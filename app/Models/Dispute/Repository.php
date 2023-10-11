@@ -80,6 +80,11 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
             ->where(Entity::STATUS, Status::OPEN)
+            ->where(function ($query)
+            {
+                $query->where(Entity::DEDUCTION_SOURCE_TYPE, '!=', RecoveryMethod::REFUNDED_PAYMENT)
+                    ->orWhereNull(Entity::DEDUCTION_SOURCE_TYPE);
+            })
             ->where(Entity::EMAIL_NOTIFICATION_STATUS, EmailNotificationStatus::SCHEDULED)
             ->where(Entity::EXPIRES_ON, '>', $currentTimestamp)
             ->with([Entity::PAYMENT, Entity::REASON, Entity::MERCHANT])
@@ -151,6 +156,11 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
             ->where(Entity::STATUS, Status::LOST)
+            ->where(function ($query)
+            {
+                $query->where(Entity::DEDUCTION_SOURCE_TYPE, '!=', RecoveryMethod::REFUNDED_PAYMENT)
+                    ->orWhereNull(Entity::DEDUCTION_SOURCE_TYPE);
+            })
             ->where(Entity::CREATED_AT, '>=', $from)
             ->where(Entity::CREATED_AT, '<=', $to)
             ->distinct()
@@ -349,6 +359,12 @@ class Repository extends Base\Repository
 
         $query = $query->merchantId($merchantId);
 
+        $query = $query->where(function ($query)
+                {
+                    $query->where(Entity::DEDUCTION_SOURCE_TYPE, '!=', RecoveryMethod::REFUNDED_PAYMENT)
+                        ->orWhereNull(Entity::DEDUCTION_SOURCE_TYPE);
+                });
+
         $count = $query->count();
 
         $disputedAmountSum = $query->sum($disputedAmountColumn);
@@ -358,6 +374,20 @@ class Repository extends Base\Repository
             'disputed_amount_sum' => intval($disputedAmountSum),
         ];
     }
+
+    public function buildFetchQueryAdditional($params, $query)
+    {
+//        check if auth check has to be added
+        if ($this->auth->isAdminAuth() === false)
+        {
+            $query->where(function ($query)
+            {
+                $query->where(Entity::DEDUCTION_SOURCE_TYPE, '!=', RecoveryMethod::REFUNDED_PAYMENT)
+                    ->orWhereNull(Entity::DEDUCTION_SOURCE_TYPE);
+            });
+        }
+    }
+
 
     protected function addQueryParamGateway($query, $params)
     {

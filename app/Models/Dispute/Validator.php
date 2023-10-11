@@ -14,6 +14,7 @@ use RZP\Models\FileStore;
 use RZP\Models\Admin\File;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Error\PublicErrorDescription;
 use PhpParser\Node\Expr\AssignOp\Mod;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -476,6 +477,36 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid File extension. Only ' . implode(', ', self::ACCEPTED_EXTENSIONS) . ' file formats are allowed'
             );
+        }
+    }
+
+    public function validateDeductionSourceTypeNotRefundedPayments(Entity $dispute)
+    {
+        $deductionSourceType = $dispute->getDeductionSourceType();
+
+        if ($deductionSourceType === RecoveryMethod::REFUNDED_PAYMENT)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_CANNOT_PERFORM_ACTION_ON_REFUNDED_PAYMENT_DISPUTE
+            );
+        }
+    }
+
+    public function validateDisputeForRefundedChargebacksUpdateByOps(Entity $dispute, array $input)
+    {
+        $deductionSourceType = $dispute->getDeductionSourceType();
+
+        if ($deductionSourceType === RecoveryMethod::REFUNDED_PAYMENT)
+        {
+            if ((isset($input[Entity::STATUS]) === false) or
+                (isset($input[Entity::INTERNAL_STATUS]) === false) or
+                (in_array($input[Entity::STATUS], Status::STATUS_UPDATE_FOR_REFUNDED_CHARGEBACKS_VIA_OPS) === false) or
+                (in_array($input[Entity::INTERNAL_STATUS], InternalStatus::INTERNAL_STATUS_UPDATE_FOR_REFUNDED_CHARGEBACKS_VIA_OPS) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_CANNOT_PERFORM_ACTION_ON_REFUNDED_PAYMENT_DISPUTE
+                );
+            }
         }
     }
 

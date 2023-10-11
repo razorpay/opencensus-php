@@ -13,6 +13,12 @@ class Status
     const WON          = 'won';
     const CLOSED       = 'closed';
 
+    const STATUS_UPDATE_FOR_REFUNDED_CHARGEBACKS_VIA_OPS = [
+        self::OPEN,
+        self::LOST,
+        self::WON,
+        self::UNDER_REVIEW,
+    ];
 
     protected static $statuses = [
         self::OPEN,

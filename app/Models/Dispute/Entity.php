@@ -412,6 +412,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DEDUCTION_SOURCE_ID, $deductionSourceId);
     }
 
+    public function setEmailNotificationStatus($emailNotificationStatus)
+    {
+        $this->setAttribute(self::EMAIL_NOTIFICATION_STATUS, $emailNotificationStatus);
+    }
+
+    public function setDeductAtOnset($deductAtOnset)
+    {
+        $this->setAttribute(self::DEDUCT_AT_ONSET, $deductAtOnset);
+    }
+
     public function resetDeductionSourceAttributes()
     {
         $this->setDeductionSourceId(null);
@@ -728,6 +738,11 @@ class Entity extends Base\PublicEntity
     public function getDeductionSourceId()
     {
         return $this->getAttribute(self::DEDUCTION_SOURCE_ID);
+    }
+
+    public function getDeductionSourceType()
+    {
+        return $this->getAttribute(self::DEDUCTION_SOURCE_TYPE);
     }
 
     public function isChildDispute(): bool

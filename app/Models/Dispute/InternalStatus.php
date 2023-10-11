@@ -15,6 +15,14 @@ class InternalStatus
     const WON                       = 'won';
     const CLOSED                    = 'closed';
 
+    const INTERNAL_STATUS_UPDATE_FOR_REFUNDED_CHARGEBACKS_VIA_OPS = [
+        self::OPEN,
+        self::REPRESENTED,
+        self::LOST_MERCHANT_DEBITED,
+        self::LOST_MERCHANT_NOT_DEBITED,
+        self::WON,
+    ];
+
     protected static $internalStatuses = [
         self::OPEN,
         self::CONTESTED,

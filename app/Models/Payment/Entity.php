@@ -2547,6 +2547,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::STATUS) === Status::CAPTURED);
     }
 
+    public function isRefunded()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::REFUNDED);
+    }
+
     public function isPartiallyOrFullyRefunded()
     {
         return ! ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::NULL);

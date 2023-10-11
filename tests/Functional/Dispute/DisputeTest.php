@@ -1222,7 +1222,9 @@ class DisputeTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $disputes = $this->fixtures->times(2)->create('dispute');
+        $disputes = $this->fixtures->times(2)->create('dispute', [
+            'deduction_source_type' => 'refund',
+        ]);
 
         $testData = $this->updateFetchTestData();
 
@@ -1388,7 +1390,8 @@ class DisputeTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->fixtures->times(3)->create('dispute', [
-            'amount' => 1000,
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
         ]);
 
         $response = $this->startTest();
@@ -1401,16 +1404,19 @@ class DisputeTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->fixtures->create('dispute', [
-            'amount' => 1000,
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'under_review',
-            'amount' => 2000,
+            'status'                => 'under_review',
+            'amount'                => 2000,
+            'deduction_source_type' => 'adjustment',
         ]);
 
         $this->fixtures->create('dispute', [
-            'amount' => 1000,
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
         ]);
 
         $response = $this->startTest();
@@ -1423,22 +1429,26 @@ class DisputeTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->fixtures->create('dispute', [
-            'amount' => 1000,
+            'amount'                => 1000,
+            'deduction_source_type' => 'adjustment',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'under_review',
-            'amount' => 1000,
+            'status'                => 'under_review',
+            'amount'                => 1000,
+            'deduction_source_type' => 'adjustment',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'closed',
-            'amount' => 1000,
+            'status'                => 'closed',
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'won',
-            'amount' => 1000,
+            'status'                => 'won',
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
         ]);
 
         $response = $this->startTest();
@@ -1466,29 +1476,32 @@ class DisputeTest extends TestCase
         $testData['request']['content']['to'] = Carbon::now()->addHours(1)->getTimestamp();
 
         $this->fixtures->create('dispute', [
-            'amount' => 2000,
-            'created_at' => Carbon::now()->getTimestamp(),
+            'amount'                => 2000,
+            'created_at'            => Carbon::now()->getTimestamp(),
+            'deduction_source_type' => 'refund',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'under_review',
-            'amount' => 1000,
+            'status'                => 'under_review',
+            'amount'                => 1000,
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'closed',
-            'amount' => 3000,
+            'status'                => 'closed',
+            'amount'                => 3000,
+            'deduction_source_type' => 'adjustment',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'open',
-            'amount' => 1000,
-            'created_at' => Carbon::now()->subHours(10)->getTimestamp()
+            'status'                => 'open',
+            'amount'                => 1000,
+            'created_at'            => Carbon::now()->subHours(10)->getTimestamp(),
         ]);
 
         $this->fixtures->create('dispute', [
-            'amount' => 2000,
-            'created_at' => Carbon::now()->addHours(10)->getTimestamp()
+            'amount'                => 2000,
+            'created_at'            => Carbon::now()->addHours(10)->getTimestamp(),
+            'deduction_source_type' => 'refund',
         ]);
 
         $response = $this->startTest();
@@ -1509,21 +1522,91 @@ class DisputeTest extends TestCase
         $this->assertArrayNotHasKey('items', $response);
     }
 
+    public function testDisputeFetchAggregateForOpenStatusWithoutRefundedChargebackProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->times(3)->create('dispute', [
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'open',
+            'internal_status'       => 'open',
+            'deduct_at_onset'       => true,
+            'deduction_source_type' => 'refunded_payment',
+            'amount'                => 1000,
+        ]);
+
+        $testData = $this->testData['testDisputeFetchAggregateForOpenStatusProxyAuth'];
+
+        $response = $this->startTest($testData);
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchAggregateForAllStatusWithoutRefundedChargebackProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('dispute', [
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'under_review',
+            'amount'                => 1000,
+            'deduction_source_type' => 'adjustment',
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'closed',
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'won',
+            'amount'                => 1000,
+            'deduction_source_type' => 'adjustment',
+
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'open',
+            'internal_status'       => 'open',
+            'deduct_at_onset'       => true,
+            'deduction_source_type' => 'refunded_payment',
+            'amount'                => 1000,
+        ]);
+
+        $testData = $this->testData['testDisputeFetchAggregateForAllStatusProxyAuth'];
+
+        $response = $this->startTest($testData);
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
     public function testDisputeFetchAggregateForUnderReviewStatusProxyAuth()
     {
         $this->ba->proxyAuth();
 
         $this->fixtures->create('dispute', [
-            'amount' => 1000,
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'under_review',
-            'amount' => 2000,
+            'status'                => 'under_review',
+            'amount'                => 2000,
+            'deduction_source_type' => 'refund',
         ]);
 
         $this->fixtures->create('dispute', [
-            'amount' => 1000,
+            'amount'                => 1000,
+            'deduction_source_type' => 'adjustment',
         ]);
 
         $response = $this->startTest();
@@ -1536,22 +1619,26 @@ class DisputeTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->fixtures->create('dispute', [
-            'amount' => 1000,
+            'amount'                => 1000,
+            'deduction_source_type' => 'adjustment',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'under_review',
-            'amount' => 1000,
+            'status'                => 'under_review',
+            'amount'                => 1000,
+            'deduction_source_type' => 'adjustment',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'closed',
-            'amount' => 1000,
+            'status'                => 'closed',
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'won',
-            'amount' => 1000,
+            'status'                => 'won',
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
         ]);
 
         $response = $this->startTest();
@@ -1579,29 +1666,34 @@ class DisputeTest extends TestCase
         $testData['request']['content']['to'] = Carbon::now()->addHours(1)->getTimestamp();
 
         $this->fixtures->create('dispute', [
-            'amount' => 2000,
-            'created_at' => Carbon::now()->getTimestamp(),
+            'amount'                => 2000,
+            'deduction_source_type' => 'refund',
+            'created_at'            => Carbon::now()->getTimestamp(),
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'under_review',
-            'amount' => 1000,
+            'status'                => 'under_review',
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'closed',
-            'amount' => 3000,
+            'status'                => 'closed',
+            'amount'                => 3000,
+            'deduction_source_type' => 'adjustment',
         ]);
 
         $this->fixtures->create('dispute', [
-            'status' => 'open',
-            'amount' => 1000,
-            'created_at' => Carbon::now()->subHours(10)->getTimestamp()
+            'status'                => 'open',
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
+            'created_at'            => Carbon::now()->subHours(10)->getTimestamp()
         ]);
 
         $this->fixtures->create('dispute', [
-            'amount' => 2000,
-            'created_at' => Carbon::now()->addHours(10)->getTimestamp()
+            'amount'                => 2000,
+            'created_at'            => Carbon::now()->addHours(10)->getTimestamp(),
+            'deduction_source_type' => 'adjustment',
         ]);
 
         $response = $this->startTest();
@@ -2179,6 +2271,7 @@ class DisputeTest extends TestCase
             'expires_on'                => (strtotime('+1 month', strtotime('now'))),
             'amount'                    => 10000,
             'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refund',
         ];
         $dispute1 = $this->fixtures->create('dispute', $attributes1);
 
@@ -2192,6 +2285,7 @@ class DisputeTest extends TestCase
             'expires_on'                => (strtotime('+1 month', strtotime('now'))),
             'amount'                    => 10000,
             'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refund',
         ];
         $dispute2 = $this->fixtures->create('dispute', $attributes2);
 
@@ -2205,6 +2299,7 @@ class DisputeTest extends TestCase
             'expires_on'                => (strtotime('+1 month', strtotime('now'))),
             'amount'                    => 10000,
             'email_notification_status' => EmailNotificationStatus::DISABLED,
+            'deduction_source_type'     => 'refund',
         ];
         $this->fixtures->create('dispute', $attributesNotToBeEmailed);
 
@@ -2302,6 +2397,7 @@ class DisputeTest extends TestCase
             'expires_on'                => (strtotime('+1 month', strtotime('now'))),
             'amount'                    => 10000,
             'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refund',
         ];
         $dispute1 = $this->fixtures->create('dispute', $attributes1);
 
@@ -2315,6 +2411,7 @@ class DisputeTest extends TestCase
             'expires_on'                => (strtotime('+1 month', strtotime('now'))),
             'amount'                    => 10000,
             'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'adjustment',
         ];
         $dispute2 = $this->fixtures->create('dispute', $attributes2);
 
@@ -2328,6 +2425,7 @@ class DisputeTest extends TestCase
             'expires_on'                => (strtotime('+1 month', strtotime('now'))),
             'amount'                    => 10000,
             'email_notification_status' => EmailNotificationStatus::DISABLED,
+            'deduction_source_type'     => 'refund',
         ];
         $this->fixtures->create('dispute', $attributesNotToBeEmailed);
 
@@ -2402,6 +2500,7 @@ class DisputeTest extends TestCase
             'expires_on'                => (strtotime('+1 month', strtotime('now'))),
             'amount'                    => 10000,
             'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refund',
         ];
         $dispute1 = $this->fixtures->create('dispute', $attributes1);
 
@@ -2415,6 +2514,7 @@ class DisputeTest extends TestCase
             'expires_on'                => (strtotime('+1 month', strtotime('now'))),
             'amount'                    => 10000,
             'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refund',
         ];
         $dispute2 = $this->fixtures->create('dispute', $attributes2);
 
@@ -2428,6 +2528,7 @@ class DisputeTest extends TestCase
             'expires_on'                => (strtotime('+1 month', strtotime('now'))),
             'amount'                    => 10000,
             'email_notification_status' => EmailNotificationStatus::DISABLED,
+            'deduction_source_type'     => 'adjustment',
         ];
         $this->fixtures->create('dispute', $attributesNotToBeEmailed);
 
@@ -2500,6 +2601,7 @@ class DisputeTest extends TestCase
             'expires_on'                => (strtotime('+1 month', strtotime('now'))),
             'amount'                    => 10000,
             'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refund',
         ];
         $this->fixtures->create('dispute', $attributes);
 
@@ -3418,6 +3520,7 @@ class DisputeTest extends TestCase
                 'expires_on'                => (strtotime('+1 month', strtotime('now'))),
                 'amount'                    => 10000,
                 'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+                'deduction_source_type'     => 'refund',
             ];
 
             $attributes = array_merge($attributes, $disputeCreateInput);
@@ -4027,6 +4130,358 @@ class DisputeTest extends TestCase
         }
     }
 
+    public function testDisputeCreateForRefundedPaymentsSingleRefundDaoSetAsTrueInPayload()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', [
+            'status'        => 'refunded',
+            'refund_status' => 'full',
+            'amount'        => 10000
+        ]);
+
+        $refund = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => $payment['amount'],
+            'base_amount' => $payment['amount'],
+            'status'      => 'processed',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $testData = & $this->testData['testDisputeCreateForRefundedPayments'];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/disputes';
+
+        $testData['request']['content']['reason_id'] = $reason->getId();
+
+        $response = $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $this->assertEquals($payment['id'], $response['payment_id']);
+
+        $this->assertEquals($refund['id'], $response['deduction_source_id']);
+
+        $this->assertEquals('rfnd_' . $refund['id'], $response['comments']);
+    }
+
+    public function testDisputeCreateForRefundedPaymentsSingleRefundDaoSetAsFalseInPayload()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', [
+            'status'        => 'refunded',
+            'refund_status' => 'full',
+            'amount'        => 10000
+        ]);
+
+        $refund = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => $payment['amount'],
+            'base_amount' => $payment['amount'],
+            'status'      => 'processed',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $testData = & $this->testData['testDisputeCreateForRefundedPayments'];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/disputes';
+
+        $testData['request']['content']['reason_id'] = $reason->getId();
+
+        $testData['request']['content']['deduct_at_onset'] = 0;
+
+        $response = $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $this->assertEquals($payment['id'], $response['payment_id']);
+
+        $this->assertEquals($refund['id'], $response['deduction_source_id']);
+
+        $this->assertEquals('rfnd_' . $refund['id'], $response['comments']);
+    }
+
+    public function testDisputeCreateForRefundedPaymentsMultipleRefundDaoSetAsTrueInPayload()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', [
+            'status'        => 'refunded',
+            'refund_status' => 'full',
+            'amount'        => 10000
+        ]);
+
+        $refund1 = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => 5000,
+            'base_amount' => 5000,
+            'status'      => 'processed',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $refund2 = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => 5000,
+            'base_amount' => 5000,
+            'status'      => 'processed',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $testData = & $this->testData['testDisputeCreateForRefundedPayments'];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/disputes';
+
+        $testData['request']['content']['reason_id'] = $reason->getId();
+
+        $response = $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $this->assertEquals($payment['id'], $response['payment_id']);
+
+        $this->assertInArray($response['deduction_source_id'], [
+            $refund1['id'],
+            $refund2['id']
+        ]);
+
+        $this->assertInArray($response['comments'], [
+            'rfnd_' . $refund1['id'] . ',' . 'rfnd_' . $refund2['id'],
+            'rfnd_' . $refund2['id'] . ',' . 'rfnd_' . $refund1['id'],
+        ]);
+    }
+
+    public function testDisputeCreateForRefundedPaymentsMultipleRefundDifferentStatusDaoSetAsFalseInPayload()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', [
+            'status'        => 'refunded',
+            'refund_status' => 'full',
+            'amount'        => 10000
+        ]);
+
+        $refund1 = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => 5000,
+            'base_amount' => 5000,
+            'status'      => 'processed',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $refund2 = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => 5000,
+            'base_amount' => 5000,
+            'status'      => 'created',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $testData = & $this->testData['testDisputeCreateForRefundedPayments'];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/disputes';
+
+        $testData['request']['content']['reason_id'] = $reason->getId();
+
+        $testData['request']['content']['deduct_at_onset'] = 0;
+
+        $response = $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $this->assertEquals($payment['id'], $response['payment_id']);
+
+        $this->assertInArray($response['deduction_source_id'], [
+            $refund1['id'],
+            $refund2['id']
+        ]);
+
+        $this->assertInArray($response['comments'], [
+            'rfnd_' . $refund1['id'] . ',' . 'rfnd_' . $refund2['id'],
+            'rfnd_' . $refund2['id'] . ',' . 'rfnd_' . $refund1['id'],
+        ]);
+    }
+
+    public function testDisputeCreateForRefundedPaymentsMultipleRefundSameStatusDaoSetAsFalseInPayload()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', [
+            'status'        => 'refunded',
+            'refund_status' => 'full',
+            'amount'        => 10000
+        ]);
+
+        $refund1 = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => 5000,
+            'base_amount' => 5000,
+            'status'      => 'created',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $refund2 = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => 5000,
+            'base_amount' => 5000,
+            'status'      => 'created',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $testData = & $this->testData['testDisputeCreateForRefundedPayments'];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/disputes';
+
+        $testData['request']['content']['reason_id'] = $reason->getId();
+
+        $testData['request']['content']['deduct_at_onset'] = 0;
+
+        $response = $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $this->assertEquals($payment['id'], $response['payment_id']);
+
+        $this->assertInArray($response['deduction_source_id'], [
+            $refund1['id'],
+            $refund2['id']
+        ]);
+
+        $this->assertInArray($response['comments'], [
+            'rfnd_' . $refund1['id'] . ',' . 'rfnd_' . $refund2['id'],
+            'rfnd_' . $refund2['id'] . ',' . 'rfnd_' . $refund1['id'],
+        ]);
+    }
+
+    public function testDisputeCreateForNormalDisputeSingleRefundDaoSetAsFalsePaymentRefundStatusPartialStatusRefunded()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', [
+            'status'        => 'refunded',
+            'refund_status' => 'partial',
+            'amount'        => 10000
+        ]);
+
+        $refund = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => 5000,
+            'base_amount' => 5000,
+            'status'      => 'processed',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $testData = & $this->testData['testDisputeCreateForNormalDisputes'];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/disputes';
+
+        $testData['request']['content']['reason_id'] = $reason->getId();
+
+        $response = $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $this->assertEquals($payment['id'], $response['payment_id']);
+    }
+
+    public function testDisputeCreateForNormalDisputeMultipleRefundDaoSetAsTruePaymentRefundStatusPartialStatusRefunded()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', [
+            'status'        => 'captured',
+            'refund_status' => 'full',
+            'amount'        => 10000
+        ]);
+
+        $refund1 = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => 2500,
+            'base_amount' => 2500,
+            'status'      => 'processed',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $refund2 = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => 2500,
+            'base_amount' => 2500,
+            'status'      => 'processed',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $testData = & $this->testData['testDisputeCreateForNormalDisputes'];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/disputes';
+
+        $testData['request']['content']['reason_id'] = $reason->getId();
+
+        $response = $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $this->assertEquals($payment['id'], $response['payment_id']);
+    }
+
+    public function testDisputeCreateForFullyRefundedPaymentDeductionSourceTypeAdjustment()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', [
+            'status'        => 'refunded',
+            'refund_status' => 'full',
+            'amount'        => 10000
+        ]);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/disputes';
+
+        $testData['request']['content']['reason_id'] = $reason->getId();
+
+        $response = $this->startTest($testData);
+    }
 
     protected function getTestCasesForDisputeEditWithStatusInternalStatusValidCombinations() : array
     {
@@ -4497,6 +4952,7 @@ class DisputeTest extends TestCase
 
         $response = $this->startTest();
     }
+
 
     /**
      *  While marking a dispute internal_status to `represented` for deduct at onset dispute,
@@ -5119,6 +5575,791 @@ class DisputeTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testDisputeFetchAllForAdminIncludingRefundedChargeback()
+    {
+        $this->ba->adminAuth();
+
+        $dispute = $this->createRefundedChargebackDispute();
+
+        $this->fixtures->create('dispute', ['internal_status' => 'open']);
+
+        $this->fixtures->create('dispute', ['internal_status' => 'closed']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDisputeFetchOpenInternalStatusForAdminIncludingRefundedChargeback()
+    {
+        $this->ba->adminAuth();
+
+        $dispute = $this->createRefundedChargebackDispute();
+
+        $this->fixtures->create('dispute', ['internal_status' => 'open']);
+
+        $this->fixtures->create('dispute', ['internal_status' => 'closed']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testRefundedChargebackDiputeEditByOpsSuccessful()
+    {
+        $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
+
+        $dispute = $this->fixtures->create('dispute', [
+            'internal_status'         => 'open',
+            'status'                  => 'open',
+            'deduction_source_type'   => 'refunded_payment',
+        ]);
+
+        $this->merchant = $dispute->merchant;
+
+        $this->ba->adminProxyAuth($this->merchant->getId(), 'rzp_test_' . $this->merchant->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
+
+        $response = $this->startTest();
+    }
+
+    public function testRefundedChargebackDiputeEditByOpsValidationErrorNotInList()
+    {
+        $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
+
+        $dispute = $this->fixtures->create('dispute', [
+            'internal_status'         => 'open',
+            'status'                  => 'open',
+            'deduction_source_type'   => 'refunded_payment',
+        ]);
+
+        $this->merchant = $dispute->merchant;
+
+        $this->ba->adminProxyAuth($this->merchant->getId(), 'rzp_test_' . $this->merchant->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['status'] = 'won';
+
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
+
+        $response = $this->startTest();
+    }
+
+    public function testDisputeFetchCountForUnderReviewStatusExcludingRefundedChargebackProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('dispute', [
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'under_review',
+            'amount'                => 2000,
+            'deduction_source_type' => 'adjustment',
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'amount'                => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'open',
+            'internal_status'       => 'open',
+            'deduct_at_onset'       => false,
+            'deduction_source_type' => 'refunded_payment',
+            'amount'                => 1000,
+        ]);
+
+        $testData = $this->testData['testDisputeFetchCountForUnderReviewStatusProxyAuth'];
+
+        $response = $this->startTest($testData);
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testDisputeFetchCountForAllStatusExcludingRefundedChargebackProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('dispute', [
+            'amount'                => 1000,
+            'deduction_source_type' => 'adjustment',
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'under_review',
+            'amount'                => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'closed',
+            'amount'                => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'won',
+            'amount'                => 1000,
+            'deduction_source_type' => 'refund',
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'open',
+            'internal_status'       => 'open',
+            'deduct_at_onset'       => true,
+            'deduction_source_type' => 'refunded_payment',
+            'amount'                => 1000,
+        ]);
+
+        $testData = $this->testData['testDisputeFetchCountForAllStatusProxyAuth'];
+
+        $response = $this->startTest($testData);
+
+        $this->assertArrayNotHasKey('items', $response);
+    }
+
+    public function testBulkRefundedChargebackDisputeEdit()
+    {
+        $disputeForRefund = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => true,
+        ]);
+
+        $disputeForAdjustment = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => true,
+        ]);
+
+        $refundedChargebackDispute = $this->fixtures->create('dispute', [
+            'status'                => 'open',
+            'internal_status'       => 'open',
+            'deduct_at_onset'       => false,
+            'deduction_source_type' => 'refunded_payment',
+        ]);
+
+        $fileData = [
+            [
+                'id'                                 => $disputeForRefund->getId(),
+                'gateway_dispute_status'             => 'open',
+                'skip_deduction'                     => 'Y',
+                'comments'                           => 'test comment',
+                'status'                             => 'under_review',
+                'internal_status'                    => 'represented',
+                'deduction_reversal_delay_in_days'   => 50,
+                'recovery_method'                    => null,
+            ],
+
+            [
+                'id'                                 => $disputeForAdjustment->getId(),
+                'gateway_dispute_status'             => 'open',
+                'skip_deduction'                     => 'Y',
+                'comments'                           => 'test comment',
+                'status'                             => 'under_review',
+                'internal_status'                    => 'represented',
+                'deduction_reversal_delay_in_days'   => 50,
+                'recovery_method'                    => null,
+            ],
+
+            [
+                'id'                                 => $refundedChargebackDispute->getId(),
+                'gateway_dispute_status'             => 'open',
+                'skip_deduction'                     => 'Y',
+                'comments'                           => 'test comment',
+                'status'                             => 'under_review',
+                'internal_status'                    => 'represented',
+                'deduction_reversal_delay_in_days'   => null,
+                'recovery_method'                    => null,
+            ],
+        ];
+
+        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+
+        $testData = & $this->testData['testBulkDisputeEdit'];
+
+        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+
+        $this->startTest($testData);
+
+        $disputeArrayForRefund     = $this->getEntityById('dispute', $disputeForRefund->getId(), true);
+        $disputeArrayForAdjustment = $this->getEntityById('dispute', $disputeForAdjustment->getId(), true);
+        $disputeArrayForRefundedChargeback = $this->getEntityById('dispute', $refundedChargebackDispute->getId(), true);
+
+        $this->assertArraySelectiveEquals([
+            'internal_status' => 'represented',
+            'status'          => 'under_review',
+        ], $disputeArrayForRefund);
+
+        $this->assertArraySelectiveEquals([
+            'internal_status' => 'represented',
+            'status'          => 'under_review',
+        ], $disputeArrayForAdjustment);
+
+        $this->assertArraySelectiveEquals([
+            'internal_status' => 'represented',
+            'status'          => 'under_review',
+        ], $disputeArrayForRefundedChargeback);
+
+        $this->assertNotNull($disputeArrayForRefund['deduction_reversal_at']);
+        $this->assertNotNull($disputeArrayForAdjustment['deduction_reversal_at']);
+        $this->assertNull($disputeArrayForRefundedChargeback['deduction_reversal_at']);
+
+        $this->assertNotEquals(1300000000, $disputeArrayForRefund['internal_respond_by']);
+        $this->assertNotEquals(1300000000, $disputeArrayForAdjustment['internal_respond_by']);
+        $this->assertNotEquals(1300000000, $disputeArrayForRefundedChargeback['internal_respond_by']);
+
+        $this->assertNotEquals('test comment', $disputeArrayForRefundedChargeback['comments']);
+    }
+
+    public function testBulkRefundedChargebackDisputeEditValidationFailure()
+    {
+        $id1 = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => true,
+        ])->getId();
+
+        $id2 = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => false,
+        ])->getId();
+
+        $id3 = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => false,
+        ])->getId();
+
+        $refundedChargebackDisputeId = $this->fixtures->create('dispute', [
+            'status'                => 'open',
+            'internal_status'       => 'open',
+            'deduct_at_onset'       => false,
+            'deduction_source_type' => 'refunded_payment',
+        ])->getId();
+
+        $fileData = [
+            [
+                'id'                               => $id1,
+                'gateway_dispute_status'           => 'open',
+                'skip_deduction'                   => 'N',
+                'comments'                         => 'test comment',
+                'status'                           => 'lost',
+                'internal_status'                  => 'open',
+                'deduction_reversal_delay_in_days' => 50,
+                'recovery_method'                  => 'refund',
+            ],
+
+            [
+                'id'                               => $id2,
+                'gateway_dispute_status'           => 'open',
+                'skip_deduction'                   => 'N',
+                'comments'                         => 'test comment',
+                'status'                           => 'lost',
+                'internal_status'                  => 'lost_merchant_debited',
+                'deduction_reversal_delay_in_days' => null,
+                'recovery_method'                  => null,
+            ],
+
+            [
+                'id'                               => $id3,
+                'gateway_dispute_status'           => 'open',
+                'skip_deduction'                   => 'N',
+                'comments'                         => 'test comment',
+                'status'                           => 'lost',
+                'internal_status'                  => 'lost_merchant_debited',
+                'deduction_reversal_delay_in_days' => null,
+                'recovery_method'                  => 'refund',
+            ],
+
+            [
+                'id'                               => $refundedChargebackDisputeId,
+                'gateway_dispute_status'           => 'open',
+                'skip_deduction'                   => 'N',
+                'comments'                         => 'test comment',
+                'status'                           => 'lost',
+                'internal_status'                  => 'closed',
+                'deduction_reversal_delay_in_days' => null,
+                'recovery_method'                  => null,
+            ],
+        ];
+
+        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+
+        $testData = & $this->testData['testBulkDisputeEdit'];
+
+        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+
+        $disputeArray1Before = $this->getEntityById('dispute', $id1, true);
+        $disputeArray2Before = $this->getEntityById('dispute', $id2, true);
+        $refundedChargebackDisputeBefore = $this->getEntityById('dispute', $refundedChargebackDisputeId, true);
+
+        $this->startTest($testData);
+
+        $disputeArray1After = $this->getEntityById('dispute', $id1, true);
+        $disputeArray2After = $this->getEntityById('dispute', $id2, true);
+        $refundedChargebackDisputeAfter = $this->getEntityById('dispute', $refundedChargebackDisputeId, true);
+
+        $this->assertEquals($disputeArray1Before, $disputeArray1After);
+        $this->assertEquals($disputeArray2Before, $disputeArray2After);
+        $this->assertEquals($refundedChargebackDisputeBefore, $refundedChargebackDisputeAfter);
+
+        $disputeArray3 = $this->getEntityById('dispute', $id3, true);
+
+        $this->assertArraySelectiveEquals([
+            'internal_status'       => 'lost_merchant_debited',
+            'status'                => 'lost',
+            'deduction_source_type' => 'refund',
+        ], $disputeArray3);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($disputeArray3['payment_id'], $refund['payment_id']);
+        $this->assertEquals($disputeArray3['amount'], $refund['amount']);
+    }
+
+    public function testDisputeFetchForMerchantExcludingRefundedChargebacks()
+    {
+        $this->ba->proxyAuth();
+
+        $disputes = $this->fixtures->times(2)->create('dispute', [
+            'deduction_source_type' => 'refund',
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'open',
+            'internal_status'       => 'open',
+            'deduct_at_onset'       => false,
+            'deduction_source_type' => 'refunded_payment',
+            'amount'                => 1000,
+        ]);
+
+        $testData = $this->testData['testDisputeFetchForMerchant'];
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->checkDisputeFetchForMerchant($disputes, $content);
+
+        $this->ba->privateAuth();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('reason', $content['items'][0]);
+
+        $this->assertArrayNotHasKey('lifecycle', $content['items'][0]);
+
+        $this->checkDisputeFetchForMerchant($disputes, $content);
+    }
+
+
+    public function testDisputeFetchForMerchantOpenStatusExcludingRefundedChargebacks()
+    {
+        $this->ba->proxyAuth();
+
+        $disputes = $this->fixtures->times(2)->create('dispute', [
+            'deduction_source_type' => 'refund',
+            'status'                => 'open',
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'open',
+            'internal_status'       => 'open',
+            'deduct_at_onset'       => false,
+            'deduction_source_type' => 'refunded_payment',
+            'amount'                => 1000,
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'status'                => 'under_review',
+            'internal_status'       => 'represented',
+            'deduction_source_type' => 'adjustment',
+        ]);
+
+        $testData = & $this->testData['testDisputeFetchForMerchant'];
+
+        $testData['request']['url'] ='/disputes?status=open';
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->checkDisputeFetchForMerchant($disputes, $content);
+
+        $this->ba->privateAuth();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('reason', $content['items'][0]);
+
+        $this->assertArrayNotHasKey('lifecycle', $content['items'][0]);
+
+        $this->checkDisputeFetchForMerchant($disputes, $content);
+    }
+
+    public function testPhaseBasedBulkCreateMailsViaFdExcludingRefundedChargebackSamePhaseTickets()
+    {
+        Mail::fake();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->mockFreshdesk(1);
+
+        $this->ba->cronAuth();
+
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
+
+        $this->mockSalesforceRequestforSalesPOC('10000000000000', "sales.poc@gmail.com", 1);
+
+        $attributes1 = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refund',
+        ];
+        $dispute1 = $this->fixtures->create('dispute', $attributes1);
+
+        $attributes2 = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'adjustment',
+        ];
+        $dispute2 = $this->fixtures->create('dispute', $attributes2);
+
+        $attributesNotToBeEmailed = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::ARBITRATION,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::DISABLED,
+            'deduction_source_type'     => 'refund',
+        ];
+        $this->fixtures->create('dispute', $attributesNotToBeEmailed);
+
+        $refundedChargebackDisputeEmailNotificationDisabled = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::ARBITRATION,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::DISABLED,
+            'deduction_source_type'     => 'refunded_payment',
+        ];
+        $this->fixtures->create('dispute', $refundedChargebackDisputeEmailNotificationDisabled);
+
+        $refundedChargebackDisputeEmailNotificationScheduled = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::ARBITRATION,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refunded_payment',
+        ];
+        $this->fixtures->create('dispute', $refundedChargebackDisputeEmailNotificationScheduled);
+
+        $testData = &$this->testData['testPhaseBasedBulkCreateMailsViaFd'];
+
+        $this->startTest($testData);
+
+        $disputeByPaymentIdMap = [];
+
+        $totalPhasePayments = [];
+
+        foreach ([$dispute1, $dispute2] as $dispute)
+        {
+            $disputeByPaymentIdMap['pay_' . $dispute['payment_id']] = $dispute;
+
+            $phase = $dispute['phase'];
+
+            if (isset($totalPhasePayments[$phase]) === false)
+            {
+                $totalPhasePayments[$phase] = 0;
+            }
+
+            $totalPhasePayments[$phase]++;
+        }
+
+        $expectedData = [
+            'dispute_payment_map' => $disputeByPaymentIdMap,
+            'total_payments'      => $totalPhasePayments,
+        ];
+
+        $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute1[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
+
+        $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
+
+        $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute2[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
+
+        $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
+    }
+
+    public function testPhaseBasedBulkCreateMailsViaFdExcludingRefundedChargebackDifferentPhaseTickets()
+    {
+        Mail::fake();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->mockFreshdesk(2);
+
+        $this->ba->cronAuth();
+
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
+
+        $this->mockSalesforceRequestforSalesPOC('10000000000000', "sales.poc@gmail.com", 2);
+
+        $attributes1 = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refund',
+        ];
+        $dispute1 = $this->fixtures->create('dispute', $attributes1);
+
+        $attributes2 = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::ARBITRATION,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refund',
+        ];
+        $dispute2 = $this->fixtures->create('dispute', $attributes2);
+
+        $attributesNotToBeEmailed = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::CHARGEBACK,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::DISABLED,
+            'deduction_source_type'     => 'adjustment',
+        ];
+        $this->fixtures->create('dispute', $attributesNotToBeEmailed);
+
+        $refundedChargebackDisputeEmailNotificationDisabled = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::ARBITRATION,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::DISABLED,
+            'deduction_source_type'     => 'refunded_payment',
+        ];
+        $this->fixtures->create('dispute', $refundedChargebackDisputeEmailNotificationDisabled);
+
+        $refundedChargebackDisputeEmailNotificationScheduled = [
+            'payment_id'                => $this->fixtures->create('payment:captured')->getId(),
+            'gateway_dispute_id'        => 'Dispute100001',
+            'gateway_dispute_status'    => 'open',
+            'reason_id'                 => $reason['id'],
+            'phase'                     => Phase::ARBITRATION,
+            'raised_on'                 => (strtotime('-1 month', strtotime('now'))),
+            'expires_on'                => (strtotime('+1 month', strtotime('now'))),
+            'amount'                    => 10000,
+            'email_notification_status' => EmailNotificationStatus::SCHEDULED,
+            'deduction_source_type'     => 'refunded_payment',
+        ];
+        $this->fixtures->create('dispute', $refundedChargebackDisputeEmailNotificationScheduled);
+
+        $testData = &$this->testData['testPhaseBasedBulkCreateMailsViaFd'];
+
+        $this->startTest($testData);
+
+        $disputeByPaymentIdMap = [];
+
+        $totalPhasePayments = [];
+
+        foreach ([$dispute1, $dispute2] as $dispute)
+        {
+            $disputeByPaymentIdMap['pay_' . $dispute['payment_id']] = $dispute;
+
+            $phase = $dispute['phase'];
+
+            if (isset($totalPhasePayments[$phase]) === false)
+            {
+                $totalPhasePayments[$phase] = 0;
+            }
+
+            $totalPhasePayments[$phase]++;
+        }
+
+        $expectedData = [
+            'dispute_payment_map' => $disputeByPaymentIdMap,
+            'total_payments'      => $totalPhasePayments,
+        ];
+
+        $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute1[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
+
+        $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
+
+        $actualEmailStatus = $this->getEntityById('dispute', 'disp_' .$dispute2[Entity::ID], true)[Entity::EMAIL_NOTIFICATION_STATUS];
+
+        $this->assertEquals(EmailNotificationStatus::NOTIFIED, $actualEmailStatus);
+    }
+
+    public function testDisputeFileDeleteForRefundedChargebackValidationFailure()
+    {
+        $dispute = $this->createRefundedChargebackDispute();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/disputes/' . $dispute['id'] . '/files/file_123456';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testDisputeFetchFilesForRefundedChargebackValidationFailure()
+    {
+        $dispute = $this->createRefundedChargebackDispute();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/disputes/' . $dispute['id'] . '/files';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testRefundedChargebackDisputeFetchByDisputeIdValidationFailure()
+    {
+        $dispute = $this->createRefundedChargebackDispute();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/disputes/' . $dispute['id'];
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testRefundedChargebackDisputeContestByIdValidationFailure()
+    {
+        $dispute = $this->createRefundedChargebackDispute();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/disputes/' . $dispute['id']  . '/contest';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testRefundedChargebackDisputeAcceptByIdValidationFailure()
+    {
+        $dispute = $this->createRefundedChargebackDispute();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/disputes/' . $dispute['id'] . '/accept';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function createRefundedChargebackDispute()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', [
+            'status'        => 'refunded',
+            'refund_status' => 'full',
+            'amount'        => 10000
+        ]);
+
+        $refund = $this->fixtures->create('refund', [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => $payment['amount'],
+            'base_amount' => $payment['amount'],
+            'status'      => 'processed',
+            'gateway'     => 'upi_airtel',
+        ]);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $testData = & $this->testData['testDisputeCreateForRefundedPayments'];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/disputes';
+
+        $testData['request']['content']['reason_id'] = $reason->getId();
+
+        $testData['request']['content']['deduct_at_onset'] = 0;
+
+        $response = $this->startTest($testData);
+
+        return $response;
+    }
+
     protected function mockSalesforceRequest($expectedMerchantIds, $expectedResponse): void
     {
         $this->salesforceMock->shouldReceive('getSalesForceTeamNameForMerchantID')
@@ -5197,6 +6438,11 @@ class DisputeTest extends TestCase
                                  return $expectedResponse;
                              });
 
+    }
+
+    protected function assertInArray($value, array $array)
+    {
+        return (in_array($value, $array, true));
     }
 
     protected function mockSplitzTreatmentBulkRequest($output)

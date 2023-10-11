@@ -103,6 +103,85 @@ return [
         ],
     ],
 
+    'testDisputeCreateForRefundedPayments' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 10000,
+                'deduct_at_onset'      => 1,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'                    => 10000,
+                'amount_deducted'           => 0,
+                'phase'                     => 'chargeback',
+                'status'                    => 'open',
+                'deduction_source_type'     => 'refunded_payment',
+                'email_notification_status' => 'disabled',
+                'gateway_dispute_id'        => '4342frf34r',
+                'internal_status'           => 'open',
+            ],
+        ],
+    ],
+
+    'testDisputeCreateForNormalDisputes' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 5000,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'                    => 5000,
+                'amount_deducted'           => 0,
+                'phase'                     => 'chargeback',
+                'status'                    => 'open',
+                'deduction_source_type'     => null,
+                'comments'                  => null,
+                'gateway_dispute_id'        => '4342frf34r',
+                'internal_status'           => 'open',
+            ],
+        ],
+    ],
+
+    'testDisputeCreateForFullyRefundedPaymentDeductionSourceTypeAdjustment' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 10000,
+                'deduct_at_onset'      => 1,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Cannot create dispute as the merchant has already lost',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testLostInternationalDispute' => [
         'request' => [
             'method'  => 'post',
@@ -2838,6 +2917,165 @@ return [
             ]
         ],
         'status_code' => 200,
+    ],
+
+    'testDisputeFetchAllForAdminIncludingRefundedChargeback' => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 3,
+                'items'         => []
+            ],
+        ],
+    ],
+
+    'testDisputeFetchOpenInternalStatusForAdminIncludingRefundedChargeback' => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?internal_status=open',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 2,
+                'items'         => []
+            ],
+        ],
+    ],
+
+    'testRefundedChargebackDiputeEditByOpsSuccessful' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'internal_status' => 'won',
+                'status'          => 'won',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'internal_status' => 'won',
+                'status'          => 'won',
+            ],
+        ],
+    ],
+
+    'testRefundedChargebackDiputeEditByOpsValidationErrorNotInList' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'internal_status' => 'closed',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This action cannot be performed on refunded payment dispute',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeFileDeleteForRefundedChargebackValidationFailure' => [
+        'request' => [
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This action cannot be performed on refunded payment dispute',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeFetchFilesForRefundedChargebackValidationFailure' => [
+        'request' => [
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This action cannot be performed on refunded payment dispute',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRefundedChargebackDisputeFetchByDisputeIdValidationFailure' => [
+        'request' => [
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This action cannot be performed on refunded payment dispute',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRefundedChargebackDisputeContestByIdValidationFailure' => [
+        'request' => [
+            'method' => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This action cannot be performed on refunded payment dispute',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRefundedChargebackDisputeAcceptByIdValidationFailure' => [
+        'request' => [
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This action cannot be performed on refunded payment dispute',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 ];
 

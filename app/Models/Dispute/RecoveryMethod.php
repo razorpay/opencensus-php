@@ -8,9 +8,10 @@ use RZP\Models\Payment\Gateway;
 
 class RecoveryMethod
 {
-    const ADJUSTMENT      = "adjustment";
-    const REFUND          = "refund";
-    const RISK_OPS_REVIEW = "risk_ops_review";
+    const ADJUSTMENT       = "adjustment";
+    const REFUND           = "refund";
+    const RISK_OPS_REVIEW  = "risk_ops_review";
+    const REFUNDED_PAYMENT = 'refunded_payment';
 
     const NETBANKING_RECOVER_VIA_REFUND_GATEWAYS = [
         Gateway::NETBANKING_HDFC,

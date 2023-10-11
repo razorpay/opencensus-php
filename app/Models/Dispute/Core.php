@@ -180,6 +180,12 @@ class Core extends Base\Core
 
                 $dispute = $this->repo->transaction(function() use ($dispute, $payment, $isShadowModeDualWrite, $reverseShadowResp)
                 {
+                    if (($payment->isRefunded() === true) and
+                        ($payment->isFullyRefunded() === true))
+                    {
+                        $this->updateDisputeEntityValuesForRefundedPayments($dispute, $payment);
+                    }
+
                     if ($dispute->getDeductAtOnset() === true && $reverseShadowResp === null)
                     {
                         $this->createNegativeAdjustmentAndUpdateDispute($dispute, 0, false);
@@ -211,13 +217,19 @@ class Core extends Base\Core
                     return $dispute;
                 });
 
-                $event = $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_CREATED, $dispute);
+                if ($dispute->getDeductionSourceType() !== RecoveryMethod::REFUNDED_PAYMENT)
+                {
+                    $event = $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_CREATED, $dispute);
 
-                (new Shield($this->app))->enqueueShieldEvent($event);
+                    (new Shield($this->app))->enqueueShieldEvent($event);
+                }
 
                 $this->trace->count(Metrics::DISPUTE_CREATE);
 
-                $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
+                if ($dispute->getDeductionSourceType() !== RecoveryMethod::REFUNDED_PAYMENT)
+                {
+                    $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
+                }
 
                 // dual-write shadow mode should be ramped-down to 0
                 // before ramping up dual-write reverse shadow.
@@ -243,6 +255,42 @@ class Core extends Base\Core
             });
     }
 
+    protected function updateDisputeEntityValuesForRefundedPayments(Entity $dispute, Payment\Entity $payment)
+    {
+        $dispute->setEmailNotificationStatus(EmailNotificationStatus::DISABLED);
+
+        $dispute->setDeductAtOnset(false);
+
+        $refundIdsString = '';
+
+        $refundIds = $payment->refunds->getIds();
+
+        //condition check for sanity purpose
+        if (empty($refundIds) === false)
+        {
+            $dispute->setDeductionSourceType(RecoveryMethod::REFUNDED_PAYMENT);
+
+            $firstRefundId = array_shift($refundIds);
+
+            $refundIdsString = 'rfnd_' . $firstRefundId;
+
+            foreach ($refundIds as $refundId)
+            {
+                $refundIdsString .= ',' . 'rfnd_' . $refundId;
+            }
+
+            $dispute->setDeductionSourceId($firstRefundId);
+
+            $dispute->setComments($refundIdsString);
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException('Cannot create dispute as the merchant has already lost');
+        }
+
+        $this->repo->saveOrFail($dispute);
+    }
+
     /**
      * @param Entity $dispute
      * @param array  $input
@@ -266,6 +314,25 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+//            remove this validation once automation is live
+            (new Validator)->validateDisputeForRefundedChargebacksUpdateByOps($dispute, $input);
+
+//             uncomment this when automation is live
+//            (new Validator)->validateDeductionSourceTypeNotRefundedPayments($dispute);
+
+            if ($dispute->getDeductionSourceType() === RecoveryMethod::REFUNDED_PAYMENT)
+            {
+                if (isset($input[Entity::COMMENTS]) === true)
+                {
+                    // to not overwrite the existing comments as it is used to store the refund details associated with the dispute
+                    unset($input[Entity::COMMENTS]);
+                }
+            }
+        }
+
+
         $parent = $this->checkAndGetParent($input, $dispute);
 
         $isShadowModeDualWrite = $this->app['disputes']->isShadowModeDualWrite($dispute->payment->isInternational());
@@ -282,13 +349,19 @@ class Core extends Base\Core
         $returnParam = $this->repo->transaction(function() use ($dispute, $input, $isShadowModeDualWrite) {
             $this->handleDisputeClosure($dispute, $input);
 
-            $this->fireDisputeStatusChangeWebhookEvent($dispute);
+            if ($dispute->getDeductionSourceType() !== RecoveryMethod::REFUNDED_PAYMENT)
+            {
+                $this->fireDisputeStatusChangeWebhookEvent($dispute);
+            }
 
             $this->repo->saveOrFail($dispute);
 
             $this->updateCustomerTicketIfApplicable($dispute);
 
-            $this->generateDisputeEvent($dispute);
+            if ($dispute->getDeductionSourceType() !== RecoveryMethod::REFUNDED_PAYMENT)
+            {
+                $this->generateDisputeEvent($dispute);
+            }
 
             $dispute->refresh();
 
@@ -329,7 +402,7 @@ class Core extends Base\Core
         if ($dispute->isClosed() === false)
         {
             $event = $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_PROCESSED, $dispute);
-
+            
             (new Shield($this->app))->enqueueShieldEvent($event);
         }
     }
@@ -345,6 +418,8 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
             [Entity::ID => $dispute->getId()]);
+
+        (new Validator)->validateDeductionSourceTypeNotRefundedPayments($dispute);
 
         $dispute->getValidator()->validateForMerchantUpdate($input);
 
@@ -526,6 +601,17 @@ class Core extends Base\Core
         $dispute->setResolvedAt(Carbon::now()->getTimestamp());
 
         $dispute->setDeductionReversalAt(null);
+
+        if ($dispute->getDeductionSourceType() === RecoveryMethod::REFUNDED_PAYMENT)
+        {
+            $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
+
+            $payment->setDisputed(false);
+
+            $this->repo->saveOrFail($payment);
+
+            return;
+        }
 
         $skipDeduct = (isset($input[Entity::SKIP_DEDUCTION])) ? boolval($input[Entity::SKIP_DEDUCTION]) : false;
 
@@ -2051,6 +2137,8 @@ class Core extends Base\Core
 
         $dispute = $this->repo->dispute->findByIdAndMerchantId($disputeId, $this->merchant->getId());
 
+        (new Validator)->validateDeductionSourceTypeNotRefundedPayments($dispute);
+
         $mutexKey = DisputeConstants::DISPUTE_CONTEST_BY_MUTEX_PREFIX . $disputeId;
 
         $this->mutex->acquireAndRelease(
@@ -2077,6 +2165,8 @@ class Core extends Base\Core
         $disputeId = Entity::verifyIdAndStripSign($disputeId);
 
         $dispute = $this->repo->dispute->findByIdAndMerchantId($disputeId, $this->merchant->getId());
+
+        (new Validator)->validateDeductionSourceTypeNotRefundedPayments($dispute);
 
         $dispute = $this->repo->transaction(function() use ($dispute, $input) {
              (new Evidence\Core)->handlePatchDisputeEvidence($dispute, [

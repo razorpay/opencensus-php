@@ -379,6 +379,8 @@ class Service extends Base\Service
     {
         $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
+        (new Validator)->validateDeductionSourceTypeNotRefundedPayments($dispute);
+
         if ($this->app['basicauth']->isExpress() === true)
         {
             $res = $dispute->toArrayAdmin();
@@ -400,12 +402,16 @@ class Service extends Base\Service
     {
         $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
 
+        (new Validator)->validateDeductionSourceTypeNotRefundedPayments($dispute);
+
         (new File\Core)->deleteFile($dispute, $fileId);
     }
 
     public function getFiles(string $id)
     {
         $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+
+        (new Validator)->validateDeductionSourceTypeNotRefundedPayments($dispute);
 
         return (new File\Core)->getFilesForEntity($dispute);
     }
