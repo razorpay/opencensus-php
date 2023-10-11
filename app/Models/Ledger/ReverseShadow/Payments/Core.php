@@ -100,10 +100,18 @@ class Core extends Base\Core
 
         $commission = $fee - $tax;
 
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT) === true)
+        {
+            $moneyParams[Constants::TAX]                        = strval($tax);
+            $moneyParams[Constants::COMMISSION]                 = strval($commission);
+            $moneyParams[Constants::MERCHANT_VAS_AMOUNT]        = strval($fee);
+
+            return $moneyParams;
+        }
+
         //Todo: Check with banking team , fee and tax is populated but do not get deducted from balance.
         //Todo: how do we charge this amount from acquirer bank.
-        if (($payment->merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT) === true) or
-            ($payment->isHdfcVasDSCustomerFeeBearerSurcharge() === true))
+        else if ($payment->isHdfcVasDSCustomerFeeBearerSurcharge() === true)
         {
             if ($this->isPostpaid($payment) === true)
             {
@@ -156,7 +164,11 @@ class Core extends Base\Core
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT;
 
-        if($this->isPostpaid($payment) === true)
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT) === true)
+        {
+            $rule[Constants::ACCOUNTING] = Constants::VAS_MERCHANT_FLOW;
+        }
+        else if($this->isPostpaid($payment) === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
         }

@@ -1604,7 +1604,7 @@ class PaymentLedgerTest extends TestCase
 
     }
 
-    public function testDSPaymentCaptureWithVASFeatureEnabled()
+    public function testDSPaymentCaptureWithVASFeatureEnabledMerchant()
     {
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
 
@@ -1679,13 +1679,13 @@ class PaymentLedgerTest extends TestCase
             "currency" => "INR",
             "transactor_event" =>  "payment_merchant_captured",
             "money_params" => [
-                "base_amount" => "0",
-                "merchant_balance_amount" => "0",
-                "tax" => "0",
-                "commission" => "0",
+                "merchant_vas_amount" => "1476",
+                "tax" => "226",
+                "commission" => "1250",
             ],
             "additional_params" => [
-                "direct_settlement_accounting" =>  "direct_settlement",
+                "direct_settlement_accounting"  =>  "direct_settlement",
+                "accounting"                    => "vas_merchant_flow"
             ],
             "ledger_integration_mode" =>  "reverse-shadow",
             "tenant" => "PG"
@@ -1773,14 +1773,13 @@ class PaymentLedgerTest extends TestCase
             "currency" => "INR",
             "transactor_event" =>  "payment_merchant_captured",
             "money_params" => [
-                "base_amount" => "0",
-                "merchant_receivable_amount" => "0",
-                "tax" => "0",
-                "commission" => "0",
+                "merchant_vas_amount" => "1476",
+                "tax" => "226",
+                "commission" => "1250",
             ],
             "additional_params" => [
-                "direct_settlement_accounting" =>  "direct_settlement",
-                "credit_accounting" => "postpaid"
+                "direct_settlement_accounting"  =>  "direct_settlement",
+                "accounting"                    => "vas_merchant_flow"
             ],
             "ledger_integration_mode" =>  "reverse-shadow",
             "tenant" => "PG"

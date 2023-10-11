@@ -23,7 +23,7 @@ class CaptureJournalEvents
         {
             $moneyParams = self::generateMoneyParamsForCaptureDirectSettlement($payment,$transaction);
 
-            $additionalParams = self::fetchRulesForPaymentCreditsDS($transaction);
+            $additionalParams = self::fetchRulesForPaymentCreditsDS($transaction, $payment);
         }
         else
         {
@@ -141,11 +141,17 @@ class CaptureJournalEvents
         return $rule;
     }
 
-    public static function fetchRulesForPaymentCreditsDS(Transaction\Entity $transaction)
+    public static function fetchRulesForPaymentCreditsDS(Transaction\Entity $transaction, Payment\Entity $payment)
     {
         $rule = null;
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT;
+
+
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT) === true)
+        {
+            $rule[Constants::ACCOUNTING] = Constants::VAS_MERCHANT_FLOW;
+        }
 
         if($transaction->isGratis() === true)
         {
@@ -277,6 +283,15 @@ class CaptureJournalEvents
         $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
 
         $moneyParams[Constants::BASE_AMOUNT] = strval($amount);
+
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT) === true)
+        {
+            $moneyParams[Constants::TAX]                        = strval($tax);
+            $moneyParams[Constants::COMMISSION]                 = strval($fee);
+            $moneyParams[Constants::MERCHANT_VAS_AMOUNT]        = strval(abs($transaction->getFee()));
+
+            return $moneyParams;
+        }
 
         if($transaction->isGratis() === true)
         {
