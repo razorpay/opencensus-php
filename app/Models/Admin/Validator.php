@@ -360,12 +360,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $mozartGatewayPvtRules = [
-        'gateway'            => 'required|string|in:citi,icici,yesbank_upi,yesbank,icici_imps,rbl,m2p,axis,amazonpay,mc_send',
+        'gateway'            => 'required|string|in:citi,icici,yesbank_upi,yesbank,icici_imps,rbl,m2p,axis,amazonpay,mc_send,idfc',
         'action'             => 'required|string|in:gateway_auth,gateway_session,transfer_init,transfer_status,beneficiary_verify,beneficiary_register,registration,account_balance,account_statement,account_statement_consolidated',
         'namespace'          => 'required|string',
         'payload'            => 'required|array',
         'payload.entities'   => 'required|array',
-        'version'            => 'required|string|in:v1,v2,v3,v4',
+        'version'            => 'required|string|in:v1,v2,v3,v4,v5',
     ];
 
     protected static $externalAdminFetchMultiplePaymentRules = [
