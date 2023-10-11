@@ -33,7 +33,6 @@ class NbplusNetbankingUbiCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
     public function testNetbankingUbiCombinedFile()
     {
-        Queue::fake();
 
         Mail::fake();
 
@@ -75,10 +74,6 @@ class NbplusNetbankingUbiCombinedFileTest extends NbPlusPaymentServiceNetbanking
         ];
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $files);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
 
         Mail::assertSent(DailyFileMail::class, function ($mail) {
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');

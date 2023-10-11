@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Excel;
-use Queue;
 
 use Carbon\Carbon;
 
@@ -33,8 +32,6 @@ class NbplusNetbankingNsdlCombinedFileTest extends NbPlusPaymentServiceNetbankin
     public function testNetbankingNsdlRefundFile()
     {
         Mail::fake();
-
-        Queue::fake();
 
         $this->mockBeam(function ($pushData, $intervalInfo, $mailInfo, $synchronous)
         {

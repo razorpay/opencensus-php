@@ -119,7 +119,7 @@ class Core extends Base\Core
 
     protected function isAsyncGateway($target, string $type)
     {
-        return in_array($type, Constants::ASYNC_GATEWAYS, true) and
+        return array_key_exists($type, Constants::ASYNC_GATEWAYS) and
             in_array($target, Constants::ASYNC_GATEWAYS[$type], true);
     }
 }
