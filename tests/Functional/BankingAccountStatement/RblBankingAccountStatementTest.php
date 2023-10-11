@@ -45,6 +45,7 @@ use RZP\Jobs\BankingAccountStatementCleanUp;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Services\Mock\BankingAccountService;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\BankingAccountStatementReconNeo;
@@ -161,6 +162,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
 
         $this->fixtures->base->connection('test');
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     // TODO: to be removed before merging to master. This one way of handling the new db connection
@@ -586,126 +589,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->startTest();
     }
-
-    /**
-     * Case where the response from RBL CA is migrated to BAS
-     * TODO: Uncomment UT once Payouts is done with changes
-     */
-    // public function testRblAccountStatementCase7()
-    // {
-    //     $mockedResponse = $this->getRblDataResponse();
-
-    //     $this->setMozartMockResponse($mockedResponse);
-
-    //     $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-    //     // detach API RBL CA
-    //     $this->fixtures->edit('banking_account', $baBeforeTest['id'], [
-    //         'merchant_id'       => '10000000000001',
-    //         'account_number'    => null,
-    //         'balance_id'        => null,
-    //         'channel'           => 'yesbank'
-    //     ]);
-
-    //     $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
-
-    //     $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
-
-    //     $this->app['config']->set('applications.banking_account_service.mock', true);
-
-    //     $basMock = Mockery::mock(\RZP\Services\Mock\BankingAccountService::class, [$this->app])->makePartial();
-
-    //     $basMock->shouldReceive('fetchAccountDetailsByBalance')->atLeast()->once()->andReturns([
-    //         'partner_bank'              => 'RBL',
-    //         'ifsc'                      => 'RATN0000156',
-    //         'account_number'            => '2224440041626905',
-    //         'account_currency'          => 'INR',
-    //         'application_tracking_id'   => '',
-    //         'pincode'                   =>  '1',
-    //         'id'                        => 'xba00000000001',
-    //         'status'                    => 'ACTIVE'
-    //     ]);
-
-    //     $this->app->instance('banking_account_service', $basMock);
-
-    //     $this->ba->cronAuth();
-
-    //     $this->setupForRblAccountStatement();
-
-    //     $this->testData[__FUNCTION__] = $this->testData['testRblAccountStatementCase1'];
-
-    //     $this->startTest();
-
-    //     $transactions = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
-
-    //     $txn = last($transactions);
-
-    //     $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
-
-    //     $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
-
-    //     $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
-
-    //     $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
-
-    //     $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
-
-    //     $txnActual = $this->txnEntity->toArray();
-
-    //     $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
-
-    //     $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
-
-    //     $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
-
-    //     $basExpected = [
-    //         BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
-    //         BasEntity::BANK_TRANSACTION_ID   => trim($txn['txnId']),
-    //         BasEntity::TYPE                  => 'debit',
-    //         BasEntity::AMOUNT                => 10095,
-    //         BasEntity::BALANCE               => 11355,
-    //         BasEntity::POSTED_DATE           => 1451937993,
-    //         BasEntity::TRANSACTION_DATE      => 1451932200,
-    //         BasEntity::DESCRIPTION           => trim($txn['transactionSummary']['txnDesc']),
-    //         BasEntity::CHANNEL               => 'rbl',
-    //         BasEntity::ENTITY_ID             => $externalId,
-    //         BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
-    //         BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
-    //     ];
-
-    //     $this->assertArraySubset($basExpected, $basActual, true);
-
-    //     $externalExpected = [
-    //         BasEntity::MERCHANT_ID                => $basActual[BasEntity::MERCHANT_ID],
-    //         ExternalEntity::BALANCE_ID            => $this->balance->getId(),
-    //         ExternalEntity::BANK_REFERENCE_NUMBER => $basActual[BasEntity::BANK_TRANSACTION_ID],
-    //         ExternalEntity::TYPE                  => $basActual[BasEntity::TYPE],
-    //         ExternalEntity::AMOUNT                => $basActual[BasEntity::AMOUNT],
-    //         ExternalEntity::CHANNEL               => $basActual[BasEntity::CHANNEL],
-    //         ExternalEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
-    //     ];
-
-    //     $this->assertArraySubset($externalExpected, $externalActual, true);
-
-    //     $txnExpected = [
-    //         TransactionEntity::ID               => $externalTxnId,
-    //         TransactionEntity::ENTITY_ID        => $externalId,
-    //         TransactionEntity::TYPE             => 'external',
-    //         TransactionEntity::DEBIT            => $externalActual[ExternalEntity::AMOUNT],
-    //         TransactionEntity::CREDIT           => 0,
-    //         TransactionEntity::AMOUNT           => $externalActual[ExternalEntity::AMOUNT],
-    //         TransactionEntity::FEE              => 0,
-    //         TransactionEntity::TAX              => 0,
-    //         TransactionEntity::PRICING_RULE_ID  => null,
-    //         TransactionEntity::ON_HOLD          => false,
-    //         TransactionEntity::SETTLED          => false,
-    //         TransactionEntity::SETTLED_AT       => null,
-    //         TransactionEntity::SETTLEMENT_ID    => null,
-    //     ];
-
-    //     $this->assertArraySubset($txnExpected, $txnActual, true);
-    // }
-
 
     public function testRblAccountStatementCorrectionInClosingBalance()
     {
@@ -15519,5 +15402,190 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($bas->getEntityType(), 'payout');
 
         $this->assertEquals($bas->getEntityId(), $payout->getId());
+    }
+
+    public function testStatementFetchWhenBankingAccountCredentialsAreFetchedFromBAS()
+    {
+        $this->setRazorxMockForBankingAccountStatementV2Api();
+
+        // mock BAS
+        $mock = Mockery::mock(BankingAccountService::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive('fetchBankingCredentials')
+             ->andReturn([
+                             "id"            => "1234",
+                             "credentials"   => [
+                                 "bank_reference_number" => "123456",
+                                 "auth_password"         => "johndoe123",
+                                 "auth_username"         => "johndoe",
+                                 "client_id"             => "client_id",
+                                 "client_secret"         => "client_secret",
+                                 "corp_id"               => "123456",
+                                 "extra_field_1"         => "extra_field_1"
+                             ],
+                             "extra_field_2" => "extra_field_2"
+                         ]);
+
+        $this->app->instance('banking_account_service', $mock);
+
+        //mock Mozart
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $partialMozartRequest = [
+            'source_account' => [
+                'account_number' => '2224440041626905',
+                'credentials'    => [
+                    "auth_password" => "johndoe123",
+                    "auth_username" => "johndoe",
+                    "client_id"     => "client_id",
+                    "client_secret" => "client_secret",
+                    "corp_id"       => "123456"
+                ],
+            ]
+        ];
+
+        $mozartResponse = $this->convertRblV1ResponseToV2Response($this->getRblDataResponse());
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+                          ->withArgs(function($namespace, $gateway, $action, $input) use ($partialMozartRequest)
+                          {
+                              $this->assertArraySelectiveEquals($partialMozartRequest, $input);
+
+                              return true;
+
+                          })->andReturn($mozartResponse);
+
+        $this->app->instance('mozart', $mozartServiceMock);
+
+        $basd = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basd[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $bankingAccountParams = [
+            'id'                    => 'xba00000000001',
+            'account_number'        => '2224440041626904',
+            'merchant_id'           => '10000000000001',
+            'balance_id'            => '100000Balance2',
+        ];
+
+        // edit banking account fixture so that entity is not found in db
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], $bankingAccountParams);
+
+        $this->ba->cronAuth();
+
+        $this->setupForRblAccountStatement();
+
+        $testData = $this->testData['testRblAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+    }
+
+    public function testRblStatementGenerationWhenBankingAccountDetailsAreFetchedFromBAS()
+    {
+        // mock BAS
+        $mock = Mockery::mock(BankingAccountService::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive('fetchAccountDetailsByBalance')
+             ->andReturn([
+                             "id"                          => "KKSvGgJZi4E2tt",
+                             "created_at"                  => 1663744791148,
+                             "updated_at"                  => 1663744791148,
+                             "beneficiary_name"            => "johndoe",
+                             "beneficiary_email"           => "johndoe@test.com",
+                             "beneficiary_mobile"          => "8888899999",
+                             "beneficiary_address1"        => "test ad 1",
+                             "beneficiary_address2"        => "test ad 2",
+                             "beneficiary_address3"        => "test ad 3",
+                             "beneficiary_city"            => "bangalore",
+                             "beneficiary_state"           => "karnataka",
+                             "beneficiary_country"         => "india",
+                             "beneficiary_pin"             => "560038",
+                             "application_number"          => "appNo", // bank_internal_reference_number
+                             "associated_account_managers" => null,
+                             "business_id"                 => "KKPrvY19oGyDQh",
+                             "account_number"              => "2224440041626905",
+                             "account_type"                => "CA_DIRECT",
+                             "partner_bank"                => "RBL",
+                             "balance_id"                  => "",
+                             "fts_fund_account_id"         => "",
+                             "account_currency"            => "",
+                             "ifsc"                        => "RATN0000004",
+                             "urn"                         => "",
+                             "alias_id"                    => "",
+                             "status"                      => "ACTIVATED",
+                             "preference"                  => null,
+                             "bank_status"                 => "activated",
+                             "application_tracking_id"     => "123456789",
+                             "pincode"                     => "400899",
+                             "sub_status"                  => "ca_activated",
+                             "auth_username"               => "johndoe",
+                             "auth_password"               => "johndoepass",
+                             "corp_id"                     => "123456",
+                             "application_status"          => "activated",
+                             "metadata"                    => [
+                                 "bank_account_open_date" => 1690950589 // account_activation_date
+                             ]
+                         ]);
+
+        $this->app->instance('banking_account_service', $mock);
+
+        $this->addTestTransactions();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $bankingAccountParams = [
+            'id'                    => 'xba00000000001',
+            'account_number'        => '2224440041626904',
+            'merchant_id'           => '10000000000001',
+            'balance_id'            => '100000Balance2',
+        ];
+
+        // edit banking account fixture so that entity is not found in db
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], $bankingAccountParams);
+
+        $currentTime = time();
+
+        $this->testData[__FUNCTION__] = $this->testData['testRblXlsxStatementGeneration'];
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+
+        $this->assertArrayHasKey(self::FILE_ID, $response);
+
+        $fileName = storage_path(self::MOCK_UFH_BASE_LOCATION) .
+                    '/2224440041626905_946684800_' .
+                    $currentTime .
+                    '.xlsx';
+
+        $spreadsheet = IOFactory::load($fileName);
+
+        $activeSheet = $spreadsheet->getActiveSheet();
+
+        $bene_name_cell = "B4";
+        $bene_pin_cell = "B11";
+        $bene_mobile_cell = "B18";
+        $bene_email_cell = "B19";
+        $bank_internal_ref_num_cell = "B21";
+        $activation_date_cell = "B24";
+        $status_cell = "B26";
+        $account_num_cell = "B27";
+        $ifsc_cell = "D18";
+
+        $this->assertEquals("JOHNDOE@TEST.COM" , $activeSheet->getCell($bene_email_cell)->getValue());
+        $this->assertEquals("johndoe" , $activeSheet->getCell($bene_name_cell)->getValue());
+        $this->assertEquals("560038" , $activeSheet->getCell($bene_pin_cell)->getValue());
+        $this->assertEquals("8888899999" , $activeSheet->getCell($bene_mobile_cell)->getValue());
+        $this->assertEquals("appNo" , $activeSheet->getCell($bank_internal_ref_num_cell)->getValue());
+        $this->assertEquals("RATN0000004" , $activeSheet->getCell($ifsc_cell)->getValue());
+        $this->assertEquals("activated" , $activeSheet->getCell($status_cell)->getValue());
+        $this->assertEquals("2224440041626905" , $activeSheet->getCell($account_num_cell)->getValue());
+        $this->assertEquals("2023/08/02" , $activeSheet->getCell($activation_date_cell)->getValue());
     }
 }

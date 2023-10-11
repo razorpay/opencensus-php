@@ -1703,7 +1703,7 @@ class Service extends Base\Service
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, null, 'No db records found.');
                 }
-                
+
                 throw $ex;
             }
         }

@@ -22,6 +22,7 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Models\BankingAccount\Constants;
 use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
+use RZP\Models\BankingAccount\Service as BankingAccountService;
 
 class Processor extends BankingAccount\Gateway\Processor
 {
@@ -61,20 +62,21 @@ class Processor extends BankingAccount\Gateway\Processor
     /** @var Entity $bankingAccount */
     protected $bankingAccount;
 
+    protected $processorInput = [];
+
     public function __construct(array $input = [])
     {
         parent::__construct();
 
         if (empty($input) === false)
         {
+            $this->processorInput = $input;
+
             $merchantId = $input[Entity::MERCHANT_ID];
 
             $channel = $input[Entity::CHANNEL];
 
             /** @var Entity $bankingAccount */
-            /**
-             * TODO: __multi_ca__ To be handled by Payouts
-             */
             $this->bankingAccount = $this->repo->banking_account->getActiveBankingAccountByMerchantIdAndChannel($merchantId, $channel);
         }
     }
@@ -263,7 +265,7 @@ class Processor extends BankingAccount\Gateway\Processor
      *
      * @throws BadRequestException
      */
-    public function fetchGatewayBalanceForBankingAccount(BankingAccount\Entity $bankingAccount): int
+    public function fetchGatewayBalanceForBankingAccount(BankingAccount\Entity|null $bankingAccount): int
     {
         $response = $this->verifyCredentials($bankingAccount);
 
@@ -282,11 +284,14 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         $balance = $this->fetchGatewayBalanceForBankingAccount($this->bankingAccount);
 
-        $this->bankingAccount->setGatewayBalance($balance);
+        if ($this->bankingAccount !== null)
+        {
+            $this->bankingAccount->setGatewayBalance($balance);
 
-        $this->bankingAccount->setBalanceLastFetchedAt(Carbon::now()->getTimestamp());
+            $this->bankingAccount->setBalanceLastFetchedAt(Carbon::now()->getTimestamp());
 
-        $this->repo->saveOrFail($this->bankingAccount);
+            $this->repo->saveOrFail($this->bankingAccount);
+        }
 
         return $balance;
     }
@@ -387,7 +392,7 @@ class Processor extends BankingAccount\Gateway\Processor
         $request['url']['version'] = 'v2';
     }
 
-    protected function verifyCredentials(BankingAccount\Entity $bankingAccount)
+    protected function verifyCredentials(BankingAccount\Entity|null $bankingAccount)
     {
         $request = $this->formatDataForMozartFetchBalanceApi($bankingAccount);
 
@@ -478,18 +483,41 @@ class Processor extends BankingAccount\Gateway\Processor
         return intval(number_format($amount * 100, 0, '.', ''));
     }
 
-    protected function formatDataForMozartFetchBalanceApi(BankingAccount\Entity $bankingAccount)
+    protected function formatDataForMozartFetchBalanceApi(BankingAccount\Entity|null $bankingAccount)
     {
+        if ($bankingAccount !== null)
+        {
+            return [
+                Fields::SOURCE_ACCOUNT => [
+                    Fields::SOURCE_ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
+                    Fields::ID                      => $bankingAccount->getBankReferenceNumber(),
+                    Fields::CREDENTIALS             => [
+                        Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
+                        Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
+                        Fields::CORP_ID                 => $bankingAccount->getReference1(),
+                        Fields::CLIENT_ID               => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID),
+                        Fields::CLIENT_SECRET           => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET),
+                    ],
+                ],
+            ];
+        }
+
+        $basCredentials = (new BankingAccountService())->fetchCredentialsFromApiAndBas(
+            $this->processorInput[Entity::MERCHANT_ID],
+            $this->processorInput[Entity::CHANNEL],
+            $this->processorInput[BASDetails\Entity::ACCOUNT_NUMBER]
+        );
+
         $data = [
             Fields::SOURCE_ACCOUNT => [
-                Fields::SOURCE_ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
-                Fields::ID                      => $bankingAccount->getBankReferenceNumber(),
-                Fields::CREDENTIALS             => [
-                    Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
-                    Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
-                    Fields::CORP_ID                 => $bankingAccount->getReference1(),
-                    Fields::CLIENT_ID               => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID),
-                    Fields::CLIENT_SECRET           => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET),
+                Fields::SOURCE_ACCOUNT_NUMBER => $this->processorInput[BASDetails\Entity::ACCOUNT_NUMBER],
+                Fields::ID                    => $basCredentials[Fields::CREDENTIALS][BankingAccount\Entity::BANK_REFERENCE_NUMBER],
+                Fields::CREDENTIALS           => [
+                    Fields::AUTH_USERNAME => $basCredentials[Fields::CREDENTIALS][Fields::AUTH_USERNAME],
+                    Fields::AUTH_PASSWORD => $basCredentials[Fields::CREDENTIALS][Fields::AUTH_PASSWORD],
+                    Fields::CORP_ID       => $basCredentials[Fields::CREDENTIALS][Fields::CORP_ID],
+                    Fields::CLIENT_ID     => $basCredentials[Fields::CREDENTIALS][Fields::CLIENT_ID],
+                    Fields::CLIENT_SECRET => $basCredentials[Fields::CREDENTIALS][Fields::CLIENT_SECRET],
                 ],
             ],
         ];

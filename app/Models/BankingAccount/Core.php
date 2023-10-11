@@ -203,6 +203,7 @@ class Core extends Base\Core
         Channel::YESBANK,
         Channel::AXIS,
         Channel::ICICI,
+        Channel::RBL,
     ];
 
     public function __construct()

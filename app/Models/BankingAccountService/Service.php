@@ -1751,8 +1751,8 @@ class Service extends Base\Service
         }
 
         // This will be empty only for bankingAccounts stored on BAS
-        if (empty($balance->bankingAccount) && 
-            in_array($balance->getChannel(), Channel::getDirectTypeChannels()) && 
+        if (empty($balance->bankingAccount) &&
+            in_array($balance->getChannel(), Channel::getDirectTypeChannels()) &&
             $balance->getAccountType() === Merchant\Balance\AccountType::DIRECT)
         {
             $basBankingAccount = $this->bankingAccountService->fetchAccountDetailsByBalance($balance);
@@ -1811,8 +1811,8 @@ class Service extends Base\Service
         }
 
         // This will be empty only for bankingAccounts stored on BAS
-        if (empty($balance->bankingAccount) && 
-            in_array($channel, Channel::getDirectTypeChannels()) && 
+        if (empty($balance->bankingAccount) &&
+            in_array($channel, Channel::getDirectTypeChannels()) &&
             $balance->getAccountType() === Merchant\Balance\AccountType::DIRECT)
         {
             return $this->bankingAccountService->fetchBankingCredentials($merchantId, $channel, $accountNumber);
@@ -1821,17 +1821,17 @@ class Service extends Base\Service
         $bankingAccount = $balance->bankingAccount;
 
         return [
-            Constants::ID               => $bankingAccount->getId(),
-            Constants::CORP_ID_CRED     => '',
-            Constants::URN_CRED         => '',
-            Constants::ACCOUNT_NUMBER   => $accountNumber,
-            Constants::CREDENTIALS      => [
-                Constants::AUTH_USERNAME    => $bankingAccount->getUsername(),
-                Constants::AUTH_PASSWORD    => $bankingAccount->getPassword(),
-                Constants::CLIENT_ID        => $bankingAccount->getDetailsDataUsingKey(Constants::CLIENT_ID),
-                Constants::CLIENT_SECRET    => $bankingAccount->getDetailsDataUsingKey(Constants::CLIENT_SECRET),
-                Constants::CORP_ID          => $bankingAccount->getReference1(),
-                Constants::BANK_REFERENCE_NUMBER    => $bankingAccount->getBankReferenceNumber()
+            Constants::ID             => $bankingAccount->getId(),
+            Constants::CORP_ID_CRED   => '',
+            Constants::URN_CRED       => '',
+            Constants::ACCOUNT_NUMBER => $accountNumber,
+            Constants::CREDENTIALS    => [
+                Constants::AUTH_USERNAME         => $bankingAccount->getUsername(),
+                Constants::AUTH_PASSWORD         => $bankingAccount->getPassword(),
+                Constants::CLIENT_ID             => $bankingAccount->getDetailsDataUsingKey(Constants::CLIENT_ID),
+                Constants::CLIENT_SECRET         => $bankingAccount->getDetailsDataUsingKey(Constants::CLIENT_SECRET),
+                Constants::CORP_ID_CRED          => $bankingAccount->getReference1(),
+                Constants::BANK_REFERENCE_NUMBER => $bankingAccount->getBankReferenceNumber()
             ]
         ];
     }
@@ -1856,8 +1856,8 @@ class Service extends Base\Service
         }
 
         // This will be empty only for CAs stored on BAS
-        if (empty($balance->bankingAccount) && 
-            in_array($channel, Channel::getDirectTypeChannels()) && 
+        if (empty($balance->bankingAccount) &&
+            in_array($channel, Channel::getDirectTypeChannels()) &&
             $balance->getAccountType() === Merchant\Balance\AccountType::DIRECT)
         {
             return $this->bankingAccountService->fetchFtsFundAccountIdFromBas($merchantId, $channel, $accountNumber);
@@ -1949,7 +1949,7 @@ class Service extends Base\Service
                 try
                 {
                     (new \RZP\Models\BankingAccount\BankLms\Validator())->validateMerchantIsAttachedToPartner(
-                        $bankingAccount->merchant, 
+                        $bankingAccount->merchant,
                         (new \RZP\Models\BankingAccount\BankLms\Service())->getPartnerMerchant());
 
                     if (isset($bankingAccountApplication['metadata']))
@@ -1980,16 +1980,16 @@ class Service extends Base\Service
                 // is_documents_walkthrough_complete is stored as 0/1 in API DB
                 if (isset($bankingAccountApplication['metadata']['additional_details']))
                 {
-                    if ($bankingAccountApplication['metadata']['additional_details']['is_documents_walkthrough_complete'] === 1) 
+                    if ($bankingAccountApplication['metadata']['additional_details']['is_documents_walkthrough_complete'] === 1)
                     {
                         $bankingAccountApplication['metadata']['additional_details']['is_documents_walkthrough_complete'] = true;
                     }
                     else
                     {
                         $bankingAccountApplication['metadata']['additional_details']['is_documents_walkthrough_complete'] = false;
-                    } 
+                    }
                 }
-                
+
                 // 4. generate banking_account for BAS
                 $balance = $bankingAccount->balance;
                 $basBankingAccount = array_merge($basInput['banking_account'], [
@@ -2023,10 +2023,10 @@ class Service extends Base\Service
                         'relationship_type' => 'SALES_POC',
                     ];
                 }
-                
+
                 // OPS_POC(reviewer)
                 $reviewer = $bankingAccount->reviewers()->first();
-    
+
                 if(!empty($reviewer))
                 {
                     $bankingAccountAccountManagers[] = [
@@ -2047,7 +2047,7 @@ class Service extends Base\Service
                 }
 
                 // RBL_BANK_POC(bank_poc)
-                if (!empty($bankPocUserId)) 
+                if (!empty($bankPocUserId))
                 {
                     $bankingAccountAccountManagers[] = [
                         'rzp_admin_id'      => $bankPocUserId,
@@ -2068,7 +2068,7 @@ class Service extends Base\Service
                         $onBehalfOf = 'bank';
 
                         $commentedBy = $apiComment->getAttribute('user_id');
-                    } 
+                    }
                     else
                     {
                         // comment was added by admin
@@ -2174,7 +2174,7 @@ class Service extends Base\Service
                     $this->repo->banking_account->saveOrFail($bankingAccount);
 
                 });
-                
+
                 $result[$bankingAccountId] = 'success';
             }
             catch(\Exception $e)

@@ -61,7 +61,7 @@ class Processor extends BaseProcessor
 
             $this->accountCredentials = $bas->fetchBankingCredentials($merchantId, $channel, $accountNumber);
 
-            (new Validator)->validateInput('icici_credentials', $this->accountCredentials);
+            (new Validator)->setStrictFalse()->validateInput('icici_credentials', $this->accountCredentials);
 
             $this->accountNumber = $accountNumber;
 

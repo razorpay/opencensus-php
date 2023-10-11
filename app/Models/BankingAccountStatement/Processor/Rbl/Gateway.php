@@ -24,6 +24,7 @@ use RZP\Models\BankingAccountStatement\Category;
 use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
+use RZP\Models\BankingAccount\Service as BankingAccountService;
 use RZP\Models\BankingAccountStatement\Processor\Base as BaseProcessor;
 use RZP\Models\BankingAccountStatement\Core as BankingAccountStatementCore;
 use RZP\Models\BankingAccountStatement\Processor\Rbl\RequestResponseFields as Fields;
@@ -997,28 +998,27 @@ class Gateway extends BaseProcessor
 
     protected function getRequestDataForMozart(array $input, array $lastTransaction)
     {
-        /** 
-         * TODO: __multi_ca__ To be handled by Payouts
-        */
-        /** @var BankingAccountEntity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByAccountNumberAndChannel($this->accountNumber,
-                                                                                      $this->channel);
+        $basCredentials = (new BankingAccountService())->fetchCredentialsFromApiAndBas(
+            $this->basDetails->getMerchantId(),
+            $this->channel,
+            $this->accountNumber
+        );
 
         $data = [
-            Fields::ATTEMPT => [
-                Fields::ID                          => (string) Carbon::now()->timestamp,
-                Fields::FROM_DATE                   => $this->getStatementStartTime($bankingAccount),
-                Fields::TO_DATE                     => Carbon::today(Timezone::IST)->toDateString(),
-                Fields::TRANSACTION_TYPE            => TransactionType::BOTH,
+            Fields::ATTEMPT          => [
+                Fields::ID               => (string) Carbon::now()->timestamp,
+                Fields::FROM_DATE        => $this->getStatementStartTime(),
+                Fields::TO_DATE          => Carbon::today(Timezone::IST)->toDateString(),
+                Fields::TRANSACTION_TYPE => TransactionType::BOTH,
             ],
-            Fields::SOURCE_ACCOUNT => [
-                Fields::ACCOUNT_NUMBER              => $this->accountNumber,
-                Fields::CREDENTIALS => [
-                    Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
-                    Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
-                    Fields::CLIENT_ID               => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID),
-                    Fields::CLIENT_SECRET           => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET),
-                    Fields::CORP_ID                 => $bankingAccount->getReference1(),
+            Fields::SOURCE_ACCOUNT   => [
+                Fields::ACCOUNT_NUMBER => $this->accountNumber,
+                Fields::CREDENTIALS    => [
+                    Fields::AUTH_USERNAME => $basCredentials[Fields::CREDENTIALS][Fields::AUTH_USERNAME],
+                    Fields::AUTH_PASSWORD => $basCredentials[Fields::CREDENTIALS][Fields::AUTH_PASSWORD],
+                    Fields::CLIENT_ID     => $basCredentials[Fields::CREDENTIALS][Fields::CLIENT_ID],
+                    Fields::CLIENT_SECRET => $basCredentials[Fields::CREDENTIALS][Fields::CLIENT_SECRET],
+                    Fields::CORP_ID       => $basCredentials[Fields::CREDENTIALS][Fields::CORP_ID],
                 ]
             ],
             Fields::LAST_TRANSACTION => $this->getPaginationDataForRequest($lastTransaction),
@@ -1028,25 +1028,25 @@ class Gateway extends BaseProcessor
     }
     protected function getRequestDataForMozartV2(array $input)
     {
-        /**
-         * TODO: __multi_ca__ To be handled by Payouts
-         */
-        /** @var BankingAccountEntity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->getFromBalanceId($this->basDetails->getBalanceId());
+        $basCredentials = (new BankingAccountService())->fetchCredentialsFromApiAndBas(
+            $this->basDetails->getMerchantId(),
+            $this->channel,
+            $this->accountNumber
+        );
 
         return [
-            Fields::ATTEMPT => [
-                Fields::ID                          => (string) Carbon::now()->timestamp,
-                Fields::TRANSACTION_TYPE            => TransactionType::BOTH,
+            Fields::ATTEMPT        => [
+                Fields::ID               => (string) Carbon::now()->timestamp,
+                Fields::TRANSACTION_TYPE => TransactionType::BOTH,
             ],
             Fields::SOURCE_ACCOUNT => [
-                Fields::ACCOUNT_NUMBER              => $this->accountNumber,
-                Fields::CREDENTIALS => [
-                    Fields::AUTH_USERNAME           => $bankingAccount->getUsername(),
-                    Fields::AUTH_PASSWORD           => $bankingAccount->getPassword(),
-                    Fields::CLIENT_ID               => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_ID),
-                    Fields::CLIENT_SECRET           => $bankingAccount->getDetailsDataUsingKey(Fields::CLIENT_SECRET),
-                    Fields::CORP_ID                 => $bankingAccount->getReference1(),
+                Fields::ACCOUNT_NUMBER => $this->accountNumber,
+                Fields::CREDENTIALS    => [
+                    Fields::AUTH_USERNAME => $basCredentials[Fields::CREDENTIALS][Fields::AUTH_USERNAME],
+                    Fields::AUTH_PASSWORD => $basCredentials[Fields::CREDENTIALS][Fields::AUTH_PASSWORD],
+                    Fields::CLIENT_ID     => $basCredentials[Fields::CREDENTIALS][Fields::CLIENT_ID],
+                    Fields::CLIENT_SECRET => $basCredentials[Fields::CREDENTIALS][Fields::CLIENT_SECRET],
+                    Fields::CORP_ID       => $basCredentials[Fields::CREDENTIALS][Fields::CORP_ID],
                 ]
             ]
         ];
@@ -1060,7 +1060,7 @@ class Gateway extends BaseProcessor
      *
      * @return string
      */
-    protected function getStatementStartTime(BankingAccountEntity $bankingAccount)
+    protected function getStatementStartTime()
     {
         // TODO: Might want to use the transactions tables for this instead of BAS table.
         $bankTransaction = $this->getLastBankTransaction();

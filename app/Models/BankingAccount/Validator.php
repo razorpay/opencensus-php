@@ -293,7 +293,6 @@ class Validator extends Base\Validator
         'error'  => 'sometimes'
     ];
 
-
     public function validatePincodes(array $input)
     {
         foreach ($input[Entity::PINCODES] as $pincode)

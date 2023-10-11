@@ -31,6 +31,7 @@ use RZP\Services\Mozart as MozartService;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Services\Mock\BankingAccountService;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -1792,5 +1793,59 @@ class RblPayoutTest extends TestCase
         $this->assertEquals('on_hold', $payout['status']);
         $this->assertEquals('beneficiary_bank_down', $payout['queued_reason']);
 
+    }
+
+    protected function mockBASResponseForFetchingBankingCredentials($exception = null): void
+    {
+        $basMock = $this->getMockBuilder(BankingAccountService::class)
+                        ->setConstructorArgs([$this->app])
+                        ->setMethods(['fetchBankingCredentials'])
+                        ->getMock();
+
+        $basMock->method('fetchBankingCredentials')
+                ->willReturn([
+                                 "id"            => "1234",
+                                 "credentials"   => [
+                                     "bank_reference_number" => "123456",
+                                     "auth_password"         => "johndoe123",
+                                     "auth_username"         => "johndoe",
+                                     "client_id"             => "client_id",
+                                     "client_secret"         => "client_secret",
+                                     "corp_id"               => "123456",
+                                 ],
+                                 "extra_field_1" => "extra_field_1" // Added this to verify the strict validation
+                             ]);
+
+        $this->app->instance('banking_account_service', $basMock);
+    }
+
+    public function testBalanceFetchWhenBankingAccountCredentialsAreFetchedFromBAS()
+    {
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                       ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $bankingAccountParams = [
+            'id'                    => 'xba00000000001',
+            'account_number'        => '2224440041626904',
+            'merchant_id'           => '10000000000001',
+            'balance_id'            => '100000Balance2',
+        ];
+
+        // edit banking account fixture so that entity is not found in db
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], $bankingAccountParams);
+
+        $this->mockBASResponseForFetchingBankingCredentials();
+
+        $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
+
+        $this->assertNotEquals(0, $basDetailsAfterCronRuns->getBalanceLastFetchedAt());
     }
 }

@@ -59,8 +59,6 @@ abstract class Generator extends Base
             }
         }
 
-        $bankingAccount = (new \RZP\Models\BankingAccount\Service())->fetchAccountByAccountNumberChannel($this->accountNumber, $this->channel);
-
         $accountOwnerInfo = $this->getAccountOwnerInfo($bankingAccount);
 
         list($statementSummary, $transactions) = $this->getAccountSummaryAndTransactions($bankingAccount);
@@ -76,9 +74,9 @@ abstract class Generator extends Base
 
     protected function getAccountSummaryAndTransactions(BankingAccountEntity $bankingAccount)
     {
-        $balanceId = $this->repo
-                          ->balance
-                          ->getBalanceIdByAccountNumberOrFail($bankingAccount->getAccountNumber());
+        $balanceId = $bankingAccount->getBalanceId() ?? $this->repo
+                ->balance
+                ->getBalanceIdByAccountNumberOrFail($bankingAccount->getAccountNumber());
 
         $bankAccountStatements = $this->repo
                                       ->statement
