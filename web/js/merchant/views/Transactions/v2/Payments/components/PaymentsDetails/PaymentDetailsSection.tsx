@@ -160,7 +160,7 @@ function PaymentDetailsSection({
                     Invoice ID
                   </Text>
                   {invoice_id ? (
-                    <CopyWrapper onClick={copyToClipboard.bind(null, order_id)}>
+                    <CopyWrapper onClick={copyToClipboard.bind(null, invoice_id)}>
                       <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
                         {invoice_id}
                       </Text>

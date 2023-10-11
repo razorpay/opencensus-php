@@ -99,8 +99,8 @@ test.describe
       await navigateToTransactions(page);
       const id = payments.paymentId.created.netbanking;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
-      await expect(page.getByText('Net amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
-      await expect(page.getByText('Gross amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
+      // await expect(page.getByText('Net amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
+      // await expect(page.getByText('Gross amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
       await expect(page.getByText('Payment ID')).toBeVisible();
       await expect(page.getByText('pay_MWaxTM6QW05iz9')).toBeVisible();
@@ -115,8 +115,8 @@ test.describe
       await navigateToTransactions(page);
       const id = payments.paymentId.authorized.upi;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
-      await expect(page.getByText('Net amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
-      await expect(page.getByText('Gross amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
+      // await expect(page.getByText('Net amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
+      // await expect(page.getByText('Gross amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
       await expect(page.getByText('Payment ID')).toBeVisible();
       await expect(page.getByText(id)).toBeVisible();
@@ -152,8 +152,8 @@ test.describe
       await navigateToTransactions(page);
       const id = payments.paymentId.captured.upi;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
-      await expect(page.getByText('Gross amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
-      await expect(page.getByText('Net amount₹ 5,836.80₹ - Indian Rupee (INR)')).toBeVisible();
+      // await expect(page.getByText('Gross amount₹ 6,000.00₹ - Indian Rupee (INR)')).toBeVisible();
+      // await expect(page.getByText('Net amount₹ 5,836.80₹ - Indian Rupee (INR)')).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
       await expect(page.getByText('Payment ID')).toBeVisible();
       await expect(page.getByText(id)).toBeVisible();
@@ -174,8 +174,8 @@ test.describe
       await navigateToTransactions(page);
       const id = payments.paymentId.failed.netbanking;
       await gotoTransactionDetailsPageById({ page, id, listSelector: 'payments-list' });
-      await expect(page.getByText('Gross amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
-      await expect(page.getByText('Net amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
+      // await expect(page.getByText('Gross amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
+      // await expect(page.getByText('Net amount₹ 112.00₹ - Indian Rupee (INR)')).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Details' })).toBeVisible();
       await expect(page.getByText('Payment ID')).toBeVisible();
       await expect(page.getByText(id)).toBeVisible();

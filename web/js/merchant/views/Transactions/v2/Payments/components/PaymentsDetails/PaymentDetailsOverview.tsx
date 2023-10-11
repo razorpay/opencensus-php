@@ -1,17 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Badge,
-  Box,
-  Card,
-  CardBody,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  ChevronUpIcon,
-  Divider,
-  Link,
-  Text,
-  useTheme,
-} from '@razorpay/blade/components';
+import React, { useEffect } from 'react';
+import { Badge, Box, Card, CardBody, Divider, Text, useTheme } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -25,26 +13,12 @@ import {
   fetchHolidayList,
   fetchSettlementConfig,
 } from 'merchant/reducers/settlements/details';
-import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import * as ModalActions from 'merchant_common/reducers/modals';
 
 import Tooltip from './Tooltip';
-import {
-  OverviewIconWrapper,
-  OverviewSubtextWrapper,
-  DashedDivider,
-  SectionFooter,
-  CollapsibleContainer,
-  CardWrapper,
-  RowsWrapper,
-  BoxContainer,
-  StyledChevron,
-  StyledAmountContainer,
-  StyledAmountWrapper,
-} from './styled';
+import { OverviewIconWrapper, OverviewSubtextWrapper, StyledAmountWrapper } from './styled';
 import { IPaymentDetails, IPaymentIdRefundDetails, ApplicationDetails } from './types';
 
-import { trackDetailsClick } from 'merchant/views/Transactions/v2/common/tracking';
 import {
   getBadgeIcon,
   getBaseVariant,
@@ -76,17 +50,9 @@ function PaymentDetailsOverview({
   fetchHolidayList,
   fetchSchedule,
   fetchSettlementConfig,
-  openModal,
   history,
-  location: { pathname },
 }: IPaymentDetailsOverview) {
-  const [isOpen, setIsOpen] = useState(false);
-  const toggleDeductions = () => {
-    setIsOpen((prevValue) => !prevValue);
-  };
-  const { currency, fee, tax, amount, created_at, status } = paymentDetails;
-  const totalDeductions = fee + tax;
-  const netAmount = amount - totalDeductions;
+  const { currency, amount, created_at, status } = paymentDetails;
   const settlementId = paymentDetails?.transaction?.settlement_id;
   const [createdDay, createdTime] = useTime(created_at);
 
@@ -95,14 +61,6 @@ function PaymentDetailsOverview({
     breakpoints: theme.breakpoints,
   });
   const isMobile = matchedDeviceType === 'mobile';
-
-  const viewSettlementSchedule = () => {
-    trackDetailsClick({ objectName: 'View Settlement Cycle' });
-    openModal({
-      size: 'medium',
-      component: <SettlementScheduleV2 />,
-    });
-  };
 
   useEffect(() => {
     if (!settlementId) {
@@ -235,6 +193,7 @@ function PaymentDetailsOverview({
           )}
         </CardBody>
       </Card>
+      {/* TODO: keep it back once tax and fee currency value is fixed for international payments
       <BoxContainer disableMarginTop>
         <CardWrapper enableBorderTopRadius>
           <Card padding="spacing.5" elevation="none">
@@ -370,7 +329,7 @@ function PaymentDetailsOverview({
             </Text>
           )}
         </SectionFooter>
-      </BoxContainer>
+      </BoxContainer> */}
     </Box>
   );
 }
