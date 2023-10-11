@@ -7587,27 +7587,6 @@ class Processor
             $this->validateOrderForUpiInitialRecurring($this->order);
         }
 
-        // blocking upi autopay intent tpv flow for now. will remove this when it is supported
-        if(($this->merchant->isTPVRequired() === true) and
-           ($payment->isUpiIntentRecurring()))
-        {
-            $this->trace->info(
-                TraceCode::MISC_TRACE_CODE,
-                [
-                    'message'      => "autopay intent tpv payment creation not allowed",
-                    'paymentId'    => $payment->getId(),
-                    'merchantId'   => $payment->getMerchantId()
-                ]
-            );
-
-            throw new Exception\BadRequestException(
-                ErrorCode::SERVER_ERROR_INTENT_TPV_NOT_SUPPORTED,
-                Payment\Entity::ORDER_ID,
-                [
-                    'paymentId' => $payment->getId()
-                ]);
-        }
-
         if ($this->isOtmPayment($input) === true)
         {
             $this->validateOrderForUpiOtm($this->order);

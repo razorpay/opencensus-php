@@ -6934,6 +6934,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPI_RECURRING_UPDATE_TOKEN_STATUS                     = 'UPI_RECURRING_UPDATE_TOKEN_STATUS';
     const UPI_RECURRING_DEBIT_RETRY                             = 'UPI_RECURRING_DEBIT_RETRY';
     const UPI_RECURRING_EVENT                                   = 'UPI_RECURRING_EVENT';
+    const UPI_RECURRING_INTENT_TPV_NOT_SUPPORTED                = 'UPI_RECURRING_INTENT_TPV_NOT_SUPPORTED';
+
+
     //MHQ Metrics
     const MANDATEHQ_REQUEST_COUNT                               = 'MANDATEHQ_REQUEST_COUNT';
 
