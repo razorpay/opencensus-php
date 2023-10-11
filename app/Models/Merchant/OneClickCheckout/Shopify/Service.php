@@ -1902,6 +1902,7 @@ class Service extends Base\Service
     // returns shopId and oauth token for hitting magic-checkout-service
     private function getMerchantAuthCredentials(string $merchantId, string $appName): array
     {
+        $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
         $creds = $this->getShopifyAuthByMerchant();
 
         if (empty($creds) === true)
