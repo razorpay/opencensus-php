@@ -1126,7 +1126,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_MULTIPLE_TERMINALS                              = 'FETCH_MULTIPLE_TERMINALS';
     const FETCH_ENTITY_BY_ID                                    = 'FETCH_ENTITY_BY_ID';
     const FETCH_AXIS_PAYSECURE_PAYMENTS                         = 'FETCH_AXIS_PAYSECURE_PAYMENTS';
-
+    
+    const PAYMENT_LINK_PAYMENT_NOT_FOUND                        = 'PAYMENT_LINK_PAYMENT_NOT_FOUND';
+    const PAYMENT_LINK_EMPTY_PAYMENT_ID                         = 'PAYMENT_LINK_EMPTY_PAYMENT_ID';
     const PAYMENT_LINK_CREATE_REQUEST                           = 'PAYMENT_LINK_CREATE_REQUEST';
     const PAYMENT_LINK_CREATED                                  = 'PAYMENT_LINK_CREATED';
     const PAYMENT_LINK_UPDATE_REQUEST                           = 'PAYMENT_LINK_UPDATE_REQUEST';
@@ -1178,7 +1180,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_PAGE_BULK_UPLOAD                              = 'PAYMENT_PAGE_BULK_UPLOAD';
     const PAYMENT_PAGE_CREATE_RECORD_EXCEPTION                  = 'PAYMENT_PAGE_CREATE_RECORD_EXCEPTION';
     const PAYMENT_PAGE_RECORD_STATUS_UPDATE                     = 'PAYMENT_PAGE_RECORD_STATUS_UPDATE';
-
     const PAYMENT_PAGE_RECIEPT_NOT_ENABLED                  = 'PAYMENT_PAGE_RECIEPT_NOT_ENABLED';
     const PAYMENT_PAGE_CREATE_INVOICE                       = 'PAYMENT_PAGE_CREATE_INVOICE';
     const PAYMENT_PAGE_ORDER_EMPTY                          = 'PAYMENT_PAGE_ORDER_EMPTY';
@@ -9698,6 +9699,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NO_CODE_APPS_RESPONSE_RECEIVED                        = 'NO_CODE_APPS_RESPONSE_RECEIVED';
     const NO_CODE_APPS_PAYMENT_EVENT_RECEIVED                   = 'NO_CODE_APPS_PAYMENT_EVENT_RECEIVED';
     const NO_CODE_APPS_PAYMENT_EVENT_RETRY                      = 'NO_CODE_APPS_PAYMENT_EVENT_RETRY';
+    const NO_CODE_APPS_EMPTY_PAYMENT_ID_RECEIVED                = 'NO_CODE_APPS_EMPTY_PAYMENT_ID_RECEIVED';
+    const NO_CODE_APPS_PAYMENT_NOT_FOUND                        = 'NO_CODE_APPS_PAYMENT_NOT_FOUND';
 
     // Custom Domain Service traces
     const CDS_INTEGRATION_ERROR                                 = 'CDS_INTEGRATION_ERROR';
@@ -10277,7 +10280,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NOCODE_SERVICE_REQUEST                         = 'NOCODE_SERVICE_REQUEST';
     const NOCODE_SERVICE_REQUEST_FAILED                  = 'NOCODE_SERVICE_REQUEST_FAILED';
     const NOCODE_SERVICE_RESPONSE_RECIEVED               = 'NOCODE_SERVICE_RESPONSE_RECIEVED';
-
+    const NOCODE_SERVICE_NO_PAYMENT_ORDER                = 'NOCODE_SERVICE_NO_PAYMENT_ORDER';
+    
     const VENDOR_PAYMENT_VIA_CORP_SPLITZ_ERROR            = "VENDOR_PAYMENT_VIA_CORP_SPLITZ_ERROR";
     const LAZYPAY_WHITELISTED_MERCHANTS_SPLITZ_ERROR      = "LAZYPAY_WHITELISTED_MERCHANTS_SPLITZ_ERROR";
 

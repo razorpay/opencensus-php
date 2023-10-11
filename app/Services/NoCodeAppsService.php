@@ -108,6 +108,10 @@ class NoCodeAppsService {
         if ($payment->hasOrder() !== true
             || $payment->order->getProductType() !== ProductType::PAYMENT_STORE)
         {
+            $this->trace->info(TraceCode::NOCODE_SERVICE_NO_PAYMENT_ORDER, [
+                'payment_id' => $payment->getId() ?? null,
+            ]);
+    
             return [];
         }
 
@@ -138,9 +142,7 @@ class NoCodeAppsService {
             'auth'             => [$this->key, $this->secret],
             'follow_redirects' => false,
         ];
-
-        $this->trace->info(TraceCode::NOCODE_SERVICE_REQUEST, ['url' => Tracing::maskUrl($url)]);
-
+        
         $headers = [
             self::ACCEPT                    => self::CONTENT_TYPE_JSON,
             self::CONTENT_TYPE              => self::CONTENT_TYPE_JSON,
@@ -150,7 +152,12 @@ class NoCodeAppsService {
         ];
 
         $response = [];
-
+    
+        $this->trace->info(TraceCode::NOCODE_SERVICE_REQUEST, [
+            'input' => $input,
+            'url'   => Tracing::maskUrl($url)
+        ]);
+        
         try
         {
             $response = $this->makeApiCall($url, $headers, $body, "POST", $options);

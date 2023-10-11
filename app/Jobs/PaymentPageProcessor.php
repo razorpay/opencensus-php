@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\PaymentLink;
 use Illuminate\Support\Str;
 use RZP\Models\Merchant;
+use Razorpay\Trace\Logger as Trace;
 use Rzp\Models\PaymentLink\CustomDomain\Plans as CDSPlan;
 
 /**
@@ -141,7 +142,9 @@ class PaymentPageProcessor extends Job
         if (empty($paymentId) === true)
         {
             $this->delete();
-
+    
+            $this->trace->info(TraceCode::NO_CODE_APPS_EMPTY_PAYMENT_ID_RECEIVED, $this->context);
+            
             return;
         }
 
@@ -152,8 +155,25 @@ class PaymentPageProcessor extends Job
         {
             $payment = $this->repoManager->payment->findOrFail($paymentId);
         }
-        catch (\Throwable $exception){}
-
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::NO_CODE_APPS_PAYMENT_NOT_FOUND);
+        }
+        
+        if ($payment === null)
+        {
+            $this->retry($this->attempts() * self::RETRY_DELAY);
+    
+            $this->trace->info(TraceCode::NO_CODE_APPS_PAYMENT_EVENT_RETRY, [
+                "attempt"   => $this->attempts()
+            ]);
+    
+            return;
+        }
+        
         $traceContext = $this->context + [
                 'payment_id' => $payment->getId()
             ];
@@ -189,6 +209,8 @@ class PaymentPageProcessor extends Job
         if (empty($paymentId) === true)
         {
             $this->delete();
+            
+            $this->trace->info(TraceCode::PAYMENT_LINK_EMPTY_PAYMENT_ID, $this->context);
 
             $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
 
@@ -201,8 +223,25 @@ class PaymentPageProcessor extends Job
         {
             $payment = $this->repoManager->payment->findOrFail($paymentId);
         }
-        catch (\Throwable $exception){}
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::PAYMENT_LINK_PAYMENT_NOT_FOUND);
+        }
 
+        if ($payment === null)
+        {
+            $this->retry($this->attempts() * self::RETRY_DELAY);
+    
+            $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_RETRY, [
+                "attempt"   => $this->attempts()
+            ]);
+    
+            return;
+        }
+        
         $paymentLink    = $payment->paymentLink;
 
         if (empty($paymentLink) === true) {
