@@ -8,6 +8,7 @@ import {
 import { ColumnDef } from 'merchant/views/MagicCheckout/common/components/Datatable/types';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import ProfileSlider from './ProfileSlider';
+import { gramsToKilos } from 'merchant/views/MagicCheckout/ShippingSettings/ProfileSettings/ShippingMethods/helpers';
 
 export const Profile = {
   title: 'Profile',
@@ -90,7 +91,9 @@ export const Slab = {
         )} and ${getFormattedAmountNew(amount.lt, true)}`;
       }
       if (weight) {
-        text += `${amount ? ' and' : 'If'} weight is between ${weight.gte} kg and ${weight.lt} kg`;
+        text += `${amount ? ' and' : 'If'} weight is between ${gramsToKilos(
+          weight.gte,
+        )} kg and ${gramsToKilos(weight.lt)} kg`;
       }
       return text;
     } else return '-';

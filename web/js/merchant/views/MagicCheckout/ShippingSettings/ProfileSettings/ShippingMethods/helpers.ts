@@ -4,6 +4,16 @@ import { getDefaultFormValues } from './constants';
 import { rupeesToPaise, paiseToRupees } from 'common/utils/rzp-utils';
 import { deepCopy } from 'common/utils/immutable';
 
+export const kiloToGrams = (weight: number | string): number => {
+  weight = (Number(weight) * 1000).toFixed(0);
+  return Number(weight);
+};
+
+export const gramsToKilos = (weight: number | string): number => {
+  weight = (Number(weight) / 1000).toFixed(2);
+  return Number(weight);
+};
+
 export const buildShippingMethodsPayload = (values) => {
   values = deepCopy(values);
   const payload: Record<string, any> = {};
@@ -12,10 +22,14 @@ export const buildShippingMethodsPayload = (values) => {
       payload[key] = rupeesToPaise(values[key].value);
     } else {
       if (key === 'fee_rules') {
-        const { amount } = values[key].value;
+        const { amount, weight } = values[key].value;
         if (amount) {
           amount.gte = rupeesToPaise(amount.gte);
           amount.lt = rupeesToPaise(amount.lt);
+        }
+        if (weight) {
+          weight.gte = kiloToGrams(weight.gte);
+          weight.lt = kiloToGrams(weight.lt);
         }
       }
       if (key === 'attribute_rules') {
@@ -44,10 +58,14 @@ export const buildFormDataFromMethod = (values: ShippingMethod): Record<Inputs, 
     }
     if (entry[0] === 'fee_rules') {
       const value = values[entry[0]];
-      const { amount } = value;
+      const { amount, weight } = value;
       if (amount) {
         amount.gte = paiseToRupees(amount.gte);
         amount.lt = paiseToRupees(amount.lt);
+      }
+      if (weight) {
+        weight.gte = gramsToKilos(weight.gte);
+        weight.lt = gramsToKilos(weight.lt);
       }
       values[entry[0]] = value;
     }

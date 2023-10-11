@@ -111,7 +111,7 @@ const ShippingSlab = (): JSX.Element => {
       ...existingValue,
       [newCondition]: {
         gte: 0,
-        lt: 100,
+        lt: 1000,
       },
     };
     setValue('fee_rules', val);
