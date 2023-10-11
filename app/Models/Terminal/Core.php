@@ -94,6 +94,7 @@ class Core extends Base\Core
 
     public function createV3($input, $path)
     {
+        $this->generatePlanID($input);
 
         $path = str_replace("v1","v3", $path);
 
@@ -102,6 +103,20 @@ class Core extends Base\Core
         ]);
 
         return $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
+    }
+
+    public function generatePlanID($input)
+    {
+        $planName = $input[Entity::PLAN_NAME] ?? null;
+        unset($input[Entity::PLAN_NAME]);
+
+        if (isset($planName) === true)
+        {
+            $plan = $this->repo->pricing
+                ->getPlanByName($planName);
+
+            $input[Entity::PLAN_ID] = $plan->getId();
+        }
     }
 
     public function createWithId($input, $merchant)
