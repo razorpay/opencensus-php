@@ -14,6 +14,7 @@ use Lib\PhoneBook;
 use RZP\Constants\Country;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
+use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\NetbankingConfig;
@@ -710,7 +711,9 @@ trait Authorize
                 break;
             }
 
-            if($payment->isMethodCardOrEmi() === true && $payment->isInternational() === false &&  isset($payment->card) && $payment->card->getTrivia() != '1')
+            $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
+            if(($payment->isMethodCardOrEmi() === true && $payment->isInternational() === false &&  isset($payment->card)
+                && $payment->card->getTrivia() != '1') || (str_starts_with(strtolower($rzpTestCaseID),'ALT_ID')))
              {
                 //make condition $payment->card->getTrivia()!='1' to enable alt id
                 //call alt id and set trivia 3 for alt id
