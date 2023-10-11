@@ -256,6 +256,8 @@
             <directory>./tests/Functional/TaxPayments/</directory>
             <directory>./tests/Functional/Contact/</directory>
             <directory>./tests/Functional/FundAccounts/</directory>
+            <directory>./tests/Functional/FundTransfer/</directory>
+            <directory>./tests/Functional/BankingAccountTpv/</directory>
             <file>./tests/Functional/Merchant/FeaturesTest.php</file>
             <!--<file>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</file>-->
         </testsuite>
