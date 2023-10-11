@@ -181,6 +181,13 @@ describe('RL - Token Details Form', () => {
     });
     expect(screen.getByTestId('billing_frequency')).toBeInTheDocument();
     expect(screen.getByRole('option', { name: /As and when presented/ })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /Daily/ })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /Weekly/ })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /Fortnightly/ })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: /Monthly/ })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /Bimonthly/ })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /Quarterly/ })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /^Half Yearly/ })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /^Yearly/ })).toBeInTheDocument();
   });
 });

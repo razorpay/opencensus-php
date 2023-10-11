@@ -82,11 +82,11 @@ export const FREQUENCY_DESC_MAP = {
   as_presented: 'You can charge the customer anytime',
   daily: 'You can charge the customer daily',
   weekly: 'You can charge the customer once a week',
-  fortnightly: 'You can charge the customer fortnightly',
+  fortnightly: 'You can charge the customer every two weeks',
   monthly: 'You can charge the customer once a month',
-  bimonthly: 'You can charge the customer bimonthly',
+  bimonthly: 'You can charge the customer every two months',
   quarterly: 'You can charge the customer once a quarter',
-  half_yearly: 'You can charge the customer half yearly',
+  half_yearly: 'You can charge the customer every six months',
   yearly: 'You can charge the customer once a year',
 };
 

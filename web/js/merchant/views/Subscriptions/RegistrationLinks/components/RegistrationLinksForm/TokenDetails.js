@@ -104,11 +104,6 @@ export default function TokenDetailsForm({
   const isCardFrequencyEnabled = isCardPayment && isCardMultipleFrequencyEnabled;
 
   if (isUPIPayment) {
-    if (!isDebitPatternEnabled) {
-      billingFrequency = BILLING_FREQUENCY.filter(({ name }) => {
-        return [FREQUENCY.MONTHLY, FREQUENCY.AS_PRESENTED].includes(name);
-      });
-    }
     maxAmountProps.placeholder = `Max ${getFormattedAmount(UPI_AVL_LIMIT)}`;
     maxAmountProps.description =
       'This is the maximum you can charge the customer per billing cycle';
