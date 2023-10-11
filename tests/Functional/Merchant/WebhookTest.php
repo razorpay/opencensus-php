@@ -1432,9 +1432,10 @@ class WebhookTest extends TestCase
             {
                 $this->assertArraySelectiveEquals($expectedEvent, $event);
                 $this->assertArrayNotHasKey('context', $event);
-            });
+            }
+        );
 
-        $this->refundPayment($payment['id'], 3459);
+        $this->refundPayment($payment['id']);
     }
 
     public function testRefundSpeedChangedEventDataForMerchantsLinkedToPartner()
@@ -1545,10 +1546,110 @@ class WebhookTest extends TestCase
             {
                 $this->assertArraySelectiveEquals($expectedEvent, $event);
                 $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $this->refundPayment($payment['id']);
+    }
+
+    public function testInvoicePaidEventWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
+
+        $expectedEvent = $this->testData['testInvoicePaidWebhookEventData']['event'];
+
+        $this->expectWebhookEventWithContext('invoice.paid',
+                                             [
+                                                 'entity_type' => 'invoice',
+                                                 'event_type'  => 'partnership'
+                                             ],
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
             }
         );
 
-        $this->refundPayment($payment['id']);
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random', 'payment_capture' => true]);
+
+        $this->fixtures->create('invoice', ['amount' => 1000000]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $order->getAmount();
+
+        $this->doAuthPayment($payment);
+    }
+
+    public function testInvoicePartiallyPaidEventWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
+
+        $this->fixtures->merchant->addFeatures(['invoice_partial_payments']);
+
+        $order = $this->fixtures->create('order', [
+            'id'              => '100000000order',
+            'amount'          => 100000,
+            'payment_capture' => true,
+            'partial_payment' => '1']);
+
+        $invoice = $this->fixtures->create('invoice', ['status' => 'issued', 'partial_payment' => '1']);
+
+        $expectedEvent = $this->testData[__FUNCTION__];
+        $this->expectWebhookEventWithContext('invoice.partially_paid',
+                                             ['entity_type' => 'invoice', 'event_type' => 'partnership'],
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 60000;
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order->getPublicId(),
+            'invoice_id' => $invoice->getPublicId(),
+        ];
+
+        $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+    }
+
+    public function testInvoiceExpiredEventWithTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzTreatmentBulkRequest([["variant" => ["name" => "enable"]]]);
+
+        // Creates expire-able invoice
+        $yesterday = Carbon::yesterday(Timezone::IST);
+        $now       = Carbon::now(Timezone::IST);
+        $issuedAt  = $yesterday->timestamp;
+        $expireBy  = $now->subSecond()->timestamp;
+
+        $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random', 'payment_capture' => true]);
+
+        $this->fixtures->create('invoice', ['issued_at' => $issuedAt, 'expire_by' => $expireBy]);
+
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+
+        $this->expectWebhookEventWithContext('invoice.expired',
+                                             ['entity_type' => 'invoice', 'event_type' => 'partnership'],
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            });
+
+        $this->ba->cronAuth();
+        $this->startTest();
     }
 
     public function testWebhookEventFireForSubscriptionAuthenticatedWithTransactionIsolation()

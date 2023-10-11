@@ -1228,6 +1228,124 @@ return [
         ],
     ],
 
+    'testInvoicePartiallyPaidEventWithTransactionIsolation' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.partially_paid',
+        'contains' => [
+            'payment',
+            'order',
+            'invoice',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 60000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 60000,
+                    'amount_due'  => 40000,
+                    'currency'    => 'INR',
+                    'status'      => 'attempted',
+                    'attempts'    => 1,
+                ],
+            ],
+            'invoice' => [
+                'entity' => [
+                    'id'              => 'inv_1000000invoice',
+                    'entity'          => 'invoice',
+                    'order_id'        => 'order_100000000order',
+                    'status'          => 'partially_paid',
+                    'partial_payment' => true,
+                    'gross_amount'    => 100000,
+                    'tax_amount'      => 0,
+                    'amount'          => 100000,
+                    'amount_paid'     => 60000,
+                    'amount_due'      => 40000,
+                    'currency'        => 'INR',
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoiceExpiredEventWithTransactionIsolation' => [
+        'event' => [
+            'entity'   => 'event',
+            'event'    => 'invoice.expired',
+            'contains' => [
+                'invoice',
+            ],
+            'payload'  => [
+                'invoice' => [
+                    'entity' => [
+                        'id'               => 'inv_1000000invoice',
+                        'entity'           => 'invoice',
+                        'receipt'          => null,
+                        'invoice_number'   => null,
+                        'customer_id'      => 'cust_100000customer',
+                        'customer_details' => [
+                            'name'             => 'test',
+                            'email'            => 'test@razorpay.com',
+                            'contact'          => '1234567890',
+                            'billing_address'  => null,
+                            'customer_name'    => 'test',
+                            'customer_email'   => 'test@razorpay.com',
+                            'customer_contact' => '1234567890',
+                        ],
+                        'order_id'              => 'order_100000000order',
+                        'payment_id'            => null,
+                        'status'                => 'expired',
+                        'paid_at'               => null,
+                        'cancelled_at'          => null,
+                        'sms_status'            => 'sent',
+                        'email_status'          => 'sent',
+                        'date'                  => null,
+                        'terms'                 => null,
+                        'partial_payment'       => false,
+                        'gross_amount'          => 100000,
+                        'tax_amount'            => 0,
+                        'amount'                => 100000,
+                        'amount_paid'           => 0,
+                        'amount_due'            => 1000000,
+                        'currency'              => 'INR',
+                        'description'           => null,
+                        'notes'                 => [],
+                        'comment'               => null,
+                        'short_url'             => 'http://bitly.dev/2eZ11Vn',
+                        'view_less'             => true,
+                        'billing_start'         => null,
+                        'billing_end'           => null,
+                        'type'                  => 'invoice',
+                        'group_taxes_discounts' => false,
+                        'user_id'               => null,
+                    ],
+                ],
+            ],
+        ],
+        'request' => [
+            'url'     => '/invoices/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'total_invoices_count' => 1,
+                'failed_invoice_ids'   => [],
+                // 'time_taken'           => '1 secs',
+            ],
+        ]
+    ],
+
     'testFailedPaymentWebhookWithTransactionIsolation' => [
         'event' => [
             'entity' => 'event',

@@ -920,12 +920,17 @@ class ApiEventSubscriber extends Base\Core
         InvoiceJob::dispatch($this->getMode(), InvoiceJob::CAPTURED, $payment->getInvoiceId());
 
         $payload = $this->getInvoicePayloadWithPayment($payment);
+
+        $this->setContextForEntity($payment->getMerchantId(), 'invoice', $payment->getInvoiceId());
+
         $this->dispatchEventToStork($payload);
     }
 
     protected function onInvoiceExpired($invoice)
     {
         $payload = $this->getInvoicePayload($invoice);
+
+        $this->setContextForEntity($invoice->getMerchantId(), 'invoice', $invoice->getId());
 
         $this->dispatchEventToStork($payload);
     }
