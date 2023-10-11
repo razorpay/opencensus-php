@@ -2,8 +2,10 @@
 
 namespace RZP\Services;
 
+use Request;
 use GuzzleHttp\RequestOptions;
 use RZP\Constants\Mode;
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use GuzzleHttp\Client as Guzzle;
@@ -117,12 +119,18 @@ class PaymentsCrossBorderClient
 
     private function getRequestHeaders()
     {
-        return [
+        $headers = [
             self::CONTENT_TYPE      => self::CONTENT_TYPE_JSON,
             self::X_TASK_ID         => $this->app['request']->getTaskId(),
             self::X_MERCHANT_ID     => $this->app['basicauth']->getMerchantId() ?? '',
             self::X_INTERNAL_APP    => $this->app['basicauth']->getInternalApp() ?? '',
         ];
+
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
+
+        return $headers;
     }
 
     private function formatResponse($response)

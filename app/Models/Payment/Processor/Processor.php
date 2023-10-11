@@ -3962,7 +3962,12 @@ class Processor
         //
         $payment = $this->buildPaymentEntity($input);
 
-        if(isset($input['order_id']) === true)
+        if($payment->merchant->isLRSEducationFlowEnabled() === true)
+        {
+            $order = $this->repo->order->findByPublicId($input['order_id']);
+            $payment->order()->associate($order);
+        }
+        else if(isset($input['order_id']) === true)
         {
             $order = $this->associateOrderWithPaymentForConvenienceFee($input, $payment);
         }
@@ -3976,11 +3981,17 @@ class Processor
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
-        (new Currency\Core)->reverseMccConversionOnFeeIfApplicable($input, $fee, $tax);
         if ($payment->merchant->isLRSEducationFlowEnabled() === true)
         {
-            (new Currency\Core)->reverseLRSEducationFee($input, $fee, $tax);
+            $input['lrs_inr_fee'] = $fee;
+            $input['lrs_inr_tax'] = $tax;
+            $input['lrs_inr_amount'] = (new Currency\Core)->reverseLRSEducationFee($input, $fee, $tax);
         }
+        else
+        {
+            (new Currency\Core)->reverseMccConversionOnFeeIfApplicable($input, $fee, $tax);
+        }
+
         $input['fee'] = $fee;
         $input['tax'] = $tax;
 
@@ -4033,6 +4044,14 @@ class Processor
             'currency'        => (isset($input['dcc_applied']) && $input['dcc_applied']) ? $input['dcc_currency'] : $input['currency'],
         ];
 
+        if ($payment->merchant->isLRSEducationFlowEnabled() === true) {
+            $data['fees'] = $input['lrs_inr_fee'];
+            $data['tax'] = $input['lrs_inr_tax'];
+            $data['currency'] = Currency\Currency::INR;
+            $data['razorpay_fee'] = $input['lrs_inr_fee'] - $input['lrs_inr_tax'];
+            $data['amount'] = $input['lrs_inr_amount'] + $data['fees'];
+        }
+
         //Adding extra fields for response in case of
         //additional customer fee associated with Payment
         if(isset($customerFee) === true)
@@ -4047,7 +4066,8 @@ class Processor
         }
 
         // Unset dcc values from input
-        unset($input['dcc_amount'], $input['dcc_fee'], $input['dcc_tax'], $input['dcc_applied']);
+        unset($input['dcc_amount'], $input['dcc_fee'], $input['dcc_tax'], $input['dcc_applied'],
+            $input['lrs_inr_fee'], $input['lrs_inr_tax'], $input['lrs_inr_amount']);
 
         // Set new input amount and fees
         $input['amount'] = $input['amount'] + $fee;

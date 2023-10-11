@@ -1010,7 +1010,13 @@ class Payment extends Base
                 $baseCurrency = $this->entity->merchant->getCurrency();
             }
 
-            $amount = $amount - (new Core)->getBaseAmount($fee, $currency, $baseCurrency);
+            $input = [];
+            if ($this->entity->merchant->isLRSEducationFlowEnabled() === true)
+            {
+                $input['is_lrs_merchant'] = true;
+                $input['order_id'] = $this->entity->getOrderAttribute()['id'];
+            }
+            $amount = $amount - (new Core)->getBaseAmount($fee, $currency, $baseCurrency, $input);
         }
 
         if ($this->entity->getEntity() === (Entity::PAYMENT))

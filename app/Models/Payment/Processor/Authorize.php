@@ -169,7 +169,6 @@ trait Authorize
 
         $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
-        $this->setConvertCurrencyIfLrsEducationEnabled($payment);
         // this needs to be done after we have card entity as we need to know if
         // cards used in payment is international
         $this->processCurrencyConversions($payment, $input);
@@ -4531,7 +4530,6 @@ trait Authorize
         {
             $payment->setConvertCurrency(true);
         }
-
     }
     /**
      * @throws Exception\BadRequestException
@@ -5030,6 +5028,8 @@ trait Authorize
 
         $merchant = $payment->merchant;
 
+        $this->setConvertCurrencyIfLrsEducationEnabled($payment);
+
         // For card and App method payments, check all conditions
         // and for rest payment methods check only if currency != INR
         if (!$merchant->isLRSEducationFlowEnabled() && ($currency !== $merchant->getCurrency() && !$merchant->isCustomerFeeBearerAllowedOnInternational()) &&
@@ -5084,13 +5084,15 @@ trait Authorize
         /**
          * Allow MCC on international merchants on CFB only if the feature flag is enabled
          * And remove fee for the calculation of base amount, as fee calculation is done on base :-)
+         * Same applies for LRS transactions as well.
          */
 
-        if ($payment->isInternational() and
-            $currency !== $merchant->getCurrency() and
-            $merchant->isFeeBearerCustomerOrDynamic())
+        if (($merchant->isFeeBearerCustomerOrDynamic() and
+            $currency !== $merchant->getCurrency()) and
+            ($payment->isInternational() or
+                $merchant->isLRSEducationFlowEnabled()))
         {
-            if($merchant->isCustomerFeeBearerAllowedOnInternational()|| $merchant->isLRSEducationFlowEnabled())
+            if($merchant->isCustomerFeeBearerAllowedOnInternational() or $merchant->isLRSEducationFlowEnabled())
             {
                 $amount = $amount - $payment->getFee();
             }
@@ -5110,12 +5112,18 @@ trait Authorize
         if($merchant->isLRSEducationFlowEnabled() === true)
         {
             $input['is_lrs_merchant'] = true;
-            $input['order_id'] = $payment->getOrderId();
+            /**
+             * This needs to be set before calling base amount method to get the total converted amount received
+             * from cross border service instead of calculating it through amount.
+             * When calling getBaseAmount for fee calculation, This won't be set.
+             */
+            $input['is_lrs_convert_amount'] = true;
         }
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $merchant->getCurrency(), $input);
+
         if($merchant->isLRSEducationFlowEnabled() === true)
         {
-            unset($input['order_id']);
+            unset($input['is_lrs_convert_amount']);
         }
         // if gateway is doing currency conversions, actual rate used by gateway
         // will use lower than current rates hence we also use merchant / default
@@ -5131,13 +5139,15 @@ trait Authorize
         /**
          * Correct the base amount by adding back the removed fee in case of MCC.
          * Strange workarounds eh? Things you have to do for NR (Ask your product manager about it)
+         * Same applies for LRS transactions as well.
          */
 
-        if ($payment->isInternational() and
-            $currency !== $merchant->getCurrency() and
-            $merchant->isFeeBearerCustomerOrDynamic())
+        if (($merchant->isFeeBearerCustomerOrDynamic() and
+            $currency !== $merchant->getCurrency()) and
+            ($payment->isInternational() or
+                $merchant->isLRSEducationFlowEnabled()))
         {
-            if($merchant->isCustomerFeeBearerAllowedOnInternational() || $merchant->isLRSEducationFlowEnabled())
+            if($merchant->isCustomerFeeBearerAllowedOnInternational() or $merchant->isLRSEducationFlowEnabled())
             {
                 $baseFee = (new Currency\Core)->getBaseAmount($payment->getFee(), $currency, $merchant->getCurrency(), $input);
                 $baseAmount = $baseAmount + $baseFee;
@@ -5179,7 +5189,7 @@ trait Authorize
                 $paymentMetaEntity = (new Payment\PaymentMeta\Core)->updateMccInfo($paymentMeta, $paymentMetaInput);
             }
         }
-        unset($input['mcc_mark_down_percent'], $input['mcc_forex_rate'], $input['mcc_applied']);
+        unset($input['mcc_mark_down_percent'], $input['mcc_forex_rate'], $input['mcc_applied'], $input['is_lrs_merchant']);
 
         $payment->setBaseAmount($baseAmount);
     }

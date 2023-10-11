@@ -3472,9 +3472,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         if ($this->isFeeBearerCustomer() === true and
             $this->getCurrency()!== Currency\Currency::INR and
-            $this->isInternational() and
-            $this->merchant->isCustomerFeeBearerAllowedOnInternational() and
-            $originalPaymentFee!=null)
+            $originalPaymentFee!=null and
+            (($this->isInternational() and
+            $this->merchant->isCustomerFeeBearerAllowedOnInternational()) or
+            ($this->merchant->isLRSEducationFlowEnabled())))
         {
             $amount -= $originalPaymentFee;
         }
@@ -6080,14 +6081,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             and $this->isFeeBearerCustomer()
             and $this->isCaptured() === false
             and !$this->isStatus(Status::FAILED)
-            and $this->merchant->isCustomerFeeBearerAllowedOnInternational())
+            and ($this->merchant->isCustomerFeeBearerAllowedOnInternational()
+            or $this->merchant->isLRSEducationFlowEnabled()))
         {
             $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($this->getId());
 
             if(isset($paymentMeta)) {
-
-                if (!empty($paymentMeta->getMccForexRate())) {
-
+                if ($this->merchant->isLRSEducationFlowEnabled() and !empty($paymentMeta->getForexRate()))
+                {
+                    $fee = (float)$this->getFee()*($paymentMeta->getForexRate());
+                    $data[self::feeCurrencyAmount] = (int)ceil($fee);
+                }
+                else if (!empty($paymentMeta->getMccForexRate())) {
                     $fee = (float)$this->getFee()*($paymentMeta->getMccForexRate());
                     $data[self::feeCurrencyAmount] = (int)ceil($fee);
                 }
@@ -6148,14 +6153,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             and $this->isFeeBearerCustomer()
             and $this->isCaptured() === false
             and !$this->isStatus(Status::FAILED)
-            and $this->merchant->isCustomerFeeBearerAllowedOnInternational())
+            and ($this->merchant->isCustomerFeeBearerAllowedOnInternational()
+            or $this->merchant->isLRSEducationFlowEnabled()))
         {
             $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($this->getId());
 
             if(isset($paymentMeta)) {
-
-                if (!empty($paymentMeta->getMccForexRate())) {
-
+                if ($this->merchant->isLRSEducationFlowEnabled() and !empty($paymentMeta->getForexRate()))
+                {
+                    $fee = (float)$this->getFee()*($paymentMeta->getForexRate());
+                    $data[self::feeCurrencyAmount] = (int)ceil($fee);
+                }
+                else if (!empty($paymentMeta->getMccForexRate())) {
                     $fee = (float)$this->getFee()*$paymentMeta->getMccForexRate();
                     $data[self::feeCurrencyAmount] = (int)ceil($fee);
                 }

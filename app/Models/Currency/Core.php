@@ -141,7 +141,7 @@ class Core extends Base\Core
         }
 
         if (isset($input) && isset($input['is_lrs_merchant'])) {
-                return $this->getLrsRates($input);
+                return $this->getLrsRates($amount, $input);
         } else if (isset($input) && isset($input['mcc_request_id'])) {
                 $rates = $this->getRatesById($currency, $input);
         } else {
@@ -164,18 +164,21 @@ class Core extends Base\Core
             return $baseAmount;
     }
 
-    public function getLrsRates(&$input)
+    public function getLrsRates($amount, &$input)
     {
         $param = [
             'order_id' => $input['order_id'],
         ];
         $lrs_quote = $this->getLrsQuote($param);
         if (!empty($lrs_quote) && isset($lrs_quote['data'])) {
-            $input['mcc_applied'] = true;
-            $input['mcc_forex_rate'] = $lrs_quote['data']['exchange_rate'];
             $input['lrs_forex_rate'] = $lrs_quote['data']['exchange_rate'];
-            return $lrs_quote['data']['converted_amount'];
+            if ($input['is_lrs_convert_amount'] === true)
+            {
+                return (int)$lrs_quote['data']['converted_amount'];
+            }
+            return (int)ceil($amount * $lrs_quote['data']['exchange_rate']);
         }
+        return 0;
     }
 
     public function getLrsQuote($param)
@@ -250,7 +253,7 @@ class Core extends Base\Core
         $tax = (int) ceil(($tax / $rate) * $denominationFactor);
     }
 
-    public function reverseLRSEducationFee($input, &$fee, &$tax): void
+    public function reverseLRSEducationFee($input, &$fee, &$tax)
     {
         $param = [
             'order_id' => $input['order_id'],
@@ -258,7 +261,7 @@ class Core extends Base\Core
         $lrs_quote = $this->getLrsQuote($param);
         if (empty($lrs_quote))
         {
-            return;
+            return 0;
         }
         $rate = $lrs_quote['data']['exchange_rate'];
         $denominationFactorInr = Currency::DENOMINATION_FACTOR[Currency::INR];
@@ -266,6 +269,7 @@ class Core extends Base\Core
         $denominationFactor = $denominationFactorInputCurr/$denominationFactorInr;
         $fee = (int) ceil(($fee / $rate) * $denominationFactor);
         $tax = (int) ceil(($tax / $rate) * $denominationFactor);
+        return (int)$lrs_quote['data']['converted_amount'];
     }
 
     protected function getMccReverseRateAndDenominationFactor($input)
