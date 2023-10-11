@@ -793,7 +793,10 @@ class Core extends Base\Core
                 {
                     try
                     {
-                        if(empty($partnerSubMtuMap[$partner->getId()]) === false and $partnerSubMtuMap[$partner->getId()] >= Constants::GENERATE_INVOICE_MIN_SUB_MTU_COUNT)
+                        if(
+                            empty($partnerSubMtuMap[$partner->getId()]) === false and
+                            $partnerSubMtuMap[$partner->getId()] >= Constants::GENERATE_INVOICE_MIN_SUB_MTU_COUNT
+                        )
                         {
                             $this->generateInvoice($partner, $input);
                         }

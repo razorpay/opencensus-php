@@ -816,13 +816,22 @@ trait PartnerTrait
     {
         $client = $this->markMerchantAsNonPurePlatformPartner($partnerId, MerchantConstants::AGGREGATOR);
 
-        $user = $this->fixtures->user->createUserForMerchantONLiveAndTest($partnerId, ['id'=> $userId, 'email'=> 'random@gmail.com'], Role::OWNER);
+        $partner = $this->getDbEntityById('merchant', $partnerId);
+        $partnerUser = $partner->primaryOwner();
+
+        if ($partnerUser === null)
+        {
+            $partnerUser = $this->fixtures->user->createUserForMerchantONLiveAndTest(
+                $partnerId, ['id'=> $userId, 'email'=> 'random@gmail.com'], Role::OWNER
+            );
+        }
 
         $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
 
         $this->fixtures->merchant->createAccount($submerchantId);
 
-        $this->fixtures->user->createUserMerchantMapping( ['user_id' => $userId, 'merchant_id' => $submerchantId, 'role' => Role::OWNER]);
+        $this->fixtures->user->createUserMerchantMapping( ['user_id' => $partnerUser->getId(), 'merchant_id' => $submerchantId, 'role' => Role::OWNER], 'test');
+        $this->fixtures->user->createUserMerchantMapping( ['user_id' => $partnerUser->getId(), 'merchant_id' => $submerchantId, 'role' => Role::OWNER], 'live');
 
         $this->createDefaultSubmerchantPricingPlan();
 

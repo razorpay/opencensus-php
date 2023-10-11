@@ -1937,11 +1937,11 @@ return [
                     'tax_components' => [
                         [
                             'name'     => 'CGST 9%',
-                            'rate'     => '90000',
+                            'rate'     => 90000,
                         ],
                         [
                             'name'     => 'SGST 9%',
-                            'rate'     => '90000',
+                            'rate'     => 90000,
                         ]
                     ]
                 ],
@@ -1954,7 +1954,7 @@ return [
                     'tax_components' => [
                         [
                             'name'     => 'IGST 18%',
-                            'rate'     => '180000',
+                            'rate'     => 180000,
                         ]
                     ]
                 ]

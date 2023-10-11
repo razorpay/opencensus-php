@@ -1673,58 +1673,6 @@ return [
         ],
     ],
 
-    'testFetchPartnerSubmerchantsPurePlatformOptimised' => [
-        'request'  => [
-            'url'     => '/submerchants',
-            'method'  => 'GET',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 2,
-                'items'  => [
-                    [
-                        'id'               => 'acc_10000000000009',
-                        'name'             => 'random_name_1',
-                        'email'            => 'subm1@xyz.com',
-                        'hold_funds'       => false,
-                        'details'          => [
-                            'activation_status' => null,
-                        ],
-                        'user'              => [
-                            'email'             => 'subm1@xyz.com',
-                            'contact_mobile'    => null,
-                        ],
-                        'dashboard_access'  => false,
-                        'application' => [
-                            'id' => '8ckeirnw84ifke',
-                        ],
-                        'kyc_access'        => null,
-                    ],
-                    [
-                        'id'               => 'acc_10000000000009',
-                        'name'             => 'random_name_1',
-                        'email'            => 'subm1@xyz.com',
-                        'hold_funds'       => false,
-                        'details'          => [
-                            'activation_status' => null,
-                        ],
-                        'user'              => [
-                            'email'             => 'subm1@xyz.com',
-                            'contact_mobile'    => null,
-                        ],
-                        'dashboard_access'  => false,
-                        'application' => [
-                            'id' => '10000RandomApp',
-                        ],
-                        'kyc_access'        => null,
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'testFetchPartnerSubmerchantsFilters' => [
         'request'  => [
             'url'     => '/submerchants',
@@ -1912,42 +1860,6 @@ return [
                         'application' => [
                             'id' => '10000RandomApp',
                         ]
-                    ],
-                ],
-            ],
-        ],
-    ],
-
-    'testFetchPartnerSubmerchantsPurePlatformFiltersOptimised' => [
-        'request'  => [
-            'url'     => '/submerchants',
-            'method'  => 'GET',
-            'content' => [
-                'application_id' => '10000RandomApp',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'id'               => 'acc_10000000000009',
-                        'name'             => 'random_name_1',
-                        'email'            => 'subm1@xyz.com',
-                        'hold_funds'       => false,
-                        'details'          => [
-                            'activation_status' => null,
-                        ],
-                        'user'              => [
-                            'email'             => 'subm1@xyz.com',
-                            'contact_mobile'    => null,
-                        ],
-                        'dashboard_access'  => false,
-                        'application' => [
-                            'id' => '10000RandomApp',
-                        ],
-                        'kyc_access'        => null,
                     ],
                 ],
             ],
@@ -3106,73 +3018,6 @@ return [
         'response' => [
             'content' => [
                 'feature_enabled' => false,
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
-    'testFetchEntitiesForPartnershipService' => [
-        'request'  => [
-            'method'  => 'GET',
-            'url'     => '/internal/partnerships/merchant',
-        ],
-        'response' => [
-            'content' => [[
-                'merchant'           => [
-                    'partner_type'       => 'reseller',
-                    'country'            => 'IN'
-                ],
-                'merchant_details'   => [
-                    'activation_status'  => 'activated',
-                    'gstin'              => '29ABCDE1234L1Z1'
-                ],
-                'partner_activation' => [
-                    'activation_status'  => 'activated'
-                ],
-                'commission_balance' => [
-                    'balance_id'         => 'balanceIdTest1'
-                ]
-            ]],
-            'status_code' => 200,
-        ],
-    ],
-
-    'testFetchPartialEntitiesForPartnershipService' => [
-        'request'  => [
-            'method'  => 'GET',
-            'url'     => '/internal/partnerships/merchant',
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'merchant'      => [
-                        'partner_type' => 'reseller',
-                        'country'      => 'IN'
-                    ],
-                    'tax_components' => [
-                        [
-                            'name'     => 'CGST 9%',
-                            'rate'     => 90000,
-                        ],
-                        [
-                            'name'     => 'SGST 9%',
-                            'rate'     => 90000,
-                        ]
-                    ]
-                ],
-                [
-                    'merchant'       => [
-                        'id'           => 'partnerMerchId',
-                        'partner_type' => 'reseller',
-                        'country'      => 'IN'
-                    ],
-                    'tax_components' => [
-                        [
-                            'name'     => 'IGST 18%',
-                            'rate'     => '180000',
-                        ]
-                    ]
-                ]
             ],
             'status_code' => 200,
         ],

@@ -7188,3 +7188,6 @@ ALTER TABLE bank_accounts
 
 ALTER TABLE pricing
     ADD COLUMN percent_rate_scale_factor INT UNSIGNED DEFAULT 100;
+
+ALTER TABLE user_device_details
+    ADD COLUMN `metadata` json DEFAULT NULL;

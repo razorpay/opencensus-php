@@ -2026,6 +2026,7 @@ class Pricing extends Base
     public function createImplicitPartnerPricingPlan($attributes = [])
     {
         $pricingPlanId = $attributes['plan_id'] ?? Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN;
+        $orgId = $attributes['org_id'] ?? Constants::RAZORPAY_ORG_ID;
 
         $rows = [
             [
@@ -2036,7 +2037,7 @@ class Pricing extends Base
                 'payment_method' => 'card',
                 'percent_rate'   => 180,
                 'fixed_rate'     => 0,
-                'org_id'         => '100000razorpay',
+                'org_id'         => $orgId,
                 'type'           => 'pricing',
             ],
         ];

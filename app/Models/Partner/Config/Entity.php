@@ -426,7 +426,7 @@ class Entity extends PublicEntity
             $merchant = (new Merchant\Service)->getMerchantFromMid($application[0][self::MERCHANT_ID]);
         }
 
-        return ($merchant->merchantDetail->getBusinessName())??($merchant->getName());
+        return ($merchant->merchantDetail->getBusinessName()) ?? ($merchant->getName());
     }
 
     public function toBuildArray()

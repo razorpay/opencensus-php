@@ -884,6 +884,19 @@ return [
         ],
     ],
 
+    'testCaptureCommissionWithReverseShadowCommissionEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/commissions/{id}/capture',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'created',
+            ],
+        ],
+    ],
+
     'testCaptureCommissionByPartner' => [
         'request'  => [
             'method'  => 'POST',

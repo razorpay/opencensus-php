@@ -171,7 +171,7 @@ class Repository extends BaseRepository
         $serialized = parent::serializeForIndexing($entity);
 
         $serialized[Entity::MERCHANT] = [
-            Entity::ID => $entity->source->merchant->getId(),
+            Entity::ID => $entity->source[Constants::MERCHANT_ID],
         ];
 
         return $serialized;

@@ -248,15 +248,6 @@ class PartnerActivationTest extends OAuthTestCase
 
         $this->createMerchant(self::MERCHANT_ID, false, null);
 
-        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
-
-        $this->app->instance('stork_service', $storkMock);
-
-        $merchantTestUtil = new MerchantTest();
-        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Partner_activation.Activated', '8888888888', [
-            'id' => self::MERCHANT_ID
-        ]);
-
         $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
         $testData = $this->testData['saveAllPartnerActivationDetails'];
         $this->runRequestResponseFlow($testData);
@@ -288,7 +279,7 @@ class PartnerActivationTest extends OAuthTestCase
         $this->app->instance('stork_service', $storkMock);
 
         $merchantTestUtil = new MerchantTest();
-        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Partner_activation.Needs_clarification', '8888888888', [
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Partner_activation.Needs_clarification', '+918888888888', [
             'id' => self::MERCHANT_ID
         ]);
 

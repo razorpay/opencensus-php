@@ -571,8 +571,6 @@ class Core extends Base\Core
 
             $this->trace->count(Metric::COMMISSION_CAPTURE_TOTAL, $commission->getMetricDimensions());
 
-            $this->app->partnerships->createCommissionDualWrite($commission);
-
             return $commission;
         });
     }

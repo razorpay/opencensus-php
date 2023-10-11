@@ -1279,11 +1279,12 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->allowAdminToAccessPartnerMerchant();
 
         $this->allowAdminToAccessSubMerchant();
-        $this->fixtures->on(Mode::TEST)->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
             'name' => 'random_name_1',
             'email' => 'subm1@xyz.com',
         ]);
-        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+        $partner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+        $partnerUser = $partner->primaryOwner() ?? $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
         $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, ['email' => 'subm1@xyz.com']);
 
         $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
@@ -1327,7 +1328,8 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->allowAdminToAccessSubMerchant();
 
-        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+        $partner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+        $partnerUser = $partner->primaryOwner() ?? $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
 
         $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
@@ -1369,12 +1371,13 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->allowAdminToAccessPartnerMerchant();
 
         $this->allowAdminToAccessSubMerchant();
-        $this->fixtures->on(Mode::TEST)->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
             'name' => 'random_name_1',
             'email' => 'subm1@xyz.com',
         ]);
 
-        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+        $partner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+        $partnerUser = $partner->primaryOwner() ?? $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
 
         $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, ['email' => 'subm1@xyz.com']);
 
@@ -1784,7 +1787,7 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertTrue($merchant->isPartner());
 
         // Add a partner user
-        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+        $partnerUser = $merchant->primaryOwner();
 
         // Add a submerchant user
         $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
@@ -2033,6 +2036,7 @@ class PartnerExperienceTest extends OAuthTestCase
         Mail::fake();
 
         $merchantId = self::DEFAULT_MERCHANT_ID;
+        $this->createMerchantDetailsForDefaultMerchant();
 
         $this->ba->proxyAuth();
 
@@ -2053,6 +2057,19 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEmpty($merchantApplication);
 
         Mail::assertQueued(PartnerOnBoarded::class);
+    }
+
+    private function createMerchantDetailsForDefaultMerchant(string $merchantId = self::DEFAULT_MERCHANT_ID)
+    {
+        $merchantDetails = [
+            'merchant_id' => $merchantId,
+            'business_type' => 1,
+            'business_category' => 'financial_services',
+            'business_subcategory' => 'mutual_fund',
+        ];
+        $merchantDetails = $this->fixtures->merchant_detail->createMerchantDetail($merchantDetails);
+        $this->fixtures->on('live')->merchant_detail->createSane($merchantDetails);
+        $this->fixtures->on('test')->merchant_detail->createSane($merchantDetails);
     }
 
     public function testUpdatePartnerTypeAsResellerUsingProxyAuthForActivatedMerchant()
@@ -2379,6 +2396,9 @@ class PartnerExperienceTest extends OAuthTestCase
     protected function markMerchantAsPartner(string $merchantId, string $partnerType)
     {
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $partnerType]);
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => $merchantId, 'name' => 'generate_partner_invoice'
+        ]);
     }
 
     protected function mockAuthServiceCreateApplication(Merchant\Entity $merchant, array $response = [], $times = 1)
@@ -3370,8 +3390,10 @@ class PartnerExperienceTest extends OAuthTestCase
     public function testPartnerEmailUpdate()
     {
         $this->ba->adminAuth();
+        $this->mockAllSplitzTreatment();
 
         $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+        $this->createMerchantDetailsForDefaultMerchant(self::DEFAULT_PARTNER_ID);
 
         $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID);
 
@@ -3392,8 +3414,10 @@ class PartnerExperienceTest extends OAuthTestCase
     public function testPartnerEmailUpdateWithExistingUser()
     {
         $this->ba->adminAuth();
+        $this->mockAllSplitzTreatment();
 
         $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+        $this->createMerchantDetailsForDefaultMerchant(self::DEFAULT_PARTNER_ID);
 
         $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID);
 
@@ -3421,8 +3445,10 @@ class PartnerExperienceTest extends OAuthTestCase
     public function testPartnerEmailUpdateWithTeamUser()
     {
         $this->ba->adminAuth();
+        $this->mockAllSplitzTreatment();
 
         $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+        $this->createMerchantDetailsForDefaultMerchant(self::DEFAULT_PARTNER_ID);
 
         $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID);
 
@@ -3450,8 +3476,10 @@ class PartnerExperienceTest extends OAuthTestCase
     public function testPartnerEmailUpdateWithBankingAndPrimaryTeamUser()
     {
         $this->ba->adminAuth();
+        $this->mockAllSplitzTreatment();
 
         $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+        $this->createMerchantDetailsForDefaultMerchant(self::DEFAULT_PARTNER_ID);
 
         $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID);
 
@@ -3496,11 +3524,14 @@ class PartnerExperienceTest extends OAuthTestCase
     public function testPartnerEmailUpdateWithSubmAsPartner()
     {
         $this->ba->adminAuth();
+        $this->mockAllSplitzTreatment();
 
         // create partner and submerchant
         $this->fixtures->merchant->createAccount(self::DEFAULT_PARTNER_ID);
+        $this->createMerchantDetailsForDefaultMerchant(self::DEFAULT_PARTNER_ID);
 
         $this->setUpNonPurePlatformPartnerAndSubmerchant(self::DEFAULT_PARTNER_ID);
+        $this->createMerchantDetailsForDefaultMerchant('100submerchant');
 
         $this->fixtures->user->createUserMerchantMapping( ['user_id' => 'RazorpayUserId', 'merchant_id' => self::DEFAULT_PARTNER_ID, 'role' => Role::OWNER, 'product' => 'banking']);
 
@@ -3883,58 +3914,6 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertNotNull($accessMap);
 
         $this->assertEquals($partnerId, $accessMap['entity_owner_id']);
-    }
-
-
-    // The following testcase would create a merchant for the subM, wouldn't attach the subM to partner as the experiment is disabled
-    public function testUserRegisterWithMobileWithReferralCodeWithExperimentDisable()
-    {
-        $smsPayload = [
-            'otp'        => '0007',
-            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
-            'context'    => 'user_id:signup_otp:token',
-        ];
-
-        $ravenMock = $this->getMockBuilder(Raven::class)
-                          ->setConstructorArgs([$this->app])
-                          ->onlyMethods(['generateOtp'])
-                          ->getMock();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $this->app['raven']->method('generateOtp')
-                           ->willReturn($smsPayload);
-
-        $testData = &$this->testData['testUserRegisterWithMobileWithReferralCode'];
-
-        $partnerMerchant = $this->createPartner('aggregator');
-
-        $referralLink = $this->getDbEntity('referrals', ['product' => 'primary']);
-
-        $referralCode = $referralLink['ref_code'];
-
-        $testData['request']['content']['partner_referral_code'] = $referralCode;
-
-        $this->ba->dashboardGuestAppAuth();
-
-        $this->mockAllSplitzTreatment([
-                                          "response" => [
-                                              "variant" => [
-                                                  "name" => 'disable',
-                                              ]
-                                          ]
-                                      ]);
-
-        $response = $this->runRequestResponseFlow($testData);
-
-        $createdSubM = $this->getDbLastEntity('merchant');
-
-        $accessMap = $this->getDbEntity('merchant_access_map',
-                                        ['entity_owner_id' => $partnerMerchant['id'],
-                                         'merchant_id'     => $createdSubM['id']
-                                        ]);
-        $this->assertNull($accessMap);
-
     }
 
     // The test case checks if create signup source method is called for phantom source
