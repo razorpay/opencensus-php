@@ -38,7 +38,7 @@ const SuccessRateBanner = ({
         }}
         variant="button"
       >
-        Details
+        View dashboard
       </Link>
     </Box>
   );

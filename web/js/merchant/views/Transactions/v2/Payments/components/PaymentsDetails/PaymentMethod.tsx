@@ -25,7 +25,7 @@ function PaymentMethod({ payment, method, card, bank, vpa, wallet }: IPaymentMet
     if (method === 'card') {
       return (
         <>
-          {titleCase(card?.type)} card{' '}
+          {card?.international ? 'International' : 'Domestic'} {titleCase(card?.type)} card{' '}
           <span style={{ marginLeft: '8px' }}>
             (<img src={CardIcon} alt="card-icon" style={{ marginLeft: '4px' }} />
             xx{card?.last4})

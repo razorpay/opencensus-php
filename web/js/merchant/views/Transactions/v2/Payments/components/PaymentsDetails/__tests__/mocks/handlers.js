@@ -543,3 +543,27 @@ export const mockApplicationDetails = () => {
     }),
   );
 };
+
+export const mockPaymentTransfers = () => {
+  return server.use(
+    rest.get('*/merchant/api/:mode/payments/:id/transfers', (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: true,
+          data: {
+            count: 1,
+            entity: 'collection',
+            items: [
+              {
+                id: 'trf_JMMPL4TnlzG30O',
+              },
+            ],
+          },
+        }),
+        ctx.delay(50),
+      );
+    }),
+  );
+};

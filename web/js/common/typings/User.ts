@@ -65,6 +65,7 @@ type Getters = {
   isPartnershipForCapitalEnabled: boolean;
   isPartnershipsInviteFlowEnabled: boolean;
   isInternationalMethodsHidden: boolean;
+  isDirectTransferEnabled: boolean;
 };
 
 type UserProperties = {

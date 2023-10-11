@@ -114,8 +114,9 @@ export const RowWrapper = styled.div(
       padding-left: 2px;
     }
   }
-  @media screen and (max-width: ${theme.breakpoints.m}px) {
-    flex-direction: column;
+  flex-direction: column;
+  @media screen and (min-width: ${theme.breakpoints.m}px) {
+    flex-direction: row;
   };
 `,
 );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -10,7 +10,7 @@ import {
   StyledTabHeader,
   StyledTabItem,
 } from 'merchant/views/Transactions/v2/common/styled';
-import { trackTransactionsTabClick } from 'merchant/views/Transactions/v2/common/tracking';
+import { track, trackTransactionsTabClick } from 'merchant/views/Transactions/v2/common/tracking';
 import { Page } from 'merchant/views/Transactions/v2/common/types';
 
 const { ORDERS } = Page;
@@ -23,6 +23,21 @@ const {
 } = TransactionsEntityRoute;
 
 export const LandingContainer = ({ children }) => {
+  useEffect(() => {
+    track({
+      objectName: 'Transactions Page',
+      actionName: 'Rendered',
+    });
+    setTimeout(() =>
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth',
+      }),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="tabbed-container">
       <LandingPageAnalyticsOverview />

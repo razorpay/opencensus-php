@@ -21,10 +21,18 @@ describe('Payment Method component', () => {
   };
 
   describe(`Card method`, () => {
-    test('should show Card payment method', () => {
+    test('should show Domestic Card payment method', () => {
       render(<App props={cardAppProps} />);
       const cardType = cardAppProps.card.type;
-      expect(screen.getByText(`${titleCase(cardType)} card`)).toBeInTheDocument();
+      expect(screen.getByText(`Domestic ${titleCase(cardType)} card`)).toBeInTheDocument();
+    });
+
+    test('should show International Card payment method', () => {
+      render(
+        <App props={{ ...cardAppProps, card: { ...cardAppProps.card, international: true } }} />,
+      );
+      const cardType = cardAppProps.card.type;
+      expect(screen.getByText(`International ${titleCase(cardType)} card`)).toBeInTheDocument();
     });
   });
 

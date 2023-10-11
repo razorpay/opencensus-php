@@ -344,7 +344,18 @@ const ApiKeysAndPlugins = lazy(() =>
 const NitroPgPricing = lazy(() =>
   import(/* webpackChunkName: "NitroPgPricing" */ 'common/ui/MwebExOfferCampaign/NitroPgPricing'),
 );
+
+const PaymentTransferNew = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentTransferNew" */ 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentTransferNew'
+  ),
+);
+
 const entityDetailsMap = {
+  '/payments/:id(pay_.+)/v2/transfers/new': {
+    component: PaymentTransferNew,
+    additionalCondition: (user) => user.isAllowedEdit('payments'),
+  },
   '/payments/:id(pay_.+)/:entity_name(transfers|disputes)/:entity_id': {
     component: PaymentsDetails,
     additionalCondition: (user) => user.isAllowedEdit('payments'),

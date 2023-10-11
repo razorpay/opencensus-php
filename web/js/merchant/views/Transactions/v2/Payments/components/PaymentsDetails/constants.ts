@@ -21,6 +21,8 @@ export const tooltipContent = {
   platformFees: 'Platform fees charged by Razorpay',
   gst: 'Goods and Service Tax (GST)',
   partnerApplicationFees: 'The fees has been charged for a transaction via partner:',
+  transfer:
+    'You can’t create a transfer for this payment because the entire amount is already transfered',
 };
 
 export const ERROR_DESCRIPTION_CONTENT_MAP = {

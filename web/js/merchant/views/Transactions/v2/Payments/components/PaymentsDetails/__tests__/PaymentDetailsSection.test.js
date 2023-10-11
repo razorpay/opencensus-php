@@ -11,6 +11,11 @@ jest.mock('common/hooks/useMobile', () => ({
   useMobile: jest.fn(),
 }));
 
+jest.mock(
+  'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/PaymentTransfers',
+  () => () => <div>Payment Transfers</div>,
+);
+
 describe('Payment Details Section component', () => {
   const App = ({ props }) => {
     return <PaymentDetailsSection {...props} />;
@@ -93,6 +98,11 @@ describe('Payment Details Section component', () => {
 
       expect(screen.getByText('Description')).toBeInTheDocument();
       expect(screen.getByText(`${happyFlowProps.paymentDetails.description}`)).toBeInTheDocument();
+    });
+
+    test('should render Payment Transfers', () => {
+      render(<App props={happyFlowProps} />);
+      expect(screen.getByText('Payment Transfers')).toBeInTheDocument();
     });
   });
 

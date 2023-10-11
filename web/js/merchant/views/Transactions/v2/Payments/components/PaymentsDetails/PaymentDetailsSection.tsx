@@ -31,6 +31,7 @@ import {
 } from './styled';
 import { IPaymentDetails, ApplicationDetails } from './types';
 import { onCopy } from './utils';
+import PaymentTransfers from './PaymentTransfers';
 
 interface IPaymentDetailsSection extends RouteComponentProps<{ id: string }> {
   paymentDetails: IPaymentDetails;
@@ -288,6 +289,7 @@ function PaymentDetailsSection({
                   </Text>
                   {getNotes({ notes, isStorefront })}
                 </RowWrapper>
+                <PaymentTransfers paymentDetails={paymentDetails} />
                 {/* Show only if dispute is raised */}
                 {disputes.items.length > 0 && (
                   <>

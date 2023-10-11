@@ -22,8 +22,12 @@ const RefundsListWrapper = (props) => {
 
 class RefundsList extends ListContainer {
   render() {
-    const { loading, history, navigate } = this.props;
-    const { pathname } = location;
+    const {
+      loading,
+      history,
+      navigate,
+      location: { pathname },
+    } = this.props;
     const { count, skip } = this.state;
     return (
       <>

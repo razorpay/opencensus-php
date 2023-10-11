@@ -1,3 +1,4 @@
+import { Store } from 'common/typings';
 import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
 
 export enum PaymentStatus {
@@ -239,5 +240,30 @@ export interface ICurrentBalance {
 
 export interface ApplicationDetails {
   name: string;
+  id: string;
+}
+
+export interface ITransfer {
+  id: string;
+}
+
+export interface ITransfers {
+  loading: boolean;
+  items: ITransfer[];
+}
+
+export interface IPaymentTransfers {
+  paymentDetails: IPaymentDetails;
+  fetchTransfers: (arg: { fetchTransfers: () => void }) => void;
+  transfers: ITransfers;
+}
+
+export interface ITransferList {
+  transfers: ITransfers;
+}
+
+export interface IPaymentTransferNew {
+  user: Store['session']['user'];
+  fetchTransfers: (arg: { fetchTransfers: () => void }) => void;
   id: string;
 }

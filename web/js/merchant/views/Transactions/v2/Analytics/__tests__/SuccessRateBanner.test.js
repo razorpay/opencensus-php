@@ -10,7 +10,7 @@ describe('SuccessRateBanner', () => {
     expect(screen.getByAltText('success rate emoji')).toBeInTheDocument();
     expect(
       screen.getByRole('button', {
-        name: 'Details',
+        name: 'View dashboard',
       }),
     ).toBeInTheDocument();
   });
@@ -25,7 +25,7 @@ describe('SuccessRateBanner', () => {
   test('should redirect to success rate page when clicked on link', async () => {
     renderApp();
     const gotoSuccessRateButton = screen.getByRole('button', {
-      name: 'Details',
+      name: 'View dashboard',
     });
     await userEvent.click(gotoSuccessRateButton);
     await assertRedirect();
