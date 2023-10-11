@@ -16316,6 +16316,7 @@ class Route
         ],
 
         'terminals_service' => [
+            'merchant_fetch_methods_internal',
             'internal_get_banking_config',
             'feature_get_multiple_internal',
             'internal_org_get',
