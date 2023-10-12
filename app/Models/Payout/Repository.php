@@ -2938,7 +2938,7 @@ class Repository extends Base\Repository
         {
             $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
         }
-        
+
         return $this->newQueryWithConnection($connectionType)
                     ->whereBetween(Entity::CREATED_AT, [$createdAtStart, $createdAtEnd])
                     ->where(Entity::ID, '>', $id)

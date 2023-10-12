@@ -30,6 +30,7 @@ use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Services\Mozart as MozartService;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\FreePayout;
+use RZP\Jobs\RblUniqueGatewayBalanceUpdate;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Services\Mock\BankingAccountService;
 use RZP\Models\Feature\Constants as Features;
@@ -1077,6 +1078,71 @@ class RblPayoutTest extends TestCase
 
         $this->assertEmpty($response[BankingAccount\Core::MADE_PAYOUT_RULE]);
         $this->assertEmpty($response[BankingAccount\Core::BALANCE_CHANGE_RULE]);
+        $this->assertEquals([$basDetails->getMerchantId()], $response[BankingAccount\Core::MANDATORY_UPDATE_RULE]);
+    }
+
+    public function testBalanceFetchInRblUniqueJob()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on',
+                RazorxTreatment::UNIQUE_RBL_BALANCE_UPDATE => 'on'
+            ]
+        );
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        $response = $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetails */
+        $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
+
+        $this->assertArrayHasKey(BankingAccount\Core::MADE_PAYOUT_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::BALANCE_CHANGE_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::MANDATORY_UPDATE_RULE, $response);
+
+        $this->assertEmpty($response[BankingAccount\Core::MADE_PAYOUT_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::BALANCE_CHANGE_RULE]);
+
+        $this->assertEquals([$basDetails->getMerchantId()], $response[BankingAccount\Core::MANDATORY_UPDATE_RULE]);
+    }
+
+    public function testUniquenessInRblBalanceFetch()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on',
+                RazorxTreatment::UNIQUE_RBL_BALANCE_UPDATE => 'on'
+            ]
+        );
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        Queue::fake();
+
+        $counter = 3;
+
+        while ($counter > 0)
+        {
+            $response = $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+            $counter--;
+        }
+
+        $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        Queue::assertPushed(RblUniqueGatewayBalanceUpdate::class, 1);
+
+        /** @var Details\Entity $basDetails */
+        $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
+
+        $this->assertArrayHasKey(BankingAccount\Core::MADE_PAYOUT_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::BALANCE_CHANGE_RULE, $response);
+        $this->assertArrayHasKey(BankingAccount\Core::MANDATORY_UPDATE_RULE, $response);
+
+        $this->assertEmpty($response[BankingAccount\Core::MADE_PAYOUT_RULE]);
+        $this->assertEmpty($response[BankingAccount\Core::BALANCE_CHANGE_RULE]);
+
         $this->assertEquals([$basDetails->getMerchantId()], $response[BankingAccount\Core::MANDATORY_UPDATE_RULE]);
     }
 

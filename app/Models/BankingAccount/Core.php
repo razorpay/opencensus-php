@@ -41,6 +41,7 @@ use RZP\Models\BankingAccount\State;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\IntegrationException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
@@ -2474,12 +2475,25 @@ class Core extends Base\Core
                                Entity::MERCHANT_ID => $merchantId,
                            ]);
         }
-
     }
 
     protected function getGatewayBalanceUpdateJobForChannel(string $channel)
     {
         $job = 'RZP\Jobs' . '\\' . studly_case($channel) . 'BankingAccountGatewayBalanceUpdate';
+
+        if ($channel === Channel::RBL)
+        {
+            $variant = $this->app->razorx->getTreatment(
+                'unique_rbl_balance_update',
+                RazorxTreatment::UNIQUE_RBL_BALANCE_UPDATE,
+                $this->mode ?? Mode::LIVE
+            );
+
+            if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+            {
+                $job = 'RZP\Jobs' . '\\' . studly_case($channel) . 'UniqueGatewayBalanceUpdate';
+            }
+        }
 
         if (class_exists($job) === true)
         {
