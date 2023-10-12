@@ -10511,6 +10511,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MAGIC_CHECKOUT_SERVICE_PURCHASE_EVENT_FAILED           = 'MAGIC_CHECKOUT_SERVICE_PURCHASE_EVENT_FAILED';
 
+    // Slack integration trace codes
+    const SLACK_PUSH_MESSAGE_FAILURE                             = 'SLACK_PUSH_MESSAGE_FAILURE';
+    const SLACK_PUSH_MESSAGE_INIT                                = 'SLACK_PUSH_MESSAGE_INIT';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
