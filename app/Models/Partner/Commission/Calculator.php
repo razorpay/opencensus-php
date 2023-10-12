@@ -1339,7 +1339,7 @@ class Calculator extends Base\Core
             {
                 // If the entity origin is not empty, log it,
                 // It can be empty if the payment is not originated from an application
-                $this->trace->info(TraceCode::COMMISSION_PAYMENT_ORIGIN_NOT_PRESENT, [
+                $this->trace->info(TraceCode::COMMISSION_PAYMENT_ORIGIN_PRESENT, [
                     'entity_origin'     => $entityOrigin->toArray(),
                     'submerchant_id'    => $submerchant->getId(),
                     'source_entity_id'  => $sourceEntity->getId(),

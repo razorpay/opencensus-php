@@ -421,14 +421,33 @@ class PartnershipsService extends Base\Service
             $payload = CommissionCreateEventDataUtil::getPayloadForCommissionCreate($commissions, $components, $payment);
 
             \Event::dispatch(new TransactionalClosureEvent(function() use ($payload) {
-                // Job will be dispatched only after the transaction commits.
-                // and after a delay of 5 seconds
-                $this->pushJobWithDelay($payload, self::COMMISSION_SHADOW_PHASE_QUEUE_CONFIG_KEY, 5);
+                try
+                {
+                    // Job will be dispatched only after the transaction commits.
+                    // and after a delay of 5 seconds
+                    $this->pushJobWithDelay($payload, self::COMMISSION_SHADOW_PHASE_QUEUE_CONFIG_KEY, 5);
 
-                $this->trace->count(Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH, ['event_name' => 'commission_create', 'success' => true]);
+                    $this->trace->count(
+                        Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH,
+                        ['event_name' => 'commission_create', 'success' => true]
+                    );
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::PRTS_COMMISSION_SHADOW_PHASE_JOB_PUSH_FAILED,
+                        [$payload]
+                    );
+                    $this->trace->count(
+                        Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH,
+                        ['event_name' => 'commission_create', 'success' => false]
+                    );
+                }
             }));
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
@@ -436,7 +455,10 @@ class PartnershipsService extends Base\Service
                 TraceCode::PRTS_COMMISSION_SHADOW_PHASE_FAILED,
                 [$payment->toArrayPublic(), $commissions]
             );
-            $this->trace->count(Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH, ['event_name' => 'commission_create', 'success' => false]);
+            $this->trace->count(
+                Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH,
+                ['event_name' => 'commission_create', 'success' => false]
+            );
         }
     }
 

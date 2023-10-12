@@ -76,11 +76,11 @@ class Core extends Base\Core
             $entity = $this->fetchEntityByType($entityType, $entityId);
             $entityOrigin = $this->fetchEntityOrigin($entity);
 
-            if (empty($entityOrigin) === false)
+            if (empty($entityOrigin) === true)
             {
-                // If the entity origin is not empty, log it,
+                // If the entity origin is empty, log it,
                 // It can be empty if the payment is not originated from an application
-                $this->trace->info(TraceCode::COMMISSION_PAYMENT_ORIGIN_NOT_PRESENT, [
+                $this->trace->info(TraceCode::COMMISSION_CALCULATOR_PAYMENT_ORIGIN_NOT_PRESENT, [
                     'entity_origin'     => $entityOrigin->toArray(),
                     'entity_id'         => $entity->getId(),
                     'source'            => 'partnerships'
