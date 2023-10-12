@@ -51,6 +51,30 @@ class VerificationDetailsTransformer extends Base\Transformer
                 "function"  => 'mapVerificationStatus'
             ],
             [
+                "column"    => 'poa_verification_status',
+                'condition' => [
+                    'artefact_type'     => 'passport',
+                    'verification_unit' => 'ocr'
+                ],
+                "function"  => 'mapVerificationStatus'
+            ],
+            [
+                "column"    => 'poa_verification_status',
+                'condition' => [
+                    'artefact_type'     => 'voters_id',
+                    'verification_unit' => 'ocr'
+                ],
+                "function"  => 'mapVerificationStatus'
+            ],
+            [
+                "column"    => 'poa_verification_status',
+                'condition' => [
+                    'artefact_type'     => 'aadhaar',
+                    'verification_unit' => 'probe_provider'
+                ],
+                "function"  => 'mapVerificationStatus'
+            ],
+            [
                 "column"    => 'bank_details_verification_status',
                 'condition' => [
                     'artefact_type'     => 'bank_account',
