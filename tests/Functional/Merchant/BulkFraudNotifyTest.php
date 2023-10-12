@@ -858,7 +858,7 @@ class BulkFraudNotifyTest extends TestCase
         $expectedContent = [
             'group_id'        => 82000656452,
             'tags'            => ['bulk_fraud_email'],
-            'priority'        => 1,
+            'priority'        => 2,
             'phone'           => '+919991119991',
             'custom_fields'   => [
                 'cf_ticket_queue'               => 'Merchant',
@@ -866,8 +866,9 @@ class BulkFraudNotifyTest extends TestCase
                 'cf_subcategory'                => 'Fraud alerts',
                 'cf_product'                    => 'Payment Gateway',
                 'cf_created_by'                 => 'agent',
-                'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
                 'cf_merchant_id'                => '10000000000000',
+                'cf_new_requester_category'     => 'Razorpay',
+                'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
                 'cf_merchant_activation_status' => 'undefined',
             ],
         ];
@@ -876,7 +877,7 @@ class BulkFraudNotifyTest extends TestCase
                                                     $expectedContent,
                                                     [
                                                         'id'        => 123,
-                                                        'priority'  => 1,
+                                                        'priority'  => 2,
                                                         'fr_due_by' => 'today'
                                                     ]);
 
@@ -954,6 +955,7 @@ class BulkFraudNotifyTest extends TestCase
             'group_id'        => 82000656452,
             'email_config_id' => 82000098661,
             'custom_fields'   => [
+                'cf_new_requester_category' => 'Razorpay',
                 'cf_ticket_queue' => 'Merchant',
                 'cf_merchant_id'  => '10000000000000',
                 'cf_category'     => 'Risk Report_Merchant',
@@ -967,7 +969,7 @@ class BulkFraudNotifyTest extends TestCase
             $expectedContent,
             [
                 'id'        => 123,
-                'priority'  => 1,
+                'priority'  => 3,
                 'fr_due_by' => 'today',
                 'spam' => false,
                 'fr_escalated' => false,

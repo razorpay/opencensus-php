@@ -82,6 +82,7 @@ class Service extends Base\Service
             'email_config_id' => (int) $freshDeskConfig['email_config_ids']['cybercrime_helpdesk']['acknowledgement'],
             'group_id'        => (int) $freshDeskConfig['group_ids']['cybercrime_helpdesk']['acknowledgement'],
             'custom_fields'   => [
+                FdConstants::CF_NEW_REQUESTOR_CATEGORY => FdConstants::RAZORPAY,
                 'cf_ticket_queue' => 'Thirdparty',
                 'cf_category'     => 'Fraud',
                 'cf_subcategory'  => Constants::FRESHDESK_EMAIL_CYBER_CELL_SUB_CATEGORY,

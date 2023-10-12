@@ -511,6 +511,7 @@ return [
                 'debit_note_notification' => env('FRESHDESK_IND_EMAIL_CONFIG_DEBIT_NOTE_NOTIFICATION_ID'),
                 'dispute'                 => env('FRESHDESK_IND_EMAIL_CONFIG_DISPUTE_ID'),
                 'chargebacks'             => env('FRESHDESK_IND_EMAIL_CONFIG_CHARGEBACKS_ID'),
+                'fraud_alerts'            => env('FRESHDESK_CYBERCRIME_HELPDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
             ],
             'cybercrime_helpdesk'   => [
                 'acknowledgement'   => env('FRESHDESK_CYBERCRIME_HELPDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),

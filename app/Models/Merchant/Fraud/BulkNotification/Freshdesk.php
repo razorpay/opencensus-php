@@ -83,9 +83,11 @@ class Freshdesk extends Base\Core
         {
             $requestParams = [
                 'type'            => 'Service request',
-                'priority'        => 3,
+                'priority'        => 2,
                 'tags'            => ['bulk_fraud_email'],
-                'groupId'        => $this->getGroupId($merchantData[0][Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION]),
+                'groupId'         => $this->getGroupId($merchantData[0][Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION]),
+                FreshdeskConstants::CF_NEW_REQUESTOR_CATEGORY => FreshdeskConstants::RAZORPAY,
+                FreshdeskConstants::CF_MERCHANT_ID            => $merchant->getId(),
             ];
 
             $fdTicket = (new Merchant\RiskMobileSignupHelper())->createFdTicket($merchant,
@@ -271,17 +273,27 @@ class Freshdesk extends Base\Core
 
         $emailConfigId = (int) $this->app['config']->get('applications.freshdesk')['email_config_ids']['rzpind']['risk_notification'];
 
+        $priority = 3;
+
+        if ($isCardNetworkRequest === false)
+        {
+            $emailConfigId = (int) $this->app['config']->get('applications.freshdesk')['email_config_ids']['rzpind']['fraud_alerts'];
+
+            $priority = 2;
+        }
+
         $fdOutboundEmailRequest = [
             'subject'         => $mailSubject,
             'description'     => $mailBody,
             'status'          => 6,
             'type'            => 'Service request',
-            'priority'        => 3,
+            'priority'        => $priority,
             'email'           => $primaryEmailId,
             'tags'            => ['bulk_fraud_email'],
             'group_id'        => $groupId,
             'email_config_id' => $emailConfigId,
             'custom_fields'   => [
+                FreshdeskConstants::CF_NEW_REQUESTOR_CATEGORY => FreshdeskConstants::RAZORPAY,
                 'cf_ticket_queue' => 'Merchant',
                 'cf_merchant_id'  => $merchant->getId(),
                 'cf_category'     => 'Risk Report_Merchant',

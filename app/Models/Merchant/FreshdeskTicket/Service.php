@@ -1846,7 +1846,7 @@ class Service extends Base\Service
 
         $input['custom_fields'][Constants::CF_MERCHANT_ID] = $this->auth->getMerchantId();
 
-        $input['priority'] = 1;
+        $input['priority'] = $input[Constants::PRIORITY] ?? 1;
 
         if (empty ($input[Constants::TICKET_STATUS]) === true)
         {
