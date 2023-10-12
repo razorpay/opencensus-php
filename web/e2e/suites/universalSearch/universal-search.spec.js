@@ -16,10 +16,13 @@ test.describe.parallel('Test universal search @flow=universal-search @project=pa
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });
 
+  test.beforeEach(async ({ page }) => {
+    await page.goto(routes.DASHBOARD);
+  });
+
   test('should show universal search box and open search results on focus @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
 
@@ -36,7 +39,6 @@ test.describe.parallel('Test universal search @flow=universal-search @project=pa
   });
 
   test('popular searches and no results found @priority=normal', async ({ page }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -67,7 +69,6 @@ test.describe.parallel('Test universal search @flow=universal-search @project=pa
   });
 
   test('should navigate to product on search result click @priority=normal', async ({ page }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -91,7 +92,6 @@ test.describe.parallel('Test universal search @flow=universal-search @project=pa
   test('should give higher rank to search result by title over keyword @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -113,7 +113,6 @@ test.describe.parallel('Test universal search @flow=universal-search @project=pa
   });
 
   test('should show appropriate search results @priority=normal', async ({ page }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -136,10 +135,13 @@ test.describe
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });
 
+  test.beforeEach(async ({ page }) => {
+    await page.goto(routes.DASHBOARD);
+  });
+
   test('should show entity search results for entity id search @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     const searchQuery = 'pay_1234567891012131';
@@ -163,7 +165,6 @@ test.describe
   test('should show entity search results for ph number search @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -189,7 +190,6 @@ test.describe
   });
 
   test('should show entity search results for email search @priority=normal', async ({ page }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -217,7 +217,6 @@ test.describe
   test('should show entity search results for entity status search @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -245,7 +244,6 @@ test.describe
   test('should show entity search results for UTR search in Settlements entity @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -270,7 +268,6 @@ test.describe
   test('should show entity search results for title search in paymentpages @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -295,7 +292,6 @@ test.describe
   test('should show entity search results for paymentlink url search @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -320,7 +316,6 @@ test.describe
   test('should show entity search results for QRCode status search @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -350,7 +345,6 @@ test.describe
   test('should show entity search results for Accounts email search @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -380,7 +374,6 @@ test.describe
   test('should show entity search results for Reversals transferId search @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();
@@ -406,7 +399,6 @@ test.describe
   });
 
   test('should list all entities for no search query match @priority=normal', async ({ page }) => {
-    await page.goto(routes.DASHBOARD);
     const searchBox = await page.locator("input[name='search']");
     await expect(searchBox).toBeVisible();
     await searchBox.focus();

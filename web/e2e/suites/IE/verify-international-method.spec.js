@@ -10,33 +10,12 @@ const ELEMENT_CONFIG = {
   CLOSE_MODAL: 'span[class="Modal-close  "] >> text="×"',
 };
 
-const removeKYCSubmittedModal = async ({ page }) => {
-  let KycModal;
-  try {
-    // Check for kyc submitted modal using modal selector
-    KycModal = await page.waitForSelector(ELEMENT_CONFIG.KYC_MODAL, {
-      timeout: 5000,
-    });
-  } catch (err) {
-    // if no verificationPopup then proceed to next step
-    KycModal = null;
-  }
-  if (KycModal) {
-    // fetching close button cta
-    const submitVerification = await page.waitForSelector(ELEMENT_CONFIG.CLOSE_MODAL, {
-      timeout: 5000,
-    });
-
-    // closing kyc modal
-    await submitVerification.click();
-  }
-};
-
 test.describe
   .parallel('Test International Method banner on homepage @flow=ie @project=payments @project=payments-roast', () => {
   test.use({
     storageState: StorageStatePath.ACTIVATED_NOT_IE_STATE,
   });
+
   // roast test verifyViewInternationalMethodsTest
   test('should be IE banner and link should redirect to IE page @priority=normal @suite=payments-automation', async ({
     page,
@@ -44,8 +23,6 @@ test.describe
     await page.goto(routes.DASHBOARD);
 
     await page.waitForTimeout(5000);
-
-    await removeKYCSubmittedModal({ page });
 
     const ieCTA = page.getByRole('link', { name: ELEMENT_CONFIG.CTA_NAME });
     await expect(ieCTA).toBeVisible();

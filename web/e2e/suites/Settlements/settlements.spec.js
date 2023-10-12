@@ -12,19 +12,8 @@ const ELEMENT_CONFIG = {
 };
 
 async function waitAndClickViewSettlements({ page }) {
-  let viewSettlementsBtn;
-  try {
-    viewSettlementsBtn = await page.waitForSelector(ELEMENT_CONFIG.SETTLEMENT_BANNER, {
-      timeout: 10000,
-    });
-  } catch (err) {
-    // supress error thrown if element is not found
-  }
-  if (viewSettlementsBtn) {
-    await viewSettlementsBtn.click();
-  } else {
-    console.log('view settlments button not found');
-  }
+  const viewSettlementsBtn = await page.locator(ELEMENT_CONFIG.SETTLEMENT_BANNER);
+  await viewSettlementsBtn.click();
 }
 
 // roast test settlemetsTest

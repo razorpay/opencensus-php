@@ -83,29 +83,8 @@ const generateDataForPaymentLink = () => {
   };
 };
 
-const skipKYCModal = async ({ page }) => {
-  let kycButton, closeButton;
-  try {
-    kycButton = await page.waitForSelector('text="Submit KYC details"', {
-      timeout: 5000,
-    });
-    closeButton = await page.waitForSelector('.Modal-container--welcome-modal .Modal-close', {
-      timeout: 5000,
-    });
-  } catch (error) {
-    // Element not found within the specified timeout
-    // Handle the error or perform alternative actions
-  }
-
-  if (kycButton) {
-    await closeButton.click();
-    await page.waitForTimeout(1000);
-  }
-};
-
 export const switchToTestMode = async ({ page }) => {
   await page.goto(routes.DASHBOARD);
-  await skipKYCModal({ page });
   let modeSwitchToggle;
   try {
     modeSwitchToggle = await page.waitForSelector('a.switch-modes-toggle', {
@@ -217,5 +196,4 @@ module.exports = {
   hideSearchFTUXBannerByLocalStorage,
   getNextDate,
   fillExpiry,
-  skipKYCModal,
 };
