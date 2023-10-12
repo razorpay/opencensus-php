@@ -223,6 +223,8 @@ return [
             Permission::VIEW_ALL_MERCHANT_AGGREGATIONS      => '',
             Permission::VIEW_MERCHANT_AGGREGATIONS          => '',
             Permission::VIEW_MERCHANT_TAGS                  => '',
+            Permission::VIEW_COUNTRY_DASHBOARD_CONFIGS      => '',
+            Permission::EDIT_COUNTRY_DASHBOARD_CONFIGS      => '',
             Permission::VIEW_MERCHANT_CAPITAL_TAGS          => '',
             Permission::MERCHANT_SEND_ACTIVATION_MAIL       => [
                 'assignable' => true,

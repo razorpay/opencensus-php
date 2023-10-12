@@ -1378,6 +1378,10 @@ class UserRolesScope
             '1cc_delete_analytics_integration_accounts'                   => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_analytics_integration_get_oauth_redirect_url'            => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_analytics_integration_handle_oauth_callback'             => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
+
+            'get_all_country_dashboard_config'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_ADMIN, Role::LINKED_ACCOUNT_OWNER],
+            'get_country_dashboard_config'                          => [Role::OWNER, Role::ADMIN],
+            'edit_country_dashboard_config'                         => [Role::OWNER, Role::ADMIN],
         ];
 
         /*

@@ -4622,6 +4622,11 @@ class Route
 
         // Edge Routes
         'third_party_authenticate'                            => ['post', 'edge/internal/authenticate', 'EdgeController@authenticate'],
+
+        // i18n merchant dashboard ui configs
+        'get_all_country_dashboard_config'          => ['get',  'country/{country_code}/dashboard/configs',                  'DashboardUIController@getAllCountryDashboardUIConfigs'],
+        'get_country_dashboard_config'              => ['get',  'country/{country_code}/dashboard/config/{config}',         'DashboardUIController@getCountryDashboardUIConfig'],
+        'edit_country_dashboard_config'             => ['put',  'country/{country_code}/dashboard/configs',                  'DashboardUIController@editCountryConfigs'],
     ];
 
     public static $public = [
@@ -6732,6 +6737,7 @@ class Route
         'dispute_file_delete',
         'dispute_files_fetch',
         'merchant_get_tags',
+        'get_all_country_dashboard_config',
         'merchant_edit_email_la',
         'la_fetch',
         'merchant_bank_account_create',
@@ -8855,6 +8861,10 @@ class Route
          '1cc_coupon_engine_delete_template',
          '1cc_shopify_fetch_liquid_files',
          '1cc_shopify_update_liquid_files',
+
+         //i18n Dashboard UI Configs based on Country
+        'edit_country_dashboard_config',
+        'get_country_dashboard_config',
     ];
 
     protected static $splitPaymentRoutes = [
@@ -10405,6 +10415,10 @@ class Route
         'admin_1cc_whitelist_coupons'              => Permission::MAGIC_OPS,
         '1cc_shopify_fetch_liquid_files'           => Permission::MAGIC_OPS,
         '1cc_shopify_update_liquid_files'          => Permission::MAGIC_OPS,
+
+        'get_all_country_dashboard_config'             => Permission::VIEW_COUNTRY_DASHBOARD_CONFIGS,
+        'get_country_dashboard_config'                 => Permission::VIEW_COUNTRY_DASHBOARD_CONFIGS,
+        'edit_country_dashboard_config'                => Permission::EDIT_COUNTRY_DASHBOARD_CONFIGS,
     ];
 
     public static $bankLmsRoutePermissions = [
@@ -12865,6 +12879,8 @@ class Route
             'bulk_payout_fetch_rows',
             'bulk_payout_process',
             'bulk_payouts_workflow_summary',
+            'get_all_country_dashboard_config',
+            'get_country_dashboard_config',
         ],
 
         'admin_dashboard' => [
@@ -15348,6 +15364,9 @@ class Route
             '1cc_shipping_get_method',
             '1cc_shipping_delete_method',
             '1cc_shipping_get_shipping_profiles',
+            'edit_country_dashboard_config',
+            'get_country_dashboard_config',
+            'get_all_country_dashboard_config',
         ],
 
         //
@@ -18192,6 +18211,9 @@ class Route
         'ledger_outbox_retry'                               => HeartBeatLagChecker::MASTER,
         'order_outbox_retry'                                => HeartBeatLagChecker::MASTER,
         'qr_code_fetch_multiple'                            => HeartbeatLagChecker::SLAVE,
+        'get_all_country_dashboard_config'                  => HeartBeatLagChecker::MASTER,
+        'get_country_dashboard_config'                      => HeartBeatLagChecker::MASTER,
+        'edit_country_dashboard_config'                     => HeartBeatLagChecker::MASTER,
     ];
 
     public static $terminalsServiceFormRequestsRoutes = [

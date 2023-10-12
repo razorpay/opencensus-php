@@ -18,6 +18,7 @@ class Constants
     const CustomHardLimitConfigurations = "custom_hard_limit_configurations";
 
     const DirectAccountsPayoutModeConfig = 'direct_accounts_payout_mode_config';
+    const CountryDashboardConfigurations = 'country_dashboard_config';
 
     const OrgDefaultIIR = 'default_iir_config';
 
@@ -41,6 +42,7 @@ class Constants
         self::CustomUDFFlagConfig            => "rzp/pg/org/cards/banking_program/CardsConfig",
         self::UpiInAppDisplayControls        => "rzp/pg/merchant/upi/in_app/DisplayControls",
         self::NcOptOutConfiguration          =>"rzp/platform/partner/optout/NeedsClarification",
+        self::CountryDashboardConfigurations => "rzp/pg/country/dashboard/merchant/UIControls",
     ];
 
 }

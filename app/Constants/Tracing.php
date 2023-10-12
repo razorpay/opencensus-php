@@ -482,7 +482,10 @@ class Tracing
             'bank_transfer_process_internal',
             'bank_transfer_process_icici',
             'bank_transfer_process_icici_internal',
-            'feature_delete'
+            'feature_delete',
+
+            'get_all_country_dashboard_config',
+            'edit_country_dashboard_config'
         ]);
     }
 

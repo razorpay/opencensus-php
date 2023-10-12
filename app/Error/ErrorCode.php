@@ -3028,6 +3028,8 @@ class ErrorCode
 
     const BAD_REQUEST_SPLIT_PAYMENT_FAILED                                          = 'BAD_REQUEST_SPLIT_PAYMENT_FAILED';
 
+    const BAD_REQUEST_ENTITY_NOT_SUPPORTED                                          = 'BAD_REQUEST_ENTITY_NOT_SUPPORTED';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);
