@@ -750,15 +750,8 @@ class Processor
                 (empty($input[Payment\Entity::TOKEN_ID]) === false) or
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
                 (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
-                ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF')) or
-                //($merchant->isRazorpayOrgId() === false) or
-                ((empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false) and (empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true and (
-                            empty($input[Payment\Entity::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA]) === true or
-                            empty($input[Payment\Entity::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER]) === true or
-                            empty($input[Payment\Entity::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID]) === true
-                        ))
-                    //and empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true
-                ))
+                ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF'))
+                )
             {
                 if (($this->route->isRearchRoute($currentRouteName) === true) and
                     (empty($input[Payment\Entity::METHOD]) === false and
@@ -1149,10 +1142,31 @@ class Processor
                 return ($result === 'on');
             }
 
+            if ($iin->getNetworkCode() === Card\Network::AMEX && $this->isPaymentViaTokenisedCard($input) && (empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true)) {
+                return true;
+            }
+
+            if ($this->isPaymentViaTokenisedCard($input) and (empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true and (
+                        empty($input[Payment\Entity::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA]) === true or
+                        empty($input[Payment\Entity::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER]) === true or
+                        empty($input[Payment\Entity::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID]) === true
+                    ))
+            ) {
+
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_INPUT_REASON, [
+                    'inputField' => 'tokenised_card_without_cryptogram',
+                    'network' => $iin->getNetworkCode(),
+                    'merchant_id' => $merchant->getId(),
+                ]);
+                return false;
+            }
+
             if ($iin->getNetworkCode() === Card\Network::DICL && $this->isPaymentViaTokenisedCard($input)) {
                 $input[E::CARD][E::TOKEN_REFERENCE_NUMBER ]=  $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null;
                 $input[E::CARD][E::TOKEN_REFERENCE_ID ]= $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID] ?? null;
             }
+
+
             if ($this->isPaymentViaTokenisedCard($input))
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
