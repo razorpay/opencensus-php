@@ -728,6 +728,8 @@ return array(
 
     'sbi_sku_v2_migration_experiment_id' => env('SBI_SKU_V2_MIGRATION_SPLITZ_EXP_ID'),
 
+    'route_to_offers_engine_experiment_id' => env('ROUTE_TO_OFFERS_ENGINE_EXP_ID'),
+
     'fee_based_gating_exp_id' => env('FEE_BASED_GATING_EXP_ID'),
 
     'split_payment_enabled_experiment_id' => env('SPLIT_PAYMENT_ENABLED_EXPERIMENT_ID'),

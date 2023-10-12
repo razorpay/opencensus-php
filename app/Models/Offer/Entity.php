@@ -32,7 +32,7 @@ class Entity extends Base\PublicEntity
      * 0 - Conditional display
      * 1 - Display always
     */
-    const CHECKOUT_DISPLAY    = 'checkout_display';
+    const CHECKOUT_DISPLAY    = 'checkout_display';     // deprecated in offers-engine
     const PERCENT_RATE        = 'percent_rate';
     const MIN_AMOUNT          = 'min_amount';
     const MAX_CASHBACK        = 'max_cashback';
@@ -504,6 +504,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT_TYPE);
     }
 
+    public function isNoCostEmi()
+    {
+        if ($this->getEmiSubvention() == true)
+        {
+            if ($this->getPercentRate() === 0 || is_null($this->getPercentRate())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function isLowCostEmi()
+    {
+        if ($this->getEmiSubvention() == true)
+        {
+            return !$this->isNoCostEmi();
+
+        }
+        return false;
+    }
 // --------------------- Calculator --------------------------------------------
 
     public function getDiscountedAmountForPayment(int $amount, $payment): int

@@ -864,6 +864,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerCheckoutService();
 
+        $this->registerOffersEngineService();
+
         $this->registerMagicCheckoutPluginService();
 
         $this->registerSlackClient();
@@ -960,7 +962,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'cds_http_client',
             AsvConstant::ASV_HTTP_CLIENT,
             'kafkaProducerClient',
-            ASVV2Constant::ASV_SDK_CLIENT
+            ASVV2Constant::ASV_SDK_CLIENT,
+            'offers_engine'
         ];
     }
 
@@ -2659,6 +2662,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $mock = $app['config']->get('applications.checkout_service.mock');
 
             $implementation = $mock ? Mock\CheckoutService::class : CheckoutService::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerOffersEngineService(): void
+    {
+        $this->app->singleton('offers_engine', function($app)
+        {
+            $mock = $app['config']->get('applications.offers_engine.mock');
+
+            $implementation = $mock ? Mock\OffersEngine::class : OffersEngine::class;
 
             return new $implementation($app);
         });

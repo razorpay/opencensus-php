@@ -3,12 +3,15 @@
 namespace RZP\Tests\Functional\Offer;
 
 use Carbon\Carbon;
+use Mockery;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\DbMigrationMetricsObserver;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Offer\Core;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -21,8 +24,11 @@ use Razorpay\Trace\Facades\Trace;
 class OffersTest extends TestCase
 {
     use RazorxTrait;
+    use MocksSplitz;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+
+    protected $offersEngineMock;
 
     protected function setUp(): void
     {
@@ -31,6 +37,8 @@ class OffersTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
+
+        $this->setUpOffersEngineMock();
 
         // This is set to 1 Jan 2018
         // Because in test cases offers start date is set
@@ -42,13 +50,198 @@ class OffersTest extends TestCase
         $entityClass::observe(DbMigrationMetricsObserver::class);
     }
 
+    protected function setUpOffersEngineMock()
+    {
+        $this->offersEngineMock = Mockery::mock('RZP\Services\OffersEngine', [$this->app])
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $this->app['offers_engine'] = $this->offersEngineMock;
+    }
+
+
+    private function mockSplitzExperiment($output)
+    {
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->byDefault()
+            ->andReturn($output);
+    }
+
     public function testCreateCardOffer()
     {
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+            'offer' => [
+                'metadata' => [
+                    'name' => 'Test Offer',
+                    'display_name' => 'Test Offer',
+                    'description' => 'Some more details',
+                    'terms' => [
+                        'tnc' => 'Some more details',
+                    ],
+                    'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                    'state' => 'STATE_CREATED',
+                    'offer_on' => 'BENEFICIARY_TYPE_SELF',
+                    'currency' => 'INR',
+                    'schedules' => [
+                        'starts_at' => 1514764800,
+                        'ends_at' => 1546300800,
+                    ],
+                ],
+                'spec' => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding' => [
+                        'type' => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type' => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value' => 100,
+                            ],
+                        ],
+                    ],
+                    'benefits_types' => [
+                        'BENEFIT_TYPE_DISCOUNT',
+                    ],
+                    'rule_groups' => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true',
+                                    'then' => [
+                                        [
+                                            'discount' => [
+                                                'percent_discount' => 1000,
+                                                'applicable_on' => 'Order.total_amount',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.CardType == \"credit\" && PaymentInstrument.CardNetwork == \"VISA\" && PaymentInstrument.Issuer == \"HDFC\"',
+                                    'then' => [
+                                        [
+                                            'discount' => [
+                                                    [
+                                                        'percent_discount' => 1000,
+                                                        'applicable_on' => 'Order.total_amount',
+                                                    ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'publish' => [
+                'continue_txn_on_failure' => 0,
+                'offer_type' => 'OFFER_TYPE_STAGE_REGULAR',
+                'channel_name' => 'CHANNEL_RZP_CHECKOUT',
+            ],
+        ]);
+
         $this->startTest();
     }
 
     public function testCreateOfferWithNullMethod()
     {
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+            'offer' => [
+                'metadata' => [
+                    'name' => 'Test Offer',
+                    'display_name' => 'Test Offer',
+                    'description' => 'Some more details',
+                    'terms' => [
+                        'tnc' => 'Some more details',
+                    ],
+                    'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                    'created_by' => 'rzp_merchant',
+                    'state' => 'STATE_CREATED',
+                    'offer_on' => 'BENEFICIARY_TYPE_SELF',
+                    'currency' => 'INR',
+                    'schedules' => [
+                        'starts_at' => 1514764800,
+                        'ends_at' => 1546300800,
+                    ],
+                ],
+                'spec' => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding' => [
+                        'type' => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type' => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value' => 100,
+                            ],
+                        ],
+                    ],
+                    'benefits_types' => [
+                        'BENEFIT_TYPE_DISCOUNT',
+                    ],
+                    'rule_groups' => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true',
+                                    'then' => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on' => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true && PaymentInstrument.CardNetwork == \"VISA\" && PaymentInstrument.Issuer == \"HDFC\"',
+                                    'then' => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on' => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'publish' => [
+                'continue_txn_on_failure' => 0,
+                'offer_type' => 'OFFER_TYPE_STAGE_REGULAR',
+                'channel_name' => 'CHANNEL_RZP_CHECKOUT',
+            ],
+        ]);
+
         $this->startTest();
     }
 
@@ -59,11 +252,177 @@ class OffersTest extends TestCase
 
     public function testCreateCardOfferWithIin()
     {
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+            'offer' => [
+                'metadata' => [
+                    'name' => 'Test Offer',
+                    'display_name' => 'Test Offer',
+                    'description' => 'Some more details',
+                    'terms' => [
+                        'tnc' => 'Some more details',
+                    ],
+                    'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                    'created_by' => 'rzp_merchant',
+                    'state' => 'STATE_CREATED',
+                    'offer_on' => 'BENEFICIARY_TYPE_SELF',
+                    'currency' => 'INR',
+                    'schedules' => [
+                        'starts_at' => 1514764800,
+                        'ends_at' => 1546300800,
+                    ],
+                ],
+                'spec' => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding' => [
+                        'type' => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type' => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value' => 100,
+                            ],
+                        ],
+                    ],
+                    'benefits_types' => [
+                        'BENEFIT_TYPE_DISCOUNT',
+                    ],
+                    'rule_groups' => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true',
+                                    'then' => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on' => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.Iin in [\"411111\"]',
+                                    'then' => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on' => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'publish' => [
+                'continue_txn_on_failure' => 0,
+                'offer_type' => 'OFFER_TYPE_STAGE_REGULAR',
+                'channel_name' => 'CHANNEL_RZP_CHECKOUT',
+            ],
+        ]);
+
         $this->startTest();
     }
 
     public function testCreateDcCardOfferWithIin()
     {
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+            'offer' => [
+                'metadata' => [
+                    'name' => 'Test Offer',
+                    'display_name' => 'Test Offer',
+                    'description' => 'Some more details',
+                    'terms' => [
+                        'tnc' => 'Some more details',
+                    ],
+                    'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                    'created_by' => 'rzp_merchant',
+                    'state' => 'STATE_CREATED',
+                    'offer_on' => 'BENEFICIARY_TYPE_SELF',
+                    'currency' => 'INR',
+                    'schedules' => [
+                        'starts_at' => 1514764800,
+                        'ends_at' => 1546300800,
+                    ],
+                ],
+                'spec' => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding' => [
+                        'type' => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type' => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value' => 100,
+                            ],
+                        ],
+                    ],
+                    'benefits_types' => [
+                        'BENEFIT_TYPE_DISCOUNT',
+                    ],
+                    'rule_groups' => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true',
+                                    'then' => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on' => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'true && PaymentInstrument.Method == \"card\" && PaymentInstrument.Issuer == \"HDFC\" && PaymentInstrument.CardType == \"debit\" && PaymentInstrument.Iin in [\"411111\"]',
+                                    'then' => [
+                                        [
+                                            'discount' => [
+                                                [
+                                                    'percent_discount' => 1000,
+                                                    'applicable_on' => 'Order.total_amount',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'publish' => [
+                'continue_txn_on_failure' => 0,
+                'offer_type' => 'OFFER_TYPE_STAGE_REGULAR',
+                'channel_name' => 'CHANNEL_RZP_CHECKOUT',
+            ],
+        ]);
+
         $this->startTest();
     }
 
@@ -71,7 +430,101 @@ class OffersTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
+
         $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+            'offer' => [
+                'metadata' => [
+                    'name' => 'Test Offer',
+                    'display_name' => 'Test Offer',
+                    'description' => 'HDFC Debit Card EMI offers',
+                    'terms' => [
+                        'tnc' => 'Some more details',
+                    ],
+                    'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                    'created_by' => 'rzp_merchant',
+                    'state' => 'STATE_CREATED',
+                    'offer_on' => 'BENEFICIARY_TYPE_SELF',
+                    'currency' => 'INR',
+                    'schedules' => [
+                        'starts_at' => 1514764800,
+                        'ends_at' => 1546300800,
+                    ],
+                ],
+                'spec' => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding' => [
+                        'type' => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type' => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value' => 100,
+                            ],
+                        ],
+                    ],
+                    'usage_limits' => [
+                        [
+                            'on' => 'LIMIT_ON_CARD_NUMBER',
+                            'maximum_value' => 2,
+                        ],
+                    ],
+                    'benefits_types' => [
+                        'BENEFIT_TYPE_NO_COST_EMI',
+                    ],
+                    'rule_groups' => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'Order.TotalAmount >= 500000',
+                                    'then' => [
+                                        [
+                                            'no_cost_emi' => [
+                                                [
+                                                    'discount' => [
+                                                        'percent_discount' => 1000,
+                                                        'applicable_on' => 'Order.total_amount',
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'Order.TotalAmount >= 500000 && PaymentInstrument.Method == \"emi\" && PaymentInstrument.Issuer == \"HDFC\" && PaymentInstrument.CardType == \"debit\" && PaymentInstrument.EmiTenure == 6',
+                                    'then' => [
+                                        [
+                                            'no_cost_emi' => [
+                                                [
+                                                    'discount' => [
+                                                        'percent_discount' => 1000,
+                                                        'applicable_on' => 'Order.total_amount',
+                                                    ],
+                                                    'tenure' => 6,
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'publish' => [
+                'continue_txn_on_failure' => 0,
+                'offer_type' => 'OFFER_TYPE_STAGE_REGULAR',
+                'channel_name' => 'CHANNEL_RZP_CHECKOUT',
+            ],
+        ]);
 
         $this->startTest();
     }
@@ -80,7 +533,101 @@ class OffersTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
+
         $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
+            'offer' => [
+                'metadata' => [
+                    'name' => 'Test Offer',
+                    'display_name' => 'Test Offer',
+                    'description' => 'HDFC Debit Card EMI offers',
+                    'terms' => [
+                        'tnc' => 'HDFC Debit Card EMI offers',
+                    ],
+                    'advertiser_id' => 'rzp.merchant.10000000000000', // Replace with the actual advertiser ID
+                    'created_by' => 'rzp_merchant',
+                    'state' => 'STATE_CREATED',
+                    'offer_on' => 'BENEFICIARY_TYPE_SELF',
+                    'currency' => 'INR',
+                    'schedules' => [
+                        'starts_at' => 1514764800,
+                        'ends_at' => 1546300800,
+                    ],
+                ],
+                'spec' => [
+                    'allowed_channels' => [
+                        'CHANNEL_RZP_CHECKOUT',
+                    ],
+                    'funding' => [
+                        'type' => 'BENEFICIARY_TYPE_SELF',
+                        'split' => [
+                            [
+                                'type' => 'VALUE_OPTION_PERCENTAGE',
+                                'bearer' => 'USER_TYPE_PUBLISHER',
+                                'value' => 100,
+                            ],
+                        ],
+                    ],
+                    'usage_limits' => [
+                        [
+                            'on' => 'LIMIT_ON_CARD_NUMBER',
+                            'maximum_value' => 2,
+                        ],
+                    ],
+                    'benefits_types' => [
+                        'BENEFIT_TYPE_NO_COST_EMI',
+                    ],
+                    'rule_groups' => [
+                        'CHANNEL_RZP_CHECKOUT.STAGE_DISCOVER' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'Order.TotalAmount >= 500000',
+                                    'then' => [
+                                        [
+                                            'no_cost_emi' => [
+                                                [
+                                                    'discount' => [
+                                                        'percent_discount' => 1000,
+                                                        'applicable_on' => 'Order.total_amount',
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'CHANNEL_RZP_CHECKOUT.STAGE_AVAIL' => [
+                            'rules' => [
+                                [
+                                    'when_expression' => 'Order.TotalAmount >= 500000 && PaymentInstrument.Method == \"emi\" && PaymentInstrument.Issuer == \"HDFC\" && PaymentInstrument.CardType == \"debit\" && PaymentInstrument.EmiTenure == 6',
+                                    'then' => [
+                                        [
+                                            'no_cost_emi' => [
+                                                [
+                                                    'discount' => [
+                                                        'percent_discount' => 1000,
+                                                        'applicable_on' => 'Order.total_amount',
+                                                    ],
+                                                    'tenure' => 6,
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'publish' => [
+                'continue_txn_on_failure' => 0,
+                'offer_type' => 'OFFER_TYPE_STAGE_REGULAR',
+                'channel_name' => 'CHANNEL_RZP_CHECKOUT',
+            ],
+        ]);
 
         $this->startTest();
     }
@@ -88,6 +635,8 @@ class OffersTest extends TestCase
     public function testPaymentMethodTypeForCreditCardOfferCreation(): void
     {
         $this->fixtures->merchant->enableEmi();
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
 
         $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
 
@@ -97,6 +646,8 @@ class OffersTest extends TestCase
 
     public function testCreateCardOfferWithMaxPaymentCount()
     {
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
+
         $this->startTest();
     }
 
@@ -118,6 +669,8 @@ class OffersTest extends TestCase
 
     public function testOfferCreateBulk()
     {
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
+
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -247,7 +800,7 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateEmiSubventionOffer()
+    public function testCreateNCEmiSubventionOffer()
     {
         $this->fixtures->merchant->enableEmi();
 
@@ -461,11 +1014,15 @@ class OffersTest extends TestCase
 
     public function testDeactivateOffer()
     {
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
+
         $offer = $this->fixtures->create('offer:card');
 
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
         $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
+
+        $this->offersEngineMock->shouldReceive('updateOffer')->times(1);
 
         $this->startTest();
     }

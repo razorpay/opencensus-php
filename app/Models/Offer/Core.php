@@ -24,17 +24,24 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\SubscriptionOffer;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Currency\Core as CurrencyCore;
+use RZP\Exception\BadRequestValidationFailureException;
 use Throwable;
 
 class Core extends Base\Core
 {
     protected $mutex;
 
+    protected OffersEngine $offersEngine;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->mode = $this->app['rzp.mode'] ?? 'live';
+
+        $this->offersEngine = new OffersEngine();
     }
 
     public function create(array $input): array
@@ -47,14 +54,15 @@ class Core extends Base\Core
 
         return $this->mutex->acquireAndRelease(
             $resource,
-            function() use ($input, $merchant)
+            function () use ($input, $merchant)
             {
-                return $this->repo->transaction(function() use ($input, $merchant)
+                return $this->repo->transaction(function () use ($input, $merchant)
                 {
                     $offers_array = array();
 
                     // Check to find where it's either a nc or lc emi offer
-                    if (isset($input[Entity::EMI_SUBVENTION]) and $input[Entity::EMI_SUBVENTION] == 1) {
+                    if (isset($input[Entity::EMI_SUBVENTION]) and $input[Entity::EMI_SUBVENTION] == 1)
+                    {
                         $offers_array = $this->createSubventedOffer($input, $offers_array, $merchant);
 
                     }
@@ -88,6 +96,12 @@ class Core extends Base\Core
 
         $this->traceNonExistingIins($offer, $merchant);
 
+        if ($this->shouldRouteToOffersEngine($merchant->getId()) === true) {
+
+            $this->offersEngine->update($offer, $input);
+
+        }
+
         return $offer;
     }
 
@@ -97,12 +111,13 @@ class Core extends Base\Core
         $failed = [];
         $response = [];
 
-        if(count($offerIds) > 1500) {
+        if (count($offerIds) > 1500)
+        {
             throw new Exception\BadRequestException(
                 TraceCode::BAD_REQUEST_ONLY_1500_OFFERS_DEACTIVATE_IN_BULK);
         }
 
-        foreach($offerIds as $offerId){
+        foreach ($offerIds as $offerId) {
 
             try {
 
@@ -110,7 +125,7 @@ class Core extends Base\Core
 
                     TraceCode::OFFER_DEACTIVATE,
                     [
-                        'offer_id'   => $offerId,
+                        'offer_id' => $offerId,
                     ]
                 );
 
@@ -123,7 +138,7 @@ class Core extends Base\Core
                 $success[] = $offer->getPublicId();
 
             }
-            catch (\Exception $e){
+            catch (\Exception $e) {
 
                 $failed[] = $offerId;
 
@@ -144,7 +159,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::OFFER_DEACTIVATE_BULK_RESPONSE,
             [
-                'response'   => $response,
+                'response' => $response,
             ]);
 
         return $response;
@@ -162,7 +177,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::OFFER_DEACTIVATE,
                 [
-                    'offer_id'   => $offer->getPublicId(),
+                    'offer_id' => $offer->getPublicId(),
                 ]);
 
             $offer->deactivate();
@@ -170,6 +185,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($offer);
 
             $response[] = $offer->getPublicId();
+
         }
 
         return $response;
@@ -183,17 +199,17 @@ class Core extends Base\Core
 
         $applicableOffers = array();
 
-        foreach($defaultOffers as $offer)
+        foreach ($defaultOffers as $offer)
         {
             $offer = $this->validateDefaultOfferForMerchant($offer);
 
-            if($offer !== null)
+            if ($offer !== null)
             {
                 array_push($applicableOffers, $offer);
             }
         }
 
-        if(count($applicableOffers)>0)
+        if (count($applicableOffers) > 0)
         {
             $defaultOffersBool = true;
         }
@@ -201,6 +217,7 @@ class Core extends Base\Core
         return $defaultOffersBool;
 
     }
+
     public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment, array $input)
     {
         $verbose = true;
@@ -213,7 +230,7 @@ class Core extends Base\Core
                 TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT,
                 [
                     'payment_id' => $payment->getId(),
-                    'offer_id'   => $offer->getId()
+                    'offer_id' => $offer->getId()
                 ]);
 
             $this->lockDecrementCurrentOfferUsage($payment);
@@ -225,7 +242,7 @@ class Core extends Base\Core
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
 
-            $this->revertOfferPaymentInput($offer,  $payment,  $input);
+            $this->revertOfferPaymentInput($offer, $payment, $input);
 
         }
 
@@ -233,7 +250,7 @@ class Core extends Base\Core
             TraceCode::OFFER_APPLIED_ON_PAYMENT,
             [
                 'payment_id' => $payment->getId(),
-                'offer_id'   => $offer->getId()
+                'offer_id' => $offer->getId()
             ]);
     }
 
@@ -243,7 +260,7 @@ class Core extends Base\Core
         //and merchant does not want to block payment for that offer, setting the original order amount
         //again for payment amount.
 
-        if(($offer->getOfferType() === Constants::INSTANT_OFFER) and ($input['order_amount'] !== null ))
+        if (($offer->getOfferType() === Constants::INSTANT_OFFER) and ($input['order_amount'] !== null))
         {
             $payment->setAmount($input['order_amount']);
 
@@ -283,7 +300,7 @@ class Core extends Base\Core
         //
         foreach ($sharedOffers as $sharedOffer)
         {
-            $result =  $this->shouldApplySharedOffer($sharedOffer, $directOffers, $merchantId);
+            $result = $this->shouldApplySharedOffer($sharedOffer, $directOffers, $merchantId);
 
             if ($result === true)
             {
@@ -314,10 +331,10 @@ class Core extends Base\Core
         if ($checker->checkApplicabilityOnOrder($order) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
-            [
-                'offer_id' => $offer->getPublicId(),
-                'order_id' => $order->getPublicId(),
-            ]);
+                [
+                    'offer_id' => $offer->getPublicId(),
+                    'order_id' => $order->getPublicId(),
+                ]);
         }
 
         return $offer;
@@ -360,8 +377,8 @@ class Core extends Base\Core
         {
             return false;
         }
-        else if (($order->getProductType() !== ProductType::SUBSCRIPTION)  and
-                 ($offer->getProductType() === ProductType::SUBSCRIPTION))
+        else if (($order->getProductType() !== ProductType::SUBSCRIPTION) and
+            ($offer->getProductType() === ProductType::SUBSCRIPTION))
         {
             return false;
         }
@@ -398,12 +415,14 @@ class Core extends Base\Core
 
         $offerUsages = $this->getOffersUsage($offerIds, $merchantId, $oneMonthAgo);
 
-        usort($offers, static function ($offer1, $offer2) use($offerUsages) {
+        usort($offers, static function ($offer1, $offer2) use ($offerUsages)
+        {
             // Sort Descending
             return $offerUsages[$offer2['id']] <=> $offerUsages[$offer1['id']];
         });
 
-        foreach ($offers as &$offer) {
+        foreach ($offers as &$offer)
+        {
             $offer = Arr::only($offer, Entity::getVisibleForAffordability());
         }
 
@@ -421,23 +440,26 @@ class Core extends Base\Core
      * Fetches the usage of each offer.
      * An offer is considered as used if it has been associated with an authorized payment.
      *
-     * @param string[] $offerIds     The list of offer ids whose usage needs to be calculated
-     * @param string   $merchantId   The primary key of the merchant to whom these offers belong to
-     * @param int      $minCreatedAt The epoch timestamp post which data needs to be scanned
+     * @param string[] $offerIds The list of offer ids whose usage needs to be calculated
+     * @param string $merchantId The primary key of the merchant to whom these offers belong to
+     * @param int $minCreatedAt The epoch timestamp post which data needs to be scanned
      *
      * @return array
      */
     public function getOffersUsage(array $offerIds, string $merchantId, int $minCreatedAt): array
     {
-        if (empty($offerIds)) {
+        if (empty($offerIds))
+        {
             return [];
         }
 
         $offersUsage = $this->repo->payment->getOffersUsage($offerIds, $merchantId, $minCreatedAt);
 
         // Initialize offer ids which haven't been used yet with a zero (0).
-        foreach ($offerIds as $id) {
-            if (!array_key_exists($id, $offersUsage)) {
+        foreach ($offerIds as $id)
+        {
+            if (!array_key_exists($id, $offersUsage))
+            {
                 $offersUsage[$id] = 0;
             }
         }
@@ -458,10 +480,10 @@ class Core extends Base\Core
             // offers on direct terminals.
             //
             $merchantsWithDirectFreechargeTerminals = $this->repo
-                                                           ->terminal
-                                                           ->getDirectTerminalsForGateway(Gateway::WALLET_FREECHARGE)
-                                                           ->pluck(Terminal\Entity::MERCHANT_ID)
-                                                           ->toArray();
+                ->terminal
+                ->getDirectTerminalsForGateway(Gateway::WALLET_FREECHARGE)
+                ->pluck(Terminal\Entity::MERCHANT_ID)
+                ->toArray();
 
             if (in_array($merchantId, $merchantsWithDirectFreechargeTerminals, true) === true)
             {
@@ -509,7 +531,8 @@ class Core extends Base\Core
 
             $existingDurations = [];
 
-            $existingOffers->each(function ($existingOffer) use(& $existingDurations) {
+            $existingOffers->each(function ($existingOffer) use (& $existingDurations)
+            {
                 $existingOfferDuration = $existingOffer[Entity::EMI_DURATIONS] ?: Emi\Entity::VALID_DURATIONS;
 
                 $existingDurations = array_merge($existingDurations, $existingOfferDuration);
@@ -522,11 +545,11 @@ class Core extends Base\Core
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
             }
         }
-        else
-        {
+        else {
             $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $this->merchant->getId());
 
-            if($existingOffers->count() > 0) {
+            if ($existingOffers->count() > 0)
+            {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
             }
         }
@@ -536,18 +559,18 @@ class Core extends Base\Core
      * Checks if the offer ids provided in linked_offer_ids are valid and also
      * removes public sign from them
      *
-     * @param  array $input
+     * @param array $input
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function verifyIdAndStripSignForLinkedOfferIds(array & $input)
+    protected function verifyIdAndStripSignForLinkedOfferIds(array &$input)
     {
         try
         {
             if (empty($input[Entity::LINKED_OFFER_IDS]) === false)
             {
                 $input[Entity::LINKED_OFFER_IDS] = Entity::verifyIdAndStripSignMultiple(
-                                                    $input[Entity::LINKED_OFFER_IDS]);
+                    $input[Entity::LINKED_OFFER_IDS]);
             }
         }
         catch (Exception\BadRequestException $e)
@@ -565,12 +588,13 @@ class Core extends Base\Core
         $issuer = $input[Entity::ISSUER] ?? '';
 
         if (IFSC::isDebitCardIssuer($issuer)) {
+
             // HDFC_DC & UTIB_DC are hacks to differentiate between credit & debit card EMI plans
             $input[Entity::PAYMENT_METHOD_TYPE] = Emi\Type::DEBIT;
         }
         elseif ((isset($input[Entity::PAYMENT_METHOD]) === true) and
-                ($input[Entity:: PAYMENT_METHOD] === Payment\Method::EMI) and
-                (isset($input[Entity::PAYMENT_METHOD_TYPE]) === false))
+            ($input[Entity:: PAYMENT_METHOD] === Payment\Method::EMI) and
+            (isset($input[Entity::PAYMENT_METHOD_TYPE]) === false))
         {
             $input[Entity::PAYMENT_METHOD_TYPE] = Emi\Type::CREDIT;
         }
@@ -586,23 +610,27 @@ class Core extends Base\Core
 
             $nonExistingIins = array_diff($iins, $existingIins);
 
-            $this->trace->info(
-                TraceCode::OFFER_IIN_DOES_NOT_EXISTS,
-                [
-                    'merchant_id'       => $merchant->getId(),
-                    'non_existing_iins' => array_values($nonExistingIins),
-                ]);
+            // log only if there are non-existing iins
+            if (count($nonExistingIins) > 0)
+            {
+                $this->trace->info(
+                    TraceCode::OFFER_IIN_DOES_NOT_EXISTS,
+                    [
+                        'merchant_id' => $merchant->getId(),
+                        'non_existing_iins' => array_values($nonExistingIins),
+                    ]);
+            }
         }
     }
 
-    protected function validateMerchant(Merchant\Entity $merchant, array & $input)
+    protected function validateMerchant(Merchant\Entity $merchant, array &$input)
     {
-        if($merchant->isShared() === true)
+        if ($merchant->isShared() === true)
         {
             return;
         }
 
-        if(empty($input[Entity::PAYMENT_METHOD]) === true)
+        if (empty($input[Entity::PAYMENT_METHOD]) === true)
         {
             return;
         }
@@ -611,7 +639,7 @@ class Core extends Base\Core
 
         $method = $input[Entity::PAYMENT_METHOD];
 
-        if($merchantPaymentMethods->isMethodEnabled($method) === false)
+        if ($merchantPaymentMethods->isMethodEnabled($method) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Payment method not enabled for the merchant : $method", Entity::PAYMENT_METHOD);
@@ -649,9 +677,9 @@ class Core extends Base\Core
     //increment the offer usage count after failed payment for max offer validation.
     public function lockIncrementCurrentOfferUsage(Entity $offer)
     {
-        if($offer !== null)
+        if ($offer !== null)
         {
-            $offer = $this->repo->transaction(function () use($offer)
+            $offer = $this->repo->transaction(function () use ($offer)
             {
                 $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
@@ -671,9 +699,9 @@ class Core extends Base\Core
     {
         $offer = $payment->getOffer();
 
-        if($offer !== null && $offer->getMaxOfferUsage() !== null)
+        if ($offer !== null && $offer->getMaxOfferUsage() !== null)
         {
-            $offer = $this->repo->transaction(function () use($offer)
+            $offer = $this->repo->transaction(function () use ($offer)
             {
                 $offer = $this->repo->offer->lockForUpdate($offer->getId());
 
@@ -717,7 +745,7 @@ class Core extends Base\Core
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::OFFER_ON_SUBSCRIPTION) === true)
         {
-            $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => true ]);
+            $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, ['enabled' => true]);
 
             return true;
         }
@@ -752,32 +780,31 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION_CALCULATION, ['input' => $input]);
 
-        $offerId      = Entity::verifyIdAndStripSign($input['offer']);
-        $fetchActive  = $input[SubscriptionOffer\Entity::ACTIVE] ?? true;
+        $offerId = Entity::verifyIdAndStripSign($input['offer']);
+        $fetchActive = $input[SubscriptionOffer\Entity::ACTIVE] ?? true;
         $fetchExpired = $input[SubscriptionOffer\Entity::EXPIRED] ?? false;
 
         $offer = $this->repo->offer->fetchSubscriptionOfferById($offerId, $fetchActive, $fetchExpired);
 
         $data = [
             SubscriptionOffer\Entity::DISCOUNTED_AMOUNT => (int)$input['amount'],
-            SubscriptionOffer\Entity::ORIGINAL_AMOUNT   => (int)$input['amount'],
-            SubscriptionOffer\Entity::OFFER_VALID       => 0,
-            SubscriptionOffer\Entity::MESSAGE           => null,
-            SubscriptionOffer\Entity::OFFER_NAME        => '',
-            SubscriptionOffer\Entity::OFFER_DESC        => '',
+            SubscriptionOffer\Entity::ORIGINAL_AMOUNT => (int)$input['amount'],
+            SubscriptionOffer\Entity::OFFER_VALID => 0,
+            SubscriptionOffer\Entity::MESSAGE => null,
+            SubscriptionOffer\Entity::OFFER_NAME => '',
+            SubscriptionOffer\Entity::OFFER_DESC => '',
         ];
 
         if ($offer === null)
         {
-            $data[SubscriptionOffer\Entity::MESSAGE]    = 'Offer Not Found';
+            $data[SubscriptionOffer\Entity::MESSAGE] = 'Offer Not Found';
 
             return $data;
         }
 
-        try
-        {
-            $data[SubscriptionOffer\Entity::OFFER_NAME]  = $offer->getName();
-            $data[SubscriptionOffer\Entity::OFFER_DESC]  = $offer->getDisplayText();
+        try {
+            $data[SubscriptionOffer\Entity::OFFER_NAME] = $offer->getName();
+            $data[SubscriptionOffer\Entity::OFFER_DESC] = $offer->getDisplayText();
 
             $data[SubscriptionOffer\Entity::DISCOUNTED_AMOUNT] = $offer->getDiscountedAmount($input['amount']);
 
@@ -786,7 +813,7 @@ class Core extends Base\Core
             // 2. Don't need to have db calls when amount it self is not discountable
             if ($data[SubscriptionOffer\Entity::DISCOUNTED_AMOUNT] === $data[SubscriptionOffer\Entity::ORIGINAL_AMOUNT])
             {
-                $data[SubscriptionOffer\Entity::MESSAGE]    = PublicErrorDescription::OFFER_ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT;
+                $data[SubscriptionOffer\Entity::MESSAGE] = PublicErrorDescription::OFFER_ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT;
             }
             else
             {
@@ -798,18 +825,17 @@ class Core extends Base\Core
 
                 $data[SubscriptionOffer\Entity::OFFER_VALID] = 1;
             }
-        }
-        catch (\Exception $e)
+        } catch (\Exception $e)
         {
             // Not an error for just the calculation, so printing in info
             $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION_NA,
                 [
-                    'input'  => $input,
+                    'input' => $input,
                     'reason' => $e->getMessage()
                 ]
             );
 
-            $data[SubscriptionOffer\Entity::MESSAGE]    = $e->getMessage();
+            $data[SubscriptionOffer\Entity::MESSAGE] = $e->getMessage();
         }
 
         return $data;
@@ -829,19 +855,20 @@ class Core extends Base\Core
                 null,
                 [
                     'payment_method' => $payment->getMethod(),
-                    'offer_method'   => $offer->getPaymentMethod()
+                    'offer_method' => $offer->getPaymentMethod()
                 ]
             );
         }
 
         $baseOffer = $this->repo->offer->findByPublicId(Entity::getSignedId($offerId));
-        $checker   = new Checker($baseOffer, false);
+        $checker = new Checker($baseOffer, false);
 
         $this->repo->beginTransactionAndRollback(
-            function () use ($checker, $baseOffer, $payment, $input) {
+            function () use ($checker, $baseOffer, $payment, $input)
+            {
 
                 $orderInput = [
-                    'amount'   => $input['amount'],
+                    'amount' => $input['amount'],
                     'currency' => 'INR',
                 ];
 
@@ -916,12 +943,16 @@ class Core extends Base\Core
 
     /**
      * @param Merchant\Entity $merchant
+     * @param array $input
+     * @param bool $isNcEmi
      * @return Entity
+     * @throws BadRequestValidationFailureException
      * @throws Exception\BadRequestException
-     * @throws Exception\BadRequestValidationFailureException
      */
     protected function createOffer(Merchant\Entity $merchant, array $input): Entity
     {
+        $subscriptionInput = [];
+
         if (isset($input[Entity::PRODUCT_TYPE]) === true and
             $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION)
         {
@@ -945,14 +976,51 @@ class Core extends Base\Core
         $this->repo->saveOrFail($offer);
 
         if (isset($input[Entity::PRODUCT_TYPE]) and
-            $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION) {
+            $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION)
+        {
             // create entry in subscription_offers_master
             $this->addSubscriptionData($offer, $subscriptionInput ?? []);
         }
 
         $this->traceNonExistingIins($offer, $merchant);
 
+        if ($this->shouldRouteToOffersEngine($merchant->getId()) === true)
+        {
+            $this->offersEngine->createOffer($offer, $subscriptionInput ?? []);
+        }
+
         return $offer;
+    }
+
+    private function shouldRouteToOffersEngine(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => $merchantId,
+                "experiment_id" => $this->app['config']->get('app.route_to_offers_engine_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
+                [
+                    'msg' => $e->getMessage()
+                ]);
+        }
+
+        return false;
     }
 
     /**
@@ -971,7 +1039,8 @@ class Core extends Base\Core
 
                 array_push($offers_array, $this->createOffer($merchant, $input));
 
-            } catch (\Exception $exception) {
+            }
+            catch (\Exception $exception) {
 
                 $error = new Error($exception->getError()->getPublicErrorCode(), $exception->getError()->getDescription(), null, null);
                 array_push($offers_array, $error);
@@ -979,11 +1048,13 @@ class Core extends Base\Core
         }
 
         // If the offer has LC emi component, then lc emi key is populated
-        if (empty($input[Entity::LOW_COST_EMI]) === false) {
+        if (empty($input[Entity::LOW_COST_EMI]) === false)
+        {
 
             $lc_emi_values = $input[Entity::LOW_COST_EMI];
 
-            foreach ($lc_emi_values as $lc_emi) {
+            foreach ($lc_emi_values as $lc_emi)
+            {
 
                 $merchant_subvention =
                     $lc_emi["discount_to_avail"]["discount_percentage"];
@@ -992,10 +1063,13 @@ class Core extends Base\Core
 
                 $input[Entity::EMI_DURATIONS] = $tenure;
                 $input[Entity::PERCENT_RATE] = $merchant_subvention;
-                try {
+                try
+                {
                     $lc_emi_offer = $this->createOffer($merchant, $input);
                     array_push($offers_array, $lc_emi_offer);
-                } catch (\Exception $exception) {
+                }
+                catch (\Exception $exception)
+                {
                     $error = new Error($exception->getError()->getPublicErrorCode(), $exception->getError()->getDescription(), null, null);
                     array_push($offers_array, $error);
                 }

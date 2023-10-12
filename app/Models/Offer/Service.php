@@ -52,14 +52,13 @@ class Service extends Base\Service
 
         $merchantIds = $input['merchant_ids'];
 
-        $success  = 0;
+        $success = 0;
         $failures = [];
 
-        foreach ($merchantIds as $merchantId)
-        {
-            try
-            {
+        foreach ($merchantIds as $merchantId) {
+            try {
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
                 $offers_array = $this->core->withMerchant($merchant)->create($input_offer);
 
                 foreach ($offers_array as $offer)
@@ -83,8 +82,8 @@ class Service extends Base\Service
             }
         }
 
-        $summary  = [
-            'success'  => $success,
+        $summary = [
+            'success' => $success,
             'failures' => $failures
         ];
 
@@ -108,8 +107,7 @@ class Service extends Base\Service
     {
         $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        if ($offer->getProductType() === ProductType::SUBSCRIPTION)
-        {
+        if ($offer->getProductType() === ProductType::SUBSCRIPTION) {
             $offer = $this->repo->offer->fetchSubscriptionOfferById($offer->getId(), false, true);
         }
 
@@ -134,8 +132,7 @@ class Service extends Base\Service
 
     public function bulkDeactivateOffers()
     {
-        if (empty($_FILES) === true)
-        {
+        if (empty($_FILES) === true) {
             return [];
         }
         $file = file_get_contents($_FILES['file']['tmp_name']);
@@ -158,24 +155,21 @@ class Service extends Base\Service
         //
         // Applying this check only on offers CRU
         //
-        if (in_array($route, self::PROXY_ROUTES, true) === false)
-        {
+        if (in_array($route, self::PROXY_ROUTES, true) === false) {
             return;
         }
 
         //
         // All merchants have access to offer routes over proxy auth
         //
-        if ($this->auth->isProxyAuth() === true)
-        {
+        if ($this->auth->isProxyAuth() === true) {
             return;
         }
 
         //
         // Merchants with this feature can also access and create offers over private auth
         //
-        if ($this->auth->getMerchant()->isFeatureEnabled(Feature::OFFER_PRIVATE_AUTH) === true)
-        {
+        if ($this->auth->getMerchant()->isFeatureEnabled(Feature::OFFER_PRIVATE_AUTH) === true) {
             return;
         }
 
@@ -190,19 +184,14 @@ class Service extends Base\Service
 
         $orderEntity = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
 
-        if (isset($input["card"]["number"]) === false and isset($input["card"]["token"]) === false)
-        {
+        if (isset($input["card"]["number"]) === false and isset($input["card"]["token"]) === false) {
             return $applicableOffers;
         }
         $cardNumber = null;
 
-        if (isset($input["card"]["token"]) === true)
-        {
+        if (isset($input["card"]["token"]) === true) {
             $cardNumber = (new Card\CardVault)->getCardNumber($input["card"]["token"]);
-        }
-
-        else
-        {
+        } else {
             $cardNumber = $input["card"]["number"];
         }
 
@@ -210,8 +199,7 @@ class Service extends Base\Service
 
         $iinEntity = $this->repo->iin->find($iin);
 
-        if (isset($iinEntity) === false)
-        {
+        if (isset($iinEntity) === false) {
             throw new Exception\BadRequestException('BAD_REQUEST_ERROR', 'iin', null, 'iin not found');
         }
 
@@ -225,12 +213,10 @@ class Service extends Base\Service
 
         $offers = $this->repo->offer->findMany($offerIds);
         //iterating over all offers
-        foreach ($offers as $offer)
-        {
+        foreach ($offers as $offer) {
             $checker = new Checker($offer, $verbose);
             //validating whether offer is applicable for payment or not
-            if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $orderEntity) === true)
-            {
+            if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $orderEntity) === true) {
                 //adding the offer public id to return list
                 $applicableOffers[] = $offer->getPublicId();
             }
@@ -241,12 +227,9 @@ class Service extends Base\Service
 
     protected function isVerboseLogEnabled(): bool
     {
-        try
-        {
-            $verbose = (bool) Cache::get(ConfigKey::OFFER_LOG_VERBOSE);
-        }
-        catch (\Throwable $ex)
-        {
+        try {
+            $verbose = (bool)Cache::get(ConfigKey::OFFER_LOG_VERBOSE);
+        } catch (\Throwable $ex) {
             $this->trace->traceException($ex, Trace::ERROR);
 
             $verbose = false;

@@ -378,6 +378,7 @@ return [
                 'name'            => 'Test Offer',
                 'payment_method'  => 'card',
                 'issuer'          => 'HDFC_DC',
+                'iins'            => ['411111'],
                 'percent_rate'    => 1000,
                 'processing_time' => 86400,
                 'starts_at'       => 1514764800,
@@ -397,6 +398,7 @@ return [
                 'name'            => 'Test Offer',
                 'issuer'          => 'HDFC',
                 'payment_method_type' => 'debit',
+                'iins'            => ['411111'],
                 'percent_rate'    => 1000,
                 'processing_time' => 86400,
                 'starts_at'       => 1514764800,
@@ -417,7 +419,8 @@ return [
                 'emi_durations'       => [6],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
-                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'HDFC Debit Card Emi Subvention offers',
                 'terms'               => 'Some more details',
                 'block'               =>  1,
@@ -438,7 +441,9 @@ return [
                 'max_payment_count'   => 2,
                 'min_amount'          => 500000,
                 'display_text'        => 'HDFC Debit Card Emi Subvention offers',
-                'terms'               => 'Some more details'
+                'terms'               => 'Some more details',
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 ]
             ],
         ],
@@ -454,7 +459,8 @@ return [
                 'processing_time'     => '1',
                 'emi_subvention'      => true,
                 'emi_durations'       => [6],
-                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'HDFC Debit Card EMI offers',
                 'terms'               => 'HDFC Debit Card EMI offers',
                 'block'               =>  1,
@@ -901,7 +907,7 @@ return [
         ]
     ],
 
-    'testCreateEmiSubventionOffer' => [
+    'testCreateNCEmiSubventionOffer' => [
         'request' => [
             'content' => [
                 'name'                => 'Test Offer',
@@ -910,7 +916,8 @@ return [
                 'emi_subvention'      => true,
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
-                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
                 'block'               =>  1,
@@ -928,6 +935,8 @@ return [
                 'issuer'              => 'HDFC',
                 'max_payment_count'   => 2,
                 'min_amount'          => 316389,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details'
                 ]

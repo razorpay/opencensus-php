@@ -14,9 +14,9 @@ final class RazorxTreatment
     const PAR_ASYNC_FOR_CARD_FINGERPRINT = 'par_async_for_card_fingerprint';
 
     const DISABLE_RZP_TOKENISED_PAYMENT        = 'disable_rzp_tokenised_payment';
-    
+
     const EMANDATE_ENABLE_NR_DEBIT_FLOW                    = 'emandate_enable_nr_debit_flow';
-    
+
     const EMANDATE_ENABLE_ACH_DEBIT_RETURNS_FLOW           = 'emandate_enable_ach_debit_returns_flow';
     //Razorx treatment constant, whether to make sync call or not
 

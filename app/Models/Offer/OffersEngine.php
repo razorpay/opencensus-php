@@ -1,0 +1,877 @@
+<?php
+
+namespace RZP\Models\Offer;
+
+use RZP\Exception;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Emi;
+use RZP\Models\Base;
+use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
+use RZP\Models\Order;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
+
+class OffersEngine extends Base\Core
+{
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function createOffer(Entity $offer, array $subscriptionInput)
+    {
+        try {
+
+            $tenureDiscountMap = $this->getTenureDiscountMapForEMI($offer);
+
+            $oeRequest = $this->buildRequestForOffersEngine($offer, $subscriptionInput, $tenureDiscountMap);
+
+            $oeResponse = $this->app['offers_engine']->createOffer($oeRequest);
+
+            if (empty($oeResponse))
+            {
+                $this->trace->count(Metric::OFFERS_ENGINE_CREATE_OFFER_RESPONSE_NIL);
+                // raise slack alert
+                $this->trace->debug(TraceCode::OFFERS_ENGINE_CREATE_OFFER_RESPONSE_NIL, [
+                    'api_response' => $offer,
+                    'offers_engine_response' => $oeResponse,
+                ]);
+                return;
+            }
+
+            $convertedResponse = [];
+
+            if ($oeResponse != null) {
+
+                // emi_subvention can be null too in case of false, set the value so comparison will not fail on this field
+                if ($offer[Entity::EMI_SUBVENTION] !== true)
+                {
+                    $offer[Entity::EMI_SUBVENTION] = false;
+                }
+
+                $convertedResponse = $this->convertOffersEngineResponseToEntityOffer($oeResponse);
+            }
+
+            $this->traceOffersDiff($offer, $convertedResponse, $tenureDiscountMap, $subscriptionInput);
+
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->count(Metric::OFFERS_ENGINE_CREATE_OFFER_FAIL);
+            $this->trace->debug(TraceCode::OFFERS_ENGINE_CREATE_OFFER_FAIL, [
+                'api_response' => $offer,
+                'exception' => $exception,
+            ]);
+        }
+
+    }
+
+    private function traceOffersDiff(Entity $offerApi, array $convertedOeResponse, $tenureDiscountMapAPI, $subscriptionInputAPI)
+    {
+        // get differences in API offer and OE converted offer
+        $differences = $this->compareOffers($offerApi, $convertedOeResponse[Constants::OFFER]);
+
+        $mismatchPresent = false;
+        if (!empty($tenureDiscountMapAPI))
+        {
+            // sort the array to ensure mismatch does not happen due to ordering of keys
+            ksort($tenureDiscountMapAPI);
+            $tenureDiscountMapOE = $convertedOeResponse[Constants::TENURE_DISCOUNT_MAP];
+            ksort($tenureDiscountMapOE);
+
+            if ($tenureDiscountMapAPI !== $tenureDiscountMapOE)
+            {
+                $mismatchPresent = true;
+
+                // raise slack alert
+                $this->trace->info(TraceCode::CREATE_OFFER_RESPONSE_MISMATCH, [
+                    'tenureDiscountMapAPI' => $tenureDiscountMapAPI,
+                    'tenureDiscountMapOE' => $tenureDiscountMapOE,
+                ]);
+            }
+        }
+
+        if (!empty($subscriptionInputAPI))
+        {
+            ksort($subscriptionInputAPI);
+            $subscriptionInputOE = $convertedOeResponse[Constants::SUBSCRIPTION_FIELDS];
+            ksort($subscriptionInputOE);
+
+            if (!empty($subscriptionInputAPI !== $subscriptionInputOE))
+            {
+                $mismatchPresent = true;
+                $this->trace->info(TraceCode::CREATE_OFFER_RESPONSE_MISMATCH, [
+                    'subscriptionInputAPI' => $subscriptionInputAPI,
+                    'subscriptionInputOE' => $convertedOeResponse[Constants::SUBSCRIPTION_FIELDS],
+                ]);
+            }
+        }
+
+        if (!empty($differences))
+        {
+            $this->trace->info(TraceCode::CREATE_OFFER_RESPONSE_MISMATCH, [
+                'differences' => $differences,
+            ]);
+        }
+
+        if ($mismatchPresent === true)
+        {
+            $this->trace->count(Metric::CREATE_OFFER_RESPONSE_MISMATCH);
+        }
+    }
+
+    public function update(Entity $offer, array $input)
+    {
+        try {
+            if (isset($input[Entity::ACTIVE]) === false)
+            {
+                return $offer;
+            }
+
+            $state = '';
+            if ($input[Entity::ACTIVE] === 1 || $input[Entity::ACTIVE] === true)
+            {
+                $state = Constants::UPDATE_STATE_CREATED;
+            }
+            else
+            {
+                $state = Constants::UPDATE_STATE_DISABLED;
+            }
+
+            $offersEngineInput = [
+                Constants::OFFER_ID => $offer->getId(),
+                Constants::OFFER => [
+                    Constants::METADATA => [
+                        Constants::STATE => $state,
+                    ]
+                ],
+                'field_masks' => ["metadata.state"]
+            ];
+
+            // try to update offer in OE
+            $offersEngineResponse = $this->app['offers_engine']->updateOffer($offer->getPublicId(), $offersEngineInput);
+
+            if (empty($offersEngineResponse))
+            {
+                $this->trace->count(Metric::OFFERS_ENGINE_CREATE_OFFER_FAIL);
+                // raise slack alert
+                $this->trace->debug(TraceCode::OFFERS_ENGINE_UPDATE_OFFER_RESPONSE_NIL, [
+                    'api_response' => $offer,
+                    'offers_engine_response' => $offersEngineResponse,
+                ]);
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->count(Metric::OFFERS_ENGINE_UPDATE_OFFER_FAIL);
+            $this->trace->debug(TraceCode::OFFERS_ENGINE_UPDATE_OFFER_FAIL, [
+                'api_response' => $offer,
+                'exception' => $exception,
+            ]);
+        }
+    }
+
+
+// *Functions converting API Offer to Offers Engine Offer*
+    private function buildRequestForOffersEngine(Entity $offer, array $subscriptionInput, $tenureDiscountMap)
+    {
+        $offersEngineRequest =
+            [
+                Constants::METADATA => $this->getOffersEngineMetadata($offer),
+                Constants::SPEC     => $this->getOffersEngineSpec($offer, $subscriptionInput, $tenureDiscountMap),
+            ];
+
+        return [
+            Constants::OFFER => $offersEngineRequest,
+            Constants::PUBLISH => $this->getOfferChannelProperties($offer),
+        ];
+    }
+
+    private function getOffersEngineMetadata(Entity $offer): array
+    {
+        // initialise metadata
+        $metadata = [];
+
+        $metadata[Constants::NAME] = $offer->getName();
+
+        $metadata[Constants::DISPLAY_NAME] = $offer->getName();
+
+        $metadata[Constants::DESCRIPTION] = $offer->getDisplayText();
+
+        $metadata[Constants::TERMS] = [
+            Constants::TERMS_AND_CONDITIONS => strval($offer->getTerms()),
+        ];
+
+        // **offer_id**
+        $metadata[Constants::OFFER_ID] = $offer->getId();
+
+        // getUser for merchant dashboard and getAdmin for admin dashboard
+        if ($this->app['basicauth']->getUser() !== null)
+        {
+            $metadata[Constants::CREATED_BY_ID] = $this->app['basicauth']->getUser()->getEmail();
+        }
+        else
+        {
+            $metadata[Constants::CREATED_BY_ID] = $this->app['basicauth']->getAdmin()->getEmail();
+        }
+
+        // offer will be in 'CREATED' state, then auto publish changes it to published for rzp offers
+        $metadata[Constants::STATE] = "STATE_CREATED"; // enum = 2
+
+        // offer_on (beneficiary_type) is 'SELF'
+        $metadata[Constants::OFFER_ON] = "BENEFICIARY_TYPE_SELF"; // enum = 1
+
+        $metadata[Constants::CURRENCY] = 'INR';
+
+        // initialise schedules (NOTE - no `schedule` field for API offers)
+        $metadata[Constants::SCHEDULES] = [
+            Constants::STARTS_AT => $offer->getStartsAt(),
+            Constants::ENDS_AT => $offer->getEndsAt(),
+        ];
+
+        // these fields are not applicable for rzp offers - terms.url,
+        // image_url, redemption, brand_id, schedules.schedule, labels
+        return $metadata;
+    }
+
+    private function getOffersEngineSpec(Entity $offer, array $subscriptionInput, array $tenureDiscountMap): array
+    {
+        $spec = [];
+
+        // allowed_channel for rzp offers is 'RZP_CHECKOUT'
+        $spec[Constants::ALLOWED_CHANNELS] = [Constants::CHANNEL_RZP_CHECKOUT]; // enum = 1
+
+        /* funding is done by SELF for rzp_offers
+           bearer is advertiser / publisher (merchant) for rzp offers
+           funding split type is percentage
+           funding split value is 100 %
+           i.e. 100% is borne by publisher for rzp offers */
+        $spec[Constants::FUNDING] = [
+            Constants::TYPE => Constants::BENEFICIARY_TYPE_SELF,
+            Constants::FUNDING_SPLIT =>  [
+                [
+                    Constants::TYPE => Constants::VALUE_OPTION_PERCENTAGE, // enum = 2
+                    Constants::FUNDING_BEARER => Constants::USER_TYPE_PUBLISHER, // enum = 2
+                    Constants::VALUE => 100,
+                ]
+            ],
+        ];
+
+        $spec[Constants::BENEFITS_TYPES] = [$this->getOfferSpecBenefitType($offer)];
+
+        $spec[Constants::USAGE_LIMITS] = $this->getUsageLimits($offer);
+
+        $spec[Constants::RULE_GROUPS] = $this->getRuleGroups($offer, $tenureDiscountMap, $subscriptionInput, $spec[Constants::BENEFITS_TYPES][0]);
+
+        return $spec;
+    }
+
+    private function getTenureDiscountMapForEMI(Entity $offer)
+    {
+        // get merchant_paybacks if emi_subvention offer
+        if ($offer->isNoCostEmi())
+        {
+            // fetch payback map for only no cost emi
+            return $this->getMerchantPaybackMap($offer);
+
+        }
+        else if ($offer->isLowCostEmi())
+        {
+            // set the percent rate for corresponding tenure for lc emi
+            return [
+                $offer[Entity::EMI_DURATIONS][0] => $offer[Entity::LOW_COST_EMI][Constants::DISCOUNT_TO_AVAIL][Constants::DISCOUNT_PERCENTAGE],
+            ];
+        }
+
+        return [];
+    }
+
+    private function getMerchantPaybackMap(Entity $offer)
+    {
+
+        $tenureDiscountMap = [];
+
+        $emiRepo = new Emi\Repository();
+
+        $emiPlans = $emiRepo->fetchByParams($offer->getEmiDurations(), $offer->getIssuer(), $offer->getPaymentNetwork(), $offer->getPaymentMethodType());
+
+        foreach ($emiPlans as $emiPlan)
+        {
+            $tenureDiscountMap[$emiPlan['duration']] = $emiPlan['merchant_payback'];
+        }
+
+        return $tenureDiscountMap;
+    }
+
+    private function getOfferSpecBenefitType(Entity $offer): string
+    {
+        if ($offer->isNoCostEmi() === true)
+        {
+            return Constants::BENEFIT_TYPE_NO_COST_EMI;
+        }
+
+        if ($offer->isLowCostEmi() === true)
+        {
+            return Constants::BENEFIT_TYPE_LOW_COST_EMI;
+        }
+
+        return Constants::API_OFFER_BENEFIT_MAP[$offer->getOfferType()];
+    }
+
+    private function getUsageLimits(Entity $offer): array
+    {
+        $usageLimits = [];
+
+        if ($offer->getMaxOfferUsage() !== null)
+        {
+            $usageLimits[] = [
+                Constants::MAXIMUM_VALUE => $offer->getMaxOfferUsage(),
+                Constants::ON => Constants::LIMIT_ON_OFFER,
+                Constants::LIMIT_TYPE => Constants::LIMIT_TYPE_COUNT,
+            ];
+        }
+
+        // no limit can be applied if either of these is empty
+        if ($offer->getMaxPaymentCount() !== null && $offer->getPaymentMethod() !== null)
+        {
+            $usageLimits[] = [
+                Constants::MAXIMUM_VALUE => $offer->getMaxPaymentCount(),
+                Constants::ON => Constants::LIMIT_ON_CARD_NUMBER,
+                Constants::LIMIT_TYPE => Constants::LIMIT_TYPE_COUNT,
+
+            ];
+        }
+
+        return $usageLimits;
+    }
+
+    private function getRuleGroups(Entity $offer, array $tenureDiscountMap, array $subscriptionInput, string $benefitType){
+
+        $discoverConditionString = $this->getDiscoverWhenCondition($offer, $subscriptionInput);
+
+        $discountType = Constants::BENEFIT_DISCOUNT_MAP[$benefitType];
+
+        $discoverRules = $this -> getOfferDiscoverRules(
+            $offer, $tenureDiscountMap,
+            $discountType,
+            $discoverConditionString);
+
+        $availRules = $this -> getOfferAvailRules(
+            $offer, $tenureDiscountMap,
+            $discountType,
+            $discoverConditionString);
+
+        return [
+          Constants::CHANNEL_RZP_CHECKOUT . ".".Constants::STAGE_DISCOVER  => $discoverRules,
+          Constants::CHANNEL_RZP_CHECKOUT . ".".Constants::STAGE_AVAIL => $availRules,
+        ];
+
+    }
+
+    private function getDiscoverWhenCondition(Entity $offer, array $subscriptionInput): string
+    {
+        // discover when condition is same for all tenures in case of nc / lc emi too for rzp_offers
+        $discoverConditionWhenArray = array();
+
+        if ($offer->getMinAmount() !== null)
+        {
+            array_push($discoverConditionWhenArray, 'Order.TotalAmount >= ' . $offer->getMinAmount());
+        }
+
+        if ($offer->getMaxOrderAmount() !== null)
+        {
+            array_push($discoverConditionWhenArray, 'Order.TotalAmount <= ' . $offer->getMaxOrderAmount());
+        }
+
+        if (empty($subscriptionInput) !== true)
+        {
+            if (isset($subscriptionInput[SubscriptionOfferEntity::REDEMPTION_TYPE]))
+            {
+                // mandatory input for subscription offer
+                array_push($discoverConditionWhenArray, 'Subscription.RedemptionType == ' .
+                    Constants::SUBSCRIPTION_TYPE_VALUE_TO_ENUM_MAP[$subscriptionInput[SubscriptionOfferEntity::REDEMPTION_TYPE]]);
+
+                if ($subscriptionInput[SubscriptionOfferEntity::REDEMPTION_TYPE] === Constants::SUBSCRIPTION_TYPE_CYCLE)
+                {
+                    array_push($discoverConditionWhenArray, 'Subscription.NoOfCycles == ' . $subscriptionInput[SubscriptionOfferEntity::NO_OF_CYCLES]);
+                }
+            }
+
+        }
+        // convert conditions array to a string
+        $whenCondition = implode(' && ', $discoverConditionWhenArray);
+
+        return $whenCondition !== '' ? $whenCondition : 'true';
+    }
+
+    private function getOfferDiscoverRules(Entity $offer, array $tenureDiscountMap, string $benefitType, string $discoverConditionWhenString)
+    {
+        $benefits = [];
+
+        if ($offer->isLowCostEmi() || $offer->isNoCostEmi() )
+        {
+            // fetch issuer based on type of offer - issuer is stored in 'issuer' or 'payment network'
+            $issuer = $offer->getIssuer();
+            if ($issuer === '')
+            {
+                $issuer = $offer->getPaymentNetwork();
+            }
+
+            foreach ($offer->getEmiDurations() as $duration)
+            {
+                // append a benefit within no cost emi for each offer tenure in discover
+                $benefits[$benefitType][] = [
+                    Constants::DISCOUNT => [
+                        Constants::PERCENTAGE_DISCOUNT => $tenureDiscountMap[$duration],
+                        Constants::APPLICABLE_ON => 'Order.total_amount'
+                    ],
+                    Constants::TENURE => $duration,
+                    Constants::ISSUER => $issuer,
+                ];
+            }
+        }
+        else
+        {
+            $benefits = $this->getThenForNonEmi($offer,$benefitType);
+        }
+
+        $discoverConditions[Constants::RULES][] = [
+            Constants::WHEN => $discoverConditionWhenString,
+            Constants::THEN => [$benefits],
+        ];
+
+        return $discoverConditions;
+    }
+
+    private function getOfferAvailRules(Entity $offer, array $tenureDiscountMap, string $benefitType, string $discoverConditionWhenString)
+    {
+
+        // avail when condition is same for all tenures in case of no_cost_emi too for rzp_offers
+        $availConditionWhenArray = array();
+
+        // append discover condition first
+        array_push($availConditionWhenArray, $discoverConditionWhenString);
+
+        if ($offer->getPaymentMethod() !== null)
+        {
+            // note - if specified, only one payment method allowed per offer in API
+            array_push($availConditionWhenArray, 'PaymentInstrument.Method == "' . $offer->getPaymentMethod() . '"');
+        }
+
+        // set payment_method_type if not null (NOTE - if null it means both are allowed in case of cards)
+        if ($offer->getPaymentMethodType() !== null)
+        {
+            array_push($availConditionWhenArray, 'PaymentInstrument.CardType == "' . $offer->getPaymentMethodType() . '"');
+        }
+
+        // set issuer if not null
+        // note - only one issuer can be set in an offer currently in API
+        if ($offer->getIssuer() !== null)
+        {
+            $issuerKey = 'PaymentInstrument.Issuer';
+
+            switch ($offer->getPaymentMethod()) {
+                case Payment\METHOD::WALLET:
+                    $issuerKey = 'PaymentInstrument.Wallet';
+                    break;
+                case Payment\METHOD::CARDLESS_EMI:
+                case Payment\METHOD::PAYLATER:
+                    $issuerKey = 'PaymentInstrument.Provider';
+                    break;
+
+            }
+            array_push($availConditionWhenArray, $issuerKey . ' == "' . $offer->getIssuer() . '"');
+        }
+
+        if ($offer->getPaymentNetwork() !== null)
+        {
+            array_push($availConditionWhenArray, 'PaymentInstrument.CardNetwork == "' . $offer->getPaymentNetwork() . '"');
+        }
+
+        if ($offer->getIins() !== null)
+        {
+            $iinStr = implode(', ', $offer->getIins());
+
+            array_push($availConditionWhenArray, 'PaymentInstrument.Iin in [' . $iinStr . ']');
+        }
+
+        // convert conditions array to string with && logic
+        $availConditionWhen = implode(' && ', $availConditionWhenArray);
+
+        if ($offer->isNoCostEmi() || $offer->isLowCostEmi())
+        {
+            $availConditions = [];
+            foreach ($offer->getEmiDurations() as $duration) {
+                // append tenure condition too for nc emi, separately for each tenure
+                $availConditionTenure = $availConditionWhen ;
+                $availConditionTenure = $availConditionTenure . ' && PaymentInstrument.EmiTenure == ' . strval($duration);
+
+                // fetch issuer based on type of offer - issuer is stored in 'issuer' or 'payment network'
+                $issuer = $offer->getIssuer();
+                if ($issuer === '')
+                {
+                    $issuer = $offer->getPaymentNetwork();
+                }
+
+                $availConditions[Constants::RULES][] = [
+
+                    Constants::WHEN => $availConditionTenure,
+
+                    Constants::THEN => [
+                        [
+                            $benefitType => [
+                                [
+                                    Constants::DISCOUNT => [
+                                        Constants::PERCENTAGE_DISCOUNT => $tenureDiscountMap[$duration],
+                                        Constants::APPLICABLE_ON => 'Order.total_amount'
+                                    ],
+                                    Constants::TENURE => $duration,
+                                    Constants::ISSUER => $issuer,
+                                ]
+                            ]
+                        ]
+                    ]
+                ];
+            }
+            return $availConditions;
+        }
+
+        $benefits = $this->getThenForNonEmi($offer, $benefitType);
+        $availConditions[Constants::RULES][] = [
+            Constants::WHEN => $availConditionWhen,
+            Constants::THEN => [$benefits],
+        ];
+        return $availConditions;
+
+    }
+
+    private function getThenForNonEmi(Entity $offer,  string $benefitType)
+    {
+        if ($offer->getFlatCashback() !== null)
+        {
+            $benefits[$benefitType][] = [
+                Constants::FLAT_DISCOUNT => $offer->getFlatCashback(),
+                Constants::APPLICABLE_ON => 'Order.total_amount'
+            ];
+        }
+        else
+        {
+            $benefits[$benefitType][] = [
+                Constants::PERCENTAGE_DISCOUNT => $offer->getPercentRate(),
+                Constants::MAX_DISCOUNT => $offer->getMaxCashback(),
+                Constants::APPLICABLE_ON => 'Order.total_amount',   // might not be needed for 'already_discounted'
+            ];
+        }
+        return $benefits;
+    }
+
+    private function getOfferChannelProperties(Entity $offer): array
+    {
+        $channelProperties = [];
+
+        // block value = 0 means do not block payment
+        // so we should continue txn on failure if block = 0
+        $channelProperties[Constants::BLOCKING] = ($offer[Entity::BLOCK] === false);
+
+        if ($offer->isDefaultOffer() === true)
+        {
+            $channelProperties[Constants::OFFER_TYPE] = Constants::OFFER_TYPE_STAGE_REGULAR;
+        }
+        else
+        {
+            $channelProperties[Constants::OFFER_TYPE] = Constants::OFFER_TYPE_STAGE_HIDDEN;
+        }
+
+        $channelProperties[Constants::AUTO_APPLY] = false;
+
+        $channelProperties[Constants::CHANNEL_NAME] = Constants::CHANNEL_RZP_CHECKOUT;
+
+        return $channelProperties;
+    }
+
+// *Functions converting Offers Engine Offer to API Offer*
+
+    /**
+     * @param array $offersEngineResponse
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    private function convertOffersEngineResponseToEntityOffer(array $offersEngineResponse)
+    {
+        $offer = new Entity();
+
+        if ($offersEngineResponse[Constants::OFFER] === null || $offersEngineResponse[Constants::PUBLISH] === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFERS_ENGINE_RESPONSE_EMPTY, null,
+                [
+                    Constants::OFFER_ID => $offer->getPublicId(),
+                ]);
+        }
+
+        // Extract offer metadata
+        $this->mapOfferMetadata($offersEngineResponse[Constants::OFFER][Constants::METADATA], $offer);
+
+        // Map offer channel properties
+        $this->mapChannelProperties($offersEngineResponse[Constants::PUBLISH], $offer);
+
+        // Map offer spec and set additional attributes
+        $response = $this->mapOfferSpecAndSetAttributes($offersEngineResponse[Constants::OFFER][Constants::SPEC], $offer);
+
+        // not present in oe
+        $offer[Entity::ACTIVE] = true;
+        $offer[Entity::ERROR_MESSAGE] = Entity::DEFAULT_ERROR_MESSAGE;
+
+        if (!empty($response[Constants::SUBSCRIPTION_FIELDS]))
+        {
+            $offer[Entity::PRODUCT_TYPE] = Order\ProductType::SUBSCRIPTION;
+
+            $response[Constants::SUBSCRIPTION_FIELDS][SubscriptionOfferEntity::APPLICABLE_ON] = Constants::SUBSCRIPTION_APPLICABLE_ON_BOTH;
+        }
+
+        return [
+            Constants::OFFER => $offer,
+            Constants::SUBSCRIPTION_FIELDS => $response[Constants::SUBSCRIPTION_FIELDS],
+            Constants::TENURE_DISCOUNT_MAP => $response[Constants::TENURE_DISCOUNT_MAP],
+        ];
+    }
+
+    private function mapOfferMetadata(array $offerMetadata, Entity $offer)
+    {
+        $offer->setAttribute(Entity::ID, $offerMetadata[Constants::OFFER_ID]);
+        $offer->setAttribute(Entity::NAME, $offerMetadata[Constants::NAME]);
+        $offer->setAttribute(Entity::DISPLAY_TEXT, $offerMetadata[Constants::DESCRIPTION]);
+        $offer->setAttribute(Entity::TERMS, $offerMetadata[Constants::TERMS][Constants::TERMS_AND_CONDITIONS]);
+        $offer->setAttribute(Entity::MERCHANT_ID, str_replace('rzp.merchant.', '', $offerMetadata[Constants::ADVERTISER_ID]));
+        $offer->setAttribute(Entity::STARTS_AT, $offerMetadata[Constants::SCHEDULES][Constants::STARTS_AT]);
+        $offer->setAttribute(Entity::ENDS_AT, $offerMetadata[Constants::SCHEDULES][Constants::ENDS_AT]);
+    }
+
+    private function mapChannelProperties(array $channelProperties, Entity $offer)
+    {
+        $offer->setAttribute(Entity::BLOCK, $channelProperties[Constants::BLOCKING] === true ? 0 : 1);
+        $offer->setAttribute(Entity::DEFAULT_OFFER, $channelProperties[Constants::OFFER_TYPE] === Constants::OFFER_TYPE_STAGE_REGULAR ? 1 : 0);
+    }
+
+    private function mapOfferSpecAndSetAttributes(array $offersEngineSpec, Entity $offer): array
+    {
+        $availRuleGroup = $this->fetchAvailRuleGroup($offersEngineSpec);
+
+        if ($availRuleGroup === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AVAIL_RULE_GROUP_NOT_FOUND, null,
+                [
+                    Constants::OFFER_ID => $offer->getId(),
+                ]);
+        }
+
+        // Set emi_subvention and offer_type
+        $this->setEmiSubventionAndOfferType($offer, $offersEngineSpec);
+
+        // Set max_offer_usage and max_payment_count from usage_limits
+        $this->setUsageLimits($offer, $offersEngineSpec);
+
+        $subscriptionFields = [];
+        $tenureDiscountMap = [];
+        $offerType = $offersEngineSpec[Constants::BENEFITS_TYPES][0];
+
+        // Loop through each availRule in the response array.
+        foreach ($availRuleGroup[Constants::RULES] as $availRule)
+        {
+            // Extract common fields for both 'no_cost_emi' and other offer types.
+            $this->extractCommonFields($offer, $offerType, $availRule, $tenureDiscountMap, $subscriptionFields);
+        }
+
+        // For nc/lc emi, set the array of emi durations in the offer object
+        $offer[Entity::EMI_DURATIONS] = [];
+        if ($offerType === Constants::BENEFIT_TYPE_NO_COST_EMI
+            || $offerType === Constants::BENEFIT_TYPE_LOW_COST_EMI )
+        {
+            $offer->setAttribute(Entity::EMI_DURATIONS, array_keys($tenureDiscountMap));
+        }
+
+        return [
+            Constants::TENURE_DISCOUNT_MAP => $tenureDiscountMap,
+            Constants::SUBSCRIPTION_FIELDS => $subscriptionFields,
+        ];
+    }
+
+    private function fetchAvailRuleGroup(array $offersEngineSpec)
+    {
+        return $offersEngineSpec[Constants::RULE_GROUPS][Constants::CHANNEL_RZP_CHECKOUT . '.' . Constants::STAGE_AVAIL];
+    }
+
+    private function setEmiSubventionAndOfferType(Entity $offer, array $offersEngineSpec)
+    {
+        $benefitType = $offersEngineSpec[Constants::BENEFITS_TYPES][0];
+        // set emi_subvention and offer_type
+        if ($benefitType === Constants::BENEFIT_TYPE_NO_COST_EMI
+            || $benefitType === Constants::BENEFIT_TYPE_LOW_COST_EMI)
+        {
+            // emi_subvention is true for nce
+            $offer->setAttribute(Entity::EMI_SUBVENTION, true);
+            // if no_cost_emi the type is always instant discount
+            $offer->setAttribute(Entity::TYPE, Constants::INSTANT_OFFER);
+        } else {
+            // emi_subvention is false for other offers
+            $offer->setAttribute(Entity::EMI_SUBVENTION, false);
+
+            $offer->setAttribute(Entity::TYPE, Constants::BENEFIT_API_OFFER_MAP[$benefitType]);
+        }
+    }
+
+    private function setUsageLimits(Entity $offer, array $offersEngineSpec)
+    {
+        // set max_offer_usage and max_payment_count from usage_limits
+        foreach ($offersEngineSpec[Constants::USAGE_LIMITS] as $usageLimit)
+        {
+            if ($usageLimit[Constants::ON] === Constants::LIMIT_ON_OFFER)
+            {
+                $offer->setAttribute(Entity::MAX_OFFER_USAGE, $usageLimit[Constants::MAXIMUM_VALUE]);
+            }
+            else if ($usageLimit[Constants::ON] === Constants::LIMIT_ON_CARD_NUMBER)
+            {
+                $offer->setAttribute(Entity::MAX_PAYMENT_COUNT, $usageLimit[Constants::MAXIMUM_VALUE]);
+            }
+        }
+    }
+
+    private function extractCommonFields(Entity $offer, string $offerType, array $availCondition,  &$tenureDiscountMap, &$subscriptionFields)
+    {
+        $whenExpression = $availCondition[Constants::WHEN];
+
+        $discountType = Constants::BENEFIT_DISCOUNT_MAP[$offerType];
+
+        if ($offerType === Constants::BENEFIT_TYPE_NO_COST_EMI
+            || $offerType === Constants::BENEFIT_TYPE_LOW_COST_EMI )
+        {
+            $emiDur = $availCondition[Constants::THEN][0][$discountType][0][Constants::TENURE];
+
+            $percentDiscount = $availCondition[Constants::THEN][0][$discountType][0][Constants::DISCOUNT][Constants::PERCENTAGE_DISCOUNT];
+
+            $tenureDiscountMap[$emiDur] = $percentDiscount;
+        }
+        else
+        {
+            if ($availCondition[Constants::THEN][0][$discountType][0][Constants::FLAT_DISCOUNT] !== null)
+            {
+                $offer->setAttribute(Entity::FLAT_CASHBACK, $availCondition[Constants::THEN][0][$discountType][0][Constants::FLAT_DISCOUNT]);
+            }
+            if ($availCondition[Constants::THEN][0][$discountType][0][Constants::PERCENTAGE_DISCOUNT] !== null)
+            {
+                $offer->setAttribute(Entity::PERCENT_RATE, $availCondition[Constants::THEN][0][$discountType][0][Constants::PERCENTAGE_DISCOUNT]);
+            }
+            if ($availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT] !== null)
+            {
+                $offer->setAttribute(Entity::MAX_CASHBACK, $availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT]);
+            }
+        }
+
+        $this->extractAndSetConditions($whenExpression, $offer, $subscriptionFields);
+    }
+
+    private function extractAndSetConditions($whenExpression, Entity $offer, &$subscriptionFields)
+    {
+        // Extract the other conditions from the 'when' expression and set them in the offer object.
+        $conditions = explode(' && ', $whenExpression);
+
+        foreach ($conditions as $condition)
+        {
+            $parts = explode(' ', $condition, 3);
+            $field = $parts[0];
+            $operator = $parts[1];
+            $value = $parts[2];
+            // handle strings from conditions
+            // remove \"
+            $value = str_replace('"', '', $value);
+            // Check and set the corresponding field in the offer object.
+            // NOTE - PaymentInstrument.EmiTenure is ignored as it is handled differently
+            switch ($field) {
+                case 'Order.TotalAmount':
+                    if ($operator === '>=') {
+                        $offer->setAttribute(Entity::MIN_AMOUNT, (int)$value);
+                    } elseif ($operator === '<=') {
+                        $offer->setAttribute(Entity::MAX_ORDER_AMOUNT, (int)$value);
+                    }
+                    break;
+                case 'PaymentInstrument.Method':
+                    $offer->setAttribute(Entity::PAYMENT_METHOD, $value);
+                    break;
+                case 'PaymentInstrument.CardType':
+                    $offer->setAttribute(Entity::PAYMENT_METHOD_TYPE, $value);
+                    break;
+                // issuer, wallet, provider mean the same in API
+                case 'PaymentInstrument.Issuer':
+                case 'PaymentInstrument.Wallet':
+                case 'PaymentInstrument.Provider':
+                    $offer->setAttribute(Entity::ISSUER, $value);
+                    break;
+                case 'PaymentInstrument.CardNetwork':
+                    $offer->setAttribute(Entity::PAYMENT_NETWORK, $value);
+                    break;
+                case 'PaymentInstrument.Iin':
+                    // remove prefix '['
+                    $iinArrayStr = substr($value, 1);
+                    // remove suffix ']'
+                    $iinArrayStr = basename($iinArrayStr, ']');
+                    $iinArr = explode(', ', $iinArrayStr);
+                    $iins = [];
+                    foreach ($iinArr as $iin) {
+                        // remove '\"'
+                        $iins[] = $iin;
+                    }
+                    $offer->setAttribute(Entity::IINS, $iins);
+                    break;
+                case 'Subscription.RedemptionType':
+                    $subscriptionFields[SubscriptionOfferEntity::REDEMPTION_TYPE] =
+                        Constants::SUBSCRIPTION_TYPE_ENUM_TO_VALUE_MAP[$value];
+                    break;
+                case 'Subscription.NoOfCycles':
+                    $subscriptionFields[SubscriptionOfferEntity::NO_OF_CYCLES] = $value;
+                    break;
+            }
+        }
+    }
+
+    private function compareOffers(Entity $apiOffer, Entity $oeOffer)
+    {
+        $differences = [];
+
+        // Define an array of fields to compare
+        // note - fields not compared are id, percent_rate(variable in UTs), description, terms,
+        // international(not present in OE), active, checkout_display(not present in OE),
+        // linked_offer_ids(feature na), payment_count(not needed in OE), processing_time(not present in OE),
+        // display_text, error_message, current_offer_usage, product_type
+        $fieldsToCompare = [
+            Entity::MERCHANT_ID, Entity::NAME, Entity::PAYMENT_METHOD, Entity::PAYMENT_METHOD_TYPE, Entity::IINS,
+            Entity::BLOCK, Entity::TYPE, Entity::MIN_AMOUNT, Entity::MAX_CASHBACK,
+            Entity::FLAT_CASHBACK, Entity::EMI_SUBVENTION, Entity::EMI_DURATIONS,
+            Entity::STARTS_AT, Entity::ENDS_AT, Entity::PAYMENT_NETWORK, Entity::ISSUER,
+            Entity::MAX_OFFER_USAGE, Entity::DEFAULT_OFFER, Entity::MAX_ORDER_AMOUNT,
+        ];
+
+        // if offer is not a no cost emi, compare percent_rate too
+        if ($apiOffer[Entity::EMI_SUBVENTION] != 1 || $apiOffer[Entity::EMI_SUBVENTION] != true)
+        {
+            $fieldsToCompare[] = Entity::PERCENT_RATE;
+        }
+
+        foreach ($fieldsToCompare as $field) {
+            // Check if both values are not empty
+            if ((!empty($apiOffer[$field]) || !empty($oeOffer[$field]))
+                && $apiOffer[$field] !== $oeOffer[$field])
+            {
+                $differences[$field] = [
+                    'apiOffer' => $apiOffer[$field],
+                    'oeOffer' => $oeOffer[$field],
+                ];
+            }
+        }
+
+        return $differences;
+    }
+}

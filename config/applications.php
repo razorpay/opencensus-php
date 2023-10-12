@@ -1861,6 +1861,22 @@ return [
         'secret'    => env('APP_EDGE_SECRET')
     ],
 
+    'offers_engine' => [
+        'mock'                    => env('OFFERS_ENGINE_MOCK', false),
+        'offers_engine_username'  => [
+            'test'      => env('OFFERS_ENGINE_TEST_USERNAME'),
+            'live'      => env('OFFERS_ENGINE_LIVE_USERNAME'),
+        ],
+        'offers_engine_password'  => [
+            'test'      => env('OFFERS_ENGINE_TEST_PASSWORD'),
+            'live'      => env('OFFERS_ENGINE_LIVE_PASSWORD'),
+        ],
+        'base_url'  => [
+            'test'  => env('OFFERS_ENGINE_TEST_URL'),
+            'live'  => env('OFFERS_ENGINE_LIVE_URL'),
+        ]
+    ],
+
     'razorassist' => [
         'secret'    => env('APP_RAZORASSIST_SECRET')
     ],
