@@ -14,7 +14,6 @@ export default function useTrackPartnerExperiments(user: UserT): void {
     isShowAffWidgetWoocWaitlist,
     isShowSegregatedCreditEmi,
     isShowResumeOnboarding,
-    isEnablePurePlatformSwitch,
   } = user;
 
   const trackExperiments = useCallback(() => {
@@ -36,7 +35,6 @@ export default function useTrackPartnerExperiments(user: UserT): void {
         isShowAffWidgetWoocWaitlist,
         isShowSegregatedCreditEmi,
         isShowResumeOnboarding,
-        isEnablePurePlatformSwitch,
       },
     });
   }, [
@@ -51,7 +49,6 @@ export default function useTrackPartnerExperiments(user: UserT): void {
     isShowAffWidgetWoocWaitlist,
     isShowSegregatedCreditEmi,
     isShowResumeOnboarding,
-    isEnablePurePlatformSwitch,
   ]);
 
   useEffect(() => {

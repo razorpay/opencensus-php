@@ -171,9 +171,7 @@ const Home = ({
       </ShowWhen>
       <ShowWhen
         additionalCondition={(currentUser) =>
-          currentUser.isPartner('reseller') &&
-          currentUser?.isEnablePurePlatformSwitch &&
-          isShowPartnerSwitch()
+          currentUser.isPartner('reseller') && isShowPartnerSwitch()
         }
       >
         <Suspense fallback={<Loader />}>

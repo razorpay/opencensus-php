@@ -2068,11 +2068,6 @@ export default class User {
     return getSplitzExperimentVariant('ecosystem_downtimes')?.variables?.result === 'on';
   }
 
-  get isEnablePurePlatformSwitch() {
-    const variant = getSplitzExperimentVariant('pure_platform_switch');
-    return variant?.name === 'enable';
-  }
-
   get showIsPlusPlusExperiment() {
     return getSplitzExperimentVariant('capital_isplusplus_splitz')?.variables?.result === 'on';
   }
