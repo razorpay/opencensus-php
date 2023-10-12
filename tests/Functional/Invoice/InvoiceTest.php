@@ -3501,4 +3501,42 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals($order->getPublicId(), $response['invoice']['order_id']);
     }
+
+    public function testGetInvoiceDetailsForCheckoutByInvoiceIdInQueryParams(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $order = $this->fixtures->create('order');
+
+        $invoice = $this->fixtures->create('invoice', ["order_id" => $order->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['invoice_id'] = $invoice->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals($order->getPublicId(), $response['invoice']['order_id']);
+    }
+
+    public function testGetInvoiceDetailsForCheckoutBySubscriptionId(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $order = $this->fixtures->create('order');
+
+        $subscriptionId = "abcdefg1234567";
+        $invoice = $this->fixtures->create('invoice', [
+            "order_id" => $order->getId(),
+            "subscription_id" => $subscriptionId
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['subscription_id'] = $subscriptionId;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals($order->getPublicId(), $response['invoice']['order_id']);
+    }
 }

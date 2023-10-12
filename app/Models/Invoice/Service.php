@@ -144,8 +144,16 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function getInvoiceDetailsForCheckout(string $invoiceId): array
+    public function getInvoiceDetailsForCheckout(string $invoiceId, array $input): object|array
     {
+        if (isset($input[Entity::SUBSCRIPTION_ID])) {
+            return $this->core->getFormattedInvoiceDataForSubscription($input[Entity::SUBSCRIPTION_ID]);
+        }
+
+        if (isset($input['invoice_id'])) {
+            $invoiceId = $input['invoice_id'];
+        }
+
         $data = $this->core->getFormattedInvoiceData($invoiceId, $this->merchant);
 
         if (isset($data['customer']['notes'])) {

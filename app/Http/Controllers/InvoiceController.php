@@ -123,7 +123,9 @@ class InvoiceController extends Controller
 
     public function getInvoiceDetailsForCheckout($id)
     {
-        $data = $this->service()->getInvoiceDetailsForCheckout($id);
+        $input = Request::all();
+
+        $data = $this->service()->getInvoiceDetailsForCheckout($id, $input);
 
         return ApiResponse::json($data);
     }

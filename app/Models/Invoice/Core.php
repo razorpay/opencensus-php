@@ -42,6 +42,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
 use RZP\Jobs\Invoice\BatchCancel as InvoiceBatchCancelJob;
+use RZP\Exception;
 
 class Core extends Base\Core
 {
@@ -911,6 +912,35 @@ class Core extends Base\Core
         {
             $data[Entity::CUSTOMER] = $customer->toArrayPublic();
         }
+
+        return $data;
+    }
+
+    public function getFormattedInvoiceDataForSubscription(string $subscriptionId): array
+    {
+        if (($pos = strpos($subscriptionId, '_')) !== false) {
+            $subscriptionId = substr($subscriptionId, $pos + 1);
+        }
+
+        /** @var Entity $invoice */
+        $invoice =  $this->repo->invoice->fetchIssuedInvoicesOfSubscriptionId($subscriptionId);
+
+        if ($invoice === null) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                null,
+                ['subscription_id'=> $subscriptionId],
+            );
+        }
+
+        $orderId       = $invoice->getOrderId();
+        $publicOrderId = Order\Entity::getSignedId($orderId);
+
+        $data['invoice'] = [
+            Entity::ORDER_ID => $publicOrderId,
+            Entity::URL      => $invoice->getShortUrl(),
+            Entity::AMOUNT   => $invoice->getAmount(),
+        ];
 
         return $data;
     }
