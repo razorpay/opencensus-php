@@ -534,7 +534,7 @@ trait Authorize
 
     }
 
-    protected function setAltIdRequestData(array $input, array & $gatewayInput, Payment\Entity $payment)
+    protected function setAltIdRequestData(array $input, array & $gatewayInput, Payment\Entity $payment, $currentTerminal)
     {
         $requestData = [];
         if(!($payment->isCard() === true)){
@@ -551,6 +551,10 @@ trait Authorize
             $requestData['iin']['iin'] = $gatewayInput['iin']['iin'];
             $requestData['iin']['issuer'] = $gatewayInput['iin']['issuer'];
             $requestData['iin']['network'] = $gatewayInput['iin']['network'];
+        }
+        if($currentTerminal != null) {
+            $requestData['terminal']['id'] = $currentTerminal['id'];
+            $requestData['terminal']['gateway_merchant_id'] = $currentTerminal['gateway_merchant_id'];
         }
         if(isset($payment['merchant_id']))
         {
@@ -720,7 +724,7 @@ trait Authorize
 
                 if ($this->isAltIdExperimentEnabled($payment, 'app.alt_id_live_mode_experiment_id') === true )
                     {
-                        $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput);
+                        $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
                     }
             }
 
@@ -968,10 +972,10 @@ trait Authorize
         return false;
     }
 
-    protected function fetchAltIdData(array $input, array & $gatewayInput, Payment\Entity $payment, array & $terminalGatewayInput)
+    protected function fetchAltIdData(array $input, array & $gatewayInput, Payment\Entity $payment, array & $terminalGatewayInput, $currentTerminal)
     {
         $cardCore = new Card\Core;
-        $altIdRequest = $this->setAltIdRequestData($input, $gatewayInput, $payment);
+        $altIdRequest = $this->setAltIdRequestData($input, $gatewayInput, $payment, $currentTerminal);
 
         $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input,$gatewayInput, $terminalGatewayInput);
 
