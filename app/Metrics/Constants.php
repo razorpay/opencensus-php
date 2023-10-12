@@ -110,13 +110,14 @@ class Constants
   const LABEL_HTTP_REQUESTS_ORIGIN                  = 'origin';
   const LABEL_HTTP_REQUESTS_DOMAIN                  = 'domain';
   const LABEL_HTTP_REQUESTS_GRAPHQL_CLIENT          = 'graphql_client';
-  
+
   const LABEL_DASHBOARD_CBS                         = 'chunked_based_streaming';
   const LABEL_DASHBOARD_CONCURRENT_API_CALL         = 'concurrent_api_call';
-  
+
   const LABEL_DASHBOARD_RAZORX_CACHING_API_CALL     = 'razorx_cache_api_call';
 
-  const LABEL_RZP_TEAM                              = 'rzp_team';
+    const LABEL_RZP_TEAM                              = 'rzp_team';
+    const LABEL_RZP_TEAM_TAG                          = 'rzp_team_tag';
 
   // Metric labels - HTTP_REQUESTS_API_DOWNSTREAM
   const LABEL_HTTP_REQUESTS_API_DOWNSTREAM_STATUS            = 'status';

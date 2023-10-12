@@ -59,6 +59,10 @@ class Metrics
 
         $apolloClientName = $request->header('apollographql-client-name');
 
+        $teamByRoute = RouteTeamMap::getTeamNamesForRoute($routeName);
+
+        $tagByTeam = RouteTeamMap::getTeamSlackTag($teamByRoute);
+
         return [
             Constants::LABEL_HTTP_REQUESTS_ORIGIN         => ApiUrl::getRequestOrigin(),
             Constants::LABEL_HTTP_REQUESTS_DOMAIN         => $request->server->get('SERVER_NAME') ?? 'unknown_domain',
@@ -68,7 +72,8 @@ class Metrics
             Constants::LABEL_HTTP_REQUESTS_ROUTE          => $routeName,
             Constants::LABEL_HTTP_REQUESTS_STATUS         => $this->getStatusCode($response),
             Constants::LABEL_HTTP_REQUESTS_CONTROLLER     => $request->route() !== null ? $request->route()->getAction()['controller']  : 'unknown_controller',
-            Constants::LABEL_RZP_TEAM                     => RouteTeamMap::getTeamNamesForRoute($routeName),
+            Constants::LABEL_RZP_TEAM                     => $teamByRoute,
+            Constants::LABEL_RZP_TEAM_TAG                 => $tagByTeam,
         ];
     }
 

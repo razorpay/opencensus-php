@@ -4,6 +4,8 @@ namespace App\Admin;
 
 use Config;
 use App\Trace\TraceCode;
+use App\Metrics\Constants;
+use App\Http\RouteTeamMap;
 use Symfony\Component\Routing\Route;
 use Ackintosh\Ganesha as CircuitBreaker;
 use App\Metrics\Constants as MetricsConstants;
@@ -54,6 +56,8 @@ class ApiRouteCircuitBreaker
 
     protected $circuitState;
 
+    protected array $teamLabels = [];
+
     protected $options = [
         // The interval in time (seconds) that evaluate the thresholds.
         self::TIME_WINDOW            => 60,
@@ -99,6 +103,28 @@ class ApiRouteCircuitBreaker
         $this->matchPath();
     }
 
+    /**
+     * @return array
+     */
+    public function getTeamLabels(): array
+    {
+        return $this->teamLabels;
+    }
+
+    /**
+     * @return void
+     */
+    private function setTeamLabels(): void
+    {
+        $teamByRoute = RouteTeamMap::getTeamNamesForRoute($this->matchedRouteName);
+
+        $tagByTeam = RouteTeamMap::getTeamSlackTag($teamByRoute);
+
+        $this->teamLabels =  [
+            Constants::LABEL_RZP_TEAM       => $teamByRoute,
+            Constants::LABEL_RZP_TEAM_TAG   => $tagByTeam,
+        ];
+    }
   /**
    * @throws \Exception
    */
@@ -117,8 +143,9 @@ class ApiRouteCircuitBreaker
         $this->app['metrics']->count(
             MetricsConstants::API_CIRCUIT_BREAKER_STATE_COUNT,
             MetricsConstants::EVENT_COUNT_ONE, [
-                MetricsConstants::CIRCUIT_STATE                => $this->circuitState,
-                MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE    => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
+                MetricsConstants::CIRCUIT_STATE             => $this->circuitState,
+                MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
+
             ]);
 
         $this->app['trace']->info(TraceCode::API_CIRCUIT_BREAKER_DECISION, [
@@ -175,7 +202,7 @@ class ApiRouteCircuitBreaker
                 MetricsConstants::CIRCUIT_STATE              => $this->circuitState,
                 MetricsConstants::REQUEST_RESULT             => MetricsConstants::REQUEST_SUCCESS,
                 MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE  => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
-            ]);
+            ] + $this->getTeamLabels());
     }
 
     public function failure($traceData = [])
@@ -206,7 +233,7 @@ class ApiRouteCircuitBreaker
                 MetricsConstants::CIRCUIT_STATE              => $this->circuitState,
                 MetricsConstants::REQUEST_RESULT             => MetricsConstants::REQUEST_FAILURE,
                 MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE  => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
-            ]);
+            ] + $this->getTeamLabels());
     }
 
     public function saveApiRouteDetails($apiRouteName, $apiPathPattern)
@@ -265,6 +292,9 @@ class ApiRouteCircuitBreaker
 
         // in case of matched route name is null or not same as in api
         $this->matchedRouteName = $apiRouteName;
+
+        // since matchedRouteName is updated, update the team labels as well
+        $this->setTeamLabels();
     }
 
     protected function doesRouteDetailNotExist($apiRoutes, $apiRouteName)
@@ -349,6 +379,9 @@ class ApiRouteCircuitBreaker
 
                 $this->matchedRouteName   = $routeName;
 
+                // since matchedRouteName is updated, update the team labels as well
+                $this->setTeamLabels();
+
                 return true;
             }
         }
@@ -356,6 +389,9 @@ class ApiRouteCircuitBreaker
         $this->matchedPathPattern = null;
 
         $this->matchedRouteName   = null;
+
+        // since matchedRouteName is updated, update the team labels as well
+        $this->setTeamLabels();
 
         return false;
     }
