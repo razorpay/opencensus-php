@@ -878,7 +878,14 @@ class Core extends Base\Core
                     ];
 
                     // dispatch to queue again for txn creation
-                    $transferCore->dispatchForTransferProcessing($transfer->getSourceType(), $sourcePayment, 900, true, $input);
+                    $transferCore->dispatchForTransferProcessing($transfer->getSourceType(), $sourcePayment, 30, true, $input);
+
+                    $this->trace->info(
+                        TraceCode::TRANSFER_PROCCESSED_SUCCESSFULLY_IN_REVERSE_SHADOW,
+                        [
+                            LedgerConstants::TRANSFER_ID  => $transfer->getPublicId(),
+                            'transfer_input_to_queue'     => $input
+                        ]);
 
                     // transfer transactions created via queue in async
                     return null;
