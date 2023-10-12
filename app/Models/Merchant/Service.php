@@ -11798,6 +11798,12 @@ class Service extends Base\Service
 
     public function settlementsEventsCron($input)
     {
+        // 1GB memory limit
+        RuntimeManager::setMemoryLimit('1024M');
+
+        // 8 hours runtime limit
+        RuntimeManager::setTimeLimit(28800);
+        RuntimeManager::setMaxExecTime(28800);
 
         $cronLastRunAt = $this->getSettlementsEventsCronLastRunAt($input);
 
