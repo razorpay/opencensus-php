@@ -447,25 +447,7 @@ class Service extends Base\Service
             "merchant_id" => $this->merchant->getId()
         ]);
 
-        $pgosInput = $input;
-
-        $sections = [Constants::SHIPPING, Constants::REFUND, Constants::TERMS,Constants::CONTACT_US, Constants::PRIVACY];
-        if (isset($pgosInput["merchant_website_details"]) === true )
-        {
-            $merchantWebsiteDetails = $pgosInput["merchant_website_details"];
-
-            foreach ($sections as $section)
-            {
-                if(isset($merchantWebsiteDetails[$section]) === true)
-                {
-                    if ( isset($merchantWebsiteDetails[$section]["website"])===true && $merchantWebsiteDetails[$section]["website"] == [])
-                    {
-                        $pgosInput["merchant_website_details"][$section]["website"] = null;
-
-                    }
-                }
-            }
-        }
+        $pgosInput = $this->getSanitizedInputForPgos($input);
 
         $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_save_policy_compliance_details', $pgosInput, $this->merchant, true);
         $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
@@ -2721,5 +2703,49 @@ class Service extends Base\Service
         $this->trace->traceException($e);
 
         throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::SERVER_ERROR);
+    }
+
+    private function getSanitizedInputForPgos(array $pgosInput)
+    {
+        $sections = [Constants::SHIPPING, Constants::REFUND, Constants::TERMS,Constants::CONTACT_US, Constants::PRIVACY];
+
+        foreach (["merchant_website_details", "admin_website_details", "additional_data"] as $inputKey) {
+
+            if (isset($pgosInput[$inputKey]) === true and is_array($inputData = &$pgosInput[$inputKey]) === true)
+            {
+                if ($inputKey === "merchant_website_details")
+                {
+                    foreach ($sections as $section)
+                    {
+                        foreach (["website", "appStore", "playStore"] as $field)
+                        {
+                            if (isset($inputData[$section][$field]) === true and empty($inputData[$section][$field]) === true)
+                            {
+                                $inputData[$section][$field] = null;
+                            }
+                        }
+                    }
+                }
+
+                if ($inputKey === "admin_website_details")
+                {
+                    foreach (["website", "appstore_url", "playstore_url"] as $field)
+                    {
+                        if (isset($inputData[$field]) === true and empty($inputData[$field]) === true)
+                        {
+                            $inputData[$field] = null;
+                        }
+                    }
+                }
+
+                if (empty($inputData) === true)
+                {
+                    $pgosInput[$inputKey] = null;
+                }
+            }
+        }
+
+        return $pgosInput;
+
     }
 }
