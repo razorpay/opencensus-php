@@ -1,24 +1,26 @@
 /* eslint-disable react/no-unsafe */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { compose } from 'redux';
 import { Link } from 'react-router-dom';
-import Button from 'common/new-ui/Button';
-import { openModal } from 'merchant_common/reducers/modals';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
+import { compose } from 'redux';
+
+import Button from 'common/new-ui/Button';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
-import { fetchPayments, fetchRefunds, fetchSettlements } from 'merchant/reducers/collection';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import GenericPanel, {
   PanelBody,
   PanelTopbar,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { fetchPayments, fetchRefunds, fetchSettlements } from 'merchant/reducers/collection';
+import { openModal } from 'merchant_common/reducers/modals';
+
 import { tabs, tabsMeta } from './data';
 import { trackTabClick, trackEntityClick, trackGoToLinks, selfServeTracking } from './ga';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const shouldDisplayCompact = (windowWidth) => {
   return windowWidth < 480;
@@ -129,9 +131,16 @@ class RecentActivity extends Component {
   }
 
   fetchData(params) {
+    const { startDate, endDate, fetchRefunds, fetchSettlements } = this.props;
+    const payload = { ...params };
+    if (startDate && endDate) {
+      payload.from = startDate.unix();
+      payload.to = endDate.unix();
+    }
+
     this.fetchPayments(params, this.props);
-    this.props.fetchRefunds(params);
-    this.props.fetchSettlements(params);
+    fetchRefunds(payload);
+    fetchSettlements(payload);
   }
 
   fetchPayments(params, nextProps) {
@@ -161,7 +170,15 @@ class RecentActivity extends Component {
       this.props.startDate?.unix() !== nextProps.startDate?.unix() ||
       this.props.endDate?.unix() !== nextProps.endDate?.unix()
     ) {
+      const payload = { ...DEFAULT_PARAMS };
+      const { fetchRefunds, fetchSettlements } = this.props;
+      if (nextProps.startDate && nextProps.endDate) {
+        payload.from = nextProps.startDate.unix();
+        payload.to = nextProps.endDate.unix();
+      }
       this.fetchPayments(DEFAULT_PARAMS, nextProps);
+      fetchRefunds(payload);
+      fetchSettlements(payload);
     }
   }
 
