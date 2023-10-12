@@ -12,6 +12,10 @@ class Factory
             \RZP\Models\Merchant\Email\Entity::class => new Email($saveResponse),
             \RZP\Models\Merchant\BusinessDetail\Entity::class => new BusinessDetail($saveResponse),
             \RZP\Models\Merchant\Document\Entity::class => new Document($saveResponse),
+            \RZP\Models\Merchant\Detail\Entity::class => new MerchantDetail($saveResponse),
+            \RZP\Models\Merchant\Stakeholder\Entity::class => new Stakeholder($saveResponse),
+            \RZP\Models\Merchant\Entity::class => new Merchant($saveResponse),
+            \RZP\Models\Address\Entity::class => new Address($saveResponse),
             default => null,
         };
     }

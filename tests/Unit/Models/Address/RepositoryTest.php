@@ -3,22 +3,31 @@
 namespace Unit\Models\Address;
 
 use Config;
+use Google\Protobuf\StringValue;
 use Razorpay\Asv\Error\GrpcError;
 use Rzp\Accounts\Account\V1\Stakeholder;
 use Rzp\Accounts\Merchant\V1\Address;
 use Rzp\Accounts\Merchant\V1\AddressResponseByStakeholderId;
+use Rzp\Accounts\Merchant\V1\AddressSaveRequest;
+use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
+use Rzp\Accounts\Merchant\V1\MerchantSaveRequest;
+use Rzp\Accounts\Merchant\V1\SaveRequest;
+use Rzp\Accounts\Merchant\V1\SaveResponse;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Address\Entity as AddressEntity;
 use RZP\Models\Address\Repository;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant;
 use RZP\Models\Merchant\Stakeholder\Entity as StakeholderEntity;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Stakeholder\Repository as StakeholderRepo;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Stakeholder as StakeholderWrapper;
+use Unit\Models\Merchant\TestingHelper\RepositoryTestHelper;
 
 
-class RepositoryTest extends TestCase
+class RepositoryTest extends RepositoryTestHelper
 {
 
     private $stakeholderEntityJson1 = '{
@@ -218,6 +227,157 @@ class RepositoryTest extends TestCase
         $repo->asvRouter = $asvRouterMock;
         $gotAddress = $repo->fetchPrimaryAddressForStakeholderOfTypeResidential($stakeholder, "residential");
         self::assertEquals($addressEntity1->toArray(), $gotAddress->toArray());
+    }
+
+    public function testAddressSaveOrFailAsv()
+    {
+
+        /*
+         *  Base Setup for the test
+         *
+         */
+
+        $repo     = new Repository();
+        $address = new StakeholderWrapper();
+
+        $entity1 = $this->getAddressEntityFromJson($this->addressEntityJson1);
+
+        $proto1 = $this->getAddressProtoFromJson($this->addressEntityJson1);
+        $proto1->setCreatedAt(0);
+        $proto1->setUpdatedAt(0);
+
+
+        $saveResponse = (new SaveResponse())->setAddresses(
+            [
+                new EntitySaveResponse(
+                [
+                    "id" => "JWNkBHL4Waqqf8",
+                    "created_at" => 10,
+                    "updated_at" => 10,
+                ]
+            )
+            ]
+        );
+
+        /*
+         * Test 1: The save or fail ASV should not be reached if write is not enabled.
+         */
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = false;
+        $this->getWriteMockClient()->expects($this->never())->method("save");
+        $repo->saveOrFail($entity1);
+
+        /*
+        * Test  2: The save or fail ASV should not be reached if Splitz is off.
+        */
+
+        // false, false
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $this->setSplitzWithOutputForBulk(["false", "false"], 1);
+        $this->getWriteMockClient()->expects($this->never())->method("save");
+        $repo->saveOrFail($entity1);
+
+        // true, false
+        $this->setSplitzWithOutputForBulk(["true", "false"], 1);
+        $this->getWriteMockClient()->expects($this->never())->method("save");
+        $repo->saveOrFail($entity1);
+
+        // false, true
+        $this->setSplitzWithOutputForBulk(["false", "true"], 1);
+        $repo->saveOrFail($entity1);
+        $this->getWriteMockClient()->expects($this->never())->method("save");
+        /*
+        * Test  3: The save or fail ASV should not be reached if Splitz throws exception.
+        */
+        $this->setSplitzWithOutputForBulk(["false", "true"], 1, true);
+        $this->getWriteMockClient()->expects($this->never())->method("save");
+        $repo->saveOrFail($entity1);
+//
+        /*
+        * Test  4-1: Save Or should work fine if splitz is on, created updated_at should be updated.
+         *  Case for create
+        */
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $addressSaveRequest3 = new AddressSaveRequest();
+        $entity1 = $this->getAddressEntityFromJson($this->addressEntityJson1);
+        $addressSaveRequest3->setAddress($proto1);
+        $addressSaveRequest3->setFields(array_keys($entity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setAddressSaveRequests([$addressSaveRequest3]);
+        $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
+        $address->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($entity1);
+        self::assertEquals(10, $entity1['created_at']);
+        self::assertEquals(10, $entity1['updated_at']);
+
+        /*
+         * Test  4-2: Save Or should work fine if splitz is on, created updated_at should be updated. This is case of update
+         */
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $entity1['city']                        = "pune";
+        $proto1->setCity((new StringValue())->setValue("pune"));
+        $addressSaveRequest3 = new AddressSaveRequest();
+        $addressSaveRequest3->setAddress($proto1);
+        $addressSaveRequest3->setFields(array_keys($entity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setAddressSaveRequests([$addressSaveRequest3]);
+        $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
+        $address->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($entity1);
+        self::assertEquals(10, $entity1['created_at']);
+        self::assertEquals(10, $entity1['updated_at']);
+
+
+        /*
+         * Test  4-3: Save operation should not happen if no dirty field present
+         */
+        $entity1->setRawAttributes($entity1->getAttributes(), true);
+        $addressSaveRequest3 = new AddressSaveRequest();
+        $addressSaveRequest3->setAddress($proto1);
+        $addressSaveRequest3->setFields(array_keys($entity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setAddressSaveRequests([$addressSaveRequest3]);
+        $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->never())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
+        $address->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($entity1);
+        self::assertEquals(10, $entity1['created_at']);
+        self::assertEquals(10, $entity1['updated_at']);
+
+
+        /*
+        * Test 5: Save or fail should fail, if Splitz is on, asv throw exception.
+        */
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $entity1 = $this->getAddressEntityFromJson($this->addressEntityJson1);
+        $proto1 = $this->getAddressProtoFromJson($this->addressEntityJson1);
+        $proto1->setCreatedAt(0);
+        $proto1->setUpdatedAt(0);
+        $addressSaveRequest3 = new AddressSaveRequest();
+        $addressSaveRequest3->setAddress($proto1);
+        $addressSaveRequest3->setFields(array_keys($entity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setAddressSaveRequests([$addressSaveRequest3]);
+        $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->once())->method("save")->with($saveRequest)->
+        willThrowException(new \RZP\Exception\BaseException("I am ASV Exception.", "ASV_SERVER_ERROR"));
+        $address->getAsvSdkClient()->setWriteService($writeService);
+        try {
+            $repo->saveOrFail($entity1);
+            d("i am here");
+            self::fail("Exception was expected.");
+        } catch (\Exception $e) {
+            self::assertEquals(\Illuminate\Database\QueryException::class, get_class($e));
+            self::assertEquals("ASV_SERVER_ERROR", $e->getCode());
+            self::assertEquals("I am ASV Exception. (SQL: )", $e->getMessage());
+            self::assertEquals([], $e->getBindings());
+            self::assertEquals("", $e->getSql());
+
+            //created_at, updated_at not changed
+            self::assertEquals(2313, $entity1['created_at']);
+            self::assertEquals(2342, $entity1['updated_at']);
+        }
     }
 
     private function createStakeholderInDatabase($json)

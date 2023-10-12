@@ -45,6 +45,9 @@ class Metric
     const ASV_WRITE_REQUEST_ROUTER_ERROR              = 'asv_router_error';
 
     const ASV_WRITE_REQUEST_ROUTER_RESULT       = 'asv_write_request_router_result';
+
+    const ASV_WRITE_MERCHANT_AND_MERCHANT_DETAIL_ROUTER_RESULT    = 'asv_write_merchant_and_merchant_detail_request_router_result';
+
     const DB_REQUESTS_BEFORE_MIGRATION          = 'db_requests_before_migration';
     const ASV_SYNC_ACCOUNT_DEVIATION_FAILED     = 'asv_sync_account_deviation_failed';
 

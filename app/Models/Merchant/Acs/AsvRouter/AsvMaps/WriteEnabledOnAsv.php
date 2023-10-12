@@ -6,6 +6,9 @@ use RZP\Models\Merchant\Email\Repository as MerchantEmailRepository;
 use RZP\Models\Merchant\Website\Repository as MerchantWebsiteRepository;
 use RZP\Models\Merchant\Document\Repository as MerchantDocumentRepository;
 use RZP\Models\Merchant\BusinessDetail\Repository as BusinessDetailRepository;
+use RZP\Models\Merchant\Detail\Repository as MerchantDetailRepository;
+use RZP\Models\Merchant\Repository as MerchantRepository;
+use RZP\Models\Address\Repository as AddressRepository;
 
 
 
@@ -19,7 +22,10 @@ final class WriteEnabledOnAsv {
         MerchantWebsiteRepository::class => true,
         MerchantEmailRepository::class => true,
         BusinessDetailRepository::class => true,
-        MerchantDocumentRepository::class => true
+        MerchantDocumentRepository::class => true,
+        MerchantDetailRepository::class => true,
+        MerchantRepository::class => true,
+        AddressRepository::class => true,
     );
 
     public static array $DELETE_OR_FAIL = array(

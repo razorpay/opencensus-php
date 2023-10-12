@@ -56,6 +56,8 @@ class Constant
 
     const ADDRESS  = 'stakeholder';
 
+    const STAKEHOLDER_ADDRESS = "stakeholder_address";
+
     const ENTITY = 'entity';
 
     const MERCHANT_ID = 'merchant_id';

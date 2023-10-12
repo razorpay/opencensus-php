@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Acs\ParityChecker\Entity;
 
 use App;
 use RZP\Models\Merchant\Acs\ParityChecker\Entity\TestData\TestDataInterface;
+use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\Repository;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Base\RepositoryManager;
@@ -46,6 +48,15 @@ class Base
         $this->comparator = new Comparator\Base();
         $this->merchantId = $merchantId;
         $this->parityCheckMethods = $parityCheckMethods;
+    }
+
+    public function createMerchantWithId($id) {
+        $repo = new Repository();
+        $entityMerchant = new Entity();
+        $entityMerchant->build();
+        $entityMerchant->country_code = "IN";
+        $entityMerchant->id  = $id;
+        $repo->saveOrFail($entityMerchant);
     }
 
     /**
@@ -187,10 +198,16 @@ class Base
         foreach($testDataItem[Constant::CUSTOM_ATTRIBUTES] as $attribute => $value) {
             if(is_callable($value)) {
                 $entity->$attribute  = $value($entity);
+
+                if($this->checkIfMerchantDetails($entity) and $attribute === "merchant_id") {
+                    $this->createMerchantWithId($entity->merchant_id);
+                }
                 continue;
             }
+
             $entity->$attribute = $value;
         }
+
 
         return $entity;
     }
@@ -244,11 +261,20 @@ class Base
                 ];
         }
 
-        $difference = $this->comparator->getExactDifference(
-            $this->unsetIgnoreKeys($entity->toArray()),
-            $this->unsetIgnoreKeys($asvEntity->toArray()),
-            true
-        );
+        $difference = [];
+
+        if($this->checkIfMerchantDetails($entity) === false and
+            $this->checkIfMerchantEntity($entity) === false and
+            $this->checkIfStakeholderEntity($entity) === false
+        ) {
+
+
+            $difference = $this->comparator->getExactDifference(
+                $this->unsetIgnoreKeys($entity->toArray()),
+                $this->unsetIgnoreKeys($asvEntity->toArray()),
+                true
+            );
+        }
 
         if($difference != []) {
             return [
@@ -404,8 +430,22 @@ class Base
         return in_array($entity->getEntityName(),\RZP\Constants\Entity::AUDITED_ENTITIES, true) === true;
     }
 
+    private function checkIfMerchantEntity($entity) : bool {
+        return $entity->getEntityName() === "merchant";
+    }
+
     private function getEntityId($entity) : string
     {
         return  $entity->getAttributes()["id"] ?? ($entity->getAttributes()["merchant_id"] ?? "");
+    }
+
+    private function checkIfMerchantDetails($entity) : bool
+    {
+        return $entity->getEntityName() === "merchant_detail";
+    }
+
+    private function checkIfStakeholderEntity($entity)
+    {
+        return $entity->getEntityName() === "stakeholder";
     }
 }

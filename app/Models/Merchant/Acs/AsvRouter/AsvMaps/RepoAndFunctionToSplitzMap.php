@@ -48,20 +48,24 @@ final class RepoAndFunctionToSplitzMap
             FunctionConstant::FIND_OR_FAIL =>  SplitzConstant::SPLITZ_MERCHANT_GET_BY_ID,
             FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_MERCHANT_GET_BY_ID,
             FunctionConstant::FIND_FOR_IMPLICIT_JOIN => SplitzConstant::SPLITZ_MERCHANT_FIND_FOR_IMPLICIT_JOIN,
+            FunctionConstant::SAVE_OR_FAIL => SplitzConstant::SPLITZ_MERCHANT_SAVE_OR_FAIL,
         ),
         AddressRepository::class => array(
             FunctionConstant::GET_BY_STAKEHOLDER_ID => SplitzConstant::SPLITZ_ADDRESS_GET_BY_STAKEHOLDER_ID,
+            FunctionConstant::SAVE_OR_FAIL => SplitzConstant::SPLITZ_ADDRESS_SAVE_OR_FAIL,
         ),
         StakeholderRepository::class => array(
             FunctionConstant::FIND_OR_FAIL => SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_ID,
             FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_ID,
             FunctionConstant::GET_BY_MERCHANT_ID => SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_MERCHANT_ID,
             FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN => SplitzConstant::SPLITZ_IMPLICIT_JOIN_STAKEHOLDER_BY_MERCHANTID,
+            FunctionConstant::SAVE_OR_FAIL => SplitzConstant::SPLITZ_STAKEHOLDER_SAVE_OR_FAIL,
         ),
         MerchantDetailRepository::class => array(
             FunctionConstant::FIND_OR_FAIL => SplitzConstant::SPLITZ_MERCHANT_DETAIL_GET_BY_ID,
             FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_MERCHANT_DETAIL_GET_BY_ID,
             FunctionConstant::FIND_FOR_IMPLICIT_JOIN => SplitzConstant::SPLITZ_MERCHANT_DETAIL_FIND_FOR_IMPLICIT_JOIN,
+            FunctionConstant::SAVE_OR_FAIL => SplitzConstant::SPLITZ_MERCHANT_DETAIL_SAVE_OR_FAIL,
         ),
     );
 

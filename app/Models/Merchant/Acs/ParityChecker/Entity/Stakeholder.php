@@ -17,6 +17,9 @@ class Stakeholder extends Base implements ParityInterface
     {
         parent::__construct($merchantId, $parityCheckMethods);
         $this->stakeholder = new \RZP\Models\Merchant\Acs\AsvSdkIntegration\Stakeholder();
+        $this->entityClass = StakeholderEntity::class;
+        $this->entityRepoClass = \RZP\Models\Merchant\Stakeholder\Repository::class;
+        $this->testData = new TestData\Stakeholder();
     }
 
     /**

@@ -6,6 +6,7 @@ use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Acs\ParityChecker\Constant\Constant;
 use RZP\Models\Merchant\Acs\ParityChecker\ParityInterface;
+use RZP\Models\Merchant\Detail\Entity;
 
 class MerchantDetail extends Base implements ParityInterface
 {
@@ -15,6 +16,9 @@ class MerchantDetail extends Base implements ParityInterface
     {
         parent::__construct($merchantId, $parityCheckMethods);
         $this->merchantDetail = new \RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDetail();
+        $this->entityClass = new Entity();
+        $this->entityRepoClass = new \RZP\Models\Merchant\Detail\Repository();
+        $this->testData = new \RZP\Models\Merchant\Acs\ParityChecker\Entity\TestData\MerchantDetails();
     }
 
     /**

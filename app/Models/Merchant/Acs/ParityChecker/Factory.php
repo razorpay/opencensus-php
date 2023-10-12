@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Acs\ParityChecker;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
+use RZP\Models\Merchant\Acs\ParityChecker\Entity\Address;
 use RZP\Models\Merchant\Acs\ParityChecker\Entity\Merchant;
 use RZP\Models\Merchant\Acs\ParityChecker\Constant\Constant;
 use RZP\Models\Merchant\Acs\ParityChecker\Entity\MerchantDetail;
@@ -31,6 +32,7 @@ class Factory
             Constant::STAKEHOLDER => Stakeholder::class,
             Constant::MERCHANT_DETAIL => MerchantDetail::class,
             Constant::MERCHANT => Merchant::class,
+            Constant::STAKEHOLDER_ADDRESS => Address::class,
             default => throw new BaseException('parity checker class is not defined for entity ' . $entity,
                 ErrorCode::ASV_INTERNAL_PARITY_CHECKER_ERROR),
         };

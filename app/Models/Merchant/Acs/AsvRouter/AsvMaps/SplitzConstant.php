@@ -49,4 +49,11 @@ final class SplitzConstant
     const SPLITZ_MERCHANT_BUSINESS_DETAIL_SAVE_OR_FAIL = 'splitz_experiment_merchant_business_detail_save_or_fail';
 
     const SPLITZ_MERCHANT_DOCUMENT_SAVE_OR_FAIL = 'splitz_experiment_merchant_document_save_or_fail';
+
+    const SPLITZ_MERCHANT_DETAIL_SAVE_OR_FAIL = 'splitz_experiment_merchant_detail_save_or_fail';
+
+    const SPLITZ_STAKEHOLDER_SAVE_OR_FAIL = 'splitz_experiment_stakeholder_save_or_fail';
+    const SPLITZ_MERCHANT_SAVE_OR_FAIL = 'splitz_experiment_merchant_save_or_fail';
+
+    const SPLITZ_ADDRESS_SAVE_OR_FAIL = 'splitz_experiment_address_save_or_fail';
 }

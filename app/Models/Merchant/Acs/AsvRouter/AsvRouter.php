@@ -7,6 +7,8 @@ use phpDocumentor\Reflection\Types\Self_;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
+use RZP\Models\Merchant\Repository as MerchantRepository;
+use RZP\Models\Merchant\Detail\Repository as MerchantDetailRepository;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Constants\Metric;
 use RZP\Trace\TraceCode;
@@ -239,11 +241,19 @@ class AsvRouter
             // When We ramp up for all entities.
             // Why both metric/log?: It is hard to get insights from logs for over
             // 7 days, hence, also adding a metric.
-            $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_RESULT, [
-                'routeOrWorkerName' => $routeOrWorkerName,
-                'isWriteRequestRouted' => $isRequestRoutedToAsv,
-                'identifier' => $repoClass . '::' . $functionName,
-            ]);
+            if ($repoClass != MerchantRepository::class or $repoClass != MerchantDetailRepository::class) {
+                $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_RESULT, [
+                    'routeOrWorkerName' => $routeOrWorkerName,
+                    'isWriteRequestRouted' => $isRequestRoutedToAsv,
+                    'identifier' => $repoClass . '::' . $functionName,
+                ]);
+            } else {
+                $this->trace->count(Metric::ASV_WRITE_MERCHANT_AND_MERCHANT_DETAIL_ROUTER_RESULT, [
+                    'routeOrWorkerName' => $routeOrWorkerName,
+                    'isWriteRequestRouted' => $isRequestRoutedToAsv,
+                    'identifier' => $repoClass . '::' . $functionName,
+                ]);
+            }
 
             $this->trace->info(TraceCode::ASV_WRITE_REQUEST_ROUTER_RESULT, [
                 'routeOrWorkerName' => $routeOrWorkerName,

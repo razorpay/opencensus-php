@@ -3,6 +3,14 @@
 namespace Unit\Models\Merchant;
 
 use Config;
+use Google\Protobuf\Int32Value;
+use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
+use Rzp\Accounts\Merchant\V1\MerchantDocumentSaveRequest;
+use Rzp\Accounts\Merchant\V1\MerchantSaveRequest;
+use Rzp\Accounts\Merchant\V1\SaveRequest;
+use Rzp\Accounts\Merchant\V1\SaveResponse;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument;
 use RZP\Tests\Functional;
 use Razorpay\Asv\Error\GrpcError;
 use RZP\Models\Merchant\Repository;
@@ -128,47 +136,47 @@ class RepositoryTest extends RepositoryTestHelper
 
         $this->createMerchantInDatabase($this->merchantEntityJson1);
 
-        $merchantEntity1 = $this->getMerchantEntityFromJson($this->merchantEntityJson1);
+        $merchantEntity1      = $this->getMerchantEntityFromJson($this->merchantEntityJson1);
         $merchantEntity1Array = $merchantEntity1->toArray();
-        $merchantProto1 = $this->getMerchantProtoFromJson($this->merchantEntityJson1);
+        $merchantProto1       = $this->getMerchantProtoFromJson($this->merchantEntityJson1);
 
         // Test Case 1 - ExcludedRoute true - Request for findOrFail & findOrFailPublic  should not go to account service
         $this->setSplitzWithOutput("false", 0);
-        $repo = new Repository();
+        $repo            = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, true, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantEntity1Array, "CzmiCwTPCL3t2K");
 
         // Test Case 2 - SaveRoute false - Splitz off - Request for findOrFail & findOrFailPublic  should not go to account service
         $this->setSplitzWithOutput("false", 2);
-        $repo = new Repository();
+        $repo            = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantEntity1Array, "CzmiCwTPCL3t2K");
 
         // Test Case 3 - SaveRoute false - Splitz Exception - Request for findOrFail & findOrFailPublic  should not go to account service
         $this->splitzShouldThrowException(2);
-        $repo = new Repository();
+        $repo            = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantEntity1Array, "CzmiCwTPCL3t2K");
 
 
         // Test Case 4 - SaveRoute false - Column Selection - Request for findOrFail & findOrFailPublic should not go to account service
         $this->setSplitzWithOutput("false", 0);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
-        $merchantEntityForFindOrFail = $repo->findOrFail("CzmiCwTPCL3t2K", ["id"]);
+        $repo                              = new Repository();
+        $repo->asvRouter                   = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $merchantEntityForFindOrFail       = $repo->findOrFail("CzmiCwTPCL3t2K", ["id"]);
         $merchantEntityForFindOrFailPublic = $repo->findOrFailPublic("CzmiCwTPCL3t2K", ["id"]);
         $this->assertEquals(["id" => $merchantEntity1Array['id']], $merchantEntityForFindOrFail->toArray());
         $this->assertEquals(["id" => $merchantEntity1Array['id']], $merchantEntityForFindOrFailPublic->toArray());
 
         // Test Case 5 - SaveRoute false - array of ids - Request for findOrFail & findOrFailPublic should not go to account service
         $this->setSplitzWithOutput("false", 0);
-        $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
-        $merchantEntityForFindOrFail = $repo->findOrFail(["CzmiCwTPCL3t2K"]);
-        $merchantEntityForFindOrFailPublic = $repo->findOrFailPublic(["CzmiCwTPCL3t2K"]);
-        $merchantEntityForFindOrFailArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($merchantEntity1Array, $merchantEntityForFindOrFail->first()->toArray());
-        $merchantEntityForFindOrFailPublicArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($merchantEntity1Array, $merchantEntityForFindOrFailPublic->first()->toArray());
-        $merchantEntityForFindOrFailArray['audit_id'] = $merchantEntity1Array['audit_id'];
+        $repo                                               = new Repository();
+        $repo->asvRouter                                    = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
+        $merchantEntityForFindOrFail                        = $repo->findOrFail(["CzmiCwTPCL3t2K"]);
+        $merchantEntityForFindOrFailPublic                  = $repo->findOrFailPublic(["CzmiCwTPCL3t2K"]);
+        $merchantEntityForFindOrFailArray                   = $this->removeNonExistingKeysFromEntityFetchedFromDB($merchantEntity1Array, $merchantEntityForFindOrFail->first()->toArray());
+        $merchantEntityForFindOrFailPublicArray             = $this->removeNonExistingKeysFromEntityFetchedFromDB($merchantEntity1Array, $merchantEntityForFindOrFailPublic->first()->toArray());
+        $merchantEntityForFindOrFailArray['audit_id']       = $merchantEntity1Array['audit_id'];
         $merchantEntityForFindOrFailPublicArray['audit_id'] = $merchantEntity1Array['audit_id'];
         $this->assertEquals($merchantEntity1Array, $merchantEntityForFindOrFailArray);
         $this->assertEquals($merchantEntity1Array, $merchantEntityForFindOrFailPublicArray);
@@ -178,14 +186,14 @@ class RepositoryTest extends RepositoryTestHelper
         // Test Case 6 - SaveRoute false - Splitz on - Request for findOrFail & findOrFailPublic  should go to account service
         $this->setSplitzWithOutput("true", 2);
         $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t2K", $merchantResponse, null, "getById", 2);
-        $repo = new Repository();
+        $repo            = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantEntity1Array, "CzmiCwTPCL3t2K");
 
         // Test Case 7 - SaveRoute false - Splitz on - Request for findOrFail & findOrFailPublic  should go to account service - Exception occurs fallback to DB
         $this->setSplitzWithOutput("true", 2);
         $this->setEntityMockClientWithIdAndResponse("CzmiCwTPCL3t2K", null, new GrpcError(STATUS_DEADLINE_EXCEEDED, "deadline exceeded"), "getById", 2);
-        $repo = new Repository();
+        $repo            = new Repository();
         $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->callFindOrFailAndFindOrFailPublicAndCompare($repo, $merchantEntity1Array, "CzmiCwTPCL3t2K");
 
@@ -230,16 +238,16 @@ class RepositoryTest extends RepositoryTestHelper
                 "setterFunctionName" => 'setMerchant',
                 "responseSetterFunctionName" => 'setMerchant',
                 "entityRepo" => new Repository(),
-                "entityRepoName" =>  'merchant',
+                "entityRepoName" => 'merchant',
                 "asvMockMethod" => "getById",
                 "entityName" => "merchant",
                 "entityData" => $this->merchantEntityJson1,
                 "entityClass" => new MerchantEntity(),
-                "entityProtoClass"  => new MerchantProto(),
+                "entityProtoClass" => new MerchantProto(),
                 "AssociatedEntityRepo" => new \RZP\Models\Merchant\Detail\Repository(),
                 "AssociatedEntityName" => "merchant_detail",
                 "AssociatedEntityData" => $this->merchantDetailEntityJson1,
-                "AssociatedEntityClass" =>  new MerchantDetailEntity(),
+                "AssociatedEntityClass" => new MerchantDetailEntity(),
                 "mockBuilderInterface" => "Razorpay\Asv\Interfaces\MerchantInterface",
                 "merchant_id" => "CzmiCwTPCL3t2K",
                 "shouldEntityNeedsToBeCreated" => false,
@@ -260,16 +268,16 @@ class RepositoryTest extends RepositoryTestHelper
                 "setterFunctionName" => 'setMerchant',
                 "responseSetterFunctionName" => 'setMerchant',
                 "entityRepo" => new Repository(),
-                "entityRepoName" =>  'merchant',
+                "entityRepoName" => 'merchant',
                 "asvMockMethod" => "getById",
                 "entityName" => "merchant",
                 "entityData" => $this->merchantEntityJson1,
                 "entityClass" => new MerchantEntity(),
-                "entityProtoClass"  => new MerchantProto(),
+                "entityProtoClass" => new MerchantProto(),
                 "AssociatedEntityRepo" => new \RZP\Models\Adjustment\Repository(),
                 "AssociatedEntityName" => "adjustment",
                 "AssociatedEntityData" => $this->adjustmentEntityJson1,
-                "AssociatedEntityClass" =>  new AdjustmentEntity(),
+                "AssociatedEntityClass" => new AdjustmentEntity(),
                 "mockBuilderInterface" => "Razorpay\Asv\Interfaces\MerchantInterface",
                 "merchant_id" => "CzmiCwTPCL3t2K",
                 "id" => "7wmZhMR5L6cAyu",
@@ -288,10 +296,163 @@ class RepositoryTest extends RepositoryTestHelper
         $this->runTestsForImplicitJoin($entitiesData);
     }
 
-    public function updateAuditIdAndAssert($entityRepo, $associatedEntity, $entityArray, $relationName, $repoName) {
-        app('repo')->$repoName = $entityRepo;
-        $entity = $associatedEntity->$relationName->toArray();
-        $entity['audit_id'] = "M4Au4oJAxUkdNV";
+    public function testMerchantSaveOrFailAsv()
+    {
+
+
+        /*
+         *  Base Setup for the test
+         *
+         */
+
+        $repo     = new \RZP\Models\Merchant\Repository();
+        $merchant = new Merchant();
+
+        $entity1 = $this->getMerchantEntityFromJson($this->merchantEntityJson1);
+
+        $proto1 = $this->getMerchantProtoFromJson($this->merchantEntityJson1);
+        $proto1->setCreatedAt(0);
+        $proto1->setUpdatedAt(0);
+        $proto1->setFreePayoutsConsumed((new Int32Value())->setValue(0));
+        $proto1->setSettlementSchedule((new Int32Value())->setValue(3));
+
+
+        $saveResponse = (new SaveResponse())->setMerchant(new EntitySaveResponse(
+                [
+                    "id" => "JWNkBHL4Waqqf8",
+                    "created_at" => 10,
+                    "updated_at" => 10,
+                    "audit_id" => "newtesttesttestid",
+                ]
+            )
+        );
+
+        /*
+         * Test 1: The save or fail ASV should not be reached if write is not enabled.
+         */
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = false;
+        $this->getWriteMockClient()->expects($this->never())->method("save");
+        $repo->saveOrFail($entity1);
+
+        /*
+        * Test  2: The save or fail ASV should not be reached if Splitz is off.
+        */
+
+        // false, false
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $this->setSplitzWithOutputForBulk(["false", "false"], 1);
+        $this->getWriteMockClient()->expects($this->never())->method("save");
+        $repo->saveOrFail($entity1);
+
+        // true, false
+        $this->setSplitzWithOutputForBulk(["true", "false"], 1);
+        $this->getWriteMockClient()->expects($this->never())->method("save");
+        $repo->saveOrFail($entity1);
+
+        // false, true
+        $this->setSplitzWithOutputForBulk(["false", "true"], 1);
+        $repo->saveOrFail($entity1);
+        $this->getWriteMockClient()->expects($this->never())->method("save");
+        /*
+        * Test  3: The save or fail ASV should not be reached if Splitz throws exception.
+        */
+        $this->setSplitzWithOutputForBulk(["false", "true"], 1, true);
+        $this->getWriteMockClient()->expects($this->never())->method("save");
+        $repo->saveOrFail($entity1);
+//
+        /*
+        * Test  4-1: Save Or should work fine if splitz is on, created updated_at should be updated.
+         *  Case for create
+        */
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $merchantSaveRequest3 = new MerchantSaveRequest();
+        $entity1 = $this->getMerchantEntityFromJson($this->merchantEntityJson1);
+        $merchantSaveRequest3->setMerchant($proto1);
+        $merchantSaveRequest3->setFields(array_keys($entity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantSaveRequest($merchantSaveRequest3);
+        $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
+        $merchant->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($entity1);
+        self::assertEquals(10, $entity1['created_at']);
+        self::assertEquals(10, $entity1['updated_at']);
+        self::assertEquals("newtesttesttestid", $entity1['audit_id']);
+
+        /*
+         * Test  4-2: Save Or should work fine if splitz is on, created updated_at should be updated. This is case of update
+         */
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $entity1['audit_id']                        = $proto1->getAuditIdUnwrapped();
+        $merchantSaveRequest3 = new MerchantSaveRequest();
+        $merchantSaveRequest3->setMerchant($proto1);
+        $merchantSaveRequest3->setFields(array_keys($entity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantSaveRequest($merchantSaveRequest3);
+        $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
+        $merchant->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($entity1);
+        self::assertEquals(10, $entity1['created_at']);
+        self::assertEquals(10, $entity1['updated_at']);
+        self::assertEquals("newtesttesttestid", $entity1['audit_id']);
+
+
+        /*
+         * Test  4-3: Save operation should not happen if no dirty field present
+         */
+        $entity1->setRawAttributes($entity1->getAttributes(), true);
+        $merchantSaveRequest3 = new MerchantSaveRequest();
+        $merchantSaveRequest3->setMerchant($proto1);
+        $merchantSaveRequest3->setFields(array_keys($entity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantSaveRequest($merchantSaveRequest3);
+        $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->never())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
+        $merchant->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($entity1);
+        self::assertEquals(10, $entity1['created_at']);
+        self::assertEquals(10, $entity1['updated_at']);
+        self::assertEquals("newtesttesttestid", $entity1['audit_id']);
+
+
+        /*
+        * Test 5: Save or fail should fail, if Splitz is on, asv throw exception.
+        */
+        $existingAuditId  = $proto1->getAuditIdUnwrapped();
+        $entity1['audit_id']  = $existingAuditId;
+        $merchantSaveRequest3 = new MerchantSaveRequest();
+        $merchantSaveRequest3->setMerchant($proto1);
+        $merchantSaveRequest3->setFields(array_keys($entity1->getDirty()));
+        $saveRequest = (new SaveRequest())->setMerchantSaveRequest($merchantSaveRequest3);
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
+        $this->setSplitzWithOutputForBulk(["true", "true"], 1);
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->once())->method("save")->with($saveRequest)->
+        willThrowException(new \RZP\Exception\BaseException("I am ASV Exception.", "ASV_SERVER_ERROR"));
+        $merchant->getAsvSdkClient()->setWriteService($writeService);
+        try {
+            $repo->saveOrFail($entity1);
+            self::fail("Exception was expected.");
+        } catch (\Exception $e) {
+            self::assertEquals(\Illuminate\Database\QueryException::class, get_class($e));
+            self::assertEquals("ASV_SERVER_ERROR", $e->getCode());
+            self::assertEquals("I am ASV Exception. (SQL: )", $e->getMessage());
+            self::assertEquals([], $e->getBindings());
+            self::assertEquals("", $e->getSql());
+
+            //created_at, updated_at not changed
+            self::assertEquals(10, $entity1['created_at']);
+            self::assertEquals(10, $entity1['updated_at']);
+            self::assertEquals($existingAuditId, $entity1['audit_id']);
+        }
+    }
+
+    public function updateAuditIdAndAssert($entityRepo, $associatedEntity, $entityArray, $relationName, $repoName)
+    {
+        app('repo')->$repoName    = $entityRepo;
+        $entity                   = $associatedEntity->$relationName->toArray();
+        $entity['audit_id']       = "M4Au4oJAxUkdNV";
         $entityForFindOrFailArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($entityArray, $entity);
         $this->assertEquals($entityForFindOrFailArray, $entityArray);
     }
@@ -302,11 +463,11 @@ class RepositoryTest extends RepositoryTestHelper
      */
     protected function callFindOrFailAndFindOrFailPublicAndCompare($repo, $expectedMerchantArray, $merchantId)
     {
-        $merchantEntityForFindOrFail = $repo->findOrFail($merchantId);
-        $merchantEntityForFindOrFailPublic = $repo->findOrFailPublic($merchantId);
-        $merchantEntityForFindOrFailArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($expectedMerchantArray, $merchantEntityForFindOrFail->toArray());
-        $merchantEntityForFindOrFailPublicArray = $this->removeNonExistingKeysFromEntityFetchedFromDB($expectedMerchantArray, $merchantEntityForFindOrFailPublic->toArray());
-        $merchantEntityForFindOrFailArray['audit_id'] = $expectedMerchantArray['audit_id'];
+        $merchantEntityForFindOrFail                        = $repo->findOrFail($merchantId);
+        $merchantEntityForFindOrFailPublic                  = $repo->findOrFailPublic($merchantId);
+        $merchantEntityForFindOrFailArray                   = $this->removeNonExistingKeysFromEntityFetchedFromDB($expectedMerchantArray, $merchantEntityForFindOrFail->toArray());
+        $merchantEntityForFindOrFailPublicArray             = $this->removeNonExistingKeysFromEntityFetchedFromDB($expectedMerchantArray, $merchantEntityForFindOrFailPublic->toArray());
+        $merchantEntityForFindOrFailArray['audit_id']       = $expectedMerchantArray['audit_id'];
         $merchantEntityForFindOrFailPublicArray['audit_id'] = $expectedMerchantArray['audit_id'];
 
         $this->assertEquals($expectedMerchantArray, $merchantEntityForFindOrFailArray);
@@ -327,7 +488,7 @@ class RepositoryTest extends RepositoryTestHelper
 
     protected function setEntityMockClientWithIdAndResponse($id, $response, $error, $method, $count)
     {
-        $merchant = new Merchant();
+        $merchant           = new Merchant();
         $merchantMockClient = $this->getMockClient();
         $merchantMockClient->expects($this->exactly($count))->method($method)->with($id, $merchant->getDefaultRequestMetaData())->willReturn([$response, $error]);
         $merchant->getAsvSdkClient()->setMerchant($merchantMockClient);
@@ -349,7 +510,7 @@ class RepositoryTest extends RepositoryTestHelper
 
     private function getMerchantEntityFromJson(string $json): MerchantEntity
     {
-        $merchantArray = json_decode($json, true);
+        $merchantArray  = json_decode($json, true);
         $merchantEntity = new MerchantEntity();
         $merchantEntity->setRawAttributes($merchantArray);
         return $merchantEntity;

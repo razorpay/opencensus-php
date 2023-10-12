@@ -169,6 +169,7 @@ class Base
               $this->getRequestMetaDataForSave($requestMetadata)
             );
 
+
             if ($err !== null) {
                 $this->handleError($err);
             }
