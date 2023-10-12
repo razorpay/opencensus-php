@@ -73,7 +73,7 @@ export const SEAMLESS_OPTIONS = [
 ];
 
 export const INSTANT_PROVIDER_UNSUPPORTED_METHODS = {
-  paytm: ['upi'],
+  paytm: [],
   payu: ['emi', 'emandate'],
   cashfree: ['card'],
 };
@@ -89,28 +89,13 @@ export const SEAMLESS_CONTENT = {
           </p>
           <p>
             This is a beta release and supports the following payment methods - Debit Cards, Credit
-            Cards, Netbanking, Paytm Wallet.
+            Cards, UPI, Netbanking, Paytm Wallet.
           </p>
         </div>
       ),
       buttonText: 'Please note that `Instant` integration mode does not support the following:',
       listPoints: (
         <ul>
-          <li>
-            <b>UPI Payments via Paytm</b>&nbsp;
-            <span>
-              - UPI payments via Paytm PG are currently not supported on this Integration mode. By
-              default UPI payments will be routed to Razorpay PG. You can &nbsp;
-              <a
-                href="https://razorpay.com/docs/payments/optimizer/create-custom-rule"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                configure a new rule
-              </a>
-              &nbsp; to change this if required.
-            </span>
-          </li>
           <li>
             <b>Refunds for Paytm payments</b>&nbsp;
             <span>
