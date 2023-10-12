@@ -146,6 +146,7 @@ class Validator extends Base\Validator
         ConfigKey::RBL_STATEMENT_FETCH_RETRY_LIMIT                => 'filled|integer',
         ConfigKey::BLOCK_X_REGISTRATION                           => 'filled|boolean',
         ConfigKey::BLOCK_YESBANK_RX_FAV                           => 'filled|boolean',
+        ConfigKey::FEES_BREAKUP_MANUAL_ID_SET                     => 'filled|integer',
         ConfigKey::REMOVE_SETTLEMENT_BA_COOL_OFF                  => 'filled|boolean',
         ConfigKey::BLOCK_YESBANK_WALLET_PAYOUTS                   => 'filled|boolean',
         ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX                => 'filled|array',

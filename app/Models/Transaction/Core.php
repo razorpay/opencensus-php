@@ -11,6 +11,7 @@ use Razorpay\Trace\Logger;
 use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\Settlement\Bucket;
@@ -2088,9 +2089,13 @@ class Core extends Base\Core
         {
             $this->repo->transaction(function() use ($txn, $feesSplit)
             {
+                $counter = 0;
+
                 foreach ($feesSplit as $feeSplit)
                 {
                     $feeSplit->transaction()->associate($txn);
+
+                    $this->checkIfManualIdSetIsRequired($feeSplit, $txn->source, $counter);
 
                     $this->repo->saveOrFail($feeSplit);
 
@@ -2101,6 +2106,8 @@ class Core extends Base\Core
                             'source_id'      => $txn->source->getPublicId(),
                             'transaction_id' => $txn->getId(),
                         ]);
+
+                    $counter++;
                 }
 
                 $this->trace->info(
@@ -2142,6 +2149,31 @@ class Core extends Base\Core
                     'payment_id'        => $txn->getEntityId(),
                     'fee_split'         => $feesSplit->toArrayPublic(),
                 ]);
+        }
+    }
+
+    public function checkIfManualIdSetIsRequired($feeSplit, $sourceEntity, $counter = 0)
+    {
+        if ((method_exists($sourceEntity, 'getEntityName')) and
+            ($sourceEntity->getEntityName() === Payout\Entity::PAYOUT) and
+            ($this->repo->beginTransactionAndRollback === true))
+        {
+            $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::FEES_BREAKUP_MANUAL_ID_SET]) ?? false;
+
+            if (boolval($config) === false)
+            {
+                return;
+            }
+
+            $dummyDateForCreation = Carbon::create(2016, 9, 29, $counter, 00, rand(0, 59), Timezone::IST)
+                                          ->getTimestamp();
+
+            /** @var $feeSplit Transaction\FeeBreakup\Entity */
+            $dummyIdGenerated = $feeSplit->generateUniqueIdFromTimestamp($dummyDateForCreation);
+
+            $feeSplit->setId($dummyIdGenerated);
+            $feeSplit->setCreatedAt($dummyDateForCreation);
+            $feeSplit->setUpdatedAt($dummyDateForCreation);
         }
     }
 

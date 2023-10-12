@@ -174,6 +174,8 @@ class ConfigKey
 
     const BLOCK_YESBANK_RX_FAV                  = self::PREFIX . 'block_yesbank_rx_fav';
 
+    const FEES_BREAKUP_MANUAL_ID_SET            = self::PREFIX . 'fees_breakup_manual_id_set';
+
     const REMOVE_SETTLEMENT_BA_COOL_OFF         = self::PREFIX . 'remove_settlement_ba_cool_off';
 
     const RX_ACCOUNT_NUMBER_SERIES_PREFIX       = self::PREFIX . 'rx_account_number_series_prefix';
@@ -414,7 +416,7 @@ class ConfigKey
     const DEFAULT_PRICING_FOR_SWIFT                 = self::PREFIX . 'default_pricing_for_swift';
 
     const CURRENCY_METHOD_LEVEL_DCC_MARKUP          = self::PREFIX . 'default_currency_method_level_dcc_markup';
-  
+
     const UPI_TURBO_SDK_TIMEOUTS                    = self::PREFIX . 'upi_turbo_sdk_timeouts';
 
     const PUBLIC_KEYS = [
@@ -464,6 +466,7 @@ class ConfigKey
         self::RBL_STATEMENT_FETCH_RETRY_LIMIT,
         self::BLOCK_X_REGISTRATION,
         self::BLOCK_YESBANK_RX_FAV,
+        self::FEES_BREAKUP_MANUAL_ID_SET,
         self::REMOVE_SETTLEMENT_BA_COOL_OFF,
         self::BLOCK_YESBANK_WALLET_PAYOUTS,
         self::RX_ACCOUNT_NUMBER_SERIES_PREFIX,

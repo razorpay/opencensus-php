@@ -241,6 +241,8 @@ class RepositoryManager extends Illuminate\Support\Manager
 {
     protected $app;
 
+    public $beginTransactionAndRollback = false;
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -442,10 +444,14 @@ class RepositoryManager extends Illuminate\Support\Manager
         {
             $this->db->beginTransaction();
 
+            $this->beginTransactionAndRollback = true;
+
             $result = $callback($this);
         }
         finally
         {
+            $this->beginTransactionAndRollback = false;
+
             $this->db->rollback();
         }
 
