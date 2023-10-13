@@ -272,10 +272,6 @@ class RblBankingAccountStatement extends Job
             $traceData['message']      = 'Deleting the job after configured number of tries. Still unsuccessful.';
 
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, $traceData);
-
-            $operation = 'banking account statement fetch job failed';
-
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
         }
 
         $this->delete();

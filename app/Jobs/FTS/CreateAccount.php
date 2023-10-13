@@ -145,10 +145,6 @@ class CreateAccount extends Job
             {
                 $this->delete();
 
-                $operation = 'fts create account job failed';
-
-                (new SlackNotification)->send($operation, $data, null, 1, 'fts_alerts');
-
                 return;
             }
             else

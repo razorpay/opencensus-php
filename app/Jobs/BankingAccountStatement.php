@@ -184,10 +184,6 @@ class BankingAccountStatement extends Job
             }
 
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, $data);
-
-            $operation = 'banking account statement fetch job failed';
-
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
         }
     }
 

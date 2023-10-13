@@ -104,11 +104,6 @@ class ConnectedBankingAccountGatewayBalanceUpdate extends Job
                 Metric::LABEL_TRACE_CHANNEL     => $this->params[BankingAccount\Entity::CHANNEL],
             ]);
 
-            $operation = 'banking account gateway balance update job failed';
-
-            // TODO:// change channel for alerts if wanted to have separately for icici
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
-
             $this->delete();
         }
     }

@@ -218,15 +218,6 @@ class Gateway extends BaseProcessor
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_EXISTING_RECORDS_FOUND, [
                 'data' => $data,
             ]);
-
-            $operation = 'existing records found while fetching the statement for RBL';
-
-            (new SlackNotification)->send(
-                $operation,
-                $data,
-                null,
-                1,
-                'rx_ca_rbl_alerts');
         }
         else
         {

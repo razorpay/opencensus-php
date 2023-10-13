@@ -643,12 +643,6 @@ abstract class ApiProcessor extends NodalAccount
         }
         else
         {
-            (new SlackNotification)->send('Card payout not supported for issuer',
-                [
-                    'id'     => $this->entity->getId(),
-                    'issuer' => $cardIssuer,
-                ], null, 1);
-
             new LogicException('IFSC code does not exist for this card issuer');
         }
     }

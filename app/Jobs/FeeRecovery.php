@@ -127,10 +127,6 @@ class FeeRecovery extends Job
                     Trace::ERROR,
                     TraceCode::FEE_RECOVERY_CRON_FAILURE_DELETE_JOB,
                     $data);
-
-                $operation = 'Fee Recovery job failed thrice';
-
-                (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
             }
             else
             {

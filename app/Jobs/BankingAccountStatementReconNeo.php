@@ -160,7 +160,7 @@ class BankingAccountStatementReconNeo extends Job
             {
                 $traceData = $this->params;
 
-                $traceData['message'] = $operation = 'Deleting the job after configured number of tries for gateway exception';
+                $traceData['message'] = 'Deleting the job after configured number of tries for gateway exception';
 
                 $traceData[BAS\Entity::MERCHANT_ID] = $BASCore->getBasDetails()->getMerchantId();
 
@@ -170,8 +170,6 @@ class BankingAccountStatementReconNeo extends Job
                     BAS\Metric::LABEL_CHANNEL => $this->params['channel'],
                     'is_monitoring'           => true,
                 ]);
-
-                (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_rbl_recon_alerts');
 
                 $this->delete();
             }
@@ -210,10 +208,6 @@ class BankingAccountStatementReconNeo extends Job
                 BAS\Metric::LABEL_CHANNEL => $this->params['channel'],
                 'is_monitoring'           => true,
             ]);
-
-            $operation = $this->params['channel'].' banking account statement fetch job failed';
-
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_rbl_recon_alerts');
         }
     }
 

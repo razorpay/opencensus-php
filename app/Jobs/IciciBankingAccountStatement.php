@@ -266,11 +266,6 @@ class IciciBankingAccountStatement extends Job
             }
 
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, $traceData);
-
-            $operation = 'icici banking account statement fetch job failed';
-
-            //TODO:// setup new channel for icici
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
         }
 
         $this->delete();

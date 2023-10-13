@@ -169,9 +169,6 @@ class BankingAccountStatementProcessor extends Job
                                     'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
                                 ]);
 
-            $operation = 'banking account statement processor job failed';
-
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
         }
     }
 

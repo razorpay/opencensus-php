@@ -5000,10 +5000,6 @@ class Core extends Base\Core
                 'account_statement_row'     => $bas->getId(),
             ];
 
-            $operation = 'RBL payout could not be marked as failed, account statement row exists for it';
-
-            (new SlackNotification)->send($operation, $data, null, 1, 'rx_rbl_recon_alerts');
-
             throw new Exception\LogicException(
                 'Failed payout has a corresponding BAS entity. This should be reversed instead, not failed.',
                 null,

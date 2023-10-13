@@ -554,15 +554,6 @@ class Core extends Base\Core
                         {
                             // Persisting in redis
                             $processor->storeMissingStatementsInRedis($missingTransactions, $accountNumber, $merchant->getId());
-
-                            $operation = 'Missing records found while fetching the statement for ' . $channel;
-
-                            (new SlackNotification)->send(
-                                $operation,
-                                $traceData,
-                                null,
-                                0,
-                                'rx_rbl_recon_alerts');
                         }
                     }
 

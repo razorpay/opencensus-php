@@ -154,7 +154,7 @@ class BankingAccountStatementRecon extends Job
             {
                 $traceData = $this->params;
 
-                $traceData['message'] = $operation = 'Deleting the job after configured number of tries for gateway exception';
+                $traceData['message'] = 'Deleting the job after configured number of tries for gateway exception';
 
                 $this->trace->error(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, $traceData);
 
@@ -162,8 +162,6 @@ class BankingAccountStatementRecon extends Job
                     BAS\Metric::LABEL_CHANNEL => $this->params['channel'],
                     'is_monitoring'           => $this->isMonitoring,
                 ]);
-
-                (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_rbl_recon_alerts');
 
                 $this->delete();
             }
@@ -219,10 +217,6 @@ class BankingAccountStatementRecon extends Job
                 BAS\Metric::LABEL_CHANNEL => $this->params['channel'],
                 'is_monitoring'           => $this->isMonitoring,
             ]);
-
-            $operation = $this->params['channel'].' banking account statement fetch job failed';
-
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_rbl_recon_alerts');
         }
     }
 

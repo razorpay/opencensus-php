@@ -148,13 +148,7 @@ class Service
 
     protected function sendProcessCompletionSlackAlert($data = null)
     {
-        (new SlackNotification)->send(
-            'Pagination process complete for ' . $this->entity->getRunFor(),
-            $data,
-            null,
-            1,
-            'x-payouts-core-alerts'
-        );
+
     }
 
     public function populateRedisKey($input): array
