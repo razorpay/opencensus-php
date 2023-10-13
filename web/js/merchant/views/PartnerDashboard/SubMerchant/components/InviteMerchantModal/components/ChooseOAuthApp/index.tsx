@@ -82,7 +82,13 @@ const ChooseOAuthApp = ({
                 borderColor="surface.border.normal.lowContrast"
                 borderWidth="thin"
               >
-                <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
+                <Box
+                  display="flex"
+                  gap="spacing.5"
+                  alignItems="center"
+                  flex="1"
+                  justifyContent="space-between"
+                >
                   <Box
                     display="flex"
                     gap="spacing.5"

@@ -101,6 +101,17 @@ export default class Application extends GenericEntity {
       }
     }
 
+    // pass the referral metadata
+
+    const clientID = params.client_details?.[1]?.id;
+    const redirectUri = params.client_details?.[1]?.redirect_url?.[0];
+
+    formData.append('referral_metadata[application_id]', this.id);
+    formData.append('referral_metadata[client_id]', clientID);
+    formData.append('referral_metadata[partner_id]', window.rzp_user?.merchant?.id);
+    formData.append('referral_metadata[redirect_uri]', redirectUri);
+    formData.append('referral_metadata[scope]', 'read_write');
+
     return merchantFetch({
       url: `oauth/applications/${this.id}`,
       mode: 'live',
