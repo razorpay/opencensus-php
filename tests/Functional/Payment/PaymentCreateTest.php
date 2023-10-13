@@ -8480,36 +8480,6 @@ class PaymentCreateTest extends TestCase
         $this->processAndAssertResponseData($testData, $response);
     }
 
-    public function test1CCOrderPaymentsWithoutCustomerDeatils()
-    {
-        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
-        $order = $this->fixtures->order->create(['receipt' => 'receipt']);
-        $this->fixtures->create('order_meta',
-            [
-                'order_id' => $order->getId(),
-                'value' => [
-                    'line_items_total' => $order->getAmount(),
-                    "cod_fee" => 0,
-                    "shipping_fee" => 0,
-                ],
-                'type' => 'one_click_checkout',
-            ]);
-        $this->ba->publicAuth();
-        $testData = $this->testData[__FUNCTION__];
-        $payment = $this->getDefaultPaymentArray();
-        $payment["order_id"] = 'order_' . $order->getId();
-        $payment["amount"] = $order->getAmount();
-        $testData['request']['content'] = $payment;
-
-        $this->expectException(BadRequestException::class);
-        $this->expectExceptionMessage('Something went wrong, please try again after sometime.');
-
-        $response = $this->makeRequestParent($testData['request']);
-
-        $this->processAndAssertStatusCode($testData, $response);
-        $this->processAndAssertResponseData($testData, $response);
-    }
-
     public function test1CCOrderPaymentsCodAsPaymentMethodRTOCheck()
     {
         $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);

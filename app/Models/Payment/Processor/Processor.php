@@ -9986,16 +9986,26 @@ class Processor
             {
                 return;
             }
-
+            $orderMetaValue = $orderMeta->getValue();
             // 1cc: Ensuring customer details check only occurs when oMeta is accompanied by shipping_fee etc.
-            $keys = array_keys($orderMeta->getValue());
+            $keys = array_keys($orderMetaValue);
 
             if (sizeof($keys) === 1 and $keys[0] === 'line_items_total')
             {
                 return;
             }
-
-            $customerDetails = $orderMeta->getValue()[Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS] ?? null;
+            // As orders are created in PG Router and Golang prefills fields with their default value, shipping,
+            // cod fee will always be set to 0 and line_items to nil for Magic X orders, so if there are fields apart
+            // from line_items_total and line_items is nil, we can assume it is a Magic X order and pass the validation.
+            if (
+                empty($orderMetaValue[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS]) === true &&
+                $orderMetaValue[Order\OrderMeta\Order1cc\Fields::SHIPPING_FEE] === 0 &&
+                $orderMetaValue[Order\OrderMeta\Order1cc\Fields::COD_FEE] === 0
+            )
+            {
+                return;
+            }
+            $customerDetails = $orderMetaValue[Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS] ?? null;
 
             if (empty($customerDetails) === true or empty($customerDetails[Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]) === true)
             {
@@ -10005,7 +10015,7 @@ class Processor
                     null);
             }
 
-            $promotions = $orderMeta->getValue()[Order\OrderMeta\Order1cc\Fields::PROMOTIONS] ?? null;
+            $promotions = $orderMetaValue[Order\OrderMeta\Order1cc\Fields::PROMOTIONS] ?? null;
 
             $couponData = null;
             $nectorDiscount = null;

@@ -116,8 +116,9 @@ class OneCcPaymentsTest extends TestCase
                 'order_id' => $order->getId(),
                 'value' => [
                     'line_items_total' => $order->getAmount(),
-                    "cod_fee" => 0,
-                    "shipping_fee" => 0,
+                    'cod_fee'          => 0,
+                    'shipping_fee'     => 0,
+                    'line_items'       => $this->lineItems(),
                 ],
                 'type' => 'one_click_checkout',
             ]);
@@ -135,5 +136,71 @@ class OneCcPaymentsTest extends TestCase
 
         $this->processAndAssertStatusCode($testData, $response);
         $this->processAndAssertResponseData($testData, $response);
+    }
+
+    public function test1CCOrderPaymentsForMagicX()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+        $order = $this->fixtures->order->create(['receipt' => 'receipt']);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value' => [
+                    'line_items_total' => $order->getAmount(),
+                    "cod_fee"          => 0,
+                    "shipping_fee"     => 0,
+                    "line_items"       => null,
+                ],
+                'type' => 'one_click_checkout',
+            ]);
+        $this->ba->publicAuth();
+        $testData = $this->testData[__FUNCTION__];
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = 'order_' . $order->getId();
+        $payment['amount'] = $order->getAmount();
+        $testData['request']['content'] = $payment;
+        $response = $this->makeRequestParent($testData['request']);
+        $this->processAndAssertStatusCode($testData, $response);
+        $this->processAndAssertResponseData($testData, $response);
+    }
+
+    public function test1CCOrderPaymentsForMagicXWithLineItems()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+        $order = $this->fixtures->order->create(['receipt' => 'receipt']);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value' => [
+                    'line_items_total' => $order->getAmount(),
+                    "cod_fee"          => 0,
+                    "shipping_fee"     => 0,
+                    "line_items"       => $this->lineItems(),
+                ],
+                'type' => 'one_click_checkout',
+            ]);
+        $this->ba->publicAuth();
+        $testData = $this->testData[__FUNCTION__];
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = 'order_' . $order->getId();
+        $payment['amount'] = $order->getAmount();
+        $testData['request']['content'] = $payment;
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('Something went wrong, please try again after sometime.');
+        $response = $this->makeRequestParent($testData['request']);
+        $this->processAndAssertStatusCode($testData, $response);
+        $this->processAndAssertResponseData($testData, $response);
+    }
+
+    protected function lineItems(): array
+    {
+        return [
+            [
+                'variant_id' => '12321',
+                'product_id' => '23456',
+                'price'      => 1000000,
+                'name'       => 'Test Product',
+            ]
+        ];
     }
 }

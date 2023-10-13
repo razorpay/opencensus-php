@@ -240,6 +240,7 @@ class Client
     {
         $headers = [
           'Content-type' => 'application/json',
+          'User-Agent'   => 'MagicGuzzleHTTP_' . $this->shopId . '/1'
         ];
 
         if ($apiType === OneClickCheckout\Constants::STOREFRONT)
@@ -266,7 +267,6 @@ class Client
             $this->tokenUsed = self::ACCESS_TOKEN_TYPE_ADMIN;
             $headers['X-Shopify-Access-Token'] = $this->oauthToken;
         }
-
         $this->headers = $headers;
     }
 
@@ -441,7 +441,6 @@ class Client
                'api_type'          => $apiType,
                'response'          => $response['body'],
                'headers'           => $response['headers'],
-               'input'             => $input,
                'access_token_used' => $this->tokenUsed,
             ]
         );

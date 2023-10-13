@@ -445,7 +445,6 @@ class Service extends Base\Service
                             'request' => $this->getMaskedContactDetails($input),
                             'response' => (empty($decodedResponse['promotion']) === true) ? $decodedResponse :
                                 $this->getMaskedCoupons(['promotions' => [$decodedResponse['promotion']]]),
-                            'exception' => $ex->getTrace(),
                             'message'   => $ex->getMessage(),
                             'internal_error_code' => $internalErrorCode
                         ]
