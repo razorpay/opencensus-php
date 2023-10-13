@@ -1,5 +1,5 @@
-import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { STATUS_DATA } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/data';
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 import type { PaymentType } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
 
@@ -26,16 +26,16 @@ type SubscriptionPlanDataT = {
   internal_subscription?: {
     status?: 'pending' | 'processed';
   };
+  next_charge_at?: string; // Time in epoch as string
+  current_start?: string; // Time in epoch as string
+  current_end?: string; // Time in epoch as string
   payment_subscription?: {
     id?: string;
     entity?: string;
     plan_id?: string;
     customer_id?: string;
     status?: 'created' | 'active' | 'authenticated' | 'pending' | 'halted' | 'cancelled';
-    current_start?: string; // Time in epoch as string
-    current_end?: string; // Time in epoch as string
     quantity?: number;
-    charge_at?: string; // Time in epoch as string
     end_at?: string; // Time in epoch as string
     total_count?: number;
     paid_count?: number;
@@ -68,4 +68,4 @@ type SubscriptionPlanDataT = {
 
 type StatusDataT = (typeof STATUS_DATA)[keyof typeof STATUS_DATA];
 
-export { PricingPlansProps, SubscriptionPlanDataT, StatusDataT };
+export { PricingPlansProps, StatusDataT, SubscriptionPlanDataT };

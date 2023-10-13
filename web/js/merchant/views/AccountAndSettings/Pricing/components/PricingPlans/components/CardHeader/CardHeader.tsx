@@ -17,9 +17,9 @@ const CardHeader = ({
   subscriptionPlanData,
   statusData,
 }: CardHeaderPropsT): JSX.Element | null => {
-  const timeToChargeAt = Number(subscriptionPlanData?.payment_subscription?.charge_at);
-  const timeSubscriptionStarted = Number(subscriptionPlanData?.payment_subscription?.current_start);
-  const timeSubscriptionEnds = Number(subscriptionPlanData?.payment_subscription?.current_end);
+  const timeToChargeAt = Number(subscriptionPlanData?.next_charge_at);
+  const timeSubscriptionStarted = Number(subscriptionPlanData?.current_start);
+  const timeSubscriptionEnds = Number(subscriptionPlanData?.current_end);
   const monthlyPlanAmount = Number(subscriptionPlanData?.plan?.monthly_plan_amount) / 100;
   const yearlyPlanAmount = Number(subscriptionPlanData?.plan?.yearly_plan_amount) / 100;
   const currentTime = new Date().getTime();
