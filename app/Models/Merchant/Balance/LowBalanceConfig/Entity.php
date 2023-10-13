@@ -9,11 +9,12 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\HardDeletes;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
     // Traits
-    use HasBalance;
+    use HasBalance, AsvGetAttribute;
     use HardDeletes;
 
     // properties

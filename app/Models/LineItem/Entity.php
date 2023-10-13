@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Item;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
+
 
     const ENTITY_ID        = 'entity_id';
     const ENTITY_TYPE      = 'entity_type';

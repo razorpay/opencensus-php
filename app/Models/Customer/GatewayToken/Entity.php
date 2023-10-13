@@ -4,12 +4,15 @@ namespace RZP\Models\Customer\GatewayToken;
 
 use RZP\Models\Base;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Terminal\Entity $terminal
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const MERCHANT_ID   = 'merchant_id';
     const TERMINAL_ID   = 'terminal_id';
     const TOKEN_ID      = 'token_id';

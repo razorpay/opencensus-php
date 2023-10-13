@@ -19,6 +19,7 @@ use RZP\Models\BankingAccount\AccountType;
 use RZP\Models\Feature\Constants as Features;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Card\Entity|BankAccount\Entity|Vpa\Entity|WalletAccount\Entity account
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Entity extends Base\PublicEntity
 {
 
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     // Attributes
     const ACCOUNT_TYPE  = 'account_type';

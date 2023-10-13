@@ -9,10 +9,11 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\QueryCache\Cacheable;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use Cacheable;
+    use Cacheable, AsvGetAttribute;
 
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';
