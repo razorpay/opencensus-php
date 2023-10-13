@@ -3850,6 +3850,176 @@ class BankTransferRxTest extends TestCase
     }
 
     /**
+     * Fund Loading failure happens due to banking Account TPV not present, but during refund since payer bank account
+     * entity not built due to validation failure, it fails.
+     */
+    public function testBankTransferIciciIMPSForRazorpayXWithPayerBankAccountCreationFailure()
+    {
+        Mail::fake();
+
+        $this->setupForIciciXFundLoading();
+
+        $this->enableRazorXTreatmentForNonTpvRefundsViaX();
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $commonMerchantBankingBalance = $this->getDbEntity('balance',
+                                                           [
+                                                               'merchant_id' => '100000Razorpay',
+                                                               'type'        => 'banking'
+                                                           ], 'live');
+
+        // Making pricing zero for this specific payout amount, mode etc. so that
+        $this->fixtures->on('live')->edit('pricing', 'Bbg7e4oKCgaubd',
+                                          [
+                                              'fixed_rate' => 0
+                                          ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        // Assert that no payments were created during this request
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading, $countOfPayoutsAfterFundLoading);
+
+        // Assert that two transactions were created. One for Bank transfer and one for payout.
+        $this->assertEquals($countOfTransactionsBeforeFundLoading, $countOfTransactionsAfterFundLoading);
+
+        // Since TPV account was not found, we shall send the Fund Loading failed email
+        Mail::assertQueued(FundLoadingFailed::class, function($mail) {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('₹ 50000', $viewData['amount']);
+            $this->assertEquals('YESB0000011', $viewData['payer_ifsc']);
+            $this->assertEquals('XXXXXXXXXXXXXXXXXX6789', $viewData['payer_account_number']);
+            $this->assertEquals('XXXXXXXXXXXX3333', $viewData['payee_account_number']);
+            $this->assertEquals(FundLoadingFailed::URL, $viewData['url']);
+
+            $mailSubject = 'Fund loading of ₹ 50000 to your RazorpayX account number XXXXXXXXXXXX3333 has been rejected';
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.merchant.razorpayx.fund_loading_failed', $mail->view);
+
+            return true;
+        });
+    }
+
+    /**
+     * Fund Loading success happens even though payer bank account is not built due to validaiton failure
+     * on payer account number.
+     */
+    public function testBankTransferIciciIMPSForRazorpayXWithPayerBankAccountCreationFailureButFundLoadingSuccess()
+    {
+        Mail::fake();
+
+        $this->setupForIciciXFundLoading();
+
+        $this->enableRazorXTreatmentForNonTpvRefundsViaX();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_TPV_FLOW]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $commonMerchantBankingBalance = $this->getDbEntity('balance',
+                                                           [
+                                                               'merchant_id' => '100000Razorpay',
+                                                               'type'        => 'banking'
+                                                           ], 'live');
+
+        // Making pricing zero for this specific payout amount, mode etc. so that
+        $this->fixtures->on('live')->edit('pricing', 'Bbg7e4oKCgaubd',
+                                          [
+                                              'fixed_rate' => 0
+                                          ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        // Assert that no payments were created during this request
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading, $countOfPayoutsAfterFundLoading);
+
+        // Assert that two transactions were created. One for Bank transfer and one for payout.
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1, $countOfTransactionsAfterFundLoading);
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        // Assertions on payer bank account for bank transfer
+        $this->assertNull($bankTransfer->getPayerBankAccountId());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        Mail::assertQueued(FundLoadingFailed::class, 0);
+    }
+
+    /**
      * We are trying to load funds to some existing account number which has a TPV but in pending state.
      * This will fail and get refunded back via fund loading to common merchant and a payout from that merchant.
      */

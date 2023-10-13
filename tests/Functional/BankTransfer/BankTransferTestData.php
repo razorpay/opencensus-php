@@ -2488,6 +2488,56 @@ return [
         ],
     ],
 
+    'testBankTransferIciciIMPSForRazorpayXWithPayerBankAccountCreationFailure' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/icici/internal',
+            'method'  => 'post',
+            'content' => [
+                'payee_account'  => null,
+                'payee_ifsc'     => null,
+                'payer_name'     => 'Name of account holder',
+                'payer_account'  => '9876543200000010126789',
+                'payer_ifsc'     => 'YESB0000011',
+                'mode'           => 'IMPS',
+                'time'           => 148415544000,
+                'amount'         => 50000,
+                'description'    => 'IMPS payment of 50,000 rupees',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid'          => true,
+                'message'        => null,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankTransferIciciIMPSForRazorpayXWithPayerBankAccountCreationFailureButFundLoadingSuccess' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/icici/internal',
+            'method'  => 'post',
+            'content' => [
+                'payee_account'  => null,
+                'payee_ifsc'     => null,
+                'payer_name'     => 'Name of account holder',
+                'payer_account'  => '9876543200000010126789',
+                'payer_ifsc'     => 'YESB0000011',
+                'mode'           => 'IMPS',
+                'time'           => 148415544000,
+                'amount'         => 50000,
+                'description'    => 'IMPS payment of 50,000 rupees',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid'          => true,
+                'message'        => null,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testAdminTestBankTransferPayment' => [
             'url' => '/ecollect/validate/test',
             'method' => 'post',
