@@ -2105,6 +2105,20 @@ class Service extends Base\Service
 
         $tokenCard->generateID();
 
+        if($tokenCard->getTrivia() === '2') {
+            if (empty($input['card_vault_token']) === true)
+            {
+                $this->trace->info(TraceCode::ALT_ID_TOKEN_MIGRATION_INVALID_REQUEST, [
+                    '$input'     =>  $input
+                ]);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+            } else  {
+                $tokenCard->setVaultToken($input['card_vault_token']);
+                $this->trace->info(TraceCode::ALT_ID_TOKEN_MIGRATION_CARD_VAULT_TOKEN_SET, [
+                    'tokenCard.VaultToken'     =>  $tokenCard->getVaultToken()
+                ]);
+            }
+        }
         if (isset($tokenCard->message_type))
         {
             unset($tokenCard->message_type);

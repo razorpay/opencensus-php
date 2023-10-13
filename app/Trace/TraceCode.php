@@ -1613,6 +1613,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATED_IIN_AND_CARD_ENTITY                           = 'UPDATED_IIN_AND_CARD_ENTITY';
     const RECURRING_SET_TERMINAL_FROM_TOKEN                     = 'RECURRING_SET_TERMINAL_FROM_TOKEN';
     const CARD_META_DATA_EVENT                                  = 'CARD_META_DATA_EVENT';
+    const ALT_ID_TOKEN_MIGRATION_INVALID_REQUEST                = 'ALT_ID_TOKEN_MIGRATION_INVALID_REQUEST';
+    const ALT_ID_TOKEN_MIGRATION_CARD_VAULT_TOKEN_SET           = 'ALT_ID_TOKEN_MIGRATION_CARD_VAULT_TOKEN_SET';
 
     //Pricing
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';
