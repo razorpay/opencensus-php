@@ -24,4 +24,4 @@ web/js/merchant/views/Settings/PaymentMethods     @amitabh-blade @NarasimhaSwamy
 web/js/merchant/views/Transactions/v1/SuccessRate @amitabh-blade @akash-sachan @NarasimhaSwamy
 web/js/merchant/views/Navigator                   @parth-p-ui @prem-io
 config/splitz.php                                 @sandeshdamkondwar @abhayp
-web/js/merchant/views/Transactions/v2             @ShivamKSRazorpay @AakashRaina
+web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe
