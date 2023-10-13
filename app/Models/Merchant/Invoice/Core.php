@@ -563,11 +563,9 @@ class Core extends Base\Core
         do{
             $merchantIdsWithCaRblActivated = $this->repo
                 ->banking_account_statement_details
-                ->getMerchantsByChannelAndAccountType(
+                ->getCurrentAccountActivatedMerchants(
                     $batch,
                     $skip,
-                    \RZP\Models\BankingAccount\Channel::RBL,
-                    AccountType::DIRECT,
                     $merchantIds,
                     $merchantIdsExcluded);
 
@@ -656,27 +654,6 @@ class Core extends Base\Core
                     'count' => $skip,
                 ]);
 
-            $skip = 0;
-
-            do {
-                $merchantIdsWithIciciCaAccounts = $this->repo
-                    ->banking_account_statement_details
-                    ->getMerchantsByChannelAndAccountType(
-                        $batch,
-                        $skip,
-                        \RZP\Models\BankingAccount\Channel::ICICI,
-                        AccountType::DIRECT,
-                        $merchantIds,
-                        $merchantIdsExcluded);
-
-                $merchantIdsFetchedViaNewQuery = array_merge($merchantIdsFetchedViaNewQuery, $merchantIdsWithIciciCaAccounts);
-
-                $count = count($merchantIdsWithIciciCaAccounts);
-
-                $skip += $count;
-
-            } while ($batch === $count);
-
             $allEligibleMerchantIds = array_merge($allEligibleMerchantIds,$merchantIdsFetchedViaNewQuery);
         } catch (\Exception $e)
         {
@@ -685,12 +662,6 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::MERCHANT_INVOICE_NEW_ELIGIBLE_MERCHANTS_FETCH_FAILED);
         }
-
-        $this->trace->info(
-            TraceCode::MERCHANT_ICICI_CA_DISPATCH_COUNT,
-            [
-                'count' => $skip,
-            ]);
 
         $allEligibleUniqueMerchantIds = array_unique($allEligibleMerchantIds);
 

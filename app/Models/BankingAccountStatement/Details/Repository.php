@@ -278,15 +278,13 @@ class Repository extends Base\Repository
 
     /*
      * select `merchants`.`id` from `banking_account_statement_details` inner join `merchants` on
-     * `banking_account_statement_details`.`merchant_id` = `merchants`.`id` where `banking_account_statement_details`.`channel` = ? and
+     * `banking_account_statement_details`.`merchant_id` = `merchants`.`id` where `banking_account_statement_details`.`channel` in (?,?,?,?) and
      * `banking_account_statement_details`.`account_type` = ? and `banking_account_statement_details`.`status` in (?, ?) and `merchants`.`activated` = ?
      * and (`parent_id` not in (?) or `parent_id` is null) limit 10000 offset 0
      * DBA thread - https://razorpay.slack.com/archives/C3BPZHG8P/p1686285370722479
      */
-    public function getMerchantsByChannelAndAccountType(int    $limit,
+    public function getCurrentAccountActivatedMerchants(int    $limit,
                                                         int    $skip,
-                                                        string $channel,
-                                                        string $accountType,
                                                         array  $merchantIds = [],
                                                         array  $merchantIdsExcluded = []): array
     {
@@ -299,12 +297,13 @@ class Repository extends Base\Repository
         $bankingAccountMerchantIdColumn = $this->repo->banking_account_statement_details->dbColumn(Entity::MERCHANT_ID);
 
         $statusList = Status::getStatusesForActiveCaFlows();
+        $directChannels = \RZP\Models\BankingAccountService\Channel::getDirectTypeChannels();
 
         $query =  $this->newQueryWithConnection($this->getSlaveConnection())
             ->join(Constants\Table::MERCHANT, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn)
             ->select($merchantIdColumn)
-            ->where($channelColumn, '=', $channel)
-            ->where($accountTypeColumn, '=', $accountType)
+            ->whereIn($channelColumn, $directChannels)
+            ->where($accountTypeColumn, '=', AccountType::DIRECT)
             ->whereIn($statusColumn, $statusList)
             ->where($merchantActivatedColumn, '=', 0)
             ->where(function ($query)
