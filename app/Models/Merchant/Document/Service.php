@@ -28,6 +28,7 @@ use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use function Doctrine\Common\Cache\Psr6\get;
 use RZP\Models\Merchant\Document\Constants as DocumentConstants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Service extends Base\Service
 {
@@ -399,6 +400,50 @@ class Service extends Base\Service
         return ["success" => false];
     }
 
+    // This function is a proxy to payments-cross-border-service
+    // to request create internal firs.
+    public function requestInternalFIRSDocument(array $input)
+    {
+        (new Validator)->validateInput('requestInternalFIRSDocument',$input);
+        $merchantId = $this->merchant->getId();
+        $currentYear = date('Y');
+        $currentMonth = date('n');
+        $previousMonth = date('n', strtotime('last month'));
+        // return exception if month is greater than current month and date is less the 10 of the current month
+        if (($input['year'] == $currentYear && $input['month'] >= $currentMonth)
+            || ($input['year'] > $currentYear)
+            || ($input['year'] == $currentYear && $input['month'] == $previousMonth && date('d') < 10)) {
+            $this->trace->info(
+                TraceCode::REQUEST_INTERNAL_FIRS_DOCUMENT_ERROR,
+                [
+                    "merchant_id" => $merchantId,
+                    "type"        => $input["type"],
+                    "month"       => intval($input["month"]),
+                    "year"        => intval($input["year"])
+                ]);
+            throw new Exception\BadRequestValidationFailureException('invalid request body');
+        }
+        try
+        {
+            // request internal FIRS Documents
+            $requestFIRSDocumentInput = array(
+                "merchant_id" => $merchantId,
+                "type"        => $input["type"],
+                "month"       => intval($input["month"]),
+                "year"        => intval($input["year"])
+            );
+
+            return $this->app['payments-cross-border']->requestInternalFirsDocument($requestFIRSDocumentInput);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENTS_CROSS_BORDER_REQUEST_INTERNAL_FIRS_ERROR,  [
+                'merchantId'    => $merchantId,
+            ]);
+            throw $e;
+        }
+    }
+
     //This function fetches all the FIRS documents for that merchant in a particular
     //month and year.
     public function fetchFIRSDocuments(array $input)
@@ -407,13 +452,29 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        $from = strtotime($input['month'].'/01/'.$input['year']);
-        $to = strtotime("+1 Month",$from)-1;
+        // from and to will be calculated on the basis if month is passed from FE.
+        // If month is passed, from will be 1st of the month passed, and to will be the
+        // last day of the month passed, else from will be first day of the year and to
+        // will be last day of the year or last day of the current year previous month.
 
-        // Query for RBL + ICICI Firstdata + ICICI Zip Files
-        $documents = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypesAndDate($merchantId, ['firs_file', 'firs_firstdata_file', 'firs_icici_zip'], $from, $to);
+        if (isset($input['month'])) {
+            $from = strtotime($input['month'].'/01/'.$input['year']);
+            $to = strtotime("+1 Month",$from)-1;
+        } else {
+            $current_year = date("Y");
+            if ($input['year'] == $current_year) {
+                $from = strtotime('01/01/' . $current_year);
+                $to = strtotime('last day of previous month');
+            } else {
+                $from = strtotime('01/01/' . $input['year']);
+                $to = strtotime('12/31/' . $input['year']);
+            }
+        }
 
-        $documentMetaData=[];
+        //Query for RBL + ICICI Firstdata + ICICI Zip Files
+        $documents = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypesAndDate($merchantId, ['firs_file', 'firs_firstdata_file', 'firs_icici_zip'], intval($from), intval($to));
+
+        $documentMetaData = [];
 
         foreach ($documents as $document)
         {
@@ -428,6 +489,8 @@ class Service extends Base\Service
                 Entity::DOCUMENT_TYPE   => $document->getDocumentType(),
                 Entity::MERCHANT_ID     => $document->getMerchantId(),
                 Entity::FILE_STORE_ID   => $document->getFileStoreId(),
+                Entity::FIlE_STATUS     => DocumentConstants::PROCESSED,
+                Entity::DOCUMENT_DATE   => $document->getDocumentDate(),
                 Entity::CREATED_AT      => $document->getCreatedAt(),
             ];
             array_push($documentMetaData,$documentResponse);
@@ -439,32 +502,46 @@ class Service extends Base\Service
                 "merchant_id"=> $merchantId,
                 "month"     => intval($input['month']),
                 "year"      => intval($input['year']),
-                "type"      => DocumentConstants::FIRS_INTERNAL_AMEX_DOCUMENT_TYPE
+                "type"      => DocumentConstants::INTERNAL_FIRS_FILES_TYPE
             );
 
-            $internalFirsDocuments =  $this->app['payments-cross-border']->getDocuments($internalFirsDocumentInput);
+            $internalFirsDocuments = $this->app['payments-cross-border']->getDocuments($internalFirsDocumentInput);
             if (!empty($internalFirsDocuments) && isset($internalFirsDocuments['items'])) {
                 // For Zip Files Check Status Before Sending Documents to FE
                 foreach ($internalFirsDocuments['items'] as $internalFirsDocument) {
+                    if (!isset($internalFirsDocument['status']) || (isset($internalFirsDocument['status']) && $internalFirsDocument['status'] == "")) {
+                        $internalFirsDocument['status'] = DocumentConstants::PROCESSED;
+                    }
+
                     $internalFirsDocumentResponse = [
-                        Entity::ID              => $internalFirsDocument['id'],
-                        Entity::DOCUMENT_TYPE   => $internalFirsDocument['document_type'],
-                        Entity::MERCHANT_ID     => $internalFirsDocument['entity_id'],
-                        Entity::FILE_STORE_ID   => $internalFirsDocument['file_id'],
-                        Entity::CREATED_AT      => $internalFirsDocument['created_at'],
+                        Entity::ID            => $internalFirsDocument['id'],
+                        Entity::DOCUMENT_TYPE => $internalFirsDocument['document_type'],
+                        Entity::MERCHANT_ID   => $internalFirsDocument['entity_id'],
+                        Entity::FILE_STORE_ID => $internalFirsDocument['file_id'],
+                        Entity::DOCUMENT_DATE => $internalFirsDocument['document_date'],
+                        Entity::FIlE_STATUS   => $internalFirsDocument['status'],
+                        Entity::CREATED_AT    => $internalFirsDocument['created_at'],
                     ];
-                    array_push($documentMetaData,$internalFirsDocumentResponse);
+                    array_push($documentMetaData, $internalFirsDocumentResponse);
                 }
             }
-
         } catch (\Exception $e) {
             // trace the error and move to next piece of code
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENTS_CROSS_BORDER_DOCUMENT_FETCH_ERROR,  [
-                'merchantId'    => $merchantId,
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENTS_CROSS_BORDER_DOCUMENT_FETCH_ERROR, [
+                'merchantId' => $merchantId,
             ]);
         }
+        if($this->ShouldReturnNewDocumentFetchResponse()) {
+            $groupedData = $this->groupDocumentsByMonth($documentMetaData);
+            $documentsData = [
+            "year" => $input['year'],
+            "months" => $groupedData
+            ];
+        } else {
+            $documentsData = $documentMetaData;
+        }
 
-        return $documentMetaData;
+        return $documentsData;
     }
 
     //This function returns signed_url to download/view the FIRS documents in a particular month and year
@@ -485,9 +562,7 @@ class Service extends Base\Service
 
                 $internalFirsDocument =  $this->app['payments-cross-border']->getDocuments($internalFirsDocumentInput);
                 $fileStoreId = 'file_'.$internalFirsDocument['items'][0]['file_id'];
-
                 $signedURL = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $fileStoreId, $this->merchant->getId());
-
                 $documentMetaData = [
                     Entity::ID              => $internalFirsDocument['items'][0]['id'],
                     Entity::DOCUMENT_TYPE   => $internalFirsDocument['items'][0]['document_type'],
@@ -720,6 +795,92 @@ class Service extends Base\Service
     public function getSignedUrl(string $documentId)
     {
         return $this->core->getSignedUrl($documentId);
+    }
+
+    /* this function group documents by month and include only one entry for unique
+    document type
+    */
+    public function groupDocumentsByMonth($documentMetaData)
+    {
+        $groupedData = [];
+
+        foreach ($documentMetaData as $item) {
+            $documentDate = date('Y-m-d', $item['document_date']);
+            $documentType = $item[Entity::DOCUMENT_TYPE];
+            $record = [
+                Entity::ID => $item[Entity::ID],
+                Entity::DOCUMENT_TYPE => $documentType,
+                Entity::FILE_STORE_ID => $item[Entity::FILE_STORE_ID],
+                Entity::MERCHANT_ID   => $item[Entity::MERCHANT_ID],
+                Entity::FIlE_STATUS   => $item[Entity::FIlE_STATUS],
+                Entity::DOCUMENT_DATE => $item[Entity::DOCUMENT_DATE],
+                Entity::CREATED_AT    => $item[Entity::CREATED_AT],
+            ];
+
+            $month = date('F', strtotime($documentDate));
+            // Initialize latest record for document type in this month
+            if (!isset($latestRecords[$month][$documentType])) {
+                $latestRecords[$month][$documentType] = null;
+            }
+
+            // Check if document_type is firs_file, firs_firstdata_file, firs_icici_zip
+            if ($documentType == 'firs_file' || $documentType == 'firs_firstdata_file' || $documentType == 'firs_icici_zip') {
+                if (!isset($groupedData[$month])) {
+                    $groupedData[$month] = [$record];
+                } else {
+                    $groupedData[$month][] = $record;
+                }
+            } else {
+                // Check if this record is newer than the latest record for this document type in this month
+                if ($record[Entity::CREATED_AT] > $latestRecords[$month][$documentType][Entity::CREATED_AT]) {
+                    $latestRecords[$month][$documentType] = $record;
+                }
+            }
+        }
+
+        // Group records by month and document type
+        foreach ($latestRecords as $month => $recordsByType) {
+            foreach ($recordsByType as $documentType => $latestRecord) {
+                if ($latestRecord !== null && ($documentType !== 'firs_file' || $documentType !== 'firs_firstdata_file' || $documentType !== 'firs_icici_zip')) {
+                    if (!isset($groupedData[$month])) {
+                        $groupedData[$month] = [$latestRecord];
+                    } else {
+                        $groupedData[$month][] = $latestRecord;
+                    }
+                }
+            }
+        }
+        return $groupedData;
+    }
+
+    protected function ShouldReturnNewDocumentFetchResponse(): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.return_latest_document_fetch_response_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR
+            );
+        }
+
+        return false;
     }
 
 }

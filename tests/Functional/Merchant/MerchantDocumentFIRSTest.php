@@ -61,9 +61,41 @@ class MerchantDocumentFIRSTest Extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         $this->assertCount(2,$content);
-        $this->assertEquals('firs_file',$content[0]['document_type']);
-        $this->assertEquals('firs_file',$content[1]['document_type']);
 
+        $this->assertEquals('firs_file',$content['months'][date('F')][0]['document_type']);
+        $this->assertEquals('firs_file',$content['months'][date('F')][1]['document_type']);
+
+    }
+
+    public function testRequestInternalFIRSDocument()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['url'] = sprintf($request['url']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $pxbServiceMock = $this->getMockBuilder(PaymentsCrossBorderClient::class)
+            ->onlyMethods(['requestInternalFirsDocument'])
+            ->getMock();
+        $this->app->instance('payments-cross-border', $pxbServiceMock);
+
+        $pxbServiceMock->method("requestInternalFirsDocument")
+            ->willReturn([
+                        "id"            => "MQlRFCy5mrJDWE",
+                        "document_type" => "firs_internal_file",
+                        "file_store_id" => "MQlRFCy5mrJDQT",
+                        "merchant_id"   => "CCOhinUeUsT8HN",
+                        "document_date" => "1692194209",
+                        "file_status"   => "processed",
+                        "created_at"    => "1692194209"
+            ]);
+
+        $response = $this->sendRequest($request);
+        $content = $this->getJsonContentFromResponse($response);
+        $this->assertEquals('processed',$content['file_status']);
     }
 
     public function testFetchFIRSDocumentsAmex()
@@ -99,9 +131,8 @@ class MerchantDocumentFIRSTest Extends TestCase
 
         $response = $this->sendRequest($request);
         $content = $this->getJsonContentFromResponse($response);
-
-        $this->assertCount(1,$content);
-        $this->assertEquals('firs_internal_amex_file',$content[0]['document_type']);
+        $this->assertCount(1,$content['months']['August']);
+        $this->assertEquals('firs_internal_amex_file',$content['months']['August'][0]['document_type']);
 
     }
 
@@ -128,7 +159,7 @@ class MerchantDocumentFIRSTest Extends TestCase
 
         $response = $this->sendRequest($request);
         $content = $this->getJsonContentFromResponse($response);
-        $this->assertCount(0,$content);
+        $this->assertCount(0,$content['months']);
     }
 
     public function testFetchFIRSDocumentsUploadedOnFirstDayOfMonth()
@@ -160,9 +191,8 @@ class MerchantDocumentFIRSTest Extends TestCase
         $response = $this->sendRequest($requestForFeb);
 
         $content = $this->getJsonContentFromResponse($response);
-
         $this->assertCount(2,$content);
-        $this->assertEquals('firs_file',$content[0]['document_type']);
+        $this->assertEquals('firs_file',$content['months']['February'][0]['document_type']);
 
         $requestForJan = $this->testData[__FUNCTION__]['request'];
 
@@ -172,10 +202,7 @@ class MerchantDocumentFIRSTest Extends TestCase
         $response = $this->sendRequest($requestForJan);
 
         $content = $this->getJsonContentFromResponse($response);
-
-        $this->assertCount(0,$content);
-        $this->assertEquals(0,count($content));
-
+        $this->assertCount(0,$content['months']);
     }
 
     public function testDownloadFIRSDocuments()
@@ -384,8 +411,8 @@ class MerchantDocumentFIRSTest Extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         $this->assertCount(2,$content);
-        $this->assertEquals('firs_file',$content[0]['document_type']);
-        $this->assertEquals('firs_icici_zip',$content[1]['document_type']);
+        $this->assertEquals('firs_file',$content['months'][date('F')][0]['document_type']);
+        $this->assertEquals('firs_icici_zip',$content['months'][date('F')][1]['document_type']);
 
     }
 
@@ -435,8 +462,8 @@ class MerchantDocumentFIRSTest Extends TestCase
 
         $content = $this->getJsonContentFromResponse($response);
 
-        $this->assertCount(1,$content);
-        $this->assertEquals('firs_file',$content[0]['document_type']);
+        $this->assertCount(1,$content['months'][date('F')]);
+        $this->assertEquals('firs_file',$content['months'][date('F')][0]['document_type']);
 
     }
 
@@ -626,9 +653,9 @@ class MerchantDocumentFIRSTest Extends TestCase
 
         $content = $this->getJsonContentFromResponse($response);
 
-        $this->assertCount(2,$content);
-        $this->assertEquals('firs_file',$content[0]['document_type']);
-        $this->assertEquals('firs_firstdata_file',$content[1]['document_type']);
+        $this->assertCount(2,$content['months'][date('F')]);
+        $this->assertEquals('firs_file',$content['months'][date('F')][0]['document_type']);
+        $this->assertEquals('firs_firstdata_file',$content['months'][date('F')][1]['document_type']);
 
     }
 
@@ -668,9 +695,8 @@ class MerchantDocumentFIRSTest Extends TestCase
 
         $content = $this->getJsonContentFromResponse($response);
 
-        $this->assertCount(2,$content);
-        $this->assertEquals('firs_file',$content[0]['document_type']);
-        $this->assertEquals('firs_firstdata_file',$content[1]['document_type']);
+        $this->assertEquals('firs_file',$content['months'][date('F')][0]['document_type']);
+        $this->assertEquals('firs_firstdata_file',$content['months'][date('F')][1]['document_type']);
 
     }
 

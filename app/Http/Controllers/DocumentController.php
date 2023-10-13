@@ -88,6 +88,15 @@ class DocumentController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function requestInternalFIRSDocument()
+    {
+        $input = Request::all();
+
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->requestInternalFIRSDocument($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function fetchPXBDocuments()
     {
         $input = Request::all();

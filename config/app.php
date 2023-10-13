@@ -437,6 +437,8 @@ return array(
 
     'void_refund_avs_failed_experiment_id' => env('VOID_REFUND_AVS_FAILED_EXPERIMENT_ID'),
 
+    'return_latest_document_fetch_response_experiment_id' => env('RETURN_LATEST_DOCUMENT_FETCH_RESPONSE_EXPERIMENT_ID'),
+
     'cmma_limit_breach_trigger_experiment_id' => env('CMMA_LIMIT_BREACH_TRIGGER_EXPERIMENT_ID'),
 
     'cmma_limit_breach_trigger_new_experiment_id' => env('CMMA_LIMIT_BREACH_TRIGGER_NEW_EXPERIMENT_ID'),

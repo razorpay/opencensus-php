@@ -25,6 +25,8 @@ class Constants
     const MERCHANT    = 'merchant';
     const URL         = 'url';
 
+    const PROCESSED          = 'processed';
+
     const ORIGINAL_FILE_NAME = 'original_file_name';
 
 
@@ -34,7 +36,8 @@ class Constants
     const CONTENT_DISPOSITION_INLINE = 'inline';
     const SIGNED_URL                 = 'signed_url';
 
-    const FIRS_INTERNAL_AMEX_DOCUMENT_TYPE = 'firs_internal_amex_file';
+    const INTERNAL_FIRS_FILES_TYPE = 'internal_firs_files';
+
     const FIRS_INTERNAL_DOCUMENT_TYPE = 'firs_internal_file';
     const LRS_SWIFT_COPY_DOCUMENT_TYPE = 'lrs_swift_copy';
 }

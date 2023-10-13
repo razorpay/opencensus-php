@@ -2603,7 +2603,7 @@ class Route
         'state_fetch_internal'                     => ['get',      'states/{id}/internal',                               'LocationController@getstateDetailsFromCountryCode'                              ],
 
         //FIRS Document Route
-        'firs_document_categorize'                 => ['post',      'merchant/firs',                                 'LambdaController@processLambdaFIRS'                                ],
+        'request_internal_firs'                    => ['post',      'merchant/firs',                                 'DocumentController@requestInternalFIRSDocument'                                ],
         'firs_document_fetch'                      => ['get',       'merchant/firs',                                 'DocumentController@fetchFIRSDocuments'                             ],
         'firs_document_download'                   => ['get',       'merchant/firs/content',                         'DocumentController@DownloadFIRSDocuments'                          ],
         'firs_collect_and_zip_cron'                => ['post',      'merchant/firs/collect/cron',                    'DocumentController@collectAndZipFIRSDocuments'                 ],
@@ -5623,7 +5623,6 @@ class Route
         'daily_reconciliation_summary_fetch',
         'hourly_reconciliation_summary_fetch',
         'lambda_post_h2h',
-        'firs_document_categorize',
         'automate_merchant_master_firs',
         'process_settlement_repatriation',
         'process_opgsp_settlement_repatriation',
@@ -6630,6 +6629,7 @@ class Route
         'payment_update_merchant_document',
         'payment_bulk_update_merchant_document',
         'firs_document_fetch',
+        'request_internal_firs',
         'firs_document_download',
         'pxb_document_fetch',
         'emerchantpay_get_request_data',
@@ -10337,6 +10337,7 @@ class Route
 
         //FIRS documents
         'firs_document_fetch'                 =>'*',
+        'request_internal_firs'               =>'*',
         'firs_document_download'              =>'*',
 
         'pxb_document_fetch'                  => '*',
@@ -11894,6 +11895,7 @@ class Route
             'merchant_patch_purpose_code',
             'user_fetch_purpose_code',
             'firs_document_fetch',
+            'request_internal_firs',
             'firs_document_download',
             'pxb_document_fetch',
             'emerchantpay_get_request_data',
@@ -15188,7 +15190,6 @@ class Route
             'create_risk_action',
             'merchant_workflow_clarification',
 
-            'firs_document_fetch',
             'firs_document_download',
             'pxb_document_fetch',
             'country_fetch',
@@ -16144,7 +16145,6 @@ class Route
             'setl_process_pos_file',
             'custom_setl_read_file',
             'segment_create_update',
-            'firs_document_categorize',
             'automate_merchant_master_firs',
             'process_settlement_repatriation',
             'process_opgsp_settlement_repatriation',

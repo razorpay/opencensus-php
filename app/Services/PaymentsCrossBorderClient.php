@@ -26,6 +26,8 @@ class PaymentsCrossBorderClient
     const CONFIGURE_DCS = 'v1/configure-dcs';
     const GET_CONFIGURE_DCS = 'v1/configure-dcs/%s';
 
+    const REQUEST_INTERNAL_FIRS_DOCUMENT = 'v1/request/merchant/firs';
+
     const GET = 'GET';
     const POST = 'POST';
 
@@ -39,6 +41,7 @@ class PaymentsCrossBorderClient
         "GET_CONFIGURE_DCS" => self::GET_CONFIGURE_DCS,
         "GET_LRS_QUOTE" => self::GET_LRS_QUOTE,
         "UPDATE_PAYMENT_STATUS" => self::UPDATE_PAYMENT_STATUS,
+        "REQUEST_INTERNAL_FIRS_DOCUMENT" => self::REQUEST_INTERNAL_FIRS_DOCUMENT,
     ];
 
     protected $client;
@@ -153,6 +156,21 @@ class PaymentsCrossBorderClient
             return $this->makeRequest($url, self::GET, $input);
         } catch (\Throwable $e) {
             $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_DOCUMENT_FETCH_ERROR,[
+                'error' => $e,
+            ]);
+
+            throw $e;
+        }
+    }
+
+    public function requestInternalFirsDocument($input)
+    {
+        $url = self::PAYMENTS_CROSS_BORDER_URLS['REQUEST_INTERNAL_FIRS_DOCUMENT'];
+
+        try {
+            return $this->makeRequest($url, self::POST, $input);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::PAYMENTS_CROSS_BORDER_REQUEST_INTERNAL_FIRS_ERROR,[
                 'error' => $e,
             ]);
 

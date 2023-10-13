@@ -402,6 +402,26 @@ return [
         ],
     ],
 
+    'testRequestInternalFIRSDocument' => [
+        'request'  => [
+            'url'       => '/merchant/firs',
+            'method'    => 'POST',
+            'content' => [
+                "type"        => "firs_internal_file",
+                "month"       => 6,
+                "year"        => 2023
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "merchant_id" => "CCOhinUeUsT8HN",
+                "type"        => "firs_internal_file",
+                "month"       => 6,
+                "year"        => 2023
+            ]
+        ],
+    ],
+
     'testFetchFIRSDocumentsUploadedOnFirstDayOfMonth' => [
         'request'  => [
             'url'       => '/merchant/firs?month=%s&year=%s',

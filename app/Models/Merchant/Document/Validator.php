@@ -63,8 +63,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $firsDocumentFetchRequestRules = [
+        'month'       => 'min:1|max:12',
+        'year'        => 'required|digits:4',
+    ];
+
+    protected static $requestInternalFIRSDocumentRules = [
         'month'       => 'required|min:1|max:12',
         'year'        => 'required|digits:4',
+        'type'        => 'required'
     ];
 
     protected static $firsDocumentDownloadRequestRules = [

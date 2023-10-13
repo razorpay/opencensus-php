@@ -30,4 +30,9 @@ class PaymentsCrossBorderClient
     {
         return null;
     }
+    public function requestInternalFirsDocument($input)
+    {
+        return $this->response;
+    }
+
 }

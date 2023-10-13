@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const AUDIT_ID           = 'audit_id';
     //When the document is accounted for
     const DOCUMENT_DATE      = 'document_date';
+    const FIlE_STATUS        = 'file_status';
     const METADATA           = 'metadata';
 
     protected static $sign = 'doc';
