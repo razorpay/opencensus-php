@@ -37,7 +37,6 @@ abstract class BaseHandler
         $this->trace = $this->app['trace'];
 
         $this->files=$files;
-
     }
 
     /**

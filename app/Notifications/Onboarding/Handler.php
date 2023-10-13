@@ -300,13 +300,16 @@ class Handler extends BaseHandler
         // TODO: throw exception
     }
 
-    // this function should be called only for NC events
-    private static function getUrlForNCEvent(Entity $merchant): string
+    public static function getUrlForNCEvent(Entity $merchant): string
+    {
+        return env('EASY_DASHBOARD_URL') . '/' . self::getUrlPathForNCEvent($merchant);
+    }
+
+    public static function getUrlPathForNCEvent(Entity $merchant): string
     {
         $isOnboardedViaPhantom = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
 
-        $baseUrl = env('EASY_DASHBOARD_URL');
-        $ncUrl = $baseUrl . '/onboarding/needs-clarification';
+        $ncUrlPath = 'onboarding/needs-clarification';
 
         $appId = null;
         $partnerId = null;
@@ -329,13 +332,13 @@ class Handler extends BaseHandler
                     {
                         $partnerId = $partner->getId();
 
-                        $ncUrl = $baseUrl . '/sub-merchant/needs-clarification?partnerId=' . $partnerId;
+                        $ncUrlPath =  'sub-merchant/needs-clarification?partnerId=' . $partnerId;
                     }
                     else if ($partnerType === MerchantConstants::PURE_PLATFORM)
                     {
                         $appId = $accessMap->getEntityId();
 
-                        $ncUrl = $baseUrl . '/sub-merchant/needs-clarification?applicationId=' . $appId;
+                        $ncUrlPath =  'sub-merchant/needs-clarification?applicationId=' . $appId;
                     }
                 }
             }
@@ -350,11 +353,11 @@ class Handler extends BaseHandler
                 'partner_id'        => $partnerId,
                 'partner_app_id'    => $appId,
                 'partner_type'      => $partnerType,
-                'nc_url'            => $ncUrl
+                'nc_url_path'       => $ncUrlPath
             ]
         );
 
-        return $ncUrl;
+        return $ncUrlPath;
     }
 
     // all the events related to needs_clarification activation status should have 'NC_' prefix

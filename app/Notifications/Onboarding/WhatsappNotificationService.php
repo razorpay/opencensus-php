@@ -2,14 +2,13 @@
 
 namespace RZP\Notifications\Onboarding;
 
-use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\Constants;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Notifications\BaseNotificationService;
 use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Models\Partner\Core as PartnerCore;
-use RZP\Notifications\Onboarding\Constants as OnboardingConstants;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 
 class WhatsappNotificationService extends BaseNotificationService
 {
@@ -159,7 +158,7 @@ class WhatsappNotificationService extends BaseNotificationService
         {
             $payload[Constants::IS_CTA_TEMPLATE] = true;
 
-            $payload[Constants::BUTTON_URL_PARAM] = Events::WHATSAPP_TEMPLATES_CTA_TEMPLATE[$this->event];
+            $payload[Constants::BUTTON_URL_PARAM] = $this->getCTATemplate($this->event);
         }
 
         return $payload;
@@ -201,5 +200,19 @@ class WhatsappNotificationService extends BaseNotificationService
         $merchant = $this->args[Constants::MERCHANT];
 
         return $merchant->merchantDetail->getContactMobile();
+    }
+
+    private function getCTATemplate(string $event): string
+    {
+        $merchant = $this->args[Constants::MERCHANT];
+
+        // if the merchant is onboarded via Phantom flow and the event is NC then fetch the applicable CTA
+        if (Handler::isNCEvent($event) === true and
+            $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING) === true)
+        {
+            return Handler::getUrlPathForNCEvent($this->args[Constants::MERCHANT]);
+        }
+
+        return Events::WHATSAPP_TEMPLATES_CTA_TEMPLATE[$this->event];
     }
 }

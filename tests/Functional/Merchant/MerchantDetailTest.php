@@ -10058,7 +10058,7 @@ You can now start accepting payments from https://www.example.com.
                   });
     }
 
-    protected function expectStorkWhatsappRequest($storkMock, $text, $destination): void
+    protected function expectStorkWhatsappRequest($storkMock, $text, $destination, $expectedInput = []): void
     {
         $storkMock->shouldReceive('sendWhatsappMessage')
             ->times(1)
@@ -10067,7 +10067,7 @@ You can now start accepting payments from https://www.example.com.
                 {
                     return true;
                 }),
-                Mockery::on(function ($actualText) use($text)
+                Mockery::on(function ($actualText) use ($text)
                 {
                     $actualText = trim(preg_replace('/\s+/', ' ', $actualText));
 
@@ -10080,16 +10080,22 @@ You can now start accepting payments from https://www.example.com.
 
                     return true;
                 }),
-                Mockery::on(function ($actualReceiver) use($destination)
+                Mockery::on(function ($actualReceiver) use ($destination)
                 {
                     if ($actualReceiver !== $destination)
                     {
                         return false;
                     }
+
                     return true;
                 }),
-                Mockery::on(function ($input)
+                Mockery::on(function ($actualInput) use ($expectedInput)
                 {
+                    if (empty($actualInput) === false)
+                    {
+                        $this->assertArraySelectiveEquals($expectedInput, $actualInput);
+                    }
+
                     return true;
                 }))
             ->andReturnUsing(function ()
@@ -12118,8 +12124,22 @@ We look forward to transacting with you!
             'ncUrl'         => $shortenNCUrl
         ];
 
-        // if the exp 'PHANTOM_NC_SMS' is enabled, SMS template name should be picked up as 'Sms.Onboarding.Nc_v2'
+        // if the exp 'PHANTOM_NC_SMS' is enabled, SMS template name should be picked up as ''sms.onboarding.custom_nc_url''
         $this->expectStorkSendSmsRequest($storkMock,'sms.onboarding.custom_nc_url', '+919123456789', $expectedParams);
+
+        $whatsAppText = "Hi " . $merchant->name . ",
+            In order to complete KYC verification for your account, we need a few more details from you as below.
+            As a next step, we request you to go to your Razorpay dashboard and take the action required as per the given instructions immediately.
+            Please note, you will not be able to collect payments from customers or receive it in your bank account until the required details are updated.";
+
+        $bottomUrlParam = 'onboarding/needs-clarification';
+
+        $expectedInput = [
+            'button_url_param'  => $bottomUrlParam,
+            'template_name'     => 'nc_count_payments_live_settlements_not_live'
+        ];
+
+        $this->expectStorkWhatsappRequest($storkMock, $whatsAppText, '+919123456789', $expectedInput);
 
         $this->startTest($testData);
 
@@ -12218,6 +12238,20 @@ We look forward to transacting with you!
 
         // if 'PHANTOM_NC_SMS' exp is not enabled then use the existing SMS template 'sms.onboarding.nc_revamp'
         $this->expectStorkSendSmsRequest($storkMock,'sms.onboarding.nc_revamp', '+919123456789', $expectedParams);
+
+        $whatsAppText = "Hi " . $merchant->name . ",
+            In order to complete KYC verification for your account, we need a few more details from you as below.
+            As a next step, we request you to go to your Razorpay dashboard and take the action required as per the given instructions immediately.
+            Please note, you will not be able to collect payments from customers or receive it in your bank account until the required details are updated.";
+
+        $bottomUrlParam = 'onboarding/needs-clarification';
+
+        $expectedInput = [
+            'button_url_param'  => $bottomUrlParam,
+            'template_name'     => 'nc_count_payments_live_settlements_not_live'
+        ];
+
+        $this->expectStorkWhatsappRequest($storkMock, $whatsAppText, '+919123456789', $expectedInput);
 
         $this->startTest($testData);
 
@@ -12328,8 +12362,22 @@ We look forward to transacting with you!
             'ncUrl'         => $shortenNCUrl
         ];
 
-        // if the exp is enabled, SMS template name should be picked up as 'Sms.Onboarding.Nc_v2'
+        // if the exp is enabled, SMS template name should be picked up as 'sms.onboarding.custom_nc_url'
         $this->expectStorkSendSmsRequest($storkMock,'sms.onboarding.custom_nc_url', '+919123456789', $expectedParams);
+
+        $whatsAppText = "Hi " . $merchant->name . ",
+            In order to complete KYC verification for your account, we need a few more details from you as below.
+            As a next step, we request you to go to your Razorpay dashboard and take the action required as per the given instructions immediately.
+            Please note, you will not be able to collect payments from customers or receive it in your bank account until the required details are updated.";
+
+        $bottomUrlParam = 'sub-merchant/needs-clarification?applicationId=' . $app->getId();
+
+        $expectedInput = [
+            'button_url_param'  => $bottomUrlParam,
+            'template_name'     => 'nc_count_payments_live_settlements_not_live'
+        ];
+
+        $this->expectStorkWhatsappRequest($storkMock, $whatsAppText, '+919123456789', $expectedInput);
 
         $this->startTest($testData);
 
@@ -12439,6 +12487,20 @@ We look forward to transacting with you!
 
         // if the exp is not enabled, SMS template should be picked up as 'sms.onboarding.nc_revamp'
         $this->expectStorkSendSmsRequest($storkMock, 'sms.onboarding.nc_revamp', '+919123456789', $expectedParams);
+
+        $whatsAppText = "Hi " . $merchant->name . ",
+            In order to complete KYC verification for your account, we need a few more details from you as below.
+            As a next step, we request you to go to your Razorpay dashboard and take the action required as per the given instructions immediately.
+            Please note, you will not be able to collect payments from customers or receive it in your bank account until the required details are updated.";
+
+        $bottomUrlParam = 'sub-merchant/needs-clarification?applicationId=' . $app->getId();
+
+        $expectedInput = [
+            'button_url_param'  => $bottomUrlParam,
+            'template_name'     => 'nc_count_payments_live_settlements_not_live'
+        ];
+
+        $this->expectStorkWhatsappRequest($storkMock, $whatsAppText, '+919123456789', $expectedInput);
 
         $this->startTest($testData);
 
