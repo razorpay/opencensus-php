@@ -698,7 +698,7 @@ class Core extends Base\Core
         $card->setVault($vault);
     }
 
-    public function fetchAltIdData(array $fetchAltIdRequest, array $input, array & $gatewayInput, array & $terminalGatewayInput)
+    public function fetchAltIdData(array $fetchAltIdRequest, array $input, array & $gatewayInput, array & $terminalGatewayInput, $payment)
     {
         $response = null;
         try {
@@ -729,6 +729,7 @@ class Core extends Base\Core
             $terminalGatewayInput['card'][Card\Entity::CRYPTOGRAM_VALUE] = $response['alt_id']['cryptogram_value'];
             $terminalGatewayInput['card'][Card\Entity::TRIVIA] = '2';
             $terminalGatewayInput['card'][Card\Entity::ALT_ID] = 1;
+            $response['alt_id']['card_vault_token'] = $payment->card->getVaultToken();
 
             $terminalGatewayInput['alt_id_data'] = $response;
 

@@ -140,6 +140,7 @@ trait CardCacheTrait
                 $input['card'][Card\Entity::EXPIRY_MONTH] = $altIdData['alt_id'][Card\Entity::EXPIRY_MONTH];
                 $input['card'][Card\Entity::EXPIRY_YEAR] = $altIdData['alt_id'][Card\Entity::EXPIRY_YEAR];
                 $input['card'][Card\Entity::VAULT_TOKEN] = $altIdData[Card\Entity::TOKEN];
+                $input['card']['card_vault_token'] = $altIdData['alt_id']['card_vault_token'];
             }
             else
             {

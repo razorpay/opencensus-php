@@ -977,7 +977,7 @@ trait Authorize
         $cardCore = new Card\Core;
         $altIdRequest = $this->setAltIdRequestData($input, $gatewayInput, $payment, $currentTerminal);
 
-        $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input,$gatewayInput, $terminalGatewayInput);
+        $altIdData = $cardCore->fetchAltIdData($altIdRequest, $input,$gatewayInput, $terminalGatewayInput, $payment);
 
         $iin = $payment->card->iinRelation;
 
@@ -8110,6 +8110,23 @@ trait Authorize
             $input['card'] = $payment->card->toArray();
 
             $this->setCardNumberAndCvv($input,$payment->card->toArray());
+            if(isset($token->card) && $token->card->getTrivia() === '2') {
+                if (empty($input['card']['card_vault_token']) === true)
+                {
+                    $this->trace->info(TraceCode::ALT_ID_TOKEN_MIGRATION_INVALID_REQUEST, [
+                        '$input.card.cardVaultToken'     =>  $input['card']['card_vault_token']
+                    ]);
+                } else  {
+                    $token->card->setVaultToken($input['card']['card_vault_token']);
+                    $token->card->generateID();
+                    $token->card()->associate($token->card);
+                    $this->repo->saveOrFail($token->card);
+                    $this->repo->saveOrFail($token);
+                    $this->trace->info(TraceCode::ALT_ID_TOKEN_MIGRATION_CARD_VAULT_TOKEN_SET, [
+                        '$input.card.cardVaultToken'     =>  $input['card']['card_vault_token']
+                    ]);
+                }
+            }
 
             $cardInput = [
                 'cvv'                             => $input['card']['cvv'] ?? Card\Entity::getDummyCvv($payment->card->getNetworkCode()),
