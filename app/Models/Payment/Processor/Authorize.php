@@ -707,25 +707,25 @@ trait Authorize
 
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
+            $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
+            if(($payment->isMethodCardOrEmi() === true && $payment->isInternational() === false &&  isset($payment->card)
+                    && $payment->card->getTrivia() != '1') || (str_starts_with(strtolower($rzpTestCaseID),'ALT_ID')))
+            {
+                //make condition $payment->card->getTrivia()!='1' to enable alt id
+                //call alt id and set trivia 3 for alt id
+
+                if ($this->isAltIdExperimentEnabled($payment, 'app.alt_id_live_mode_experiment_id') === true )
+                {
+                    $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
+                }
+            }
+
             // passing $terminalGateawyInput and $gatewayInput
             $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $terminalGatewayInput, $gatewayInput);
 
             if ($request !== null)
             {
                 break;
-            }
-
-            $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
-            if(($payment->isMethodCardOrEmi() === true && $payment->isInternational() === false &&  isset($payment->card)
-                && $payment->card->getTrivia() != '1') || (str_starts_with(strtolower($rzpTestCaseID),'ALT_ID')))
-             {
-                //make condition $payment->card->getTrivia()!='1' to enable alt id
-                //call alt id and set trivia 3 for alt id
-
-                if ($this->isAltIdExperimentEnabled($payment, 'app.alt_id_live_mode_experiment_id') === true )
-                    {
-                        $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
-                    }
             }
 
             // TODO: This is temporarily added here until we make
