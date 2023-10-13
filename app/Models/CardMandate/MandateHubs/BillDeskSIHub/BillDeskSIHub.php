@@ -265,6 +265,20 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
     protected function getReportInitialPaymentInput(Payment\Entity $payment,
                                                     CardMandate\Entity $cardMandate, array $authenticationData, array $authorizationData): array
     {
+        if ((isset($authenticationData[Constants::GATEWAY_REFERENCE_ID1])) and
+            (!empty($authenticationData[Constants::GATEWAY_REFERENCE_ID1])) and
+            ($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::CARD_MANDATE_3DS2, $this->app['rzp.mode']) === 'on'))
+        {
+            // we get enrollment_status as "C" in the case of 3ds 2.0. hence we are changing it to "Y" as per the SIHUB requirement
+            $authenticationData[Constants::ENROLLMENT_STATUS] = "Y";
+
+            if ((isset($authenticationData[Constants::ECI])) and
+                (ltrim($authenticationData[Constants::ECI],"0") === "2")) // eci = 2 => MasterCard, and eci = 5 => Visa
+            {
+                $authenticationData[Constants::XID] = $authenticationData[Constants::GATEWAY_REFERENCE_ID1];
+            }
+        }
+
         $inputResponse = [
             Constants::PAYMENT              => $payment->toArray(),
             Constants::GATEWAY              => MandateHubs::BILLDESK_SIHUB,

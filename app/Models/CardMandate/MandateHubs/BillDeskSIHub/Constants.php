@@ -49,6 +49,9 @@ class Constants
     const XID                   = 'xid';
     const CAVV2                 = 'cavv2';
     const BILLDESK_SIHUB        = 'billdesk_sihub';
+    const ECI                   = 'eci';
+    const ENROLLMENT_STATUS     = 'enrollment_status';
+    const GATEWAY_REFERENCE_ID1 = 'gateway_reference_id1';
 
     const FREQUENCY_AS_PRESENTED = 'as_presented';
 }

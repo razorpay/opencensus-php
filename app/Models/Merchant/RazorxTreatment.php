@@ -676,6 +676,8 @@ final class RazorxTreatment
 
     public const CARD_MANDATE_CORRECT_DETAILS_FETCH = "card_mandate_correct_details_fetch";
 
+    public const CARD_MANDATE_3DS2 = "card_mandate_3ds2";
+
     // Experiment to migrate yes bank debit file batch processing
     public const BATCH_SERVICE_ENACH_NPCI_NETBANKING_MIGRATION = "batch_service_enach_npci_netbanking_migration";
 
