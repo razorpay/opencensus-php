@@ -124,6 +124,14 @@ class Events
         self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'sms.onboarding.partner_submerchant_registered_settlements',
     ];
 
+    // this list contain only NC events
+    const SMS_TEMPLATE_CUSTOM_NC = [
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => 'sms.onboarding.custom_nc_url',
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => 'sms.onboarding.custom_nc_url',
+        self::NC_COUNT_1_PAYMENTS_NOT_LIVE                      => 'sms.onboarding.custom_nc_url',
+        self::NC_COUNT_1_ONBOARDING_PAUSE                       => 'sms.onboarding.custom_nc_url',
+    ];
+
     const SMS_TEMPLATES_CUSTOM_NAMESPACES = [
         self::PARTNER_ADDED_SUBMERCHANT               => 'partnerships',
         self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION => 'partnerships-experience',

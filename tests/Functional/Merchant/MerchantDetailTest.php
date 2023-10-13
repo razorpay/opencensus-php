@@ -10102,7 +10102,7 @@ You can now start accepting payments from https://www.example.com.
             });
     }
 
-    protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
+    protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParams = [])
     {
         $storkMock->shouldReceive('sendSms')
                   ->times(1)
@@ -10111,14 +10111,13 @@ You can now start accepting payments from https://www.example.com.
                       {
                           return true;
                       }),
-                      Mockery::on(function ($actualPayload) use ($templateName, $destination, $expectedParms)
+                      Mockery::on(function ($actualPayload) use ($templateName, $destination, $expectedParams)
                       {
-
                           // We are sending null in contentParams in the payload if there is no SMS_TEMPLATE_KEYS present for that event
                           // Reference: app/Notifications/Dashboard/SmsNotificationService.php L:99
                           if(isset($actualPayload['contentParams']) === true)
                           {
-                              $this->assertArraySelectiveEquals($expectedParms, $actualPayload['contentParams']);
+                              $this->assertArraySelectiveEquals($expectedParams, $actualPayload['contentParams']);
                           }
 
                           if (($templateName !== $actualPayload['templateName']) or
@@ -11886,9 +11885,9 @@ We look forward to transacting with you!
         $this->fixtures->edit('merchant', $merchantId, []);
 
         $this->fixtures->create('merchant_detail',
-                                ["merchant_id"      => $merchantId,
-                                 'business_website' => "http://hello.com"
-                                ]);
+            ["merchant_id"      => $merchantId,
+                'business_website' => "http://hello.com"
+            ]);
 
         $this->fixtures->create('merchant_website', [
             'merchant_id'              => $merchantId,
@@ -11941,9 +11940,9 @@ We look forward to transacting with you!
         $this->fixtures->edit('merchant', $merchantId, []);
 
         $this->fixtures->create('merchant_detail',
-                                ["merchant_id"      => $merchantId,
-                                 'business_website' => "http://hello.com"
-                                ]);
+            ["merchant_id"      => $merchantId,
+                'business_website' => "http://hello.com"
+            ]);
 
         $this->fixtures->create('merchant_access_map', [
             'merchant_id' => $merchantId,
@@ -11998,9 +11997,9 @@ We look forward to transacting with you!
         $this->fixtures->edit('merchant', $merchantId, []);
 
         $this->fixtures->create('merchant_detail',
-                                ["merchant_id"      => $merchantId,
-                                 'business_website' => "http://hello.com"
-                                ]);
+            ["merchant_id"      => $merchantId,
+                'business_website' => "http://hello.com"
+            ]);
 
         $this->fixtures->create('merchant_access_map', [
             'merchant_id' => $merchantId,
@@ -12036,5 +12035,424 @@ We look forward to transacting with you!
         $response = $this->startTest();
 
         $this->assertNotNull($response);
+    }
+
+    // NC event - payments live and settlements not live
+    public function testSMSForEasyOnboardingNCFlowWithExpEnabled()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'live'       => true,
+                'activated'  => 1,
+                'hold_funds' => true
+            ]
+        );
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', ['merchant_id' => $merchant->getId()]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+            [
+                'address_proof_url',
+                'business_pan_url',
+                'business_proof_url',
+                'promoter_address_url',
+                'personal_pan',
+                'cancelled_cheque',
+            ]
+        );
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail',
+            [
+                'merchant_id' => $merchant->getId(),
+                'user_id' => $merchantUser->getId(),
+                'signup_campaign' => 'easy_onboarding'
+            ]
+        );
+
+        // add review notes for fields
+        $testData = $this->testData['testAddClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        // put the merchant to NC state
+        $testData = $this->testData['changeActivationStatusToNeedsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $elfinMock = \Mockery::mock('RZP\Services\Elfin')->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('elfin', $elfinMock);
+
+        $shortenNCUrl = 'http://dwarf.razorpay.in/63bfuk5';
+
+        $elfinMock->shouldReceive('shorten')
+                  ->times(1)
+                  ->andReturnUsing(function () use ($shortenNCUrl)
+                    {
+                        return $shortenNCUrl;
+                    }
+                  );
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $expectedParams = [
+            'subMerchantId' => $merchantId,
+            'ncUrl'         => $shortenNCUrl
+        ];
+
+        // if the exp 'PHANTOM_NC_SMS' is enabled, SMS template name should be picked up as 'Sms.Onboarding.Nc_v2'
+        $this->expectStorkSendSmsRequest($storkMock,'sms.onboarding.custom_nc_url', '+919123456789', $expectedParams);
+
+        $this->startTest($testData);
+
+        // verify that the email has been sent
+        \Illuminate\Support\Facades\Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $data = $mail->getData();
+
+            self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
+
+            // check the NC url sent in email
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/onboarding/needs-clarification', $data['ncUrl']);
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_not_live', $mail->getTemplate());
+
+            return true;
+        });
+    }
+
+    // NC event - payments live and settlements not live
+    public function testSMSForEasyOnboardingNCFlowWithExpNotEnabled()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'live'       => true,
+                'activated'  => 1,
+                'hold_funds' => true
+            ]
+        );
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', ['merchant_id' => $merchant->getId()]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+            [
+                'address_proof_url',
+                'business_pan_url',
+                'business_proof_url',
+                'promoter_address_url',
+                'personal_pan',
+                'cancelled_cheque',
+            ]
+        );
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail',
+            [
+                'merchant_id' => $merchant->getId(),
+                'user_id' => $merchantUser->getId(),
+                'signup_campaign' => 'easy_onboarding'
+            ]
+        );
+
+        // add review notes for fields
+        $testData = $this->testData['testAddClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        // put the merchant to NC state
+        $testData = $this->testData['changeActivationStatusToNeedsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $elfinMock = \Mockery::mock('RZP\Services\Elfin')->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('elfin', $elfinMock);
+
+        $shortenNCUrl = 'http://dwarf.razorpay.in/63bfuk5';
+
+        $elfinMock->shouldReceive('shorten')
+                  ->times(1)
+                  ->andReturnUsing(function () use ($shortenNCUrl)
+                    {
+                        return $shortenNCUrl;
+                    }
+                  );
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $expectedParams = [
+            'subMerchantId' => $merchantId,
+            'ncUrl'         => $shortenNCUrl
+        ];
+
+        // if 'PHANTOM_NC_SMS' exp is not enabled then use the existing SMS template 'sms.onboarding.nc_revamp'
+        $this->expectStorkSendSmsRequest($storkMock,'sms.onboarding.nc_revamp', '+919123456789', $expectedParams);
+
+        $this->startTest($testData);
+
+        // verify email has been sent
+        \Illuminate\Support\Facades\Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $data = $mail->getData();
+
+            self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
+
+            // check the NC url sent in email
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/onboarding/needs-clarification', $data['ncUrl']);
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_not_live', $mail->getTemplate());
+
+            return true;
+        });
+    }
+
+    // NC event - payments live and settlements not live
+    public function testSMSForPhantomOnboardingNCFlowWithExpEnabled()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'live'       => true,
+                'activated'  => 1,
+                'hold_funds' => true
+            ]
+        );
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', ['merchant_id' => $merchant->getId()]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+            [
+                'address_proof_url',
+                'business_pan_url',
+                'business_proof_url',
+                'promoter_address_url',
+                'personal_pan',
+                'cancelled_cheque',
+            ]
+        );
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        // use 'phantom_onboarding' as signup campaign for user
+        $this->fixtures->create('user_device_detail',
+            [
+                'merchant_id' => $merchant->getId(),
+                'user_id' => $merchantUser->getId(),
+                'signup_campaign' => 'phantom_onboarding'
+            ]
+        );
+
+        [$partner, $app] = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $app->getId(),
+            'merchant_id'     => $merchant->getId(),
+            'entity_owner_id' => $partner->getId()
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        // add review notes for fields
+        $testData = $this->testData['testAddClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        // put the merchant to NC state
+        $testData = $this->testData['changeActivationStatusToNeedsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $elfinMock = \Mockery::mock('RZP\Services\Elfin')->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('elfin', $elfinMock);
+
+        $shortenNCUrl = 'http://dwarf.razorpay.in/63bfuk5';
+
+        $elfinMock->shouldReceive('shorten')
+                  ->times(1)
+                  ->andReturnUsing(function () use ($shortenNCUrl)
+                    {
+                        return $shortenNCUrl;
+                    }
+                  );
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $expectedParams = [
+            'subMerchantId' => $merchantId,
+            'ncUrl'         => $shortenNCUrl
+        ];
+
+        // if the exp is enabled, SMS template name should be picked up as 'Sms.Onboarding.Nc_v2'
+        $this->expectStorkSendSmsRequest($storkMock,'sms.onboarding.custom_nc_url', '+919123456789', $expectedParams);
+
+        $this->startTest($testData);
+
+        // verify that the email has been sent
+        \Illuminate\Support\Facades\Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) use ($app) {
+            $data = $mail->getData();
+
+            self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
+
+            // check the NC url sent in email
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_not_live', $mail->getTemplate());
+
+            return true;
+        });
+    }
+
+    // NC event - payments live and settlements not live
+    public function testSMSForPhantomOnboardingNCFlowWithExpNotEnabled()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'live' => true,
+                'activated' => 1,
+                'hold_funds' => true
+            ]
+        );
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', ['merchant_id' => $merchant->getId()]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+            [
+                'address_proof_url',
+                'business_pan_url',
+                'business_proof_url',
+                'promoter_address_url',
+                'personal_pan',
+                'cancelled_cheque',
+            ]
+        );
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        // use 'phantom_onboarding' as signup campaign for user
+        $this->fixtures->create('user_device_detail',
+            [
+                'merchant_id' => $merchant->getId(),
+                'user_id' => $merchantUser->getId(),
+                'signup_campaign' => 'phantom_onboarding'
+            ]
+        );
+
+        [$partner, $app] = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $accessMapData = [
+            'entity_type' => 'application',
+            'entity_id' => $app->getId(),
+            'merchant_id' => $merchant->getId(),
+            'entity_owner_id' => $partner->getId()
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        // add review notes for fields
+        $testData = $this->testData['testAddClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        // put the merchant to NC state
+        $testData = $this->testData['changeActivationStatusToNeedsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $elfinMock = \Mockery::mock('RZP\Services\Elfin')->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('elfin', $elfinMock);
+
+        $shortenNCUrl = 'http://dwarf.razorpay.in/63bfuk5';
+
+        $elfinMock->shouldReceive('shorten')
+            ->times(1)
+            ->andReturnUsing(function () use ($shortenNCUrl) {
+                return $shortenNCUrl;
+            }
+            );
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $expectedParams = [
+            'subMerchantId' => $merchantId,
+            'ncUrl' => $shortenNCUrl
+        ];
+
+        // if the exp is not enabled, SMS template should be picked up as 'sms.onboarding.nc_revamp'
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.onboarding.nc_revamp', '+919123456789', $expectedParams);
+
+        $this->startTest($testData);
+
+        // verify that the email has been sent
+        \Illuminate\Support\Facades\Mail::assertQueued(MerchantOnboardingEmail::class, function ($mail) use ($app) {
+            $data = $mail->getData();
+
+            self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
+
+            // check the NC url sent in email
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_not_live', $mail->getTemplate());
+
+            return true;
+        });
     }
 }

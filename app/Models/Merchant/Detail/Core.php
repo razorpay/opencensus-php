@@ -3876,10 +3876,8 @@ class Core extends Base\Core
 
                     $merchantDetails->setLocked(false);
 
-                    if (
-                        ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false) or
-                        (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false
-                    )
+                    if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false or
+                        (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
                     {
                         $this->sendNeedsClarificationEmail($merchant);
                     }

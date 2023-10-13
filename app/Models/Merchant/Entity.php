@@ -2021,7 +2021,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(BankingAccount\Entity::class)
             ->whereNotIn(BankingAccount\Entity::STATUS, [
-                BankingAccount\Status::TERMINATED, 
+                BankingAccount\Status::TERMINATED,
                 BankingAccount\Status::MIGRATED,
             ]);
     }
@@ -2042,7 +2042,7 @@ class Entity extends Base\PublicEntity
                                ->where(BankingAccount\Entity::STATUS, BankingAccount\Status::ACTIVATED)
                                ->get();
 
-        /** @var BankingAccountService $bankingAccountService */                               
+        /** @var BankingAccountService $bankingAccountService */
         $bankingAccountService = app('banking_account_service');
 
         // Some CAs (ICICI, Axis, Yes Bank, RBL Migration) exist at banking account service.
@@ -3962,6 +3962,7 @@ class Entity extends Base\PublicEntity
         $app = App::getFacadeRoot();
 
         $deviceDetail = $app['repo']->user_device_detail->fetchByMerchantIdAndUserRole($this->getId());
+
         if (in_array(optional($deviceDetail)->getSignupCampaign(), $signupCampaigns, true))
         {
             return true;

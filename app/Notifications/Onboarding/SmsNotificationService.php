@@ -65,6 +65,7 @@ class SmsNotificationService extends BaseNotificationService
                 $this->mode,
                 $payload
             );
+
             $this->trace->info(
                 TraceCode::MERCHANT_ONBOARDING_SMS_SENT,
                 [
@@ -171,7 +172,7 @@ class SmsNotificationService extends BaseNotificationService
         }
     }
 
-    protected function getPayload()
+    protected function getPayload(): array
     {
         $merchant = $this->args[Constants::MERCHANT];
 
@@ -199,6 +200,8 @@ class SmsNotificationService extends BaseNotificationService
             OnboardingConstants::DELIVERY_CALLBACK_REQUESTED => true
         ];
 
+        Handler::updateNCUrlIfApplicable($merchantId, $this->event, $this->args, true);
+
         $payload[Constants::PARAMS]                   = array_merge($payload[OnboardingConstants::CONTENT_PARAMS], $this->args[Constants::PARAMS] ?? []);
         $payload[OnboardingConstants::CONTENT_PARAMS] = $payload[Constants::PARAMS];
 
@@ -212,8 +215,27 @@ class SmsNotificationService extends BaseNotificationService
         return $merchant->merchantDetail->getContactMobile();
     }
 
-    private function getTemplateMessage()
+    private function getTemplateMessage(): string
     {
+        // fetch the template from custom NC list if the event is NC and exp is enabled
+        if (Handler::isNCEvent($this->event) === true and
+            empty($this->args[Constants::PARAMS][OnboardingConstants::NC_URL]) === false)
+        {
+            $merchant = $this->args[Constants::MERCHANT];
+
+            $properties = [
+                'id'            => $merchant->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.phantom_nc_sms')
+            ];
+
+            $isExpEnabled = (new Core())->isSplitzExperimentEnable($properties, 'enable');
+
+            if ($isExpEnabled === true)
+            {
+                return Events::SMS_TEMPLATE_CUSTOM_NC[$this->event];
+            }
+        }
+
         return Events::SMS_TEMPLATES[$this->event];
     }
 }

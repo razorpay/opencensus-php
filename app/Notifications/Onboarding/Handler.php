@@ -129,9 +129,9 @@ class Handler extends BaseHandler
      *
      * @param string $merchantId
      * @param string $event
-     *
+     * @return bool
      */
-    public function sendEventNotificationForMerchant(string $merchantId, string $event)
+    public function sendEventNotificationForMerchant(string $merchantId, string $event): bool
     {
         $success = true;
 
@@ -161,7 +161,7 @@ class Handler extends BaseHandler
         return $success;
     }
 
-    private function getNCCommunicationEvent(Entity $merchant)
+    private function getNCCommunicationEvent(Entity $merchant): array
     {
         $events = [];
 
@@ -179,36 +179,35 @@ class Handler extends BaseHandler
 
             if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === false)
             {
-                array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE : Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE);
+                $events[] = ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE : Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE;
 
-                array_push($events, Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE);
+                $events[] = Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE;
 
             }
             else
             {
                 if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === true)
                 {
-                    array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE : Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE);
+                    $events[] = ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE : Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE;
 
-                    array_push($events, Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE);
+                    $events[] = Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE;
                 }
                 else
                 {
                     if ($merchant->isActivated() === false)
                     {
-
                         if ((new DetailCore())->blockMerchantActivations($merchant) === false)
                         {
-                            array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_NOT_LIVE : Events::NC_COUNT_2_PAYMENTS_NOT_LIVE);
+                            $events[] = ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_NOT_LIVE : Events::NC_COUNT_2_PAYMENTS_NOT_LIVE;
 
-                            array_push($events, Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE);
+                            $events[] = Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE;
                         }
-                        // merchant new communications while onboarding is paused
                         else
                         {
-                            array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_ONBOARDING_PAUSE : Events::NC_COUNT_2_ONBOARDING_PAUSE);
+                            // merchant new communications while onboarding is paused
+                            $events[] = ($ncCount <= 1) ? Events::NC_COUNT_1_ONBOARDING_PAUSE : Events::NC_COUNT_2_ONBOARDING_PAUSE;
 
-                            array_push($events, Events::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE);
+                            $events[] = Events::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE;
                         }
 
                     }
@@ -217,7 +216,7 @@ class Handler extends BaseHandler
         }
         else
         {
-            array_push($events, Events::NEEDS_CLARIFICATION);
+            $events[] = Events::NEEDS_CLARIFICATION;
         }
 
         $this->args[MConstants::PARAMS]['clarification_details'] = $clarificationDetails;
@@ -232,48 +231,60 @@ class Handler extends BaseHandler
         return $events;
     }
 
-    private function getEventForActivationStatus(?string $activationStatus, Entity $merchant)
+    private function getEventForActivationStatus(?string $activationStatus, Entity $merchant): array
     {
-        $events                  = [];
-        $isUnregistered          = BusinessType::isUnregisteredBusiness($merchant->merchantDetail->getBusinessType());
-        $currentActivationStatus = $merchant->merchantDetail->getActivationStatus();
+        $events                     = [];
+        $isUnregistered             = BusinessType::isUnregisteredBusiness($merchant->merchantDetail->getBusinessType());
+        $currentActivationStatus    = $merchant->merchantDetail->getActivationStatus();
+        $isEasyEligibleOnboarding   = $merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS);
 
         switch ($currentActivationStatus)
         {
             case Status::ACTIVATED_MCC_PENDING:
-                array_push($events, Events::ACTIVATED_MCC_PENDING_SUCCESS);
-                array_push($events, Events::ACTIVATED_MCC_PENDING_ACTION_REQUIRED);
-                array_push($events, Events::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS);
+                $events = [
+                    Events::ACTIVATED_MCC_PENDING_SUCCESS,
+                    Events::ACTIVATED_MCC_PENDING_ACTION_REQUIRED,
+                    Events::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS
+                ];
+
                 break;
 
             case Status::NEEDS_CLARIFICATION:
                 $events = $this->getNCCommunicationEvent($merchant);
+
                 break;
 
             case Status::ACTIVATED:
-                if ($isUnregistered or ($activationStatus === Status::INSTANTLY_ACTIVATED))
+                if ($isEasyEligibleOnboarding === true)
                 {
-                    if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
-                    {
-                        array_push($events, Events::UNREGISTERED_SETTLEMENTS_ENABLED);
-                        array_push($events, Events::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED);
-                    }
+                    break;
+                }
+                else if ($isUnregistered or ($activationStatus === Status::INSTANTLY_ACTIVATED))
+                {
+                    $events = [
+                        Events::UNREGISTERED_SETTLEMENTS_ENABLED,
+                        Events::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED
+                    ];
                 }
                 else
                 {
-                    if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
-                    {
-                        array_push($events, Events::REGISTERED_SETTLEMENTS_ENABLED);
-                        array_push($events, Events::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED);
-                    }
+                    $events = [
+                        Events::REGISTERED_SETTLEMENTS_ENABLED,
+                        Events::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED
+                    ];
                 }
+
                 break;
+
             case Status::INSTANTLY_ACTIVATED:
-                if ($merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
+                if ($isEasyEligibleOnboarding === false)
                 {
-                    array_push($events, Events::PAYMENTS_ENABLED);
-                    array_push($events, Events::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED);
+                    $events = [
+                        Events::PAYMENTS_ENABLED,
+                        Events::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED
+                    ];
                 }
+
                 break;
         }
 
@@ -289,6 +300,7 @@ class Handler extends BaseHandler
         // TODO: throw exception
     }
 
+    // this function should be called only for NC events
     private static function getUrlForNCEvent(Entity $merchant): string
     {
         $isOnboardedViaPhantom = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
@@ -346,7 +358,7 @@ class Handler extends BaseHandler
     }
 
     // all the events related to needs_clarification activation status should have 'NC_' prefix
-    private static function isNCEvent(string $event): bool
+    public static function isNCEvent(string $event): bool
     {
         if (str_starts_with($event, Events::NC_EVENTS_PREFIX) === true)
         {
@@ -356,17 +368,29 @@ class Handler extends BaseHandler
         return false;
     }
 
-    public static function updateNCUrlIfApplicable(string $merchantId, string $event, array & $args)
+    public static function updateNCUrlIfApplicable(string $merchantId, string $event, array & $args, bool $shortenUrl = false)
     {
-        if (self::isNCEvent($event) !== true or empty($args[MConstants::PARAMS][Constants::NC_URL]) === false)
+        if (self::isNCEvent($event) !== true)
         {
             return;
         }
 
         $app = App::getFacadeRoot();
 
-        $merchant = $app['repo']->merchant->findOrFail($merchantId);
+        $ncUrl = $args[MConstants::PARAMS][Constants::NC_URL] ?? null;
 
-        $args[MConstants::PARAMS][Constants::NC_URL] = self::getUrlForNCEvent($merchant);
+        if (empty($ncUrl) === true)
+        {
+            $merchant = $app['repo']->merchant->findOrFail($merchantId);
+
+            $ncUrl = self::getUrlForNCEvent($merchant);
+        }
+
+        if ($shortenUrl === true)
+        {
+            $ncUrl = $app['elfin']->shorten($ncUrl);
+        }
+
+        $args[MConstants::PARAMS][Constants::NC_URL] = $ncUrl;
     }
 }

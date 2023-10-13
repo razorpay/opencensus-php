@@ -4,17 +4,12 @@ namespace RZP\Models\ClarificationDetail;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Trace\Tracer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Detail;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\Entity as DEntity;
-use \WpOrg\Requests\Exception as RequestsException;
-use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
 
 class Service extends Base\Service
