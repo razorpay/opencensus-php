@@ -3284,7 +3284,7 @@ class VirtualAccountTest extends TestCase
     {
         $vaEntity = new \RZP\Models\VirtualAccount\Entity();
 
-        $vaEntity->merchant = $merchant;
+        $vaEntity->merchant()->associate($merchant);
 
         $vaEntityReflectionObj = new \ReflectionObject($vaEntity);
 

@@ -3,10 +3,13 @@
 namespace RZP\Models\Payout\Batch;
 
 use RZP\Constants;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Base\PublicEntity as BasePublicEntity;
 
 class Entity extends BasePublicEntity
 {
+    use AsvGetAttribute;
+
     const BATCH_ID = 'batch_id';
 
     // The reference ID will be provided by the merchant hitting the API, this will be reflected in the

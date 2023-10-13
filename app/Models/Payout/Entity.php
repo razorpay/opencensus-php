@@ -47,6 +47,7 @@ use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\SubVirtualAccount\Core as SubVaCore;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Exception\UserWorkflowNotApplicableException;
 use RZP\Models\PayoutSource\Core as PayoutSourceCore;
 use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
@@ -67,7 +68,7 @@ use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use HasBalance;
+    use HasBalance, AsvGetAttribute;
     use NotesTrait;
 
     const ID                                    = 'id';

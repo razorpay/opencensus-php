@@ -3,9 +3,12 @@
 namespace RZP\Models\Merchant\Reminders;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                     = 'id';
     const REMINDER_ID            = 'reminder_id';
     const REMINDER_STATUS        = 'reminder_status';

@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\OfflinePayment;
 use RZP\Models\Order\Repository as OrderRepository;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Vpa\Entity          $vpa
@@ -29,7 +30,7 @@ use RZP\Trace\TraceCode;
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
     use NotesTrait;
     use HasBalance;
 

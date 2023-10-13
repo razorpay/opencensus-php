@@ -16,12 +16,13 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Order\Repository as OrderRepository;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status as QrStatus;
 
 class Entity extends Base\PublicEntity
 {
 
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
 
     const ID          = 'id';
     const MERCHANT_ID = 'merchant_id';

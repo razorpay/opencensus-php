@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\PaperMandate;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -18,6 +19,8 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const PAPER_MANDATE_ID            = 'paper_mandate_id';
     const UPLOADED_FILE_ID            = 'uploaded_file_id';
     const ENHANCED_FILE_ID            = 'enhanced_file_id';

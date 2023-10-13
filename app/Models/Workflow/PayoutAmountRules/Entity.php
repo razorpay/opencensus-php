@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Workflow;
 use RZP\Models\Merchant;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * Class Entity
@@ -17,7 +18,7 @@ use RZP\Models\Workflow\Base;
  */
 class Entity extends Base\Entity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const MERCHANT_ID = 'merchant_id';
     const ENTITY_ID   = 'entity_id';

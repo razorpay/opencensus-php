@@ -14,6 +14,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Merchant\Entity    $merchant
@@ -23,7 +24,7 @@ use RZP\Models\Base\Traits\NotesTrait;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
     use SoftDeletes;
 
     const BANK_ACCOUNT_ID             = 'bank_account_id';

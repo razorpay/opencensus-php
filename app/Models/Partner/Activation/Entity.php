@@ -5,12 +5,15 @@ namespace RZP\Models\Partner\Activation;
 use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Merchant\Detail\Entity  $merchantDetail
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const MERCHANT_ID               = 'merchant_id';
     const ACTIVATION_STATUS         = 'activation_status';
     const ACTIVATED_AT              = 'activated_at';
