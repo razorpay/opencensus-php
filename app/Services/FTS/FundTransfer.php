@@ -417,6 +417,14 @@ class FundTransfer extends Base
             $channel = Channel::ICICI;
         }
 
+        /**
+         * Issue ref: https://razorpay.slack.com/archives/C013868TRK4/p1697128717682159?thread_ts=1696321121.986939&cid=C013868TRK4
+         */
+        if ($channel === Channel::AMAZONPAY)
+        {
+            $channel = Channel::AMAZONPAY_FTS;
+        }
+
         $request[Constants::TRANSFER] = [
             Constants::PREFERRED_MODE    => $this->fta->getMode(),
             Constants::AMOUNT            => $this->source->getAmount(),

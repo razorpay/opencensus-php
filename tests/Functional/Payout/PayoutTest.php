@@ -19535,6 +19535,103 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('amazonpay', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
     }
 
+    public function testFtsRequestForAmazonPayWhenFtaHasUpdatedChannel()
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->fixtures->create('fund_account:wallet_account', [
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contact->getId(),
+        ]);
+
+        $this->startTest($this->testData['testCreatePayoutViaAmazonPay']);
+
+        $payoutId = $this->getDbLastEntity('payout')->getId();
+
+        $this->ba->ftsAuth();
+
+        // Processed Webhook sent from FTS
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => null,
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'AMAZON_PAY',
+            'extra_info'          => [
+                'beneficiary_name' => 'Chirag',
+                'cms_ref_no'       => '7a452792bee81',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 799028841,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'apay.razsof_MfPNM4430PLezL',
+            'mode'                => 'WALLET_TRANSFER',
+            'narration'           => 'WinZO Games Private Limited Fu',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 1,
+            'source_id'           => $payoutId,
+            'source_type'         => 'payout',
+            'status'              => 'INITIATED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $fundTransferAttempt = $this->getDbEntity('fund_transfer_attempt', [
+            'source_id' => $payoutId,
+        ]);
+
+        $this->assertEquals(Channel::AMAZONPAY, $fundTransferAttempt->getChannel());
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $ftsTransferSuccess = false;
+
+        $ftsMock->shouldReceive('createAndSendRequest')
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess, $payoutId) {
+
+                    self::assertEquals('/transfer', $endpoint);
+                    self::assertEquals('POST', $method);
+
+                    self::assertEquals('payout_refund', $input[FTSConstants::PRODUCT]);
+                    self::assertEquals('amazon_pay', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_CHANNEL]);
+                    self::assertEquals('WALLET_TRANSFER', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_MODE]);
+                    self::assertEquals($payoutId, $input[FTSConstants::TRANSFER][FTSConstants::SOURCE_ID]);
+
+                    $ftsTransferSuccess = true;
+
+                    return [
+                        FTSConstants::BODY => [
+                            FTSConstants::STATUS           => FTSConstants::STATUS_CREATED,
+                            FTSConstants::MESSAGE          => 'fund transfer sent to fts.',
+                            FTSConstants::FUND_TRANSFER_ID => random_integer(2),
+                            FTSConstants::FUND_ACCOUNT_ID  => random_integer(2),
+                        ]
+                    ];
+                })->once();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        (new \RZP\Jobs\FTS\FundTransfer(EnvMode::TEST, $fundTransferAttempt->getId()))->handle();
+
+        $this->assertTrue($ftsTransferSuccess);
+    }
+
     // Handles the case where merchant is disabled after creating a wallet fund account.
     // Any payout created to that fund account should fail as long as merchant is disabled
     public function testCreatePayoutViaAmazonPayMerchantDisabled()
