@@ -119,6 +119,7 @@ class Entity extends Base\PublicEntity
     const VIRTUAL_UPI_ROOT               = 'virtual_upi_root';
     const VIRTUAL_UPI_MERCHANT_PREFIX    = 'virtual_upi_merchant_prefix';
     const VIRTUAL_UPI_HANDLE             = 'virtual_upi_handle';
+    const TOKENISATION_MASTERCARD        = 'tokenisation_mastercard';
 
 
     //
@@ -1296,8 +1297,13 @@ class Entity extends Base\PublicEntity
 
             $orgId = 'org_' . $input[self::ORG_ID];  // resulting orgId will be org_{id}
 
+            if ($input[self::GATEWAY] == self::TOKENISATION_MASTERCARD)
+            {
+                return;
+            }
             try
             {
+
                 $org = (new Org\Repository)->findOrFailPublic($input[self::ORG_ID]);
 
                 $this->org()->associate($org);  // if org is set in input, associate the terminal with this org
