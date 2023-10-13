@@ -171,6 +171,7 @@ export const PaymentIssuersOptions = [
   { label: 'Bank of Baroda Bank', name: 'BARB' },
   { label: 'IDBI Bank', name: 'IBKL' },
   { label: 'AU small finance bank', name: 'AUBL' },
+  { label: 'IDFC First bank', name: 'IDFB' },
 ];
 
 export const PaymentNetworksOptions = [
