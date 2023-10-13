@@ -4,6 +4,8 @@ namespace RZP\Jobs\CrossBorder;
 
 use App;
 use Mail;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Jobs\Job;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -143,26 +145,7 @@ class CrossBorderCommonUseCases extends Job
                     (new MerchantInternationalIntegrationService())->generateEmerchantpayMaf($this->mode, $this->payload['body']['merchant_id']);
                     break;
                 case self::CREATE_INVOICE_VERIFICATION_WORKFLOW:
-                    $response = (new WorkflowServiceClient)->createWorkflowProxy($this->payload['body']);
-                    if ($this->payload['priority'] == 'P0') {
-                        try
-                        {
-                            CrossBorderCommonUseCases::sendSlackNotification(
-                                $this->payload['payment_id'],
-                                $this->payload['merchant_id'],
-                                $this->payload['priority'],
-                                $response['id'],
-                                "");
-                        }
-                        catch (\Throwable $e)
-                        {
-                            $this->trace->traceException($e, Trace::ERROR, TraceCode::CROSS_BORDER_INVOICE_WORKFLOW_NOTIFICATION_FAILED,
-                                [
-                                    'payload' => $this->payload,
-                                ]
-                            );
-                        }
-                    }
+                    $this->createInvoiceVerificationWorkflow();
                     break;
                 case self::OPGSP_IMPORT_INVOICE_REMINDER:
                     $this->sendInvoiceReminderEmailForOpgspImport();
@@ -235,6 +218,12 @@ class CrossBorderCommonUseCases extends Job
                 'attempt_number'        => 1 + $this->attempts(),
                 'worker_retry_delay'    => $workerRetryDelay
             ]);
+
+            // Push Error Metrics to Vajra for failed cases
+            (new Metrics())->pushErrorMetrics(Metrics::CROSS_BORDER_COMMON_WORKER_JOB_FAILED, [
+                Metrics::ACTION => $this->payload['action'],
+                Metrics::IS_DELETED => false
+            ]);
         }
         else
         {
@@ -244,6 +233,12 @@ class CrossBorderCommonUseCases extends Job
                 'payload'           => $this->payload,
                 'job_attempts'      => $this->attempts(),
                 'message'           => 'Deleting the job after configured number of tries. Still unsuccessful.'
+            ]);
+
+            // Push Error Metrics to Vajra for Deleted cases
+            (new Metrics())->pushErrorMetrics(Metrics::CROSS_BORDER_COMMON_WORKER_JOB_FAILED, [
+                Metrics::ACTION => $this->payload['action'],
+                Metrics::IS_DELETED => true
             ]);
         }
     }
@@ -262,6 +257,30 @@ class CrossBorderCommonUseCases extends Job
         }
         else {
             $this->mode = Mode::LIVE;
+        }
+    }
+
+    protected function createInvoiceVerificationWorkflow()
+    {
+        $response = (new WorkflowServiceClient)->createWorkflowProxy($this->payload['body']);
+        if ($this->payload['priority'] == 'P0') {
+            try
+            {
+                CrossBorderCommonUseCases::sendSlackNotification(
+                    $this->payload['payment_id'],
+                    $this->payload['merchant_id'],
+                    $this->payload['priority'],
+                    $response['id'],
+                    "");
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::CROSS_BORDER_INVOICE_WORKFLOW_NOTIFICATION_FAILED,
+                    [
+                        'payload' => $this->payload,
+                    ]
+                );
+            }
         }
     }
 
@@ -336,8 +355,6 @@ class CrossBorderCommonUseCases extends Job
         $contactEmail = $merchantDetail->getContactEmail();
         if (!isset($contactEmail) or empty($contactEmail))
         {
-            $this->delete();
-
             $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DELETED, [
                 'payload'           => $this->payload,
                 'message'           => 'Deleting the job as contact email address is not present.'
@@ -387,12 +404,10 @@ class CrossBorderCommonUseCases extends Job
             // retry if file upload status is 'created'
             if ($fileDetails['status'] == self::CREATED)
             {
-                $this->checkRetry();
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS);
             }
             else
             {
-                $this->delete();
-
                 $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DELETED, [
                     'payload'           => $this->payload,
                     'message'           => 'Deleting the job as FIRS was not successfully uploaded.'
@@ -404,11 +419,11 @@ class CrossBorderCommonUseCases extends Job
         // fetch merchant detail entity to get business name and contact email
         $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantId);
 
+        $merchant = $this->repo->merchant->find($merchantId);
+
         $contactEmail = $merchantDetail->getContactEmail();
         if (!isset($contactEmail) or empty($contactEmail))
         {
-            $this->delete();
-
             $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DELETED, [
                 'payload'           => $this->payload,
                 'message'           => 'Deleting the job as contact email address is not present.'
@@ -421,8 +436,9 @@ class CrossBorderCommonUseCases extends Job
 
         $mailPayload = [
             'business_name' => (isset($businessName) and !empty($businessName)) ? $businessName : self::DEFAULT_BUSINESS_NAME,
-            "contact_email" => $contactEmail,
+            'contact_email' => $contactEmail,
             'firs_month_year' => (isset($documentDate) and !empty($documentDate)) ? date("M Y", $documentDate) : self::DEFAULT_MONTH_YEAR,
+            'org_id' => $merchant->getOrgId()
         ];
 
         $mail = new MerchantEmail\FirsAvailableMail($mailPayload);
@@ -514,6 +530,8 @@ class CrossBorderCommonUseCases extends Job
                 Trace::ERROR,
                 TraceCode::IMPORT_FLOW_ON_HOLD_CLEAR_FAILED
             );
+
+            throw $e;
         }
     }
 
@@ -867,11 +885,6 @@ class CrossBorderCommonUseCases extends Job
         }
         catch (\Throwable $e)
         {
-            if (isset($paymentEInvoice) and isset($eInvoiceCore))
-            {
-                $this->handleFailure($paymentEInvoice, $eInvoiceCore);
-                return;
-            }
             throw $e;
         }
     }
@@ -890,7 +903,7 @@ class CrossBorderCommonUseCases extends Job
 
         if (in_array($errorCode, Constants::NON_RETRYABLE_ERROR_CODES) == false)
         {
-            $this->checkRetry();
+            throw new BadRequestException($errorCode);
         }
     }
 

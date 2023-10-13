@@ -57,6 +57,7 @@ class DccEInvoiceCore extends Core
             Entity::AMOUNT => $invoiceAmount,
             Entity::TYPE => Constants::REFERENCE_TYPE_TO_TYPE_MAP[$referenceType],
             Entity::REF_NUM => $baseEntity->getId(),
+            Entity::CURRENCY => Currency::INR
         ];
 
         return $this->create($input, $payment->merchant, null, null, $payment);
@@ -351,7 +352,7 @@ class DccEInvoiceCore extends Core
     // converts amount to rupees
     protected function getAmountInRupees($amount)
     {
-        return number_format((abs($amount) /100), '2', '.', '');
+        return number_format((abs($amount) /Currency::DENOMINATION_FACTOR[Currency::INR]), '2', '.', '');
     }
 
     // calculates invoice amount
@@ -364,11 +365,14 @@ class DccEInvoiceCore extends Core
         {
             $dccMarkUpPercent = $paymentMeta->getDccMarkUpPercent();
             $invoiceAmount = ($paymentAmount * $dccMarkUpPercent) / 100;
-            // In case of MCC payment, multiply MCC forex rates with the amount
+            // In case of MCC payment, multiply MCC forex rates with the amount and also denomination factor
             if ($payment->getCurrency() !== Currency::INR)
             {
                 $forexRate = $paymentMeta->getMccForexRate();
                 $invoiceAmount *= !empty($forexRate) ? $forexRate : 1;
+
+                $denominationFactor = Currency::getDenomination(Currency::INR)/Currency::getDenomination($payment->getCurrency());
+                $invoiceAmount *= $denominationFactor;
             }
         }
         else

@@ -35,6 +35,7 @@ class PaymentEInvoiceTest extends TestCase
     const PAYMENT_AMOUNT = 100000;
     const MINIMUM_PAYMENT_AMOUNT = 1000;
     const PAYMENT_CURRENCY = 'INR';
+    const THREE_DECIMAL_PAYMENT_CURRENCY = 'KWD';
     const PAYMENT_GATEWAY_CURRENCY = 'USD';
     const DCC_MARK_UP_PERCENT = 8;
     const FOREX_RATE = 10;
@@ -88,17 +89,17 @@ class PaymentEInvoiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->createRequiredEntities(self::PAYMENT_AMOUNT);
+        $this->createRequiredEntities(self::PAYMENT_AMOUNT,self::PAYMENT_CURRENCY);
         $this->setUpEInvoiceClientMock();
         $this->ba->privateAuth();
     }
 
     // creates payment, payment_meta and address entities
-    protected function createRequiredEntities($amount)
+    protected function createRequiredEntities($amount, $currency)
     {
         $paymentAttributes = [
-            'amount' => self::PAYMENT_AMOUNT,
-            'currency' => self::PAYMENT_CURRENCY,
+            'amount' => $amount,
+            'currency' => $currency,
             'gateway' => self::GATEWAY
         ];
         $this->payment = $this->fixtures->create('payment:captured', $paymentAttributes);
@@ -107,8 +108,14 @@ class PaymentEInvoiceTest extends TestCase
             'payment_id' => $this->payment->getId(),
             'gateway_currency' => self::PAYMENT_GATEWAY_CURRENCY,
             'gateway_amount' => self::PAYMENT_AMOUNT / self::FOREX_RATE,
-            'dcc_mark_up_percent' => self::DCC_MARK_UP_PERCENT,
+            'dcc_mark_up_percent' => self::DCC_MARK_UP_PERCENT
         ];
+
+        if($currency!=self::PAYMENT_CURRENCY)
+        {
+            $paymentMetaAttributes['mcc_forex_rate'] = self::FOREX_RATE;
+            $paymentMetaAttributes['mcc_applied'] = true;
+        }
         $this->fixtures->create(E::PAYMENT_META, $paymentMetaAttributes);
 
         $addressAttributes = [
@@ -161,6 +168,21 @@ class PaymentEInvoiceTest extends TestCase
         $this->assertEmpty($invoice[Entity::COMMENT]);
     }
 
+    public function testDCCInvoiceThreeDecimalPaymentFlow()
+    {
+        $this->createRequiredEntities(self::PAYMENT_AMOUNT, self::THREE_DECIMAL_PAYMENT_CURRENCY);
+
+        $invoice = $this->generateDCCEInvoice(Constants::PAYMENT_FLOW);
+
+        $this->assertEquals($this->payment->getId(), $invoice[Entity::ENTITY_ID]);
+        $this->assertEquals($this->payment->getId(), $invoice[Entity::REF_NUM]);
+        $this->assertEquals(Status::GENERATED, $invoice[Entity::STATUS]);
+        $this->assertEquals(Type::DCC_INV, $invoice[Entity::TYPE]);
+        $this->assertEquals(self::INVOICE_REF_NUM, $invoice[Entity::NOTES][Constants::IRN]);
+        $this->assertEquals($this->getInvoiceAmount(Constants::PAYMENT_FLOW, self::THREE_DECIMAL_PAYMENT_CURRENCY), $invoice[Entity::AMOUNT]);
+        $this->assertEmpty($invoice[Entity::COMMENT]);
+    }
+
     // successful invoice for credit note
     public function testDCCInvoiceRefundFlow()
     {
@@ -194,7 +216,7 @@ class PaymentEInvoiceTest extends TestCase
     public function testDCCInvoiceWithSmallAmount()
     {
 
-        $this->createRequiredEntities(self::MINIMUM_PAYMENT_AMOUNT);
+        $this->createRequiredEntities(self::MINIMUM_PAYMENT_AMOUNT, self::PAYMENT_CURRENCY);
 
         $invoice = $this->generateDCCEInvoice(Constants::PAYMENT_FLOW);
 
@@ -251,7 +273,7 @@ class PaymentEInvoiceTest extends TestCase
         $this->assertEquals($this->payment->getId(), $invoice[Entity::REF_NUM]);
         $this->assertEquals(Status::GENERATED, $invoice[Entity::STATUS]);
         $this->assertEquals(self::INVOICE_REF_NUM, $invoice[Entity::NOTES][Constants::IRN]);
-        $this->assertEquals($this->getInvoiceAmount(Constants::PAYMENT_FLOW), $invoice[Entity::AMOUNT]);
+        $this->assertEquals($this->getInvoiceAmount(Constants::PAYMENT_FLOW, 'USD'), $invoice[Entity::AMOUNT]);
         $this->assertEmpty($invoice[Entity::COMMENT]);
     }
 
@@ -338,7 +360,7 @@ class PaymentEInvoiceTest extends TestCase
                 Entity::TYPE => Type::DCC_INV,
                 Entity::REF_NUM => $this->payment->getId(),
                 Entity::ORDER_ID => $this->fixtures->create(E::ORDER)->getId(),
-                Entity::AMOUNT => $this->getInvoiceAmount(Constants::PAYMENT_FLOW),
+                Entity::AMOUNT => $this->getInvoiceAmount(Constants::PAYMENT_FLOW, 'INR'),
                 Entity::STATUS => Status::GENERATED,
             ];
             $this->eInvoice = $this->fixtures->create(E::INVOICE, $invoiceAttributes);
@@ -380,7 +402,7 @@ class PaymentEInvoiceTest extends TestCase
     protected function getRequestContent($referenceType)
     {
         $baseEntity = $referenceType === Constants::PAYMENT_FLOW ? $this->payment : $this->refund;
-        $invoiceAmount = $this->getAmountInRupees($this->getInvoiceAmount($referenceType));
+        $invoiceAmount = $this->getAmountInRupees($this->getInvoiceAmount($referenceType, $this->payment->getCurrency()));
 
         return [
             Constants::ACCESS_TOKEN => 'a78e74508f285f5cd120716b81d8e91f2af96326',
@@ -427,11 +449,11 @@ class PaymentEInvoiceTest extends TestCase
     }
 
     // calculates expected invoice amount
-    protected function getInvoiceAmount($referenceType)
+    protected function getInvoiceAmount($referenceType, $currency)
     {
         if ($referenceType === Constants::PAYMENT_FLOW)
         {
-            $invoiceAmount = (self::PAYMENT_AMOUNT * self::DCC_MARK_UP_PERCENT) / 100;
+            $invoiceAmount = ($this->payment->getAmount() * self::DCC_MARK_UP_PERCENT) / 100;
         }
         else
         {
@@ -440,6 +462,7 @@ class PaymentEInvoiceTest extends TestCase
         if ($this->payment->getCurrency() != Currency::INR)
         {
             $invoiceAmount *= self::FOREX_RATE;
+            $invoiceAmount *= (Currency::getDenomination(Currency::INR)/Currency::getDenomination($currency));
         }
         return round($invoiceAmount);
     }

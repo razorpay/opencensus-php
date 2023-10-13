@@ -55,6 +55,7 @@ class FirsAvailableMail extends Mailable
                 'business_name' => $this->data['business_name'],
                 'firs_month_year' => $this->data['firs_month_year'],
             ],
+            'org_id' => $this->data['org_id']
         ];
     }
 

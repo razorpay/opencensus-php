@@ -1767,6 +1767,8 @@ class Service extends Base\Service
                         'settlement_currency'   => $settlementCurrency,
                     ]
                 );
+
+                throw $ex;
             }
         }
     }

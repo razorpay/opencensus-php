@@ -10533,6 +10533,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SLACK_PUSH_MESSAGE_FAILURE                             = 'SLACK_PUSH_MESSAGE_FAILURE';
     const SLACK_PUSH_MESSAGE_INIT                                = 'SLACK_PUSH_MESSAGE_INIT';
 
+    const CROSS_BORDER_METRICS_PUSH_FAILED                       = "CROSS_BORDER_METRICS_PUSH_FAILED";
+    const CROSS_BORDER_METRICS_PUSH_SUCCESS                       = "CROSS_BORDER_METRICS_PUSH_SUCCESS";
+    
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
