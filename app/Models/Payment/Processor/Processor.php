@@ -929,10 +929,14 @@ class Processor
                         $requestContext = $this->app['request.ctx.v2'];
                         $globalCustomerId = optional($requestContext->passportUtil)->getGlobalCustomerId() ?: '';
 
-                        $input[Payment\Entity::GLOBAL_CUSTOMER_ID] = $globalCustomerId;
+                        $getCustomerInput = [
+                            Payment\Entity::CUSTOMER_ID => $input[Payment\Entity::CUSTOMER_ID] ?? '',
+                            Payment\Entity::APP_TOKEN => $input[Payment\Entity::APP_TOKEN] ?? '',
+                            Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId,
+                        ];
 
                         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
-                            $input, $merchant, false);
+                            $getCustomerInput, $merchant, false);
                         if ($customer !== null)
                         {
                             $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
@@ -2095,10 +2099,14 @@ class Processor
         $requestContext = $this->app['request.ctx.v2'];
         $globalCustomerId = optional($requestContext->passportUtil)->getGlobalCustomerId() ?: '';
 
-        $input[Payment\Entity::GLOBAL_CUSTOMER_ID] = $globalCustomerId;
+        $getCustomerInput = [
+            Payment\Entity::CUSTOMER_ID => $input[Payment\Entity::CUSTOMER_ID] ?? '',
+            Payment\Entity::APP_TOKEN => $input[Payment\Entity::APP_TOKEN] ?? '',
+            Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId,
+        ];
 
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
-            $input, $this->merchant, false);
+            $getCustomerInput, $this->merchant, false);
 
         if ($customer != null)
         {

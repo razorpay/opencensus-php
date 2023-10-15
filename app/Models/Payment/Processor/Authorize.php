@@ -5313,10 +5313,17 @@ trait Authorize
         $requestContext = $this->app['request.ctx.v2'];
         $globalCustomerId = optional($requestContext->passportUtil)->getGlobalCustomerId() ?: '';
 
-        $input[Payment\Entity::GLOBAL_CUSTOMER_ID] = $globalCustomerId;
+        $getCustomerInput = [
+            Payment\Entity::CUSTOMER_ID => $input[Payment\Entity::CUSTOMER_ID] ?? '',
+            Payment\Entity::APP_TOKEN => $input[Payment\Entity::APP_TOKEN] ?? '',
+            Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId,
+        ];
 
-        list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
-                                                                $input, $merchant, $followGlobal);
+        [$customer, $customerApp] = (new Customer\Core())->getCustomerAndApp(
+            $getCustomerInput,
+            $merchant,
+            $followGlobal,
+        );
 
         // need to enable this check before enabling the token_interoperability
        // $this->isTokenInteroperabilityAllowed($customer, $payment, $input);
