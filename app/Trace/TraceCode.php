@@ -4773,6 +4773,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BENEFICIARY_VERIFY_ACCOUNT                            = 'BENEFICIARY_VERIFY_ACCOUNT';
     const BENEFICIARY_VERIFY_FAILED                             = 'BENEFICIARY_VERIFY_FAILED';
     const BEAM_NOTIFIER_FAILED                                  = 'BEAM_NOTIFIER_FAILED';
+    const SETTLEMENTS_SLACK_NOTIFICATION_SEND_SKIPPED           = 'SETTLEMENTS_SLACK_NOTIFICATION_SEND_SKIPPED';
     const SLACK_NOTIFICATION_SEND_FAILED                        = 'SLACK_NOTIFICATION_SEND_FAILED';
     const VERIFY_FUND_TRANSFER_INIT                             = 'VERIFY_FUND_TRANSFER_INIT';
     const FTA_VERIFICATION_SKIPPED                              = 'FTA_VERIFICATION_SKIPPED';

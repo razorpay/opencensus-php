@@ -59,8 +59,6 @@ class SlackNotification extends Base\Core
 
             $username =  'Settlements';
 
-            $channel = Config::get('slack.channels.settlements');
-
             if ($e !== null)
             {
                 $data += [
@@ -69,10 +67,19 @@ class SlackNotification extends Base\Core
                 ];
             }
 
-            if ($slackChannel !== null)
+            if (($slackChannel === 'settlements') or ($slackChannel === null))
             {
-                $channel = Config::get('slack.channels.' . $slackChannel);
+                $this->trace->info(
+                    TraceCode::SETTLEMENTS_SLACK_NOTIFICATION_SEND_SKIPPED,
+                    [
+                        'operation' => $operation,
+                        'data'      => $data,
+                    ]);
+
+                return ;
             }
+
+            $channel = Config::get('slack.channels.' . $slackChannel);
 
             $data += [
                 'mode' => $this->mode,

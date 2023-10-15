@@ -1199,8 +1199,6 @@ trait SettlementTrait
                         TraceCode::SETTLEMENT_SKIPPED,
                         $traceData);
 
-                    (new SlackNotification)->send('setl_skipped', $traceData, $ex);
-
                     throw $ex;
                 }
             },
@@ -1338,8 +1336,6 @@ trait SettlementTrait
     protected function successNotification($data, $settlements, $traceCode)
     {
         $this->trace->info($traceCode, $data);
-
-        (new SlackNotification)->send('setl_initiate', $data);
     }
 
     protected function settlementFailure($channel, $e, $traceCode)

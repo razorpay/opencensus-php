@@ -702,14 +702,6 @@ class Core extends Base\Core
                 'merchant_ids' => $result->getIds(),
             ]);
 
-        (new SlackNotification)->send(
-            'merchant_invoice_alert',
-            [
-                'total_invoice_skipped' => $result->count(),
-            ],
-            null,
-            $result->count());
-
         $merchantIds = [];
 
         $result->each(

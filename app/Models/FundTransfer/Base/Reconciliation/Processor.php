@@ -278,8 +278,6 @@ abstract class Processor extends Base\Core
             }
             catch (\Throwable $e)
             {
-                (new SlackNotification)->send('setl_verify', [], $e);
-
                 throw $e;
             }
 
@@ -287,8 +285,6 @@ abstract class Processor extends Base\Core
 
             return $summary;
         });
-
-        (new SlackNotification)->send('setl_verify', $summary);
 
         return $summary;
     }
