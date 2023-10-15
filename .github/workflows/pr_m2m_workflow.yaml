@@ -12,8 +12,7 @@ jobs:
     name: Cancel or Skip workflow
     if: always()
     runs-on:
-      - api
-      - ARM64
+      - api-micro-arm
     steps:
       - name: Cancel Previous Runs
         timeout-minutes: 3

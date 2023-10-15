@@ -6,7 +6,6 @@ on:
 jobs:
   processDismissal:
     runs-on:
-      - self-hosted
       - api
       - X64
     steps:

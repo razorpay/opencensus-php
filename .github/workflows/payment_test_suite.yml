@@ -2,8 +2,7 @@ on: [push]
 jobs:
   cancel:
     runs-on:
-      - api-public
-      - ARM64
+      - api-micro-arm
     name: Cancel Previous Runs
     timeout-minutes: 1
     if: always()
