@@ -163,10 +163,13 @@ class UserController extends Controller
                     'api_host'        => $data['api_host'] ?? null,
                     'session_id'      => $data['session_id'] ?? null
                 ]);
+    
+                $id = $details['id'] ?? null;
+                $userId = $details['user']['id'] ?? null;
 
                 return redirect(env('EASY_DASHBOARD_URL'))->withCookies([
-                    Cookie::make('rzp_merchant_id', $details['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
-                    Cookie::make('rzp_user_id', $details['user']['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
+                    Cookie::make('rzp_merchant_id', $id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
+                    Cookie::make('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
                 ]);
             }
 
