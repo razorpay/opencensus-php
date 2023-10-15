@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Services\RazorXClient;
 use RZP\Models\BankingAccountStatement as BAS;
 
@@ -111,6 +112,12 @@ class BankingAccountStatementUpdate extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'params' => $this->params,
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

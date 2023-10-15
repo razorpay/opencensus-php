@@ -3,9 +3,11 @@
 namespace RZP\Jobs;
 
 use App;
-use RZP\Trace\TraceCode;
-use RZP\Services\RazorXClient;
 use Razorpay\Trace\Logger as Trace;
+
+use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
+use RZP\Services\RazorXClient;
 use RZP\Models\FundAccount\DetailsPropagator\Core as DetailsPropagator;
 
 /***
@@ -81,6 +83,12 @@ class FundAccountDetailsPropagatorJob extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'fund_account_id' => $this->fundAccountId
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context, self::MAX_RETRIES, self::MAX_RETRY_DELAY);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

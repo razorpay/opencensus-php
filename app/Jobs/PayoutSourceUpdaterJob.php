@@ -3,9 +3,12 @@
 namespace RZP\Jobs;
 
 use App;
-use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Jitendra\Lqext\TransactionAware;
+
+use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
@@ -118,5 +121,31 @@ class PayoutSourceUpdaterJob extends Job
                 $this->release(self::MAX_RETRY_DELAY);
             }
         }
+    }
+
+    /**
+     * Defines how the job is handled in an event of worker timeout
+     */
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
+    {
+        $this->trace->count(Metric::RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT, [
+            'job_name'   => $this->getJobName() ?? '',
+            'mode'       => $this->getMode() ?? '',
+        ]);
+
+        parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'payout_id'               => $this->payoutPublicId,
+            'previous_status'         => $this->previousPayoutStatus,
+            'expected_current_status' => $this->expectedCurrentStatus
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context, self::MAX_RETRIES, self::MAX_RETRY_DELAY);
+
+        $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
+            'is_deleted'  => optional($this->job)->isDeleted() ?? null,
+            'is_released' => optional($this->job)->isReleased() ?? null,
+        ]);
     }
 }

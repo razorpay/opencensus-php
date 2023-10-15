@@ -4,15 +4,14 @@ namespace RZP\Jobs;
 
 use App;
 use Carbon\Carbon;
-use RZP\Services\RazorXClient;
 use Illuminate\Support\Facades\DB;
-use RZP\Trace\Tracer;
-use RZP\Models\Admin;
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
-use RZP\Constants\HyperTrace;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Merchant\RazorxTreatment;
+
+use RZP\Trace\Tracer;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
+use RZP\Constants\HyperTrace;
+use RZP\Services\RazorXClient;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement as BAS;
 use RZP\Base\Database\Connectors\MySqlConnector;
@@ -63,8 +62,6 @@ class BankingAccountStatementProcessor extends Job
 
             $this->traceActiveDbConnections();
 
-            $this->resetTransactionLevel();
-
             $BASCore = new BAS\Core;
 
             $basDetails = $BASCore->getBasDetails($this->params['account_number'], $this->params['channel'], BASD\Status::getStatusesForProcessing());
@@ -83,6 +80,7 @@ class BankingAccountStatementProcessor extends Job
                         BAS\Entity::CHANNEL            => $this->params['channel'],
                         BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
                         BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                        'active_transactions'          => $this->repoManager->getTransactionLevel()
                     ]);
 
                 // Add merchant context in params
@@ -179,6 +177,28 @@ class BankingAccountStatementProcessor extends Job
         $this->trace->info(TraceCode::ACTIVE_DB_CONNECTIONS, $activeDbConnection);
     }
 
+    protected function handleWorkerTimeoutGracefully($context = [], $maxRetries = 1, $retryDelay = 0)
+    {
+        $internalJob = $this->job;
+
+        $jobIsDeletedOrReleased = false;
+
+        /**
+         * Generally all Internal Jobs extends Illuminate\Contracts\Queue\Job interface, which
+         * means isDeletedOrReleased() method will always exist. Adding this as an additional safety check.
+         */
+        if ((is_null($internalJob) === false) and
+            (method_exists($internalJob, 'isDeletedOrReleased')))
+        {
+            $jobIsDeletedOrReleased = $internalJob->isDeletedOrReleased();
+        }
+
+        if ($jobIsDeletedOrReleased === false)
+        {
+            $this->checkRetry();
+        }
+    }
+
     /**
      * Defines how the job is handled in an event of worker timeout
      */
@@ -191,31 +211,11 @@ class BankingAccountStatementProcessor extends Job
 
         parent::beforeJobKillCleanUp($variant);
 
+        $this->handleWorkerTimeoutGracefully();
+
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,
             'is_released' => optional($this->job)->isReleased() ?? null,
-        ]);
-    }
-
-    protected function resetTransactionLevel()
-    {
-        $app = App::getFacadeRoot();
-
-        $variant = $app->razorx->getTreatment(
-            $this->getJobName(),
-            RazorxTreatment::RESET_TRANSACTION_LEVELS,
-            $this->mode ?? Mode::LIVE
-        );
-
-        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            $this->repoManager->resetTransactionLevel();
-        }
-
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_TRANSACTION_STATE, [
-            'variants'            => $variant,
-            'job_name'            => $this->getJobName(),
-            'active_transactions' => $this->repoManager->getTransactionLevel()
         ]);
     }
 }

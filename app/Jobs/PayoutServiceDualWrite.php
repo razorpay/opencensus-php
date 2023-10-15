@@ -3,11 +3,12 @@
 namespace RZP\Jobs;
 
 use App;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Models\Payout\Core;
 use RZP\Services\RazorXClient;
-use Razorpay\Trace\Logger as Trace;
 
 class PayoutServiceDualWrite extends Job
 {
@@ -85,6 +86,28 @@ class PayoutServiceDualWrite extends Job
         }
     }
 
+    protected function handleWorkerTimeoutGracefully($context = [], $maxRetries = 1, $retryDelay = 0)
+    {
+        $internalJob = $this->job;
+
+        $jobIsDeletedOrReleased = false;
+
+        /**
+         * Generally all Internal Jobs extends Illuminate\Contracts\Queue\Job interface, which
+         * means isDeletedOrReleased() method will always exist. Adding this as an additional safety check.
+         */
+        if ((is_null($internalJob) === false) and
+            (method_exists($internalJob, 'isDeletedOrReleased')))
+        {
+            $jobIsDeletedOrReleased = $internalJob->isDeletedOrReleased();
+        }
+
+        if ($jobIsDeletedOrReleased === false)
+        {
+            $this->checkRetry();
+        }
+    }
+
     /**
      * Defines how the job is handled in an event of worker timeout
      */
@@ -96,6 +119,8 @@ class PayoutServiceDualWrite extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $this->handleWorkerTimeoutGracefully();
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

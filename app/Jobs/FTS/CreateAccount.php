@@ -6,8 +6,8 @@ use App;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
-use RZP\Jobs\Metric;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Services\RazorXClient;
 use RZP\Exception\RecordAlreadyExists;
 use RZP\Models\Settlement\SlackNotification;
@@ -165,6 +165,15 @@ class CreateAccount extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'id'      => $this->id,
+            'type'    => $this->type,
+            'product' => $this->product,
+            'status'  => $this->status,
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context, self::MAX_ALLOWED_ATTEMPTS, self::RETRY_PERIOD);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

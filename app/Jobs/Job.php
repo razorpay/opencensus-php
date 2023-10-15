@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use App;
 use Razorpay\Trace\Logger;
 use Illuminate\Bus\Queueable;
+use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -157,15 +158,12 @@ class Job implements ShouldQueue
            $this->init();
         });
 
-        if ($this->repoManager->getTransactionLevel() > 0)
+        if (($this->repoManager->getTransactionLevel() > 0) and
+            !($this->job instanceof SyncJob))
         {
             $this->trace->error(TraceCode::QUEUE_JOB_INVALID_TRANSACTION_LEVEL, [
                 'job_name'          => $this->getJobName(),
                 'transaction_level' => $this->repoManager->getTransactionLevel()
-            ]);
-
-            $this->trace->count(Metric::QUEUE_JOB_TRANSACTION_LEVEL_COUNT, [
-                'job_name' => $this->getJobName(),
             ]);
         }
 
@@ -433,5 +431,47 @@ class Job implements ShouldQueue
 
             return false;
         }, E_WARNING);
+    }
+
+    protected function handleWorkerTimeoutGracefully($context = [], $maxRetries = 1, $retryDelay = 0)
+    {
+        $traceInfo = [
+            'context'            => $context,
+            'job_name'           => $this->getJobName(),
+            'attempts_exhausted' => $this->attempts(),
+        ];
+
+        $internalJob = $this->job;
+
+        $jobIsDeletedOrReleased = false;
+
+        /**
+         * Generally all Internal Jobs extends Illuminate\Contracts\Queue\Job interface, which
+         * means isDeletedOrReleased() method will always exist. Adding this as an additional safety check.
+         */
+        if ((is_null($internalJob) === false) and
+            (method_exists($internalJob, 'isDeletedOrReleased')))
+        {
+            $jobIsDeletedOrReleased = $internalJob->isDeletedOrReleased();
+        }
+
+        if ($this->attempts() < $maxRetries)
+        {
+            $this->trace->info(TraceCode::QUEUE_JOB_WORKER_TIMEOUT_RELEASE, $traceInfo);
+
+            if ($jobIsDeletedOrReleased === false)
+            {
+                $this->release($retryDelay);
+            }
+        }
+        else
+        {
+            $this->trace->info(TraceCode::QUEUE_JOB_WORKER_TIMEOUT_DELETE, $traceInfo);
+
+            if ($jobIsDeletedOrReleased === false)
+            {
+                $this->delete();
+            }
+        }
     }
 }

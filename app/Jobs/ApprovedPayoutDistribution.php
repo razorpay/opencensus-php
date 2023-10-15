@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use Config;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
@@ -137,9 +138,28 @@ class ApprovedPayoutDistribution extends Job
 
         parent::beforeJobKillCleanUp($variant);
 
+        $context = [
+            'data'          => $this->data,
+            'message_group' => $this->messageGroup,
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context);
+
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,
             'is_released' => optional($this->job)->isReleased() ?? null,
         ]);
+    }
+
+    protected function handleWorkerTimeoutGracefully($context = [], $maxRetries = 1, $retryDelay = 0)
+    {
+        $traceInfo = [
+            'context'            => $context,
+            'job_name'           => $this->getJobName(),
+        ];
+
+        $this->trace->info(TraceCode::QUEUE_JOB_WORKER_TIMEOUT_RELEASE, $traceInfo);
+
+        $this->release();
     }
 }

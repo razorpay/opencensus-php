@@ -3,9 +3,11 @@
 namespace RZP\Jobs;
 
 use Throwable;
+use Razorpay\Trace\Logger;
+
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use Razorpay\Trace\Logger;
+use RZP\Constants\Metric;
 use RZP\Services\RazorXClient;
 use RZP\Models\FundAccount\Type;
 use RZP\Exception\LogicException;
@@ -251,6 +253,12 @@ class FaVpaValidation extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'favId' => $this->favId,
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

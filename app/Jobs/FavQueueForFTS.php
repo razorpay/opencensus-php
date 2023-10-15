@@ -2,10 +2,12 @@
 
 namespace RZP\Jobs;
 
+use Razorpay\Trace\Logger;
+
 use RZP\Trace\Tracer;
 use RZP\Services\FTS;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger;
+use RZP\Constants\Metric;
 use RZP\Constants\HyperTrace;
 use RZP\Services\RazorXClient;
 use RZP\Models\FundAccount\Validation\Core as FAVCore;
@@ -137,6 +139,28 @@ class FavQueueForFTS extends Job
         }
     }
 
+    protected function handleWorkerTimeoutGracefully($context = [], $maxRetries = 1, $retryDelay = 0)
+    {
+        $internalJob = $this->job;
+
+        $jobIsDeletedOrReleased = false;
+
+        /**
+         * Generally all Internal Jobs extends Illuminate\Contracts\Queue\Job interface, which
+         * means isDeletedOrReleased() method will always exist. Adding this as an additional safety check.
+         */
+        if ((is_null($internalJob) === false) and
+            (method_exists($internalJob, 'isDeletedOrReleased')))
+        {
+            $jobIsDeletedOrReleased = $internalJob->isDeletedOrReleased();
+        }
+
+        if ($jobIsDeletedOrReleased === false)
+        {
+            $this->checkRetry();
+        }
+    }
+
     /**
      * Defines how the job is handled in an event of worker timeout
      */
@@ -148,6 +172,8 @@ class FavQueueForFTS extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $this->handleWorkerTimeoutGracefully();
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

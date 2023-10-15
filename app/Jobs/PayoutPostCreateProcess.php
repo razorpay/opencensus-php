@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Services\RazorXClient;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -96,6 +97,12 @@ class PayoutPostCreateProcess extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'payout_id' => $this->payoutId,
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context, self::MAX_RETRY_ATTEMPT, self::MAX_RETRY_DELAY);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

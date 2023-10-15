@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Services\RazorXClient;
 
 class PartnerBankDowntimeHoldPayouts extends Job
@@ -69,6 +70,12 @@ class PartnerBankDowntimeHoldPayouts extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'payout_id' => $this->payoutId,
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

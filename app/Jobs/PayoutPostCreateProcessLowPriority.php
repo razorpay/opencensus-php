@@ -6,6 +6,7 @@ use RZP\Trace\Tracer;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Payout\Entity;
 use RZP\Services\RazorXClient;
@@ -218,6 +219,12 @@ class PayoutPostCreateProcessLowPriority extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'payout_id' => $this->payoutId,
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context, self::MAX_RETRY_ATTEMPT, self::MAX_RETRY_DELAY);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

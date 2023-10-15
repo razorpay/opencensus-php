@@ -3,13 +3,13 @@
 namespace RZP\Jobs\FTS;
 
 use App;
-
-use RZP\Jobs\Job;
-use RZP\Jobs\Metric;
-use RZP\Trace\TraceCode;
-use RZP\Services\RazorXClient;
 use Razorpay\Trace\Logger as Trace;
 use Jitendra\Lqext\TransactionAware;
+
+use RZP\Jobs\Job;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
+use RZP\Services\RazorXClient;
 use RZP\Exception\RecordAlreadyExists;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -140,6 +140,12 @@ class FundTransfer extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'fta_id' => $this->ftaId,
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context, self::MAX_ALLOWED_ATTEMPTS, self::RETRY_PERIOD);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

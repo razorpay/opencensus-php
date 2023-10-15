@@ -4,9 +4,11 @@ namespace RZP\Jobs;
 
 use App;
 use Carbon\Carbon;
+
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Models\BankingAccountStatement as BAS;
@@ -438,6 +440,13 @@ class MissingAccountStatementDetection extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'channel'     => $this->channel,
+            'merchant_id' => optional($this->basDetails)->getMerchantId(),
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context, self::MAX_JOB_ATTEMPTS, self::MAX_RETRY_ATTEMPT);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

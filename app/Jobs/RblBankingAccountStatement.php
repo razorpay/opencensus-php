@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Metric;
 use RZP\Services\RazorXClient;
 use Razorpay\Trace\Logger as Trace;
 
@@ -348,6 +349,8 @@ class RblBankingAccountStatement extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $this->checkRetry();
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

@@ -4,8 +4,10 @@ namespace RZP\Jobs;
 
 use App;
 use Config;
-use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
+
+use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Models\Payout\Core;
 use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
@@ -193,6 +195,8 @@ class ApprovedPayoutProcessor extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $this->checkRetry();
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

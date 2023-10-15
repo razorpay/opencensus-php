@@ -113,12 +113,19 @@ class ConnectedBankingAccountGatewayBalanceUpdate extends Job
      */
     protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
     {
-        $this->trace->count(\RZP\Jobs\Metric::RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT, [
+        $this->trace->count(Metric::RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT, [
             'job_name'   => $this->getJobName() ?? '',
             'mode'       => $this->getMode() ?? '',
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'channel'      => $this->params[BankingAccount\Entity::CHANNEL],
+            'merchant_id'  => $this->params[BankingAccount\Entity::MERCHANT_ID],
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context, self::MAX_RETRY_ATTEMPT, self::MAX_RETRY_DELAY);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

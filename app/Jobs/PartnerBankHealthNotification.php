@@ -2,12 +2,12 @@
 
 namespace RZP\Jobs;
 
-use RZP\Services\RazorXClient;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
+use RZP\Services\RazorXClient;
 use RZP\Models\PartnerBankHealth\Notifier;
-
 class PartnerBankHealthNotification extends Job
 {
     const MAX_RETRY_ATTEMPT = 3;
@@ -92,6 +92,13 @@ class PartnerBankHealthNotification extends Job
         ]);
 
         parent::beforeJobKillCleanUp($variant);
+
+        $context = [
+            'data'         => $this->data,
+            'merchant_ids' => $this->merchantIds,
+        ];
+
+        $this->handleWorkerTimeoutGracefully($context, self::MAX_RETRY_ATTEMPT, self::MAX_RETRY_DELAY);
 
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,

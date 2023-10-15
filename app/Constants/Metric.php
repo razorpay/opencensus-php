@@ -135,7 +135,8 @@ class Metric
     const QUEUE_JOB_ATTEMPT_COUNT               = 'queue_job_attempt_count';
     const QUEUE_JOB_WORKER_TIMEOUT              = 'queue_job_worker_timeout';
     const QUEUE_JOB_WORKER_EXCEPTION            = 'queue_job_worker_exception';
-    const QUEUE_JOB_TRANSACTION_LEVEL_COUNT     = 'queue_job_transaction_level_count';
+
+    const RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT = 'razorpayx_payouts_banking_queues_timeout_count';
 
     // Order Outbox
     const ORDER_OUTBOX_SOFT_DELETE_FAILURE                  = 'order_outbox_soft_delete_failure';
