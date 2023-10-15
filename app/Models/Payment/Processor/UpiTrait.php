@@ -144,6 +144,10 @@ trait UpiTrait
             $input[Payment\Method::UPI][Payment\Entity::VPA] = $this->getVpaFromEncryptedVpaIfApplicable($input[Payment\Method::UPI][Payment\Entity::VPA_TOKEN]);
 
             $input[Payment\Entity::VPA] = $input[Payment\Method::UPI][Payment\Entity::VPA];
+
+            unset($input[Payment\Method::UPI][Payment\Entity::VPA_TOKEN]);
+
+            unset($input[Payment\Entity::VPA_TOKEN]);
         }
         else if (isset($input[Payment\Entity::VPA_TOKEN]) === true)
         {

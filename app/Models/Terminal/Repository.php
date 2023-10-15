@@ -2415,7 +2415,7 @@ class Repository extends Base\Repository
             "function" => __FUNCTION__
         ];
 
-        if($this->isTestEnv())
+        if($this->isTestEnv() or Environment::isEnvironmentBeta($this->app['env']))
         {
 
             $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
