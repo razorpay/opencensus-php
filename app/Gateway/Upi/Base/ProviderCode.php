@@ -194,6 +194,7 @@ class ProviderCode
     const INDIE              = 'indie';
     const YESPAY             = 'yespay';
     const slice              = 'slice';
+    const trio               = 'trio';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -379,6 +380,7 @@ class ProviderCode
         self::INDIE              => IFSC::INDB,
         self::YESPAY             => 'NPCI',
         self::slice              => 'NPCI',
+        self::trio               => 'NPCI',
     ];
 
     /**

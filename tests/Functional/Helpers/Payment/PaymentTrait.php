@@ -3960,6 +3960,7 @@ trait PaymentTrait
             "indie",
             "yespay",
             "slice",
+            "trio",
 
         ];
 
