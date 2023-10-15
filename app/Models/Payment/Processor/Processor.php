@@ -404,6 +404,11 @@ class Processor
     const ALLOW_ROUTE_ON_REARCH_UPS_V2 = 'allow_route_on_rearch_ups_v2';
 
     /**
+     * Razorx flag to allow pg ledger reverse shadow merchants through UPS re-arch flow
+     */
+    const ALLOW_PG_LEDGER_MERCHANTS_ON_REARCH_UPS = 'allow_pg_ledger_merchants_on_rearch_ups';
+
+    /**
      * Razorx flag to indicate which method and gateway are supported by barricade service
      */
     const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
@@ -2022,8 +2027,21 @@ class Processor
 
         if ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-            $routeViaReArch = false;
-            $dimensions[35] = 1;
+            $pgLedgerReverseShadowEnabled = $this->app->razorx->getTreatment($merchant->getId(), self::ALLOW_PG_LEDGER_MERCHANTS_ON_REARCH_UPS,
+                $this->mode);
+
+            $this->trace->info(TraceCode::UPI_PAYMENT_PG_LEDGER_RAZORX_VARIANT,
+                [
+                    'merchant_id'           => $merchant->getId(),
+                    'feature_flag'          => self::ALLOW_PG_LEDGER_MERCHANTS_ON_REARCH_UPS,
+                    'merchant_ramp_variant' => $pgLedgerReverseShadowEnabled,
+                ]);
+
+            if (strtolower($pgLedgerReverseShadowEnabled) !== 'on')
+            {
+                $routeViaReArch = false;
+                $dimensions[35] = 1;
+            }
         }
 
         $dimensions[36] = (string) strtolower($input['_']['library'] ?? 'unknown');
