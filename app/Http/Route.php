@@ -16438,6 +16438,7 @@ class Route
             'adj_transaction_create',
             'refund_scrooge_transaction_create',
             'internal_token_create',
+            'customer_fetch_by_id_internal',
         ],
 
         'freshdesk_webhook' => [
