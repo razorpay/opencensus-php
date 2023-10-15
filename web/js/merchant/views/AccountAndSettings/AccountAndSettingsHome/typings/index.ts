@@ -10,6 +10,7 @@ import {
   SectionCardDataFields,
   WebsiteAppSettingsFields,
 } from './section';
+import { Store } from 'common/typings';
 
 export type isMobile = boolean | undefined;
 export type User = Record<string, any>;
@@ -177,10 +178,17 @@ export type ActualInfoDataInterface = Omit<
   'getValue' | 'shouldEdit' | 'isVisible'
 >;
 
-export interface UserInfoPropsInterface {
+export interface UserInfoPropsI {
   isMobile?: isMobile;
   infoData: InfoDataInterface[];
   onClick: (arg0: InfoDataInterface) => void;
+}
+
+export interface UserInfoPropsInterface extends UserInfoPropsI {
+  updateMerchantConfig: () => Promise<UpdateMerchantConfigI>;
+  updateSession: () => void;
+  showNotification: () => void;
+  user: Store['session']['user'];
 }
 
 export interface AdditionalContextInterface extends FeatureInterface {
@@ -198,6 +206,24 @@ interface ModalPayloadInterface {
   component: JSX.Element;
   queryParams?: Record<string, string>;
 }
+
+interface UpdateMerchantConfigI {
+  id: string;
+  name: string;
+  fee_bearer: string;
+  transaction_report_email: Array<string>;
+  invoice_label_field: string;
+  auto_capture_late_auth: false;
+  brand_color: string;
+  handle: string | null;
+  logo_url: string | null;
+  fee_credits_threshold: number;
+  amount_credits_threshold: number;
+  refund_credits_threshold: number;
+  balance_threshold: number;
+  display_name: string;
+  default_refund_speed: string;
+}
 export interface ProfilePropsInterface {
   user: User;
   isMobile?: isMobile;
@@ -207,7 +233,7 @@ export interface ProfilePropsInterface {
   showNotification: (payload: NotificationPayload) => void;
   updateUser: () => Promise<void>;
   closeModal: () => void;
-  updateMerchantConfig: () => Promise<void>;
+  updateMerchantConfig: () => Promise<UpdateMerchantConfigI>;
 }
 
 export interface FormConfigInterface {
@@ -232,4 +258,13 @@ export interface ProfileViewpropsInterface {
   userRole: string;
   handleEditClick: () => void;
   profile: Record<string, unknown>;
+}
+
+export interface ActiveModalI {
+  id: PersonalProfileFields;
+  displayName: string;
+  updateMerchantConfig: (
+    args: { display_name?: string; name?: string },
+    callback: () => void,
+  ) => void;
 }

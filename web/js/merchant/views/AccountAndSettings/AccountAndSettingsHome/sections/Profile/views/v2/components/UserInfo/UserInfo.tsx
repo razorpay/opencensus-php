@@ -1,11 +1,54 @@
 import { Box, Link, Text } from '@razorpay/blade/components';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Verification from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/Profile/views/v2/components/Verification';
-import { UserInfoPropsInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+import {
+  UserInfoPropsInterface,
+  PersonalProfileFields,
+  ActiveModalI,
+} from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import React from 'react';
 import { StyledInfo, TooltipContainer } from './styled';
+import ModalForm from 'merchant/views/AccountAndSettings/common/components/ModalForm';
+import { updateDisplayNameHandler } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/Profile/handlers';
+import { updateMerchantConfig } from 'merchant/reducers/profile';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { updateSession } from 'merchant/reducers/session';
 
-const UserInfo = ({ isMobile, infoData, onClick }: UserInfoPropsInterface): JSX.Element => {
+const UserInfo = ({
+  isMobile,
+  infoData,
+  onClick,
+  updateMerchantConfig,
+  updateSession,
+  showNotification,
+  user,
+}: UserInfoPropsInterface): JSX.Element => {
+  const [activeModal, setActiveModal] = React.useState<ActiveModalI | null>(null);
+
+  const onModalClose = () => {
+    setActiveModal(null);
+  };
+
+  const onUpdateClick = (userInput): void => {
+    const id = activeModal!.id;
+    if (id === PersonalProfileFields.DISPLAY_NAME) {
+      const props = { updateMerchantConfig, updateSession, showNotification, user };
+      updateDisplayNameHandler(props)({ display_name: userInput }, () => {
+        setActiveModal(null);
+      });
+    }
+  };
+
+  const onEditClick = (item) => {
+    if (item.id === PersonalProfileFields.DISPLAY_NAME) {
+      setActiveModal(item);
+    } else {
+      onClick(item);
+    }
+  };
+
   return (
     <Box
       display="flex"
@@ -34,7 +77,7 @@ const UserInfo = ({ isMobile, infoData, onClick }: UserInfoPropsInterface): JSX.
                 <Link
                   variant="button"
                   size="small"
-                  onClick={onClick.bind(null, each)}
+                  onClick={() => onEditClick(each)}
                   isDisabled={!each.isEditEnable}
                 >
                   Edit
@@ -52,8 +95,28 @@ const UserInfo = ({ isMobile, infoData, onClick }: UserInfoPropsInterface): JSX.
         ),
       )}
       <Verification isMobile={isMobile} />
+      <ModalForm
+        showModal={!!activeModal}
+        onModalDismiss={onModalClose}
+        onUpdateClick={onUpdateClick}
+        entity={activeModal}
+      />
     </Box>
   );
 };
 
-export default UserInfo;
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      updateMerchantConfig,
+      updateSession,
+      showNotification,
+    },
+    dispatch,
+  );
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserInfo);

@@ -65,8 +65,16 @@ describe('Merchant Profile Section Version 2', () => {
   });
 
   test.each([
-    { name: 'Display Name', value: 'Kapil 12', isHandler: true, isEditable: true, order: 0 },
     {
+      id: 'display_name',
+      name: 'Display Name',
+      value: 'Kapil 12',
+      isHandler: true,
+      isEditable: true,
+      order: 0,
+    },
+    {
+      id: 'email',
       name: 'Email',
       value: 'kapil.thakur+150@razorpay.com',
       isHandler: false,
@@ -74,19 +82,25 @@ describe('Merchant Profile Section Version 2', () => {
       isEditable: true,
       order: 2,
     },
-    { name: 'Name', value: 'Kapil Thakur', isHandler: false, isEditable: true, order: 1 },
-    { name: 'Phone Number', value: '7798586889', isHandler: true, isEditable: true, order: 3 },
     {
-      name: 'Email',
-      value: 'kapil.thakur+150@razorpay.com',
+      id: 'name',
+      name: 'Name',
+      value: 'Kapil Thakur',
       isHandler: false,
-      type: 'add',
       isEditable: true,
-      order: 2,
+      order: 1,
+    },
+    {
+      id: 'phone_number',
+      name: 'Phone Number',
+      value: '7798586889',
+      isHandler: true,
+      isEditable: true,
+      order: 3,
     },
   ])(
     'should render user details and call handleedit on click of edit icon %s',
-    async ({ name, value, isEditable, order }) => {
+    async ({ id, name, value, isEditable, order }) => {
       jest.spyOn(context, 'useTwoFactorVerificationContext').mockImplementation(() => {
         return {
           criticalFlow: ({ onUserTwoFaVerified, onFlowTermination }) => {
@@ -105,7 +119,13 @@ describe('Merchant Profile Section Version 2', () => {
       if (isEditable) {
         const editButton = screen.getAllByRole('button');
         await userEvent.click(editButton[order]);
-        expect(modalsSpy).toHaveBeenCalledTimes(1);
+        if (id === 'display_name') {
+          expect(screen.getByText('Edit display name')).toBeInTheDocument();
+        } else if (id === 'name') {
+          expect(screen.getByText('Edit profile name')).toBeInTheDocument();
+        } else {
+          expect(modalsSpy).toHaveBeenCalledTimes(1);
+        }
       }
     },
   );

@@ -13,7 +13,7 @@ import EmailSelfServeModal from 'merchant/views/Settings/EmailSelfServe/EmailInp
 import AddEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail';
 import { handleUpdateAnalytics } from './utils';
 
-export const updateDisplayNameHandler = (componentScope) => (attributes) => {
+export const updateDisplayNameHandler = (componentScope) => (attributes, onSuccessCallback) => {
   return componentScope
     .updateMerchantConfig(attributes)
     .then((resp) => {
@@ -28,12 +28,17 @@ export const updateDisplayNameHandler = (componentScope) => (attributes) => {
           type: 'success',
           message: 'Display name changed successfully.',
         });
-        componentScope.closeModal();
+        if (componentScope.closeModal) {
+          componentScope.closeModal();
+        }
         const newUser = new User({
           ...componentScope.user,
           display_name: resp.data.display_name,
         });
         componentScope.updateSession({ user: newUser });
+        if (onSuccessCallback) {
+          onSuccessCallback();
+        }
       }
       return resp;
     })
@@ -50,7 +55,7 @@ export const updateContactMobileHandler = (componentScope) => (userData) => {
   componentScope.closeModal();
 };
 
-export const updateUserNameHandler = (componentScope) => (payload) => {
+export const updateUserNameHandler = (componentScope) => (payload, onSuccessCallback) => {
   return componentScope
     .updateUserName(payload)
     .then((response) => {
@@ -67,6 +72,9 @@ export const updateUserNameHandler = (componentScope) => (payload) => {
           message: 'User name changed successfully.',
         });
         componentScope.closeModal();
+        if (onSuccessCallback) {
+          onSuccessCallback();
+        }
       }
       return response;
     })

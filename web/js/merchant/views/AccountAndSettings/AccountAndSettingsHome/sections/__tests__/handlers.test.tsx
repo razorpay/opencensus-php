@@ -36,9 +36,12 @@ describe('Update From Fields Handlers', () => {
         updateMerchantConfig: jest.fn(() => Promise.resolve({ success: true, data: response })),
         user: {},
       });
-      callback({
-        attribute: 'display_name',
-      });
+      callback(
+        {
+          attribute: 'display_name',
+        },
+        () => {},
+      );
       await waitFor(() => {
         expect(context.showNotification).toHaveBeenCalledTimes(1);
       });
@@ -61,7 +64,7 @@ describe('Update From Fields Handlers', () => {
       updateMerchantConfig: jest.fn(() => Promise.reject({ success: false })),
       user: {},
     });
-    callback({});
+    callback({}, () => {});
     await waitFor(() => {
       expect(context.showNotification).toHaveBeenCalledTimes(1);
     });
@@ -78,7 +81,7 @@ describe('Update From Fields Handlers', () => {
       updateMerchantConfig: jest.fn(() => Promise.resolve({ success: false })),
       user: {},
     });
-    const response = callback({});
+    const response = callback({}, () => {});
     response.then((res) => {
       expect(res).toStrictEqual({
         success: false,

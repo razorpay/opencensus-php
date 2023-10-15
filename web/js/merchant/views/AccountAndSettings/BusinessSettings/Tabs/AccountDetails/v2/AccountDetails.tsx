@@ -21,10 +21,17 @@ import {
   getUserAccountDetails,
   makeAnalytics,
 } from './utils';
+import ModalForm from 'merchant/views/AccountAndSettings/common/components/ModalForm';
+import {
+  PersonalProfileFields,
+  ActiveModalI,
+} from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 
 const screen = Modules.BusinessSettings;
 
 const AccountDetails = (props): JSX.Element => {
+  const [activeModal, setActiveModal] = React.useState<ActiveModalI | null>(null);
+
   const { openModal, user, isMobile } = props;
 
   const context = useTwoFactorVerificationContext();
@@ -66,10 +73,33 @@ const AccountDetails = (props): JSX.Element => {
           isNewAccountAndSettingsPage: true,
         });
       } else {
-        openModal(modalConfig);
+        // eslint-disable-next-line no-lonely-if
+        if (id === PersonalProfileFields.DISPLAY_NAME || id === PersonalProfileFields.NAME) {
+          setActiveModal({ ...data, ...attributes });
+        } else {
+          openModal(modalConfig);
+        }
       }
     }
   };
+
+  const onUpdateClick = (userInput) => {
+    const id = activeModal!.id;
+    switch (id) {
+      case PersonalProfileFields.DISPLAY_NAME:
+        return activeModal!.updateMerchantConfig?.({ display_name: userInput }, () => {
+          setActiveModal(null);
+        });
+      case PersonalProfileFields.NAME:
+        return activeModal!.updateMerchantConfig?.({ name: userInput }, () => {
+          setActiveModal(null);
+        });
+      default:
+        return null;
+    }
+  };
+
+  const onModalClose = () => setActiveModal(null);
 
   const queryparamMap = getQueryParamMapping({ userDetails, handleEditAction });
   const WrapperComponent = !isMobile ? StyledTabContentContainer : React.Fragment;
@@ -86,6 +116,12 @@ const AccountDetails = (props): JSX.Element => {
           {ownerDetails && <DetailsViewCard title="Owner’s Account Details" info={ownerDetails} />}
         </Box>
       </TriggerOnQueryParamMatch>
+      <ModalForm
+        showModal={!!activeModal}
+        onModalDismiss={onModalClose}
+        onUpdateClick={onUpdateClick}
+        entity={activeModal}
+      />
     </WrapperComponent>
   );
 };
