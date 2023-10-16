@@ -872,11 +872,11 @@ class Base extends BaseCore
                         //we will mark it failed.
                         if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
                         {
-                            $payout->setStatus(Status::FAILED);
-
                             $payout->setFailureReason('Insufficient balance to process payout');
 
                             $payout->setStatusCode($insufficientFundsErrorCode);
+
+                            $payout->setStatus(Status::FAILED);
 
                             $this->repo->saveOrFail($payout);
 
@@ -1013,11 +1013,11 @@ class Base extends BaseCore
                         //
                         if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
                         {
-                            $payout->setStatus(Status::FAILED);
-
                             $payout->setFailureReason('Insufficient balance to process payout');
 
                             $payout->setStatusCode($insufficientFundsErrorCode);
+
+                            $payout->setStatus(Status::FAILED);
 
                             $this->repo->saveOrFail($payout);
 
@@ -1378,9 +1378,9 @@ class Base extends BaseCore
 
                     $payout->setFailureReason('Payout failed. Contact support for help');
 
-                    $payout->setStatus(Status::FAILED);
-
                     $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR);
+
+                    $payout->setStatus(Status::FAILED);
                 }
 
                 $this->repo->payout->saveOrFail($payout);
@@ -1567,11 +1567,11 @@ class Base extends BaseCore
                         //
                         if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
                         {
-                            $payout->setStatus(Status::FAILED);
-
                             $payout->setFailureReason('Insufficient balance to process payout');
 
                             $payout->setStatusCode($insufficientFundsErrorCode);
+
+                            $payout->setStatus(Status::FAILED);
 
                             $this->repo->saveOrFail($payout);
 

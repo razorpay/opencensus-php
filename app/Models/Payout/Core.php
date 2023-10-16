@@ -1924,6 +1924,10 @@ class Core extends Base\Core
 
             $payout->setCreatedAt($metadata[Entity::PAYOUT][Entity::CREATED_AT]);
 
+            $payout->setFailureReason('Payout failed due to technical failure. Please retry after 30 min');
+
+            $payout->setStatusCode("FTS_ATTEMPT_CREATE_FAILED");
+
             $payout->setStatus(Status::FAILED);
 
             $payout->merchant()->associate($this->merchant);
@@ -1931,10 +1935,6 @@ class Core extends Base\Core
             $payout->balance()->associate($balance);
 
             $payout->setUpdatedAt(Carbon::now()->getTimestamp());
-
-            $payout->setFailureReason('Payout failed due to technical failure. Please retry after 30 min');
-
-            $payout->setStatusCode("FTS_ATTEMPT_CREATE_FAILED");
 
             (new PayoutsStatusDetailsCore())->create($payout);
 
@@ -3248,12 +3248,12 @@ class Core extends Base\Core
 
                         if ($isSlaBreached === true)
                         {
-                            $payout->setStatus(Status::FAILED);
-
                             //Failure reason is marked as BENE_BANK_DOWN since the sla is breached and the bank is still down.
                             $payout->setFailureReason(QueuedReasons::BENE_BANK_DOWN);
 
                             $payout->setStatusCode("BBANK_OFFLINE");
+
+                            $payout->setStatus(Status::FAILED);
 
                             $this->repo->payout->saveOrFail($payout);
 
@@ -3395,9 +3395,9 @@ class Core extends Base\Core
                         //Failure reason is marked as PARTNER_BANK_DEGRADED since the sla is breached and the bank is still down.
                         $payout->setFailureReason(QueuedReasons::GATEWAY_DEGRADED);
 
-                        $payout->setStatus(Status::FAILED);
-
                         $payout->setStatusCode("PARTNER_BANK_OFFLINE");
+
+                        $payout->setStatus(Status::FAILED);
 
                         $this->repo->payout->saveOrFail($payout);
 
@@ -4596,6 +4596,9 @@ class Core extends Base\Core
                                       mixed $credit_bas = null)
     {
         $reversal = null;
+
+        $payout->setReversalStatusUpdateIntentForMetrics(true);
+
         /*
          * Cloning a payout to be used in case we send some additional events to ledger
          * cloning is done here before payout gets marked as REVERSED because
@@ -4901,11 +4904,11 @@ class Core extends Base\Core
 
                             $previousStatus = $payout->getStatus();
 
-                            $payout->setStatus(Status::FAILED);
-
                             $payout->setFailureReason($ftaFailureReason);
 
                             $payout->setStatusCode($ftaBankStatusCode);
+
+                            $payout->setStatus(Status::FAILED);
 
                             if ($this->shouldHandleRewardForFailedPayout($payout) === true)
                             {
@@ -5017,6 +5020,8 @@ class Core extends Base\Core
                                   $credit_bas = null,
                                   Reversal\Entity &$reversal = null)
     {
+        $payout->setReversalStatusUpdateIntentForMetrics(true);
+
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_INITIATED,
             [

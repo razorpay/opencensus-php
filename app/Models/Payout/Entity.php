@@ -456,6 +456,14 @@ class Entity extends Base\PublicEntity
     /**
      * @var bool
      *
+     * This flag will be used to isolate the payout_processed metrics when
+     * the actual intent is to reverse the payout but we first mark the payout as processed for proper status transitions.
+     */
+    protected $reversalStatusUpdateIntentForMetrics = false;
+
+    /**
+     * @var bool
+     *
      * This flag will be set to true if we have deducted the balance already for this payout. This will ensure that
      * we do not deduct the balance again in the transaction creation flow.
      */
@@ -1579,6 +1587,11 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
+    public function setReversalStatusUpdateIntentForMetrics(bool $flag = false)
+    {
+        $this->reversalStatusUpdateIntentForMetrics = $flag;
+    }
+
     public function setIsPayoutService(int $isPayoutService = 0)
     {
         $this->setAttribute(self::IS_PAYOUT_SERVICE, $isPayoutService);
@@ -2062,6 +2075,11 @@ class Entity extends Base\PublicEntity
     public function getLedgerResponseAwaitedFlag()
     {
         return $this->ledgerResponseAwaitedFlag;
+    }
+
+    public function getReversalStatusUpdateIntentForMetrics()
+    {
+        return $this->reversalStatusUpdateIntentForMetrics;
     }
 
     protected function getSettledOnAttribute()
@@ -3458,9 +3476,9 @@ class Entity extends Base\PublicEntity
             $errorCode = ErrorCode::BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR;
         }
 
-        $this->setStatus($status);
         $this->setFailureReason($errorReason);
         $this->setStatusCode($errorCode);
+        $this->setStatus($status);
         (new PayoutsStatusDetails\Core())->create($this);
 
         $event = $isFailedWebhookEnabled ? 'api.payout.failed' : 'api.payout.reversed';

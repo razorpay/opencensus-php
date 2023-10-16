@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Balance\Entity as Balance;
 
@@ -128,7 +129,13 @@ final class Metric
     const IS_JOB_DELETED = 'is_job_deleted';
     const ACCOUNT_TYPE   = 'account_type';
 
-    const ERROR_DESCRIPTION = 'error_description';
+    const ERROR_DESCRIPTION     = 'error_description';
+    const FAILURE_STATUS_REASON = 'failure_status_reason';
+    const IS_FIRST_TERMINAL     = 'is_first_terminal';
+    const WITHIN_SLA            = 'within_sla';
+
+    // 3600 seconds
+    const PAYOUT_FAILURE_SLA = 3600;
 
     public static function pushStatusChangeMetrics(Entity $payout, string $previousStatus = null)
     {
@@ -629,12 +636,78 @@ final class Metric
         {
             case Status::REVERSED:
             case Status::FAILED:
+
                 return [
-                    Entity::FAILURE_REASON => $payout->getFailureReason(),
+                    Entity::FAILURE_REASON      => $payout->getFailureReason(),
+                    self::FAILURE_STATUS_REASON => self::getFailureStatusReason($payout),
+                    self::IS_FIRST_TERMINAL     => self::getIsFirstTerminal($payout, $currentStatus),
+                    self::WITHIN_SLA            => self::getWithinSla($payout),
                 ];
+
+            case Status::PROCESSED:
+
+                return [
+                    self::IS_FIRST_TERMINAL => self::getIsFirstTerminal($payout, $currentStatus),
+                    self::WITHIN_SLA        => self::getWithinSla($payout),
+                ];
+
             default:
                 return [];
         }
+    }
+
+    protected static function getFailureStatusReason(Entity $payout)
+    {
+        $payoutError = new PayoutError($payout);
+
+        $errorDetails = $payoutError->getErrorDetails();
+
+        return $errorDetails['reason'] ?? null ;
+    }
+
+    protected static function getWithinSla(Entity $payout)
+    {
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if (($payout->getInitiatedAt() !== null) and
+            (($currentTime - $payout->getInitiatedAt()) > self::PAYOUT_FAILURE_SLA))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    // getIsFirstTerminal returns true only if the payout is marked as failed or processed or reversed for the first time
+    // for the status reversed,
+    //      if the payout is actually getting reversed, we return true
+    //      if a already failed payout is moving reversed, we return false
+    // for the status processed,
+    //      if the payout is actually getting processed, we return true
+    //      while reversing the payout, for the sake of proper status transitions if we are marking the payout as processed, we return false
+    // for the status failed,
+    //      a payout can never go to processed or reversed from failed in the same session, so we always return true
+    protected static function getIsFirstTerminal(Entity $payout, string $status)
+    {
+        switch ($status)
+        {
+            case Status::REVERSED:
+                if ($payout->getFailedAt() !== null)
+                {
+                    return false;
+                }
+                break;
+
+            case Status::PROCESSED:
+                if (($payout->getReversalStatusUpdateIntentForMetrics() === true) or
+                    ($payout->getFailedAt() !== null))
+                {
+                    return false;
+                }
+                break;
+        }
+
+        return true;
     }
 
     protected static function getSource(Entity $payout)
