@@ -394,7 +394,9 @@ class Service extends Base\Service
         if(isset($response['msg']) === true and str_contains($response['msg'], "Merchant not eligible for policy wizard v2")===false)
         {
             throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+
                 'error description' => $response['msg']
+
             ]);
         }
 
@@ -413,6 +415,7 @@ class Service extends Base\Service
         */
 
         if ($this->isWebsiteSectionsApplicable($this->merchant,false, true) === false)
+
         {
             return ["isWebsiteSectionsApplicable" => false,
                     "isGracePeriodApplicable"     => false

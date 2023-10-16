@@ -1381,8 +1381,12 @@ class Route
         'onboarding_order_verify'                  => ['post',     'pg/onboarding/payment_order_verify',             'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_payment_webhook'               => ['post',     'pg/onboarding/payment_order_webhook',            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
 
-        // pending status code and success true return from pgos to api
+
         'merchant_get_l2_dynamic_configs'          => ['get',     'pg/onboarding/merchant_get_l2_dynamic_configs',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_policy_section_publish_v2'       => ['post',    'pg/onboarding/merchant_policy_section_publish_v2', 'MerchantOnboardingProxyController@handleDashboardProxyRequests'   ],
+
+
+        // pending status code and success true return from pgos to api
         'merchant_website_section_page_load_v2'    => ['get',      'pg/onboarding/merchant_policy_preview',          'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
 
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
@@ -6405,6 +6409,7 @@ class Route
     //
 
     public static $proxy = [
+        'merchant_policy_section_publish_v2',
         'merchant_website_section_page_load_v2',
         'user_update_name',
         'merchant_get_l2_dynamic_configs',
@@ -8895,6 +8900,7 @@ class Route
         'merchant_create_lead_to_salesforce_admin'        => Permission::VIEW_ACTIVATION_FORM,
         'proxy_for_activation_status'                     => Permission::VIEW_ACTIVATION_FORM,
         'merchant_website_section_action'                 => Permission::EDIT_MERCHANT,
+        'merchant_policy_section_publish_v2'             => Permission::EDIT_MERCHANT,
         'merchant_website_section_save'                   => Permission::EDIT_MERCHANT,
         'merchant_website_section_fetch'                  => Permission::VIEW_MERCHANT,
         'merchant_website_section_page_load'              => Permission::VIEW_MERCHANT,
@@ -11367,8 +11373,10 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_policy_section_publish_v2',
             'merchant_get_l2_dynamic_configs',
             'merchant_website_section_page_load_v2',
+
             'merchant_bmc_response_fetch',
             'merchant_bmc_response_save',
             'onboarding_order_create',

@@ -378,11 +378,16 @@ class RouteTeamMap
         'merchant_bmc_response_fetch'                     => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_bmc_response_fetch_admin'               => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_bmc_response_save'                      => [self::TEAM_PAYMENTS_GROWTH],
+
+        'merchant_get_l2_dynamic_configs'                 => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_policy_section_publish_v2'              => [self::TEAM_PAYMENTS_GROWTH],
+
         'onboarding_order_create'                         => [self::TEAM_PAYMENTS_GROWTH],
         'onboarding_order_verify'                         => [self::TEAM_PAYMENTS_GROWTH],
         'onboarding_payment_webhook'                      => [self::TEAM_PAYMENTS_GROWTH],
-        'merchant_get_l2_dynamic_configs'                 => [self::TEAM_PAYMENTS_GROWTH],
+
         'merchant_website_section_page_load_v2'           => [self::TEAM_PAYMENTS_GROWTH],
+
 
         // Risk team
         'shield_rules_get_multiple'                       => [self::TEAM_PAYMENTS_RISK],
