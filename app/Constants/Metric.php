@@ -42,6 +42,8 @@ class Metric
     const ASV_REQUEST_NOT_ROUTED_TO_ASV         = 'asv_request_not_routed_to_asv';
 
     const ASV_WRITE_REQUEST_ERROR              = 'asv_write_request_error';
+
+    const ASV_DELETE_REQUEST_ERROR              = 'asv_delete_request_error';
     const ASV_WRITE_REQUEST_ROUTER_ERROR              = 'asv_router_error';
 
     const ASV_WRITE_REQUEST_ROUTER_RESULT       = 'asv_write_request_router_result';

@@ -11,6 +11,8 @@ class Website implements EntityToProtoConvertorInterface
 {
     protected MerchantWebsite $entity;
 
+    use DeleteNotSupported;
+
     protected array $dirtyFieldKeys;
 
     function __construct(MerchantWebsite $entity,array $dirtyFieldKeys)

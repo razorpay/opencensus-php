@@ -12,6 +12,8 @@ class Merchant implements EntityToProtoConvertorInterface
 {
     protected MerchantEntity $entity;
 
+    use DeleteNotSupported;
+
     protected array $dirtyFieldKeys;
 
     function __construct(MerchantEntity $entity, array $dirtyFieldKeys)

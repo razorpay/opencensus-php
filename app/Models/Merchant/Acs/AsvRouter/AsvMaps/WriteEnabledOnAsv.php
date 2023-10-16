@@ -29,6 +29,7 @@ final class WriteEnabledOnAsv {
     );
 
     public static array $DELETE_OR_FAIL = array(
+        MerchantDocumentRepository::class => true,
     );
 
     public function __construct()

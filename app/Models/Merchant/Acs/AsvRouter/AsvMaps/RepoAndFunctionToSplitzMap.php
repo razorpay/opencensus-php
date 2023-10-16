@@ -43,6 +43,7 @@ final class RepoAndFunctionToSplitzMap
             FunctionConstant::GET_BY_TYPE_AND_MERCHANT_ID => SplitzConstant::SPLITZ_DOCUMENT_GET_BY_TYPE_AND_MERCHANT_ID,
             FunctionConstant::GET_BY_MERCHANT_ID_FOR_IMPLICIT_JOIN => SplitzConstant::SPLITZ_IMPLICIT_JOIN_DOCUMENT_BY_MERCHANTID,
             FunctionConstant::SAVE_OR_FAIL => SplitzConstant::SPLITZ_MERCHANT_DOCUMENT_SAVE_OR_FAIL,
+            FunctionConstant::DELETE_OR_FAIL=>SplitzConstant::SPLITZ_MERCHANT_DOCUMENT_DELETE_OR_FAIL
         ),
         MerchantRepository::class => array(
             FunctionConstant::FIND_OR_FAIL =>  SplitzConstant::SPLITZ_MERCHANT_GET_BY_ID,

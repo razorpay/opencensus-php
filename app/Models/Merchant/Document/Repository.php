@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Document;
 
 use RZP\Base\ConnectionType;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkIntegration;
 use RZP\Models\Merchant\Acs\Traits\AsvFetchCommon;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
@@ -31,6 +32,19 @@ class Repository extends Base\Repository
         parent::__construct();
 
         $this->asvRouter = new AsvRouter();
+    }
+    public function deleteOnAccountService($entity): void {
+        try
+        {
+            (new AsvSdkIntegration())->delete($entity);
+        }
+        catch (\Throwable $th)
+        {
+            // Map the ASV Error to DB QueryException, so that the handling for this error is not impacted.
+            // However, we are not Setting SQL and binding and the SQL generated will be empty.
+            // It is not possible to get the query executed as it is done on Account Service.
+            throw new \Illuminate\Database\QueryException("", [], $th);
+        }
     }
 
     public function fetchAllMerchantIDsFromSlaveDB($input)

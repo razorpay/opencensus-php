@@ -14,6 +14,8 @@ class MerchantDetail implements EntityToProtoConvertorInterface
      * @param \RZP\Models\Merchant\Detail\Entity $entity
      */
 
+    use DeleteNotSupported;
+
     protected array $dirtyFieldKeys;
 
     public function __construct(\RZP\Models\Merchant\Detail\Entity $entity, array $dirtyFieldKeys)

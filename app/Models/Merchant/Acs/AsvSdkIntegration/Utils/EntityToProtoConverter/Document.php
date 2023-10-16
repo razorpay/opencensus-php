@@ -54,4 +54,13 @@ class Document implements EntityToProtoConvertorInterface
         $saveRequest->setMerchantDocumentSaveRequests([$merchantDocumentSaveRequest]);
         return $saveRequest;
     }
+
+    public function toDeleteProtoRequest(): MerchantV1\DeleteRequest
+    {
+        $deleteRequest = new MerchantV1\DeleteRequest();
+
+        $deleteRequest->setMerchantDocumentIds([$this->entity->getId()]);
+
+        return $deleteRequest;
+    }
 }

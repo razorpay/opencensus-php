@@ -4,6 +4,7 @@ namespace Unit\Models\Merchant\Document;
 
 use Config;
 use Razorpay\Asv\Error\GrpcError;
+use Rzp\Accounts\Merchant\V1\DeleteResponse;
 use Rzp\Accounts\Merchant\V1\EntitySaveResponse;
 use Rzp\Accounts\Merchant\V1\MerchantDocument as MerchantDocumentProto;
 use Rzp\Accounts\Merchant\V1\MerchantDocumentResponse;
@@ -12,6 +13,8 @@ use Rzp\Accounts\Merchant\V1\MerchantDocumentSaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveRequest;
 use Rzp\Accounts\Merchant\V1\SaveResponse;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\Entity;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\WriteEnabledOnAsv;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument;
@@ -481,6 +484,115 @@ class RepositoryTest extends RepositoryTestHelper
             self::assertEquals(10, $documentEntity3['created_at']);
             self::assertEquals(10, $documentEntity3['updated_at']);
             self::assertEquals("testtesttestid", $documentEntity3['audit_id']);
+        }
+    }
+
+    /**
+     * @throws LogicException
+     */
+    public function testDocumentDeleteOrFailAsv() {
+
+
+        /*
+         *  Base Setup for the test
+         *
+         */
+
+        $repo = new Repository();
+        $document = new MerchantDocument();
+
+        $documentEntity1 = $this->getMerchantDocumentEntityFromJson($this->merchantDocumentEntityJson1);
+        $deleteResponse = (new DeleteResponse())->setMerchantDocumentIds(["JWNkBHL4Waqqf8"]);
+        WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = false;
+
+        /*
+         * Test 1: The delete or fail ASV should not be reached if write is not enabled.
+         */
+        WriteEnabledOnAsv::$DELETE_OR_FAIL[Repository::class] = false;
+        $this->getWriteMockClient()->expects($this->never())->method("delete");
+        $repo->saveOrFail($documentEntity1);
+        $repo->deleteOrFail($documentEntity1);
+        self::assertNull($documentEntity1[Entity::DELETED_AT]);
+
+        /*
+        * Test  2: The delete or fail ASV should not be reached if Splitz is off.
+        */
+
+        // false, false
+        WriteEnabledOnAsv::$DELETE_OR_FAIL[Repository::class] = true;
+        $this->setSplitzWithOutputForBulk(["false", "false"], 1);
+        $this->getWriteMockClient()->expects($this->never())->method("delete");
+        $documentEntity1 = $this->getMerchantDocumentEntityFromJson($this->merchantDocumentEntityJson1);
+        $documentEntity1->setId(UniqueIdEntity::generateUniqueId());
+        $repo->saveOrFail($documentEntity1);
+        $repo->deleteOrFail($documentEntity1);
+        self::assertNull($documentEntity1[Entity::DELETED_AT]);
+
+        // true, false
+        $this->setSplitzWithOutputForBulk(["true", "false"], 1);
+        $this->getWriteMockClient()->expects($this->never())->method("delete");
+        $documentEntity1 = $this->getMerchantDocumentEntityFromJson($this->merchantDocumentEntityJson1);
+        $documentEntity1->setId(UniqueIdEntity::generateUniqueId());
+        $repo->saveOrFail($documentEntity1);
+        $repo->deleteOrFail($documentEntity1);
+        self::assertNull($documentEntity1[Entity::DELETED_AT]);
+        // false, true
+        $this->setSplitzWithOutputForBulk(["false", "true"], 1);
+        $this->getWriteMockClient()->expects($this->never())->method("delete");
+        $documentEntity1 = $this->getMerchantDocumentEntityFromJson($this->merchantDocumentEntityJson1);
+        $documentEntity1->setId(UniqueIdEntity::generateUniqueId());
+        $repo->saveOrFail($documentEntity1);
+        $repo->deleteOrFail($documentEntity1);
+        self::assertNull($documentEntity1[Entity::DELETED_AT]);
+        /*
+        * Test  3: The save or fail ASV should not be reached if Splitz throws exception.
+        */
+        $this->setSplitzWithOutputForBulk(["false", "true"], 1, true);
+        $this->getWriteMockClient()->expects($this->never())->method("delete");
+        $documentEntity1 = $this->getMerchantDocumentEntityFromJson($this->merchantDocumentEntityJson1);
+        $documentEntity1->setId(UniqueIdEntity::generateUniqueId());
+        $repo->saveOrFail($documentEntity1);
+        $repo->deleteOrFail($documentEntity1);
+        self::assertNull($documentEntity1[Entity::DELETED_AT]);
+
+        /*
+        * Test  4-1: Save Or should work fine if splitz is on, created updated_at should be updated.
+        */
+
+        $documentEntity1 = $this->getMerchantDocumentEntityFromJson($this->merchantDocumentEntityJson1);
+        $documentEntity1->setId(UniqueIdEntity::generateUniqueId());
+        $this->setSplitzWithOutputForBulk(["true", "true"],1);
+        $writeService = $this->getWriteMockClient();;
+        $writeService->expects($this->once())->method("delete")
+            ->willReturn([$deleteResponse, null]);
+        $document->getAsvSdkClient()->setWriteService($writeService);
+        $repo->saveOrFail($documentEntity1);
+        $repo->deleteOrFail($documentEntity1);
+        self::assertNull($documentEntity1[Entity::DELETED_AT]);
+
+
+        /*
+        * Test 5: Save or fail should fail, if Splitz is on, asv throw exception.
+        */
+        $this->setSplitzWithOutputForBulk(["true", "true"],1);
+        $documentEntity1 = $this->getMerchantDocumentEntityFromJson($this->merchantDocumentEntityJson1);
+        $documentEntity1->setId(UniqueIdEntity::generateUniqueId());
+        $writeService = $this->getWriteMockClient();
+        $writeService->expects($this->once())->method("delete")->
+        willThrowException(new \RZP\Exception\BaseException("I am ASV Exception.", "ASV_SERVER_ERROR"));
+        $document->getAsvSdkClient()->setWriteService($writeService);
+        try {
+            $repo->saveOrFail($documentEntity1);
+            $repo->deleteOrFail($documentEntity1);
+            self::fail("Exception was expected.");
+        } catch (\Exception $e) {
+            self::assertEquals(\Illuminate\Database\QueryException::class, get_class($e));
+            self::assertEquals("ASV_SERVER_ERROR", $e->getCode());
+            self::assertEquals("I am ASV Exception. (SQL: )", $e->getMessage());
+            self::assertEquals([], $e->getBindings());
+            self::assertEquals("", $e->getSql());
+
+            self::assertNull($documentEntity1[Entity::DELETED_AT]);
         }
     }
 

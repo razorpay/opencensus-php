@@ -191,6 +191,13 @@ trait RepositoryUpdateTestAndLive
             return parent::delete($entity);
         }
 
+        if ($this->shouldRouteRequestToAccountService($entity, [], FunctionConstant::DELETE_OR_FAIL))
+        {
+            $this->deleteOnAccountService($entity);
+
+            return;
+        }
+
         $res = $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);

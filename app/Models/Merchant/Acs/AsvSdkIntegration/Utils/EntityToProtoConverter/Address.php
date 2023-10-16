@@ -11,6 +11,8 @@ class Address implements EntityToProtoConvertorInterface
 
     protected AddressEntity $entity;
 
+    use DeleteNotSupported;
+
     protected array $dirtyFieldKeys;
 
     function __construct(AddressEntity $entity, array $dirtyFieldKeys)

@@ -1637,6 +1637,7 @@ return [
         "splitz_experiment_merchant_email_save_or_fail" => env('ASV_SPLITZ_MERCHANT_EMAIL_SAVE_OR_FAIL', ''),
         "splitz_experiment_merchant_business_detail_save_or_fail" => env('ASV_SPLITZ_MERCHANT_BUSINESS_DETAIL_SAVE_OR_FAIL', ''),
         "splitz_experiment_merchant_document_save_or_fail" => env('ASV_SPLITZ_MERCHANT_DOCUMENT_SAVE_OR_FAIL', ''),
+        "splitz_experiment_merchant_document_delete_or_fail" => env('ASV_SPLITZ_MERCHANT_DOCUMENT_DELETE_OR_FAIL', ''),
         "splitz_experiment_merchant_detail_save_or_fail" => env('ASV_SPLITZ_MERCHANT_DETAIL_SAVE_OR_FAIL', ''),
         "splitz_experiment_stakeholder_save_or_fail" => env('ASV_SPLITZ_STAKEHOLDER_SAVE_OR_FAIL', ''),
         "splitz_experiment_merchant_save_or_fail" => env('ASV_SPLITZ_MERCHANT_SAVE_OR_FAIL', ''),

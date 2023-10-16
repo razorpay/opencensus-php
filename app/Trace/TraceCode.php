@@ -10526,6 +10526,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FAILED_TO_ADD_TURBO_METADATA                           = 'FAILED_TO_ADD_TURBO_METADATA';
     const ASV_WRITE_ERROR                                        = 'ASV_WRITE_ERROR';
 
+    const ASV_DELETE_ERROR                                        = 'ASV_DELETE_ERROR';
+
     const ASV_OPTIONS_NOT_SUPPORTED_FOR_WRITE                    = 'ASV_OPTIONS_NOT_SUPPORTED_FOR_WRITE';
     const ASV_WRITE_REQUEST_ROUTER_RESULT                        = 'ASV_WRITE_REQUEST_ROUTER_RESULT';
     const ASV_IMPLICIT_JOIN_ROUTER_RESULT                        = 'ASV_IMPLICIT_JOIN_ROUTER_RESULT';

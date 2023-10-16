@@ -9,6 +9,8 @@ class Email implements EntityToProtoConvertorInterface
 {
     protected MerchantEmail $entity;
 
+    use DeleteNotSupported;
+
     protected array $dirtyFieldKeys;
 
     function __construct(MerchantEmail $entity, array $dirtyFieldKeys)

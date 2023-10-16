@@ -156,7 +156,7 @@ class Base
             // if no changed field then we don't have anything to save
             // so don't do any operation
             if (empty($dirtyFieldKeys) === true) {
-                $this->trace->error(TraceCode::ASV_WRITE_CALLED_WITHOUT_DIRTY_FIELDS, [
+                $this->trace->warning(TraceCode::ASV_WRITE_CALLED_WITHOUT_DIRTY_FIELDS, [
                     'entity' => $entity->getEntityName(),
                 ]);
                 return;
@@ -183,6 +183,39 @@ class Base
             ]);
 
             $this->trace->traceException($e, Trace::ERROR, TraceCode::ASV_WRITE_ERROR);
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws BaseException
+     * @throws BadRequestException
+     */
+    function delete(BaseModel\PublicEntity $entity, ?RequestMetadata $requestMetadata = null): void
+    {
+        try {
+
+            $requestProto = (Factory::
+            getEntityToProtoConvertor($entity, []))->toDeleteProtoRequest();
+
+            [$response, $err] = $this->getAsvSdkClient()->getWriteService()->delete(
+                $requestProto,
+                $this->getRequestMetaDataForSave($requestMetadata)
+            );
+
+
+            if ($err !== null) {
+                $this->handleError($err);
+            }
+
+        } catch (\Throwable $e) {
+
+            $this->trace->count(Metric::ASV_DELETE_REQUEST_ERROR, [
+                'error_code' => $e->getCode(),
+            ]);
+
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::ASV_DELETE_ERROR);
             throw $e;
         }
     }

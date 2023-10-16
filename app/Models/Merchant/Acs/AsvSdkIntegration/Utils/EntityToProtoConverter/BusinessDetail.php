@@ -10,6 +10,8 @@ class BusinessDetail implements EntityToProtoConvertorInterface
 {
     protected BusinessDetailEntity $entity;
 
+    use DeleteNotSupported;
+
     protected array $dirtyFieldKeys;
 
     function __construct(BusinessDetailEntity $entity, array $dirtyFieldKeys)

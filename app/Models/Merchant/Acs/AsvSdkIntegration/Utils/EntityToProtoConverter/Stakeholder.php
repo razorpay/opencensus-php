@@ -9,6 +9,8 @@ class Stakeholder implements EntityToProtoConvertorInterface
 {
     protected StakeholderEntity $entity;
 
+    use DeleteNotSupported;
+
     protected array $dirtyFieldKeys;
 
     function __construct(StakeholderEntity $entity, array $dirtyFieldKeys)

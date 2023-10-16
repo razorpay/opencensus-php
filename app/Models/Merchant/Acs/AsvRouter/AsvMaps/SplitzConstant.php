@@ -50,6 +50,8 @@ final class SplitzConstant
 
     const SPLITZ_MERCHANT_DOCUMENT_SAVE_OR_FAIL = 'splitz_experiment_merchant_document_save_or_fail';
 
+    const SPLITZ_MERCHANT_DOCUMENT_DELETE_OR_FAIL = 'splitz_experiment_merchant_document_delete_or_fail';
+
     const SPLITZ_MERCHANT_DETAIL_SAVE_OR_FAIL = 'splitz_experiment_merchant_detail_save_or_fail';
 
     const SPLITZ_STAKEHOLDER_SAVE_OR_FAIL = 'splitz_experiment_stakeholder_save_or_fail';

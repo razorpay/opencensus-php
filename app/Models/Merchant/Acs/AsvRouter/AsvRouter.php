@@ -241,7 +241,7 @@ class AsvRouter
             // When We ramp up for all entities.
             // Why both metric/log?: It is hard to get insights from logs for over
             // 7 days, hence, also adding a metric.
-            if ($repoClass != MerchantRepository::class or $repoClass != MerchantDetailRepository::class) {
+            if ($repoClass != MerchantRepository::class and $repoClass != MerchantDetailRepository::class) {
                 $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_RESULT, [
                     'routeOrWorkerName' => $routeOrWorkerName,
                     'isWriteRequestRouted' => $isRequestRoutedToAsv,
