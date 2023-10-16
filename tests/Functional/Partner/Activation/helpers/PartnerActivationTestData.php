@@ -367,10 +367,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'   => '1cXSLlUU8V9sXl',
-                'entity_name' => 'partner_activation',
-                'state'       => 'open',
-                'maker_type'  => 'admin'
+                'merchant_id'       => '1cXSLlUU8V9sXl',
+                'hold_funds'        => false,
+                'submitted'         => true,
+                'activation_status' => 'activated',
             ],
         ],
     ],

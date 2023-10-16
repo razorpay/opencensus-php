@@ -144,7 +144,7 @@ class PartnerActivationTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
 
-        $this->startTest();
+        $response = $this->startTest();
 
         $state = $this->getDbEntity('action_state');
 
@@ -153,6 +153,8 @@ class PartnerActivationTest extends OAuthTestCase
         $this->assertEquals('activated', $state['name']);
 
         $this->assertEquals('partner_activation', $state['entity_type']);
+
+        $this->assertEquals('activated', $response['partner_activation']['activation_status']);
     }
 
     public function testSubmitPartnerActivationForNonRegisteredBusinessUnderReview()
@@ -248,6 +250,15 @@ class PartnerActivationTest extends OAuthTestCase
 
         $this->createMerchant(self::MERCHANT_ID, false, null);
 
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $merchantTestUtil = new MerchantTest();
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Partner_activation.Activated', '+918888888888', [
+            'id' => self::MERCHANT_ID
+        ]);
+
         $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
         $testData = $this->testData['saveAllPartnerActivationDetails'];
         $this->runRequestResponseFlow($testData);
@@ -264,9 +275,8 @@ class PartnerActivationTest extends OAuthTestCase
         $this->assertEquals(2, count($actionStates));
         $this->assertEquals('under_review', $actionStates->get(0)['name']); // for partner_activation entity
         $this->assertEquals('partner_activation', $actionStates->get(0)['entity_type']); // for partner_activation entity
-        $this->assertEquals('open', $actionStates->get(1)['name']); // for workflow_action entity
-        $this->assertEquals('workflow_action', $actionStates->get(1)['entity_type']); // for workflow_action entity
-
+        $this->assertEquals('activated', $actionStates->get(1)['name']);
+        $this->assertEquals('partner_activation', $actionStates->get(1)['entity_type']);
         // Mail::assertQueued(PartnerActivationConfirmation::class);
     }
 
@@ -314,10 +324,6 @@ class PartnerActivationTest extends OAuthTestCase
         $testData = $this->testData['submitActivationDataForUnVerifiedDetails'];
         $this->runRequestResponseFlow($testData);
         $this->assertTrue($response['partner_activation']['submitted']);
-
-        $workflowAction = $this->getDbEntity('workflow_action');
-        $this->assertEquals('partner_activation', $workflowAction['entity_name']);
-        $this->assertEquals(self::MERCHANT_ID, $workflowAction['entity_id']);
     }
 
     public function testBulkAssignReviewer()

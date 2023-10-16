@@ -6428,7 +6428,6 @@ class ActivationTest extends OAuthTestCase
 
         $this->mockMerchantImpersonated($merchantId);
 
-        $this->setupWorkflow('Activate partner', 'edit_activate_partner');
         $this->setupImpersonatedWorkflow();
 
         $this->startTest();
@@ -6441,17 +6440,15 @@ class ActivationTest extends OAuthTestCase
 
         $partnerActivation = $this->getDbEntityById('partner_activation', $merchantId);
 
-        $this->assertEquals($partnerActivation->getActivationStatus(), null);
+        $this->assertEquals($partnerActivation->getActivationStatus(), 'activated');
 
         $workflowActions = $this->getDbEntities('workflow_action');
 
-        $this->assertEquals(2, count($workflowActions));
+        $this->assertEquals(1, count($workflowActions));
 
         $this->assertEquals('merchant_detail', $workflowActions->get(0)['entity_name']);
         $this->assertEquals('open', $workflowActions->get(0)['state']);
 
-        $this->assertEquals('partner_activation', $workflowActions->get(1)['entity_name']);
-        $this->assertEquals('open', $workflowActions->get(1)['state']);
     }
 
     private function setupMerchantDetailVerificationStatus($merchantId) {
