@@ -50,10 +50,24 @@ class CounterHelper extends Base\Core
         // and don't want them to be done outside of a transaction.
         assertTrue($this->repo->counter->isTransactionActive());
 
+        $freePayoutsCount = (new Balance\FreePayout)->getFreePayoutsCount($balance);
+
+        if ($freePayoutsCount === 0)
+        {
+            return null;
+        }
+
         /** @var Counter\Entity $counter */
         $counter = (new Counter\Core)->fetchOrCreate($balance);
 
-        $freePayoutsCount = (new Balance\FreePayout)->getFreePayoutsCount($balance);
+        $freePayoutsConsumed = $counter->getFreePayoutsConsumed();
+
+        //this is to prevent unncessary locking for update if free payouts does not apply.
+        if (($freePayoutsConsumed >= $freePayoutsCount) and
+            ($this->shouldResetFreePayoutsConsumed($counter) === false))
+        {
+            return null;
+        }
 
         /** @var Counter\Entity $counter */
         $counter = $this->repo->counter->lockForUpdate($counter->getId());
