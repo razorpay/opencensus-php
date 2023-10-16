@@ -16323,6 +16323,558 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetFreePayoutsAttributesForLiteAccountCreatedOct2023AndMerchantCreatedOct2023()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'shared',
+            'channel'     => 'yesbank',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2023, 10, 20, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2023, 10, 20, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB3;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForLiteAccountCreatedOct2023AndMerchantCreatedAug2023()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'shared',
+            'channel'     => 'yesbank',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2023, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2023, 10, 20, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB3;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForLiteAccountCreatedOct2023AndMerchantCreatedAug2021()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'shared',
+            'channel'     => 'yesbank',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2021, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2023, 10, 20, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB3;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForLiteAccountCreatedAug2023AndMerchantCreatedAug2023()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'shared',
+            'channel'     => 'yesbank',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2023, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2023, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB2;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForLiteAccountCreatedAug2023AndMerchantCreatedAug2021()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'shared',
+            'channel'     => 'yesbank',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2021, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2023, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForLiteAccountCreatedAug2021AndMerchantCreatedAug2021()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'shared',
+            'channel'     => 'yesbank',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2021, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2021, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForDirectAccountCreatedOct2023AndMerchantCreatedOct2023()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'direct',
+            'channel'     => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2023, 10, 20, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2023, 10, 20, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForDirectAccountCreatedOct2023AndMerchantCreatedAug2023()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'direct',
+            'channel'     => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2023, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2023, 10, 20, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForDirectAccountCreatedOct2023AndMerchantCreatedAug2021()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'direct',
+            'channel'     => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2021, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2023, 10, 20, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForDirectAccountCreatedAug2023AndMerchantCreatedAug2023()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'direct',
+            'channel'     => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2023, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2023, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB2;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForDirectAccountCreatedAug2023AndMerchantCreatedAug2021()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'direct',
+            'channel'     => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2021, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2023, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForDirectAccountCreatedAug2021AndMerchantCreatedAug2021()
+    {
+        $this->mockRazorxTreatment();
+
+        $balanceAttributes = [
+            'balance'     => 10000000,
+            'balanceType' => 'direct',
+            'channel'     => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            $this->bankingBalance->getMerchantId(),
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $balanceId = $bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2021, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'created_at' => Carbon::create(2021, 8, 5, 00, 0, 0, Timezone::IST)
+                ->getTimestamp(),
+        ]);
+
+        $testData = $this->testData['testGetFreePayoutsAttributesForNewSlabMerchants'];
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
     public function testGetFreePayoutsAttributesOnAdminAuth()
     {
         // Setting the time to before september because

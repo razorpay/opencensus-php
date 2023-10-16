@@ -30,6 +30,8 @@ class FreePayout
 
     const SLAB2 = 'slab2';
 
+    const SLAB3 = 'slab3';
+
     const FREE_PAYOUT                           = 'free_payout';
 
     // Settings module key
@@ -64,6 +66,16 @@ class FreePayout
     // Setting default count to 0 for connected banking users
     const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB2 = 0;
 
+    const DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB3         = 0;
+
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3     = 0;
+
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB3   = 0;
+
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB3    = 0;
+
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB3 = 0;
+
     // Count of the number of free shared account payouts allowed per merchant in a month.
     const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT             = 'free_shared_account_payouts_count';
 
@@ -77,6 +89,12 @@ class FreePayout
         'day'   => 5,
         'month' => 9,
         'year'  => 2022
+    ];
+
+    const FREE_PAYOUT_SLAB3_ROLLOUT_TIMESTAMP = [
+        'day'   => 16,
+        'month' => 10,
+        'year'  => 2023
     ];
 
     public function __construct()
@@ -172,6 +190,20 @@ class FreePayout
             ($merchantCreatedAt > $freePayoutSlab2RolloutTimestamp))
         {
             $slab = self::SLAB2;
+        }
+
+        $freePayoutSlab3RolloutTimestamp = Carbon::create(
+            self::FREE_PAYOUT_SLAB3_ROLLOUT_TIMESTAMP['year'],
+            self::FREE_PAYOUT_SLAB3_ROLLOUT_TIMESTAMP['month'],
+            self::FREE_PAYOUT_SLAB3_ROLLOUT_TIMESTAMP['day'],
+            00, 0, 0, Timezone::IST)->getTimestamp();
+
+        $balanceEntityCreatedAt = $balance->getCreatedAt();
+
+        if (($balanceEntityCreatedAt !== null) and
+            ($balanceEntityCreatedAt > $freePayoutSlab3RolloutTimestamp))
+        {
+            $slab = self::SLAB3;
         }
 
         $this->app['trace']->info(TraceCode::FREE_PAYOUT_SLAB_ASSIGNED,

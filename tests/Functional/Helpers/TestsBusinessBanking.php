@@ -578,6 +578,7 @@ trait TestsBusinessBanking
             [
                 constant(Admin\ConfigKey::class . '::' . $freePayoutsCountConstantName . '_SLAB1') => 300,
                 constant(Admin\ConfigKey::class . '::' . $freePayoutsCountConstantName . '_SLAB2')  => 300,
+                constant(Admin\ConfigKey::class . '::' . $freePayoutsCountConstantName . '_SLAB3')  => 300,
             ]);
     }
 

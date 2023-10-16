@@ -206,6 +206,12 @@ class Validator extends Base\Validator
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB2    => 'filled|integer',
         ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB2 => 'filled|integer',
 
+        ConfigKey::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB3         => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3     => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB3   => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_AXIS_SLAB3    => 'filled|integer',
+        ConfigKey::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_YESBANK_SLAB3 => 'filled|integer',
+
         ConfigKey::FREE_PAYOUTS_SUPPORTED_MODES           => 'filled|array',
         ConfigKey::DELAY_RUPAY_CAPTURE                    => 'filled|boolean',
         ConfigKey::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE   => 'array',
