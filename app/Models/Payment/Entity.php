@@ -6849,6 +6849,23 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return (int)ceil($fee);
     }
 
+    public function getMccMarkDownCommisionAmount()
+    {
+        $commissionAmount = 0;
+        $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($this->getId());
+        if ($paymentMeta->getMccApplied())
+        {
+            $denominationFactorToCurrency = Currency\Currency::DENOMINATION_FACTOR[Currency\Currency::INR];
+
+            $denominationFactorFromCurrency = Currency\Currency::DENOMINATION_FACTOR[$this->getCurrency()];
+
+            $denominationFactor = $denominationFactorToCurrency / $denominationFactorFromCurrency;
+
+            $commissionAmount = ($this->getAmount() * $paymentMeta->getMccForexRate() * $paymentMeta->getMccMarkDownPercent() * $denominationFactor)/100;
+        }
+        return $commissionAmount;
+    }
+
     public function modifyInput(& $input)
     {
         foreach ($this->public as $key)

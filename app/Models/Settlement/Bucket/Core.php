@@ -304,6 +304,15 @@ class Core extends Base\Core
 
             if($payment->isInternational() === true)
             {
+                $commissionAmount = null;
+                $commissionConversionAmount = null;
+
+                if ($payment->isB2BExportCurrencyCloudPayment())
+                {
+                    $commissionAmount = $payment->getMccMarkDownCommisionAmount() + $txn->getFee();
+                    $commissionConversionAmount = (new \RZP\Models\Currency\Core())->convertAmount($commissionAmount, Currency::INR, Currency::USD);
+                }
+
                 $meta += [
                     'gateway'       => $payment->getGateway(),
                     'remitter_info' => [
@@ -312,11 +321,18 @@ class Core extends Base\Core
                         "remitter_country" => $this->getRemitterCountry($payment)
                     ],
                     'amount_meta'   => [
-                        "conversion_amount"   => $this->getConversionAmount($payment, Currency::USD),
-                        "conversion_currency" => Currency::USD,
-                        "settlement_currency" => $this->getSettlementCurrencyOfPayment($payment)
+                        "conversion_amount"             => $this->getConversionAmount($payment, Currency::USD),
+                        "conversion_currency"           => Currency::USD,
+                        "settlement_currency"           => $this->getSettlementCurrencyOfPayment($payment)
                     ],
                 ];
+                if ( $commissionAmount != null)
+                {
+                    $meta['amount_meta'] +=[
+                        "intl_commission_amount"             => $commissionAmount,
+                        "intl_commission_conversion_amount"  => $commissionConversionAmount,
+                    ];
+                }
 
                 if (Payment\Gateway::isOPGSPSettlementGateway($payment->getGateway()) === true &&
                     (empty($meta['remitter_info']['remitter_name']) or empty($meta['remitter_info']['remitter_address'])))
@@ -342,7 +358,7 @@ class Core extends Base\Core
         // Handling Payment, Adjustments and any other type of transactions here expect refunds.
         // which is currently handled in below getMetaForSource function to avoid multiple DB Fetch
         // for external entities.
-        
+
         if($txn->merchant->isSettlementByCurrencyEnabled() === true)
         {
             $payment = null;
@@ -355,14 +371,14 @@ class Core extends Base\Core
             if ($txn->isTypeAdjustment() === true)
             {
                 $adjustment = $txn->source;
-            
+
                 if(isset($adjustment) === true)
                 {
                     if ($adjustment->getEntityType() === Transaction\Type::DISPUTE)
                     {
                         $payment = $adjustment->entity->payment;
                     }
-        
+
                     if($adjustment->getEntityType() === Transaction\Type::PAYMENT)
                     {
                         $payment = $adjustment->entity;
@@ -443,13 +459,13 @@ class Core extends Base\Core
         {
             $remitterName = $payment->card->getName();
         }
-       
+
         // If Payment is not a card Payment and If gateway is under ADDRESS_NAME_REQUIRED_GATEWAYS array
         // we will fetch remitter name from addresses table.
         else if (Payment\Gateway::isAddressAndNameRequiredGateway($payment->getGateway()) === true)
         {
             $billingAddress = $payment->fetchBillingAddress();
-            
+
             if(empty($billingAddress) === false)
             {
                 $remitterName = $billingAddress->getName();
@@ -613,7 +629,7 @@ class Core extends Base\Core
                 "payment_currency" => $metaSource->getCurrency()
             ];
         }
-        
+
         return $meta;
     }
 
