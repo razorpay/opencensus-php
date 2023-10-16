@@ -9,6 +9,7 @@ import {
   session,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/RefundModal';
 import { screen, userEvent, delay, waitFor } from 'test-utils';
+import * as showWhen from 'merchant/components/ShowWhen';
 
 describe('RefundModal', () => {
   beforeEach(() => {
@@ -520,6 +521,42 @@ describe('RefundModal', () => {
     await userEvent.click(issueRefund);
     expect(
       screen.queryByText('Last digit should be 0 for three decimal currencies'),
+    ).not.toBeInTheDocument();
+  });
+
+  test('hide component if refunds.instant_refunds is enabled', () => {
+    renderApp({
+      initialState: {
+        session: {
+          user: new User({
+            merchant: { country_code: 'MYR' },
+          }),
+        },
+        payment: {
+          ...payment,
+          payment: {
+            ...payment.payment,
+            currency: null,
+            amount_refunded: 10.12222,
+            direct_settlement_refund: true,
+            gateway_refund_support: true,
+          },
+        },
+      },
+      props: {
+        current_balance: {
+          loading: false,
+        },
+        refund_check_disabled: true,
+        default_refund_speed: 'normal',
+      },
+    });
+    jest.spyOn(showWhen, 'showWhenUtil').mockImplementation(() => false);
+
+    expect(
+      screen.queryByText(
+        'Currently, Instant Refunds are available on TPV, netbanking, UPI and select credit cards and debit cards.',
+      ),
     ).not.toBeInTheDocument();
   });
 });

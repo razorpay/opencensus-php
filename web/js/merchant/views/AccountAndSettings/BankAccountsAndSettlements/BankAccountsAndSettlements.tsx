@@ -1,6 +1,8 @@
 import Breadcrumb from 'common/components/Breadcrumb';
 import { CenterLoader } from 'common/components/Loader';
+import { useI18Service } from 'common/i18';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { useSplitzService } from 'common/splitz';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
@@ -24,6 +26,7 @@ import {
 import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 
 const { BANK_ACCOUNT_DETAILS, SETTLEMENT_DETAILS, FIRS } = ROUTES_INFO;
 const BankAccountDetails = lazy(
@@ -71,6 +74,9 @@ const getTabsContent = ({ type, withStyled = true, user }) => {
 };
 
 const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Element | null => {
+  const { abExperiments } = useSplitzService();
+  const { isConfigTagEnabled } = useI18Service();
+  const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   if (!user.isAccountAndSettingsRevampEnabled) {
     switch (pathname) {
       case BANK_ACCOUNT_DETAILS:
@@ -102,10 +108,10 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
           ]}
         />
         <StyledHeader className="scrollable-tab-header">
-          <ShowWhen additionalCondition={isBankAccountDetailsAllowed}>
+          <ShowWhen additionalCondition={() => isBankAccountDetailsAllowed(extraConfig)}>
             <NavLink to={BANK_ACCOUNT_DETAILS}>Bank account details</NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={isSettlementsAllowed}>
+          <ShowWhen additionalCondition={() => isSettlementsAllowed(extraConfig)}>
             <NavLink to={SETTLEMENT_DETAILS}>Settlement details</NavLink>
           </ShowWhen>
           <ShowWhen additionalCondition={shouldShowFIRCSection}>
@@ -120,7 +126,9 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
                 <Route
                   path={getRefRoute(BANK_ACCOUNT_DETAILS)}
                   element={
-                    <RouteGuard additionalCondition={isBankAccountDetailsAllowed}>
+                    <RouteGuard
+                      additionalCondition={() => isBankAccountDetailsAllowed(extraConfig)}
+                    >
                       {getTabsContent({ type: 'bank_account', withStyled: false, user })}
                     </RouteGuard>
                   }
@@ -129,7 +137,7 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
                 <Route
                   path={getRefRoute(SETTLEMENT_DETAILS)}
                   element={
-                    <RouteGuard additionalCondition={isSettlementsAllowed}>
+                    <RouteGuard additionalCondition={() => isSettlementsAllowed(extraConfig)}>
                       {getTabsContent({ type: 'settlement', user })}
                     </RouteGuard>
                   }

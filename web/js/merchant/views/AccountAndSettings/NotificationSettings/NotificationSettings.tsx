@@ -1,5 +1,7 @@
 import React, { Suspense } from 'react';
 import { Route, NavLink, Navigate, Routes } from 'react-router-dom';
+import { useI18Service } from 'common/i18';
+import { useSplitzService } from 'common/splitz';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
@@ -24,8 +26,12 @@ import {
 import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import Loader from 'common/components/Loader';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 
 const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | null => {
+  const { abExperiments } = useSplitzService();
+  const { isConfigTagEnabled } = useI18Service();
+  const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   if (!user.isAccountAndSettingsRevampEnabled) {
     switch (pathname) {
       case ROUTES_INFO.EMAIL_NOTIFICATIONS:
@@ -63,7 +69,9 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
           <ShowWhen additionalCondition={isSmsNotificationEnabled}>
             <NavLink to={ROUTES_INFO.SMS_NOTIFICATIONS}>SMS</NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={isWhatsappNotificationEnabled}>
+          <ShowWhen
+            additionalCondition={(user) => isWhatsappNotificationEnabled(user, extraConfig)}
+          >
             <NavLink to={ROUTES_INFO.WHATSAPP_NOTIFICATIONS}>WhatsApp</NavLink>
           </ShowWhen>
         </StyledHeader>

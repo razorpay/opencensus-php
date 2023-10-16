@@ -68,7 +68,6 @@ import {
   fetchMerchantWebsiteDetails,
 } from 'merchant/reducers/websitecompliance';
 import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import WorkflowStatus from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/WorkflowStatus';
 import {
   isBankAccountDetailsAllowed,
@@ -76,6 +75,8 @@ import {
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import InternationalHPBanner from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/InternationalHPBanner';
 import FestiveAnimation from './FestiveAnimation';
+import { withI18Service } from 'common/i18';
+import { withSplitzService } from 'common/splitz';
 
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
@@ -106,6 +107,8 @@ const trafficSectionTitle = 'Traffic split on platforms';
 const recentActivityTitle = 'Recent Activity';
 
 // eslint-disable-next-line react/no-unsafe
+@withI18Service
+@withSplitzService
 @connect(
   (state) => {
     return {
@@ -978,9 +981,12 @@ class HomeContainer extends Component {
       ondemand_restrictions,
       showTnCModal,
       trackEvents,
+      i18: { isConfigTagEnabled },
+      splitz,
     } = this.props;
 
     const { activation_flow } = user;
+    const { abExperiments } = splitz;
 
     const {
       startDate,
@@ -1124,7 +1130,7 @@ class HomeContainer extends Component {
       user.isAccountAndSettingsRevampEnabled &&
       user.isBankAccountUpdateRevampEnabled &&
       user.activation_status === 'activated' &&
-      isBankAccountDetailsAllowed(user);
+      isBankAccountDetailsAllowed({ abExperiments, isConfigTagEnabled });
 
     const hasLakhmiVilasBankAcc =
       user && user.bank_branch_ifsc && user.bank_branch_ifsc.substring(0, 4) === 'LAVB';
@@ -1133,15 +1139,11 @@ class HomeContainer extends Component {
       user.isCardRecurringPaymentsBlocked &&
       user.isAccepted &&
       (user.isSubscriptionsEnabled || user.isChargeAtWillEnabled) &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ProductRecommendationsKyc);
+      !isConfigTagEnabled('product_recommendations_kyc.product_recommendation_kyc');
     return (
       <div class="react-root dashboard-home">
         <FestiveAnimation isMobile={isMobile} user={user.user} />
-        <ShowWhen
-          additionalCondition={(user) =>
-            !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Onboarding)
-          }
-        >
+        <ShowWhen additionalCondition={() => !isConfigTagEnabled('onboarding.onboarding')}>
           {showRBIChangesBanners ? (
             <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
           ) : (

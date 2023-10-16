@@ -1,5 +1,8 @@
 import React, { Suspense } from 'react';
 import { Route, NavLink, Navigate, Routes } from 'react-router-dom';
+import { useI18Service } from 'common/i18';
+import { useSplitzService } from 'common/splitz';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
@@ -33,6 +36,9 @@ const TrustedBadge = lazy(
 );
 
 const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null => {
+  const { abExperiments } = useSplitzService();
+  const { isConfigTagEnabled } = useI18Service();
+  const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   if (!user.isAccountAndSettingsRevampEnabled) {
     switch (pathname) {
       case ROUTES_INFO.BRANDING:
@@ -68,14 +74,14 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
         <StyledHeader className="scrollable-tab-header">
           <ShowWhen additionalCondition={isConfigurationViewAllowed}>
             <NavLink to={ROUTES_INFO.BRANDING}>Branding</NavLink>
-            <ShowWhen additionalCondition={isFlashCheckoutAllowed}>
+            <ShowWhen additionalCondition={(user) => isFlashCheckoutAllowed(user, extraConfig)}>
               <NavLink to={ROUTES_INFO.FLASH_CHECKOUT}>Flash Checkout</NavLink>
             </ShowWhen>
-            <ShowWhen additionalCondition={isSkipMandatorySummaryPageAllowed}>
+            <ShowWhen additionalCondition={() => isSkipMandatorySummaryPageAllowed(extraConfig)}>
               <NavLink to={ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE}>Mandate Summary Page</NavLink>
             </ShowWhen>
           </ShowWhen>
-          <ShowWhen additionalCondition={isTrustedBadgeAllowed}>
+          <ShowWhen additionalCondition={(user) => isTrustedBadgeAllowed(user, extraConfig)}>
             <NavLink to={ROUTES_INFO.TRUSTED_BADGE}>Trusted Badge</NavLink>
           </ShowWhen>
         </StyledHeader>
@@ -116,7 +122,9 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
                   <Route
                     path={getRefRoute(ROUTES_INFO.TRUSTED_BADGE)}
                     element={
-                      <RouteGuard additionalCondition={isTrustedBadgeAllowed}>
+                      <RouteGuard
+                        additionalCondition={(user) => isTrustedBadgeAllowed(user, extraConfig)}
+                      >
                         <TrustedBadge />
                       </RouteGuard>
                     }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { useI18Service } from 'common/i18';
 import {
   closeModal as fnCloseModal,
   openModal as fnOpenModal,
@@ -10,7 +11,6 @@ import { getCustomURL } from 'merchant/components/DocsLink';
 import HolidayModal from 'merchant/views/Settlements/Settlements/components/Modals/HolidayModal';
 import PaymentSchedule from './PaymentSchedule';
 import EntitySchedule from './EntitySchedule';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
@@ -28,6 +28,7 @@ const SettlementScheduleV2 = (props) => {
   const refundSchedule = schedules?.refund?.default;
   const reversalSchedule = schedules?.reversal?.default;
   const transferSchedule = schedules?.transfer?.default;
+  const { isConfigTagEnabled } = useI18Service();
 
   const toggleExample = () => {
     const { user } = props;
@@ -149,22 +150,14 @@ const SettlementScheduleV2 = (props) => {
           </div>
         </div>
         <div className="settlement-cycle-btn-container">
-          <ShowWhen
-            additionalCondition={(user) =>
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.HolidayList)
-            }
-          >
+          <ShowWhen additionalCondition={() => !isConfigTagEnabled('settlements.holiday_list')}>
             <div className="button-wrapper mr-8">
               <button onClick={viewHolidayList} className="btn btn-default full-width no-margin">
                 List of Bank Holidays
               </button>
             </div>
           </ShowWhen>
-          <ShowWhen
-            additionalCondition={(user) =>
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SettlementGuide)
-            }
-          >
+          <ShowWhen additionalCondition={() => !isConfigTagEnabled('settlements.settlement_guide')}>
             <div className="button-wrapper ml-8">
               <a
                 href={getCustomURL('https://razorpay.com/settlement')}

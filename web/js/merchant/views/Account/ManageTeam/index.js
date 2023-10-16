@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import React from 'react';
+import { withI18Service } from 'common/i18';
 // eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import ModalHeader from 'common/ui/ModalHeader';
@@ -16,7 +17,6 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import Styled from 'styled-components';
 
 const StyledDiv = Styled.div`
@@ -98,7 +98,10 @@ class ManageTeamContainer extends React.Component {
     });
   }
   render() {
-    const { user } = this.props;
+    const {
+      user,
+      i18: { isConfigTagEnabled },
+    } = this.props;
 
     return (
       <div className="content-wrapper content-sm" id="settings-content">
@@ -111,9 +114,7 @@ class ManageTeamContainer extends React.Component {
         >
           <div className="btn-toolbar pull-right">
             <ShowWhen
-              additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
-              }
+              additionalCondition={() => !isConfigTagEnabled('documentation.documentation')}
             >
               <DocsLink
                 url="https://razorpay.com/docs/team-support/"
@@ -136,7 +137,7 @@ class ManageTeamContainer extends React.Component {
           myRole="owner"
           additionalCondition={(currentUser) =>
             !currentUser.org_enforced_second_factor_auth &&
-            !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TwoFactorVerification)
+            !isConfigTagEnabled('account.hide_2fa_verification')
           }
         >
           <StyledDiv isFlowRevamped={user.isAccountAndSettingsRevampEnabled}>
@@ -163,5 +164,5 @@ const mapStateToProps = (state) => ({
 });
 
 export default connect(mapStateToProps, { sendInvitation, openModal, closeModal })(
-  ManageTeamContainer,
+  withI18Service(ManageTeamContainer),
 );

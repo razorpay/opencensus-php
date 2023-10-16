@@ -1,3 +1,6 @@
+import { useI18Service } from 'common/i18';
+import { useSplitzService } from 'common/splitz';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import { fetchFeatureByName as fetchFeatureByNameFn } from 'merchant/reducers/config';
 import {
   fetchMerchantInstruments as fetchMerchantInstrumentsFn,
@@ -44,6 +47,9 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
   } = props;
 
   const [sections, setSections] = useState<SectionCardInterface[]>([]);
+  const { abExperiments } = useSplitzService();
+  const { isConfigTagEnabled } = useI18Service();
+  const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
 
   const fetchAllInstruments = async (): Promise<void> => {
     await Promise.all([fetchMerchantInstruments(), fetchRequestedInstruments()]).catch((errors) => {
@@ -91,6 +97,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
         websiteSectionDetailsData,
         profile,
         allowCFBInternational: featureData[feature],
+        extraConfig,
       });
       setSections(sectionCards);
     }

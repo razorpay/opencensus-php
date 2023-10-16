@@ -18,6 +18,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useSplitzService } from 'common/splitz';
+import { useI18Service } from 'common/i18';
 
 const NavLinkProduct = ({
   heading,
@@ -32,6 +33,7 @@ const NavLinkProduct = ({
   const [sectionProducts, setSectionProducts] = useState<ProductsStateInterface>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { abExperiments } = useSplitzService();
+  const { isConfigTagEnabled } = useI18Service();
 
   const handleToggle = (): void => {
     analyticsTrack({
@@ -58,7 +60,10 @@ const NavLinkProduct = ({
           PRODUCTS_DATA[each.product_id] &&
           showWhenUtil({
             additionalCondition: (users) =>
-              PRODUCTS_DATA[each.product_id].additionalCondition(users, abExperiments),
+              PRODUCTS_DATA[each.product_id].additionalCondition(users, {
+                abExperiments,
+                isConfigTagEnabled,
+              }),
           })
         ) {
           accumulator.valid.push(each);

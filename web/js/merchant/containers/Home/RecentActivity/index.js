@@ -15,12 +15,12 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { fetchPayments, fetchRefunds, fetchSettlements } from 'merchant/reducers/collection';
 import { openModal } from 'merchant_common/reducers/modals';
 
 import { tabs, tabsMeta } from './data';
 import { trackTabClick, trackEntityClick, trackGoToLinks, selfServeTracking } from './ga';
+import { withI18Service } from 'common/i18';
 
 const shouldDisplayCompact = (windowWidth) => {
   return windowWidth < 480;
@@ -254,11 +254,11 @@ class RecentActivity extends Component {
 
     const newTabs = tabs.filter((tabName) => {
       if (tabName === 'refunds') {
-        return !this.props.user?.findTag?.(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds);
+        return !this.props.i18.isConfigTagEnabled('refunds.refund');
       }
 
       if (tabName === 'settlements') {
-        return !this.props.user?.findTag?.(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements);
+        return !this.props.i18.isConfigTagEnabled('settlements.settlement');
       }
 
       return true;
@@ -373,4 +373,4 @@ export default compose(
     fetchRefunds,
     fetchSettlements,
   }),
-)(RecentActivity);
+)(withI18Service(RecentActivity));

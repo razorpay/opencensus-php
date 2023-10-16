@@ -19,6 +19,7 @@ import { capturePrometheusMetric, Metrics } from 'common/utils/analytics';
 import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
 import { SpiltzServiceProvider } from 'common/splitz/context/SplitzContextProvider';
 import { redirectToAppRoute } from 'common/utils/redirectToAppRoute';
+import { I18ServiceProvider } from 'common/i18/I18ServiceProvider';
 
 (async () => {
   if (localStorage.referrer === 'chrome-extension') {
@@ -42,7 +43,9 @@ render(
       <Router basename="/app">
         <SpiltzServiceProvider dashboardType="merchant">
           <ErrorBoundary>
-            <App />
+            <I18ServiceProvider>
+              <App />
+            </I18ServiceProvider>
           </ErrorBoundary>
         </SpiltzServiceProvider>
       </Router>

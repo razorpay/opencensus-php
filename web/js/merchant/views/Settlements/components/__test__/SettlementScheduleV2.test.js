@@ -1,11 +1,12 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
-import { render, screen, waitFor } from 'test-utils';
+import { render, screen, waitFor, updateUseI18ServiceSpy } from 'test-utils';
 import { Provider } from 'react-redux';
-import { storeWithInitialState } from 'merchant/store';
+import store, { storeWithInitialState } from 'merchant/store';
 import userEvent from '@testing-library/user-event';
 import * as modals from 'merchant_common/reducers/modals';
+import User from 'merchant/models/User';
 
 const state = {
   session: {
@@ -32,6 +33,8 @@ const state = {
     },
   },
 };
+
+const stateSpy = jest.spyOn(store, 'getState');
 
 describe('SettlementScheduleV2', () => {
   const modalsSpy = jest.spyOn(modals, 'openModal');
@@ -178,6 +181,29 @@ describe('SettlementScheduleV2', () => {
         );
         expect(screen.getByRole('img')).toHaveAttribute('alt', 'settlement holiday example');
       });
+    });
+  });
+
+  describe('i18n', () => {
+    stateSpy.mockReturnValue({
+      session: {
+        user: new User(),
+        org: {
+          custom_code: 'curlec',
+        },
+      },
+    });
+
+    test('Hide holiday list btn if  settlements.holiday_list tag is enabled', () => {
+      updateUseI18ServiceSpy('settlements.holiday_list');
+      render(<App />);
+      expect(screen.queryByText('List of Bank Holidays')).not.toBeInTheDocument();
+    });
+
+    test('Hide holiday list btn if settlements.settlement_guide tag is enabled', () => {
+      updateUseI18ServiceSpy('settlements.settlement_guide');
+      render(<App />);
+      expect(screen.queryByText('Settlement Guide')).not.toBeInTheDocument();
     });
   });
 });

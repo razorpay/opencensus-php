@@ -59,6 +59,11 @@ describe('RefundModal', () => {
               },
             },
           },
+          props: {
+            i18: {
+              isConfigTagEnabled: () => undefined,
+            },
+          },
         });
         const instantRefundInput = screen.getAllByRole('checkbox')[1];
         expect(instantRefundInput).toBeEnabled();
@@ -85,6 +90,11 @@ describe('RefundModal', () => {
             current_balance: {
               loading: true,
             },
+          },
+        },
+        props: {
+          i18: {
+            isConfigTagEnabled: () => undefined,
           },
         },
       });
@@ -120,6 +130,11 @@ describe('RefundModal', () => {
             },
           },
         },
+        props: {
+          i18: {
+            isConfigTagEnabled: () => undefined,
+          },
+        },
       });
 
       expect(screen.getByText(/Add Credits/)).toBeInTheDocument();
@@ -146,6 +161,11 @@ describe('RefundModal', () => {
             user: new User({ merchants: {} }),
           },
         },
+        props: {
+          i18: {
+            isConfigTagEnabled: () => undefined,
+          },
+        },
       });
       expect(screen.getByText(/Add Funds/)).toBeInTheDocument();
     });
@@ -168,6 +188,11 @@ describe('RefundModal', () => {
                 refund_credits: 1000,
               },
             },
+          },
+        },
+        props: {
+          i18: {
+            isConfigTagEnabled: () => undefined,
           },
         },
       });

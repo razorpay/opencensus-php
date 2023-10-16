@@ -4,6 +4,7 @@ import { compose } from 'redux';
 import { Route, NavLink, Navigate, Routes } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
+import { withI18Service } from 'common/i18';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
@@ -20,7 +21,6 @@ import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isPaymentMethodEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { matchByRoute } from 'common/utils/matchByRoute';
@@ -79,6 +79,7 @@ class Settings extends Component {
       user,
       mode,
       location: { pathname },
+      i18: { isConfigTagEnabled },
     } = this.props;
 
     if (user.isAccountAndSettingsRevampEnabled) {
@@ -156,11 +157,7 @@ class Settings extends Component {
               </NavLink>
             </ShowWhen>
 
-            <ShowWhen
-              additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Reminders)
-              }
-            >
+            <ShowWhen additionalCondition={() => !isConfigTagEnabled('reminders.reminder')}>
               <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
                 Reminders
               </NavLink>
@@ -232,9 +229,7 @@ class Settings extends Component {
                   path={matchByRoute(pathname, '/reminders')}
                   element={
                     <RouteGuard
-                      additionalCondition={(user) =>
-                        !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Reminders)
-                      }
+                      additionalCondition={() => !isConfigTagEnabled('reminders.reminder')}
                     >
                       <Reminders />
                     </RouteGuard>
@@ -282,4 +277,4 @@ export default compose(
     },
   ),
   withRouter,
-)(Settings);
+)(withI18Service(Settings));

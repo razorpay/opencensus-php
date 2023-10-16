@@ -48,13 +48,13 @@ import {
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import lazy from 'merchant/routes/LazyLoader';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
 import DateRangeTooltip from './DateRangeTooltip';
 import { withSplitzService } from 'common/splitz';
+import { withI18Service } from 'common/i18';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -62,6 +62,7 @@ const TerminalStatus = lazy(() =>
   ),
 );
 
+@withI18Service
 @connect(
   (state) => ({
     windowWidth: state.app.windowWidth,
@@ -241,6 +242,7 @@ class AnalyticsMobile extends Component {
       settleNowRestrictionMsg,
       isOnDemandDisabled,
       bannerCarouselData: { banner_carousel_items = [] } = {},
+      i18: { isConfigTagEnabled },
     } = this.props;
 
     const hasSecondaryBanner =
@@ -286,8 +288,8 @@ class AnalyticsMobile extends Component {
           }`}
         >
           <ShowWhen
-            additionalCondition={(user) =>
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ProductRecommendationsKyc)
+            additionalCondition={() =>
+              !isConfigTagEnabled('product_recommendations_kyc.product_recommendation_kyc')
             }
           >
             {ticketsRaisedByAgents.length && user.isMobileSignupCareActive ? (
@@ -467,8 +469,8 @@ class AnalyticsMobile extends Component {
           <LazyLoad height={100} offset={50} once>
             <>
               <ShowWhen
-                additionalCondition={(user) =>
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ProductRecommendationsKyc)
+                additionalCondition={() =>
+                  !isConfigTagEnabled('product_recommendations_kyc.product_recommendation_kyc')
                 }
               >
                 <EasterEgg extraClass="ftx-home-page" page="Home" />

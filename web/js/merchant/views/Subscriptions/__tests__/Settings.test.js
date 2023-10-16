@@ -10,6 +10,9 @@ import {
 } from 'merchant/views/Subscriptions/__tests__/mocks/fixtures/Settings';
 import * as analytics from 'merchant/views/Subscriptions/analytics';
 
+const defaultProps = {
+  i18: { isConfigTagEnabled: jest.fn() },
+};
 describe('Subscription Settings', () => {
   beforeEach(() => {
     server.use(fetchSettings());
@@ -21,12 +24,12 @@ describe('Subscription Settings', () => {
   });
 
   test('Should render Settings with error', () => {
-    renderAppWithError();
+    renderAppWithError(defaultProps);
     expect(screen.getByText('Unable to fetch settings')).toBeInTheDocument();
   });
 
   test('Should Contain Take Tour CTA & Documentation Link', async () => {
-    renderApp();
+    renderApp(defaultProps);
     const getTour = screen.getByText(/need help\? take a tour/i);
     const documentationLink = screen.getByRole('link', {
       name: /documentation/i,
@@ -42,7 +45,7 @@ describe('Subscription Settings', () => {
   });
 
   test('Should render card settings if enabled', () => {
-    renderApp();
+    renderApp(defaultProps);
 
     [
       '^card$',
@@ -69,7 +72,7 @@ describe('Subscription Settings', () => {
   });
 
   test('Should render UPI settings if enabled', () => {
-    renderApp();
+    renderApp(defaultProps);
 
     [
       '^upi$',
@@ -92,7 +95,7 @@ describe('Subscription Settings', () => {
   });
 
   test('Should render Emandate settings if enabled', () => {
-    renderApp();
+    renderApp(defaultProps);
 
     [
       '^emandate$',
@@ -106,13 +109,13 @@ describe('Subscription Settings', () => {
   });
 
   test('Should not render Emandate settings if payment method is not enabled for merchant', () => {
-    renderAppWithoutEmandate();
+    renderAppWithoutEmandate(defaultProps);
     expect(screen.queryByText(/emandate/i)).not.toBeInTheDocument();
   });
 
   test('Settings - Toggle Card Action: API Success', async () => {
     server.use(saveSettings());
-    renderApp();
+    renderApp(defaultProps);
 
     const cardBtn = screen.getAllByRole('button')[0];
     await userEvent.click(cardBtn);
@@ -132,7 +135,7 @@ describe('Subscription Settings', () => {
 
   test('Settings - Toggle Card Action: API Fail', async () => {
     server.use(saveSettingsError());
-    renderApp();
+    renderApp(defaultProps);
     const cardBtn = screen.getAllByRole('button')[0];
     await userEvent.click(cardBtn);
     await waitFor(() => {

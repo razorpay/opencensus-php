@@ -1,12 +1,14 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, fireEvent, waitFor } from 'test-utils';
+import { render, screen, fireEvent, waitFor, updateUseI18ServiceSpy } from 'test-utils';
 import {
   defaultProps,
   App,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
 import { useQuery } from 'react-query';
+import User from 'merchant/models/User';
+import store from 'merchant/store';
 
 jest.mock('react-query', () => ({
   useQuery: jest.fn().mockReturnValue({
@@ -294,6 +296,38 @@ describe('PaymentDetails', () => {
       );
       const text = await screen.getByText('Platform Fee');
       expect(text).toBeInTheDocument();
+    });
+  });
+
+  describe('hide specific component for i18n orgs', () => {
+    const payment = { ...defaultProps.payment, method: 'upi_transfer' };
+    const bankTransfer = { loading: true, details: { virtual_account: { status: 'closed' } } };
+    const stateSpy = jest.spyOn(store, 'getState');
+
+    stateSpy.mockReturnValue({
+      session: {
+        user: new User({
+          features: ['Marketplace'],
+        }),
+      },
+    });
+    test('hide PaymentRefund and Refund Payment components if refunds.refund tags are enabled', () => {
+      updateUseI18ServiceSpy('refunds.refund');
+      render(<App payment={payment} bankTransfer={bankTransfer} />);
+      expect(screen.queryByText('PaymentRefund')).not.toBeInTheDocument();
+      expect(screen.queryByText('Refund Payment')).not.toBeInTheDocument();
+    });
+
+    test('hide PaymentDisputes component if disputes.disputes tags are enabled', () => {
+      updateUseI18ServiceSpy('disputes.disputes');
+      render(<App payment={payment} bankTransfer={bankTransfer} />);
+      expect(screen.queryByText('PaymentDisputes')).not.toBeInTheDocument();
+    });
+
+    test('hide PaymentTransfers component if payment_transfer.transfers tags are enabled', () => {
+      updateUseI18ServiceSpy('payment_transfer.transfers');
+      render(<App payment={payment} bankTransfer={bankTransfer} />);
+      expect(screen.queryByText('PaymentTransfers')).not.toBeInTheDocument();
     });
   });
 });

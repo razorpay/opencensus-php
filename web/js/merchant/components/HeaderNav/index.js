@@ -12,13 +12,12 @@ import { classList } from 'common/utils/rzp-utils';
 import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import { toggleMobileMenu } from 'merchant/reducers/app';
 import {
   fetchModalConfigDetails,
   updateModalConfigDetails,
 } from 'merchant/reducers/ModalConfigApi';
+import { toggleMobileMenu } from 'merchant/reducers/app';
 import lazyLoader from 'merchant/routes/LazyLoader';
 import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -33,6 +32,7 @@ import ProfileDropdown from './ProfileDropdown';
 import StatusDetails from './StatusDetails';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import UniversalSearch from './UniversalSearch';
+import { withI18Service } from 'common/i18';
 
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
@@ -159,6 +159,7 @@ class HeaderNav extends Component {
       org,
       referee,
       isMobile,
+      i18: { isConfigTagEnabled },
     } = this.props;
     const { isSuccessfullyCouponApplied, mtuOfferCount } = this.state;
 
@@ -216,8 +217,7 @@ class HeaderNav extends Component {
 
                 <ShowWhen
                   additionalCondition={(_user) =>
-                    !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements) &&
-                    !isMobileDevice()
+                    !isConfigTagEnabled('announcements.announcements') && !isMobileDevice()
                   }
                 >
                   <GrowthAssetEB>
@@ -239,7 +239,7 @@ class HeaderNav extends Component {
                 <ShowWhen
                   additionalCondition={(_user) =>
                     _user.isOrgAllowedFunctionality('external_links') &&
-                    !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
+                    !isConfigTagEnabled('announcements.announcements')
                   }
                 >
                   <li id="whats-new-section">
@@ -285,7 +285,7 @@ class HeaderNav extends Component {
                     !_user?.isOrgAxis &&
                     !_user?.isOrgKotak &&
                     !isOrgFeatureExist('hide_razorpay_text_link') &&
-                    !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppSwitcher)
+                    !isConfigTagEnabled('app_switcher.app_switcher')
                   }
                 >
                   <li id="app-switcher">
@@ -338,4 +338,4 @@ const enhancedComponent = compose(
   connect(mapStateToProps, { toggleMobileMenu, openModals: openModal, closeModals: closeModal }),
 );
 
-export default enhancedComponent(HeaderNav);
+export default enhancedComponent(withI18Service(HeaderNav));

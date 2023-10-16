@@ -1,5 +1,4 @@
 import { isMobileResolution } from 'common/utils/rzp-utils';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import store from 'merchant/store';
 import { getProvidedChannels } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
@@ -8,7 +7,6 @@ import {
   matchModal as matchModalx,
   matchFullPageView as matchFullPageViewx,
 } from 'merchant_common/routes';
-
 import lazy from './LazyLoader';
 
 const InstantSettlementDetails = lazy(() =>
@@ -388,9 +386,9 @@ const entityDetailsMap = {
   },
   '/instantsettlement/:id': {
     component: InstantSettlementDetails,
-    additionalCondition: (user) =>
+    additionalCondition: (user, extraConfig) =>
       user.isAllowedView('settlements') &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements),
+      !extraConfig?.i18?.isConfigTagEnabled('settlements.settlement'),
   },
   '/paymentlinks/:id(inv_.+|plink_.+)': {
     component: PaymentLinkDetails,
@@ -409,8 +407,8 @@ const entityDetailsMap = {
   },
   '/invoices/:id/details': {
     component: PaymentLinkDetails,
-    additionalCondition: (user) =>
-      user.isAllowedView('invoices') && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices),
+    additionalCondition: (user, extraConfig) =>
+      user.isAllowedView('invoices') && !extraConfig?.i18?.isConfigTagEnabled('invoices.invoice'),
   },
 
   '/route/payments/:id': { component: PaymentsDetails },
@@ -541,14 +539,14 @@ const entityModalsMap = {
   },
   '/offers/new': {
     component: OffersNew,
-    additionalCondition: (user) =>
-      user.isAllowedEdit('offers') && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Offers),
+    additionalCondition: (user, extraConfig) =>
+      user.isAllowedEdit('offers') && !extraConfig?.i18?.isConfigTagEnabled('offers.offers'),
   },
   '/paymentlinks/new': {
     component: PaymentLinkCreate,
-    additionalCondition: (user) =>
+    additionalCondition: (user, extraConfig) =>
       user.isAllowedEdit('payment_links') &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks),
+      !extraConfig?.i18?.isConfigTagEnabled('payment_links.payment_link'),
   },
   '/registration_links/:id(inv_.+)/upload_nach': {
     component: UploadNACHForm,
@@ -560,23 +558,26 @@ const entityModalsMap = {
   },
   '/subscriptions/new': {
     component: NewSubscriptionLink,
-    additionalCondition: (user) => !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions),
+    additionalCondition: (user, extraConfig) =>
+      !extraConfig?.i18?.isConfigTagEnabled('subscriptions.subscription'),
   },
   '/subscriptions/:id(sub_.+)/edit': {
     component: UpdateSubscriptionLink,
   },
   '/smartcollect/virtualaccounts/new': {
     component: VirtualAccountCreate,
-    additionalCondition: (user) => !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect),
+    additionalCondition: (_, extraConfig) =>
+      !extraConfig?.i18?.isConfigTagEnabled('smart_collect.virtual_accounts'),
   },
   '/virtualaccounts/new': {
     component: VirtualAccountCreate,
-    additionalCondition: (user) => !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect),
+    additionalCondition: (_, extraConfig) =>
+      !extraConfig?.i18?.isConfigTagEnabled('smart_collect.virtual_accounts'),
   },
   '/qr_codes/new': {
     component: QRCodeCreate,
-    additionalCondition: (user) =>
-      user.isAllowedEdit('qr_codes') && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.QrCodes),
+    additionalCondition: (user, extraConfig) =>
+      user.isAllowedEdit('qr_codes') && !extraConfig?.i18?.isConfigTagEnabled('qr_code.qr_code'),
   },
   '/route/transfers/direct_transfer': {
     component: DirectTransfers,
@@ -587,10 +588,10 @@ const entityModalsMap = {
   },
   '/stores/products/new': {
     component: StoresProductsCreate,
-    additionalCondition: (user) =>
+    additionalCondition: (user, extraConfig) =>
       user.isAllowedView('stores') &&
       user.isStoresEnabled &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Stores),
+      !extraConfig?.i18?.isConfigTagEnabled('stores.stores'),
   },
   '/stores/products/:product_id': {
     component: StoresProductsCreate,
@@ -615,9 +616,7 @@ export const supportHashMapping = {
 const fullPageViewsMap = {
   '/paymentpages/new': {
     component: PaymentPagesCreateEdit,
-    additionalCondition: (user) =>
-      user.isAllowedEdit('payment_pages') &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages),
+    additionalCondition: (user) => user.isAllowedEdit('payment_pages'),
   },
   [`${BATCH_PAYMENT_PAGES_BASE_URL}/new`]: {
     component: (props) => <PaymentPagesWysiwyg {...props} isBatchPaymentPages />,
@@ -637,36 +636,36 @@ const fullPageViewsMap = {
   },
   '/paymentpages/:id(pl_.+)/edit': {
     component: PaymentPagesWysiwyg,
-    additionalCondition: (user) =>
+    additionalCondition: (user, extraConfig) =>
       user.isAllowedEdit('payment_pages') &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages),
+      !extraConfig?.i18?.isConfigTagEnabled('payment_pages.payment_pages'),
   },
   '/paymentpages/:id(pl_.+)/success': {
     component: PaymentPagesSuccess,
-    additionalCondition: (user) =>
+    additionalCondition: (user, extraConfig) =>
       user.isAllowedEdit('payment_pages') &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages),
+      !extraConfig?.i18?.isConfigTagEnabled('payment_pages.payment_pages'),
   },
   '/paymentpages/storefront/:id(st_.+)/edit': {
     component: PaymentPagesStorefront,
-    additionalCondition: (user) =>
+    additionalCondition: (user, extraConfig) =>
       user.isAllowedEdit('payment_pages') &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages) &&
+      !extraConfig?.i18?.isConfigTagEnabled('payment_pages.payment_pages') &&
       user.isPaymentPageStorefrontEnabled,
   },
   '/paymentpages/storefront/:id(st_.+)/success': {
     component: PaymentPagesStorefrontSuccess,
-    additionalCondition: (user) =>
+    additionalCondition: (user, extraConfig) =>
       user.isAllowedEdit('payment_pages') &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages) &&
+      !extraConfig?.i18?.isConfigTagEnabled('payment_pages.payment_pages') &&
       user.isPaymentPageStorefrontEnabled,
   },
   '/paymentbuttons/new': {
     component: PaymentButtonCreate,
-    additionalCondition: (user) =>
+    additionalCondition: (user, extraConfig) =>
       user.isAllowedEdit('payment_buttons') &&
       user.isPaymentButtonEnabledByRazorX &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons),
+      !extraConfig?.i18?.isConfigTagEnabled('payment_buttons.payment_buttons'),
   },
   '/paymentbuttons/:id(pl_.+)/edit': {
     component: PaymentButtonCreate,
@@ -675,17 +674,17 @@ const fullPageViewsMap = {
   },
   '/subscription_buttons/new': {
     component: SubscriptionButtonCreate,
-    additionalCondition: (user) =>
+    additionalCondition: (user, extraConfig) =>
       user.isAllowedEdit('subscription_buttons') &&
       user.isSubscriptionButtonEnabled &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionPaymentButton),
+      !extraConfig?.i18?.isConfigTagEnabled('subscriptions.subscription_payment_button'),
   },
   '/subscription_buttons/:id(pl_.+)/edit': {
     component: SubscriptionButtonCreate,
-    additionalCondition: (user) =>
+    additionalCondition: (user, extraConfig) =>
       user.isAllowedEdit('subscription_buttons') &&
       user.isSubscriptionButtonEnabled &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionPaymentButton),
+      !extraConfig?.i18?.isConfigTagEnabled('subscriptions.subscription_payment_button'),
   },
   '/onboarding/steps': {
     component: (props) => (
@@ -720,11 +719,14 @@ const fullPageViewsMap = {
   },
   '/app-store/:partner': {
     component: PartnerPage,
-    additionalCondition: (user) => !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore),
+    additionalCondition: (_, extraConfig) =>
+      !extraConfig?.i18?.isConfigTagEnabled('app_store.app_store'),
   },
   '/app-store': {
     component: PartnerAppStore,
-    additionalCondition: (user) => !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore),
+    additionalCondition: (_, extraConfig) => {
+      return !extraConfig?.i18?.isConfigTagEnabled('app_store.app_store');
+    },
   },
   '/tncform': {
     component: GenerateTnC,

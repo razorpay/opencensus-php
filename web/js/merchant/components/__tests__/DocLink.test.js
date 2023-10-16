@@ -1,6 +1,7 @@
-import { getCustomURL } from 'merchant/components/DocsLink';
+import DocsLink, { getCustomURL } from 'merchant/components/DocsLink';
 import store from 'merchant/store';
 import cloneDeep from 'lodash/cloneDeep';
+import { render, screen, updateUseI18ServiceSpy } from 'test-utils';
 
 const storeData = store.getState();
 
@@ -14,6 +15,16 @@ const updateStore = (user) => {
     return clonedStore;
   });
 };
+
+const renderApp = ({ title }, user) =>
+  render(
+    <DocsLink
+      url="https://curlec.com/docs/payments/refunds/batc/"
+      title={title}
+      onClick={jest.fn()}
+    />,
+    updateStore(user),
+  );
 
 describe('test for getCustomURL function', () => {
   describe('test scenarios for india', () => {
@@ -89,5 +100,32 @@ describe('test for getCustomURL function', () => {
       const testURL = getCustomURL('https://razorpay.com/docs/payments/refunds/batch/');
       expect(testURL).toBe('https://curlec.com/docs/payments/refunds/batch/');
     });
+  });
+});
+
+describe('test for DocLink component', () => {
+  test('should hide component if documentation.documentation is enabled', () => {
+    const title = 'DocLinks are enabled';
+    updateUseI18ServiceSpy('documentation.documentation');
+
+    renderApp(
+      { title },
+      {
+        isOrgAllowedFunctionality: () => true,
+      },
+    );
+    expect(screen.queryByText(title)).not.toBeInTheDocument();
+  });
+
+  test('should show component if we dont pass any tag', () => {
+    const title = 'DocLinks are disabled';
+    updateUseI18ServiceSpy();
+    renderApp(
+      { title },
+      {
+        isOrgAllowedFunctionality: () => true,
+      },
+    );
+    expect(screen.queryByText(title)).toBeInTheDocument();
   });
 });

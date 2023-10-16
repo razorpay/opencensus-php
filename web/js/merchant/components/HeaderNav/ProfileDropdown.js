@@ -25,8 +25,9 @@ import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboa
 import { isOrgFeatureExist } from 'merchant/models/User';
 import RTBUserIconBg from 'assets/trustedbadge/rtb_user_icon_bg.svg';
 import BusinessImage from 'assets/business.svg';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { withI18Service } from 'common/i18';
 
+@withI18Service
 @connect(
   (state) => {
     return {
@@ -200,6 +201,7 @@ class ProfileDropdown extends Component {
       tracking,
       mode,
       onSwitchMode,
+      i18: { isConfigTagEnabled },
     } = this.props;
     const { badgeStatus } = trustedBadge || {};
     const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
@@ -317,9 +319,7 @@ class ProfileDropdown extends Component {
                   </Group>
                 </div>
                 {user.isPaymentHandleSplitzEnabled &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.RazorpayMe) && (
-                    <PaymentHandleSlug />
-                  )}
+                  !isConfigTagEnabled('profile.razorpay_me') && <PaymentHandleSlug />}
               </div>
             )}
             {showMobileNav && (
@@ -333,7 +333,7 @@ class ProfileDropdown extends Component {
                   additionalCondition={(userData) =>
                     !!showGSTModal &&
                     userData.isAllowedView('profile_gst') &&
-                    !userData.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Gst)
+                    !isConfigTagEnabled('account.gst')
                   }
                 >
                   <div className="media media-action" onClick={showGSTModal}>
@@ -343,7 +343,7 @@ class ProfileDropdown extends Component {
                 <ShowWhen
                   additionalCondition={(userData) =>
                     userData.isOrgAllowedFunctionality('external_links') &&
-                    !userData.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+                    !isConfigTagEnabled('documentation.documentation')
                   }
                 >
                   <div className="media media-action">

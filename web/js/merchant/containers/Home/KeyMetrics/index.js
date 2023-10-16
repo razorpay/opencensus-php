@@ -25,8 +25,6 @@ import {
 } from 'merchant/components/Home/data';
 import { trackNoData, trackError } from 'merchant/containers/Home/ga';
 import Tooltip from 'merchant/components/Home/Tooltip';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-
 import {
   NUM_TRANSACTIONS,
   TRANSACTION_VOLUME,
@@ -47,6 +45,7 @@ import Panel from './Panel';
 import MiniChart from './TinyAreaChart';
 import Mobile from './Mobile';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { withI18Service } from 'common/i18';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
@@ -145,6 +144,7 @@ const TabContent = ({
 };
 
 // eslint-disable-next-line react/no-unsafe
+@withI18Service
 @connect(
   (state) => {
     return {
@@ -270,14 +270,14 @@ class KeyMetricsContainer extends Component {
 
   getVisibleTabs() {
     const { tabsState } = this.state;
+    const { isConfigTagEnabled } = this.props.i18;
 
     return tabsOrder.filter((tabName) => {
       if (tabName === 'refunds') {
         return (
           tabsState[tabName].data.showTab &&
           showWhenUtil({
-            additionalCondition: (user) =>
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds),
+            additionalCondition: () => !isConfigTagEnabled('refunds.refund'),
           })
         );
       }

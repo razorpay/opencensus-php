@@ -4,6 +4,7 @@ import { compose } from 'redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
+import { withI18Service } from 'common/i18';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { required } from 'common/utils/validators';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -16,7 +17,6 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { updateEmailSettings, updateConfig } from 'merchant/reducers/config';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 class EmailNotifications extends Component {
   constructor(props) {
@@ -169,9 +169,12 @@ class EmailNotifications extends Component {
   };
 
   render() {
-    const { user } = this.props;
+    const {
+      user,
+      i18: { isConfigTagEnabled },
+    } = this.props;
     const description = `Enter email addresses that will receive email notifications regarding payments,${
-      user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements) ? '' : 'settlements, '
+      isConfigTagEnabled('settlements.settlement') ? '' : 'settlements, '
     }daily payment reports, webhooks, etc. (You can enter multiple email addresses separated by a comma.)`;
     return (
       <div>
@@ -226,4 +229,4 @@ export default compose(
     { showNotification, updateEmailSettings, openModal, closeModal, updateConfig },
   ),
   reduxForm({}),
-)(EmailNotifications);
+)(withI18Service(EmailNotifications));

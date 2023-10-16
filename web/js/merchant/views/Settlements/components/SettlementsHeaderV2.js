@@ -42,10 +42,10 @@ import {
   Documentation,
   SettlementCycle,
 } from './styledUtils';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { getCustomURL } from 'merchant/components/DocsLink';
+import { useI18Service } from 'common/i18';
 
 const SettlementsHeaderV2 = ({
   user,
@@ -82,6 +82,7 @@ const SettlementsHeaderV2 = ({
   const isSettlementOnHold = isOnTemporaryHold || isOnHold;
   const currency = user.merchant.currency;
   const docHref = useMemo(() => getCustomURL('http://razorpay.com/settlement'), []);
+  const { isConfigTagEnabled } = useI18Service();
 
   const viewSettlementCycle = () => {
     openModal({
@@ -211,9 +212,7 @@ const SettlementsHeaderV2 = ({
               </Link>
             </SettlementCycle>
             <ShowWhen
-              additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
-              }
+              additionalCondition={() => !isConfigTagEnabled('documentation.documentation')}
             >
               <Documentation>
                 <Link

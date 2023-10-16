@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 
+import { withI18Service } from 'common/i18';
 import InputField from 'common/ui/Forms/InputField';
 import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
@@ -16,7 +17,6 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { fetchStates } from 'merchant/reducers/states';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 import AddressEntry from 'merchant/views/Customers/components/AddressEntry';
 import Countries from 'merchant/helpers/countries.json';
@@ -29,6 +29,7 @@ const DEFAULT_COUNTY_MAP = {
 };
 
 // eslint-disable-next-line react/no-unsafe
+@withI18Service
 @connect(
   (state) => {
     return {
@@ -381,6 +382,7 @@ export default class AddCustomer extends Component {
 
       showGSTN,
       user,
+      i18: { isConfigTagEnabled },
     } = this.props;
 
     const {
@@ -426,7 +428,7 @@ export default class AddCustomer extends Component {
       };
     }
 
-    const showGSTNInput = showGSTN && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Gst);
+    const showGSTNInput = showGSTN && !isConfigTagEnabled('account.gst');
 
     // Add Screen 1
     const screen1 = (

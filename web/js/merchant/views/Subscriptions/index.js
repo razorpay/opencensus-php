@@ -32,7 +32,7 @@ import RTracking from 'react-tracking';
 import analytics from './analytics';
 import './index.styl';
 import DashboardBanner from 'common/ui/DashboardBanner';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { withI18Service } from 'common/i18';
 
 @connect(
   (state) => ({
@@ -138,7 +138,11 @@ class SubscriptionsController extends React.Component {
   };
 
   render() {
-    const { subscriptionProductOnBoarding, user: userInfo } = this.props;
+    const {
+      subscriptionProductOnBoarding,
+      user: userInfo,
+      i18: { isConfigTagEnabled },
+    } = this.props;
     const showPaperNachBanner = userInfo.methods?.nach ?? false;
 
     if (subscriptionProductOnBoarding.showOnboarding) {
@@ -173,7 +177,7 @@ class SubscriptionsController extends React.Component {
               <ShowWhen
                 additionalCondition={(user) =>
                   !user.isChargeAtWillEnabled &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionSettings)
+                  !isConfigTagEnabled('subscriptions.subscription_settings')
                 }
               >
                 <NavLink
@@ -236,4 +240,4 @@ class SubscriptionsController extends React.Component {
   }
 }
 
-export default SubscriptionsController;
+export default withI18Service(SubscriptionsController);

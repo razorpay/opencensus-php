@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { compose, bindActionCreators } from 'redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 
+import { withI18Service } from 'common/i18';
 import Amount, { AmountTooltip } from 'common/ui/Amount';
 import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
 import InputField from 'common/ui/Forms/InputField';
@@ -22,7 +23,6 @@ import {
   getCurrencyConfig,
 } from 'common/utils/rzp-utils';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import {
   refundPayment,
   refundOfflinePayment,
@@ -531,10 +531,9 @@ class RefundModal extends Component {
     const instant_refund_supported =
       payment.instant_refund_support && payment.instant_refund_support === true;
     const refund_check_disabled = isInstantDisabled || !instant_refund_supported;
-
     if (
       !showWhenUtil({ featureEnabled: 'disable_instant_refunds' }) &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.InstantRefunds)
+      !this.props.i18.isConfigTagEnabled('refunds.instant_refunds')
     ) {
       return (
         <div>
@@ -636,7 +635,7 @@ class RefundModal extends Component {
               }
               /* istanbul ignore else */
               if (
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.InstantRefunds) &&
+                !this.props.i18.isConfigTagEnabled('refunds.instant_refunds') &&
                 !instant_refund_supported
               ) {
                 return (
@@ -1053,4 +1052,4 @@ export default compose(
     form: 'refundModal',
   }),
   connect(mapStateToProps, mapDispatchToProps),
-)(RefundModal);
+)(withI18Service(RefundModal));

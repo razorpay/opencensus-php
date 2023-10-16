@@ -14,6 +14,7 @@ import { fetchAddOns } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import DocsLink from 'merchant/components/DocsLink';
+import { withI18Service } from 'common/i18';
 
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
@@ -89,6 +90,7 @@ class NewSubscriptionLink extends React.Component {
     await this.props.fetchPlans({ count: 100 }).then(() => this.initializePlan());
     if (
       this.props.user.isSubscriptionOffersEnabled &&
+      !this.props.i18.isConfigTagEnabled('subscription.subcription_offers') &&
       this.props.subscriptionOffers.items.length === 0
     ) {
       this.props.fetchSettings().then((resp) => {
@@ -516,7 +518,10 @@ class NewSubscriptionLink extends React.Component {
           <PlanDetails
             plans={this.props.plans}
             offers={this.props.subscriptionOffers}
-            showOffers={this.props.user.isSubscriptionOffersEnabled}
+            showOffers={
+              this.props.user.isSubscriptionOffersEnabled &&
+              !this.props.i18.isConfigTagEnabled('subscription.subcription_offers')
+            }
             onChangeInPlan={this.handleChangeInPlan}
             onDateChange={this.handleDateChange}
             onTimeChange={this.handleTimeChange}
@@ -709,4 +714,4 @@ function isFormValid(formIndex, fields, internals, validateTotalCount = () => {}
   }
 }
 
-export default withRouter(NewSubscriptionLink);
+export default withRouter(withI18Service(NewSubscriptionLink));

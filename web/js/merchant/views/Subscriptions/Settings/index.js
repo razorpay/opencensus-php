@@ -1,12 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
+// eslint-disable-next-line no-restricted-imports
+import HeaderAction from 'common/ui/HeaderAction';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { classList, findBy, rupeesToPaise } from 'common/utils/rzp-utils';
 
 import DocsLink, { DocLink } from 'merchant/components/DocsLink';
 import Amount from 'common/ui/Amount';
 import Banner from 'common/ui/Banner';
-import HeaderAction from 'common/ui/HeaderAction';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import Alert from 'common/ui/Forms/Alert';
@@ -24,6 +25,7 @@ import {
 import analytics from 'merchant/views/Subscriptions/analytics';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import { withI18Service } from 'common/i18';
 
 const PAYMENT_METHODS = {
   UPI: 'upi',
@@ -83,7 +85,7 @@ const cardNote = {
   }),
   { fetchSettings, saveSettings, showNotification },
 )
-export default class SubscriptionsSettings extends React.Component {
+class SubscriptionsSettings extends React.Component {
   state = {};
 
   componentDidMount() {
@@ -138,7 +140,11 @@ export default class SubscriptionsSettings extends React.Component {
   };
 
   render() {
-    const { settings, user, org } = this.props;
+    const { settings, user, org, i18 } = this.props;
+    const { isConfigTagEnabled } = i18;
+
+    const refConfigTagEnabled = !isConfigTagEnabled('subscription.emandate');
+
     const orgCode = org?.custom_code || 'rzp';
     const cardDescriptionText = cardDescription[orgCode] || cardDescription.rzp;
     const cardNoteText = cardNote[orgCode] || cardNote.rzp;
@@ -168,7 +174,9 @@ export default class SubscriptionsSettings extends React.Component {
 
         <div
           class="panel panel-default panel-theme"
-          style={user.isEmandateOnSubscriptionEnabled ? {} : { maxWidth: '854px' }}
+          style={
+            user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled ? {} : { maxWidth: '854px' }
+          }
         >
           {settings.error ? (
             <Alert type="error" message={settings.errors} showDismiss={false} />
@@ -185,7 +193,9 @@ export default class SubscriptionsSettings extends React.Component {
                 <div class="row">
                   <div
                     class={classList(
-                      user.isEmandateOnSubscriptionEnabled ? 'col-md-4' : 'col-md-6',
+                      user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled
+                        ? 'col-md-4'
+                        : 'col-md-6',
                       'column',
                     )}
                   >
@@ -218,7 +228,9 @@ export default class SubscriptionsSettings extends React.Component {
                   {!user.isOrgCurlec && (
                     <div
                       class={classList(
-                        user.isEmandateOnSubscriptionEnabled ? 'col-md-4' : 'col-md-6',
+                        user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled
+                          ? 'col-md-4'
+                          : 'col-md-6',
                         'column',
                       )}
                     >
@@ -253,7 +265,7 @@ export default class SubscriptionsSettings extends React.Component {
                     </div>
                   )}
 
-                  {user.isEmandateOnSubscriptionEnabled && (
+                  {user.isEmandateOnSubscriptionEnabled && refConfigTagEnabled && (
                     <div class="col-md-4 column">
                       <ToggleCard
                         title={
@@ -316,3 +328,5 @@ const ToggleCard = ({ title, checked, info = null, description, onToggleChange, 
     </div>
   );
 };
+
+export default withI18Service(SubscriptionsSettings);

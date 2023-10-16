@@ -30,6 +30,7 @@ import css from '../../css/merchant.styl';
 import fontconfig from '../../dashboard.font';
 import { BladeProvider } from '@razorpay/blade/components';
 import { paymentTheme } from '@razorpay/blade/tokens';
+import { I18ServiceProvider } from 'common/i18/I18ServiceProvider';
 
 import {
   SUCCESS_RATE,
@@ -172,7 +173,9 @@ render(
           <Router>
             <SpiltzServiceProvider dashboardType="pokedex" customLoader={() => <FullPageLoader />}>
               <SplitzRoutesBasedService customLoader={() => <FullPageLoader />}>
-                <App />
+                <I18ServiceProvider>
+                  <App />
+                </I18ServiceProvider>
               </SplitzRoutesBasedService>
             </SpiltzServiceProvider>
           </Router>

@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 
+import { withI18Service } from 'common/i18';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
@@ -22,7 +23,6 @@ import WixImage from 'assets/payment_button/success-screen/integrations/wix.svg'
 import GoogleSitesImage from 'assets/payment_button/success-screen/integrations/googleSites.svg';
 import BloggerImage from 'assets/payment_button/success-screen/integrations/blogger.svg';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const pluginsList = [
   {
@@ -97,7 +97,7 @@ const integrationsList = [
     icon: BloggerImage,
   },
 ];
-
+@withI18Service
 @connect((state) => ({
   user: state.session.user,
   mode: state.session.mode,
@@ -149,6 +149,7 @@ class SuccessModal extends React.Component {
 
   render() {
     const { isPBDirectPluginLinks } = this.props.user;
+    const { isConfigTagEnabled } = this.props.i18;
 
     return (
       <div class="PaymentButton-Create-Form PaymentButton-Create-SuccessView-V2">
@@ -211,8 +212,8 @@ class SuccessModal extends React.Component {
 
                 {/* Other integration methods */}
                 <ShowWhen
-                  additionalCondition={(user) =>
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.OtherIntegrationMethods)
+                  additionalCondition={() =>
+                    !isConfigTagEnabled('payment_buttons.other_integration_methods')
                   }
                 >
                   <div class="integration-section">

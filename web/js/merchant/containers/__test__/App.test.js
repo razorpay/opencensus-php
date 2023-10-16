@@ -10,9 +10,7 @@ import { screen, waitFor, userEvent, delay } from 'test-utils';
 const analyticsTrackSpy = jest.spyOn(trackEvents, 'analyticsTrack');
 
 jest.mock('common/splitz', () => ({
-  useSplitzService: () => ({
-    abExperiments: {},
-  }),
+  withSplitzService: jest.fn(),
 }));
 
 describe('Idle timer', () => {

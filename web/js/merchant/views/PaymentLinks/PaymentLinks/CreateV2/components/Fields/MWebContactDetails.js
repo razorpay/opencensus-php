@@ -1,11 +1,11 @@
+import { useI18Service } from 'common/i18';
 import Input from 'common/new-ui/Input';
 import DocsLink from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-
 import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 
 const MWebContactDetails = (props) => {
+  const { isConfigTagEnabled } = useI18Service();
   const handleEmailNotify = (event) => {
     const isChecked = !!event.target.value == '1';
     if (!isChecked) return;
@@ -70,9 +70,9 @@ const MWebContactDetails = (props) => {
         />
       </div>
       <ShowWhen
-        additionalCondition={(user) =>
-          !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore) &&
-          !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+        additionalCondition={() =>
+          !isConfigTagEnabled('app_store.app_store') &&
+          !isConfigTagEnabled('documentation.documentation')
         }
       >
         <DocsLink

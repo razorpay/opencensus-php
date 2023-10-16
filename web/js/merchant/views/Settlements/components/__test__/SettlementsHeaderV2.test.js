@@ -1,7 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import SettlementsHeaderV2 from 'merchant/views/Settlements/components/SettlementsHeaderV2';
-import { render, screen, waitFor } from 'test-utils';
+import { render, screen, waitFor, updateUseI18ServiceSpy } from 'test-utils';
 import userEvent from '@testing-library/user-event';
 import * as details from 'merchant/reducers/settlements/details';
 import * as home from 'merchant/reducers/home';
@@ -129,6 +129,29 @@ describe('SettlementsHeaderV2', () => {
       expect(fetchSettlementConfigSpy).toHaveBeenCalledTimes(1);
       expect(fetchBankAccountChangeStatusSpy).toHaveBeenCalledWith('testing123');
       expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  test('hide documentation link if documentation.documentation is enabled', async () => {
+    const initialState = {
+      session: {
+        user: {
+          isAllowedEdit: () => true,
+          id: 'testing123',
+          merchant: {
+            currency: 'RM',
+          },
+        },
+        org: {
+          custom_code: 'curlec',
+        },
+      },
+    };
+
+    updateUseI18ServiceSpy('documentation.documentation');
+    render(<SettlementsHeaderV2 />, { initialState });
+    await waitFor(() => {
+      expect(screen.queryByText('Documentation')).not.toBeInTheDocument();
     });
   });
 });

@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
+import { useI18Service } from 'common/i18';
+
 import SlideController from './SlideController';
 import PartnerSelectBox from './PartnerTypeSelector';
 import { getOnContactSupportClicked } from 'merchant/views/PartnerDashboard/Onboarding/steps/helpers/analytics';
 import TnCFooter from 'merchant/views/PartnerDashboard/Onboarding/steps/TnCFooter';
 import { ONBOARDING_LABELS } from 'merchant/views/PartnerDashboard/constants';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const S2 = ({
   abort,
@@ -20,6 +21,7 @@ const S2 = ({
   sliderProps,
 }) => {
   const orgName = orgDetails.business_name;
+  const { isConfigTagEnabled } = useI18Service();
 
   useEffect(() => {
     const container = document.querySelector('.partner-onboarding-base-screen');
@@ -79,9 +81,7 @@ const S2 = ({
               <li> No cap on Earnings </li>
               <li> Get automated commissions </li>
               <ShowWhen
-                additionalCondition={(user) =>
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
-                }
+                additionalCondition={() => !isConfigTagEnabled('partnership.referral_links')}
               >
                 <li> Refer using referral links </li>
               </ShowWhen>
@@ -116,9 +116,7 @@ const S2 = ({
                 integration to get automated&nbsp;commissions
               </li>
               <ShowWhen
-                additionalCondition={(user) =>
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PartnershipProgram)
-                }
+                additionalCondition={() => !isConfigTagEnabled('partnership.partnership_program')}
               >
                 <li>Not applicable for RazorpayX Current account and Corporate Cards</li>
               </ShowWhen>
@@ -127,9 +125,7 @@ const S2 = ({
         </div>
         <div className="bottom-container">
           <ShowWhen
-            additionalCondition={(user) =>
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PartnershipProgram)
-            }
+            additionalCondition={() => !isConfigTagEnabled('partnership.partnership_program')}
           >
             <p style={{ marginTop: '10px' }}>
               Want to become a Platform Partner?

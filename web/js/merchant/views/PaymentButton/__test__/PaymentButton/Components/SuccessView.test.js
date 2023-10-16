@@ -10,7 +10,7 @@ describe('Payment Button Component SuccessView Component', () => {
   });
 
   test('should render payment Button SuccessView text elements & plugins options', () => {
-    renderApp();
+    renderApp({ i18: { isConfigTagEnabled: jest.fn() } });
     expect(screen.getByText('Button Created Successfully')).toBeInTheDocument();
     expect(screen.getByText('Your payment button is ready for integration')).toBeInTheDocument();
     expect(screen.getByText('Drupal Plugin')).toBeInTheDocument();

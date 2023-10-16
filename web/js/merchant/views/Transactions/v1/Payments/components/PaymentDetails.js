@@ -3,6 +3,7 @@ import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 
+import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
 import Definition from 'common/ui/Definition';
@@ -20,7 +21,6 @@ import MaskedContact from 'merchant/components/Mask/Contact';
 import MaskedEmail from 'merchant/components/Mask/Email';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import lazy from 'merchant/routes/LazyLoader';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
@@ -90,6 +90,7 @@ function PaymentDetails(props) {
   const [isUPIVisible, setUPIVisible] = useState(false);
   const currency = user.merchant.currency;
   const isRZPOrg = user.isOrgRZP;
+  const { isConfigTagEnabled } = useI18Service();
 
   const params = new Proxy(new URLSearchParams(window.location?.search), {
     get: (searchParams, prop) => searchParams.get(prop),
@@ -320,7 +321,7 @@ function PaymentDetails(props) {
                     <ShowWhen
                       additionalCondition={(user, session) =>
                         !(session?.org?.features?.indexOf('block_payment_refund') > -1) &&
-                        !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                        !isConfigTagEnabled('refunds.refund')
                       }
                     >
                       <button
@@ -394,9 +395,8 @@ function PaymentDetails(props) {
 
                 <ShowWhen
                   apiFeatureEnabled="Marketplace"
-                  additionalCondition={(usr) =>
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentTransfers) &&
-                    !showPlatformFee
+                  additionalCondition={() =>
+                    !isConfigTagEnabled('payment_transfer.transfers') && !showPlatformFee
                   }
                 >
                   <EntityDetailRow label="Transfer">
@@ -408,11 +408,7 @@ function PaymentDetails(props) {
                   </EntityDetailRow>
                 </ShowWhen>
 
-                <ShowWhen
-                  additionalCondition={(usr) =>
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
-                  }
-                >
+                <ShowWhen additionalCondition={() => !isConfigTagEnabled('refunds.refund')}>
                   {payment.method !== 'cod' && (
                     <EntityDetailRow label="Refunds">
                       <PaymentRefund
@@ -516,11 +512,7 @@ function PaymentDetails(props) {
                 </ShowWhen>
                 <EntityDetailRow label="Description">{payment.description}</EntityDetailRow>
 
-                <ShowWhen
-                  additionalCondition={(usr) =>
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Disputes)
-                  }
-                >
+                <ShowWhen additionalCondition={() => !isConfigTagEnabled('disputes.disputes')}>
                   <EntityDetailRow label="Disputes">
                     {payment.disputes && payment.disputes.count ? (
                       <PaymentDisputes

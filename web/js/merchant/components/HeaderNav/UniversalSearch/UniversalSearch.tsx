@@ -32,6 +32,8 @@ import {
 } from './utils';
 import { entitySearch } from './utils/EntitySearch';
 import { getProductSearchResults } from './utils/productSearch';
+import { useI18Service } from 'common/i18';
+import { useSplitzService } from 'common/splitz';
 
 type UniversalSearchProps = RouteComponentProps & UniversalSearchPropInterface & WithRouterProps;
 
@@ -69,6 +71,8 @@ const UniversalSearch = ({
   const listingRef = useRef(null);
   const fuseSearch = useRef<any>({});
   const isDeviceInBreakpoint = useResizeLayout({ innerWidth: 930 });
+  const { isConfigTagEnabled } = useI18Service();
+  const { abExperiments } = useSplitzService();
 
   const debouncedTrackCall = useDebounce(trackSearchTypeInitiated, TRACK_TYPE_DEBOUNCE_DURATION);
 
@@ -126,6 +130,7 @@ const UniversalSearch = ({
         websiteSectionDetailsData,
         allowCFBInternational: featureStatusConfig.data?.[feature],
         hasEnrolled: enrollmentStatus.hasEnrolled,
+        extraConfig: { abExperiments, isConfigTagEnabled },
       },
       true,
     );
@@ -149,6 +154,7 @@ const UniversalSearch = ({
           websiteSectionDetailsData,
           allowCFBInternational: featureData?.[feature],
           hasEnrolled: enrollmentStatus.hasEnrolled,
+          extraConfig: { abExperiments, isConfigTagEnabled },
         },
         false,
       );

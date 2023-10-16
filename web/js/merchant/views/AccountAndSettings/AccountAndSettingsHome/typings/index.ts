@@ -11,6 +11,7 @@ import {
   WebsiteAppSettingsFields,
 } from './section';
 import { Store } from 'common/typings';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 
 export type isMobile = boolean | undefined;
 export type User = Record<string, any>;
@@ -197,6 +198,7 @@ export interface AdditionalContextInterface extends FeatureInterface {
   shouldShowApplications: boolean;
   mode: string;
   websiteSectionDetailsData: WebsiteSectionDetailsInterface;
+  extraConfig: ExtraConfig;
   profile: any;
   [key: string]: unknown;
 }

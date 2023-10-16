@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Link } from 'react-router-dom';
+import { useI18Service } from 'common/i18';
 import ShowWhen from 'merchant/components/ShowWhen';
 import DetailRow from 'merchant/components/DetailRow';
 import Time from 'common/ui/Time';
@@ -10,7 +11,6 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { analyticsTrack } from 'common/utils/analytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import LoaderDots from 'common/ui/LoaderDots';
@@ -26,6 +26,7 @@ const ActivationDetails = (props): JSX.Element => {
     isFlowRevamped = true,
     isNcEligibile,
   } = props;
+  const { isConfigTagEnabled } = useI18Service();
 
   React.useEffect(() => {
     const { loading, error } = isAdminAsMerchant;
@@ -78,7 +79,7 @@ const ActivationDetails = (props): JSX.Element => {
       {!isAdminAsMerchant.loading ? (
         <ShowWhen
           additionalCondition={(_user) =>
-            isAccountActivation && !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Onboarding)
+            isAccountActivation && !isConfigTagEnabled('onboarding.onboarding')
           }
         >
           <DetailRow

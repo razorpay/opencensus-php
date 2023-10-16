@@ -3,6 +3,12 @@ import { isOrgFeatureExist } from 'merchant/models/User';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import { ConfigTagType } from 'merchant/constants/tags';
+
+export type ExtraConfig = {
+  abExperiments: any;
+  isConfigTagEnabled: (path: ConfigTagType) => boolean;
+};
 
 export const PRODUCTS_DATA = {
   home: {
@@ -15,9 +21,9 @@ export const PRODUCTS_DATA = {
   },
   settlements: {
     icon: 'i-done-all',
-    additionalCondition: (user: any): boolean =>
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('settlements') &&
-      !user.findTag('i18_hide_settlements') &&
+      !isConfigTagEnabled('settlements.settlement') &&
       user.hideForNIASupportRole,
   },
   settings: {
@@ -58,18 +64,19 @@ export const PRODUCTS_DATA = {
   },
   checkout_rewards: {
     icon: 'i-rewards',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('checkoutrewards') && !user.findTag('i18_hide_checkoutrewards'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('checkoutrewards') &&
+      !isConfigTagEnabled('checkout_rewards.checkout_rewards'),
   },
   offers: {
     icon: 'i-offer',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('offers') && !user.findTag('i18_hide_offers'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('offers') && !isConfigTagEnabled('offers.offers'),
   },
   customers: {
     icon: 'i-people',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('customers') && !user.findTag('i18_hide_customers'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('customers') && !isConfigTagEnabled('customers.customer'),
   },
   optimizer: {
     icon: 'i-routing',
@@ -87,8 +94,9 @@ export const PRODUCTS_DATA = {
   },
   smart_collect: {
     icon: 'i-account-balance',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('virtual_accounts') && !user.findTag('i18_hide_virtual_accounts'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('virtual_accounts') &&
+      !isConfigTagEnabled('smart_collect.virtual_accounts'),
   },
   payment_metrics: {
     icon: 'i-chart',
@@ -97,8 +105,8 @@ export const PRODUCTS_DATA = {
   },
   qr_codes: {
     icon: 'i-qr-code',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('qr_codes') && !user.findTag('i18_hide_qr_codes'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('qr_codes') && !isConfigTagEnabled('qr_code.qr_code'),
   },
   affordability: {
     icon: 'i-affordability',
@@ -108,8 +116,8 @@ export const PRODUCTS_DATA = {
   },
   subscriptions: {
     icon: 'i-refresh',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('subscriptions') && !user.findTag('i18_hide_subscription'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('subscriptions') && !isConfigTagEnabled('subscription.subscription'),
     getHref: ({ routes, user }) =>
       routes[user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'],
   },
@@ -123,15 +131,15 @@ export const PRODUCTS_DATA = {
   },
   route: {
     icon: 'i-route',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('marketplace') && !user.findTag('i18_hide_marketplace'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('marketplace') && !isConfigTagEnabled('route.marketplace'),
   },
   payment_button: {
     icon: 'i-payment-button',
-    additionalCondition: (user: any): boolean =>
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedMultiple('payment_buttons subscription_buttons') &&
       (user.isPaymentButtonEnabledByRazorX || user.isSubscriptionButtonEnabled) &&
-      !user.findTag('i18_hide_payment_buttons'),
+      !isConfigTagEnabled('payment_buttons.payment_buttons'),
   },
   api_keys: {
     icon: 'i-api-keys-plugins',
@@ -142,25 +150,25 @@ export const PRODUCTS_DATA = {
   },
   stores: {
     icon: 'i-store-product',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('stores') && user.isStoresEnabled && !user.findTag('i18_hide_stores'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('stores') && user.isStoresEnabled && !isConfigTagEnabled('stores.stores'),
   },
   payment_pages: {
     icon: 'i-payment-pages',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('payment_pages') && !user.findTag('i18_hide_payment_pages'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('payment_pages') && !isConfigTagEnabled('payment_pages.payment_pages'),
   },
   payment_links: {
     icon: 'i-link',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('payment_links') && !user.findTag('i18_hide_payment_links'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('payment_links') && !isConfigTagEnabled('payment_links.payment_link'),
   },
   payment_handle: {
     icon: 'i-payment-handle',
-    additionalCondition: (user: any): boolean =>
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
       user.isAllowedView('payment_handle') &&
       user.isPaymentHandleSplitzEnabled &&
-      !user.findTag('i18_hide_payment_handle'),
+      !isConfigTagEnabled('payments.payment_handle'),
   },
   cash_advance: {
     icon: 'i-rupee',
@@ -172,8 +180,8 @@ export const PRODUCTS_DATA = {
   },
   invoices: {
     icon: 'i-notes',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('invoices') && !user.findTag('i18_hide_invoices'),
+    additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
+      user.isAllowedView('invoices') && !isConfigTagEnabled('invoices.invoice'),
   },
   app_store: {
     icon: 'i-app-store',
@@ -199,8 +207,8 @@ export const PRODUCTS_DATA = {
   },
   pos: {
     icon: 'i-pos',
-    additionalCondition: (_, experiments: any) => {
-      const isPosOnboardingEnabled = isExperimentEnabled(experiments.pos_onboarding);
+    additionalCondition: (_, { abExperiments }: ExtraConfig) => {
+      const isPosOnboardingEnabled = isExperimentEnabled(abExperiments.pos_onboarding);
       return isPosOnboardingEnabled;
     },
   },

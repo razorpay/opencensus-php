@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import { withI18Service } from 'common/i18';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, camelize } from 'common/utils/rzp-utils';
 import FileUploadButton from 'common/ui/FileUpload/Button';
@@ -34,7 +35,6 @@ import Button from 'common/new-ui/Button';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import EasterEgg from 'merchant/components/EasterEgg';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import EmailRequiredPreviewImage from 'assets/checkout/preview-checkout-form.png';
 import EmailOptionalPreviewImage from 'assets/checkout/preview-checkout-form-email-optional.png';
 import EmailHiddenPreviewImage from 'assets/checkout/preview-checkout-form-email-hidden.png';
@@ -460,7 +460,10 @@ class CheckoutTheme extends Component {
 
   render() {
     const { textClr, colorVariations } = this.state;
-    const { user } = this.props;
+    const {
+      user,
+      i18: { isConfigTagEnabled },
+    } = this.props;
     const isEnabled = user.isFeatureEnabled('covid_19_relief');
     return (
       <div className="panel panel-default panel-theme">
@@ -676,11 +679,7 @@ class CheckoutTheme extends Component {
                 </IntoView>
               </div>
             </form>
-            <ShowWhen
-              additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.CheckoutInfo)
-              }
-            >
+            <ShowWhen additionalCondition={() => !isConfigTagEnabled('settings.checkout_info')}>
               <div className="footer-note">
                 Changes will reflect on{' '}
                 <ShowWhen
@@ -775,4 +774,4 @@ export default compose(
     ...ModalActions,
   }),
   reduxForm({}),
-)(CheckoutTheme);
+)(withI18Service(CheckoutTheme));

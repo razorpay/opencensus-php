@@ -23,6 +23,7 @@ import {
 import { isOfferIdClickable } from 'merchant/views/Offers/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { withI18Service } from 'common/i18';
 
 import SubscriptionUsageDetails from './SubscriptionUsageDetails';
 
@@ -32,7 +33,7 @@ import SubscriptionUsageDetails from './SubscriptionUsageDetails';
   ...NotificationsActions,
 })
 @RTracking(() => window.rzpQ.component('OffersDetails'))
-export default class OffersDetails extends React.Component {
+class OffersDetails extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -43,8 +44,13 @@ export default class OffersDetails extends React.Component {
   };
 
   get isSubscriptionOffer() {
-    const { offer, user } = this.props;
-    return offer?.product_type === 'subscription' && user?.isSubscriptionOffersEnabled;
+    const { offer, user, i18 } = this.props;
+    const { isConfigTagEnabled } = i18;
+    return (
+      offer?.product_type === 'subscription' &&
+      user?.isSubscriptionOffersEnabled &&
+      !isConfigTagEnabled('subscription.subcription_offers')
+    );
   }
 
   componentDidMount() {
@@ -394,3 +400,5 @@ export default class OffersDetails extends React.Component {
     );
   }
 }
+
+export default withI18Service(OffersDetails);

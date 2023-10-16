@@ -42,6 +42,7 @@ import {
   paiseToRupees,
   mergeCurrencyFormatting,
   getCommonAnalyticsProperties,
+  isConfigTagAPISupported,
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
@@ -73,6 +74,8 @@ import { LOGOUT_ERROR, DEFAULT_TIMEOUT_IN_SECONDS } from 'merchant/constants/dat
 import lazy from 'merchant/routes/LazyLoader';
 import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 import cloneDeep from 'lodash/cloneDeep';
+import { withSplitzService } from 'common/splitz';
+import { withI18Service } from 'common/i18';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -376,11 +379,17 @@ class App extends Component {
             window.hj('tagRecording', ['instant_activation']);
           }
         }
-
+        const promiseList = [fetchFeaturesAjax(response[0].current)];
+        const countryCode = this.props?.user?.merchant?.country_code;
+        const isSupported = isConfigTagAPISupported(countryCode);
+        if (isSupported) {
+          const configPromise = this.fetchCountryConfigTags(countryCode.toLowerCase());
+          promiseList.push(configPromise);
+        }
         // Fetch features before displaying other views
-        fetchFeaturesAjax(response[0].current)
+        Promise.all(promiseList)
           .catch((_) => _)
-          .then((data) => {
+          .then(([data, _]) => {
             const user = new User(response[0]);
             user.features = setFeatures(data.success ? data.data.features : []);
 
@@ -923,6 +932,10 @@ class App extends Component {
     }
   }
 
+  fetchCountryConfigTags(countryCode) {
+    return new Promise(this.props.fetchConfigTags(countryCode));
+  }
+
   redirectToRoute(role) {
     const pathname = this.props.history.location.pathname;
     if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard_v2') {
@@ -1080,7 +1093,12 @@ class App extends Component {
   };
 
   getFPView = (location) => {
-    const matchView = matchFullPageView(location.pathname);
+    const matchView = matchFullPageView(location.pathname, {
+      i18: this.props.i18,
+      splitz: {
+        abExperiments: this.props.splitz.abExperiments,
+      },
+    });
     let FPView = null;
 
     if (matchView && matchView.match) {
@@ -1383,4 +1401,4 @@ export default compose(
       },
     },
   ),
-)(App);
+)(withI18Service(withSplitzService(App)));

@@ -11,11 +11,11 @@ import { connect } from 'react-redux';
 import { Link as RouterLink } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 
+import { withI18Service } from 'common/i18';
 import { titleCase, monetaryUnitText } from 'common/utils/rzp-utils';
 import { DocLink } from 'merchant/components/DocsLink';
 import FileUpload from 'merchant/components/File/Upload';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import {
   BATCH_TYPE,
   BATCH_UPLOAD_POINTS,
@@ -64,6 +64,7 @@ class BatchValidateModal extends Component {
       isSampleFileLoading = false,
       shouldShowSampleDownloadBtn = false,
       nullStatusNotification = null,
+      i18: { isConfigTagEnabled },
     } = this.props;
 
     let { batchTypeText = '' } = this.props;
@@ -298,27 +299,26 @@ class BatchValidateModal extends Component {
                 </p>
               </div>
             )}
-            {batchType === 'refund' &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.InstantRefunds) && (
-                <p className="process-instant-batch">
-                  {' '}
-                  <img src={`${window.cdnBaseUrl}/static/assets/notifs/instant-refunds.svg`} />{' '}
-                  Retain customers and improve trust by issuing refunds instantly. &nbsp;{' '}
-                  <DocLink
-                    onClick={() => {
-                      window.rzpAnalytics?.({
-                        eventCategory: `Batch ${titleCase(this.props.batchType)}`,
-                        eventAction: 'Learn more - upload modal',
-                        eventLabel: `Click to learn more`,
-                      });
-                    }}
-                    target="_blank"
-                    href="https://razorpay.com/docs/payment-gateway/refunds/#how-instant-refunds-work"
-                  >
-                    <strong className="btn-link">Learn more</strong>{' '}
-                  </DocLink>
-                </p>
-              )}
+            {batchType === 'refund' && !isConfigTagEnabled('refunds.instant_refunds') && (
+              <p className="process-instant-batch">
+                {' '}
+                <img src={`${window.cdnBaseUrl}/static/assets/notifs/instant-refunds.svg`} /> Retain
+                customers and improve trust by issuing refunds instantly. &nbsp;{' '}
+                <DocLink
+                  onClick={() => {
+                    window.rzpAnalytics?.({
+                      eventCategory: `Batch ${titleCase(this.props.batchType)}`,
+                      eventAction: 'Learn more - upload modal',
+                      eventLabel: `Click to learn more`,
+                    });
+                  }}
+                  target="_blank"
+                  href="https://razorpay.com/docs/payment-gateway/refunds/#how-instant-refunds-work"
+                >
+                  <strong className="btn-link">Learn more</strong>{' '}
+                </DocLink>
+              </p>
+            )}
           </>
         ) : null}
 
@@ -352,5 +352,5 @@ class BatchValidateModal extends Component {
 }
 
 export default connect(null, (dispatch) => bindActionCreators({ closeModal }, dispatch))(
-  BatchValidateModal,
+  withI18Service(BatchValidateModal),
 );

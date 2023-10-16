@@ -1,10 +1,9 @@
 import React from 'react';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import InviteMerchantTabs from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import { render, screen, userEvent } from 'test-utils';
+import { render, screen, userEvent, updateUseI18ServiceSpy } from 'test-utils';
 
 const defaultProps = {
   productType: PRODUCT_TYPE.PG,
@@ -147,16 +146,10 @@ describe('InviteMerchantTabs', () => {
   });
   test('should hide Public Links tab with international flag', () => {
     // Enable all options
-    const findTag = jest.fn();
-    findTag.mockImplementation((value) => {
-      if (value === HIDDEN_INTERNATIONAL_FEATURES_TAGS.AddNewRazorpayXMerchant) return false;
-      if (value === HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks) return true;
-      return true;
-    });
-
+    updateUseI18ServiceSpy('partnership.referral_links');
     renderApp(
       { productType: PRODUCT_TYPE.PG },
-      { userExtra: { findTag, isPartnershipForCapitalEnabled: true } },
+      { userExtra: { isPartnershipForCapitalEnabled: true } },
     );
     expect(screen.queryByText('Public Link')).not.toBeInTheDocument();
     expect(screen.getByText('Using Email')).toBeInTheDocument();

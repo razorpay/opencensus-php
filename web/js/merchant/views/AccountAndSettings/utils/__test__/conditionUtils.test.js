@@ -1,7 +1,6 @@
 import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 
 jest.mock('merchant/models/User', () => ({
@@ -78,9 +77,21 @@ describe('Condition Utils', () => {
     extraTestMessage: 'on passing profile',
   });
 
-  testUtilWhichUsesSingleUserFunc('isSkipMandatorySummaryPageAllowed', 'findTag', {
-    extraTestMessage: 'on passing flashcheckout',
-    reverse: true,
+  describe.each([
+    ['isSkipMandatorySummaryPageAllowed', 'isSkipMandatorySummaryPageAllowed'],
+    ['isReminderEnabled', 'isReminderEnabled'],
+    ['isSettlementsAllowed', 'isSettlementsAllowed'],
+  ])('%s', (util, extraTestMessage) => {
+    test.each([
+      [false, true],
+      [true, false],
+    ])(
+      `should return %s when isConfigTagEnabled returns %s on passing to conditional ${extraTestMessage}`,
+      (utilOutput, configTagOutput) => {
+        const extraConfig = { isConfigTagEnabled: () => configTagOutput };
+        expect(conditionalUtils[util](extraConfig)).toBe(utilOutput);
+      },
+    );
   });
   testUtilWhichUsesSingleUserObj('isSmsNotificationEnabled', 'contact_mobile');
 
@@ -91,11 +102,11 @@ describe('Condition Utils', () => {
       [false, false, false],
       [true, true, false],
     ])(
-      'should return %s when user.isOrgAllowedFunctionality returns %s and user.findTag returns %s',
-      (flag, isOrgAllowedFunctionality, findTag) => {
+      'should return %s when user.isOrgAllowedFunctionality returns %s and isConfigTagEnabled returns %s',
+      (flag, isOrgAllowedFunctionality, configTag) => {
         user.isOrgAllowedFunctionality.mockReturnValueOnce(isOrgAllowedFunctionality);
-        user.findTag.mockReturnValueOnce(findTag);
-        expect(isFlashCheckoutAllowed(user)).toBe(flag);
+        const extraConfig = { isConfigTagEnabled: () => configTag };
+        expect(isFlashCheckoutAllowed(user, extraConfig)).toBe(flag);
       },
     );
   });
@@ -108,16 +119,23 @@ describe('Condition Utils', () => {
       [false, false, false, undefined, 'activated', rolesList.ADMIN],
       [false, false, false, undefined, 'activated-test', rolesList.MANAGER],
     ])(
-      `should return %s when user.isWhatsappNotificationEnabled returns %s, user.isOrgAllowedFunctionality returns %s, user.contact_mobile returns %s, user.findTag returns %s and user.role returns %s on passing WhatsappNotification`,
-      (output, findTag, isWhatsappNotificationEnabled, contact_mobile, activationStatus, role) => {
+      `should return %s when user.isWhatsappNotificationEnabled returns %s, user.isOrgAllowedFunctionality returns %s, user.contact_mobile returns %s, isConfigTagEnabled returns %s and user.role returns %s on passing WhatsappNotification`,
+      (
+        output,
+        configTag,
+        isWhatsappNotificationEnabled,
+        contact_mobile,
+        activationStatus,
+        role,
+      ) => {
         user.isWhatsappNotificationEnabled.mockReturnValueOnce(isWhatsappNotificationEnabled);
         user.user = {
           contact_mobile,
         };
-        user.findTag.mockReturnValueOnce(findTag);
+        const extraConfig = { isConfigTagEnabled: () => configTag };
         user.role = role;
         user.activation_status = activationStatus;
-        expect(conditionalUtils.isWhatsappNotificationEnabled(user)).toBe(output);
+        expect(conditionalUtils.isWhatsappNotificationEnabled(user, extraConfig)).toBe(output);
       },
     );
   });
@@ -130,13 +148,13 @@ describe('Condition Utils', () => {
       [false, true, false, false, false],
       [true, true, false, false, false],
     ])(
-      'should return %s when user.isAllowedView returns %s, isOrgAxis is %s, isOrgFeatureExist returns %s and user.findTag returns %s on passing hide_razorpay_text_link',
-      (flag, isAllowedViewOutput, isOrgAxis, isOrgFeatureExistOutput, findTagOutput) => {
+      'should return %s when user.isAllowedView returns %s, isOrgAxis is %s, isOrgFeatureExist returns %s and isConfigTagEnabled returns %s on passing hide_razorpay_text_link',
+      (flag, isAllowedViewOutput, isOrgAxis, isOrgFeatureExistOutput, configTagOutput) => {
         user.isAllowedView.mockReturnValueOnce(isAllowedViewOutput);
         user.isOrgAxis = isOrgAxis;
         isOrgFeatureExist.mockReturnValueOnce(isOrgFeatureExistOutput);
-        user.findTag.mockReturnValueOnce(findTagOutput);
-        expect(conditionalUtils.isTrustedBadgeAllowed(user)).toBe(flag);
+        const extraConfig = { isConfigTagEnabled: () => configTagOutput };
+        expect(conditionalUtils.isTrustedBadgeAllowed(user, extraConfig)).toBe(flag);
       },
     );
   });
@@ -213,9 +231,9 @@ describe('Condition Utils', () => {
       [false, true, false, true],
       [true, true, true, false],
     ])(
-      'should return %s when isWebsiteComplianceFlowEnabled is %s, isWebsiteSectionsApplicable is %s and user.findTag returns %s on passing WebsiteAppDetails tag',
-      (flag, isWebsiteComplianceFlowEnabled, isWebsiteSectionsApplicable, findTagOutput) => {
-        user.findTag.mockReturnValueOnce(findTagOutput);
+      'should return %s when isWebsiteComplianceFlowEnabled is %s, isWebsiteSectionsApplicable is %s and isConfigTagEnabled returns %s on passing WebsiteAppDetails tag',
+      (flag, isWebsiteComplianceFlowEnabled, isWebsiteSectionsApplicable, configTagOutput) => {
+        const extraConfig = { isConfigTagEnabled: () => configTagOutput };
         user.isWebsiteComplianceFlowEnabled = isWebsiteComplianceFlowEnabled;
         expect(
           conditionalUtils.isWebsiteDetailsEnabled({
@@ -225,6 +243,7 @@ describe('Condition Utils', () => {
                 isWebsiteSectionsApplicable,
               },
             },
+            extraConfig,
           }),
         ).toBe(flag);
       },
@@ -238,12 +257,12 @@ describe('Condition Utils', () => {
       [false, true, false, true],
       [true, true, false, false],
     ])(
-      'should return %s when user.isAllowedView returns %s, isUnregisteredBusiness is %s and user.findTag returns %s on passing profile_gst and Gst tags',
-      (flag, isAllowedViewOutput, isUnregisteredBusiness, findTagOutput) => {
+      'should return %s when user.isAllowedView returns %s, isUnregisteredBusiness is %s and isConfigTagEnabled returns %s on passing profile_gst and Gst tags',
+      (flag, isAllowedViewOutput, isUnregisteredBusiness, configTagOutput) => {
         user.isAllowedView.mockReturnValueOnce(isAllowedViewOutput);
-        user.findTag.mockReturnValueOnce(findTagOutput);
+        const extraConfig = { isConfigTagEnabled: () => configTagOutput };
         user.isUnregisteredBusiness = isUnregisteredBusiness;
-        expect(conditionalUtils.isGstDetailsEnabled(user)).toBe(flag);
+        expect(conditionalUtils.isGstDetailsEnabled(user, extraConfig)).toBe(flag);
       },
     );
   });
@@ -258,13 +277,13 @@ describe('Condition Utils', () => {
       [false, true, false, false, true],
       [true, true, true, false, false],
     ])(
-      'should return %s when user.isAdminOrOwner is %s, isFdTicketsEnabled is %s, isComdelApiEnabled is %s and user.findTag returns %s on passing SupportHistory',
-      (flag, isAdminOrOwner, isFdTicketsEnabled, isComdelApiEnabled, findTagOutput) => {
+      'should return %s when user.isAdminOrOwner is %s, isFdTicketsEnabled is %s, isComdelApiEnabled is %s and isConfigTagEnabled returns %s on passing SupportHistory',
+      (flag, isAdminOrOwner, isFdTicketsEnabled, isComdelApiEnabled, configTagOutput) => {
         user.isAdminOrOwner = isAdminOrOwner;
         user.isFdTicketsEnabled = isFdTicketsEnabled;
         user.isComdelApiEnabled = isComdelApiEnabled;
-        user.findTag.mockReturnValueOnce(findTagOutput);
-        expect(conditionalUtils.isSupportTicketEnabled(user)).toBe(flag);
+        const extraConfig = { isConfigTagEnabled: () => configTagOutput };
+        expect(conditionalUtils.isSupportTicketEnabled(user, extraConfig)).toBe(flag);
       },
     );
   });
@@ -279,18 +298,13 @@ describe('Condition Utils', () => {
       [false, true, true],
       [true, true, false],
     ])(
-      `should return %s when user.isAllowedView returns %s and user.findTag returns %s on passing ${extraTestMessage}`,
-      (flag, isAllowedViewOutput, findTagOutput) => {
+      `should return %s when user.isAllowedView returns %s and isConfigTagEnabled returns %s on passing ${extraTestMessage}`,
+      (flag, isAllowedViewOutput, configTagOutput) => {
         user.isAllowedView.mockReturnValueOnce(isAllowedViewOutput);
-        user.findTag.mockReturnValueOnce(findTagOutput);
-        expect(conditionalUtils[util](user)).toBe(flag);
+        const extraConfig = { isConfigTagEnabled: () => configTagOutput };
+        expect(conditionalUtils[util](user, extraConfig)).toBe(flag);
       },
     );
-  });
-
-  testUtilWhichUsesSingleUserFunc('isReminderEnabled', 'findTag', {
-    reverse: true,
-    extraTestMessage: 'on passing Reminders',
   });
 
   describe('isPaymentCaptureAndRefundEnabled', () => {
@@ -302,19 +316,17 @@ describe('Condition Utils', () => {
     ])(
       `should return %s when PaymentCapture %s and Refunds %s`,
       (flag, paymentCapture, refunds) => {
-        user.findTag.mockImplementation((tag) => {
-          if (
-            tag === HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentCapture &&
-            paymentCapture === 'exists'
-          ) {
+        const extraConfig = { isConfigTagEnabled: jest.fn() };
+        extraConfig.isConfigTagEnabled.mockImplementation((tag) => {
+          if (tag === 'account.payment_capture' && paymentCapture === 'exists') {
             return true;
-          } else if (tag === HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds && refunds === 'exists') {
+          } else if (tag === 'refunds.refund' && refunds === 'exists') {
             return true;
           }
           return false;
         });
 
-        expect(conditionalUtils.isPaymentCaptureAndRefundEnabled(user)).toBe(flag);
+        expect(conditionalUtils.isPaymentCaptureAndRefundEnabled(extraConfig)).toBe(flag);
       },
     );
   });
@@ -325,18 +337,13 @@ describe('Condition Utils', () => {
       [false, true, true],
       [true, false, false],
     ])(
-      'should return %s when isOrgFeatureExist hide_settlement_details returns %s and user.findTag BankAccount returns %s',
-      (flag, isOrgFeatureExistOutput, findTagOutput) => {
+      'should return %s when isOrgFeatureExist hide_settlement_details returns %s and isConfigTagEnabled BankAccount returns %s',
+      (flag, isOrgFeatureExistOutput, configTagOutput) => {
         isOrgFeatureExist.mockReturnValueOnce(isOrgFeatureExistOutput);
-        user.findTag.mockReturnValueOnce(findTagOutput);
-        expect(conditionalUtils.isBankAccountDetailsAllowed(user)).toBe(flag);
+        const extraConfig = { isConfigTagEnabled: () => configTagOutput };
+        expect(conditionalUtils.isBankAccountDetailsAllowed(extraConfig)).toBe(flag);
       },
     );
-  });
-
-  testUtilWhichUsesSingleUserFunc('isSettlementsAllowed', 'findTag', {
-    reverse: true,
-    extraTestMessage: 'on passing Settlements',
   });
 
   describe('shouldShowFIRCSection', () => {

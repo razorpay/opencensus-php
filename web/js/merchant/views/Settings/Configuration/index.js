@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import LazyLoad from 'react-lazyload';
+import { withI18Service } from 'common/i18';
 import Spinner from 'common/ui/Spinner';
 import * as ConfigActions from 'merchant/reducers/config';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
@@ -41,7 +42,6 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import Firc from './components/FircAnnouncements/Firc';
 import ToggleSetting from './ToggleSetting';
 import { flashCheckoutProps, skipCardMandateSummaryProps } from './settings-config-constants';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import {
   isFlashCheckoutAllowed,
@@ -381,9 +381,11 @@ class CongfigurationContainer extends Component {
       showAnnouncements,
       className,
       isOldFlow,
+      i18: { isConfigTagEnabled },
     } = this.props;
     const { isFeaturesLoading } = this.state;
     let showInternationalPaymentsCard = false;
+    const extraConfig = { isConfigTagEnabled };
     const remarketerEnabled = user.isFeatureEnabled('missed_orders_plink');
     if (mode === 'live' && showInternationalPayments) {
       if (this.state.isPaypalOrg) {
@@ -431,7 +433,9 @@ class CongfigurationContainer extends Component {
             )}
 
             <ShowWhen
-              additionalCondition={(user) => showFlashCheckout && isFlashCheckoutAllowed(user)}
+              additionalCondition={(user) =>
+                showFlashCheckout && isFlashCheckoutAllowed(user, extraConfig)
+              }
             >
               <IntoView hashedWith={FLASH_CHECKOUT}>
                 <ToggleSetting {...flashCheckoutProps} org={org} />
@@ -439,9 +443,8 @@ class CongfigurationContainer extends Component {
             </ShowWhen>
 
             <ShowWhen
-              additionalCondition={(user) =>
-                showPaymentSettings &&
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentCapture)
+              additionalCondition={() =>
+                showPaymentSettings && !isConfigTagEnabled('account.payment_capture')
               }
             >
               <IntoView hashedWith={CAPTURE_SETTINGS}>
@@ -450,8 +453,8 @@ class CongfigurationContainer extends Component {
             </ShowWhen>
 
             <ShowWhen
-              additionalCondition={(user) =>
-                showDefaultRefundSpeed && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+              additionalCondition={() =>
+                showDefaultRefundSpeed && !isConfigTagEnabled('refunds.refund')
               }
             >
               <IntoView hashedWith={REFUND_SETTINGS}>
@@ -461,9 +464,7 @@ class CongfigurationContainer extends Component {
 
             <ShowWhen
               additionalCondition={(user) =>
-                showFirc &&
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.International) &&
-                user?.international
+                showFirc && !isConfigTagEnabled('settings.international') && user?.international
               }
             >
               <Firc />
@@ -475,7 +476,7 @@ class CongfigurationContainer extends Component {
 
             <ShowWhen
               additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.International) &&
+                !isConfigTagEnabled('settings.international') &&
                 user.international &&
                 mode === 'live' &&
                 showInternationalPaymentsCard
@@ -506,7 +507,7 @@ class CongfigurationContainer extends Component {
 
             <ShowWhen
               additionalCondition={(user) =>
-                showWhatsappNotifications && isWhatsappNotificationEnabled(user)
+                showWhatsappNotifications && isWhatsappNotificationEnabled(user, extraConfig)
               }
             >
               <IntoView hashedWith={WHATSAPP_NOTIF}>
@@ -516,7 +517,7 @@ class CongfigurationContainer extends Component {
 
             <ShowWhen
               additionalCondition={(user) =>
-                showSkipMandatorySummaryPage && isSkipMandatorySummaryPageAllowed(user)
+                showSkipMandatorySummaryPage && isSkipMandatorySummaryPageAllowed(user, extraConfig)
               }
             >
               <IntoView hashedWith={SKIP_CARD_MANDATE_SUMMARY}>
@@ -535,8 +536,8 @@ class CongfigurationContainer extends Component {
         )}
 
         <ShowWhen
-          additionalCondition={(user) =>
-            showAnnouncements && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
+          additionalCondition={() =>
+            showAnnouncements && !isConfigTagEnabled('announcements.announcements')
           }
         >
           <EasterEgg extraClass="ftx-settings-page-mweb" page="Settings" />
@@ -567,4 +568,4 @@ export default compose(
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('CongfigurationContainer')),
-)(CongfigurationContainer);
+)(withI18Service(CongfigurationContainer));

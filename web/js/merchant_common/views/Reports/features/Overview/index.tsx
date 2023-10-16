@@ -10,10 +10,17 @@ import { getReportsDashboardConfig } from 'merchant_common/views/Reports/configs
 import { OverviewSection } from './OverView';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal } from 'merchant_common/reducers/modals';
+import { useI18Service } from 'common/i18';
 
-const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
+const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18 }) => {
   const { allConfigs, recentConfigs } = reportsCore[dashboardType].overview.reportConfigs;
-  const refDashboardConfig = getReportsDashboardConfig(dashboardType, session);
+  const refDashboardConfig = getReportsDashboardConfig(
+    dashboardType,
+    session,
+    undefined,
+    undefined,
+    i18,
+  );
   return {
     refDashboardConfig,
     allReportConfigs: allConfigs.data,
@@ -40,5 +47,7 @@ const OverviewComponent = connect(mapStateToProps, mapDispatchToProps)(OverviewS
 
 export const OverView = (props) => {
   const dashboardType = useDashboardType();
-  return <OverviewComponent dashboardType={dashboardType} {...props} />;
+  const i18 = useI18Service();
+
+  return <OverviewComponent dashboardType={dashboardType} i18={i18} {...props} />;
 };

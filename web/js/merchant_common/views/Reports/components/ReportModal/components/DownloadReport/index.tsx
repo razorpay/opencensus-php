@@ -17,7 +17,7 @@ import {
 
 import { DownloadReportModal } from './DownloadReport';
 
-const mapStateToProps = ({ reportsCore, accounts, session }, { dashboardType }) => {
+const mapStateToProps = ({ reportsCore, accounts, session }, { dashboardType, i18 }) => {
   const { user, mode } = session;
   const {
     overview: {
@@ -27,7 +27,7 @@ const mapStateToProps = ({ reportsCore, accounts, session }, { dashboardType }) 
 
   const availableEmails = getAvailableEmails(user);
   const { availableAccounts, headers, parsePayloadBeforeSubmit, availableFormats } =
-    getReportsDashboardConfig(dashboardType, session, accounts, mode);
+    getReportsDashboardConfig(dashboardType, session, accounts, mode, i18);
 
   const generatedBy = user.current;
 

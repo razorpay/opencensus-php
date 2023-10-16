@@ -1,5 +1,4 @@
 import moment from 'moment';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const DATE_FORMAT = 'DD MMM YYYY';
 
@@ -46,22 +45,25 @@ export const getActualLogStatus = ({ status, fileId }) => {
   }
 };
 
-export const REPORT_CONFIG_TYPE = {
-  // hiding by type
-  transactions: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Transactions,
-  refunds: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds,
-  rawsql: HIDDEN_INTERNATIONAL_FEATURES_TAGS.RawSQL,
-  settlement_ondemands: HIDDEN_INTERNATIONAL_FEATURES_TAGS.OnDemandSettlements,
-  qr_code: HIDDEN_INTERNATIONAL_FEATURES_TAGS.QrCodes,
-  subscriptions: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions,
-  paymentlinksv2: HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks,
-  contacts: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Contacts,
-  payment_links: HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks,
-  custom: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Custom,
-  scrooge_refunds: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds,
-  // hiding by name
-  'Payments Report With Offers': HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentReportWithOffers,
-  'QR Code Report with Pay_Id': HIDDEN_INTERNATIONAL_FEATURES_TAGS.QRCodeReportWithPayID,
-  'Payment Button Report': HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentBtnReport,
-  'Payment page': HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages,
-};
+export const reportConfigType = (i18) =>
+  i18?.isConfigTagEnabled
+    ? {
+        // hiding by type
+        transactions: i18.isConfigTagEnabled('reports.transactions'),
+        refunds: i18.isConfigTagEnabled('reports.refunds'),
+        rawsql: i18.isConfigTagEnabled('reports.raw_sql'),
+        settlement_ondemands: i18.isConfigTagEnabled('reports.on_demand_settlements'),
+        qr_code: i18.isConfigTagEnabled('reports.qr_codes'),
+        subscriptions: i18.isConfigTagEnabled('reports.subscriptions'),
+        paymentlinksv2: i18.isConfigTagEnabled('reports.payment_links'),
+        contacts: i18.isConfigTagEnabled('reports.contacts'),
+        payment_links: i18.isConfigTagEnabled('reports.payment_links'),
+        custom: i18.isConfigTagEnabled('reports.custom'),
+        scrooge_refunds: i18.isConfigTagEnabled('reports.refunds'),
+        // hiding by name
+        'Payments Report With Offers': i18.isConfigTagEnabled('reports.payment_report_with_offers'),
+        'QR Code Report with Pay_Id': i18.isConfigTagEnabled('reports.qr_code_report_with_pay_id'),
+        'Payment Button Report': i18.isConfigTagEnabled('reports.payment_btn_report'),
+        'Payment page': i18.isConfigTagEnabled('reports.payment_pages'),
+      }
+    : {};

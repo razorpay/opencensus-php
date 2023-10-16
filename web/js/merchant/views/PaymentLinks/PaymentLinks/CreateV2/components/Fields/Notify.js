@@ -1,12 +1,11 @@
 import React from 'react';
+import { withI18Service } from 'common/i18';
 import Input from 'common/new-ui/Input';
 import DocsLink from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-
 import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 
-export default class Notify extends React.Component {
+class Notify extends React.Component {
   handleEmailNotify = (event) => {
     const isChecked = !!event.target.value == '1';
     if (!isChecked) return;
@@ -52,9 +51,9 @@ export default class Notify extends React.Component {
         </div>
 
         <ShowWhen
-          additionalCondition={(user) =>
-            !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore) &&
-            !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+          additionalCondition={() =>
+            !this.props.i18.isConfigTagEnabled('app_store.app_store') &&
+            !this.props.i18.isConfigTagEnabled('documentation.documentation')
           }
         >
           <DocsLink
@@ -67,3 +66,4 @@ export default class Notify extends React.Component {
     );
   }
 }
+export default withI18Service(Notify);

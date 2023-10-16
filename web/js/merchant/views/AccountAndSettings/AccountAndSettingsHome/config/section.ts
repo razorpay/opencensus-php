@@ -233,9 +233,9 @@ export const Sections: SectionCardInterface[] = [
         title: WebsiteAppSettingsTitles[WebsiteAppSettingsFields.WEBSITE_APP_DETAIL],
         href: ROUTES_INFO.WEBSITE_APP_SETTINGS,
         additionalCondition:
-          ({ websiteSectionDetailsData }: AdditionalContextInterface) =>
+          ({ websiteSectionDetailsData, extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
-            isWebsiteDetailsEnabled({ user, websiteSectionDetailsData }),
+            isWebsiteDetailsEnabled({ user, websiteSectionDetailsData, extraConfig }),
       },
       {
         id: WebsiteAppSettingsFields.BUSINESS_WEBSITE_DETAILS,
@@ -299,9 +299,9 @@ export const Sections: SectionCardInterface[] = [
         title: BusinessSettingsTitles[BusinessSettingsFields.GST_DETAILS],
         href: ROUTES_INFO.GST_DETAILS,
         additionalCondition:
-          () =>
+          ({ extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
-            isGstDetailsEnabled(user),
+            isGstDetailsEnabled(user, extraConfig),
       },
       {
         id: BusinessSettingsFields.CUSTOMER_SUPPORT_DETAILS,
@@ -340,9 +340,9 @@ export const Sections: SectionCardInterface[] = [
         title: BusinessSettingsTitles[BusinessSettingsFields.SUPPORT_TICKETS],
         href: ROUTES_INFO.SUPPORT_TICKETS_MERCHANT,
         additionalCondition:
-          () =>
+          ({ extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
-            isSupportTicketEnabled(user),
+            isSupportTicketEnabled(user, extraConfig),
       },
     ],
   },
@@ -357,27 +357,27 @@ export const Sections: SectionCardInterface[] = [
         title: PaymentRefundsTitles[PaymentRefundsFields.BALANCES],
         href: ROUTES_INFO.BALANCES,
         additionalCondition:
-          () =>
+          ({ extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
-            isBalancesEnabled(user),
+            isBalancesEnabled(user, extraConfig),
       },
       {
         id: PaymentRefundsFields.CREDITS,
         title: PaymentRefundsTitles[PaymentRefundsFields.CREDITS],
         href: ROUTES_INFO.CREDITS,
         additionalCondition:
-          () =>
+          ({ extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
-            isCreditsEnabled(user),
+            isCreditsEnabled(user, extraConfig),
       },
       {
         id: PaymentRefundsFields.REMINDERS,
         title: PaymentRefundsTitles[PaymentRefundsFields.REMINDERS],
         href: ROUTES_INFO.REMINDERS,
         additionalCondition:
-          () =>
-          (user: User): boolean =>
-            isReminderEnabled(user),
+          ({ extraConfig }: AdditionalContextInterface) =>
+          (): boolean =>
+            isReminderEnabled(extraConfig),
       },
       {
         id: PaymentRefundsFields.TRANSACTION_LIMITS,
@@ -398,9 +398,9 @@ export const Sections: SectionCardInterface[] = [
         title: PaymentRefundsTitles[PaymentRefundsFields.CAPTURE_REFUND_SETTINGS],
         href: ROUTES_INFO.CAPTURE_AND_REFUND_SETTINGS,
         additionalCondition:
-          () =>
-          (user: User): boolean =>
-            isPaymentCaptureAndRefundEnabled(user),
+          ({ extraConfig }: AdditionalContextInterface) =>
+          (): boolean =>
+            isPaymentCaptureAndRefundEnabled(extraConfig),
       },
       {
         id: PaymentRefundsFields.FAILED_PAYMENTS_RETRY,
@@ -424,7 +424,10 @@ export const Sections: SectionCardInterface[] = [
         id: BankAccountSettlementFields.BANK_ACCOUNT_DETAILS,
         title: BankAccountSettlementTitles[BankAccountSettlementFields.BANK_ACCOUNT_DETAILS],
         href: ROUTES_INFO.BANK_ACCOUNT_DETAILS,
-        additionalCondition: (): ((user: User) => boolean) => isBankAccountDetailsAllowed,
+        additionalCondition:
+          ({ extraConfig }: AdditionalContextInterface) =>
+          (): boolean =>
+            isBankAccountDetailsAllowed(extraConfig),
       },
       {
         id: BankAccountSettlementFields.SETTLEMENT_DETAILS,
@@ -472,9 +475,9 @@ export const Sections: SectionCardInterface[] = [
         title: NotificationSettingsTitles[NotificationSettingsFields.WHATSAPP],
         href: ROUTES_INFO.WHATSAPP_NOTIFICATIONS,
         additionalCondition:
-          () =>
+          ({ extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
-            isWhatsappNotificationEnabled(user),
+            isWhatsappNotificationEnabled(user, extraConfig),
       },
     ],
   },
@@ -484,9 +487,9 @@ export const Sections: SectionCardInterface[] = [
     icon: AccountNSettingsIcons.checkout_settings,
     iconBackground: 'linear-gradient(155.9deg, #EC9B26 10.71%, #BD7A03 59.94%)',
     additionalCondition:
-      () =>
+      ({ extraConfig }: AdditionalContextInterface) =>
       (user: User): boolean =>
-        isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user),
+        isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user, extraConfig),
     subSections: [
       {
         id: CheckoutSettingsFields.BRANDING,
@@ -502,24 +505,27 @@ export const Sections: SectionCardInterface[] = [
         title: CheckoutSettingsTitles[CheckoutSettingsFields.FLASH_CHECKOUT],
         href: ROUTES_INFO.FLASH_CHECKOUT,
         additionalCondition:
-          () =>
+          ({ extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
-            isConfigurationViewAllowed(user) && isFlashCheckoutAllowed(user),
+            isConfigurationViewAllowed(user) && isFlashCheckoutAllowed(user, extraConfig),
       },
       {
         id: CheckoutSettingsFields.SKIP_MANDATE_SUMMARY_PAGE,
         title: CheckoutSettingsTitles[CheckoutSettingsFields.SKIP_MANDATE_SUMMARY_PAGE],
         href: ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE,
         additionalCondition:
-          () =>
+          ({ extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
-            isConfigurationViewAllowed(user) && isSkipMandatorySummaryPageAllowed(user),
+            isConfigurationViewAllowed(user) && isSkipMandatorySummaryPageAllowed(extraConfig),
       },
       {
         id: CheckoutSettingsFields.TRUSTED_BADGE,
         title: CheckoutSettingsTitles[CheckoutSettingsFields.TRUSTED_BADGE],
         href: ROUTES_INFO.TRUSTED_BADGE,
-        additionalCondition: (): ((user: User) => boolean) => isTrustedBadgeAllowed,
+        additionalCondition:
+          ({ extraConfig }: AdditionalContextInterface) =>
+          (user: User): boolean =>
+            isTrustedBadgeAllowed(user, extraConfig),
       },
     ],
   },

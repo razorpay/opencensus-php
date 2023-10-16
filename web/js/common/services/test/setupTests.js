@@ -49,6 +49,17 @@ jest.mock('merchant/views/Transactions/v1/AnalyticsTrack', () => ({
 //   isTransactionsV2Enabled: (_) => true,
 // }));
 
+jest.mock('common/i18', () => {
+  return {
+    __esModule: true,
+    withI18Service: (Component) => (props) =>
+      <Component {...props} i18={{ isConfigTagEnabled: jest.fn() }} />,
+    useI18Service: () => ({
+      isConfigTagEnabled: jest.fn(),
+    }),
+  };
+});
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
 

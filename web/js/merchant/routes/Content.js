@@ -33,12 +33,12 @@ import {
   isProfileViewAllowed,
   isConfigurationViewAllowed,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 
 // import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
+import { withI18Service } from 'common/i18';
 
 const B2bPaymentsList = lazy(() =>
   import(
@@ -471,6 +471,7 @@ const TransactionV2RefundsContainer = lazy(() =>
   ),
 );
 
+@withI18Service
 @connect(
   (state) => ({
     user: state.session.user,
@@ -493,6 +494,12 @@ class Content extends Component {
   setBaseLocation = (location) => {
     const blacklistedDetailsRoutes = ['/payments/:id', '/refunds/:id'];
     let matchDetailsRoute;
+    const extraConfig = {
+      i18: this.props.i18,
+      splitz: {
+        abExperiments: this.props.splitz.abExperiments,
+      },
+    };
     if (
       this.checkIsTransactionsV2Enabled() &&
       blacklistedDetailsRoutes.some((route) =>
@@ -501,9 +508,9 @@ class Content extends Component {
     ) {
       matchDetailsRoute = null;
     } else {
-      matchDetailsRoute = matchDetail(location.pathname);
+      matchDetailsRoute = matchDetail(location.pathname, extraConfig);
     }
-    const matchModalsRoute = matchModal(location.pathname);
+    const matchModalsRoute = matchModal(location.pathname, extraConfig);
 
     if (matchDetailsRoute || matchModalsRoute) {
       let resultRoute;
@@ -599,7 +606,15 @@ class Content extends Component {
   };
 
   getBaseView = () => {
-    const { fullPageView, user, mode } = this.props;
+    const {
+      fullPageView,
+      user,
+      mode,
+      i18: { isConfigTagEnabled },
+      splitz,
+    } = this.props;
+    const { abExperiments } = splitz;
+    const extraConfig = { isConfigTagEnabled, abExperiments };
 
     if (fullPageView) return fullPageView;
 
@@ -727,7 +742,11 @@ class Content extends Component {
             <Route
               path="*"
               element={
-                <RouteGuard additionalCondition={(user) => user.isAllowedView('refunds')}>
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isAllowedView('refunds') && !isConfigTagEnabled('refunds.refund')
+                  }
+                >
                   {isTransactionV2Enabled ? <TransactionsV2EntitiesOverview /> : <Transactions />}
                 </RouteGuard>
               }
@@ -735,11 +754,7 @@ class Content extends Component {
               <Route
                 index
                 element={
-                  <RouteGuard
-                    additionalCondition={(usr) =>
-                      !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
-                    }
-                  >
+                  <RouteGuard additionalCondition={() => !isConfigTagEnabled('refunds.refund')}>
                     {isTransactionV2Enabled ? <TransactionV2RefundsContainer /> : <RefundsList />}
                   </RouteGuard>
                 }
@@ -747,11 +762,7 @@ class Content extends Component {
               <Route
                 path="batchuploads/*"
                 element={
-                  <RouteGuard
-                    additionalCondition={(usr) =>
-                      !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
-                    }
-                  >
+                  <RouteGuard additionalCondition={() => !isConfigTagEnabled('refunds.refund')}>
                     <BatchRefundsList />
                   </RouteGuard>
                 }
@@ -760,11 +771,7 @@ class Content extends Component {
               <Route
                 path="batchupload/*"
                 element={
-                  <RouteGuard
-                    additionalCondition={(usr) =>
-                      !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
-                    }
-                  >
+                  <RouteGuard additionalCondition={() => !isConfigTagEnabled('refunds.refund')}>
                     <BatchRefundsUpload />
                   </RouteGuard>
                 }
@@ -815,8 +822,7 @@ class Content extends Component {
               element={
                 <RouteGuard
                   additionalCondition={(usr) =>
-                    usr.isAllowedView('refunds') &&
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Disputes)
+                    usr.isAllowedView('refunds') && !isConfigTagEnabled('disputes.disputes')
                   }
                 >
                   <DisputesList />
@@ -894,7 +900,7 @@ class Content extends Component {
                 additionalCondition={(user) =>
                   user.isAllowedView('early_settlement') &&
                   user.isOndemandRouteSettlementsEnabled &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements)
+                  !isConfigTagEnabled('settlements.settlement')
                 }
               >
                 <Settlements>
@@ -938,8 +944,7 @@ class Content extends Component {
               element={
                 <RouteGuard
                   additionalCondition={(user) =>
-                    user.isAllowedEdit('invoices') &&
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
+                    user.isAllowedEdit('invoices') && !isConfigTagEnabled('invoices.invoice')
                   }
                 >
                   <InvoicesNew />
@@ -951,8 +956,7 @@ class Content extends Component {
               element={
                 <RouteGuard
                   additionalCondition={(user) =>
-                    user.isAllowedView('invoices') &&
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
+                    user.isAllowedView('invoices') && !isConfigTagEnabled('invoices.invoice')
                   }
                 >
                   <InvoicesNew />
@@ -978,7 +982,7 @@ class Content extends Component {
               <RouteGuard
                 additionalCondition={(user) =>
                   user.isAllowedView('payment_links') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks)
+                  !isConfigTagEnabled('payment_links.payment_link')
                 }
               >
                 <PaymentLinks />
@@ -993,7 +997,7 @@ class Content extends Component {
                 additionalCondition={(user) =>
                   user.isAllowedView('payment_handle') &&
                   user.isPaymentHandleSplitzEnabled &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentHandle)
+                  !isConfigTagEnabled('payments.payment_handle')
                 }
               >
                 <PaymentHandle />
@@ -1007,7 +1011,7 @@ class Content extends Component {
               <RouteGuard
                 additionalCondition={(user) =>
                   user.isAllowedView('payment_handle') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentHandle)
+                  !isConfigTagEnabled('payments.payment_handle')
                 }
               >
                 <PaymentHandle />
@@ -1022,7 +1026,7 @@ class Content extends Component {
                 <RouteGuard
                   additionalCondition={(user) =>
                     user.isAllowedView('payment_pages') &&
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
+                    !isConfigTagEnabled('payment_pages.payment_pages')
                   }
                 >
                   <PaymentPages />
@@ -1045,7 +1049,7 @@ class Content extends Component {
                 <RouteGuard
                   additionalCondition={(user) =>
                     user.isAllowedView('payment_pages') &&
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages) &&
+                    !isConfigTagEnabled('payment_pages.payment_pages') &&
                     user.isPaymentPageStorefrontEnabled
                   }
                 >
@@ -1060,7 +1064,7 @@ class Content extends Component {
                 <RouteGuard
                   additionalCondition={(user) =>
                     user.isAllowedView('payment_pages') &&
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
+                    !isConfigTagEnabled('payment_pages.payment_pages')
                   }
                 >
                   <PaymentPagesDetails />
@@ -1111,7 +1115,7 @@ class Content extends Component {
                   additionalCondition={(user) =>
                     user.isAllowedView('payment_buttons') &&
                     user.isPaymentButtonEnabledByRazorX &&
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons)
+                    !isConfigTagEnabled('payment_buttons.payment_buttons')
                   }
                 >
                   <PaymentButton>
@@ -1128,7 +1132,7 @@ class Content extends Component {
                   additionalCondition={(user) =>
                     user.isAllowedView('payment_buttons') &&
                     user.isPaymentButtonEnabledByRazorX &&
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons)
+                    !isConfigTagEnabled('payment_buttons.payment_buttons')
                   }
                 >
                   <PaymentButtonsDetails />
@@ -1145,7 +1149,7 @@ class Content extends Component {
                   additionalCondition={(user) =>
                     user.isAllowedView('subscription_buttons') &&
                     user.isSubscriptionButtonEnabled &&
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionPaymentButton)
+                    !isConfigTagEnabled('subscription.subscription_payment_button')
                   }
                 >
                   <PaymentButton>
@@ -1174,7 +1178,7 @@ class Content extends Component {
               <RouteGuard
                 additionalCondition={(user) =>
                   user.isAllowedView('subscriptions') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions)
+                  !isConfigTagEnabled('subscription.subscription')
                 }
               >
                 <Subscriptions />
@@ -1332,8 +1336,7 @@ class Content extends Component {
             element={
               <RouteGuard
                 additionalCondition={(user) =>
-                  user.isAllowedView('qr_codes') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.QrCodes)
+                  user.isAllowedView('qr_codes') && !isConfigTagEnabled('qr_code.qr_code')
                 }
               >
                 <QRCodes />
@@ -1372,11 +1375,7 @@ class Content extends Component {
           <Route
             path="customers/*"
             element={
-              <RouteGuard
-                additionalCondition={(user) =>
-                  !user?.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Customers)
-                }
-              >
+              <RouteGuard additionalCondition={() => !isConfigTagEnabled('customers.customer')}>
                 <tabbed-container>
                   <header id="invoicing-header">
                     <NavLink to="/customers">Customers</NavLink>
@@ -1427,8 +1426,7 @@ class Content extends Component {
             element={
               <RouteGuard
                 additionalCondition={(user) =>
-                  user.isAllowedView('marketplace') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Marketplace)
+                  user.isAllowedView('marketplace') && !isConfigTagEnabled('route.marketplace')
                 }
               >
                 <Marketplace />
@@ -1453,7 +1451,7 @@ class Content extends Component {
               <RouteGuard
                 additionalCondition={(user) =>
                   user.isAllowedView('virtual_accounts') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect)
+                  !isConfigTagEnabled('smart_collect.virtual_accounts')
                 }
               >
                 <SmartCollect />
@@ -1493,7 +1491,7 @@ class Content extends Component {
               <RouteGuard
                 additionalCondition={(user) =>
                   user.isAllowedView('virtual_accounts') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect)
+                  !isConfigTagEnabled('smart_collect.virtual_accounts')
                 }
               >
                 <SmartCollect />
@@ -1524,7 +1522,7 @@ class Content extends Component {
           <Route
             path="trustedbadge/*"
             element={
-              <RouteGuard additionalCondition={isTrustedBadgeAllowed}>
+              <RouteGuard additionalCondition={(user) => isTrustedBadgeAllowed(user, extraConfig)}>
                 <MyAccount>
                   <TrustedBadge />
                 </MyAccount>
@@ -1548,8 +1546,8 @@ class Content extends Component {
             path="website-app-details/*"
             element={
               <RouteGuard
-                additionalCondition={(user) =>
-                  true && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WebsiteAppDetails)
+                additionalCondition={() =>
+                  true && !isConfigTagEnabled('contact.website_app_details')
                 }
               >
                 <MyAccount>
@@ -1563,8 +1561,7 @@ class Content extends Component {
             element={
               <RouteGuard
                 additionalCondition={(user) =>
-                  user.isAllowedView('add_funds') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Balances)
+                  user.isAllowedView('add_funds') && !isConfigTagEnabled('account.balances')
                 }
               >
                 <MyAccount>
@@ -1579,8 +1576,7 @@ class Content extends Component {
             element={
               <RouteGuard
                 additionalCondition={(user) =>
-                  user.isAllowedView('credits') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Credits)
+                  user.isAllowedView('credits') && !isConfigTagEnabled('account.credits')
                 }
               >
                 <MyAccount>
@@ -1599,7 +1595,7 @@ class Content extends Component {
                   additionalCondition={(user) =>
                     user.isFdTicketsEnabled &&
                     !user.isComdelApiEnabled &&
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SupportHistory) &&
+                    !isConfigTagEnabled('account.support_history') &&
                     user?.isBundlePricingEnabled
                   }
                 >
@@ -1728,8 +1724,7 @@ class Content extends Component {
             element={
               <RouteGuard
                 additionalCondition={(user) =>
-                  user.isAllowedView('offers') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Offers)
+                  user.isAllowedView('offers') && !isConfigTagEnabled('offers.offers')
                 }
               >
                 <Offers />
@@ -1743,7 +1738,7 @@ class Content extends Component {
               <RouteGuard
                 additionalCondition={(user) =>
                   user.isAllowedView('checkoutrewards') &&
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Checkoutrewards)
+                  !isConfigTagEnabled('checkout_rewards.checkout_rewards')
                 }
               >
                 <CheckoutRewards />
@@ -1878,7 +1873,7 @@ class Content extends Component {
             element={
               <RouteGuard
                 additionalCondition={(user) =>
-                  isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user)
+                  isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user, extraConfig)
                 }
               >
                 <CheckoutSettings />

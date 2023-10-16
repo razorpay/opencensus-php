@@ -26,6 +26,7 @@ import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import UPIBanner from 'merchant/views/Subscriptions/SubscriptionLinks/components/UPIBanner';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { withI18Service } from 'common/i18';
 
 import Review from './Review';
 import PlanDetails from './PlanDetails';
@@ -79,7 +80,9 @@ class UpdateSubscriptionLink extends React.Component {
       validTabs: [false, false],
       subscriptionOffers: {
         items: [],
-        loading: this.props.user.isSubscriptionOffersEnabled,
+        loading:
+          this.props.user.isSubscriptionOffersEnabled &&
+          !this.props.i18.isConfigTagEnabled('subscription.subcription_offers'),
       },
     };
     this.cloneOptions = {
@@ -115,7 +118,10 @@ class UpdateSubscriptionLink extends React.Component {
       }
     }
 
-    if (this.props.user.isSubscriptionOffersEnabled) {
+    if (
+      this.props.user.isSubscriptionOffersEnabled &&
+      !this.props.i18.isConfigTagEnabled('subscription.subcription_offers')
+    ) {
       fetchSubscriptionOfferAPI([subscription.payment_method]).then((resp) => {
         this.setState({
           subscriptionOffers: resp.data,
@@ -440,7 +446,10 @@ class UpdateSubscriptionLink extends React.Component {
             onChangeInPlan={this.handleChangeInPlan}
             ref={(form) => (this.planDetailsForm = form)}
             offers={this.state.subscriptionOffers}
-            showOffers={this.props.user.isSubscriptionOffersEnabled}
+            showOffers={
+              this.props.user.isSubscriptionOffersEnabled &&
+              !this.props.i18.isConfigTagEnabled('subscription.subcription_offers')
+            }
             onChangeInOffer={this.handleChangeInOffer}
             cloneOptions={this.cloneOptions}
           />
@@ -579,4 +588,4 @@ class UpdateSubscriptionLink extends React.Component {
   }
 }
 
-export default withRouter(UpdateSubscriptionLink);
+export default withRouter(withI18Service(UpdateSubscriptionLink));

@@ -1,5 +1,6 @@
 import { NavLink, Navigate, useLocation } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { useI18Service } from 'common/i18';
 
 import { CLICK_ON_BALANCES_TAB, CLICK_ON_CREDITS_TAB } from './ga';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -8,12 +9,12 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import { useState, useEffect } from 'react';
 import getMobileDetect from 'common/utils/mobileDetect';
 import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { isTrustedBadgeAllowed } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { Badge, OffersIcon } from '@razorpay/blade/components';
 import { StyledHeader } from 'merchant/views/AccountAndSettings/Pricing/Pricing.styles';
 import { withRouter } from 'common/deprecated/withRouter';
+import { useSplitzService } from 'common/splitz';
 
 const {
   ACCOUNT_AND_SETTINGS,
@@ -26,6 +27,9 @@ const {
 const MyAccount = (props) => {
   const [isWebView, setWebView] = useState(false);
   const { pathname } = useLocation();
+  const { isConfigTagEnabled } = useI18Service();
+  const { abExperiments } = useSplitzService();
+  const extraConfig = { abExperiments, isConfigTagEnabled };
 
   useEffect(() => {
     if (getMobileDetect().isWebView()) {
@@ -77,19 +81,18 @@ const MyAccount = (props) => {
               additionalCondition={(user) =>
                 user.isWebsiteComplianceFlowEnabled &&
                 websiteSectionDetailsData.data.isWebsiteSectionsApplicable &&
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WebsiteAppDetails)
+                !isConfigTagEnabled('contact.website_app_details')
               }
             >
               <NavLink to="/website-app-details">Website/App details</NavLink>
             </ShowWhen>
-            <ShowWhen additionalCondition={isTrustedBadgeAllowed}>
+            <ShowWhen additionalCondition={(user) => isTrustedBadgeAllowed(user, extraConfig)}>
               <NavLink to="/trustedbadge">Trusted Badge</NavLink>
             </ShowWhen>
 
             <ShowWhen
               additionalCondition={(user) =>
-                user.isAllowedView('credits') &&
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Credits)
+                user.isAllowedView('credits') && !isConfigTagEnabled('account.credits')
               }
             >
               <NavLink
@@ -104,8 +107,7 @@ const MyAccount = (props) => {
 
             <ShowWhen
               additionalCondition={(user) =>
-                user.isAllowedView('add_funds') &&
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Balances)
+                user.isAllowedView('add_funds') && !isConfigTagEnabled('account.balances')
               }
             >
               <NavLink
@@ -131,7 +133,7 @@ const MyAccount = (props) => {
               additionalCondition={(user) =>
                 user.isFdTicketsEnabled &&
                 !user.isComdelApiEnabled &&
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SupportHistory)
+                !isConfigTagEnabled('account.support_history')
               }
             >
               <NavLink

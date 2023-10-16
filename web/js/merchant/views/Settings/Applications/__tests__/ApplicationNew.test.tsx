@@ -16,6 +16,9 @@ jest.mock('common/splitz', () => ({
         }}
       />
     ),
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
 }));
 
 const isPartner = jest.fn();

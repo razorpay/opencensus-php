@@ -3,8 +3,8 @@ import { Box, Button, Radio, RadioGroup, Text } from '@razorpay/blade/components
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
+import { useI18Service } from 'common/i18';
 import { User } from 'common/typings';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
@@ -38,6 +38,7 @@ const SelectProduct = ({
   const handleSelectProduct = ({ value }) => {
     setProductType(value);
   };
+  const { isConfigTagEnabled } = useI18Service();
   return (
     <Box display="flex" flexDirection="column" gap="spacing.6" flex="1" minHeight="425px">
       <RadioGroup onChange={handleSelectProduct} value={productType} size="small" label="">
@@ -80,7 +81,7 @@ const SelectProduct = ({
               </Box>
             </Box>
           </div>
-          {!user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AddNewRazorpayXMerchant) ? (
+          {!isConfigTagEnabled('partnership.add_new_razorpay_x_merchant') ? (
             <div onClick={() => setProductType(PRODUCT_TYPE.X)}>
               <Box
                 display="flex"

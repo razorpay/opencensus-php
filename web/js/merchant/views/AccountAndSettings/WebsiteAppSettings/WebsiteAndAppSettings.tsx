@@ -34,6 +34,8 @@ import {
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { Modules } from 'common/constant/enums';
+import { useI18Service } from 'common/i18';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 
 import {
   WebsiteAppSettingsFields,
@@ -76,6 +78,8 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
   } = props;
   const { hasConnectedApplications, connectedAppsloading: isConnectedAppsloading } = applications;
   const splitz = useSplitzService();
+  const { isConfigTagEnabled } = useI18Service();
+  const extraConfig: ExtraConfig = { abExperiments: splitz.abExperiments, isConfigTagEnabled };
 
   React.useEffect(() => {
     if (!Object.keys(websiteSectionDetailsData.data).length && !websiteSectionDetailsData.error) {
@@ -121,7 +125,7 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
         <StyledHeader className="scrollable-tab-header">
           <ShowWhen
             additionalCondition={(user) =>
-              isWebsiteDetailsEnabled({ user, websiteSectionDetailsData })
+              isWebsiteDetailsEnabled({ user, websiteSectionDetailsData, extraConfig })
             }
           >
             <NavLink to={ROUTES_INFO.WEBSITE_APP_SETTINGS}>
@@ -168,7 +172,11 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
                       element={
                         <RouteGuard
                           additionalCondition={(user) =>
-                            isWebsiteDetailsEnabled({ user, websiteSectionDetailsData })
+                            isWebsiteDetailsEnabled({
+                              user,
+                              websiteSectionDetailsData,
+                              extraConfig,
+                            })
                           }
                         >
                           <WebsiteAppDetails />

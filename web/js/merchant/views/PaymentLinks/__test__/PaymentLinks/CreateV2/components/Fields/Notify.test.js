@@ -40,7 +40,7 @@ describe('Notify Component Unit test', () => {
   };
 
   test('should render Notify Component with "Email", "SMS", "More ways" as different modes', () => {
-    renderApp();
+    renderApp({ i18: { isConfigTagEnabled: jest.fn() } });
     expect(screen.getByText('Notify via Email')).toBeInTheDocument();
     expect(screen.getByText('Notify via SMS')).toBeInTheDocument();
     expect(screen.getByText('More ways to notify')).toBeInTheDocument();

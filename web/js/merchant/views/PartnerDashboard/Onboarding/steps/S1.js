@@ -1,9 +1,9 @@
 import React from 'react';
 import SlideContoller from './SlideController';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { ONBOARDING_LABELS } from 'merchant/views/PartnerDashboard/constants';
 import TnCFooter from 'merchant/views/PartnerDashboard/Onboarding/steps/TnCFooter';
+import { useI18Service } from 'common/i18';
 
 const S1 = ({
   screenName,
@@ -14,15 +14,12 @@ const S1 = ({
   handleOtherCTAClicks,
   onCompleteClick,
 }) => {
+  const { isConfigTagEnabled } = useI18Service();
   return (
     <>
       <div className="partner-onbr-info">
         <div class="title">Welcome to your Partner Dashboard</div>
-        <ShowWhen
-          additionalCondition={(userData) =>
-            !userData.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PartnerCommission)
-          }
-        >
+        <ShowWhen additionalCondition={() => !isConfigTagEnabled('partnership.partner_commission')}>
           <div className="line-box brd-primary">
             <p className="info info-green">Get 0.1% commission on all your referrals.</p>
           </div>

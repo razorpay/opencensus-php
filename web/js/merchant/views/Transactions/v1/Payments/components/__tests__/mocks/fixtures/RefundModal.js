@@ -7,6 +7,20 @@ import RefundModal from 'merchant/views/Transactions/v1/Payments/components/Refu
 
 export const showWhenUtilSpy = jest.spyOn(showWhenUtils, 'showWhenUtil');
 
+jest.mock('common/i18', () => ({
+  __esModule: true,
+  withI18Service: (Component) => (props) =>
+    (
+      <Component
+        i18={{ isConfigTagEnabled: (path) => path === 'refunds.instant_refunds' }}
+        {...props}
+      />
+    ),
+  useI18Service: () => ({
+    isConfigTagEnabled: jest.fn(),
+  }),
+}));
+
 export const payment = {
   current_balance: {
     data: {},

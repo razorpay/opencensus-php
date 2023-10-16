@@ -9,10 +9,10 @@ import {
   Radio,
 } from '@razorpay/blade/components';
 
+import { useI18Service } from 'common/i18';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { User } from 'common/typings';
 import { analyticsTrack } from 'common/utils/analytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 import ClientAssistOptions from './ClientAssistOptions';
@@ -39,6 +39,7 @@ const ShareReferralLink = ({
   const referralUrl = referralData?.[productType]?.url;
   const easyAccessUrl = referralData?.[productType]?.easy_kyc_access_url;
   const { isPlatformPartnerInviteFlowEnabled } = usePartnerDashboardExperiments();
+  const { isConfigTagEnabled } = useI18Service();
 
   useEffect(() => {
     analyticsTrack({
@@ -128,7 +129,7 @@ const ShareReferralLink = ({
                 </Box>
               </div>
               {!isPlatformPartnerInviteFlowEnabled &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AddNewRazorpayXMerchant) ? (
+              !isConfigTagEnabled('partnership.add_new_razorpay_x_merchant') ? (
                 <div onClick={() => setProductType(PRODUCT_TYPE.X)}>
                   <Box
                     display="flex"

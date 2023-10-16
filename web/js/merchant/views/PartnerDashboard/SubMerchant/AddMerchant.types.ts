@@ -1,7 +1,7 @@
 import type { ActionCreator } from 'redux';
 import type { SubmitHandler } from 'redux-form';
 import type { RTrackingT } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
-
+import { ConfigTagType } from 'merchant/constants/tags';
 export interface AddMerchantPropsT {
   closeModal: () => void;
   source?: string;
@@ -24,6 +24,7 @@ export interface AddMerchantPropsT {
   validateReferralInvitesBatch?: ActionCreator<any>;
   tracking?: RTrackingT;
   handleSubmit?: SubmitHandler;
+  isConfigTagEnabled: (path: ConfigTagType) => boolean;
 }
 
 export interface AddMerchantStateT {

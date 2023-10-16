@@ -2,6 +2,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
+import { withI18Service } from 'common/i18';
 
 import Amount from 'common/ui/Amount';
 import DataTable from 'common/ui/Table/DataTable';
@@ -15,6 +16,7 @@ import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/com
 import { INVITE_MERCHANT_STEPS } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/constants';
 import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { compose } from 'redux';
 
 const activeMerchants = {
   title: 'No. of Active Accounts',
@@ -83,7 +85,11 @@ class CommissionsDailyList extends ListContainer {
   }
 
   handleAddMerchant = () => {
-    const { experiments } = this.props;
+    const {
+      experiments,
+      i18: { isConfigTagEnabled },
+    } = this.props;
+
     if (experiments.isEasierAccessToSubmerchantKycEnabled) {
       this.setState({ isInviteMerchantModalOpen: true });
     } else {
@@ -94,6 +100,7 @@ class CommissionsDailyList extends ListContainer {
             closeModal={this.props.closeModal}
             source="daily-earning"
             org={this.props.org}
+            isConfigTagEnabled={isConfigTagEnabled}
           />
         ),
       });
@@ -144,4 +151,8 @@ class CommissionsDailyList extends ListContainer {
     );
   }
 }
-export default withPartnerDashboardExperiments(withRouter(CommissionsDailyList));
+export default compose(
+  withPartnerDashboardExperiments,
+  withRouter,
+  withI18Service,
+)(CommissionsDailyList);

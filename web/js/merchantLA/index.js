@@ -15,7 +15,7 @@ import 'common/utils/polyfills';
 import store from 'merchantLA/store';
 
 import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
-
+import { I18ServiceProvider } from 'common/i18/I18ServiceProvider';
 import App from 'merchantLA/containers/App';
 import '../../css/merchant-la.styl';
 import '../../dashboard.font';
@@ -37,7 +37,9 @@ render(
         <Router basename="/app">
           <SpiltzServiceProvider dashboardType="linkedAccount">
             <ErrorBoundary>
-              <App />
+              <I18ServiceProvider>
+                <App />
+              </I18ServiceProvider>
             </ErrorBoundary>
           </SpiltzServiceProvider>
         </Router>

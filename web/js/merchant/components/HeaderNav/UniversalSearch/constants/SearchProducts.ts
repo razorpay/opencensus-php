@@ -5,7 +5,7 @@ import {
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
 import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
 import { BASE_ROUTES as SIDEBAR_ROUTES } from 'merchant/components/SidebarV2/utils/href';
-import { PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
+import { ExtraConfig, PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
 import { AccountNSettingsIcons } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/config/section';
 import {
   ACCOUNT_N_SETTINGS_TITLES,
@@ -73,8 +73,8 @@ const paymentMethodCondition = ({ instruments, user, mode, paymentMethod }): boo
 
 const isProductViewAllowed = (user: any, item): boolean => user.isAllowedView(item);
 
-const isSubscriptionsViewAllowed = (user: any): boolean =>
-  subscriptions.additionalCondition(user) && !user.isChargeAtWillEnabled;
+const isSubscriptionsViewAllowed = (user: any, extraConfig: ExtraConfig): boolean =>
+  subscriptions.additionalCondition(user, extraConfig) && !user.isChargeAtWillEnabled;
 
 const isRecurringPaymentsViewAllowed = (user: any): boolean =>
   user.isAllowedView('subscriptions') &&
@@ -208,8 +208,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'Enable Instant settlement' },
     ],
     icon: settlements.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      settlements.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      settlements.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -217,8 +217,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     url: SEARCH_PRODUCTS_URL.customers,
     tags: [{ value: 'Customer' }, { value: 'Add customer' }, { value: 'Users' }],
     icon: customers.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      customers.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      customers.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -226,8 +226,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     url: SEARCH_PRODUCTS_URL.offers,
     tags: [{ value: 'Promotions' }, { value: 'Offer ID' }],
     icon: offers.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      offers.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      offers.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -502,8 +502,12 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     ],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.website_app_settings,
-    additionalCondition: ({ user, websiteSectionDetailsData }: EligibleProductsTypes): boolean =>
-      isWebsiteDetailsEnabled({ user, websiteSectionDetailsData }),
+    additionalCondition: ({
+      user,
+      websiteSectionDetailsData,
+      extraConfig,
+    }: EligibleProductsTypes): boolean =>
+      isWebsiteDetailsEnabled({ user, websiteSectionDetailsData, extraConfig }),
     apiCondition: true,
   },
   {
@@ -591,7 +595,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     tags: [{ value: 'GST' }, { value: 'Change GST' }, { value: 'edit GST' }, { value: 'tax' }],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.business_settings,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean => isGstDetailsEnabled(user),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isGstDetailsEnabled(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -642,7 +647,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     ],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.payments_refunds,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean => isBalancesEnabled(user),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isBalancesEnabled(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -657,7 +663,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     ],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.payments_refunds,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean => isCreditsEnabled(user),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isCreditsEnabled(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -666,7 +673,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     tags: [{ value: 'Payment link reminders' }, { value: 'Payment link' }],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.payments_refunds,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean => isReminderEnabled(user),
+    additionalCondition: ({ extraConfig }: EligibleProductsTypes): boolean =>
+      isReminderEnabled(extraConfig),
     apiCondition: false,
   },
   {
@@ -715,8 +723,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     ],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.payments_refunds,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isPaymentCaptureAndRefundEnabled(user),
+    additionalCondition: ({ extraConfig }: EligibleProductsTypes): boolean =>
+      isPaymentCaptureAndRefundEnabled(extraConfig),
     apiCondition: false,
   },
   {
@@ -745,8 +753,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     ],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.bank_and_settlements,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isProfileViewAllowed(user) && isBankAccountDetailsAllowed(user),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isProfileViewAllowed(user) && isBankAccountDetailsAllowed(extraConfig),
     apiCondition: false,
   },
   {
@@ -803,8 +811,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     ],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.notification_settings,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isConfigurationViewAllowed(user) && isWhatsappNotificationEnabled(user),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isConfigurationViewAllowed(user) && isWhatsappNotificationEnabled(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -823,8 +831,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     tags: [{ value: 'Enable flash checkout' }, { value: 'Flash checkout' }, { value: 'checkout' }],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isConfigurationViewAllowed(user) && isFlashCheckoutAllowed(user),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isConfigurationViewAllowed(user) && isFlashCheckoutAllowed(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -833,8 +841,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     tags: [{ value: 'Mandate summary page' }, { value: 'skip' }],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isConfigurationViewAllowed(user) && isSkipMandatorySummaryPageAllowed(user),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isConfigurationViewAllowed(user) && isSkipMandatorySummaryPageAllowed(extraConfig),
     apiCondition: false,
   },
   {
@@ -843,7 +851,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     tags: [{ value: 'Add trusted badge' }, { value: 'Razorpay trusted badge' }],
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.checkout_settings,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean => isTrustedBadgeAllowed(user),
+    additionalCondition: ({ user, extraConfig }: EligibleProductsTypes): boolean =>
+      isTrustedBadgeAllowed(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -856,8 +865,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'product' },
     ],
     icon: invoices.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      invoices.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      invoices.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -879,8 +888,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'product' },
     ],
     icon: payment_links.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      payment_links.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      payment_links.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -893,8 +902,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'product' },
     ],
     icon: payment_pages.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      payment_pages.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      payment_pages.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -902,8 +911,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     url: SEARCH_PRODUCTS_URL.payment_button,
     tags: [{ value: 'product' }, { value: 'Button' }, { value: 'Create payment button' }],
     icon: payment_button.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      payment_button.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      payment_button.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -920,8 +929,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'product' },
     ],
     icon: route.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      route.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      route.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -937,8 +946,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'product' },
     ],
     icon: subscriptions.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isSubscriptionsViewAllowed(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      isSubscriptionsViewAllowed(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -962,8 +971,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     url: SEARCH_PRODUCTS_URL.plans,
     tags: [{ value: 'plan id' }, { value: 'plan name' }, { value: 'billing' }],
     icon: subscriptions.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isSubscriptionsViewAllowed(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      isSubscriptionsViewAllowed(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -986,8 +995,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'product' },
     ],
     icon: qr_codes.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      qr_codes.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      qr_codes.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -1000,8 +1009,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'product' },
     ],
     icon: smart_collect.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      smart_collect.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      smart_collect.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -1009,8 +1018,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     url: SEARCH_PRODUCTS_URL.checkout_rewards,
     tags: [{ value: 'Rewards' }, { value: 'Offers product' }, { value: 'product' }],
     icon: checkout_rewards.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      checkout_rewards.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      checkout_rewards.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -1047,8 +1056,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     url: SEARCH_PRODUCTS_URL.payment_handle,
     tags: [{ value: 'link' }, { value: '@' }, { value: 'create' }, { value: 'product' }],
     icon: payment_handle.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      payment_handle.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      payment_handle.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -1076,8 +1085,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'Instant settlement' },
     ],
     icon: cash_advance.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      cash_advance.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      cash_advance.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
@@ -1112,8 +1121,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     url: SEARCH_PRODUCTS_URL.line_of_credit,
     tags: [{ value: 'Business' }, { value: 'Loan' }, { value: 'Credit' }],
     icon: line_of_credit.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      line_of_credit.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      line_of_credit.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
 ];

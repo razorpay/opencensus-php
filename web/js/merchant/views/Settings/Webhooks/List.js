@@ -2,6 +2,7 @@ import React from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import { withI18Service } from 'common/i18';
 import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -20,7 +21,6 @@ import {
 } from 'merchant/views/Settings/deeplink-constants';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { Modules } from 'common/constant/enums';
 
 class WebhooksContainer extends ListContainer {
@@ -110,8 +110,8 @@ class WebhooksContainer extends ListContainer {
         <div>
           <div className="webhooks-cta-section">
             <ShowWhen
-              additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+              additionalCondition={() =>
+                !this.props.i18.isConfigTagEnabled('documentation.documentation')
               }
             >
               <DocsLink url="https://razorpay.com/docs/webhooks/" />
@@ -154,4 +154,4 @@ export default compose(
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('WebhooksContainer')),
-)(withRouter(WebhooksContainer));
+)(withRouter(withI18Service(WebhooksContainer)));

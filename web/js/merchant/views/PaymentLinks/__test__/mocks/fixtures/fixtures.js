@@ -60,6 +60,7 @@ export const paymentLinkStoreConfiguration = {
 export const defaultProps = {
   closeModal: () => {},
   openModal: () => {},
+  i18: { isConfigTagEnabled: jest.fn() },
 };
 
 export const paymentLinkItems = {

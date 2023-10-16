@@ -50,6 +50,7 @@ export const getEligibleProductsForMerchants = (
     websiteSectionDetailsData,
     allowCFBInternational,
     hasEnrolled,
+    extraConfig,
   }: EligibleProductsTypes,
   skipApiConditions: boolean,
 ): EligibleProducts[] => {
@@ -58,14 +59,18 @@ export const getEligibleProductsForMerchants = (
     productsToFilter = productsToFilter.filter((p) => !p.apiCondition);
   }
   const filteredProducts = productsToFilter.filter(({ additionalCondition }): boolean => {
-    return additionalCondition({
-      user,
-      mode,
-      websiteSectionDetailsData,
-      hasEnrolled,
-      allowCFBInternational,
-      instruments,
-    });
+    return additionalCondition(
+      {
+        user,
+        mode,
+        websiteSectionDetailsData,
+        hasEnrolled,
+        allowCFBInternational,
+        instruments,
+        extraConfig,
+      },
+      extraConfig,
+    );
   });
   return filteredProducts;
 };

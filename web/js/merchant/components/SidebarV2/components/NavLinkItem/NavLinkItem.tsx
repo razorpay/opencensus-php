@@ -9,6 +9,8 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { DASHBOARD_LANDING_URL } from 'merchant/components/SidebarV2/constants/constants';
 import { NavLinkItemInterface } from 'merchant/components/SidebarV2/typings';
 import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
+import { useI18Service } from 'common/i18';
 import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 
 import { BadgeContainer, Icon, LinkButtonItem, LinkItem, Typo } from './styled';
@@ -51,6 +53,9 @@ const NavLinkItem = ({
   location,
 }: NavLinkItemInterface & WithRouterProps): JSX.Element | null => {
   const { abExperiments } = useSplitzService();
+  const { isConfigTagEnabled } = useI18Service();
+  const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
+
   const onNavLinkItemClick = () => {
     analyticsTrack({
       objectName: 'sidebar',
@@ -70,7 +75,7 @@ const NavLinkItem = ({
   const Tags = getTags(tags);
 
   return (
-    <ShowWhen additionalCondition={(user) => additionalCondition(user, abExperiments)}>
+    <ShowWhen additionalCondition={(user) => additionalCondition(user, extraConfig)}>
       {type === 'linkButton' ? (
         <LinkButtonItem
           to={getHref ? getHref({ routes, user }) : routes[product_id] || DASHBOARD_LANDING_URL}

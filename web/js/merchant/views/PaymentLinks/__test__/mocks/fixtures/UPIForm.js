@@ -35,6 +35,13 @@ jest.mock(
   },
 );
 
+jest.mock(
+  'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields/Notify',
+  () => () => {
+    return <div>Notify Fields</div>;
+  },
+);
+
 jest.mock('common/utils/localStorage', () => ({
   setItem: jest.fn(),
   getItem: jest.fn().mockReturnValue(true),

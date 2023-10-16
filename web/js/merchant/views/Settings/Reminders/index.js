@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withI18Service } from 'common/i18';
 import {
   fetchReminders,
   fetchRemindersConfigs,
@@ -9,7 +10,6 @@ import Spinner from 'common/ui/Spinner';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Alert from 'common/ui/Forms/Alert';
 import DocsLink from 'merchant/components/DocsLink';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 import PaymentLinksSettings from './PaymentLinksSettings';
 
@@ -43,6 +43,9 @@ class Reminders extends React.Component {
       this.props.reminders.loading ||
       this.props.configs.loading ||
       this.props.merchant_config.loading;
+    const {
+      i18: { isConfigTagEnabled },
+    } = this.props;
 
     if (loading) {
       return (
@@ -54,11 +57,7 @@ class Reminders extends React.Component {
 
     return (
       <div class="content-wrapper content-sm" id="settings-content">
-        <ShowWhen
-          additionalCondition={(userData) =>
-            !userData.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
-          }
-        >
+        <ShowWhen additionalCondition={() => !isConfigTagEnabled('documentation.documentation')}>
           <div className="documentation-section-link">
             <DocsLink url="https://razorpay.com/docs/payment-links/reminders-payment-links/" />
           </div>
@@ -80,4 +79,4 @@ export default connect((state) => state.reminders, {
   fetchReminders,
   fetchRemindersConfigs,
   fetchRemindersMerchantConfigs,
-})(Reminders);
+})(withI18Service(Reminders));

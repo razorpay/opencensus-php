@@ -29,6 +29,7 @@ import PageHeading from './Components/PageHeading';
 import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import { INVITE_MERCHANT_STEPS } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/constants';
+import { useI18Service } from 'common/i18';
 
 const PurePlatformSwitchGuideLazy = React.lazy(
   () => import('merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch'),
@@ -55,6 +56,7 @@ const Home = ({
   const partnerName = merchant.name;
   const { isPartnershipForCapitalEnabled } = user;
   const partnerId = user?.merchant?.id;
+  const { isConfigTagEnabled } = useI18Service();
 
   const loadData = async () => {
     try {
@@ -107,6 +109,7 @@ const Home = ({
             onAddSuccess={onAddMerchantSuccess}
             source={source}
             org={org}
+            isConfigTagEnabled={isConfigTagEnabled}
           />
         ),
       });

@@ -2,15 +2,16 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import { withI18Service } from 'common/i18';
 import ModalHeader from 'common/ui/ModalHeader';
 import Clipboard from 'common/ui/Clipboard';
 import { titleCase } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import DocsLink from 'merchant/components/DocsLink';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const selector = formValueSelector('issueInvoice');
 // eslint-disable-next-line react/no-unsafe
+@withI18Service
 @connect((state) => {
   return {
     session: state.session,
@@ -89,7 +90,7 @@ export default class IssueInvoiceConfirmModal extends Component {
       isPaymentLink,
       disableIssueOnEmptySelection,
       onFieldChange,
-      session: { user },
+      i18: { isConfigTagEnabled },
     } = this.props;
 
     const isTestMode = this.props.session.mode === 'test';
@@ -99,8 +100,7 @@ export default class IssueInvoiceConfirmModal extends Component {
       (disableIssueOnEmptySelection || isPaymentLink) && !(sms_notify || email_notify);
 
     const showMoreWaysToNotify =
-      (customer.contact || customer.email) &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore);
+      (customer.contact || customer.email) && !isConfigTagEnabled('app_store.app_store');
 
     return (
       <div class="issue-invoice-modal">

@@ -10,7 +10,6 @@ import {
   delay,
 } from 'test-utils';
 
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import User from 'merchant/models/User';
 import CreateV2 from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/index';
 import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
@@ -21,6 +20,24 @@ import { showDynamicFields } from 'merchant/views/PaymentLinks/utils';
 jest.mock('merchant/views/PaymentLinks/utils', () => ({
   ...jest.requireActual('merchant/views/PaymentLinks/utils'),
   showDynamicFields: jest.fn(),
+}));
+
+const mockedFn = jest.fn();
+
+jest.mock('common/i18', () => ({
+  __esModule: true,
+  withI18Service: (Component) => (props) =>
+    <Component {...props} i18={{ isConfigTagEnabled: mockedFn }} />,
+  useI18Service: () => ({
+    isConfigTagEnabled: jest.fn(),
+  }),
+}));
+
+jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) => <Component {...props} splitz={{}} />,
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
 }));
 
 const onCloseMock = jest.fn();
@@ -139,7 +156,7 @@ describe('Payment Link Create V2 Unit Test', () => {
     expect(onCloseMock).toHaveBeenCalled();
   });
 
-  test(`show open the Standard PL if ${HIDDEN_INTERNATIONAL_FEATURES_TAGS.PAYMENT_LINKS.UPIPaymentLink} enabled`, () => {
+  test(`show open the Standard PL if PaymentLinks.upi_payment_link enabled`, () => {
     server.use(
       handlers.fetchRemindersHandler(),
       handlers.fetchRemindersMerchantConfigHandler(),
@@ -162,11 +179,10 @@ describe('Payment Link Create V2 Unit Test', () => {
               product_international: '111',
             },
           },
-          tags: [HIDDEN_INTERNATIONAL_FEATURES_TAGS.PAYMENT_LINKS.UPIPaymentLink],
         }),
       },
     };
-
+    mockedFn.mockImplementation((path) => path === 'payment_links.upi_payment_link');
     renderApp(null, initialStoreState);
 
     expect(screen.getByText('Create Payment Link')).toBeInTheDocument();
@@ -195,11 +211,10 @@ describe('Payment Link Create V2 Unit Test', () => {
               product_international: '111',
             },
           },
-          tags: [HIDDEN_INTERNATIONAL_FEATURES_TAGS.PAYMENT_LINKS.UPIPaymentLink],
         }),
       },
     };
-
+    mockedFn.mockImplementation((path) => path === 'payment_links.upi_payment_link');
     renderApp(null, initialStoreState);
 
     await waitForLoadingToFinish();
@@ -218,7 +233,7 @@ describe('Payment Link Create V2 Unit Test', () => {
 
   test('should be able to create payment Link successfully', async () => {
     server.use(handlers.createPaymentLinkV2());
-
+    mockedFn.mockImplementation(() => undefined);
     renderApp();
 
     // Click on standard payment link to open form.

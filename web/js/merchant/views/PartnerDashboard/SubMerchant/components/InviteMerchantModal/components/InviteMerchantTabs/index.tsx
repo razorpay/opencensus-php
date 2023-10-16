@@ -3,9 +3,8 @@ import { Box, Text } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
-import { User } from 'common/typings';
+import { useI18Service } from 'common/i18';
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import BulkInviteTab from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab';
 import BulkAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkAddMerchant';
 import BulkOAuthInvite from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkOAuthInvite';
@@ -27,7 +26,6 @@ import { OAuthAppDetailsType } from 'merchant/views/PartnerDashboard/Home/TypesD
 const { SINGLE_INVITE, BULK_UPLOAD, PUBLIC_LINK } = INVITE_TAB_TYPES;
 
 type InviteMerchantTabsProps = {
-  user: User;
   shouldShowHeaderAndTabs: boolean;
   setShowHeaderAndTabs: (args: boolean) => void;
   setShouldShowFooter: (args: boolean) => void;
@@ -39,7 +37,6 @@ type InviteMerchantTabsProps = {
   selectedApp?: OAuthAppDetailsType;
 };
 const InviteMerchantTabs = ({
-  user,
   productType,
   selectedApp,
   shouldShowHeaderAndTabs,
@@ -53,6 +50,8 @@ const InviteMerchantTabs = ({
   const [activeTabId, setActiveTabId] = useState(SINGLE_INVITE);
   const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
     usePartnerDashboardExperiments();
+  const { isConfigTagEnabled } = useI18Service();
+
   useEffect(() => {
     setShowHeaderAndTabs(true);
     setShouldShowFooter(activeTabId !== PUBLIC_LINK);
@@ -153,7 +152,7 @@ const InviteMerchantTabs = ({
           ) : null}
         </>
       ),
-      isVisible: !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks),
+      isVisible: !isConfigTagEnabled('partnership.referral_links'),
     },
   ].filter(({ isVisible }) => isVisible);
   const selectedTabIndex = tabPanes.findIndex(({ id }) => id === activeTabId);

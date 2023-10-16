@@ -93,13 +93,13 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import { XCorporateCardStatusTracker } from 'merchant/components/StatusTracker';
 import * as LocalStorageService from 'common/utils/localStorage';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
 import lazy from 'merchant/routes/LazyLoader';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
 import DateRangeTooltip from './DateRangeTooltip';
 import { withSplitzService } from 'common/splitz';
+import { withI18Service } from 'common/i18';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -463,6 +463,7 @@ class AnalyticsDesktop extends Component {
       settlementConfig,
       bannerCarouselData: { banner_carousel_items = [] } = {},
       internationalSettingStatus,
+      i18: { isConfigTagEnabled },
     } = this.props;
     const {
       data: { items },
@@ -546,11 +547,7 @@ class AnalyticsDesktop extends Component {
     return (
       <div className="home-analytics-desktop">
         <PricingSubscriptionWrapper />
-        <ShowWhen
-          additionalCondition={(user) =>
-            !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
-          }
-        >
+        <ShowWhen additionalCondition={() => !isConfigTagEnabled('onboarding.getting_started')}>
           {/* Announcement Banner Start */}
           <div
             ref={(node) => onExtraContentMount(node)}
@@ -802,11 +799,7 @@ class AnalyticsDesktop extends Component {
             <DateRangeTooltip />
           </div>
 
-          <ShowWhen
-            additionalCondition={(user) =>
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
-            }
-          >
+          <ShowWhen additionalCondition={() => !isConfigTagEnabled('announcements.announcements')}>
             <div
               className={`pull-right ${
                 this.props.user.isOndemandSettlementEnabled ? 'ondemand-enabled' : ''
@@ -972,9 +965,7 @@ class AnalyticsDesktop extends Component {
             <LazyLoad height={100} offset={50} once>
               <div className="col-md-12">
                 <ShowWhen
-                  additionalCondition={(user) =>
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
-                  }
+                  additionalCondition={() => !isConfigTagEnabled('announcements.announcements')}
                 >
                   <EasterEgg extraClass="ftx-home-page" page="Home" />
                 </ShowWhen>
@@ -1098,5 +1089,5 @@ export default withRouter(
     fetchCarouselBanner: fetchCarouselBannerProp,
     showProductsModal,
     ...EventActions,
-  })(withSplitzService(AnalyticsDesktop)),
+  })(withSplitzService(withI18Service(AnalyticsDesktop))),
 );

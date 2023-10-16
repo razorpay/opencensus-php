@@ -7,6 +7,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 import AsyncButton from 'react-async-button';
 import RTracking from 'react-tracking';
 import moment from 'moment';
+import { withI18Service } from 'common/i18';
 import Amount from 'common/ui/Amount';
 import Alert from 'common/ui/Forms/Alert';
 import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
@@ -71,7 +72,6 @@ import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurren
 import debounce from 'common/utils/debounce';
 import { removeTaxForNonINRItems } from './helpers';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 function validate(values) {
   const errors = {
@@ -112,7 +112,7 @@ function validate(values) {
 const selector = formValueSelector('newInvoice');
 
 // eslint-disable-next-line react/no-unsafe
-
+@withI18Service
 @connect(
   (state) => {
     const customers = state.customers;
@@ -1637,6 +1637,7 @@ class InvoicesNewContainer extends Component {
       customer,
       invoice,
       session: { user, org },
+      i18: { isConfigTagEnabled },
     } = this.props;
     const { selectedCustomerDisplay } = this.state;
 
@@ -1725,7 +1726,7 @@ class InvoicesNewContainer extends Component {
     const customerContact = customer.contact;
 
     const showCreateGSTEnabledInvoicesOption =
-      !merchantGSTIN && (isNew || isDraft) && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Gst);
+      !merchantGSTIN && (isNew || isDraft) && !isConfigTagEnabled('account.gst');
     return (
       <div class="react-root">
         {this.state.isLoading ? (
@@ -2181,10 +2182,9 @@ class InvoicesNewContainer extends Component {
                           {this.state.merchantAltBillingLabel}
                         </div>
                         <ShowWhen
-                          additionalCondition={(_user) =>
-                            !_user.findTag(
-                              HIDDEN_INTERNATIONAL_FEATURES_TAGS.InvoiceFooterAddress,
-                            ) && isAddressValid(merchantAddress)
+                          additionalCondition={() =>
+                            !isConfigTagEnabled('invoices.footer_address') &&
+                            isAddressValid(merchantAddress)
                           }
                         >
                           <div class="inv__Footer__merchantAddress">

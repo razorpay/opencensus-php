@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Field } from 'redux-form';
 
 import { CountryCodeInput } from 'common/components/CountryCodeInput';
+import { useI18Service } from 'common/i18';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import ListFilter from 'merchant/components/ListFilter';
 import ProviderSelector from 'merchant/components/ProviderSelector';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { handleChangeTrack } from 'merchant/views/Transactions/v1/AnalyticsTrack';
 
 const dateRangePresets = [
@@ -36,6 +36,7 @@ export default ({ showBatchIdFilter, ...props }) => {
   const resetReceiverTypeValue = () => {
     changeFormValue('txn_receiver_type', '');
   };
+  const { isConfigTagEnabled } = useI18Service();
 
   return (
     <ListFilter
@@ -153,9 +154,7 @@ export default ({ showBatchIdFilter, ...props }) => {
       </ShowWhen>
 
       <ShowWhen
-        additionalCondition={(usr) =>
-          !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.BankReferenceId)
-        }
+        additionalCondition={() => !isConfigTagEnabled('payment_list_filter.bank_reference_id')}
       >
         <div className="form-group list-filter-item">
           <label>Bank Reference Number</label>

@@ -37,6 +37,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'config_based_tags',
+        experimentId: {
+          beta: 'MJFQR9sKIrQsNL',
+          production: 'MmVVvCn7kpwSSX',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

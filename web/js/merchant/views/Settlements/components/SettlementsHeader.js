@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { useI18Service } from 'common/i18';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
@@ -9,7 +10,6 @@ import SettlementsBanner from './SettlementsBanner';
 import BalanceDetails from './BalanceDetails';
 import SettleNow from './SettleNow';
 import { fetchOnDemandBlocked as fnFetchOnDemandBlocked } from 'merchant/reducers/settlements/details';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 function SettlementsHeader(props) {
@@ -26,13 +26,13 @@ function SettlementsHeader(props) {
   } = props;
 
   const isNodalAccountBalanceLowBlocked = settleNowDisabled?.data?.blocked;
-
+  const { isConfigTagEnabled } = useI18Service();
   const { no_settlement } = settlement_amount.data;
 
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
   const isOnHold = no_settlement?.on_hold;
   const isSettlementOnHold = isOnTemporaryHold || isOnHold;
-  const leftBorderClassName = user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+  const leftBorderClassName = isConfigTagEnabled('documentation.documentation')
     ? ''
     : 'border-left';
 
@@ -83,9 +83,7 @@ function SettlementsHeader(props) {
           </div>
           <div className="right-content">
             <ShowWhen
-              additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
-              }
+              additionalCondition={() => !isConfigTagEnabled('documentation.documentation')}
             >
               <span>
                 <a

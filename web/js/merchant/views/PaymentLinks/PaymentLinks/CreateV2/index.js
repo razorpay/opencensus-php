@@ -14,6 +14,7 @@ import {
 } from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 
+import { withI18Service } from 'common/i18';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchReminders, fetchRemindersMerchantConfigs } from 'merchant/reducers/reminders';
 import { updatePLInReduxList } from 'merchant/reducers/paymentlinks/list';
@@ -31,7 +32,6 @@ import {
   showNoExpiryPL,
   showDynamicFields,
 } from 'merchant/views/PaymentLinks/utils';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 import { CUSTOM_FIELDS } from './constants';
 import PaymentLinkTypeSelector from './components/PaymentLinkTypeSelector';
@@ -58,7 +58,6 @@ export const CONTACT_PLACEHOLDER = {
 };
 
 // eslint-disable-next-line react/no-unsafe
-
 @connect(
   (state) => ({
     user: state.session.user,
@@ -114,7 +113,7 @@ class PaymentLinkCreateV2 extends React.Component {
       linkType = PAYMENT_LINKS_TYPES.BASE;
     }
 
-    if (props.user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PAYMENT_LINKS.UPIPaymentLink)) {
+    if (props.i18.isConfigTagEnabled('payment_links.upi_payment_link')) {
       linkType = PAYMENT_LINKS_TYPES.STANDARD;
     }
 
@@ -455,15 +454,17 @@ class PaymentLinkCreateV2 extends React.Component {
   render() {
     const { props, state } = this;
     const { linkType, dynamicFields } = state;
-    const { user } = props;
+    const {
+      user,
+      i18: { isConfigTagEnabled },
+    } = props;
     const { merchant } = user;
 
     // i18: Hide the payment link type selection for  based on the tag, currently we are only allowing the standard form.
     let showLinkTypeSelectionView = !linkType;
-    if (user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PAYMENT_LINKS.UPIPaymentLink)) {
+    if (isConfigTagEnabled('payment_links.upi_payment_link')) {
       showLinkTypeSelectionView = false;
     }
-
     const CurrentForm = PAYMENT_LINK_FORMS[linkType];
 
     const isModalView = props.onClose;
@@ -505,4 +506,4 @@ class PaymentLinkCreateV2 extends React.Component {
   }
 }
 
-export default withRouter(PaymentLinkCreateV2);
+export default withRouter(withI18Service(PaymentLinkCreateV2));

@@ -1,9 +1,11 @@
 import React from 'react';
+
 import ShowWhen from './ShowWhen';
 import { getUser } from 'merchant/store';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { useI18Service } from 'common/i18';
 
 export default function DocsLink({ url, title = 'Documentation', style = {}, onClick }) {
+  const { isConfigTagEnabled } = useI18Service();
   if (typeof title === 'string') {
     title = `${title}`;
   }
@@ -13,7 +15,7 @@ export default function DocsLink({ url, title = 'Documentation', style = {}, onC
     <ShowWhen
       additionalCondition={(user) =>
         user.isOrgAllowedFunctionality('external_links') &&
-        !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+        !isConfigTagEnabled('documentation.documentation')
       }
     >
       <a

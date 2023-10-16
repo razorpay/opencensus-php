@@ -23,9 +23,9 @@ import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import { withI18Service } from 'common/i18';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds|success-rate)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
@@ -68,6 +68,7 @@ const BASE_ROUTES = {
   pos: '/pos',
 };
 
+@withI18Service
 @connect(
   (state) => ({
     showMobileMenu: state.app.showMobileMenu,
@@ -219,7 +220,14 @@ class Sidebar extends Component {
   }
 
   render() {
-    const { user, config, logoURL, showMobileMenu, org } = this.props;
+    const {
+      user,
+      config,
+      logoURL,
+      showMobileMenu,
+      org,
+      i18: { isConfigTagEnabled },
+    } = this.props;
     const routes = this.routes;
     const isMerchant = !!user.current;
     const showExternalRedirect =
@@ -251,9 +259,9 @@ class Sidebar extends Component {
             {isMerchant && (
               <div className="nav">
                 <ShowWhen
-                  additionalCondition={(currentUser) =>
+                  additionalCondition={() =>
                     !isOrgFeatureExist('hide_activation_form') &&
-                    !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Onboarding)
+                    !isConfigTagEnabled('onboarding.onboarding')
                   }
                 >
                   <ActivationProgress
@@ -270,9 +278,9 @@ class Sidebar extends Component {
                 )}
 
                 <ShowWhen
-                  additionalCondition={(currentUser) =>
+                  additionalCondition={() =>
                     !isOrgFeatureExist('hide_razorpay_text_link') &&
-                    !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore)
+                    !isConfigTagEnabled('app_store.app_store')
                   }
                 >
                   <div className="open">

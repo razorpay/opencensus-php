@@ -40,7 +40,6 @@ import type {
 } from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant.types';
 import { classList } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { createSubmerchantInvite } from './api';
@@ -742,7 +741,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   };
 
   render() {
-    const { handleSubmit, user, tracking, source } = this.props;
+    const { handleSubmit, user, tracking, source, isConfigTagEnabled } = this.props;
     const {
       merchantType,
       addMode,
@@ -789,8 +788,8 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                     orgName={this.orgName}
                   />
                   <ShowWhen
-                    additionalCondition={(user) =>
-                      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AddNewRazorpayXMerchant)
+                    additionalCondition={() =>
+                      !isConfigTagEnabled('partnership.add_new_razorpay_x_merchant')
                     }
                   >
                     <SelectBox
@@ -846,9 +845,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                   {this.getTabHeaderText(ADD_MODE.bulk)}
                 </li>
                 <ShowWhen
-                  additionalCondition={(user) =>
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
-                  }
+                  additionalCondition={() => !isConfigTagEnabled('partnership.referral_links')}
                 >
                   {this.isPartnershipFUX && (
                     <li

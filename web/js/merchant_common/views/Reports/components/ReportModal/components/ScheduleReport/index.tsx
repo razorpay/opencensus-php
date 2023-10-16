@@ -6,7 +6,7 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { ScheduleReportModal } from './ScheduleReport';
 
-const mapStateToProps = ({ reportsCore, accounts, session }, { dashboardType }) => {
+const mapStateToProps = ({ reportsCore, accounts, session }, { dashboardType, i18 }) => {
   const { user, mode } = session;
   const {
     overview: {
@@ -16,7 +16,7 @@ const mapStateToProps = ({ reportsCore, accounts, session }, { dashboardType }) 
 
   const availableEmails = getAvailableEmails(user, allConfigs.data.map((e) => e.emails).flat());
   const { availableAccounts, headers, parseSchedulePayloadBeforeSubmit } =
-    getReportsDashboardConfig(dashboardType, session, accounts, mode);
+    getReportsDashboardConfig(dashboardType, session, accounts, mode, i18);
 
   const generatedBy = user.current;
 

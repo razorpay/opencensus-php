@@ -1,39 +1,39 @@
-import User, { isOrgFeatureExist } from 'merchant/models/User';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import { AdditionalContextInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+import User, { isOrgFeatureExist } from 'merchant/models/User';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import { AdditionalContextInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 
 export const isConfigurationViewAllowed = (user: User): boolean =>
   user.isAllowedView('configuration');
 
 export const isProfileViewAllowed = (user: User): boolean => user.isAllowedView('profile');
 
-export const isFlashCheckoutAllowed = (user: User): boolean =>
+export const isFlashCheckoutAllowed = (user: User, extraConfig: ExtraConfig): boolean =>
   user.isOrgAllowedFunctionality('flashcheckout') &&
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.FlashCheckout);
+  !extraConfig.isConfigTagEnabled('flash_checkout.flash_checkout');
 
-export const isSkipMandatorySummaryPageAllowed = (user: User): boolean =>
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.MandateSummary);
+export const isSkipMandatorySummaryPageAllowed = (extraConfig: ExtraConfig): boolean =>
+  !extraConfig.isConfigTagEnabled('account.mandate_summary');
 
 export const isSmsNotificationEnabled = (user: User): boolean => !!user.contact_mobile;
 
 export const isEmailNotificationEnabled = (user: User): boolean =>
   [rolesList.OWNER, rolesList.ADMIN].includes(user.role);
 
-export const isWhatsappNotificationEnabled = (user: User): boolean =>
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WhatsappNotification) &&
+export const isWhatsappNotificationEnabled = (user: User, extraConfig: ExtraConfig): boolean =>
+  !extraConfig.isConfigTagEnabled('account.whatsapp_notification') &&
   user.isWhatsappNotificationEnabled() &&
   user.user &&
   !!user.user.contact_mobile &&
   user.activation_status === 'activated' &&
   (user.role === rolesList.OWNER || user.role === rolesList.ADMIN);
 
-export const isTrustedBadgeAllowed = (user: User): boolean =>
+export const isTrustedBadgeAllowed = (user: User, extraConfig: ExtraConfig): boolean =>
   user.isAllowedView('trustedbadge') &&
   !user.isOrgAxis &&
   !isOrgFeatureExist('hide_razorpay_text_link') &&
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TrustedBadge);
+  !extraConfig.isConfigTagEnabled('account.trusted_badge');
 
 export const isPaymentMethodEnabled = (user: User, mode: string): boolean =>
   ((user.isOrgRZP === true && user.isInstrumentRequestAllowed()) ||
@@ -61,48 +61,52 @@ export const isApplicationEnabled = (user: User): boolean => user.isAllowedView(
 export const isWebsiteDetailsEnabled = ({
   user,
   websiteSectionDetailsData,
-}: Pick<AdditionalContextInterface, 'user' | 'websiteSectionDetailsData'>): boolean =>
+  extraConfig,
+}: Pick<
+  AdditionalContextInterface,
+  'user' | 'websiteSectionDetailsData' | 'extraConfig'
+>): boolean =>
   user.isWebsiteComplianceFlowEnabled &&
   websiteSectionDetailsData.data.isWebsiteSectionsApplicable &&
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WebsiteAppDetails);
+  !extraConfig.isConfigTagEnabled('contact.website_app_details');
 
-export const isGstDetailsEnabled = (user: User): boolean =>
+export const isGstDetailsEnabled = (user: User, extraConfig: ExtraConfig): boolean =>
   user.isAllowedView('profile_gst') &&
   !user.isUnregisteredBusiness &&
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Gst);
+  !extraConfig.isConfigTagEnabled('account.gst');
 
 export const isAccountDetailsEnabled = (user: User): boolean => user.isActivated;
 
 export const isTeamManagementAllowed = (user: User): boolean => user.isAllowedTeamManagement;
 
-export const isSupportTicketEnabled = (user: User): boolean =>
+export const isSupportTicketEnabled = (user: User, extraConfig: ExtraConfig): boolean =>
   user.isAdminOrOwner &&
   user.isFdTicketsEnabled &&
   !user.isComdelApiEnabled &&
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SupportHistory);
+  !extraConfig.isConfigTagEnabled('account.support_history');
 
-export const isBalancesEnabled = (user: User): boolean =>
-  user.isAllowedView('add_funds') && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Balances);
+export const isBalancesEnabled = (user: User, extraConfig: ExtraConfig): boolean =>
+  user.isAllowedView('add_funds') && !extraConfig.isConfigTagEnabled('account.balances');
 
-export const isCreditsEnabled = (user: User): boolean =>
-  user.isAllowedView('credits') && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Credits);
+export const isCreditsEnabled = (user: User, extraConfig: ExtraConfig): boolean =>
+  user.isAllowedView('credits') && !extraConfig.isConfigTagEnabled('account.credits');
 
-export const isReminderEnabled = (user: User): boolean =>
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Reminders);
+export const isReminderEnabled = (extraConfig: ExtraConfig): boolean =>
+  !extraConfig.isConfigTagEnabled('reminders.reminder');
 
-export const isPaymentCaptureAndRefundEnabled = (user: User): boolean =>
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentCapture) ||
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds);
+export const isPaymentCaptureAndRefundEnabled = (extraConfig: ExtraConfig): boolean =>
+  !extraConfig.isConfigTagEnabled('account.payment_capture') ||
+  !extraConfig.isConfigTagEnabled('refunds.refund');
 
 export const isFailedPaymentRetryEnabled = (user: User): boolean =>
   user.isFeatureEnabled('missed_orders_plink');
 
-export const isBankAccountDetailsAllowed = (user: User): boolean =>
+export const isBankAccountDetailsAllowed = (extraConfig: ExtraConfig): boolean =>
   !isOrgFeatureExist('hide_settlement_details') &&
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.BankAccount);
+  !extraConfig.isConfigTagEnabled('account.bank_account');
 
-export const isSettlementsAllowed = (user: User): boolean =>
-  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements);
+export const isSettlementsAllowed = (extraConfig: ExtraConfig): boolean =>
+  !extraConfig.isConfigTagEnabled('settlements.settlement');
 
 export const shouldShowFIRCSection = (user: User): boolean => {
   /**

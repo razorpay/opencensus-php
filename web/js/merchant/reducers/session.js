@@ -9,6 +9,7 @@ const UPDATE_USER = 'UPDATE_USER';
 const UPDATE_USER_FEATURES = 'UPDATE_USER_FEATURES';
 const UPDATE_USER_CAMPAIGNS = 'UPDATE_USER_CAMPAIGNS';
 const UPDATE_USER_TAGS = 'UPDATE_USER_TAGS';
+const UPDATE_I18N_TAGS = 'UPDATE_I18N_TAGS';
 const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
@@ -56,6 +57,16 @@ export const fetchUserTags = () => {
     type: UPDATE_USER_TAGS,
     payload: ajax({
       url: `/merchant/tags`,
+      appendModeInURL: false,
+    }),
+  };
+};
+
+export const fetchConfigTags = (countryCode) => {
+  return {
+    type: UPDATE_I18N_TAGS,
+    payload: ajax({
+      url: `/country/${countryCode}/configs`,
       appendModeInURL: false,
     }),
   };
@@ -208,6 +219,27 @@ export default function sessionReducer(state = initialState, action) {
           tags: [],
         }),
         isTagsLoaded: true,
+      });
+
+    case `${UPDATE_I18N_TAGS}::SUCCESS`:
+      window.rzp_user = {
+        ...window.rzp_user,
+        configTags: action?.payload?.data?.UIControls || {},
+      };
+
+      return merge(state, {
+        user: new User({
+          ...state.user,
+          configTags: action?.payload?.data?.UIControls || {},
+        }),
+      });
+
+    case `${UPDATE_I18N_TAGS}::ERROR`:
+      return merge(state, {
+        user: new User({
+          ...state.user,
+          configTags: {},
+        }),
       });
 
     case UPDATE_USER_FEATURES:

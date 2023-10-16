@@ -30,6 +30,7 @@ import AccountDetails from 'merchant/views/AccountAndSettings/BusinessSettings/T
 import BusinessDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/BusinessDetails';
 import ActivationDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/ActivationDetails';
 import BusinessWebsiteDetails from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails';
+import { useI18Service } from 'common/i18';
 
 const MerchantDetails = ({ user, openModal, closeModal, tracking }) => {
   const openNeedsClarificationModal = (data) => {
@@ -69,6 +70,7 @@ const MerchantDetails = ({ user, openModal, closeModal, tracking }) => {
     });
   };
 
+  const { isConfigTagEnabled } = useI18Service();
   return (
     <div className="list-group details-row-container">
       <IntoView hashedWith={[EMAIL_UPDATE, CONTACT_NUMBER_UPDATE]}>
@@ -98,7 +100,7 @@ const MerchantDetails = ({ user, openModal, closeModal, tracking }) => {
 
       <EditTransactionLimit transactionType="domestic" replyHandler={openNeedsClarificationModal} />
 
-      <ShowWhen additionalCondition={(_user) => !_user.findTag('i18_hide_international')}>
+      <ShowWhen additionalCondition={() => !isConfigTagEnabled('settings.international')}>
         <EditTransactionLimit
           transactionType="international"
           replyHandler={openNeedsClarificationModal}

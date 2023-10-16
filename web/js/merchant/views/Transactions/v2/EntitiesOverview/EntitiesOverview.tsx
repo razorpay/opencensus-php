@@ -2,9 +2,9 @@ import React from 'react';
 import { Heading } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Outlet } from 'react-router-dom';
+import { useI18Service } from 'common/i18';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import EntityAnalytics from 'merchant/views/Transactions/v2/Analytics/EntityAnalytics';
 import { EntityOverviewType } from 'merchant/views/Transactions/v2/Analytics/types';
 import GoBack from 'merchant/views/Transactions/v2/common/components/GoBack';
@@ -36,6 +36,8 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
   ].includes(pathname as TransactionsEntityRoute);
   const entityAnalyticsType =
     pathname === FAILED_PAYMENTS ? EntityOverviewType.Failed : EntityOverviewType.Refunds;
+  const { isConfigTagEnabled } = useI18Service();
+
   return (
     <div className="tabbed-container">
       <GoBack />
@@ -48,8 +50,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
         <StyledTabHeader id="transactions-header">
           <ShowWhen
             additionalCondition={(usr) =>
-              usr.isAllowedView('refunds') &&
-              !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+              usr.isAllowedView('refunds') && !isConfigTagEnabled('refunds.refund')
             }
           >
             <StyledTabItem
@@ -66,8 +67,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
           </ShowWhen>
           <ShowWhen
             additionalCondition={(usr) =>
-              usr.isAllowedView('refunds_batch_uploads') &&
-              !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+              usr.isAllowedView('refunds_batch_uploads') && !isConfigTagEnabled('refunds.refund')
             }
           >
             <StyledTabItem

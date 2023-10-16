@@ -1,8 +1,11 @@
 import Breadcrumb from 'common/components/Breadcrumb';
 import Loader from 'common/components/Loader';
+import { useI18Service } from 'common/i18';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { useSplitzService } from 'common/splitz';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import lazy from 'merchant/routes/LazyLoader';
 import {
@@ -81,6 +84,9 @@ const TeamInvitations = lazy(
 );
 
 const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Element => {
+  const { abExperiments } = useSplitzService();
+  const { isConfigTagEnabled } = useI18Service();
+  const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   if (!user.isAccountAndSettingsRevampEnabled) {
     const path = location.pathname;
     if (path === ROUTES_INFO.MANAGE_TEAM_DETAILS) return <Navigate to="/team" replace />;
@@ -113,7 +119,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
             <NavLink to={ROUTES_INFO.ACTIVATION_DETAILS}>Activation details</NavLink>
           </ShowWhen>
           <NavLink to={ROUTES_INFO.BUSINESS_DETAILS}>Business details</NavLink>
-          <ShowWhen additionalCondition={(user) => isGstDetailsEnabled(user)}>
+          <ShowWhen additionalCondition={(user) => isGstDetailsEnabled(user, extraConfig)}>
             <NavLink to={ROUTES_INFO.GST_DETAILS}>GST details</NavLink>
           </ShowWhen>
 
@@ -124,7 +130,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
           <ShowWhen additionalCondition={(user) => shouldShowTeamInvitations(user)}>
             <NavLink to={ROUTES_INFO.TEAM_INVITATIONS}>Invitations</NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={(user) => isSupportTicketEnabled(user)}>
+          <ShowWhen additionalCondition={(user) => isSupportTicketEnabled(user, extraConfig)}>
             <NavLink
               to="/business-settings/ticket-support/tickets"
               // isActive={() => {

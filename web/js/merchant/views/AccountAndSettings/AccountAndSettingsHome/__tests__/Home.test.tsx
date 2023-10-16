@@ -9,6 +9,12 @@ import React from 'react';
 import { render, screen, server, waitFor } from 'test-utils';
 import { fetchMerchantInstrumentHandler, fetchRequestedInstrumentHandler } from './mocks/handler';
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({
+    abExperiments: {},
+  }),
+}));
+
 describe('AccountAndSettingsHomePage', () => {
   const fetchConnectedApplicationsSpy = jest.spyOn(
     applicationsReducers,

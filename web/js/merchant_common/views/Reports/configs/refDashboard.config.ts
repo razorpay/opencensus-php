@@ -1,6 +1,6 @@
 import { SessionReducerState } from 'common/typings';
 
-import { REPORT_CONFIG_TYPE, getCustomConfigs } from '.';
+import { reportConfigType, getCustomConfigs } from '.';
 import {
   DashboardType,
   ModeType,
@@ -24,6 +24,7 @@ import {
   MONTHLY_INVOICE_REPORT,
   OPTIMISER_SETTLEMENTS,
 } from 'merchant_common/views/Reports/constants';
+import { I18ContextStateType } from 'common/i18/types';
 
 /**
  * @param {DashboardType} dashboardType Dashboard type where the core report component will be used.
@@ -37,6 +38,7 @@ export const getReportsDashboardConfig = (
   session?: SessionReducerState,
   accounts?,
   mode?: ModeType,
+  i18?: I18ContextStateType,
 ): RefDashboardConfigType => {
   return {
     merchant: {
@@ -50,7 +52,7 @@ export const getReportsDashboardConfig = (
           return configs.filter(({ name, type }) => {
             const { isSupportRole, isOptimizerRZPVASEnabled, isPaymentPageFileUploadEnabled } =
               session.user;
-
+            const REPORT_CONFIG_TYPE = reportConfigType(i18);
             const inCheck = REPORT_CONFIG_TYPE?.[name] ?? REPORT_CONFIG_TYPE?.[type];
             const isI18TagFound = inCheck && session.user.findTag(inCheck);
 

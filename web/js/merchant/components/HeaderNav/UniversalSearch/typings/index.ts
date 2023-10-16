@@ -1,4 +1,5 @@
 import { InstrumentsList, ShowNotificationType, User } from 'common/typings';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 
 interface WebsiteSectionData {
   isGracePeriodApplicable: boolean;
@@ -25,6 +26,7 @@ export type EligibleProductsTypes = Pick<
 > & {
   allowCFBInternational: boolean;
   hasEnrolled: boolean | null;
+  extraConfig: ExtraConfig;
 };
 
 type Tags = {
@@ -47,7 +49,7 @@ export type ProductType = {
 
 export type EligibleProducts = ProductItem & {
   apiCondition: boolean;
-  additionalCondition: (args: EligibleProductsTypes) => boolean;
+  additionalCondition: (args: EligibleProductsTypes, extraConfig: ExtraConfig) => boolean;
 };
 
 export interface UniversalSearchPropInterface {

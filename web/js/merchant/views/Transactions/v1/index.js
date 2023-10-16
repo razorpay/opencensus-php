@@ -19,12 +19,12 @@ import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { fetchOpen as fnFetchOpenDisputes } from 'merchant/reducers/disputes/details';
 import { fetchSettlementAmount as fnFetchSettlementAmount } from 'merchant/reducers/home';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
+import { withI18Service } from 'common/i18';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
@@ -98,7 +98,14 @@ class TransactionsContainer extends Component {
   };
 
   render() {
-    const { user, mode, openDisputes, settlementConfig, splitz } = this.props;
+    const {
+      user,
+      mode,
+      openDisputes,
+      settlementConfig,
+      splitz,
+      i18: { isConfigTagEnabled },
+    } = this.props;
     const { role, activation_status } = user;
 
     /* Added a check for if the settlement_amount is present or not otherwile it will be false as default*/
@@ -170,8 +177,7 @@ class TransactionsContainer extends Component {
             </ShowWhen>
             <ShowWhen
               additionalCondition={(usr) =>
-                usr.isAllowedView('refunds') &&
-                !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                usr.isAllowedView('refunds') && !isConfigTagEnabled('refunds.refund')
               }
             >
               <NavLink
@@ -194,8 +200,7 @@ class TransactionsContainer extends Component {
             </ShowWhen>
             <ShowWhen
               additionalCondition={(usr) =>
-                usr.isAllowedView('refunds_batch_uploads') &&
-                !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                usr.isAllowedView('refunds_batch_uploads') && !isConfigTagEnabled('refunds.refund')
               }
             >
               <NavLink
@@ -238,11 +243,7 @@ class TransactionsContainer extends Component {
                 Orders
               </NavLink>
             </ShowWhen>
-            <ShowWhen
-              additionalCondition={(usr) =>
-                !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Disputes)
-              }
-            >
+            <ShowWhen additionalCondition={() => !isConfigTagEnabled('disputes.disputes')}>
               <NavLink
                 to="/disputes"
                 onClick={() => {
@@ -464,5 +465,5 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 export default withSplitzService(
-  withRouter(connect(mapStateToProps, mapDispatchToProps)(TransactionsContainer)),
+  withRouter(connect(mapStateToProps, mapDispatchToProps)(withI18Service(TransactionsContainer))),
 );

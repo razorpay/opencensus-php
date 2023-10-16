@@ -36,6 +36,9 @@ import {
   newAndOldRouteMap,
   newRoutes,
 } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/constants/constants';
+import { useI18Service } from 'common/i18';
+import { useSplitzService } from 'common/splitz';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 
 const feature = 'allow_cfb_international';
 
@@ -63,6 +66,10 @@ const PaymentsAndRefundsSettings = ({
   featureStatusConfig: { data: featureData, loading: isFeatureLoading },
   location: { pathname },
 }): JSX.Element => {
+  const { abExperiments } = useSplitzService();
+  const { isConfigTagEnabled } = useI18Service();
+  const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
+
   useEffect(() => {
     if (!featureData.hasOwnProperty(feature)) {
       fetchFeatureByName({ userId: user.id, feature });
@@ -105,13 +112,13 @@ const PaymentsAndRefundsSettings = ({
           ]}
         />
         <StyledHeader className="scrollable-tab-header">
-          <ShowWhen additionalCondition={(user) => isBalancesEnabled(user)}>
+          <ShowWhen additionalCondition={(user) => isBalancesEnabled(user, extraConfig)}>
             <NavLink to={ROUTES_INFO.BALANCES}>Balances</NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={(user): boolean => isCreditsEnabled(user)}>
+          <ShowWhen additionalCondition={(user): boolean => isCreditsEnabled(user, extraConfig)}>
             <NavLink to={ROUTES_INFO.CREDITS}>Credits</NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={(user) => isReminderEnabled(user)}>
+          <ShowWhen additionalCondition={() => isReminderEnabled(extraConfig)}>
             <NavLink to={ROUTES_INFO.REMINDERS}>Reminders</NavLink>
           </ShowWhen>
           <NavLink to={ROUTES_INFO.TRANSACTION_LIMITS}>Transaction limits</NavLink>
@@ -122,7 +129,9 @@ const PaymentsAndRefundsSettings = ({
           >
             <NavLink to={ROUTES_INFO.FEE_BEARER}>Fee bearer</NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={(user): boolean => isPaymentCaptureAndRefundEnabled(user)}>
+          <ShowWhen
+            additionalCondition={(): boolean => isPaymentCaptureAndRefundEnabled(extraConfig)}
+          >
             <NavLink to={ROUTES_INFO.CAPTURE_AND_REFUND_SETTINGS}>
               Capture and refund settings
             </NavLink>
@@ -189,8 +198,8 @@ const PaymentsAndRefundsSettings = ({
                       path={getRefRoute(ROUTES_INFO.CAPTURE_AND_REFUND_SETTINGS)}
                       element={
                         <RouteGuard
-                          additionalCondition={(user): boolean =>
-                            isPaymentCaptureAndRefundEnabled(user)
+                          additionalCondition={(): boolean =>
+                            isPaymentCaptureAndRefundEnabled(extraConfig)
                           }
                         >
                           <PaymentCaptureAndRefund />

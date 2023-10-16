@@ -1,6 +1,6 @@
 import { Box, InfoIcon, Text } from '@razorpay/blade/components';
+import { useI18Service } from 'common/i18';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import User2FASettings from 'merchant/views/Account/Profile/components/User2FASettings';
 import { VerificationPropsInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import React from 'react';
@@ -12,12 +12,13 @@ const Verification = ({ isMobile, user }: VerificationPropsInterface): JSX.Eleme
     user: { org_enforced_second_factor_auth, signup_via_email },
     is2FAMobileSignupEnabled,
   } = user;
+  const { isConfigTagEnabled } = useI18Service();
 
   // condition to check whether merchant is enabled for 2fa verification
   const shouldShow2FASettings =
     !org_enforced_second_factor_auth &&
     (signup_via_email || is2FAMobileSignupEnabled) &&
-    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TwoFactorVerification);
+    !isConfigTagEnabled('account.hide_2fa_verification');
 
   if (!shouldShow2FASettings) {
     return null;

@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import RTracking from 'react-tracking';
+import { withI18Service } from 'common/i18';
 import InputField from 'common/ui/Forms/InputField';
 import Alert from 'common/ui/Forms/Alert';
 import ModalHeader from 'common/ui/ModalHeader';
@@ -18,18 +19,20 @@ import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import sanitizer from 'common/utils/xss-sanitizer';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
-export const HIDE_WEBHOOK_TYPE = {
-  payment: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Payment,
-  order: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Order,
-  invoice: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices,
-  subscription: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions,
-  fund_account: HIDDEN_INTERNATIONAL_FEATURES_TAGS.FundAccount,
-  refund: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds,
-  payment_link: HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks,
-};
+function hideWebhookType(isConfigTagEnabled) {
+  return {
+    payment: isConfigTagEnabled('webhooks.payment'),
+    order: isConfigTagEnabled('webhooks.order'),
+    invoice: isConfigTagEnabled('webhooks.invoices'),
+    subscription: isConfigTagEnabled('webhooks.subscriptions'),
+    fund_account: isConfigTagEnabled('webhooks.fund_account'),
+    refund: isConfigTagEnabled('webhooks.refunds'),
+    payment_link: isConfigTagEnabled('webhooks.payment_links'),
+  };
+}
+
 class webhookForm extends Component {
   state = {
     errors: null,
@@ -69,7 +72,11 @@ class webhookForm extends Component {
   }
 
   UNSAFE_componentWillMount() {
-    const { webhook, userData } = this.props;
+    const {
+      webhook,
+      userData,
+      i18: { isConfigTagEnabled },
+    } = this.props;
 
     if (webhook) {
       if (webhook.secret_exists) {
@@ -105,14 +112,15 @@ class webhookForm extends Component {
 
           // Remove merchant un-supported webhooks
           Object.keys(events).forEach((eventGroupKey) => {
+            const HIDE_WEBHOOK_TYPE = hideWebhookType(isConfigTagEnabled);
             const webhookType = HIDE_WEBHOOK_TYPE[eventGroupKey];
-            const i18TagFound = webhookType && userData.findTag?.(webhookType);
+            const i18TagFound = webhookType;
             if (i18TagFound) {
               delete events[eventGroupKey];
             }
             if (
               eventGroupKey === 'payment' &&
-              userData.findTag?.(HIDDEN_INTERNATIONAL_FEATURES_TAGS.DowntimePaymentEvents)
+              !isConfigTagEnabled('webhooks.downtime_payment_events')
             ) {
               this.removePaymentDowntimeEvents(events);
             }
@@ -746,4 +754,4 @@ export default compose(
   }),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('WebhooksContainer')),
-)(webhookForm);
+)(withI18Service(webhookForm));

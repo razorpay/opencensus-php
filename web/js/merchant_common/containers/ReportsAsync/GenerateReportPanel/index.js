@@ -16,8 +16,9 @@ import EmailReport from './EmailReport';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { REPORT_CONFIG_TYPE } from 'merchant_common/containers/ReportsAsync/utils';
+import { reportConfigType } from 'merchant_common/containers/ReportsAsync/utils';
 import { connect } from 'react-redux';
+import { withI18Service } from 'common/i18';
 
 const marketplaceConfigTypes = ['transactions', 'payments', 'refunds', 'settlements'];
 @RTracking(() => window.rzpQ.component('GenerateReportPanel'))
@@ -192,7 +193,7 @@ class GenerateReportPanel extends React.PureComponent {
   };
 
   render() {
-    const { user, configs, customConfigs, accounts, emailReportOptions, showSelectAccount } =
+    const { user, configs, customConfigs, accounts, emailReportOptions, showSelectAccount, i18 } =
       this.props;
     const { selectedConfig, dateRangeError, selectedAccount } = this.state;
     let allConfigs = [...configs.items, ...customConfigs];
@@ -219,6 +220,7 @@ class GenerateReportPanel extends React.PureComponent {
 
     if (user?.findTag) {
       allConfigs = allConfigs.filter((config) => {
+        const REPORT_CONFIG_TYPE = reportConfigType(i18);
         const configType = REPORT_CONFIG_TYPE[config.type];
         const configName = REPORT_CONFIG_TYPE[config.name];
         const i18TagFound =
@@ -315,4 +317,7 @@ function getDateRangeError(startAt, endAt, aggregatedPartnerReport) {
   return false;
 }
 
-export default connect((state) => ({ user: state.session.user }), null)(GenerateReportPanel);
+export default connect(
+  (state) => ({ user: state.session.user }),
+  null,
+)(withI18Service(GenerateReportPanel));

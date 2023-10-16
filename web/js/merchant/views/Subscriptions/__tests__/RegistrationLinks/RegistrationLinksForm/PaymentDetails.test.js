@@ -1,6 +1,10 @@
 import React from 'react';
-import { screen, render } from 'test-utils';
+import { screen, render, updateUseI18ServiceSpy } from 'test-utils';
 import App from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/PaymentDetails';
+import User from 'merchant/models/User';
+import store from 'merchant/store';
+
+const stateSpy = jest.spyOn(store, 'getState');
 
 describe('RL - Payment Details Form', () => {
   const onBlurElement = jest.fn();
@@ -101,5 +105,26 @@ describe('RL - Payment Details Form', () => {
     ['ifsc', 'beneficiary name', 'account number', 'account type'].forEach((fieldLabel) => {
       expect(screen.getByPlaceholderText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
     });
+  });
+
+  test('hide link if subscriptions.supported_bank_links config tag is enabled', () => {
+    stateSpy.mockReturnValue({
+      session: {
+        user: new User(),
+        org: {
+          custom_code: 'curlec',
+        },
+      },
+    });
+    updateUseI18ServiceSpy('subscriptions.supported_bank_links');
+    renderApp({
+      isEmandatePayment: false,
+      isCardPayment: false,
+      isUPIPayment: false,
+      isNACHPayment: false,
+      mandateMethod: 'card',
+    });
+
+    expect(screen.queryByText(/supported banks & networks/i)).not.toBeInTheDocument();
   });
 });

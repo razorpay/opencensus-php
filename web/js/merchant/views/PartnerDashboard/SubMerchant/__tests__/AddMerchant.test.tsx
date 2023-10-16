@@ -114,6 +114,7 @@ describe('AddMerchant', () => {
         referralData={referralData}
         addType={PRODUCT_TYPE.PG}
         org={orgDetails}
+        isConfigTagEnabled={jest.fn()}
       />,
       {
         initialState: {
@@ -135,6 +136,7 @@ describe('AddMerchant', () => {
         referralData={referralDataFixture}
         addType={PRODUCT_TYPE.CAPITAL}
         org={orgDetails}
+        isConfigTagEnabled={jest.fn()}
       />,
       {
         initialState: {

@@ -26,7 +26,7 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
 import { isLowCostExperimentEnabled as isLowCostEnabled } from 'merchant/views/Offers/New/Screens/NoCostEMI/helpers/helper';
-
+import { withI18Service } from 'common/i18';
 import OnBoarding, { getIsOffersEnabled, getIsAllowedResetOffersOnBoarding } from './OnBoarding';
 
 // eslint-disable-next-line react/no-unsafe
@@ -85,17 +85,18 @@ class OfferIndex extends Component {
   };
 
   render() {
-    const {
-      offersProductOnBoarding: { showOnboarding },
-    } = this.props;
-
+    const { offersProductOnBoarding, i18 } = this.props;
+    const { showOnboarding } = offersProductOnBoarding;
+    const { isConfigTagEnabled } = i18;
     if (showOnboarding) {
       return <OnBoarding />;
     }
 
-    const createOfferRoute = this.props.user.isSubscriptionOffersEnabled
-      ? '/offers/new' // '/offers/new?offer_creation_modal_type=subscription'
-      : '/offers/new?offer_creation_modal_type=basic';
+    const createOfferRoute =
+      this.props.user.isSubscriptionOffersEnabled &&
+      !isConfigTagEnabled('subscription.subcription_offers')
+        ? '/offers/new' // '/offers/new?offer_creation_modal_type=subscription'
+        : '/offers/new?offer_creation_modal_type=basic';
 
     let isLowCostExperimentEnabled = false;
     if (this.props.splitz) {
@@ -193,4 +194,4 @@ class OfferIndex extends Component {
   }
 }
 
-export default withSplitzService(OfferIndex);
+export default withSplitzService(withI18Service(OfferIndex));

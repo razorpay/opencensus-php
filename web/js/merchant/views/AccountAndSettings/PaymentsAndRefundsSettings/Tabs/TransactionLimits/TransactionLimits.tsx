@@ -1,3 +1,4 @@
+import { useI18Service } from 'common/i18';
 import ShowWhen from 'merchant/components/ShowWhen';
 import EditTransactionLimit from 'merchant/views/Account/Profile/components/EditTransactionLimit';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
@@ -14,11 +15,12 @@ const TransactionLimits = ({ openModal }): JSX.Element => {
       component: <NeedsClarificationModal {...data} />,
     });
   };
+  const { isConfigTagEnabled } = useI18Service();
 
   return (
     <StyledTransactionLimitContainer>
       <EditTransactionLimit transactionType="domestic" replyHandler={openNeedsClarificationModal} />
-      <ShowWhen additionalCondition={(user) => !user.findTag('i18_hide_international')}>
+      <ShowWhen additionalCondition={() => !isConfigTagEnabled('settings.international')}>
         <EditTransactionLimit
           transactionType="international"
           replyHandler={openNeedsClarificationModal}

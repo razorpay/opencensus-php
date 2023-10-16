@@ -52,12 +52,18 @@ const getReportsFeatures = (isSchedulesEnabled: boolean) => {
   return features;
 };
 
-const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
+const mapStateToProps = ({ reportsCore, session }, { dashboardType, i18 }) => {
   const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
   return {
     allReportConfigs: allConfigs.data,
     user: pickProps(session.user, ['current', 'international']),
-    refDashboardConfig: getReportsDashboardConfig(dashboardType, session),
+    refDashboardConfig: getReportsDashboardConfig(
+      dashboardType,
+      session,
+      undefined,
+      undefined,
+      i18,
+    ),
   };
 };
 

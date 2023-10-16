@@ -3,6 +3,7 @@ import { NavLink, Link } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
 import { Field } from 'redux-form';
+import { withI18Service } from 'common/i18';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
@@ -30,7 +31,6 @@ import track from './track';
 import { trackSearchFilterForInternational } from './ga';
 import EasterEgg from 'merchant/components/EasterEgg';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isReminderEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
 const {
@@ -112,7 +112,6 @@ const getExtraFields = (user, tracking, onDatesChange) => {
 
   return fields;
 };
-
 @connect((state) => ({ ...state.paymentlinks, ...state.session }), {
   fetchPaymentLinks,
   fetchReminders,
@@ -256,6 +255,10 @@ class PaymentLinksContainer extends ListContainer {
   render() {
     const { loading, paymentlinks, user: users, mode, tracking } = this.props;
     const status = this.state.status;
+    const extraConfig = {
+      abExperiments: {},
+      isConfigTagEnabled: this.props.i18.isConfigTagEnabled,
+    };
 
     const docsLinkProps = {
       url: 'https://razorpay.com/docs/payment-links/',
@@ -284,7 +287,7 @@ class PaymentLinksContainer extends ListContainer {
           <>
             <ShowWhen
               additionalCondition={(user) =>
-                isReminderEnabled(user) && isAccountsAndSettingsEnabled(user)
+                isReminderEnabled(extraConfig) && isAccountsAndSettingsEnabled(user)
               }
             >
               <span class="btn btn-link">
@@ -303,8 +306,8 @@ class PaymentLinksContainer extends ListContainer {
             </ShowWhen>
 
             <ShowWhen
-              additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+              additionalCondition={() =>
+                !this.props?.i18?.isConfigTagEnabled('documentation.documentation')
               }
             >
               <span className="hidden-xs">
@@ -408,4 +411,4 @@ class PaymentLinksContainer extends ListContainer {
   }
 }
 
-export default withRouter(PaymentLinksContainer);
+export default withRouter(withI18Service(PaymentLinksContainer));

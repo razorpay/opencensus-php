@@ -8,6 +8,7 @@ import { compose } from 'redux';
 
 import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
 import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
+import { withI18Service } from 'common/i18';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Image from 'common/ui/Image';
 import Loader from 'common/ui/Loader';
@@ -30,7 +31,6 @@ import {
   XSubmerchantCAStatusLabel,
   CapitalSubMerchantStatusLabel,
 } from 'merchant/components/StatusLabel';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ListContainer from 'merchant/containers/ListContainer';
 import { withRouter } from 'common/deprecated/withRouter';
 import { fetchProducts } from 'merchant/reducers/capital';
@@ -935,7 +935,7 @@ class ProductSubMerchantsList extends ListContainer {
                       additionalCondition={(currentUser) =>
                         ((currentUser.isPartner() && currentUser.isPartner('reseller')) ||
                           this.isCapitalProduct) &&
-                        !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
+                        !this.props?.i18?.isConfigTagEnabled('partnership.referral_links')
                       }
                     >
                       <div>
@@ -1022,6 +1022,7 @@ export const PrimarySubMerchantList = compose(
     getDispatchToProps(PRODUCT_TYPE.PG),
   ),
   withRouter,
+  withI18Service,
 )(ProductSubMerchantsList);
 
 export const XSubMerchantList = compose(
@@ -1035,6 +1036,7 @@ export const XSubMerchantList = compose(
     getDispatchToProps(PRODUCT_TYPE.X),
   ),
   withRouter,
+  withI18Service,
 )(ProductSubMerchantsList);
 
 export const CapitalSubMerchantList = compose(
@@ -1049,4 +1051,5 @@ export const CapitalSubMerchantList = compose(
     getDispatchToProps(PRODUCT_TYPE.CAPITAL),
   ),
   withRouter,
+  withI18Service,
 )(ProductSubMerchantsList);

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import { withI18Service } from 'common/i18';
 import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -63,7 +64,6 @@ import {
   getResponseTime,
   trackBankAccountDetailsChange,
 } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { shouldShowFIRCSection } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { Modules } from 'common/constant/enums';
 
@@ -592,7 +592,12 @@ class Profile extends Component {
   };
 
   render() {
-    const { user, profile, settlement_amount } = this.props;
+    const {
+      user,
+      profile,
+      settlement_amount,
+      i18: { isConfigTagEnabled },
+    } = this.props;
     const { bankAccount } = profile;
     const invitations = user.user.invitations;
     const { isAdminAsMerchant, isWebsiteInWorkflow, hasMerchant } = this.state;
@@ -608,7 +613,7 @@ class Profile extends Component {
     const show2FASettings =
       !user?.user?.org_enforced_second_factor_auth &&
       (user?.user?.signup_via_email || user.is2FAMobileSignupEnabled) &&
-      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TwoFactorVerification);
+      !isConfigTagEnabled('account.hide_2fa_verification');
     return (
       <div className="content-wrapper content-sm">
         <div className="profile-container">
@@ -655,7 +660,7 @@ class Profile extends Component {
             additionalCondition={(_user) =>
               _user.isAllowedView('profile_gst') &&
               !_user.isUnregisteredBusiness &&
-              !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Gst)
+              !isConfigTagEnabled('account.gst')
             }
           >
             <IntoView hashedWith={[UPDATE_GSTIN, NC_UPDATE_GSTIN, RR_UPDATE_GSTIN]}>
@@ -666,7 +671,7 @@ class Profile extends Component {
             additionalCondition={(_user) =>
               bankAccount &&
               !isOrgFeatureExist('hide_settlement_details') &&
-              !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.BankAccount)
+              !isConfigTagEnabled('account.bank_account')
             }
           >
             <IntoView hashedWith={[UPDATE_BANK_ACC, NC_UPDATE_BANK_ACC, RR_UPDATE_BANK_ACC]}>
@@ -718,7 +723,7 @@ class Profile extends Component {
 
           <ShowWhen
             additionalCondition={(user) =>
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Onboarding) &&
+              !isConfigTagEnabled('onboarding.onboarding') &&
               !user.isMerchantRestricted &&
               !hasMerchant
             }
@@ -770,4 +775,4 @@ export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('Profile')),
-)(Profile);
+)(withI18Service(Profile));

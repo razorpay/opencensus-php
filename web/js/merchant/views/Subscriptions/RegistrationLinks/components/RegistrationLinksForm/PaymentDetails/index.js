@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 import { PowerSelect } from 'react-power-select';
+import { useI18Service } from 'common/i18';
 import Input from 'common/new-ui/Input';
 
 import DocsLink from 'merchant/components/DocsLink';
@@ -10,7 +11,6 @@ import Emandate from './Emandate';
 import UPI from './UPI';
 import { checkIfAmount, getPaymentMethodOptions, DOCUMENTATION_LINKS } from './utils';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 export default function PaymentDetailsForm(props) {
   const {
@@ -149,6 +149,7 @@ function PaymentMethod({
   isEsignEnabled,
   handlePaymentMethod,
 }) {
+  const { isConfigTagEnabled } = useI18Service();
   if (avlblMethods.length) {
     const optionsList = getPaymentMethodOptions(isEsignEnabled);
     return (
@@ -169,9 +170,7 @@ function PaymentMethod({
             onChange={handlePaymentMethod}
           />
           <ShowWhen
-            additionalCondition={(_user) =>
-              !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SupportedBankLinks)
-            }
+            additionalCondition={() => !isConfigTagEnabled('subscriptions.supported_bank_links')}
           >
             {getDocLinkForSelectedPayment(mandateMethod)}
           </ShowWhen>

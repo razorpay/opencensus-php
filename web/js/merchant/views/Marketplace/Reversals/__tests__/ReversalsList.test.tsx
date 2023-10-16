@@ -7,6 +7,7 @@ import { reversalsData } from './mocks/fixtures';
 const location = {
   search: '',
 };
+
 describe('Reversal List', () => {
   const renderApp = () => {
     render(<ReversalsList location={location} />);

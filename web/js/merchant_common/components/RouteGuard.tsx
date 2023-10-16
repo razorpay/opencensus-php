@@ -3,6 +3,8 @@ import Loader from 'common/ui/Loader';
 import { Navigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
+import { useI18Service } from 'common/i18';
+import { useSplitzService } from 'common/splitz';
 
 const TAGS_API_NOT_RESOLVED_YET = 'TAGS_API_NOT_RESOLVED_YET';
 
@@ -14,9 +16,15 @@ function convertToArray(arrayOrString) {
   return arrayOrString;
 }
 
-export const validateUtil = ({ options, session }) => {
+export const validateUtil = (
+  { options, session },
+  extraConfig?: {
+    i18: any;
+    splitz: any;
+  },
+) => {
   const { notMyRole = '', myRole = '', additionalCondition } = options;
-
+  const { i18, splitz } = extraConfig ?? {};
   let { apiFeatureEnabled, featureEnabled } = options;
 
   const user = session?.user;
@@ -75,7 +83,11 @@ export const validateUtil = ({ options, session }) => {
   }
 
   if (isContentVisible && additionalCondition) {
-    isContentVisible = additionalCondition(user, session);
+    isContentVisible = additionalCondition(user, {
+      session,
+      i18,
+      splitz,
+    });
   }
 
   if (
@@ -89,9 +101,9 @@ export const validateUtil = ({ options, session }) => {
 };
 
 export function showWhenUtil(store) {
-  return (props) => {
+  return (props, extraConfig?) => {
     const session = store.getState().session;
-    return validateUtil({ session, options: props });
+    return validateUtil({ session, options: props }, extraConfig);
   };
 }
 
@@ -112,11 +124,20 @@ export const RouteGuard = withRouter(
       match,
       ...rest
     } = props;
+    const i18 = useI18Service();
+    // creating an abstraction of just consuming splitz experiment, rest service should not be accessed via RouteGuard
+    const { abExperiments } = useSplitzService();
 
-    const showWhenUtilResult = validateUtil({
-      options: rest,
-      session,
-    });
+    const showWhenUtilResult = validateUtil(
+      {
+        options: rest,
+        session,
+      },
+      {
+        i18,
+        splitz: { abExperiments },
+      },
+    );
 
     if (showWhenUtilResult === TAGS_API_NOT_RESOLVED_YET) {
       return customLoader || <Loader />;
@@ -132,12 +153,22 @@ export const ShowWhen = connect(
   ({ session }) => ({ session }),
   null,
 )((props) => {
+  const i18 = useI18Service();
+  // creating an abstraction of just consuming splitz experiment, rest service should not be accessed via RouteGuard
+  const { abExperiments } = useSplitzService();
+
   const { loader, children, session, ...rest } = props;
 
-  const showWhenUtilResult = validateUtil({
-    options: rest,
-    session,
-  });
+  const showWhenUtilResult = validateUtil(
+    {
+      options: rest,
+      session,
+    },
+    {
+      i18,
+      splitz: { abExperiments },
+    },
+  );
 
   if (showWhenUtilResult === TAGS_API_NOT_RESOLVED_YET) {
     return loader || <Loader />;

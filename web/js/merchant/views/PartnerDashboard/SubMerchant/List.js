@@ -5,12 +5,12 @@ import { Route, Routes } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import { withRouter } from 'common/deprecated/withRouter';
+import { withI18Service } from 'common/i18';
 import ProductWrapper from 'common/ui/ProductWrapper';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Announcement from 'merchant/components/Announcements/Instant';
 import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import lazy from 'merchant/routes/LazyLoader';
 import { merchantFetch } from 'merchant/utils/ajax';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
@@ -110,7 +110,13 @@ class SubMerchantsList extends Component {
     });
 
     trackAddNewMerchantEvents('Click - Navbar');
-    const { closeModal, openModal, org, experiments } = this.props;
+    const {
+      closeModal,
+      openModal,
+      org,
+      experiments,
+      i18: { isConfigTagEnabled },
+    } = this.props;
     const { referralData } = this.state;
     const product = this.getProductType();
     const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
@@ -132,6 +138,7 @@ class SubMerchantsList extends Component {
             referralData={referralData}
             addType={product}
             org={org}
+            isConfigTagEnabled={isConfigTagEnabled}
           />
         ),
       });
@@ -196,7 +203,7 @@ class SubMerchantsList extends Component {
     this.showX =
       props.user.isPartner() &&
       !props.user.isPartner('pure_platform') &&
-      !props.user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.RazorpayXAffiliateAccount);
+      !props.i18.isConfigTagEnabled('partnership.razorpay_x_affiliate_account');
 
     this.state = {
       tabsData: [
@@ -252,7 +259,11 @@ class SubMerchantsList extends Component {
   };
 
   render() {
-    const { user, experiments } = this.props;
+    const {
+      user,
+      experiments,
+      i18: { isConfigTagEnabled },
+    } = this.props;
     const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
       experiments;
     const product = this.getProductType();
@@ -283,7 +294,7 @@ class SubMerchantsList extends Component {
                   (currentUser) =>
                     currentUser.isPartner() &&
                     currentUser.isPartner('reseller', 'aggregator') &&
-                    !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
+                    !isConfigTagEnabled('partnership.referral_links')
                   // TODO v2: enable Share Referral Link for isPlatformPartnerWithPGInviteFlow
                 }
               >
@@ -399,4 +410,4 @@ class SubMerchantsList extends Component {
     );
   }
 }
-export default withPartnerDashboardExperiments(withRouter(SubMerchantsList));
+export default withPartnerDashboardExperiments(withRouter(withI18Service(SubMerchantsList)));

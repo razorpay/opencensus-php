@@ -16,6 +16,7 @@ import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 import { mockContext, COMPONENT_WRAPPER_TESTID } from 'common/services/test/constants';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 import { createMemoryHistory } from 'history';
+import * as commonI18 from 'common/i18';
 
 const createWrapper = ({
   context,
@@ -126,6 +127,12 @@ const delay = (time = 1000): Promise<void> => new Promise((r) => setTimeout(r, t
 // re-export everything
 export * from '@testing-library/react';
 
+const updateUseI18ServiceSpy = (configPath = '') => {
+  jest.spyOn(commonI18, 'useI18Service').mockImplementation(() => ({
+    isConfigTagEnabled: jest.fn((path) => path === configPath),
+  }));
+};
+
 // override render method
 export {
   customRender as render,
@@ -138,4 +145,5 @@ export {
   userEvent,
   checkIfComponentIsEmpty,
   COMPONENT_WRAPPER_TESTID,
+  updateUseI18ServiceSpy,
 };

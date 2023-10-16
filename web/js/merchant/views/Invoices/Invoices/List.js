@@ -3,6 +3,7 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 
+import { withI18Service } from 'common/i18';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
@@ -10,6 +11,7 @@ import Pager from 'common/ui/Pager';
 import Spinner from 'common/ui/Spinner';
 import React from 'react';
 import Alert from 'common/ui/Forms/Alert';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -30,8 +32,8 @@ import ListContainer from 'merchant/containers/ListContainer';
 
 import { track, trackSearchFilterForInternational } from 'merchant/views/Invoices/ga';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
+@withI18Service
 @connect(
   (state) => {
     return {
@@ -166,7 +168,13 @@ class InvoicesListContainer extends ListContainer {
   };
 
   render() {
-    const { loading, invoices, user, mode } = this.props;
+    const {
+      loading,
+      invoices,
+      user,
+      mode,
+      i18: { isConfigTagEnabled },
+    } = this.props;
     const { loadingAllList, totalInvoicesLength, status } = this.state;
     let content;
 
@@ -235,9 +243,7 @@ class InvoicesListContainer extends ListContainer {
             </ShowWhen>
 
             <ShowWhen
-              additionalCondition={(_user) =>
-                !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
-              }
+              additionalCondition={() => !isConfigTagEnabled('documentation.documentation')}
             >
               <DocsLink url="https://razorpay.com/docs/invoices/" />
             </ShowWhen>

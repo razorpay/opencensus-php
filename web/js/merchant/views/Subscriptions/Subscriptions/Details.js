@@ -8,6 +8,8 @@ import RTracking from 'react-tracking';
 import { withRouter } from 'common/deprecated/withRouter';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import Plan from 'merchant/models/Plan';
+import { withI18Service } from 'common/i18';
+
 import { deleteAddOn, fetchSubscriptionAddOns } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
 import { fetchInvoice, fetchCreditNote } from 'merchant/reducers/invoices/details';
@@ -894,7 +896,10 @@ class SubscriptionDetailsContainer extends React.Component {
           }}
           statusMsg={makeErrorStatus(invoiceErrors)}
           curInvoiceIndex={this.state.curInvoiceIndex}
-          isSubscriptionOffersEnabled={user.isSubscriptionOffersEnabled}
+          isSubscriptionOffersEnabled={
+            user.isSubscriptionOffersEnabled &&
+            !this.props.i18.isConfigTagEnabled('subscription.subcription_offers')
+          }
         />
       );
     }
@@ -940,7 +945,10 @@ class SubscriptionDetailsContainer extends React.Component {
           cancelUpdateSubscription={this.handleCancelUpdateSubscription}
           onClickPauseAndResume={this.onClickPauseAndResume}
           isSubscriptionPauseAndResumeEnabled={user.isSubscriptionPauseAndResumeEnabled}
-          isSubscriptionOffersEnabled={user.isSubscriptionOffersEnabled}
+          isSubscriptionOffersEnabled={
+            user.isSubscriptionOffersEnabled &&
+            !this.props.i18.isConfigTagEnabled('subscription.subcription_offers')
+          }
           removeOffer={this.removeOffer}
         />
 
@@ -963,4 +971,4 @@ function makeErrorStatus(message) {
   return {};
 }
 
-export default withRouter(SubscriptionDetailsContainer);
+export default withRouter(withI18Service(SubscriptionDetailsContainer));

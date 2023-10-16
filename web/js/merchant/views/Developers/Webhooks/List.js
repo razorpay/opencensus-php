@@ -4,6 +4,7 @@ import React from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -24,8 +25,8 @@ import {
 } from 'merchant/views/Settings/deeplink-constants';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { withRouter } from 'common/deprecated/withRouter';
+import { withI18Service } from 'common/i18';
 
 class WebhooksContainer extends ListContainer {
   fetchEntityList(params) {
@@ -107,8 +108,8 @@ class WebhooksContainer extends ListContainer {
           <HeaderAction responsive>
             <div className="btn-toolbar pull-right webhook-flex">
               <ShowWhen
-                additionalCondition={(user) =>
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+                additionalCondition={() =>
+                  !this.props.i18.isConfigTagEnabled('documentation.documentation')
                 }
               >
                 <DocsLink url="https://razorpay.com/docs/webhooks/" />
@@ -152,4 +153,4 @@ export default compose(
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('WebhooksContainer')),
-)(withRouter(WebhooksContainer));
+)(withRouter(withI18Service(WebhooksContainer)));

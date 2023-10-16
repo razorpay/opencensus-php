@@ -1,13 +1,21 @@
 import React from 'react';
 import { render, screen, waitForLoadingToFinish } from 'common/services/test/test-utils';
 import List from 'merchant/views/PartnerDashboard/SubMerchant/List';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+
+const mockIsConfigTagEnabled = jest.fn();
+jest.mock('common/i18', () => ({
+  __esModule: true,
+  withI18Service: (Component) => (props) =>
+    <Component i18={{ isConfigTagEnabled: mockIsConfigTagEnabled }} {...props} />,
+  useI18Service: () => ({
+    isConfigTagEnabled: jest.fn(),
+  }),
+}));
 
 const isPartner = jest.fn();
 const isPartnerIntent = jest.fn();
 const isFeatureEnabled = jest.fn();
 const instantActivation = { isWhitelistFlow: false };
-const findTag = jest.fn();
 
 const state = {
   session: {
@@ -16,7 +24,6 @@ const state = {
       isPartner,
       isPartnerIntent,
       isFeatureEnabled,
-      findTag,
       isPartnershipForCapitalEnabled: true,
       isPartnershipFUX: true,
       isPartnershipsInviteFlowEnabled: false,
@@ -29,8 +36,8 @@ const location = {
   pathname: '/partners/submerchants',
 };
 
-const renderApp = (newState = state) => {
-  render(<List location={location} />, {
+const renderApp = (newState = state, props = {}) => {
+  render(<List location={location} {...props} />, {
     initialState: {
       ...newState,
     },
@@ -61,8 +68,8 @@ describe('List', () => {
       if (value === 'pure_platform') return false;
       return true;
     });
-    findTag.mockReturnValue(false);
-    renderApp();
+    mockIsConfigTagEnabled.mockReturnValue(false);
+    renderApp(state);
     expect(screen.getByText('Payments')).toBeInTheDocument();
     expect(screen.getByText('RazorpayX')).toBeInTheDocument();
     expect(screen.getByText('Line Of Credit')).toBeInTheDocument();
@@ -105,11 +112,11 @@ describe('List', () => {
     });
 
     test('...the merchant is not from india (international merchants)', () => {
-      findTag.mockImplementation((value) => {
-        if (value === HIDDEN_INTERNATIONAL_FEATURES_TAGS.RazorpayXAffiliateAccount) return true;
+      mockIsConfigTagEnabled.mockImplementation((value) => {
+        if (value === 'partnership.razorpay_x_affiliate_account') return true;
         return false;
       });
-      renderApp();
+      renderApp(state);
       expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
     });
   });

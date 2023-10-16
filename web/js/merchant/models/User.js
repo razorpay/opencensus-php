@@ -5,7 +5,6 @@ import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/ut
 import { getItem } from 'common/utils/localStorage';
 import { filterBy, getURLQueryParams } from 'common/utils/rzp-utils';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { RZPFeatures } from 'merchant/helpers/data';
 import {
   antiOrgsFeatures,
@@ -108,6 +107,10 @@ export default class User {
     Object.assign(this, props);
     if (!this.tags) {
       this.tags = [];
+    }
+
+    if (!this.configTags) {
+      this.configTags = {};
     }
   }
 
@@ -1377,13 +1380,10 @@ export default class User {
   }
 
   get isSubscriptionOffersEnabled() {
-    return (
-      this.getExpStatus('offer_on_subscription') &&
-      !this.isChargeAtWillEnabled &&
-      !this.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubcriptionOffers)
-    );
+    return this.getExpStatus('offer_on_subscription') && !this.isChargeAtWillEnabled;
   }
 
+  // below getter is dead code, please remove
   get isSubscriptionOffersReportsEnabled() {
     return this.isSubscriptionOffersEnabled && this.getExpStatus('subscription_offers_reports');
   }
@@ -1409,10 +1409,7 @@ export default class User {
   }
 
   get isEmandateOnSubscriptionEnabled() {
-    return (
-      this.getExpStatus('emandate_subscription') &&
-      !this.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.EMandate)
-    );
+    return this.getExpStatus('emandate_subscription');
   }
 
   get isDirectTransferEnabled() {
