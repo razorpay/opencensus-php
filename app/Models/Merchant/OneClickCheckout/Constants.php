@@ -97,6 +97,8 @@ class Constants
     const ONE_CC_ONBOARDED_TIMESTAMP = 'one_cc_onboarded_timestamp';
     const ONE_CC_ADDRESS_INGESTION_JOB = 'job';
 
+    const ONE_CC_SHIPPING_USING_CHECKOUT = "one_cc_shipping_using_checkout";
+
     const SHOPIFY_API_TYPES = [
         self::STOREFRONT,
         self::ADMIN_REST,
@@ -181,6 +183,7 @@ class Constants
         self::ONE_CC_COUPON_ENGINE,
         self::RETARGETING_SETTINGS,
         self::SHIPPING_ENGINE,
+        self::ONE_CC_SHIPPING_USING_CHECKOUT,
     ];
 
     /**
@@ -214,6 +217,7 @@ class Constants
         self::ONE_CC_FB_ANALYTICS,
         self::ONE_CC_BUY_NOW_BUTTON,
         self::COD_ENGINE,
+        self::ONE_CC_SHIPPING_USING_CHECKOUT,
     ];
 
     const COMMON_CONFIGS = [
