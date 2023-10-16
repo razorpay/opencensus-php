@@ -345,6 +345,7 @@ class ErrorCode
     const GATEWAY_ERROR_UPI_PER_DAY_LIMIT_EXCEEDS                                   = 'GATEWAY_ERROR_UPI_PER_DAY_LIMIT_EXCEEDS';
     const GATEWAY_ERROR_DEBIT_NOT_ALLOWED_FOR_BANK                                  = 'GATEWAY_ERROR_DEBIT_NOT_ALLOWED_FOR_BANK';
     const GATEWAY_ERROR_REVERSAL_ALREADY_SENT                                       = 'GATEWAY_ERROR_REVERSAL_ALREADY_SENT';
+    const GATEWAY_ERROR_INVALID_ACCOUNT                                             = 'GATEWAY_ERROR_INVALID_ACCOUNT';
 
     const BAD_REQUEST_ACTION_CANCELLED                                              = 'BAD_REQUEST_ACTION_CANCELLED';
     const BAD_REQUEST_ITEM_NOT_FOUND                                                = 'BAD_REQUEST_ITEM_NOT_FOUND';

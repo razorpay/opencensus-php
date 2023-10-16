@@ -1310,6 +1310,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_DEBIT_FAILED                                                = 'Payment failed. Please try again with another bank account.';
     const GATEWAY_ERROR_REVERSAL_ALREADY_SENT                                       = 'Payment failed. Reversal has already been sent';
     const GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE                                   = 'Your payment didn\'t go through due to a temporary issue. Any debited amount will be refunded in 4-5 business days.';
+    const GATEWAY_ERROR_INVALID_ACCOUNT                                             = 'The merchant account is locked or closed.';
 
     // cardless emi error codes
     const BAD_REQUEST_PAYMENT_CARDLESS_EMI_CONTACT_MISMATCH                         = 'Contact given is invalid';
