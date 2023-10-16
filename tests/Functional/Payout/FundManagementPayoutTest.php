@@ -140,6 +140,8 @@ class FundManagementPayoutTest extends TestCase
                 Admin\ConfigKey::FUND_MANAGEMENT_PAYOUTS_GATEWAY_BALANCE_THRESHOLD => 1000000,
             ]
         );
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, BankingAccount\Channel::RBL);
     }
 
     protected function getFundManagementPayoutCheckQueueParams($input = null)
@@ -2589,7 +2591,7 @@ class FundManagementPayoutTest extends TestCase
         ]);
 
         $this->fixtures->edit('counter', $this->directCounter->getId(), [
-            'free_payouts_consumed' => 250
+            'free_payouts_consumed' => 300
         ]);
 
         $this->fixtures->create('credits', [
@@ -2625,7 +2627,7 @@ class FundManagementPayoutTest extends TestCase
 
         // Assert that all the free payouts have been consumed
         $this->directCounter->reload();
-        $this->assertEquals(250, $this->directCounter->getFreePayoutsConsumed());
+        $this->assertEquals(300, $this->directCounter->getFreePayoutsConsumed());
 
         $fundManagementPayout = $this->getDBLastEntity('payout');
 

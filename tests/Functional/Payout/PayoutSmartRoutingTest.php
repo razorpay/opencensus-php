@@ -215,6 +215,8 @@ class PayoutSmartRoutingTest extends TestCase
                 'free_payouts_consumed' => 0,
             ]);
 
+            $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, $channel);
+
             $directBalances[] = $directBankingBalance;
 
             $directAccountCountCreation--;
@@ -498,6 +500,8 @@ class PayoutSmartRoutingTest extends TestCase
             'channel'             => 'icici',
             'fts_fund_account_id' => null
         ]);
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, BankingAccount\Channel::ICICI);
 
         $this->app['config']->set('applications.banking_account_service.mock', false);
 

@@ -906,6 +906,8 @@ class RblPayoutTest extends TestCase
         // Reloading from DB as an updated happened above
         $freePayoutsConsumedBefore = $this->getDbLastEntity('counter', 'live')->getFreePayoutsConsumed();
 
+        $this->setFreePayoutsCountInAdminKey(Balance\AccountType::DIRECT, Balance\Channel::RBL);
+
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();

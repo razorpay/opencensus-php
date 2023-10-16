@@ -16282,6 +16282,8 @@ class PayoutTest extends OAuthTestCase
 
         $balanceId = $this->bankingBalance->getId();
 
+        $this->setFreePayoutsCountInAdminKey(AccountType::SHARED);
+
         $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
 
         $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
@@ -16885,6 +16887,8 @@ class PayoutTest extends OAuthTestCase
                             ->getTimestamp(),
         ]);
 
+        $this->setFreePayoutsCountInAdminKey(AccountType::SHARED);
+
         $this->ba->adminAuth();
 
         $testData = $this->testData['testGetFreePayoutsAttributesOnProxyAuthOwnerUser'];
@@ -16917,6 +16921,8 @@ class PayoutTest extends OAuthTestCase
         $this->mockRazorxTreatment();
 
         $adminRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'admin');
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::SHARED);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $adminRoleUser->getId());
 

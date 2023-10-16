@@ -35,6 +35,7 @@ use RZP\Models\Payout\DataMigration;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payout\WorkflowFeature;
+use RZP\Models\BankingAccount\Channel;
 use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\PayoutService\BulkPayout;
@@ -6681,6 +6682,8 @@ class PayoutServiceTest extends TestCase
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
+
         $this->fixtures->on('live')->create(
             'balance',
             [
@@ -6717,6 +6720,8 @@ class PayoutServiceTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['bulk_payout_workflow']);
 
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
+
         $this->fixtures->on('live')->create(
             'balance',
             [
@@ -6752,6 +6757,8 @@ class PayoutServiceTest extends TestCase
         $this->fixtures->merchant->addFeatures(['bulk_payout_workflow']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
         $testData                     = $this->testData['testBulkPayout_DirectAccount_MultiplePayout_SkipWorkflowTrue_FeatureEnabled'];
         $this->testData[__FUNCTION__] = $testData;
@@ -6792,6 +6799,8 @@ class PayoutServiceTest extends TestCase
         $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
         $testData                     = $this->testData['testBulkPayout_DirectAccount_MultiplePayout_SkipWorkflowTrue_FeatureEnabled'];
         $this->testData[__FUNCTION__] = $testData;
@@ -6865,6 +6874,8 @@ class PayoutServiceTest extends TestCase
 
         $createBulkPayoutMock = $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
+
         $this->fixtures->on('live')->create(
             'balance',
             [
@@ -6896,6 +6907,8 @@ class PayoutServiceTest extends TestCase
     public function testBulkPayout_SharedAndDirectAccounts_SpacesInAccountNumber()
     {
         $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -7040,6 +7053,8 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
 
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
+
         $this->fixtures->on('live')->create(
             'balance',
             [
@@ -7083,6 +7098,8 @@ class PayoutServiceTest extends TestCase
         $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
 
         $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -7137,6 +7154,8 @@ class PayoutServiceTest extends TestCase
     public function testBulkPayout_SharedAndDirectAccounts()
     {
         $this->setMockRazorxTreatment([RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE => 'on']);
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
         $this->fixtures->on('live')->create(
             'balance',
