@@ -1044,7 +1044,7 @@ class Service extends Base\Service
 
         // List as per: https://razorpay.atlassian.net/browse/CB-1864
         // Slack: https://razorpay.slack.com/archives/C024U3B04LD/p1692271580539599?thread_ts=1692271525.102929&cid=C024U3B04LD
-        // 
+        //
         if (in_array($this->merchant->getCategory(), BankTransferConstants::BLACKLISTED_MCC_FOR_CURRENCY_CLOUD) === true)
         {
             $merchantMcc = $this->merchant->getCategory() ?? '';
@@ -1305,7 +1305,7 @@ class Service extends Base\Service
     {
         $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantId);
 
-        $name = explode(' ',$merchantDetail->getPromoterPanName(),2);
+        $name = explode(' ',trim($merchantDetail->getPromoterPanName()),2);
 
         $address = [
             'street' => $merchantDetail->getBusinessRegisteredAddress(),
@@ -1324,7 +1324,7 @@ class Service extends Base\Service
         ];
 
         $requestBody = [
-            'account_name' => $this->merchant->getName(),
+            'account_name' => trim($this->merchant->getName()),
             'address'      => $address,
             'contact'      => $contact,
         ];
