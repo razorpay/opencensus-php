@@ -1,0 +1,105 @@
+import React, { useState } from 'react';
+import { Box, Text, Link } from '@razorpay/blade/components';
+
+import { pluralize } from 'common/utils/rzp-utils';
+import File from 'merchant/views/AccountAndSettings/InternationalSettings/Tabs/FIRS/components/DownloadPopup/File';
+import { trackRequestFirsButtonClick } from 'merchant/views/AccountAndSettings/InternationalSettings/analytics';
+import { PopupType } from 'merchant/views/AccountAndSettings/InternationalSettings/constants';
+import useFirsContext from 'merchant/views/AccountAndSettings/InternationalSettings/hooks/useFirsContext';
+import { PopupDataType } from 'merchant/views/AccountAndSettings/InternationalSettings/typings';
+import { getCategorizedFirsFiles } from 'merchant/views/AccountAndSettings/InternationalSettings/utils';
+
+const FirsFiles = (): React.ReactElement => {
+  const [shouldShowAll, setShouldShowAll] = useState(false);
+
+  const { popupData, firsData, isRequestFirsEnabled, setPopupData } = useFirsContext();
+  const { month, year } = popupData;
+  const { bankFirs, internalFirs, shouldShowRequestButton, isFirsRequestFailed } =
+    getCategorizedFirsFiles(firsData[year]?.[month] ?? []);
+
+  const onRequestFirs = () => {
+    trackRequestFirsButtonClick(month, year);
+    setPopupData((prev: PopupDataType) => ({
+      ...prev,
+      type: PopupType.INTERNAL_FIRS,
+    }));
+  };
+
+  const toggleShowAll = () => {
+    setShouldShowAll((prev) => !prev);
+  };
+
+  return (
+    <Box display="flex" flex="1" flexDirection="column" marginTop="spacing.7">
+      <Box marginBottom="spacing.7">
+        <Box
+          display="flex"
+          flexDirection="row"
+          justifyContent={{ base: 'space-between' }}
+          borderWidth="none"
+          borderBottomWidth="thin"
+          borderBottomColor="surface.border.normal.lowContrast"
+          paddingBottom="spacing.3"
+          marginBottom="spacing.4"
+        >
+          <Text type="subdued">
+            Bank FIRS ({bankFirs.length || 'No'} {pluralize('file', bankFirs.length)} available)
+          </Text>
+          {bankFirs.length > 3 && (
+            <Link variant="button" onClick={toggleShowAll}>
+              {shouldShowAll ? 'Collapse' : 'Show'} all
+            </Link>
+          )}
+        </Box>
+        <Box>
+          {bankFirs.map((file, index) => {
+            if (!shouldShowAll && index > 2) return null;
+            return <File key={file.id} file={file} month={month} year={year} />;
+          })}
+          {bankFirs.length === 0 && (
+            <Text size="medium" weight="regular">
+              Bank FIRS is/are usually available for download after the 15th of the next month.
+            </Text>
+          )}
+        </Box>
+      </Box>
+
+      {internalFirs.length > 0 && (
+        <Box>
+          <Box
+            borderWidth="none"
+            borderBottomWidth="thin"
+            borderBottomColor="surface.border.normal.lowContrast"
+            paddingBottom="spacing.3"
+            marginBottom="spacing.4"
+          >
+            <Text type="subdued">
+              Razorpay Statements ({internalFirs.length || 'No'}{' '}
+              {pluralize('file', internalFirs.length)} available)
+            </Text>
+          </Box>
+          <Box>
+            {internalFirs.map((file) => (
+              <File key={file.id} file={file} month={month} year={year} />
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      {shouldShowRequestButton && isRequestFirsEnabled && (
+        <Box marginTop="spacing.7" display="flex" alignItems="flex-end" flex="1">
+          <Text size="small">
+            {isFirsRequestFailed
+              ? `Your FIRS request for ${month} ${year} failed due to technical reasons.`
+              : "Don't see bank FIRS above or find any international transactions missing? "}
+            <Link variant="button" size="small" onClick={onRequestFirs}>
+              Request for Razorpay statement
+            </Link>
+          </Text>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+export default FirsFiles;

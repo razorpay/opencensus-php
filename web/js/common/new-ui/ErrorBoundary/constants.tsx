@@ -146,9 +146,7 @@ export const RoutesConfig = {
   '/payments-and-refunds-settings/reminders': Teams.PG_DASHBOARD,
   '/payments-and-refunds-settings/transaction-limits': Teams.PG_DASHBOARD,
   '/payments': Teams.PG_DASHBOARD,
-  '/payments/b2b-exports': Teams.CROSS_BORDER,
   '/payments/batchuploads': Teams.PG_DASHBOARD,
-  '/payments/invoices': Teams.CROSS_BORDER,
   '/paypal_onboard_redirect': Teams.PG_DASHBOARD,
   '/payroll': Teams.XPAYROLL,
   '/plans': Teams.APPS,
@@ -220,4 +218,9 @@ export const RoutesConfig = {
   '/website-app-settings/business-website-details': Teams.PG_DASHBOARD,
   '/website-app-settings/webhooks': Teams.PG_DASHBOARD,
   '/website-app-settings/website-app': Teams.PG_DASHBOARD,
+
+  '/payments/b2b-exports': Teams.CROSS_BORDER,
+  '/international-settings/firs': Teams.CROSS_BORDER,
+  '/international-settings/international-payment-codes': Teams.CROSS_BORDER,
+  '/payments/invoices': Teams.CROSS_BORDER,
 };

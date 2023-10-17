@@ -1,3 +1,32 @@
+import { Modules } from 'common/constant/enums';
+import User from 'common/typings/User';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import {
+  AdditionalContextInterface,
+  SectionCardInterface,
+} from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+import {
+  SectionCardDataFields,
+  PaymentMethodsFields,
+  WebsiteAppSettingsFields,
+  BusinessSettingsFields,
+  PaymentRefundsFields,
+  NotificationSettingsFields,
+  CheckoutSettingsFields,
+  BankAccountSettlementFields,
+  PricingFields,
+  PaymentMethodsTitles,
+  WebsiteAppSettingsTitles,
+  BusinessSettingsTitles,
+  PaymentRefundsTitles,
+  BankAccountSettlementTitles,
+  NotificationSettingsTitles,
+  CheckoutSettingsTitles,
+  PricingTitles,
+  InternationalSettingsFields,
+  InternationalSettingsTitles,
+} from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import {
   isConfigurationViewAllowed,
   isWhatsappNotificationEnabled,
@@ -26,33 +55,6 @@ import {
   isApplicationEnabled,
   isEmailNotificationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import {
-  AdditionalContextInterface,
-  SectionCardInterface,
-} from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
-import {
-  SectionCardDataFields,
-  PaymentMethodsFields,
-  WebsiteAppSettingsFields,
-  BusinessSettingsFields,
-  PaymentRefundsFields,
-  NotificationSettingsFields,
-  CheckoutSettingsFields,
-  BankAccountSettlementFields,
-  PricingFields,
-  PaymentMethodsTitles,
-  WebsiteAppSettingsTitles,
-  BusinessSettingsTitles,
-  PaymentRefundsTitles,
-  BankAccountSettlementTitles,
-  NotificationSettingsTitles,
-  CheckoutSettingsTitles,
-  PricingTitles,
-} from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
-import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import User from 'common/typings/User';
-import { Modules } from 'common/constant/enums';
 
 export const AccountNSettingsIcons = {
   payment_methods: 'i-payment-methods',
@@ -63,6 +65,7 @@ export const AccountNSettingsIcons = {
   notification_settings: 'i-notification-bell',
   checkout_settings: 'i-shopping-cart',
   pricing: 'i-zap',
+  international_settings: 'i-globe',
 };
 
 export const Sections: SectionCardInterface[] = [
@@ -434,12 +437,6 @@ export const Sections: SectionCardInterface[] = [
         title: BankAccountSettlementTitles[BankAccountSettlementFields.SETTLEMENT_DETAILS],
         href: ROUTES_INFO.SETTLEMENT_DETAILS,
       },
-      {
-        id: BankAccountSettlementFields.FIRS,
-        title: BankAccountSettlementTitles[BankAccountSettlementFields.FIRS],
-        href: ROUTES_INFO.FIRS,
-        additionalCondition: (): ((user: User) => boolean) => shouldShowFIRCSection,
-      },
     ],
   },
   {
@@ -544,6 +541,26 @@ export const Sections: SectionCardInterface[] = [
         title: PricingTitles[PricingFields.PRICING_PLANS],
         href: ROUTES_INFO.PRICING_PLANS,
         isNew: true,
+      },
+    ],
+  },
+  {
+    id: SectionCardDataFields.INTERNATIONAL_SETTINGS,
+    title: 'International payments settings',
+    icon: AccountNSettingsIcons.international_settings,
+    iconBackground: 'linear-gradient(162.28deg, #2A86F3 27.27%, #C592FF 121.23%)',
+    additionalCondition: (): ((user: User) => boolean) => shouldShowFIRCSection,
+    subSections: [
+      {
+        id: InternationalSettingsFields.FIRS,
+        title: InternationalSettingsTitles[InternationalSettingsFields.FIRS],
+        href: ROUTES_INFO.FIRS,
+      },
+      {
+        id: InternationalSettingsFields.INTERNATIONAL_PAYMENTS_CODES,
+        title:
+          InternationalSettingsTitles[InternationalSettingsFields.INTERNATIONAL_PAYMENTS_CODES],
+        href: ROUTES_INFO.INTERNATIONAL_PAYMENTS_CODES,
       },
     ],
   },

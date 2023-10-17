@@ -21,14 +21,13 @@ import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import {
   isBankAccountDetailsAllowed,
   isSettlementsAllowed,
-  shouldShowFIRCSection,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 
-const { BANK_ACCOUNT_DETAILS, SETTLEMENT_DETAILS, FIRS } = ROUTES_INFO;
+const { BANK_ACCOUNT_DETAILS, SETTLEMENT_DETAILS } = ROUTES_INFO;
 const BankAccountDetails = lazy(
   () =>
     import(
@@ -50,18 +49,10 @@ const SettlementDetails = lazy(
     ),
 );
 
-const FIRCSection = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "FIRCSection" */ 'merchant/views/Account/Profile/components/FIRC/FIRCSection'
-    ),
-);
-
 const getTabsContent = ({ type, withStyled = true, user }) => {
   const tabs = {
     bank_account: user.isBankAccountUpdateRevampEnabled ? BankAccountDetailsV2 : BankAccountDetails,
     settlement: SettlementDetails,
-    firc: FIRCSection,
   };
   const Component = tabs[type];
   return withStyled ? (
@@ -81,7 +72,6 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
     switch (pathname) {
       case BANK_ACCOUNT_DETAILS:
       case SETTLEMENT_DETAILS:
-      case FIRS:
         return <Navigate to="/profile" replace />;
       default:
         return <Navigate to="/dashboard" replace />;
@@ -114,9 +104,6 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
           <ShowWhen additionalCondition={() => isSettlementsAllowed(extraConfig)}>
             <NavLink to={SETTLEMENT_DETAILS}>Settlement details</NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={shouldShowFIRCSection}>
-            <NavLink to={FIRS}>Forward inwards remittance statement</NavLink>
-          </ShowWhen>
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>
@@ -139,15 +126,6 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
                   element={
                     <RouteGuard additionalCondition={() => isSettlementsAllowed(extraConfig)}>
                       {getTabsContent({ type: 'settlement', user })}
-                    </RouteGuard>
-                  }
-                />
-
-                <Route
-                  path={getRefRoute(FIRS)}
-                  element={
-                    <RouteGuard additionalCondition={shouldShowFIRCSection}>
-                      {getTabsContent({ type: 'firc', user })}
                     </RouteGuard>
                   }
                 />

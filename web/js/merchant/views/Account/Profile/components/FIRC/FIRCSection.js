@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import DetailRow from 'merchant/components/DetailRow';
+
 import Button from 'common/new-ui/Button';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import ShowWhen from 'merchant/components/ShowWhen';
-import * as modalActions from 'merchant_common/reducers/modals';
-import { fetchPurposeCode } from 'merchant/reducers/profile';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { raiseTicket } from 'merchant/views/TicketSupport/utils';
+import DetailRow from 'merchant/components/DetailRow';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { fetchPurposeCode } from 'merchant/reducers/profile';
+import lazy from 'merchant/routes/LazyLoader';
 import { trackPurposeCodePopupOpened } from 'merchant/views/Account/Profile/components/FIRC/analytics';
+import { raiseTicket } from 'merchant/views/TicketSupport/utils';
+import * as modalActions from 'merchant_common/reducers/modals';
 
 const FIRCFormModal = lazy(() => import(/* webpackChunkName: "FIRCFormModal" */ './FIRCFormModal'));
 const HSCodeModal = lazy(() =>
@@ -175,7 +176,7 @@ const FIRCSection = (props) => {
   return (
     <div className="panel panel-default">
       <div className="panel-heading">
-        <b>Forward Inwards Remittance Statement </b>&nbsp;(Proof of Foreign Transfers)
+        <b>International Payments Codes</b>
         <Spinner loading={loading} />
       </div>
 
@@ -226,10 +227,14 @@ const FIRCSection = (props) => {
               />
             )}
 
-            <DetailRow
-              label="FIRS Certificate"
-              value={() => <DownloadText clickHandler={openDownloadFIRCModal} />}
-            />
+            <ShowWhen
+              additionalCondition={(user) => user.isAccountAndSettingsRevampEnabled !== true}
+            >
+              <DetailRow
+                label="FIRS Certificate"
+                value={() => <DownloadText clickHandler={openDownloadFIRCModal} />}
+              />
+            </ShowWhen>
           </div>
 
           <div className="panel-heading background-highlight">

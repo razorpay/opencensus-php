@@ -11,7 +11,6 @@ import { screen } from 'test-utils';
 jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isBankAccountDetailsAllowed: jest.fn().mockReturnValue(false),
   isSettlementsAllowed: jest.fn().mockReturnValue(false),
-  shouldShowFIRCSection: jest.fn().mockReturnValue(false),
 }));
 
 describe('BankAccountsAndSettlements', () => {
@@ -26,7 +25,6 @@ describe('BankAccountsAndSettlements', () => {
   testConditionalLinks(renderApp, [
     ['Bank account details', 'isBankAccountDetailsAllowed', ROUTES_INFO.BANK_ACCOUNT_DETAILS],
     ['Settlement details', 'isSettlementsAllowed', ROUTES_INFO.SETTLEMENT_DETAILS],
-    ['Forward inwards remittance statement', 'shouldShowFIRCSection', ROUTES_INFO.FIRS],
   ]);
 
   testConditionalLinks(
@@ -61,17 +59,10 @@ describe('BankAccountsAndSettlements', () => {
     expect(screen.getByText('Settlement details')).toBeInTheDocument();
   });
 
-  test('should render FIRS details when shouldShowFIRCSection is true', () => {
-    conditionalUtils.shouldShowFIRCSection.mockReturnValue(true);
-    renderApp();
-    expect(screen.getByText('Forward inwards remittance statement')).toBeInTheDocument();
-  });
-
   describe('When account and settings revamp is not enabled', () => {
     testRedirectionWhenAccountAndSettingsIsNotEnabled(renderApp, [
       ['/profile', ROUTES_INFO.BANK_ACCOUNT_DETAILS],
       ['/profile', ROUTES_INFO.SETTLEMENT_DETAILS],
-      ['/profile', ROUTES_INFO.FIRS],
       ['/dashboard', '/bank-accounts-settlements/some-route'],
     ]);
   });

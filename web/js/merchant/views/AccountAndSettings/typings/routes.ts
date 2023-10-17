@@ -32,7 +32,6 @@ export enum ROUTES_INFO {
   SUPPORT_TICKETS_AGENT = '/business-settings/ticket-support/tickets/agent',
   BANK_ACCOUNT_DETAILS = '/bank-accounts-settlements/bank-account-details',
   SETTLEMENT_DETAILS = '/bank-accounts-settlements/settlement-details',
-  FIRS = '/bank-accounts-settlements/firs',
   PRICING_PLANS = '/pricing/pricing-plans',
   PRICING_PLANS_RELATIVE = '/pricing-plans',
   CARDS = '/payment-methods/cards',
@@ -43,6 +42,8 @@ export enum ROUTES_INFO {
   PAY_LATER = '/payment-methods/pay-later',
   INTERNATIONAL_PAYMENTS = '/payment-methods/international-payments',
   MEAL_CARD = '/payment-methods/meal-card',
+  FIRS = '/international-settings/firs',
+  INTERNATIONAL_PAYMENTS_CODES = '/international-settings/international-payment-codes',
 }
 
 export type OldAndNewRouteMapInterface = {

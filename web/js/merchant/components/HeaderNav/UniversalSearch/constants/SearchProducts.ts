@@ -767,13 +767,12 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     apiCondition: false,
   },
   {
-    title: SEARCH_PRODUCTS_TITLES.forward_inwards_remittance_statement,
+    title: SEARCH_PRODUCTS_TITLES.firs,
     url: SEARCH_PRODUCTS_URL.FIRS,
     tags: [{ value: 'FIRS certificate' }, { value: 'Proof of foreign transfers' }],
     group: ['in: Account & Settings'],
-    icon: AccountNSettingsIcons.bank_and_settlements,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isProfileViewAllowed(user) && shouldShowFIRCSection(user),
+    icon: AccountNSettingsIcons.international_settings,
+    additionalCondition: ({ user }: EligibleProductsTypes): boolean => shouldShowFIRCSection(user),
     apiCondition: false,
   },
   {

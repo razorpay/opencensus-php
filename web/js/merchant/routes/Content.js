@@ -32,6 +32,7 @@ import {
   isPaymentMethodEnabled,
   isProfileViewAllowed,
   isConfigurationViewAllowed,
+  shouldShowFIRCSection,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { RouteGuard } from 'merchant/components/ShowWhen';
@@ -361,6 +362,12 @@ const Pricing = lazy(() =>
 const BankAccountsAndSettlements = lazy(() =>
   import(
     /* webpackChunkName: "BankAccountsAndSettlements" */ 'merchant/views/AccountAndSettings/BankAccountsAndSettlements'
+  ),
+);
+
+const InternationalSettings = lazy(() =>
+  import(
+    /* webpackChunkName: "InternationalSettings" */ 'merchant/views/AccountAndSettings/InternationalSettings'
   ),
 );
 
@@ -1913,6 +1920,15 @@ class Content extends Component {
             element={
               <RouteGuard additionalCondition={isProfileViewAllowed}>
                 <BankAccountsAndSettlements />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="international-settings/*"
+            element={
+              <RouteGuard additionalCondition={shouldShowFIRCSection}>
+                <InternationalSettings />
               </RouteGuard>
             }
           />

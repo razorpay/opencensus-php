@@ -7,6 +7,7 @@ export enum SectionCardDataFields {
   NOTIFICATION_SETTINGS = 'notification_settings',
   CHECKOUT_SETTINGS = 'checkout_settings',
   PRICING = 'pricing',
+  INTERNATIONAL_SETTINGS = 'international_settings',
 }
 
 export enum PaymentMethodsFields {
@@ -70,7 +71,11 @@ export enum PricingFields {
 export enum BankAccountSettlementFields {
   BANK_ACCOUNT_DETAILS = 'bank_account_details',
   SETTLEMENT_DETAILS = 'settlement_details',
-  FIRS = 'forward_inwards_remittance_statement',
+}
+
+export enum InternationalSettingsFields {
+  FIRS = 'firs',
+  INTERNATIONAL_PAYMENTS_CODES = 'international_payments_code',
 }
 
 export const PaymentMethodsTitles: Record<PaymentMethodsFields, string> = {
@@ -116,7 +121,6 @@ export const PaymentRefundsTitles: Record<PaymentRefundsFields, string> = {
 
 export const BankAccountSettlementTitles: Record<BankAccountSettlementFields, string> = {
   [BankAccountSettlementFields.BANK_ACCOUNT_DETAILS]: 'Bank account details',
-  [BankAccountSettlementFields.FIRS]: 'Forward inwards remittance statement',
   [BankAccountSettlementFields.SETTLEMENT_DETAILS]: 'Settlement details',
 };
 
@@ -137,6 +141,11 @@ export const PricingTitles: Record<PricingFields, string> = {
   [PricingFields.PRICING_PLANS]: 'Pricing Plans',
 };
 
+export const InternationalSettingsTitles: Record<InternationalSettingsFields, string> = {
+  [InternationalSettingsFields.FIRS]: 'Foreign Inward Remittance Statement',
+  [InternationalSettingsFields.INTERNATIONAL_PAYMENTS_CODES]: 'International Payments Codes',
+};
+
 type ACCOUNT_N_SETTINGS_TITLES =
   | PaymentMethodsFields
   | WebsiteAppSettingsFields
@@ -145,7 +154,8 @@ type ACCOUNT_N_SETTINGS_TITLES =
   | BankAccountSettlementFields
   | NotificationSettingsFields
   | CheckoutSettingsFields
-  | PricingFields;
+  | PricingFields
+  | InternationalSettingsFields;
 
 export const ACCOUNT_N_SETTINGS_TITLES: Record<ACCOUNT_N_SETTINGS_TITLES, string> = {
   ...PaymentMethodsTitles,
@@ -156,4 +166,5 @@ export const ACCOUNT_N_SETTINGS_TITLES: Record<ACCOUNT_N_SETTINGS_TITLES, string
   ...NotificationSettingsTitles,
   ...CheckoutSettingsTitles,
   ...PricingTitles,
+  ...InternationalSettingsTitles,
 };

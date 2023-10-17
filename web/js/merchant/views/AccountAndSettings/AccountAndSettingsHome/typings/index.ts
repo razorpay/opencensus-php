@@ -9,6 +9,7 @@ import {
   PricingFields,
   SectionCardDataFields,
   WebsiteAppSettingsFields,
+  InternationalSettingsFields,
 } from './section';
 import { Store } from 'common/typings';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
@@ -126,7 +127,8 @@ export interface SubSection {
     | NotificationSettingsFields
     | CheckoutSettingsFields
     | BankAccountSettlementFields
-    | PricingFields;
+    | PricingFields
+    | InternationalSettingsFields;
   href: string;
   title: string;
   additionalCondition?: AdditionalConditionType;

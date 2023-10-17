@@ -1,6 +1,6 @@
 const ROUTE_REG = {
   accountsettings:
-    /^\/(account-settings|payment-methods|checkout-settings|notification-settings|website-app-settings|payments-and-refunds-settings|business-settings|bank-accounts-settlements)/,
+    /^\/(account-settings|payment-methods|checkout-settings|notification-settings|website-app-settings|payments-and-refunds-settings|business-settings|bank-accounts-settlements|international-settings)/,
   transactions: /^\/(payments|refunds|orders|batch-refunds|disputes|success-rate)/,
   // eslint-disable-next-line prettier/prettier
   settlements:

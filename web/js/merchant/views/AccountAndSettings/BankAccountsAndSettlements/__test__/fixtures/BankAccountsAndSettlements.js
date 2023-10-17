@@ -1,5 +1,6 @@
-import BankAccountsAndSettlements from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/BankAccountsAndSettlements';
 import { render } from 'test-utils';
+
+import BankAccountsAndSettlements from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/BankAccountsAndSettlements';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 
 jest.mock(
@@ -21,11 +22,6 @@ jest.mock(
 jest.mock('merchant/views/Account/Profile/components/SettlementDetails', () => ({
   __esModule: true,
   default: () => <div>SettlementDetails</div>,
-}));
-
-jest.mock('merchant/views/Account/Profile/components/FIRC/FIRCSection', () => ({
-  __esModule: true,
-  default: () => <div>FIRSDetails</div>,
 }));
 
 export const renderApp = ({ user, pathname } = {}) => {
