@@ -38,14 +38,7 @@ const sendToLumberjack = ({ eventName, properties = {} }) => {
         'Content-Type': 'application/json',
       },
     })
-    .catch((error) => {
-      errorService.captureError(error, {
-        tags: {
-          team: Teams.PLATFORM,
-        },
-        rank: Ranks.P2,
-      });
-    });
+    .catch(() => {});
 };
 
 export const getClientID = () => {

@@ -35,15 +35,7 @@ export const sendToLumberjack = ({ eventName, properties = {} }) => {
       'Content-Type': 'application/json',
     },
     priority: 'low',
-  }).catch((error) => {
-    errorService.captureError(error, {
-      tags: {
-        team: Teams.PLATFORM,
-        module: 'analytics',
-      },
-      rank: Ranks.P2,
-    });
-  });
+  }).catch(() => {});
 };
 
 const throwAnalyticsException = (errorMessage) => {
