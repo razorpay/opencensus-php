@@ -439,6 +439,10 @@ class Gateway
         ],
         self::WALLET_OPENWALLET     => [
             'default'           => self::WALLET_OPENWALLET,
+        ],
+        self::FIRST_DATA => [
+            'default'               => self::FIRST_DATA,
+            self::ACQUIRER_ICIC     => self::FIRST_DATA,
         ]
     ];
 
@@ -477,7 +481,8 @@ class Gateway
         self::FPX                   => self::FPX,
         self::OPTIMIZER_RAZORPAY    => self::OPTIMIZER_RAZORPAY,
         self::WALLET_RAZORPAYWALLET => self::WALLET_RAZORPAYWALLET,
-        self::WALLET_OPENWALLET     => self::WALLET_OPENWALLET
+        self::WALLET_OPENWALLET     => self::WALLET_OPENWALLET,
+        self::FIRST_DATA            => self::FIRST_DATA,
     ];
 
 
