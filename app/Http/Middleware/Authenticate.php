@@ -8,7 +8,6 @@ use Razorpay\Edge\Passport\Passport;
 use RZP\Constants\HyperTrace;
 use Illuminate\Support\Str;
 use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
 use RZP\Http\BasicAuth\KeyAuthCreds;
 use RZP\Http\BasicAuth\ClientAuthCreds;
 use RZP\Http\BasicAuth\Type;
@@ -19,11 +18,9 @@ use RZP\Http\RequestContextV2;
 use Symfony\Component\HttpFoundation\Response;
 
 use ApiResponse;
-use RZP\Exception;
 use RZP\Http\OAuth;
 use RZP\Http\Route;
 use RZP\Trace\Tracer;
-use RZP\Http\P2pRoute;
 use RZP\Trace\TraceCode;
 use RZP\Http\Response\Header;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -61,6 +58,7 @@ class Authenticate
     const ACCOUNT_ID_SOURCE    = 'account_id_source';
     const APP_NAME             = 'app_name';
     const SECRET               = 'secret';
+    const ROUTE_TYPE           = 'route_type';
 
     /**
      * Application instance
@@ -116,6 +114,12 @@ class Authenticate
     protected $route;
 
     /**
+     * Route type
+     * @var string
+     */
+    protected $routeType;
+
+    /**
      * Create a new filter instance.
      *
      * @param Application $app
@@ -137,6 +141,8 @@ class Authenticate
         $this->passport = $this->requestContext->passport;
 
         $this->route = $this->app['api.route'];
+
+        $this->routeType = $this->route->getRouteType();
 
         $this->passportUtil = empty($this->passport) ? null : new PassportUtil($this->passport);
     }
@@ -165,6 +171,7 @@ class Authenticate
         if ( $this->requestContext->shouldAuthenticateUsingPassport || $this->shouldUsePassportWithInternalAuth($route,$request) )
         {
             $this->isPartnerAuth = ($this->passport->consumer->type == self::PARTNER);
+            // TODO: this logic has to be updated once Edge Passport is usable for other auth schemes as well
             $passportAuthType = ($this->passport->authenticated === false && $this->passport->identified === true) ? Type::PUBLIC_AUTH : Type::PRIVATE_AUTH;
 
             $this->trace->info(TraceCode::AUTHENTICATING_USING_PASSPORT,
@@ -174,7 +181,8 @@ class Authenticate
                     self::ACCOUNT_ID         => $this->passportUtil->getAccountId(),
                     self::ROUTE              => $route,
                     self::PASSPORT_AUTH_TYPE => $passportAuthType,
-                    self::APP_NAME           => $this->ba->getInternalApp()
+                    self::APP_NAME           => $this->ba->getInternalApp(),
+                    self::ROUTE_TYPE         => $this->routeType
                 ]
             );
 
@@ -242,7 +250,8 @@ class Authenticate
                 self::ROUTE              => $route,
                 self::PASSPORT_AUTH      => $this->requestContext->shouldAuthenticateUsingPassport,
                 self::PASSPORT_AUTH_TYPE => $passportAuthType,
-                self::HOST               => $request->getHttpHost()
+                self::HOST               => $request->getHttpHost(),
+                self::ROUTE_TYPE         => $this->routeType
             ]);
         }
 
@@ -278,80 +287,59 @@ class Authenticate
     {
         $ret = null;
 
-        if ((in_array($route, Route::$internal, true) === true) or
-            (in_array($route, Route::$admin, true) === true))
-        {
-            $ret = $this->ba->appAuth();
-        }
-        else if (in_array($route, Route::$private, true) === true)
-        {
-            $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_PRIVATE_ROUTE_PRIVATE_AUTH], function () {
+        switch ($this->routeType) {
+            case Route::INTERNAL:
+            case Route::ADMIN:
+                $ret = $this->ba->appAuth();
+                break;
+            case Route::PRIVATE:
+                $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_PRIVATE_ROUTE_PRIVATE_AUTH], function () {
                     return $this->ba->privateAuth();
                 });
-        }
-        else if (in_array($route, P2pRoute::$private, true) === true)
-        {
-            $ret = $this->ba->privateAuth();
-        }
-        else if (in_array($route, Route::$public, true) === true)
-        {
-            //
-            // For public routes, OAuth sends a public_token using BasicAuth
-            // We check here if the key is an OAuth public token and
-            // process accordingly.
-            //
-            if ($this->oauth->hasOAuthPublicToken() === true)
-            {
-                $ret = $this->authenticateOAuthPublicToken();
-            }
-            else
-            {
-                // Process via BasicAuth
-                $ret = $this->ba->publicAuth();
-            }
-        }
-        else if (in_array($route, P2pRoute::$public, true) === true)
-        {
-            $ret = $this->ba->p2pPublicAuth();
-        }
-        else if (in_array($route, Route::$publicCallback, true) === true)
-        {
-            if ($this->ba->hasPartnerAuthCallbackKey() === true)
-            {
-                $ret = $this->ba->handlePartnerAuthOnPublicCallback();
-            }
-            else if ($this->oauth->hasOAuthPublicToken() === true)
-            {
-                $ret = $this->authenticateOAuthPublicToken();
-            }
-            else
-            {
-                $ret = $this->ba->publicCallbackAuth();
-            }
-        }
-        else if (in_array($route, Route::$proxy, true) === true)
-        {
-            $ret = $this->ba->proxyAuth();
-        }
-        else if (in_array($route, Route::$device, true) === true)
-        {
-            $ret = $this->ba->deviceAuth();
-        }
-        else if (in_array($route, P2pRoute::$device, true) === true)
-        {
-            $ret = $this->ba->p2pDeviceAuth();
-        }
-        else if (in_array($route, Route::$direct, true) === true)
-        {
-            $ret = $this->ba->directAuth();
-        }
-        else if (in_array($route, P2pRoute::$direct, true) === true)
-        {
-            $ret = $this->ba->directAuth();
-        }
-        else
-        {
-            $ret = ApiResponse::routeNotFound();
+                break;
+            case Route::P2P_PRIVATE:
+                $ret = $this->ba->privateAuth();
+                break;
+            case Route::PUBLIC:
+                // For public routes, OAuth sends a public_token using BasicAuth
+                // We check here if the key is an OAuth public token and
+                // process accordingly.
+                //
+                if ($this->oauth->hasOAuthPublicToken() === true) {
+                    $ret = $this->authenticateOAuthPublicToken();
+                } else {
+                    // Process via BasicAuth
+                    $ret = $this->ba->publicAuth();
+                }
+                break;
+            case Route::P2P_PUBLIC:
+                $ret = $this->ba->p2pPublicAuth();
+                break;
+            case ROUTE::PUBLIC_CALLBACK:
+                if ($this->ba->hasPartnerAuthCallbackKey() === true) {
+                    $ret = $this->ba->handlePartnerAuthOnPublicCallback();
+                } else if ($this->oauth->hasOAuthPublicToken() === true) {
+                    $ret = $this->authenticateOAuthPublicToken();
+                } else {
+                    $ret = $this->ba->publicCallbackAuth();
+                }
+                break;
+            case ROUTE::PROXY:
+                $ret = $this->ba->proxyAuth();
+                break;
+            case Route::DEVICE:
+                $ret = $this->ba->deviceAuth();
+                break;
+            case Route::P2P_DEVICE:
+                $ret = $this->ba->p2pDeviceAuth();
+                break;
+            case ROUTE::DIRECT:
+            case ROUTE::P2P_DIRECT:
+                $ret = $this->ba->directAuth();
+                break;
+            default:
+                $ret = ApiResponse::routeNotFound();
+                break;
         }
 
         return $ret;
@@ -648,7 +636,7 @@ class Authenticate
         if (
             !$this->requestContext->hasPassportJwt ||
             empty($this->passportUtil) ||
-            !$this->passportUtil->isEdgePassportUsable()
+            !$this->passportUtil->validatePassport()
         )
         {
             //need to reject the request here after logs confirmation

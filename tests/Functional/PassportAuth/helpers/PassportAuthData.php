@@ -49,10 +49,25 @@ return [
         ],
     ],
 
-    'testMerchantAuthWithImpersonationCanSkipWorkflow' => [
-        'request'   => [
-            'url'     => '/merchants/onboarding/escalations',
-            'method'  => 'get',
+    'testPassportAuthOnInternalRoute' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payments/timeout',
+            'server' => [
+                'HTTP_X-Passport-JWT-V1' => '',
+                'HTTP_X-PASSPORT-USABLE' => 'true'
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPassportAuthOnAdminRoute' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'GET',
             'server' => [
                 'HTTP_X-Passport-JWT-V1' => '',
                 'HTTP_X-PASSPORT-USABLE' => 'true'
@@ -60,10 +75,79 @@ return [
         ],
         'response' => [
             'content' => [
-                'limit' => [
-                    'settlement' => 1500000,
-                    'payment' => 1000000000,
-                ]
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => []
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPassportAuthOnProxyRoute' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/webhooks/events/all',
+            'server' => [
+                'HTTP_X-Passport-JWT-V1' => '',
+                'HTTP_X-PASSPORT-USABLE' => 'true'
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPassportAuthOnDirectRoute' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/checkout/public',
+            'server' => [
+                'HTTP_X-Passport-JWT-V1' => '',
+                'HTTP_X-PASSPORT-USABLE' => 'true'
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPassportAuthOnDeviceRoute' => [
+        'request' => [
+            'url' => '/upi/devices/dev_RazorpayDevice',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Passport-JWT-V1' => '',
+                'HTTP_X-PASSPORT-USABLE' => 'true'
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testMerchantAuthWithImpersonation' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'notes'         => ['key' => 'value']
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+            'server' => [
+                'HTTP_X-Passport-JWT-V1' => '',
+                'HTTP_X-PASSPORT-USABLE' => 'true',
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
             ],
             'status_code' => 200,
         ],

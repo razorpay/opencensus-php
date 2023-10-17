@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\PassportAuth;
 
+use ApiResponse;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Route;
 use RZP\Models\Merchant;
 use RZP\Constants\Mode;
@@ -90,32 +92,21 @@ class PassportAuthTest extends TestCase
 
     public function testMerchantAuthWithImpersonation()
     {
-        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
-        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey-acc_100000Razorpay'];
+        $merchant = $this->fixtures->create('merchant',['id'=>'Hoah6C9SnyNIs5']);
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
+        $keyName = "rzp_test_".$key->getKey();
+
+        $consumer = ['id' => 'Hoah6C9SnyNIs5', 'type' => 'merchant'];
+        $credential = ['username' => $keyName, 'public_key' => $keyName."-acc_100000Razorpay"];
         $impersonation = ['consumer' => ['id' => '100000Razorpay', 'type' => 'merchant'], 'type' => 'partner'];
 
         $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential, Mode::TEST, $impersonation);
-        $testData = $this->testData['testMerchantAuthWithImpersonationCanSkipWorkflow'];
+        $testData = $this->testData['testMerchantAuthWithImpersonation'];
         $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
-
-        $this->fixtures->merchant->addFeatures(['marketplace', 'partner_sub_kyc_access']);
-        $this->fixtures->create('merchant_access_map', ['entity_id' => '10000000000000', 'merchant_id' => '100000Razorpay', 'entity_owner_id' => '10000000000000']);
-
-        $this->fixtures->create(
-            'merchant_application',
-            [
-                'merchant_id' => '100000Razorpay',
-                'application_id' => '10000000000000',
-                'type'   => 'referred'
-            ]
-        );
-
-        $this->fixtures->create('merchant_detail', ['merchant_id' => '100000Razorpay', 'activation_form_milestone' => 'L2']);
-        $this->fixtures->edit('merchant','10000000000000', ['partner_type'=> 'reseller'] );
 
         $this->runRequestResponseFlow($testData);
         self::assertTrue($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
-        $this->assertBaValues('TheTestAuthKey', '100000Razorpay', 'rzp_test_TheTestAuthKey-acc_100000Razorpay', KeyAuthCreds::class, '100000Razorpay');
+        $this->assertBaValues($key->getKey(), 'Hoah6C9SnyNIs5', $keyName."-acc_100000Razorpay", KeyAuthCreds::class, '100000Razorpay');
         self::assertEmpty($this->app['request']->input('account_id'));
     }
 
@@ -519,6 +510,124 @@ class PassportAuthTest extends TestCase
             $tokenEntity['client_id'], $tokenEntity['application']['id'], ['read_only'], '10000000000000', '');
     }
 
+    /**
+     * testInternalAuthWithPassport
+     * should not use passport even if valid passport is passed in header with passport usable as true, as current route is not whitelisted
+     * i.e not part of private/public route array
+     *
+     */
+    public function testPassportAuthOnInternalRoute()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test', 'public_key' => 'rzp_test'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential);
+        $testData = $this->testData['testPassportAuthOnInternalRoute'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+
+        $cronConfig = \Config::get('applications.cron');
+        $pwd = $cronConfig['secret'];
+        $this->ba->basicAuth('rzp_test',$pwd);
+        $this->ba->addAppAuthHeaders('dashboard.razorpay.com');
+        $this->runRequestResponseFlow($testData);
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+    }
+
+    /**
+     * testPassportAuthOnAdminRoute
+     * should not use passport even if valid passport is passed in header with passport usable as true, as current route is not whitelisted
+     * i.e not part of private/public route array
+     *
+     */
+    public function testPassportAuthOnAdminRoute()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test', 'public_key' => 'rzp_test'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential);
+        $testData = $this->testData['testPassportAuthOnAdminRoute'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+
+        $this->ba->adminAuth();
+        $this->runRequestResponseFlow($testData);
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+    }
+
+    /**
+     * testPassportAuthOnProxyRoute
+     * should not use passport even if valid passport is passed in header with passport usable as true, as current route is not whitelisted
+     * i.e not part of private/public route array
+     *
+     */
+    public function testPassportAuthOnProxyRoute()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_10000000000000', 'public_key' => 'rzp_test_10000000000000'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential);
+        $testData = $this->testData['testPassportAuthOnProxyRoute'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+
+        $this->ba->proxyAuth();
+        $this->runRequestResponseFlow($testData);
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+    }
+
+    /**
+     * testPassportAuthOnDirectRoute
+     * should not use passport even if valid passport is passed in header with passport usable as true, as current route is not whitelisted
+     * i.e not part of private/public route array
+     *
+     */
+    public function testPassportAuthOnDirectRoute()
+    {
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential);
+        $testData = $this->testData['testPassportAuthOnDirectRoute'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+
+        $this->ba->directAuth();
+
+        $response = $this->sendRequest($testData['request']);
+        $this->assertStringContainsString('<title>Razorpay Checkout</title>', $response->getContent());
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+    }
+
+    /**
+     * testPassportAuthOnDeviceRoute
+     * should not use passport even if valid passport is passed in header with passport usable as true, as current route is not whitelisted
+     * i.e not part of private/public route array
+     *
+     */
+    public function testPassportAuthOnDeviceRoute()
+    {
+        $mockBA = $this->getMockBuilder(BasicAuth::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['deviceAuth'])
+            ->getMock();
+        $this->app->instance('basicauth', $mockBA);
+
+        $consumer = ['id' => '10000000000000', 'type' => 'merchant'];
+        $credential = ['username' => 'rzp_test_TheTestAuthKey', 'public_key' => 'rzp_test_TheTestAuthKey'];
+
+        $passportJWT = $this->samplePassportJwtBuilder($consumer, $credential);
+        $testData = $this->testData['testPassportAuthOnDeviceRoute'];
+        $testData['request']['server']['HTTP_X-Passport-JWT-V1'] = $passportJWT;
+
+        $this->ba->deviceAuth();
+
+        // generate dummy response
+        $mockBA->expects($this->once())->method('deviceAuth')->willReturn(ApiResponse::generateResponse());
+
+        $this->sendRequest($testData['request']);
+
+        self::assertFalse($this->app['request.ctx.v2']->shouldAuthenticateUsingPassport);
+    }
 
     //Public auth test cases
 

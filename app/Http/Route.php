@@ -18,6 +18,22 @@ class Route
 {
     protected $namespace = 'RZP\Http\Controllers';
 
+    // route types
+    CONST INTERNAL = "internal";
+    CONST ADMIN    = "admin";
+    CONST PRIVATE  = "private";
+    CONST PUBLIC   = "public";
+    CONST PROXY    = "proxy";
+    CONST DEVICE   = "device";
+    CONST DIRECT   = "direct";
+    CONST PUBLIC_CALLBACK = "public_callback";
+
+    CONST P2P_PRIVATE = "p2p_private";
+    CONST P2P_PUBLIC  = "p2p_public";
+    CONST P2P_DEVICE  = "p2p_device";
+    CONST P2P_DIRECT  = "p2p_direct";
+
+
     protected static $apiRoutes = [
         'payments_rearch_backfill'                          => ['post',     'payments/backfill',                                    'PaymentController@callCpsForBackfilling'                           ],
         'merchant_nc_revamp_eligibility_admin'              => ['get',      'merchant/activation/{id}/clarifications/eligibility',  'MerchantController@getMerchantNcRevampEligibility'                 ],
@@ -19276,4 +19292,65 @@ class Route
         return in_array($route, self::$internalAuthWithPassportRoutes,true) == true;
     }
 
+    /**
+     * gets route type, i.e return route array name to which the route belongs to.
+     * checks in a sorted order as similar to authentication order at authenticate middleware
+     * https://github.com/razorpay/api/blob/a95b4043d02fa733a1b5fdd61c1ccecd4acbd436/app/Http/Middleware/Authenticate.php#L277
+     * if the route is present in more than one route array, this will return the first route array name in which the route is found in order
+     *
+     * @return string
+     */
+    public function getRouteType() :string {
+        $route = $this->getCurrentRouteName();
+
+        if (in_array($route, Route::$internal, true)) {
+            return self::INTERNAL;
+        }
+        else if (in_array($route, Route::$admin, true))
+        {
+            return self::ADMIN;
+        }
+        else if (in_array($route, Route::$private, true))
+        {
+            return self::PRIVATE;
+        }
+        else if (in_array($route, P2pRoute::$private, true))
+        {
+            return self::P2P_PRIVATE;
+        }
+        else if (in_array($route, Route::$public, true))
+        {
+            return self::PUBLIC;
+        }
+        else if (in_array($route, P2pRoute::$public, true))
+        {
+            return self::P2P_PUBLIC;
+        }
+        else if (in_array($route, Route::$publicCallback, true))
+        {
+            return self::PUBLIC_CALLBACK;
+        }
+        else if (in_array($route, Route::$proxy, true))
+        {
+            return self::PROXY;
+        }
+        else if (in_array($route, Route::$device, true))
+        {
+            return self::DEVICE;
+        }
+        else if (in_array($route, P2pRoute::$device, true))
+        {
+            return self::P2P_DEVICE;
+        }
+        else if (in_array($route, Route::$direct, true))
+        {
+            return self::DIRECT;
+        }
+        else if (in_array($route, P2pRoute::$direct, true))
+        {
+            return self::P2P_DIRECT;
+        }
+
+        return "";
+    }
 }

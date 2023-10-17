@@ -7,6 +7,7 @@ use RZP\Base\RepositoryManager;
 use RZP\Error\ErrorCode;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\RequestContextV2;
+use RZP\Http\Route;
 use RZP\Trace\TraceCode;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\App;
@@ -66,6 +67,8 @@ class PassportUtil
      */
     protected $route;
 
+    const ALLOWED_ROUTE_TYPES = [Route::PRIVATE, Route::PUBLIC];
+
     public function __construct(Passport $passport)
     {
         $app = App::getFacadeRoot();
@@ -106,6 +109,12 @@ class PassportUtil
      */
     public function validatePassport(): bool
     {
+        // passport should be used only for identified requests, identified will be true for both private and public auth
+        // unidentified or invalid requests should be terminated at edge itself
+        if (! $this->passport->identified) {
+            return false;
+        }
+
         $errors = [];
         try {
             // these checks can evolve once passport can be used for other auth schemes
@@ -179,10 +188,20 @@ class PassportUtil
         // will be false if header doesn't exist or set to false
         $passportUsable = filter_var($request->headers->get(self::X_PASSPORT_USABLE), FILTER_VALIDATE_BOOLEAN);
 
-        // passport should be used only for identified requests, identified will be true for both private and public auth
-        // unidentified or invalid requests should be terminated at edge itself
-        // validate if passport should be used for the request and claims are valid
+        // validate if passport should be used for the request
         return ( $passportUsable === true && $this->isEdgePassportUsable());
+    }
+
+    /**
+     * checks if edge passport can be used on the current route.
+     * this is an additional authorisation check until edge is able to classify requests properly
+     *
+     * @return bool
+     */
+    public function isEdgePassportUsableOnCurrentRoute(): bool
+    {
+        $routeType = $this->app['api.route']->getRouteType();
+        return (in_array($routeType, self::ALLOWED_ROUTE_TYPES, true) === true);
     }
 
     /**
@@ -192,7 +211,7 @@ class PassportUtil
      */
     public function isEdgePassportUsable(): bool
     {
-        return ($this->passport->identified === true && $this->validatePassport() === true);
+        return ($this->isEdgePassportUsableOnCurrentRoute() && $this->validatePassport() === true);
     }
 
     /**

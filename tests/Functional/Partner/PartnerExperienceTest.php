@@ -4062,6 +4062,7 @@ class PartnerExperienceTest extends OAuthTestCase
      **/
     public function testPartnerConfigCreateDuringOAuthAppMerchantMap()
     {
+        $this->ba->appAuth();
         $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
 
         $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');

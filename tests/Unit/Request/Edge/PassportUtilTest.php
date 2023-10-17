@@ -7,6 +7,7 @@ use Razorpay\Edge\Passport;
 use Razorpay\Edge\Passport\OAuthClaims;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\BasicAuth\KeyAuthCreds;
+use RZP\Http\Route;
 use RZP\Tests\TestCase;
 use RZP\Http\Edge\PassportUtil;
 use \Mockery;
@@ -26,6 +27,17 @@ class PassportUtilTest extends TestCase
             ->setMethods(['isPartnerAuth', 'isPartnerAuthAllowed', 'getAccountId', 'setPartnerMerchantId', 'setOAuthApplicationId', 'setPartnerAuth', 'setMerchant'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
+
+        return $mock;
+    }
+
+    protected function mockRoute()
+    {
+        $mock = $this->getMockBuilder(Route::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getRouteType'])
+            ->getMock();
+        $this->app->instance('api.route', $mock);
 
         return $mock;
     }
@@ -115,9 +127,10 @@ class PassportUtilTest extends TestCase
      * @param string                        $passportUsable
      * @param Passport\ConsumerClaims       $consumer
      * @param Passport\CredentialClaims     $credential
+     * @param string                        $routeType
      * @param bool                          $expected
      */
-    public function testShouldAuthenticateUsingPassport($passport, $authenticated, $identified, $passportUsable, $consumer, $credential, $expected)
+    public function testShouldAuthenticateUsingPassport($passport, $authenticated, $identified, $passportUsable, $consumer, $credential, $routeType, $expected)
     {
         if (! empty($passport)) {
             $passport->authenticated = $authenticated;
@@ -128,6 +141,9 @@ class PassportUtilTest extends TestCase
 
         $request = $this->app['request'];
         $request->headers->set('X_PASSPORT_USABLE', $passportUsable);
+
+        $route = $this->mockRoute();
+        $route->expects($this->any())->method('getRouteType')->willReturn($routeType);
 
         $passportUtil = new PassportUtil($passport);
         $this->assertSame($passportUtil->shouldAuthenticateUsingPassport($request), $expected);
@@ -147,18 +163,55 @@ class PassportUtilTest extends TestCase
         $credential->username = 'rzp_live_10000000000000';
         $credential->publicKey = 'rzp_live_10000000000000';
 
-        // $passport, $authenticated, $identified, $passportUsable, $consumer, $credential, $expected
+        // $passport, $authenticated, $identified, $passportUsable, $consumer, $credential, $routeType, $expected
         return [
             // Case 1: passport usable false
-            [$passport, true, true, false, null, null, false],
+            [$passport, true, true, false, null, null, '', false],
             // Case 2: not authenticated and not identified
-            [$passport, false, false, true, null, null, false],
+            [$passport, false, false, true, null, null, 'private', false],
             // Case 3: passport validation fails
-            [$passport, true, true, true, null, null, false],
+            [$passport, true, true, true, null, null, 'private', false],
             // Case 4: success case private auth
-            [$passport, true, true, true, $consumer, $credential, true],
+            [$passport, true, true, true, $consumer, $credential, 'private', true],
             // Case 4: success case public auth
-            [$passport, false, true, true, $consumer, $credential, true],
+            [$passport, false, true, true, $consumer, $credential, 'public', true],
+        ];
+    }
+
+    /**
+     * @dataProvider getIsEdgePassportUsableOnCurrentRoute
+     *
+     * @param string                        $routeType
+     * @param bool                          $expected
+     */
+    public function testIsEdgePassportUsableOnCurrentRoute($routeType, $expected)
+    {
+        $route = $this->mockRoute();
+        $route->expects($this->once())->method('getRouteType')->willReturn($routeType);
+
+        $passport = new Passport\Passport;
+        $passportUtil = new PassportUtil($passport);
+        $this->assertSame($passportUtil->isEdgePassportUsableOnCurrentRoute(), $expected);
+    }
+
+    public function getIsEdgePassportUsableOnCurrentRoute(): array
+    {
+        // $routeType, $expected
+        return [
+            // Case 1: private route
+            ['private', true],
+            // Case 2: public route
+            ['public', true],
+            // Case 3: direct route
+            ['direct', false],
+            // Case 4: internal route
+            ['internal', false],
+            // Case 5: admin route
+            ['admin', false],
+            // Case 6: device route
+            ['device', false],
+            // Case 7: p2p route
+            ['p2p_private', false]
         ];
     }
 

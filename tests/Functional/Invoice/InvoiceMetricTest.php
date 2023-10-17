@@ -110,7 +110,8 @@ class InvoiceMetricTest extends TestCase
                         'route'    => 'invoice_fetch_multiple',
                         'passport_auth' => true,
                         'passport_auth_type' => 'merchant_auth_without_impersonation',
-                        'host' => 'api.razorpay.com'
+                        'host' => 'api.razorpay.com',
+                        'route_type' => 'private'
                     ],
                 ],
                 [
