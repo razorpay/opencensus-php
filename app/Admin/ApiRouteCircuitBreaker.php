@@ -145,8 +145,7 @@ class ApiRouteCircuitBreaker
             MetricsConstants::EVENT_COUNT_ONE, [
                 MetricsConstants::CIRCUIT_STATE             => $this->circuitState,
                 MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
-
-            ]);
+            ] + $this->getTeamLabels());
 
         $this->app['trace']->info(TraceCode::API_CIRCUIT_BREAKER_DECISION, [
             self::BREAK_CIRCUIT => $breakCircuit,
