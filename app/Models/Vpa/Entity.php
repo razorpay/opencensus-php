@@ -8,11 +8,12 @@ use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const ID                   = 'id';
     const ENTITY_ID            = 'entity_id';

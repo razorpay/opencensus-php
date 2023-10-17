@@ -9,8 +9,10 @@ use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\Transaction\Entity as Transaction;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Feature\Constants as MerchantFeature;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
+
 
 /**
  * @property FundAccount fundAccount
@@ -20,7 +22,7 @@ use RZP\Models\FundAccount\Entity as FundAccountEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use Traits\NotesTrait;
+    use Traits\NotesTrait, AsvGetAttribute;
     use Traits\HasBalance;
 
     const ID                     = 'id';

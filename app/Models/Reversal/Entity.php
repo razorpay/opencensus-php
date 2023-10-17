@@ -14,11 +14,12 @@ use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
     use HasBalance;
     use LinkedAccountNotesTrait;
 

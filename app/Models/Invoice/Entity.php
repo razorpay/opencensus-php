@@ -26,6 +26,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Subscription\Entity             $subscription
@@ -35,7 +36,7 @@ use RZP\Models\SubscriptionRegistration;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
     use SoftDeletes;
 
     /**

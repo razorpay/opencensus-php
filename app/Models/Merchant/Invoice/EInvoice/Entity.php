@@ -3,9 +3,12 @@
 namespace RZP\Models\Merchant\Invoice\EInvoice;
 
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const INVOICE_NUMBER        = 'invoice_number';

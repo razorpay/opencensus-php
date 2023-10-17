@@ -13,10 +13,11 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HardDeletes;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
     use HardDeletes;
     use HasFactory;
 
