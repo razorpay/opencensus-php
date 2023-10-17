@@ -26,6 +26,8 @@ class AsvRouter
 
     const None = "none";
 
+    const PARTNER_NOT_FOUND = "partner_not_found";
+
     protected $app;
 
     /**
@@ -231,35 +233,27 @@ class AsvRouter
 
             $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentName($repoClass, $functionName);
             $routeOrWorkerName = $this->getRouteOrJobName();
-            $isRequestRoutedToAsv = $this->spitzHelper->isSplitzOnForWriteByExperimentName(
-                $experimentName,
-                $id,
-                $this->getRouteOrJobName()
-            );
+            $isRequestRoutedToAsv = false;
 
-            // Metric is temporary, will be removed/seperated to avoid highcardinality.
-            // When We ramp up for all entities.
-            // Why both metric/log?: It is hard to get insights from logs for over
-            // 7 days, hence, also adding a metric.
-            if ($repoClass != MerchantRepository::class and $repoClass != MerchantDetailRepository::class) {
-                $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_RESULT, [
-                    'routeOrWorkerName' => $routeOrWorkerName,
-                    'isWriteRequestRouted' => $isRequestRoutedToAsv,
-                    'identifier' => $repoClass . '::' . $functionName,
-                ]);
-            } else {
-                $this->trace->count(Metric::ASV_WRITE_MERCHANT_AND_MERCHANT_DETAIL_ROUTER_RESULT, [
-                    'routeOrWorkerName' => $routeOrWorkerName,
-                    'isWriteRequestRouted' => $isRequestRoutedToAsv,
-                    'identifier' => $repoClass . '::' . $functionName,
-                ]);
+            if((new AsvMaps\PartnershipFlows())->checkIfPartnerShipFlow($routeOrWorkerName) === true) {
+                $partnerId = $this->getPartnerId();
+                $isRequestRoutedToAsv = $this->spitzHelper->isSplitzOnForPartnershipWriteByExperimentName(
+                    $experimentName,
+                    $id,
+                    $this->getRouteOrJobName(),
+                    $partnerId,
+                );
+            }
+            else {
+                $isRequestRoutedToAsv = $this->spitzHelper->isSplitzOnForWriteByExperimentName(
+                    $experimentName,
+                    $id,
+                    $this->getRouteOrJobName()
+                );
             }
 
-            $this->trace->info(TraceCode::ASV_WRITE_REQUEST_ROUTER_RESULT, [
-                'routeOrWorkerName' => $routeOrWorkerName,
-                'isWriteRequestRouted' => $isRequestRoutedToAsv,
-                'function_identifier' => $repoClass . '::' . $functionName,
-            ]);
+
+            $this->logAndReportMetrics($repoClass, $routeOrWorkerName, $isRequestRoutedToAsv, $functionName);
 
             return $isRequestRoutedToAsv;
         } catch (\Throwable $e) {
@@ -338,4 +332,62 @@ class AsvRouter
             return false;
         }
     }
+
+    /**
+     * @param $repoClass
+     * @param string $routeOrWorkerName
+     * @param bool $isRequestRoutedToAsv
+     * @param $functionName
+     * @return void
+     */
+    public function logAndReportMetrics($repoClass, string $routeOrWorkerName, bool $isRequestRoutedToAsv, $functionName): void
+    {
+        // Metric is temporary, will be removed/seperated to avoid highcardinality.
+        // When We ramp up for all entities.
+        // Why both metric/log?: It is hard to get insights from logs for over
+        // 7 days, hence, also adding a metric.
+        if ($repoClass != MerchantRepository::class and $repoClass != MerchantDetailRepository::class) {
+            $this->trace->count(Metric::ASV_WRITE_REQUEST_ROUTER_RESULT, [
+                'routeOrWorkerName' => $routeOrWorkerName,
+                'isWriteRequestRouted' => $isRequestRoutedToAsv,
+                'identifier' => $repoClass . '::' . $functionName,
+            ]);
+        } else {
+            $this->trace->count(Metric::ASV_WRITE_MERCHANT_AND_MERCHANT_DETAIL_ROUTER_RESULT, [
+                'routeOrWorkerName' => $routeOrWorkerName,
+                'isWriteRequestRouted' => $isRequestRoutedToAsv,
+                'identifier' => $repoClass . '::' . $functionName,
+            ]);
+        }
+
+        $this->trace->info(TraceCode::ASV_WRITE_REQUEST_ROUTER_RESULT, [
+            'routeOrWorkerName' => $routeOrWorkerName,
+            'isWriteRequestRouted' => $isRequestRoutedToAsv,
+            'function_identifier' => $repoClass . '::' . $functionName,
+        ]);
+    }
+
+    /*
+     *  Get partner id or default: PARTNER_NOT_FOUND if not present.
+     */
+    private function getPartnerId(): string
+    {
+        $partnerId = "";
+        try {
+           $partnerId = $this->app['basicauth']->getMerchantId();
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_ERROR_FINDING_PARTNER_ID);
+        }
+
+        if ($partnerId === "" or $partnerId===null) {
+            $partnerId = self::PARTNER_NOT_FOUND;
+        }
+
+        $this->trace->info(TraceCode::ASV_PARTNER_ID_FIND_RESULT, [
+            'partner_id' => $partnerId,
+        ]);
+
+        return $partnerId;
+    }
+
 }

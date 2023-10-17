@@ -1642,6 +1642,7 @@ return [
         "splitz_experiment_stakeholder_save_or_fail" => env('ASV_SPLITZ_STAKEHOLDER_SAVE_OR_FAIL', ''),
         "splitz_experiment_merchant_save_or_fail" => env('ASV_SPLITZ_MERCHANT_SAVE_OR_FAIL', ''),
         "splitz_experiment_address_save_or_fail" => env('ASV_SPLITZ_ADDRESS_SAVE_OR_FAIL', ''),
+        "splitz_send_partner_write_to_asv" => env('ASV_SPLITZ_SEND_PARTNER_WRITE_TO_ASV', ''),
         "splitz_experiment_implicit_join_entity" => env('ASV_SPLITZ_EXPERIEMENT_IMPLICIT_JOIN_ENTITY', ''),
         'splitz_experiment_implicit_join_website_by_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_IMPLICIT_JOIN_WEBSITE_BY_MERCHANT_ID', ''),
         'splitz_experiment_implicit_join_business_detail_by_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_IMPLICIT_JOIN_BUSINESS_DETAIL_BY_MERCHANT_ID', ''),

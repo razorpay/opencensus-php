@@ -4,9 +4,15 @@ namespace Unit\Models\Merchant\Acs\AsvRouter;
 
 
 use Illuminate\Http\Request;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\RequestContext;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Repository;
+use RZP\Modules\Acs\Wrapper\Constant;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
+use Config;
 
 class Route {
 
@@ -18,6 +24,161 @@ class Route {
 }
 class AsvRouterTest extends TestCase
 {
+
+    private $splitzResponse = [
+        'id' => '10000000000000',
+        'project_id' => 'K1ZCHBSn7hbCMN',
+        'experiment' => [
+            'id' => 'K1ZaAGS9JfAUHj',
+            'name' => 'CallSyncDviationAPI',
+            'exclusion_group_id' => '',
+        ],
+        'variant' => [
+            'id' => 'K1ZaAHZ7Lnumc6',
+            'name' => 'Dummy Enabled',
+            'variables' => [
+                [
+                    'key' => 'enabled',
+                    'value' => 'true',
+                ]
+            ],
+            'experiment_id' => 'K1ZaAGS9JfAUHj',
+            'weight' => 100,
+            'is_default' => false
+        ],
+        'Reason' => 'bucketer',
+        'steps' => [
+            'sampler',
+            'exclusion',
+            'audience',
+            'assign_bucket'
+        ]
+    ];
+
+    public function testShouldRouteWriteRequestToAccountService() {
+
+        Config::set('applications.asv_v2.splitz_send_partner_write_to_asv', 'K1ZaAHZ7Lnumc1');
+        Config::set('applications.asv_v2.splitz_experiment_merchant_save_or_fail', 'K1ZaAHZ7Lnumc62');
+        Config::set('applications.asv_v2.splitz_experiment_send_write_route_or_worker_to_asv', 'K1ZaAHZ7Lnumc3');
+
+        $tests = [
+            [
+                "is_partnership_route" => true,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "expected_result" => true,
+            ],
+            [
+                "is_partnership_route" => true,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => false,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "expected_result" => false,
+            ],
+            [
+                "is_partnership_route" => false,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => false,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "expected_result" => true,
+            ],
+            [
+                "is_partnership_route" => true,
+                "is_enabled_write_on_entity" => false,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "expected_result" => false,
+            ],
+            [
+                "is_partnership_route" => true,
+                "is_enabled_write_on_entity" => false,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "expected_result" => false,
+            ],
+            [
+                "is_partnership_route" => false,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "expected_result" => true,
+            ],
+            [
+                "is_partnership_route" => true,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => true,
+                "partner_id_get_exception" => false,
+                "expected_result" => false,
+            ],
+            [
+                "is_partnership_route" => true,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => true,
+                "expected_result" => true,
+            ],
+            [
+                "is_partnership_route" => true,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => false,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => true,
+                "expected_result" => false,
+            ],
+            [
+                "is_partnership_route" => false,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => false,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => true,
+                "expected_result" => true,
+            ],
+            [
+                "is_partnership_route" => false,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => false,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => true,
+                "partner_id_get_exception" => true,
+                "expected_result" => false,
+            ]
+        ];
+
+        for($i = 0; $i < count($tests); $i++) {
+            $test = $tests[$i];
+            list($request, $response) = $this->getSplitzRequestAndResponse($test);
+
+            $this->setSplitzWithOutputForBulk($response, $request, 1, $test["splitz_exception"]);
+            $asvRouter = new AsvRouter();
+
+            $this->assertEquals($test["expected_result"], $asvRouter->shouldRouteWriteRequestToAccountService(
+              Repository::class,
+                FunctionConstant::SAVE_OR_FAIL,
+                "test_id",
+            ));
+        }
+
+    }
+
     public function testAsvRouterTestForMerchantEmail()
     {
 
@@ -57,6 +218,105 @@ class AsvRouterTest extends TestCase
         } catch (\Exception $e) {
             // do nothing
         }
+    }
+
+    protected function createSplitzMock(array $methods = ['evaluateRequest'])
+    {
+        $splitzMock = $this->getMockBuilder(SplitzService::class)
+            ->onlyMethods($methods)
+            ->getMock();
+        $this->app->instance('splitzService', $splitzMock);
+
+        return $splitzMock;
+    }
+
+    public function setSplitzWithOutputForBulk(array $output, array $request, $count = 1,$exception = false) {
+        $response = [];
+        for ($i = 0; $i < count($output); $i++) {
+            $tempResponse = $this->splitzResponse;
+            $tempResponse["variant"]["variables"][0]["value"] = $output[$i] ? "true" : "false";
+            $response[$i] = $tempResponse;
+        }
+
+        $splitzMock = $this->createSplitzMock(['bulkCallsToSplitz']);
+
+        if ($exception) {
+            $splitzMock->expects($this->exactly($count))->method('bulkCallsToSplitz')->with($request)->willThrowException(new \Exception("sample"));
+        } else {
+            $splitzMock->expects($this->exactly($count))->method('bulkCallsToSplitz')->with($request)->willReturn($response);
+        }
+
+        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        return;
+    }
+
+    /**
+     * @param array $test
+     * @return array
+     */
+    public function getSplitzRequestAndResponse(array $test): array
+    {
+
+
+        $request = [
+            [
+                "experiment_id" => "K1ZaAHZ7Lnumc62",
+                "id" => "test_id"
+            ]
+        ];
+        $response = [
+            $test["is_enabled_write_on_entity"]
+        ];
+
+
+        if ($test["is_partnership_route"]) {
+            $this->mockBasicAuth($test["partner_id_get_exception"]);
+            $this->setRequestRoute('account_create_v2');
+
+            $request[] = [
+                "experiment_id" => "K1ZaAHZ7Lnumc3",
+                "id" => "account_create_v2",
+            ];
+            $response[] = $test["is_enabled_write_on_route"];
+
+            $request[] = [
+                "experiment_id" => "K1ZaAHZ7Lnumc1",
+                "id" => $test["partner_id_get_exception"] ? "partner_not_found" : "RANDOM_PARTNER_ID"
+            ];
+            $response[] = $test["is_enabled_write_on_partner"];
+
+        } else {
+            $request[] = [
+                "experiment_id" => "K1ZaAHZ7Lnumc3",
+                "id" => "not_account_create_v2",
+            ];
+            $response[] = $test["is_enabled_write_on_route"];
+
+            $this->setRequestRoute('not_account_create_v2');
+        }
+        return array($request, $response);
+    }
+
+    protected function mockBasicAuth($exception = false)
+    {
+        $mock = $this->getMockBuilder(BasicAuth::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getMerchantId'])
+            ->getMock();
+
+        if($exception) {
+            $mock->expects($this->atLeastOnce())
+                ->method('getMerchantId')
+                ->willThrowException(new \Exception("sample"));
+        } else {
+            $mock->expects($this->atLeastOnce())
+                ->method('getMerchantId')
+                ->willReturn('RANDOM_PARTNER_ID');
+        }
+
+        $this->app->instance('basicauth', $mock);
+
+        return $mock;
     }
 
 }

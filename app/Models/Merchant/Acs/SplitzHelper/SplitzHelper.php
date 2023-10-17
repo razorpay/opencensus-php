@@ -62,6 +62,44 @@ class SplitzHelper
         }
     }
 
+    function isSplitzOnForPartnershipWriteByExperimentName(
+        string $experimentName,
+        string $identifier,
+        string $routeOrWorker,
+        string $partnerId,
+        array $metadata = []): bool {
+        try {
+            $experimentIdForEntity = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[$experimentName];
+            $experimentIdForRoute = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[SplitzConstant::SPLITZ_SEND_WRITE_ROUTE_OR_WORKER_TO_ASV];
+            $experimentIdForPartner = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[SplitzConstant::SPLITZ_SEND_PARTNER_WRITE_TO_ASV];
+
+
+            return $this->isSplitzOnBulk(
+                [
+                    [
+                        "experiment_id" => $experimentIdForEntity, "id" => $identifier,
+                    ],
+                    [
+                        "experiment_id" => $experimentIdForRoute, "id" => $routeOrWorker,
+                    ],
+                    [
+                        "experiment_id" => $experimentIdForPartner, "id" => $partnerId,
+                    ]
+                ],
+                $metadata
+            );
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::ACCOUNT_SERVICE_SPLITZ_EXCEPTION, [
+                "splitz_call_exception" => $e->getMessage(),
+                "experiment_name" => $experimentName,
+                "identifier" => $identifier,
+                "route" => $routeOrWorker,
+                "partner_id" => $partnerId,
+            ]);
+            return false;
+        }
+    }
+
     function isSplitzOnByExperimentName(string $experimentName, string $identifier): bool {
         try {
             $experimentId = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[$experimentName];
