@@ -533,4 +533,29 @@ class VendorPaymentController extends Controller
     {
         return $this->service->gstInputCreditDisableIntegration($this->ba->getMerchant(), $this->input);
     }
+
+    public function createItem()
+    {
+        return $this->service->createItem($this->ba->getMerchant(), $this->input);
+    }
+
+    public function listItems()
+    {
+        return $this->service->listItems($this->ba->getMerchant(), $this->input);
+    }
+
+    public function getItem($itmId)
+    {
+        return $this->service->getItem($this->ba->getMerchant(), $itmId);
+    }
+
+    public function editItem($itmId)
+    {
+        return $this->service->editItem($this->ba->getMerchant(), $itmId, $this->input);
+    }
+
+    public function createDraft()
+    {
+        return $this->service->createDraft($this->ba->getMerchant(), $this->ba->getUser(), $this->input);
+    }
 }

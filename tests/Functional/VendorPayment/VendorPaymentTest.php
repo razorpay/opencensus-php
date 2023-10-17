@@ -1278,7 +1278,7 @@ class VendorPaymentTest extends TestCase
 
     public function testGstInputCreditDisableIntegration()
     {
-        $this->ba->cronAuth();
+        $this->ba->proxyAuth();
 
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 
@@ -1291,5 +1291,95 @@ class VendorPaymentTest extends TestCase
         $this->startTest();
 
         $vpMock->shouldHaveReceived('gstInputCreditDisableIntegration');
+    }
+
+    public function testCreateItem()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('createItem')->andReturn([
+            'id' => 'po_dummyTestId'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('createItem');
+    }
+
+    public function testListItems()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('listItems')->andReturn([
+            'count' => 1,
+            'items' => [
+                [
+                    'id' => 'itm_testDummyId'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('listItems');
+    }
+
+    public function testGetItem()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getItem')->andReturn([
+            'id' => 'itm_dummyTestId'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getItem');
+    }
+
+    public function testEditItem()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('editItem')->andReturn([
+            'id' => 'itm_dummyTestId'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('editItem');
+    }
+
+    public function testCreateDraftVendorPayment()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('createDraft')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('createDraft');
     }
 }

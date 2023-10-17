@@ -1352,4 +1352,89 @@ return [
             ]
         ]
     ],
+
+    'testCreateItem' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/items',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testListItems' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/items',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'itm_testDummyId'
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testGetItem' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/item/itm_dummyTestId',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'itm_dummyTestId',
+            ]
+        ]
+    ],
+
+    'testEditItem' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/items/itm_dummyTestId',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'itm_dummyTestId',
+            ]
+        ]
+    ],
+
+    'testCreateDraftVendorPayment' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/draft',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
 ];

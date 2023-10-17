@@ -38,6 +38,7 @@ class Service
     const UPDATE_CONTACT                = 'UpdateContactById';
     const GET_CONTACT                   = 'GetContactById';
     const CREATE_VENDOR_PAYMENT         = 'CreateVendorPayment';
+    const CREATE_DRAFT_VENDOR_PAYMENT   = 'CreateDraftVendorPayment';
     const CONTACT_ID                    = 'contact_id';
     const ID                            = 'id';
     const UPLOAD_INVOICE                = 'UploadInvoice';
@@ -107,6 +108,10 @@ class Service
     const UNLINK_PURCHASE_ORDER_FROM_INVOICE  = 'UnlinkPurchaseOrderFromInvoice';
 
     const SEARCH_ITEMS = "SearchItems";
+    const CREATE_ITEM = "CreateItem";
+    const LIST_ITEMS = 'ListItems';
+    const GET_ITEM = 'GetItem';
+    const EDIT_ITEM = 'EditItem';
 
     const CREATE_ADDRESS        = 'CreateAddress';
     const UPDATE_ADDRESS        = 'UpdateAddress';
@@ -1252,6 +1257,48 @@ class Service
     public function gstInputCreditDisableIntegration(MerchantEntity $merchant, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GST_INPUT_CREDIT_DISABLE_INTEGRATION);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function createItem(MerchantEntity $merchant, array $input)
+    {
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_ITEM);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function listItems(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::LIST_ITEMS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getItem(MerchantEntity $merchant, string $itmId)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_ITEM);
+
+        $input[self::ID] = $itmId;
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function editItem(MerchantEntity $merchant, string $itmId, array $input)
+    {
+        $input[self::ID] = $itmId;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EDIT_ITEM);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function createDraft(MerchantEntity $merchant, Entity $user, array $input)
+    {
+        $input['user_id'] = $user->getPublicId();
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_DRAFT_VENDOR_PAYMENT);
 
         return $this->makeRequest($merchant, $url, $input);
     }
