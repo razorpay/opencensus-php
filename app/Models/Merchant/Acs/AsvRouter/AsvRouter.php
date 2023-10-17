@@ -104,6 +104,27 @@ class AsvRouter
         }
     }
 
+    function logAndTrackRequestNotRoutedToAsv($id, $columns, $connectionType, $repoClass, $functionName, $flow): void
+    {
+        $this->trace->info(TraceCode::ACCOUNT_SERVICE_DO_NOT_ROUTE_REQUEST, [
+            "flow" => $flow,
+            "route_or_job_name" => $this->getRouteOrJobName(),
+            "connection_type" => $connectionType,
+            "function_identifier" => $repoClass . "::" . $functionName,
+            "columns" => $columns,
+            "id" => $id
+        ]);
+
+        $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED_TO_ASV, [
+            "flow" => $flow,
+            "route_or_job_name" => $this->getRouteOrJobName(),
+            "connection_type" => $connectionType!==null ? $connectionType: "none",
+            "function_identifier" => $repoClass . "::" . $functionName,
+            "id_str" => is_string($id) ? "true" : "false",
+            "partial_columns" => $columns != array("*") ? "true": "false",
+        ]);
+    }
+
     //TODO: remove shouldCallAccountService and use  shouldRouteFindToAccountService wherever shouldCallAccountService is used
 
     /**
@@ -125,16 +146,7 @@ class AsvRouter
 
         try {
             if ($connectionType != null || $columns != array("*") || !is_string($id)) {
-                $this->trace->info(TraceCode::ACCOUNT_SERVICE_DO_NOT_ROUTE_REQUEST, [
-                    "connection_type" => $connectionType,
-                    "function_identifier" => $repoClass . "::" . $functionName,
-                    "columns" => $columns,
-                    "id" => $id
-                ]);
-
-                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED_TO_ASV, [
-                    "function_identifier" => $repoClass . "::" . $functionName,
-                ]);
+                $this->logAndTrackRequestNotRoutedToAsv($id, $columns, $connectionType, $repoClass, $functionName, "normal");
                 return false;
             }
 
@@ -165,21 +177,14 @@ class AsvRouter
      * @param $functionIdentifier
      * @return bool
      */
+
+
     function shouldRouteFindToAccountService($id, $columns, $connectionType, $repoClass, $functionName): bool
     {
 
         try {
             if ($connectionType != null || $columns != array("*") || !is_string($id)) {
-                $this->trace->info(TraceCode::ACCOUNT_SERVICE_DO_NOT_ROUTE_REQUEST, [
-                    "connection_type" => $connectionType,
-                    "function_identifier" => $repoClass . "::" . $functionName,
-                    "columns" => $columns,
-                    "id" => $id
-                ]);
-
-                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED_TO_ASV, [
-                    "function_identifier" => $repoClass . "::" . $functionName,
-                ]);
+                $this->logAndTrackRequestNotRoutedToAsv($id, $columns, $connectionType, $repoClass, $functionName, "normal");
                 return false;
             }
 
@@ -305,16 +310,7 @@ class AsvRouter
     public function shouldRouteFindForImplicitJoinToAccountService($id, $entityName, $columns, $connectionType, $repoClass, $functionName): bool {
         try {
             if ($connectionType != null || $columns != array("*") || !is_string($id)) {
-                $this->trace->info(TraceCode::ACCOUNT_SERVICE_DO_NOT_ROUTE_REQUEST, [
-                    "connection_type" => $connectionType,
-                    "function_identifier" => $repoClass . "::" . $functionName,
-                    "columns" => $columns,
-                    "id" => $id
-                ]);
-
-                $this->trace->count(Metric::ASV_REQUEST_NOT_ROUTED_TO_ASV, [
-                    "function_identifier" => $repoClass . "::" . $functionName,
-                ]);
+                $this->logAndTrackRequestNotRoutedToAsv($id, $columns, $connectionType, $repoClass, $functionName, "implicit");
                 return false;
             }
 

@@ -1616,6 +1616,9 @@ return [
         'username' => env('ASV_V2_USERNAME', ''),
         'password' => env('ASV_V2_PASSWORD', ''),
         'grpc_timeout' => env('ASV_V2_GRPC_CLIENT_TIMEOUT', 100000),
+        'grpc_keep_alive_time_in_ms' => env('ASV_V2_GRPC_KEEP_ALIVE_TIME_IN_MS', 5000),
+        'grpc_keep_alive_timeout_in_ms' => env('ASV_V2_GRPC_KEEP_ALIVE_TIMEOUT_IN_MS', 1000),
+        'grpc_keep_alive_permit_without_calls' => env('ASV_V2_GRPC_KEEP_ALIVE_PERMIT_WITHOUT_CALLS', 0),
 
         // splitz experiment ids
         'splitz_experiment_website_read_merchantid' => env('ASV_SPLITZ_EXPERIMENT_WEBSITE_READ_MERCHANTID', ''),

@@ -2318,12 +2318,17 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $username = $asvConfig[ASVV2Constant::USERNAME];
             $password = $asvConfig[ASVV2Constant::PASSWORD];
             $grpcHost = $asvConfig[ASVV2Constant::GRPC_HOST];
+            $grpcKeepAliveTimeInMs = $asvConfig[ASVV2Constant::ASV_V2_GRPC_KEEP_ALIVE_TIME_IN_MS];
+            $grpcKeepAliveTimeoutInMs =  $asvConfig[ASVV2Constant::ASV_V2_GRPC_KEEP_ALIVE_TIMEOUT_IN_MS];
+            $grpcKeepAlivePermitWithoutCalls = $asvConfig[ASVV2Constant::ASV_V2_GRPC_KEEP_ALIVE_PERMIT_WITHOUT_CALLS];
 
+            $keepAliveConfig = new AsvSdkConfig\KeepAliveConfig($grpcKeepAliveTimeInMs, $grpcKeepAliveTimeoutInMs, $grpcKeepAlivePermitWithoutCalls);
             $credentials = new AsvSdkConfig\Credentials($username, $password);
             $logger = $app['trace'];
 
             $asvSdkConfig = new AsvSdkConfig\Config();
-            $asvSdkConfig->setHost($grpcHost)->setCredentials($credentials)->setLogger($logger)->setTraceCodeClass(TraceCode::Class);
+            $asvSdkConfig->setHost($grpcHost)->setCredentials($credentials)->setLogger($logger)
+                ->setTraceCodeClass(TraceCode::Class)->setKeepAliveConfig($keepAliveConfig);
 
             return new AsvSdkClient($asvSdkConfig);
         });

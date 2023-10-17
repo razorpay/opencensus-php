@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7c3b1486a6697491f664ccf025be0312",
+    "content-hash": "7ffdacc41622688094f1fc5f07430c2a",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -10971,16 +10971,16 @@
         },
         {
             "name": "razorpay/account-service-php-sdk",
-            "version": "v1.0.11",
+            "version": "v1.0.12",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/account-service-php-sdk.git",
-                "reference": "aaa16caa119a813c0fc335226fea057a602af6d9"
+                "reference": "b5004cb6cd0543eb2220548b17cb0f92fe0c3eb1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/account-service-php-sdk/zipball/aaa16caa119a813c0fc335226fea057a602af6d9",
-                "reference": "aaa16caa119a813c0fc335226fea057a602af6d9",
+                "url": "https://api.github.com/repos/razorpay/account-service-php-sdk/zipball/b5004cb6cd0543eb2220548b17cb0f92fe0c3eb1",
+                "reference": "b5004cb6cd0543eb2220548b17cb0f92fe0c3eb1",
                 "shasum": ""
             },
             "require": {
@@ -11010,7 +11010,7 @@
                 "asv",
                 "razorpay"
             ],
-            "time": "2023-10-09T12:06:28+00:00"
+            "time": "2023-10-13T06:00:59+00:00"
         },
         {
             "name": "razorpay/config-proto",
@@ -19323,5 +19323,5 @@
         "ext-pdo": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }

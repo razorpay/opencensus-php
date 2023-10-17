@@ -94,7 +94,7 @@
         "razorpay/dcs-php-sdk": "dev-master",
         "selective/transformer": "1.2.0",
         "grpc/grpc": "1.52.0",
-        "razorpay/account-service-php-sdk": "v1.0.11",
+        "razorpay/account-service-php-sdk": "v1.0.12",
         "ext-grpc": "*",
         "ext-pdo": "*",
         "code-orange/redis-counting-semaphore": "^1.2",
