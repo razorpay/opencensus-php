@@ -121,6 +121,11 @@ class Validator extends Base\Validator
         Mode::IMPS,
         Mode::UPI,
         Mode::IFT,
+        /*
+         * For Axis, there is an additional validation call w/o IFSC code for IMPS payments.
+         * The call is made with mode as TRANSFER, hence added this here.
+         */
+        Mode::TRANSFER,
     ];
 
     protected function validatePayerIfsc($input)

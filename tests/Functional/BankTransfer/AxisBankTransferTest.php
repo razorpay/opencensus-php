@@ -261,6 +261,31 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals('Success', $response['message']);
     }
 
+    public function testValidateBankTransferAxisForImps()
+    {
+        /*
+         * For Axis, there is an additional validation call w/o IFSC code for IMPS payments.
+         * The call is made with mode as TRANSFER.
+         */
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Bene_acc_no'] = $this->getAxisVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/ecollect/validate/axis/test',
+            'method' => 'post',
+            'server' => $testData['request']['server'],
+            'content' => $testData['request']['content']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('S', $response['Stts_flg']);
+        $this->assertEquals('000', $response['Err_cd']);
+        $this->assertEquals('Success', $response['message']);
+    }
+
     public function testBankTransferAxis()
     {
         $testData = $this->testData[__FUNCTION__];

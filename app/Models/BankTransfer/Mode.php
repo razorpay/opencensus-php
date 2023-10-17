@@ -10,6 +10,7 @@ class Mode
     const IFT  = 'ift';
     const UPI  = 'upi';
     const FT   = 'ft';
+    const TRANSFER   = 'transfer';
 
     public static function isValid($mode)
     {

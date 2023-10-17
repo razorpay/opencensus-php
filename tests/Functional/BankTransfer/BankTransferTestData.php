@@ -2770,6 +2770,37 @@ return [
         ]
     ],
 
+    'testValidateBankTransferAxisForImps' => [
+        'request' => [
+            'url'     => '/ecollect/validate/axis/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_AXIS_SECRET',
+            ],
+            'content' => [
+                'UTR'         => 'RAZP00010742429600013',
+                'Bene_acc_no' => 'RAZP000107424296',
+                'Req_type'    => 'validation',
+                'Req_dt_time' => '2021-06-28 00:00:00',
+                'Txn_amnt'    => '2.00',
+                'Corp_code'   => 'RAZP',
+                'Pmode'       => 'TRANSFER',
+                'Sndr_acnt'   => '910910910910910',
+                'Sndr_nm'     => 'ABC Pvt Ltd',
+                'Sndr_ifsc'   => '',
+                'Tran_id'     => 'RAZP00010742429600013'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Stts_flg' => 'S',
+                'Err_cd'   => '000',
+                'message'  => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testBankTransferAxis' => [
         'request' => [
             'url'     => '/ecollect/validate/axis/test',

@@ -612,6 +612,9 @@ class BankTransferController extends Controller
 
             case 'Transfer':
             case 'transfer':
+            case 'TRANSFER':
+                $mode = \RZP\Models\BankTransfer\Mode::TRANSFER;
+                break;
             case 'FT':
             case 'ft':
                 $mode = \RZP\Models\BankTransfer\Mode::FT;
