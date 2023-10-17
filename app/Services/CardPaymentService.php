@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use App;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Gateway\Paysecure\Constants;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Constants\Product;
 use RZP\Exception;
@@ -391,6 +392,24 @@ class CardPaymentService
         if ($this->action === Action::AUTHORIZE)
         {
             $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
+
+             if ( isset($input[Entity::PAYMENT]) and $input[Entity::PAYMENT][self::GATEWAY] === Gateway::PAYSECURE  )
+             {
+                  $rupayRazorxCacheKey =  implode('_', ["rupay_alt_id_razorx_result",$input[Entity::PAYMENT]['id']]);
+
+                  $variant = $this->app['cache']->get($rupayRazorxCacheKey);
+
+                  $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT,
+                        [
+                            'feature'   => $rupayRazorxCacheKey ,
+                            'variant' => $variant,
+                        ]);
+
+                  if (strtolower($variant) === 'on')
+                  {
+                    $input[Entity::CARD][Card\Entity::ALT_ID] = 1;
+                  }
+             }
 
             try
             {

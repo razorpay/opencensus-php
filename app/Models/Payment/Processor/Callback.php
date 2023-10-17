@@ -511,6 +511,47 @@ trait Callback
                         ]);
                 }
             }
+
+
+
+            // if razorx was enabled  and stored in cache during create payment call  then we will fetch alt id and process the payment using alt id for  rupay
+        if(isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false && $payment->card->getNetworkCode() === Card\Network::RUPAY)
+                 {
+                    $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
+
+                    $variant = $this->cache->get($rupayRazorxCacheKey);
+
+                    $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT,
+                        [
+                            'feature'   => $rupayRazorxCacheKey ,
+                            'variant' => $variant,
+                        ]);
+;
+                    if (strtolower($variant) === 'on')
+                     {
+
+                        $input['card']['number'] =  (new Card\CardVault)->getCardNumber($payment->card->GetVaultToken(), $payment->card->toArray(), $payment->getGateway());
+
+                        $this->fetchAltIdData($input, $gatewayInput, $payment, $input);
+
+                                  // Storing alt id data in cache
+                        if ($input['card']['trivia'] == '2'  && isset($input['alt_id_data']))
+                        {
+                            $keyAltId = $this->getAltIdCacheKey($input);
+
+                            $this->app['cache']->store($this->secureCacheDriver)->put($keyAltId, $input['alt_id_data'], 20 * 60);
+                        }
+                        else
+                        {
+                             throw new Exception\GatewayErrorException(
+                            ErrorCode::GATEWAY_ERROR_ALT_ID_CREATE_ERROR,null,
+                                [
+                                'method'        =>$payment->getMethod(),
+                                'payment_id'    => $payment->getId()
+                                ]);
+                        }
+                    }
+                }
         }
         catch (Exception\BaseException $e)
         {

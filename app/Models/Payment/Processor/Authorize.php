@@ -546,16 +546,16 @@ trait Authorize
             $requestData['card']['expiry_month'] =  strval($payment->card->getExpiryMonth());
             $requestData['card']['expiry_year']  =  strval($payment->card->getExpiryYear());
         }
-        if(isset($gatewayInput['iin']))
-        {
-            $requestData['iin']['iin'] = $gatewayInput['iin']['iin'];
-            $requestData['iin']['issuer'] = $gatewayInput['iin']['issuer'];
-            $requestData['iin']['network'] = $gatewayInput['iin']['network'];
-        }
+
+       $requestData['iin']['iin'] = $payment->card->getIin();
+       $requestData['iin']['issuer'] = $payment->card->getIssuer();
+       $requestData['iin']['network'] = $payment->card->getNetwork();
+
         if($currentTerminal != null) {
             $requestData['terminal']['id'] = $currentTerminal['id'];
             $requestData['terminal']['gateway_merchant_id'] = $currentTerminal['gateway_merchant_id'];
         }
+
         if(isset($payment['merchant_id']))
         {
             $requestData['merchant']['id'] = $payment['merchant_id'];
@@ -567,6 +567,10 @@ trait Authorize
         if(isset($payment['currency']))
         {
             $requestData['payment']['currency'] = $payment['currency'];
+        }
+        if (isset($payment->card))
+        {
+            $requestData['authentication_data']['authentication_reference_number'] = $payment->card->getReference4();
         }
         return $requestData;
     }
@@ -708,16 +712,29 @@ trait Authorize
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
             $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
-            if(($payment->isMethodCardOrEmi() === true && $payment->isInternational() === false &&  isset($payment->card)
-                    && $payment->card->getTrivia() != '1') || (str_starts_with(strtolower($rzpTestCaseID),'ALT_ID')))
-            {
-                //make condition $payment->card->getTrivia()!='1' to enable alt id
-                //call alt id and set trivia 3 for alt id
+
+            if(($payment->isMethodCardOrEmi() === true && $payment->isInternational() === false &&  isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false ) || (str_starts_with(strtolower($rzpTestCaseID),'ALT_ID')))
+             {
+
+                //call alt id and set trivia 2 for alt id
 
                 if ($this->isAltIdExperimentEnabled($payment, 'app.alt_id_live_mode_experiment_id') === true )
-                {
-                    $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
-                }
+                    {
+
+                    // rupay save=1 flow and recurring  will happen via token pan and cryptogram
+                        if ($payment->card->isRuPay() === true &&  $payment->isRecurring() === false  && $payment->getSave() === false)
+                        {
+
+                            $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
+
+                             //caching razorx response since we need to fetch alt id callback based on this response , during /authorize call we need to send guest checkout indicator thats why we need this razorx call here
+                             $this->cache->put($rupayRazorxCacheKey,"on", self::RUPAY_ALT_ID_RAZORX_TTL);
+                        }
+                        else
+                        {
+                            $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
+                        }
+                    }
             }
 
             // passing $terminalGateawyInput and $gatewayInput
@@ -928,11 +945,16 @@ trait Authorize
                 'experiment_id' => $this->app['config']->get($experimentId),
                   'request_data' => json_encode(
                         [
-                            'merchant_id' => $payment->getMerchantId(),
-                            'issuer'      => $payment->card->getIssuer(),
-                            'gateway'     => $payment->getGateway(),
-                            'network'     => $payment->card->getNetwork(),
-                            'acquirer'    => $payment->terminal->getGatewayAcquirer()
+                            'merchant_id'   => $payment->getMerchantId(),
+                            'issuer'        => $payment->card->getIssuer(),
+                            'gateway'       => $payment->getGateway(),
+                            'network'       => $payment->card->getNetwork(),
+                            'network_code'  => $payment->card->getNetworkCode(),
+                            'acquirer'      => $payment->terminal->getGatewayAcquirer(),
+                            'recurring'     => $payment->isRecurring(),
+                            'save'          => $payment->getSave(),
+                            'auth_type'     => $payment->getAuthType(),
+                            'terminal_id'   => $payment->getTerminalId()
                         ]),
             ];
 
@@ -972,7 +994,7 @@ trait Authorize
         return false;
     }
 
-    protected function fetchAltIdData(array $input, array & $gatewayInput, Payment\Entity $payment, array & $terminalGatewayInput, $currentTerminal)
+    protected function fetchAltIdData(array $input, array & $gatewayInput, Payment\Entity $payment, array & $terminalGatewayInput, $currentTerminal = null)
     {
         $cardCore = new Card\Core;
         $altIdRequest = $this->setAltIdRequestData($input, $gatewayInput, $payment, $currentTerminal);
@@ -990,12 +1012,14 @@ trait Authorize
         }
         // saving data in card entity for future use
         if(isset($altIdData['token']) && isset($altIdData['alt_id'])){
+
             $payment->card->setVaultToken($altIdData['token']);
             $payment->card->setTokenExpiryMonth($altIdData['alt_id']['expiry_month']);
             $payment->card->setTokenExpiryYear($altIdData['alt_id']['expiry_year']);
             $payment->card->setTokenIin(substr($altIdData['alt_id']['value'],0,9));
             $payment->card->setTrivia('2');
         }
+
         $this->repo->saveOrFail($payment->card);
 
         return $altIdData;

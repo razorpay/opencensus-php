@@ -723,6 +723,13 @@ class Core extends Base\Core
         // need to update this as we use terminalGatewayInput during authentication
         if (isset($response['alt_id']))
         {
+
+         if ( isset($response['alt_id']['expiry_year']) and
+            (strlen($response['alt_id']['expiry_year']) === 2))
+                {
+                    $response['alt_id']['expiry_year'] = intval('20' . $response['alt_id']['expiry_year']);
+                }
+
             $terminalGatewayInput['card'][Card\Entity::NUMBER] = $response['alt_id']['value'];
             $terminalGatewayInput['card'][Card\Entity::EXPIRY_MONTH] = $response['alt_id']['expiry_month'];
             $terminalGatewayInput['card'][Card\Entity::EXPIRY_YEAR] = $response['alt_id']['expiry_year'];

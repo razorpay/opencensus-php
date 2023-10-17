@@ -11582,6 +11582,76 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['status'], 'created');
     }
 
+ public function testPaymentCreateUsingAltIdRupay()
+    {
+        $this->ba->publicAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature)
+                {
+                    if ($feature === 'alt_id_sharp')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                    "variables" => [
+                    [
+                        'key' => 'result',
+                        'value' => 'on',
+                    ]
+                ]
+                ]
+            ]
+        ];
+
+
+        $this->mockAllSplitzTreatment($output);
+
+        $this->fixtures->iin->create([
+            'iin'     => '607384',
+            'country' => 'IN',
+            'issuer'  => 'PUNB',
+            'network' => 'RuPay',
+            'flows'   => [
+                '3ds'          => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+        $payment['card']['expiry_year'] = '2028';
+        $payment['card']['expiry_month'] = '3';
+
+        $this->mockCardVaultWithCryptogram();
+
+        $payment['card']['cvv'] = 111;
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['consent_to_save_card'] = 0;
+        $payment['card']['name'] = 'testAltIdVISA';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('9fab08f0ac2e49d7b33d7eb3bf26dbc4', $card['vault_token']);
+        $this->assertEquals('2', $card['trivia']);
+        $this->assertEquals('==wN0kDNwADMwcTO0gzM3AjN', $card['global_fingerprint']);
+    }
+
     public function testCreatePaymentRestrictOnePaymentToAnOrderWithAttemptsAs1()
     {
         $this->enablePgRouterConfig();

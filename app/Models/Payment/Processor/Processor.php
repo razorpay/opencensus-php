@@ -457,6 +457,10 @@ class Processor
 
     const SODEXO = 'sodexo';
 
+
+    const RUPAY_ALT_ID_RAZORX_RESULT         = "rupay_alt_id_razorx_result";
+    const RUPAY_ALT_ID_RAZORX_TTL            = 20*60;
+
     const FORCE_AUTHORIZE_FAILED_ALLOW_GATEWAYS = [
         Payment\Gateway::KOTAK_DEBIT_EMI,
         Payment\Gateway::FULCRUM,
