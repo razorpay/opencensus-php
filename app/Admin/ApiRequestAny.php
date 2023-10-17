@@ -182,7 +182,7 @@ class ApiRequestAny
         {
             $defaultHeaders['X-Org-Id'] = $orgId;
         }
-        
+
         $headers = $options['headers'] ?? [];
 
         $headers = array_merge($defaultHeaders, $headers);
@@ -558,17 +558,17 @@ class ApiRequestAny
     public function sendAsyncPromise($path, $method = null): \GuzzleHttp\Promise\PromiseInterface
     {
         $method = $method ?? Request::method();
-    
+
         $currentRouteName = \Route::currentRouteName() ?? 'unknown_route';
-    
+
         $apiRouteCircuitBreaker = new ApiRouteCircuitBreaker($path, $method, $currentRouteName);
-    
+
         $apiRouteCircuitBreaker->validateRouteCircuitIsOpen($path, $method);
-    
+
         $spanOptions = (new ApiRequestSpan($this->client))::getRequestSpanOptions(ApiUrl::getApiBaseUrl().$path);
-        
+
         $path = str_replace('://', '', $path);
-    
+
         return (new ApiRequestSpan($this->client))->wrapAsyncRequest(
             $method,
             $path,
@@ -579,7 +579,7 @@ class ApiRequestAny
             $spanOptions,
         );
     }
-    
+
     static function millitime(): int
     {
         return round(microtime(true) * 1000);
@@ -700,7 +700,7 @@ class ApiRequestAny
 
             $json = json_decode($e->getResponse()->getBody(), true);
             $httpCode = $e->getResponse()->getStatusCode();
-            $errors = [ $this->getApiErrorDescription($json), "Status Code: {$httpCode}"];
+            $errors = [ $this->getApiErrorDescription($json)];
 
             //in case of 2fa api calls we need the _internal passed by the api
             // and dashboard will consume that _internal. For eg.
@@ -751,7 +751,15 @@ class ApiRequestAny
             $exception = $e;
 
             $httpCode = $e->hasResponse() ? $e->getResponse()->getStatusCode() : null;
-            $errors = [$e->getMessage()];
+            $errorMessage = $e->getMessage();
+
+            // if $httpCode is 5XX then set the default error message
+            if ($httpCode >= 500 && $httpCode < 600)
+            {
+                $errorMessage = "Dear merchant, We're currently fixing an unexpected issue. Sorry for any inconvenience!";
+            }
+
+            $errors = [$errorMessage];
 
             Trace::error(
                 TraceCode::API_SERVER_EXCEPTION,
@@ -909,7 +917,6 @@ class ApiRequestAny
                 ]);
             }
         }
-
         return [$errors, null, $httpCode];
     }
 
@@ -997,7 +1004,7 @@ class ApiRequestAny
         {
             $this->options['cookies']['gclid'] = $_COOKIE['gclid'];
         }
-        
+
         // Forwarding magic_analytics_oauth_csrf cookies for Handling Magic OAuth
         if (empty($_COOKIE['magic_analytics_oauth_csrf']) === false)
         {
