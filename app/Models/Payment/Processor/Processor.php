@@ -741,7 +741,7 @@ class Processor
                 return false;
             }
 
-            if ($this->isRearchBVTRequest() === true)
+            if ($this->isRearchBVTRequest() === true || $this->isRearchDarkRequest() === true)
             {
                 if(empty($input[Payment\Entity::TOKEN]) === false)
                 {
@@ -4858,6 +4858,22 @@ class Processor
         }
 
         return ((app()->isEnvironmentQA() === true  || Environment::isEnvironmentBeta($this->app['env'])) && str_ends_with(strtolower($rzpTestCaseID),'rearch'));
+    }
+
+    protected function isRearchDarkRequest(): bool
+    {
+        if ($this->isDarkRequest() === false)
+        {
+            return false;
+        }
+
+        $rzpRearchRoutingCriteria = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
+        if(empty($rzpRearchRoutingCriteria) === true)
+        {
+            return false;
+        }
+
+        return str_ends_with(strtolower($rzpRearchRoutingCriteria),'rearch');
     }
 
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)
