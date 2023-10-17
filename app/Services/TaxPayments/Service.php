@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Request\Requests;
+use RZP\Http\RequestHeader;
 use RZP\Http\Response\StatusCode;
 use RZP\Mail\TaxPayments\GenericTaxPaymentEmail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -195,7 +196,7 @@ class Service
 
         return $this->makeRequest($merchant, $url, $input);
     }
-    
+
     public function internalIciciAction(array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::INTERNAL_ICICI_ACTION);
@@ -595,6 +596,10 @@ class Service
         $headers[self::X_USER_ID] = optional($this->app['basicauth']->getUser())->getId() ?? '';
 
         $headers[self::X_ORG_ID] = $this->app['basicauth']->getOrgId();
+
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
 
         $options = [
             'auth'    => ['api', $this->config['secret']],

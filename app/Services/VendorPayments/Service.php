@@ -1251,7 +1251,7 @@ class Service
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GST_INPUT_CREDIT_SYNC_GSTR2A_CRON);
 
-        return $this->makeRequest(null, $url);
+        return $this->makeRequest(null, $url, ['time' => now()]);
     }
 
     public function gstInputCreditDisableIntegration(MerchantEntity $merchant, array $input)
