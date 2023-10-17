@@ -807,8 +807,14 @@ class Constants
         {
             $adminService = new AdminService;
             $key = Utility::getRandomPrefix() . '_' . ConfigKey::DCS_READ_WHITELISTED_FEATURES;
-            $dcsReadEnabledFeatures = $adminService->getConfigKey(
-                ['key' => $key]);
+            $dcsReadEnabledFeatures = null;
+
+            if(($isProduction === true) || ($isTestCases === true))
+            {
+                $dcsReadEnabledFeatures = $adminService->getConfigKey(
+                    ['key' => $key]);
+            }
+
             if ($dcsReadEnabledFeatures === null)
             {
                 $dcsReadEnabledFeatures = [];
@@ -961,9 +967,9 @@ class Constants
         return false;
     }
 
-    public static function isDcsReadEnabledFeature($featureName, $isDcsName = false, $dcsKey = "", $isProduction = false): bool
+    public static function isDcsReadEnabledFeature($featureName, $isDcsName = false, $dcsKey = "", $isProduction = false, $isTestCases = false): bool
     {
-        $dcsEnabledFeatures = self::dcsReadEnabledFeaturesByEntityType("", $isDcsName, false, $isProduction);
+        $dcsEnabledFeatures = self::dcsReadEnabledFeaturesByEntityType("", $isDcsName, $isTestCases, $isProduction);
         return (key_exists($featureName, $dcsEnabledFeatures) === true) or
                 (($isDcsName === true) && (empty(Utility::searchAndReturnDcsNameWithCorrespondingColonSeparator($dcsEnabledFeatures, $featureName, $dcsKey)) === false));
     }

@@ -56,7 +56,8 @@ class Repository extends Base\Repository
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
     {
-        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction()) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "",
+                $this->app->isEnvironmentProduction(), $this->app->runningUnitTests()) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -97,7 +98,7 @@ class Repository extends Base\Repository
     public function findByEntityTypeEntityIdAndName(string $entityType, string $entityId, string $featureName)
     {
         if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName,
-                false, "", $this->app->isEnvironmentProduction()) === true)
+                false, "", $this->app->isEnvironmentProduction(), $this->app->runningUnitTests()) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -128,7 +129,7 @@ class Repository extends Base\Repository
 
     public function findByEntityIdAndNameOnConnection(string $entityId, string $featureName, string $mode)
     {
-        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction()) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction(), $this->app->runningUnitTests()) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -372,7 +373,7 @@ class Repository extends Base\Repository
         {
             return $dcs->fetchByEntityIdsAndNameViaProxy($merchantIds, $featureName, Constants::MERCHANT, $this->getAppMode());
         }
-        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction()) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction(), $this->app->runningUnitTests()) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,

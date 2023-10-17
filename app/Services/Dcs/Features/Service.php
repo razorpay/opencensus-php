@@ -3,6 +3,7 @@
 namespace RZP\Services\Dcs\Features;
 
 use Razorpay\Trace\Logger;
+use RZP\Constants\Environment;
 use RZP\Constants\HyperTrace;
 use RZP\Constants\Mode;
 use RZP\Exception;
@@ -213,6 +214,38 @@ class Service extends Base
         }
 
         return $proxyResponse;
+    }
+
+    /**
+     * @param string $entityType
+     * @param string $entityId
+     * @param string $mode
+     * @param array $enabled_features
+     * @return void
+     */
+    public function enabledFeatureViaProxy(string $entityType, string $entityId, string $mode, array $enabled_features): void
+    {
+        try {
+            $apiFeatureNames = DcsConstants::dcsReadEnabledFeaturesByEntityType($entityType, false,
+                $this->app->runningUnitTests(), $this->app->isEnvironmentProduction());
+
+            $enabled_features_proxy = $this->fetchByEntityIdAndNamesViaProxy($entityId, $apiFeatureNames, $mode, $entityType);
+
+            $diff = array_diff($enabled_features, $enabled_features_proxy);
+
+            if (sizeof($diff) > 0)
+            {
+                $this->trace->info(TraceCode::DCS_PROXY_READ_DIFF, [
+                    'diff' => $diff,
+                    'entity_id' => $entityId,
+                    'entity_type' => $entityType,
+                ]);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+        }
     }
 
     private function getByEntityIDAndTypeFromProxy(string $entity_type, string $entity_id,
@@ -535,7 +568,13 @@ class Service extends Base
 
         $cacheKey = $env .'_'. $mode.'_dcs_fetch_by_id_type_'. $entityId.'_'.$entityType;
 
-        $enabled_features = $this->cache->get($cacheKey);
+        $enabled_features = null;
+        if (($this->app->isProduction() === true) or
+            (($this->app['env'] === Environment::TESTING) or
+                ($this->app['env'] === Environment::TESTING_DOCKER )))
+        {
+            $enabled_features = $this->cache->get($cacheKey);
+        }
 
         if ($enabled_features === null)
         {
@@ -544,37 +583,26 @@ class Service extends Base
 
             if(sizeof($dcsFeatures) === 0)
             {
-                $this->cache->set($cacheKey, [], 30);
+                if (($this->app->isProduction() === true) or
+                    (($this->app['env'] === Environment::TESTING) or
+                        ($this->app['env'] === Environment::TESTING_DOCKER )))
+                {
+                    $this->cache->set($cacheKey, [], 30);
+                }
                 return $response;
             }
 
             $enabled_features = $this->fetchByEntityIdAndFeatureNames($entityId, array_keys($dcsFeatures), $mode,
                 true, $entityType, true);
 
-            try
+
+            if (($this->app->isProduction() === true) or
+                (($this->app['env'] === Environment::TESTING) or
+                    ($this->app['env'] === Environment::TESTING_DOCKER )))
             {
-                $apiFeatureNames = DcsConstants::dcsReadEnabledFeaturesByEntityType($entityType, false,
-                    $this->app->runningUnitTests(), $this->app->isEnvironmentProduction());
-
-                $enabled_features_proxy = $this->fetchByEntityIdAndNamesViaProxy($entityId, $apiFeatureNames, $mode, $entityType);
-
-                $diff = array_diff($enabled_features, $enabled_features_proxy);
-
-                if (sizeof($diff) > 0)
-                {
-                    $this->trace->info(TraceCode::DCS_PROXY_READ_DIFF, [
-                        'diff' => $diff,
-                        'entity_id' => $entityId,
-                        'entity_type' => $entityType,
-                    ]);
-                }
+                $this->enabledFeatureViaProxy($entityType, $entityId, $mode, $enabled_features);
+                $this->cache->set($cacheKey, $enabled_features, 30);
             }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex);
-            }
-
-            $this->cache->set($cacheKey, $enabled_features, 30);
         }
 
         foreach ($enabled_features as $feature_name)
@@ -619,7 +647,7 @@ class Service extends Base
         $enabled_ids = $this->cache->get($cacheKey);
 
         if ($enabled_ids === null &&
-            DcsConstants::isDcsReadEnabledFeature($apiFeatureName, false, $key, $this->app->isEnvironmentProduction()))
+            DcsConstants::isDcsReadEnabledFeature($apiFeatureName, false, $key, $this->app->isEnvironmentProduction(), $this->app->runningUnitTests()))
         {
             $enabled_ids = [];
             $features_with_id = $this->handleAggregateQueries($data, $mode, true);
