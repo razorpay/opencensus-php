@@ -85,6 +85,8 @@ class PartnershipsService extends Base\Service
 
     const GET_SUBM_SIGNUP_SOURCE = '/twirp/rzp.commissions.settings.v1.SettingsAPI/Get';
 
+    const GET_INVOICE_SIGNED_URL = '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/GetPreSignedUrl';
+
 
     const ACTIVATED = 'ACTIVATED';
 
@@ -250,6 +252,10 @@ class PartnershipsService extends Base\Service
         return $this->sendRequest($parameters, self::GET_LAST_PARTNER_MIGRATION, Requests::POST);
     }
 
+    public function updateInvoiceStatus($parameters)
+    {
+        return $this->sendRequest($parameters, self::UPDATE_INVOICE_STATUS, Requests::POST);
+    }
     public function updateInvoiceStatusAsync($parameters, $partnerId)
     {
         try
@@ -320,6 +326,20 @@ class PartnershipsService extends Base\Service
         ];
         $response =  $this->sendRequestWithRetry($parameters, self::GET_SUBM_SIGNUP_SOURCE, Requests::POST);
         return empty($response) ? "" : $response['value'];
+    }
+
+    /**
+     * @param string $invoiceId
+     *
+     * @return string | null
+     */
+    public function getInvoiceSignedUrl(string $invoiceId) : mixed
+    {
+        $parameters = [
+            'invoice_id'  => $invoiceId,
+        ];
+        $result =  $this->sendRequestWithRetry($parameters, self::GET_INVOICE_SIGNED_URL, Requests::POST);
+        return empty($result['response']) ? "" : $result['response']['signed_url'];
     }
 
     /**
@@ -679,10 +699,10 @@ class PartnershipsService extends Base\Service
     {
         $properties = [
             'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.prts_commission_invoice_shadow_phase_exp_id'),
+            'experiment_id' => $this->app['config']->get('app.prts_commission_invoice_exp_id'),
         ];
 
-        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'shadow');
     }
 
     /**

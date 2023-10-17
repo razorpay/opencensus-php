@@ -618,7 +618,7 @@ return array(
 
     'prts_commission_dual_write_exp_id' => env('PRTS_COMMISSION_DUAL_WRITE_EXP_ID'),
 
-    'prts_commission_invoice_shadow_phase_exp_id' => env('PRTS_COMMISSION_INVOICE_SHADOW_PHASE_EXP_ID'),
+    'prts_commission_invoice_exp_id' => env('PRTS_COMMISSION_INVOICE_SHADOW_PHASE_EXP_ID'),
 
     'prts_commission_shadow_phase_exp_id' => env('PRTS_COMMISSION_SHADOW_PHASE_EXP_ID'),
 

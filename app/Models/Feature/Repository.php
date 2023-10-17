@@ -183,16 +183,20 @@ class Repository extends Base\Repository
      *
      * @return array
      */
-    public function fetchPaginatedPartnerIdsWithFeature(string $featureName, int $skip, int $limit): array
+    public function fetchPaginatedPartnerIdsWithFeature(string $featureName, string $afterId, int $limit): array
     {
-        return $this->newQuery()
+        $query =  $this->newQueryOnSlave()
                     ->where(Entity::NAME, $featureName)
                     ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
                     ->orderBy(Entity::ID)
-                    ->skip($skip)
-                    ->take($limit)
-                    ->pluck(Entity::ENTITY_ID)
-                    ->toArray();
+                    ->take($limit);
+
+        if (empty($afterId) === false)
+        {
+            $query->where(Entity::ID, '>', $afterId);
+        }
+        return $query->pluck(Entity::ENTITY_ID)
+            ->toArray();
     }
 
     public function findMerchantWithFeatures(string $merchantId, array $featureNames)

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FileStore;
 
+use RZP\Constants\Entity as EntityConstant;
 use RZP\Jobs\InvoiceBucketUpdater;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -23,7 +24,17 @@ class Core extends Base\Core
 
         $file = $entityObj->file;
 
-        $signedUrl = (new Accessor)->getSignedUrlOfFile($file);
+        $signedUrl = '';
+
+        // if entity is commission invoice and bucket is partnerships fetch from prts
+        if($file->getBucket() == 'rzp-1415-prod-partnership-assets' and $entity == EntityConstant::COMMISSION_INVOICE)
+        {
+            $signedUrl = $this->app->partnerships->getInvoiceSignedUrl($entityId);
+        }
+        else
+        {
+            $signedUrl = (new Accessor)->getSignedUrlOfFile($file);
+        }
 
         $data = [
             'file_id'    => $file->getId(),

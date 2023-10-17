@@ -116,16 +116,15 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function fetchPartnersWithCommissionInvoiceFeature(int $limit, int $offset) : array
+    public function fetchPartnersWithCommissionInvoiceFeature(int $limit, string $afterId) : array
     {
-         return $this->repo->feature->fetchPaginatedPartnerIdsWithFeature(Feature\Constants::GENERATE_PARTNER_INVOICE,$offset,$limit);
+         return $this->repo->feature->fetchPaginatedPartnerIdsWithFeature(Feature\Constants::GENERATE_PARTNER_INVOICE, $afterId, $limit);
     }
 
     public function changeInvoiceStatus(Entity $invoice, $input)
     {
         $merchant = $invoice->merchant;
         $env = $this->app->environment();
-
         // check for approved only for merchant request and not after workflow approval
         if (($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true) or
             (($env === 'testing') and ($input[Entity::ACTION] === Status::APPROVED)))
@@ -732,6 +731,15 @@ class Core extends Base\Core
 
     public function generateInvoice(Merchant\Entity $partner, array $input)
     {
+        if($this->isCommissionInvoiceReverseShadowOrCutoffEnabled($partner->getId()))
+        {
+            $this->trace->info(
+                TraceCode::COMMISSION_INVOICE_GENERATE_SKIP_REVERSE_SHADOW,
+                [
+                    'partner' => $partner->getId(),
+                ]);
+            return ;
+        }
         $this->trace->info(
             TraceCode::COMMISSION_INVOICE_GENERATE_REQUEST,
             [
@@ -1479,5 +1487,42 @@ class Core extends Base\Core
             $templateSuffix = Merchant\Constants::DEFAULT;
         }
         return (Constants::DEFAULT_PARTNER_INVOICE_REMINDER_EMAIL_TEMPLATE_PREFIX.'.'.$templateSuffix);
+    }
+    public function getCommissionInvoiceExperimentMode(string $partnerId): ?string
+    {
+        try
+        {
+            $requestData = ['mid' => $partnerId, 'mode' => $this->mode];
+
+            $properties = [
+                'id'            => $partnerId,
+                'experiment_id' => $this->app['config']->get('app.prts_commission_invoice_exp_id'),
+                'request_data'  => json_encode($requestData),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            return $response['response']['variant']['name'] ?? null;
+        }
+        catch (\Exception $e)
+        {
+            $id        = $properties['id'] ?? null;
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+
+            return null;
+        }
+    }
+
+    public function isCommissionInvoiceReverseShadowEnabled(string $partnerId) : bool
+    {
+        $variant = $this->getCommissionInvoiceExperimentMode($partnerId);
+        return (isset($variant) === true and $variant == 'reverse-shadow');
+    }
+
+    public function isCommissionInvoiceReverseShadowOrCutoffEnabled(string $partnerId) : bool
+    {
+        $variant = $this->getCommissionInvoiceExperimentMode($partnerId);
+        return (isset($variant) === true and ($variant == 'reverse-shadow' or $variant == 'cutoff'));
     }
 }

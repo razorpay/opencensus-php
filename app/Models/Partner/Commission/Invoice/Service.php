@@ -34,13 +34,18 @@ class Service extends Base\Service
     {
         $limit = $input['limit'] ?? 500;
 
-        $offset = $input['offset'] ?? 0;
+        $offset = $input['after_id'] ?? '';
 
         return  (new Core)->fetchPartnersWithCommissionInvoiceFeature($limit,$offset);
     }
 
     public function changeStatus($id, array $input)
     {
+        // if reverse shadow is enabled invoice status update should be done at prts
+        if((new Core)->isCommissionInvoiceReverseShadowOrCutoffEnabled($this->merchant->getId()))
+        {
+            return $this->app->partnerships->updateInvoiceStatus(['id'=> $id, 'status'=> $input[Entity::ACTION]]);
+        }
         $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant);
 
         (new Validator)->validateInput('change_status', $input);

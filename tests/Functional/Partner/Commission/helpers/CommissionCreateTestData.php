@@ -1095,7 +1095,7 @@ return [
     'testPartnerFetchWithCommissionInvoiceFeatureWithOffset' => [
         'request'  => [
             'method' => 'GET',
-            'url'    => '/partner/commission_invoice_feature?limit=1&offset=0',
+            'url'    => '/partner/commission_invoice_feature?limit=1&after_id=',
         ],
         'response' => [
             'content'     => ['1000000000plat'],
