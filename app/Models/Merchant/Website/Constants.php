@@ -58,6 +58,8 @@ class Constants
     const MERCHANT_POLICIES_SUBDOMAIN = 'MERCHANT_POLICIES_SUBDOMAIN';
     const FILE                        = 'file';
 
+    const IS_POLICY_WIZARD_V2_ELIGIBLE = 'is_policy_wizard_v2_eligible';
+
 
     const NEEDS_CLARIFICATION_KEYS = [
         self::PLAYSTORE_URL,

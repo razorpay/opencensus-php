@@ -459,17 +459,24 @@ class Service extends Base\Service
             'response' => $response
         ]);
 
-        // return PGOS response if data is present
-        if(isset($response['msg']) === false && isset($response['data']) === true)
+        /*
+            if is_policy_wizard_v2_eligible key is present and is true, then return data or error directly
+            if either is_policy_wizard_v2_eligible is not present or is false, then redirect to monolith flow
+        */
+        if(isset($response[Constants::IS_POLICY_WIZARD_V2_ELIGIBLE]) === true and $response[Constants::IS_POLICY_WIZARD_V2_ELIGIBLE] === true)
         {
-            return $response['data'];
-        }
+            // return PGOS response if data is present
+            if(isset($response['msg']) === false and isset($response['data']) === true)
+            {
+                return $response['data'];
+            }
 
-        if(isset($response['msg']) === true && str_contains($response['msg'], "Merchant not eligible for policy wizard v2")===false)
-        {
-            throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
-                'error description' => 'something went wrong'
-            ]);
+            if(isset($response['msg']) === true)
+            {
+                throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                    'error description' => $response['msg']
+                ]);
+            }
         }
 
         // if merchant is not eligible for policy wizard v2, then direct to monolith flow
@@ -1977,17 +1984,24 @@ class Service extends Base\Service
             'response' => $response
         ]);
 
-        // return PGOS response if data is present
-        if(isset($response['data']) === true)
+        /*
+            if is_policy_wizard_v2_eligible key is present and is true, then return data or error directly
+            if either is_policy_wizard_v2_eligible is not present or is false, then redirect to monolith flow
+        */
+        if(isset($response[Constants::IS_POLICY_WIZARD_V2_ELIGIBLE]) === true and $response[Constants::IS_POLICY_WIZARD_V2_ELIGIBLE] === true)
         {
-            return $response['data'];
-        }
+            // return PGOS response if data is present
+            if(isset($response['msg']) === false and isset($response['data']) === true)
+            {
+                return $response['data'];
+            }
 
-        if(isset($response['msg']) === true and str_contains($response['msg'], "Merchant not eligible for policy wizard v2")===false)
-        {
-            throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
-                'error description' => $response['msg']
-            ]);
+            if(isset($response['msg']) === true)
+            {
+                throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                    'error description' => $response['msg']
+                ]);
+            }
         }
 
         /* if merchant is not eligible for policy wizard v2, then direct to monolith flow
