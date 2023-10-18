@@ -92,7 +92,12 @@ describe('I18ServiceProvider', () => {
 
   it('should not break if configTags is {}', () => {
     updateStore({
-      configTags: {},
+      configTags: {
+        payment_buttons: {
+          other_integration_methods: true,
+          payment_buttons: true,
+        },
+      },
       tags: ['i18_hide_onboarding'],
     });
     mockAbExperiments = {

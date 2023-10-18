@@ -65,9 +65,9 @@ export const fetchUserTags = () => {
 export const fetchConfigTags = (countryCode) => {
   return {
     type: UPDATE_I18N_TAGS,
-    payload: ajax({
-      url: `/country/${countryCode}/configs`,
-      appendModeInURL: false,
+    payload: merchantFetch({
+      url: `country/${countryCode}/dashboard/configs`,
+      method: 'GET',
     }),
   };
 };

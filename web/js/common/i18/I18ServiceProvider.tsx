@@ -5,7 +5,6 @@ import { CONFIG_TO_TAG_MAPPING, ConfigTagType } from 'merchant/constants/tags';
 import { I18ContextStateType } from './types';
 
 export const I18ServiceContext = createContext({} as I18ContextStateType);
-
 const mapStateToProps = ({ session }) => ({
   session,
 });
@@ -40,7 +39,7 @@ export const I18ServiceProvider = connect(
       }
 
       const pathList = path.split('.');
-      let configValue = { ...(user.configTags ?? {}) };
+      let configValue = { ...user.configTags };
 
       for (const key of pathList) {
         // removing optional chaining

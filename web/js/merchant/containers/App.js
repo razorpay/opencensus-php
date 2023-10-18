@@ -76,6 +76,7 @@ import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesB
 import cloneDeep from 'lodash/cloneDeep';
 import { withSplitzService } from 'common/splitz';
 import { withI18Service } from 'common/i18';
+import { fetchConfigTags } from 'merchant/reducers/session';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -383,15 +384,26 @@ class App extends Component {
         const countryCode = this.props?.user?.merchant?.country_code;
         const isSupported = isConfigTagAPISupported(countryCode);
         if (isSupported) {
-          const configPromise = this.fetchCountryConfigTags(countryCode.toLowerCase());
-          promiseList.push(configPromise);
+          const configTagPromise = this.props.fetchConfigTags(countryCode.toLowerCase());
+          promiseList.push(configTagPromise);
         }
+        /**
+         * Utilizing allSettled instead of all because in case
+         * of Promise.all if one promise fails, we would
+         * receive only failed api response resulting in loss
+         * of other api which might have succeeded.
+         * Promise.allSettled will return all error/response.
+         */
         // Fetch features before displaying other views
-        Promise.all(promiseList)
+        Promise.allSettled(promiseList)
           .catch((_) => _)
-          .then(([data, _]) => {
+          .then(([featureApi, configApi]) => {
+            // setting default values incase either api fails
+            const data = featureApi.value ? featureApi.value : {};
+            const configTags = configApi?.value ? configApi.value.data.UIControls : {};
             const user = new User(response[0]);
             user.features = setFeatures(data.success ? data.data.features : []);
+            user.configTags = { ...configTags };
 
             this.props.updateSession({ user, mode: currentMode });
             this.renderFullPageView = this.getFPView(this.props.location);
@@ -932,10 +944,6 @@ class App extends Component {
     }
   }
 
-  fetchCountryConfigTags(countryCode) {
-    return new Promise(this.props.fetchConfigTags(countryCode));
-  }
-
   redirectToRoute(role) {
     const pathname = this.props.history.location.pathname;
     if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard_v2') {
@@ -1338,6 +1346,7 @@ const mapDispatchToProps = (dispatch) =>
       fetchPayments,
       fetchTransactionAmount: fetchAmount,
       fetchEligibilityForNcRevamp,
+      fetchConfigTags,
     },
     dispatch,
   );
