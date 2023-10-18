@@ -22,6 +22,7 @@ use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Models\Merchant\Credits\Constants;
 use RZP\Models\Payout\Metric as PayoutMetric;
 use RZP\Models\BankingAccountStatement\Details;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 
 /**
@@ -31,6 +32,8 @@ use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const TYPE                  = 'type';

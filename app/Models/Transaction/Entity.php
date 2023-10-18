@@ -17,6 +17,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
 use RZP\Models\BankingAccountStatement;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * Class Entity
@@ -27,6 +28,8 @@ use RZP\Models\BankingAccountStatement;
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ENTITY_ID           = 'entity_id';
     const TYPE                = 'type';
     const AMOUNT              = 'amount';

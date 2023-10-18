@@ -11,10 +11,12 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment\Method;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const MERCHANT_ID      = 'merchant_id';
     const ORG_ID           = 'org_id';

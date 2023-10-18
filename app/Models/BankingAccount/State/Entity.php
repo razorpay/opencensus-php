@@ -7,9 +7,12 @@ use RZP\Models\Merchant;
 use RZP\Models\User;
 use RZP\Models\Admin\Admin;
 use RZP\Models\BankingAccount;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const BANKING_ACCOUNT = 'banking_account';
 
     const STATUS = 'status';
