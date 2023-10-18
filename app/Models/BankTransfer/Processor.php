@@ -528,17 +528,7 @@ class Processor extends VirtualAccount\Processor
         }
         catch (\Throwable $ex)
         {
-            $message = null;
-
-            if ((method_exists($ex, 'getMessage') === true) and
-                ($ex->getMessage() === 'Call to a member function getName() on null')) {
-
-                $message = 'Payer Bank Account Creation Failure for Refund';
-            }
-
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::RX_FUND_LOADING_REFUND_PAYOUT_CREATION_FAILED, [
-                'additional_info' => $message
-            ]);
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::RX_FUND_LOADING_REFUND_PAYOUT_CREATION_FAILED);
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FUND_LOADING_REFUND_PAYOUT_CREATION_FAILED);
         }
@@ -890,9 +880,10 @@ class Processor extends VirtualAccount\Processor
         {
             $this->createAndAssociatePayerBankAccount($bankTransfer);
 
+            $payerBankAccount = $bankTransfer->payerBankAccount;
+
             $payerDetails = [
-                BankAccount\Entity::ACCOUNT_NUMBER =>
-                    PayerBankAccount::getBankAccountInput($bankTransfer)[BankAccount\Entity::ACCOUNT_NUMBER],
+                BankAccount\Entity::ACCOUNT_NUMBER => $payerBankAccount->getAccountNumber(),
             ];
 
             /*
