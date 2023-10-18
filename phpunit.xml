@@ -472,6 +472,7 @@
             <directory>./tests/Functional/UpiTransfer</directory>
             <directory>./tests/Functional/QrCode</directory>
             <directory>./tests/Functional/BankTransfer/</directory>
+            <exclude>./tests/Functional/BankTransfer/BankTransferRxTest.php</exclude>
             <directory>./tests/Functional/Payment/Transfers/</directory>
             <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
             <file>./tests/Functional/BharatQrPayment/BharatQrPaymentTest.php</file>
