@@ -201,28 +201,28 @@ class DcsServiceConstantsTest extends TestCase
 
     public function testIsDcsReadEnabledFeature()
     {
-        $output = DcsConstants::isDcsReadEnabledFeature("cart_amount_check_enabled", true, "",false, true);
+        $output = DcsConstants::isDcsReadEnabledFeature("cart_amount_check_enabled", true);
         $this->assertEquals(true, $output, "dcs feature mismatch");
 
-        $output = DcsConstants::isDcsReadEnabledFeature("eligibility_enabled", true, "",false, true);
+        $output = DcsConstants::isDcsReadEnabledFeature("eligibility_enabled", true);
         $this->assertEquals(true, $output, "dcs feature mismatch");
 
-        $output = DcsConstants::isDcsReadEnabledFeature("cart_api_amount_check", true, "",false, true);
+        $output = DcsConstants::isDcsReadEnabledFeature("cart_api_amount_check", true);
         $this->assertEquals(false, $output, "dcs feature name mismatch");
 
-        $output = DcsConstants::isDcsReadEnabledFeature("", true, "",false, true);
+        $output = DcsConstants::isDcsReadEnabledFeature("", true);
         $this->assertEquals(false, $output, "dcs feature name mismatch");
 
-        $output = DcsConstants::isDcsReadEnabledFeature("cart_amount_check_enabled", false, "",false, true);
+        $output = DcsConstants::isDcsReadEnabledFeature("cart_amount_check_enabled", false);
         $this->assertEquals(false, $output, "dcs feature mismatch");
 
-        $output = DcsConstants::isDcsReadEnabledFeature("eligibility_enabled", false, "",false, true);
+        $output = DcsConstants::isDcsReadEnabledFeature("eligibility_enabled", false);
         $this->assertEquals(true, $output, "dcs feature mismatch");
 
-        $output = DcsConstants::isDcsReadEnabledFeature("cart_api_amount_check", false,"",false, true);
+        $output = DcsConstants::isDcsReadEnabledFeature("cart_api_amount_check", false);
         $this->assertEquals(true, $output, "dcs feature name mismatch");
 
-        $output = DcsConstants::isDcsReadEnabledFeature("", false, "",false, true);
+        $output = DcsConstants::isDcsReadEnabledFeature("", false);
         $this->assertEquals(false, $output, "dcs feature name mismatch");
     }
 
