@@ -2401,10 +2401,15 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $paymentProcessor->createLedgerEntriesForMerchantCapture($this->payment, $txn);
         }
 
-        if (($this->payment->isExternal() === true) and
-            ($this->payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false))
+        if ($this->payment->isExternal() === true)
         {
-           (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $this->payment);
+            if ($this->payment->hasBeenCaptured() === true and
+                $this->payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false) {
+                (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $this->payment);
+            }
+            else if ($this->payment->hasBeenCaptured() === false) {
+                (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $this->payment);
+            }
         }
     }
 
