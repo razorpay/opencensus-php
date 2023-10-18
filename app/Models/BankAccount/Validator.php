@@ -110,13 +110,13 @@ class Validator extends Base\Validator
 
     protected static $addVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable|max:13',
-        Entity::ACCOUNT_NUMBER        => 'required|regex:/^[a-zA-Z0-9-]+$/|between:4,20',
+        Entity::ACCOUNT_NUMBER        => 'required|regex:/^[a-zA-Z0-9-]+$/|between:4,35',
         Entity::BENEFICIARY_NAME      => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]*/|max:40|string',
     ];
 
     protected static $editVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|size:11',
-        Entity::ACCOUNT_NUMBER        => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|max:20',
+        Entity::ACCOUNT_NUMBER        => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|max:35',
         Entity::BENEFICIARY_NAME      => 'sometimes|string|max:100',
     ];
 

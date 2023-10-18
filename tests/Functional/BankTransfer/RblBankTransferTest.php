@@ -337,6 +337,56 @@ class RblBankTransferTest extends TestCase
 
     }
 
+    public function testBankTransferRblWithLongSenderAccNumber()
+    {
+        $testData = $this->testData['testBankTransferRbl'];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $testData['request']['content']['Data'][0]['senderAccountNumber'] = 'KISHORKUMARKISHORKUMAR12345';
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
+    }
+
+    public function testBankTransferRblWithSenderAccNumberExceedingLimit()
+    {
+        $testData = $this->testData['testBankTransferRbl'];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $testData['request']['content']['Data'][0]['senderAccountNumber'] = 'KISHORKUMARKISHORKUMAR1234567890123456';
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertNotEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
+    }
+
     public function createUploadedFile(string $url, $fileName = 'file.xlsx', $mime = null): UploadedFile
     {
         $mime = $mime ?? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
