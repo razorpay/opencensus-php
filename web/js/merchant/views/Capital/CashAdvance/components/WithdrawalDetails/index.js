@@ -8,8 +8,8 @@ import Spinner from 'common/ui/Spinner';
 import DataTable from 'common/ui/Table/DataTable';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import {
-  fetchWithdrawalDetails,
   fetchFunctionalWithdrawalConfigByMerchantID,
+  fetchWithdrawalDetails,
 } from 'merchant/reducers/capital/withdrawals';
 import WithdrawalStatus from 'merchant/views/Capital/CashAdvance/WithdrawalStatus';
 import {
@@ -33,7 +33,22 @@ const WithdrawalDetails = ({
   fetchFunctionalWithdrawalConfigByMerchantID,
   withdrawalDetails,
 }) => {
+  const [withdrawalId, setWithdrawalId] = useState(id);
   const [planIdPresent, setPlanIdPresent] = useState(false);
+
+  useEffect(() => {
+    if (id !== withdrawalId) {
+      setWithdrawalId(id);
+
+      fetchWithdrawalDetails({
+        reference_type: 'ID',
+        reference_id: id,
+      }).then((response) => {
+        const plan_id = response?.data?.withdrawal?.plan_id;
+        setPlanIdPresent(!!plan_id);
+      });
+    }
+  }, [id]);
 
   useEffect(() => {
     fetchFunctionalWithdrawalConfigByMerchantID({
@@ -103,7 +118,7 @@ const WithdrawalDetails = ({
           <div className="panel-heading">
             <div className="settlement-actions-wrapper">
               <span className="full-width no-margin">
-                <strong>{id}</strong>
+                <strong>{withdrawalId}</strong>
               </span>
             </div>
           </div>
@@ -112,7 +127,7 @@ const WithdrawalDetails = ({
               <div className="list-group details-row-container">
                 <WithdrawalStatus status={data.status} withdrawalDetails={data} />
                 {isLiquiloans && (
-                  <RepayNow withdrawalId={id} withdrawalDetails={withdrawalDetails} />
+                  <RepayNow withdrawalId={withdrawalId} withdrawalDetails={withdrawalDetails} />
                 )}
 
                 <div className="m-all p-all">
@@ -134,7 +149,7 @@ const WithdrawalDetails = ({
                   )}
                   {shouldShowRepaymentDetails && (
                     <RepaymentDetails
-                      id={id}
+                      id={withdrawalId}
                       withdrawalDetails={withdrawalDetails}
                       withdrawalConfigurationDetails={withdrawalConfigurationDetailsData}
                     />

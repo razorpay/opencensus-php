@@ -6,7 +6,7 @@ export const useWithdrawalRepaymentSummary = (withdrawalId: string, status: stri
   const withdrawalsInstance = new Withdrawals();
 
   return useQuery(
-    'get-withdrawal-repayment-summary',
+    ['get-withdrawal-repayment-summary', withdrawalId],
     () =>
       withdrawalsInstance.fetchWithdrawalRepaymentSummary({
         withdrawal_id: withdrawalId,
