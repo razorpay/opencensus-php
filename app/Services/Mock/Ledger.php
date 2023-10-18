@@ -514,6 +514,30 @@ class Ledger extends BaseLedger
         ];
     }
 
+    public function createBulkJournal($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "journals" => $this->getJournalResponse(),
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    public function createMultipleJournal($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "journals" => $this->getJournalResponse(),
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
     /**
      * @param      $requestBody
      * @param      $requestHeaders
@@ -523,56 +547,7 @@ class Ledger extends BaseLedger
      */
     public function fetchById($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
-        $response =  [
-            "id"                => "IWx1NL90G02vxr",
-            "created_at"        => "1634027277",
-            "updated_at"        => "1634027277",
-            "amount"            => "1590",
-            "base_amount"       => "130.000000",
-            "currency"          => "INR",
-            "tenant"            => "X",
-            "transactor_id"     => "pout_payout00000001",
-            "transactor_event"  => "payout_initiated",
-            "transaction_date"  => "1611132045",
-            "ledger_entry" => [
-                [
-                    "id"          => "I8MJlgVttAs4KQ",
-                    "created_at"  => "1634027277",
-                    "updated_at"  => "1634027277",
-                    "merchant_id" => "10000000000000",
-                    "journal_id"  => "IWx1NL90G02vxr",
-                    "account_id"  => "GoRNyEuu9Hl0OZ",
-                    "amount"      => "1590",
-                    "base_amount" => "1590",
-                    "type"        => "debit",
-                    "currency"    => "INR",
-                    "balance"     => "98410",
-                    "account_entities" => [
-                        "account_type"          => ["payable"],
-                        "fund_account_type"     => ["merchant_va"],
-                        "banking_account_id"    => ["bacc_JLcwWU3SsZ7byJ"]
-                    ]
-                ],
-                [
-                    "id"          => "HNjsypHPOUlxDR",
-                    "created_at"  => "1634027277",
-                    "updated_at"  => "1634027277",
-                    "merchant_id" => "10000000000000",
-                    "journal_id"  => "IWx1NL90G02vxr",
-                    "account_id"  => "HN5AGgmKu0ki13",
-                    "amount"      => "1590",
-                    "base_amount" => "1590",
-                    "type"        => "credit",
-                    "currency"    => "INR",
-                    "balance"     => "984100",
-                    "account_entities" => [
-                        "account_type"          => ["payable"],
-                        "fund_account_type"     => ["merchant_va_vendor"],
-                        "banking_account_id"    => ["bacc_JLcwWU3SsZ7byJ"]
-                    ]
-                ]
-            ]
-        ];
+        $response =  $this->getJournalResponse();
 
         return [
             'code' => 200,
@@ -1561,6 +1536,59 @@ class Ledger extends BaseLedger
         return [
             'code' => 200,
             'body' => $response
+        ];
+    }
+
+    private function getJournalResponse() :array {
+        return [
+            "id"                => "IWx1NL90G02vxr",
+            "created_at"        => "1634027277",
+            "updated_at"        => "1634027277",
+            "amount"            => "1590",
+            "base_amount"       => "130.000000",
+            "currency"          => "INR",
+            "tenant"            => "X",
+            "transactor_id"     => "pout_payout00000001",
+            "transactor_event"  => "payout_initiated",
+            "transaction_date"  => "1611132045",
+            "ledger_entry" => [
+                [
+                    "id"          => "I8MJlgVttAs4KQ",
+                    "created_at"  => "1634027277",
+                    "updated_at"  => "1634027277",
+                    "merchant_id" => "10000000000000",
+                    "journal_id"  => "IWx1NL90G02vxr",
+                    "account_id"  => "GoRNyEuu9Hl0OZ",
+                    "amount"      => "1590",
+                    "base_amount" => "1590",
+                    "type"        => "debit",
+                    "currency"    => "INR",
+                    "balance"     => "98410",
+                    "account_entities" => [
+                        "account_type"          => ["payable"],
+                        "fund_account_type"     => ["merchant_va"],
+                        "banking_account_id"    => ["bacc_JLcwWU3SsZ7byJ"]
+                    ]
+                ],
+                [
+                    "id"          => "HNjsypHPOUlxDR",
+                    "created_at"  => "1634027277",
+                    "updated_at"  => "1634027277",
+                    "merchant_id" => "10000000000000",
+                    "journal_id"  => "IWx1NL90G02vxr",
+                    "account_id"  => "HN5AGgmKu0ki13",
+                    "amount"      => "1590",
+                    "base_amount" => "1590",
+                    "type"        => "credit",
+                    "currency"    => "INR",
+                    "balance"     => "984100",
+                    "account_entities" => [
+                        "account_type"          => ["payable"],
+                        "fund_account_type"     => ["merchant_va_vendor"],
+                        "banking_account_id"    => ["bacc_JLcwWU3SsZ7byJ"]
+                    ]
+                ]
+            ]
         ];
     }
 }

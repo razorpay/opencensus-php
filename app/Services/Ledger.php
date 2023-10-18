@@ -372,6 +372,21 @@ class Ledger
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
+    public function createMultipleJournal($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['createInBulk'],
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $requestBody
+     * @param      $requestHeaders
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function fetchById($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['fetchById'],
