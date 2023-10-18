@@ -1143,9 +1143,7 @@ class Processor
 
             if (empty($order) === false and $order->getProductType() === ProductType::PAYMENT_LINK_V2)
             {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
+                return true;
             }
 
             if ($merchant->isFeatureEnabled('raas') === true)
