@@ -27,6 +27,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\ExternalEntity;
 use RZP\Models\Order\OrderMeta\Order1cc\Fields;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Tests\Functional\Order\OrderMeta\OrderMetaTest;
 
 /**
@@ -42,7 +43,7 @@ use RZP\Tests\Functional\Order\OrderMeta\OrderMetaTest;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait, ExternalOwner, ExternalEntity, DualWrite;
+    use NotesTrait, ExternalOwner, ExternalEntity, DualWrite, AsvGetAttribute;
 
     /**
      *
@@ -1305,7 +1306,7 @@ class Entity extends Base\PublicEntity
 
         return null;
     }
-    
+
     public function hasSplitPayments()
     {
         $orderMetas = $this->orderMetas;

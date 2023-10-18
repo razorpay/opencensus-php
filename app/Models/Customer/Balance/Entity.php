@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * Class Entity
@@ -18,6 +19,8 @@ use RZP\Models\Customer;
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const CUSTOMER_ID       = 'customer_id';
     const MERCHANT_ID       = 'merchant_id';
     const BALANCE           = 'balance';

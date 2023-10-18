@@ -12,6 +12,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 
 /**
@@ -20,7 +21,7 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
     use SoftDeletes;
 
     const ID                            = 'id';

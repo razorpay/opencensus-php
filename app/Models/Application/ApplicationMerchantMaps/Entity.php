@@ -7,9 +7,12 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     protected $entity = EntityConstants::APPLICATION_MERCHANT_MAPPING;
     protected $table  = Table::APPLICATION_MERCHANT_MAPPING;
 

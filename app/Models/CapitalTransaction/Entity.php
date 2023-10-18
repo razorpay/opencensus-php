@@ -3,9 +3,11 @@
 namespace RZP\Models\CapitalTransaction;
 
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends PublicEntity
 {
+    use AsvGetAttribute;
     protected $entity = 'capital_transaction';
 
     const TYPE             = 'type';

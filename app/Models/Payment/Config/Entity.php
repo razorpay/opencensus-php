@@ -4,10 +4,12 @@
 namespace RZP\Models\Payment\Config;
 
 use RZP\Models\Base;
-
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                  = 'id';
     const MERCHANT_ID         = 'merchant_id';
     const NAME                = 'name';

@@ -5,9 +5,12 @@ namespace RZP\Models\Merchant\Credits\Balance;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends PublicEntity
 {
+    use AsvGetAttribute;
+
     const BALANCE           = 'balance';
     const MERCHANT_ID       = 'merchant_id';
     const TYPE              = 'type';

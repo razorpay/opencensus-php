@@ -18,6 +18,7 @@ use Razorpay\Trace\Facades\Trace;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Models\Base\Traits\HasBalance;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Payment\Entity        $payment
@@ -27,7 +28,7 @@ use RZP\Models\Base\Traits\HasBalance;
  */
 class Entity extends Base\PublicEntity
 {
-    use HasBalance;
+    use HasBalance, AsvGetAttribute;
 
     const ID                 = 'id';
     const PAYMENT_ID         = 'payment_id';
