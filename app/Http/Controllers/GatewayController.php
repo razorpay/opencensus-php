@@ -499,6 +499,7 @@ class GatewayController extends Controller
                                 [
                                     'payment_id' => $payment->getId(),
                                     'merchant_id' => $payment->getMerchantId(),
+                                    'response_code' => $input['ResponseCode'],
                                 ]);
 
                             return [
@@ -2160,17 +2161,8 @@ class GatewayController extends Controller
             return false;
         }
 
-        // if success is false, only then the error block is populated
-        if ((isset($input['success']) === true) and
-            ($input['success'] === true))
-        {
-            return false;
-        }
-
-        // only in case of upi_icici and BT call
-        if ((isset($input["error"]) === true) and
-            (isset($input["error"]["gateway_error_code"]) === true) and
-            ($input["error"]["gateway_error_code"] === "BT"))
+        if ((isset($input['ResponseCode']) === true) and
+            ($input['ResponseCode'] === "BT"))
         {
             return true;
         }
