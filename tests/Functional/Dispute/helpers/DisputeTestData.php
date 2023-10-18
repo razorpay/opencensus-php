@@ -2961,11 +2961,11 @@ return [
         ],
     ],
 
-    'testRefundedChargebackDiputeEditByOpsValidationErrorNotInList' => [
+    'testRefundedChargebackDiputeEditByOpsStatusValidationErrorNotInList' => [
         'request' => [
             'method'  => 'post',
             'content' => [
-                'internal_status' => 'closed',
+                'internal_status' => 'contested',
             ]
         ],
         'response' => [
@@ -2973,6 +2973,28 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'This action cannot be performed on refunded payment dispute',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRefundedChargebackDiputeEditByOpsCommentUpdateValidationError' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'comment' => 'test comment',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This update comment action cannot be performed on refunded payment dispute',
                 ],
             ],
             'status_code' => 400,

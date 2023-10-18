@@ -770,6 +770,7 @@ class PublicErrorDescription
     const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';
     const BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE                              = 'This dispute is already closed and cannot be updated';
     const BAD_REQUEST_CANNOT_PERFORM_ACTION_ON_REFUNDED_PAYMENT_DISPUTE         = 'This action cannot be performed on refunded payment dispute';
+    const BAD_REQUEST_CANNOT_PERFORM_UPDATE_COMMENT_ACTION_ON_REFUNDED_PAYMENT_DISPUTE = 'This update comment action cannot be performed on refunded payment dispute';
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                     = 'Issue with Reporting Integration';
     const BAD_REQUEST_REPORTING_OTHER_ORG_INVALID_REQUEST                       = 'Invalid request for reporting from other org';

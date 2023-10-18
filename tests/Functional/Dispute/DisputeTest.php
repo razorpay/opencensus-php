@@ -5626,7 +5626,30 @@ class DisputeTest extends TestCase
         $response = $this->startTest();
     }
 
-    public function testRefundedChargebackDiputeEditByOpsValidationErrorNotInList()
+    public function testRefundedChargebackDiputeEditByOpsStatusValidationErrorNotInList()
+    {
+        $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
+
+        $dispute = $this->fixtures->create('dispute', [
+            'internal_status'         => 'open',
+            'status'                  => 'open',
+            'deduction_source_type'   => 'refunded_payment',
+        ]);
+
+        $this->merchant = $dispute->merchant;
+
+        $this->ba->adminProxyAuth($this->merchant->getId(), 'rzp_test_' . $this->merchant->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['status'] = 'won';
+
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
+
+        $response = $this->startTest();
+    }
+
+    public function testRefundedChargebackDiputeEditByOpsCommentUpdateValidationError()
     {
         $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
 
@@ -5771,7 +5794,7 @@ class DisputeTest extends TestCase
                 'id'                                 => $refundedChargebackDispute->getId(),
                 'gateway_dispute_status'             => 'open',
                 'skip_deduction'                     => 'Y',
-                'comments'                           => 'test comment',
+                'comments'                           => null,
                 'status'                             => 'under_review',
                 'internal_status'                    => 'represented',
                 'deduction_reversal_delay_in_days'   => null,
@@ -5814,7 +5837,7 @@ class DisputeTest extends TestCase
         $this->assertNotEquals(1300000000, $disputeArrayForAdjustment['internal_respond_by']);
         $this->assertNotEquals(1300000000, $disputeArrayForRefundedChargeback['internal_respond_by']);
 
-        $this->assertNotEquals('test comment', $disputeArrayForRefundedChargeback['comments']);
+        $this->assertNotEmpty($disputeArrayForRefundedChargeback['comments']);
     }
 
     public function testBulkRefundedChargebackDisputeEditValidationFailure()

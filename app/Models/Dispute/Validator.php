@@ -507,6 +507,13 @@ class Validator extends Base\Validator
                     PublicErrorDescription::BAD_REQUEST_CANNOT_PERFORM_ACTION_ON_REFUNDED_PAYMENT_DISPUTE
                 );
             }
+
+            if (isset($input[Entity::COMMENTS]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_CANNOT_PERFORM_UPDATE_COMMENT_ACTION_ON_REFUNDED_PAYMENT_DISPUTE
+                );
+            }
         }
     }
 

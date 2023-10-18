@@ -18,6 +18,7 @@ class Status
         self::LOST,
         self::WON,
         self::UNDER_REVIEW,
+        self::CLOSED,
     ];
 
     protected static $statuses = [

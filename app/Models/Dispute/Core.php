@@ -321,15 +321,6 @@ class Core extends Base\Core
 
 //             uncomment this when automation is live
 //            (new Validator)->validateDeductionSourceTypeNotRefundedPayments($dispute);
-
-            if ($dispute->getDeductionSourceType() === RecoveryMethod::REFUNDED_PAYMENT)
-            {
-                if (isset($input[Entity::COMMENTS]) === true)
-                {
-                    // to not overwrite the existing comments as it is used to store the refund details associated with the dispute
-                    unset($input[Entity::COMMENTS]);
-                }
-            }
         }
 
 

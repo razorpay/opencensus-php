@@ -21,6 +21,7 @@ class InternalStatus
         self::LOST_MERCHANT_DEBITED,
         self::LOST_MERCHANT_NOT_DEBITED,
         self::WON,
+        self::CLOSED,
     ];
 
     protected static $internalStatuses = [
