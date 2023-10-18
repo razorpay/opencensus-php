@@ -739,7 +739,8 @@ class Validator extends Base\Validator
                 );
             }
 
-            if (($input[Entity::METHOD] === Method::EMANDATE))
+            $authType = $input['auth_type'] ?? null;
+            if (($input[Entity::METHOD] === Method::EMANDATE) and ($authType !== 'migrated'))
             {
                 $validationTime = Carbon::now()->addYears(30)->addMinutes(1)->timestamp;
                 if ($input[Entity::EXPIRE_AT] > $validationTime)
