@@ -516,8 +516,8 @@ class CongfigurationContainer extends Component {
             </ShowWhen>
 
             <ShowWhen
-              additionalCondition={(user) =>
-                showSkipMandatorySummaryPage && isSkipMandatorySummaryPageAllowed(user, extraConfig)
+              additionalCondition={() =>
+                showSkipMandatorySummaryPage && isSkipMandatorySummaryPageAllowed(extraConfig)
               }
             >
               <IntoView hashedWith={SKIP_CARD_MANDATE_SUMMARY}>
