@@ -1205,9 +1205,7 @@ class Processor
 
             if ($this->ba->getOAuthClientId() !== null)
             {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::OAUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
+               return true;
             }
 
             if ($this->ba->isPartnerAuth() === true)
