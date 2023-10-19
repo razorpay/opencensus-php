@@ -11,6 +11,7 @@ use RZP\Models\P2p\Device;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
+use RZP\Jobs\UpiTurboErrorMappingUpdater;
 use RZP\Models\BankAccount as BankAccount;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Feature;
@@ -100,14 +101,15 @@ class Processor extends Base\Processor
     private function getGatewayPreferencesForSDK()
     {
         return [
-            Entity::GATEWAYS      => [
+            Entity::GATEWAYS            => [
                 [
                     Entity::PRIORITY => '0',
                     Entity::GATEWAY  => $this->getGateway(),
                 ],
             ],
-            Entity::POPULAR_BANKS => $this->getPopularBankListForSDK(),
-            Constants::TIMEOUTS   => $this->fetchSDKTimeoutConfigs(),
+            Entity::POPULAR_BANKS       => $this->getPopularBankListForSDK(),
+            Constants::TIMEOUTS         => $this->fetchSDKTimeoutConfigs(),
+            Entity::ERROR_MAPPING_HASH  => $this->getErrorMappingHash(),
         ];
     }
 
@@ -144,6 +146,30 @@ class Processor extends Base\Processor
         }
 
         return  $popularBanksList;
+    }
+
+    private function getErrorMappingHash()
+    {
+        $errorMappingHash = ConfigKey::get(ConfigKey::TURBO_SDK_ERROR_MAPPINGS_HASH, '');
+
+        if (empty($errorMappingHash) === true)
+        {
+            $this->trace()->warning(TraceCode::TURBO_ERROR_MAPPINGS_NOT_FOUND_IN_CACHE);
+
+            // In case redis fetch fails, we will push a message to queue to update redis configs asynchronously.
+            try
+            {
+                UpiTurboErrorMappingUpdater::dispatch($this->mode() ?? Mode::LIVE);
+
+                $this->trace()->info(TraceCode::TURBO_ERROR_MAPPING_UPDATER_QUEUE_PUSH_SUCCESS);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace()->traceException($ex, Logger::CRITICAL, TraceCode::TURBO_ERROR_MAPPING_UPDATER_QUEUE_PUSH_FAILURE);
+            }
+        }
+
+        return $errorMappingHash;
     }
 
     private function getSDKVersionLimitations()

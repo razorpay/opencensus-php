@@ -16,6 +16,7 @@ class Entity extends Base\Entity
     const GATEWAY                   = 'gateway';
     const PRIORITY                  = 'priority';
     const POPULAR_BANKS             = 'popular_banks';
+    const ERROR_MAPPING_HASH        = 'error_mapping_hash';
 
     const ORDER_ID                  = 'order_id';
     const TPV                       = 'tpv';

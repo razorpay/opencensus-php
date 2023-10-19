@@ -4649,6 +4649,9 @@ class Route
         '1cc_coupon_engine_get_sync_platform_coupons_status' => ['get', '1cc/dashboard/ce/coupons/sync', 'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_search_product_collections'                     => ['get', '1cc/magic/platform/products/collections/search', 'OneClickCheckoutController@handleMerchantDashboardReq'],
 
+        'fetch_turbo_upi_error_mapping'                      => ['get', 'upi/turbo/error_mapping', 'UpiTurboController@fetchErrorMappings'],
+        'build_turbo_upi_error_mapping'                      => ['put', 'admin/upi/turbo/error_mapping', 'UpiTurboController@setErrorMappingsAdmin'],
+
         // Edge Routes
         'third_party_authenticate'                            => ['post', 'edge/internal/authenticate', 'EdgeController@authenticate'],
 
@@ -4814,7 +4817,8 @@ class Route
         '1cc_apply_gift_card',
         '1cc_remove_gift_card',
         'offers_fetch_for_order',
-        'fetch_public_customer_eligibility'
+        'fetch_public_customer_eligibility',
+        'fetch_turbo_upi_error_mapping',
     ];
 
     public static $device = [
@@ -8903,6 +8907,9 @@ class Route
          //i18n Dashboard UI Configs based on Country
         'edit_country_dashboard_config',
         'get_country_dashboard_config',
+
+        //Upi Turbo
+        'build_turbo_upi_error_mapping',
     ];
 
     protected static $splitPaymentRoutes = [
@@ -10459,6 +10466,9 @@ class Route
         'get_all_country_dashboard_config'             => Permission::VIEW_COUNTRY_DASHBOARD_CONFIGS,
         'get_country_dashboard_config'                 => Permission::VIEW_COUNTRY_DASHBOARD_CONFIGS,
         'edit_country_dashboard_config'                => Permission::EDIT_COUNTRY_DASHBOARD_CONFIGS,
+
+        //Turbo UPI Config
+        'build_turbo_upi_error_mapping'           => Permission::SET_CONFIG_KEYS,
     ];
 
     public static $bankLmsRoutePermissions = [
@@ -13337,6 +13347,7 @@ class Route
             'create_fund_loading_downtime',
             'create_promotions_events',
             'create_submerchant_user',
+            'build_turbo_upi_error_mapping',
             'create_virtual_account_from_order',
             'credit_note_apply',
             'credit_note_get',

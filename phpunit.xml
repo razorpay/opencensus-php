@@ -103,6 +103,7 @@
             <directory>./tests/Functional/Offline/</directory>
             <directory>./tests/Functional/Store/</directory>
             <directory>./tests/Functional/Splitz/</directory>
+            <directory>./tests/Functional/TurboUpi/</directory>
         </testsuite>
         <testsuite name="Features-1 Test Suite">
             <directory>./tests/Functional/FileStore/</directory>

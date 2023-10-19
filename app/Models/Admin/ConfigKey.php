@@ -429,6 +429,10 @@ class ConfigKey
 
     const UPI_TURBO_SDK_TIMEOUTS                    = self::PREFIX . 'upi_turbo_sdk_timeouts';
 
+    const TURBO_SDK_ERROR_MAPPINGS_HASH             = self::PREFIX . 'turbo_sdk_error_mappings_hash';
+
+    const TURBO_SDK_ERROR_MAPPINGS                  = self::PREFIX . 'turbo_sdk_error_mappings';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,

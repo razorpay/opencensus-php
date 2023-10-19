@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxisOlive\Device;
 
+use RZP\Models\P2p\Preferences\Entity;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Upi\Turbo\Core;
 use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\P2p\Preferences\Constants;
@@ -210,5 +213,20 @@ class PreferencesTest extends TestCase
         ]);
 
         return $sdkTimeoutConfigs;
+    }
+
+    public function testErrorMappingHashInPreferencesResponse()
+    {
+        $helper = $this->getPreferencesHelper();
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->getGatewayPreferences($this->gateway, []);
+
+        $this->assertArrayHasKey(Entity::ERROR_MAPPING_HASH, $response);
+
+        [$errorMappings, $fileHash] = (new Core())->generateTurboErrorMappings([Gateway::UPI_AXISOLIVE]);
+
+        $this->assertEquals($fileHash, $response[Entity::ERROR_MAPPING_HASH]);
     }
 }

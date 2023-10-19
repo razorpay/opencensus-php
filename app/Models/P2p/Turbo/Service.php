@@ -2,8 +2,8 @@
 
 namespace RZP\Models\P2p\Turbo;
 
-use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Complaint;
 
 /**
@@ -11,6 +11,14 @@ use RZP\Models\P2p\Complaint;
  */
 class Service extends Base\Service
 {
+    protected $core = null;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->core = new Core();
+    }
+
     public function turboGatewayCallback(array $input)
     {
         // Initiate Gateway callback has two responsibilities to process the callback

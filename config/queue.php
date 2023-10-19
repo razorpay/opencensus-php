@@ -715,6 +715,10 @@ return [
         'live'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_COMMON_5'),
     ],
 
+    'turbo_upi_error_mapping_updater' => [
+        'live'       => env('AWS_TURBO_UPI_ERROR_MAPPING_UPDATER_LIVE_QUEUE'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings
