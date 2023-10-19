@@ -55,7 +55,7 @@ class SalesforceRequestJob extends RequestJob
         return $this->salesforceClient->fetchAccessToken($skipCache);
     }
 
-    private function notifySFDrop(array $input)
+    private function notifySFDropToGrowth(array $input)
     {
         $app = App::getFacadeRoot();
         $message = '*ALERT*: Salesforce Call Dropped for below mentioned mid';
@@ -96,7 +96,11 @@ class SalesforceRequestJob extends RequestJob
             ($responseBody[self::STATUS] != "SUCCESS")
         )
         {
-            $this->notifySFDrop($this->request);
+            if (str_contains($this->request['url'], SalesForceClient::DASHBOARD_UPSERT_URL) === true) {
+                $this->notifySFDropToGrowth($this->salesforceClient->getTraceableRequest($this->request));
+            }
+            $app = App::getFacadeRoot();
+            $app['trace']->error(TraceCode::SALESFORCE_EVENT_ERROR, ['response' => $responseBody, 'request' => $this->salesforceClient->getTraceableRequest($this->request)]);
             throw new Exception\IntegrationException(
                 'Failed to push event to Salesforce',
                 ErrorCode::SERVER_ERROR_SALESFORCE_SERVICE_ERROR,
