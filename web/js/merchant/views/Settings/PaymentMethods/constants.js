@@ -16,7 +16,6 @@ export const MERCHANT_DETAILS = 'merchant_details';
 export const ZESTMONEY = 'ZestMoney';
 export const GETSIMPL = 'Simpl';
 export const FLEXIPAY = 'Flexipay';
-export const PAYTM = 'Paytm';
 export const MAESTRO = 'Maestro';
 export const STATE_BANK_OF_INDIA = 'State Bank of India';
 export const BANK_OF_BAHRAIN_AND_KUWAIT = 'Bank of Bahrain and Kuwait';
@@ -50,7 +49,6 @@ export const DISABLED_INSTRUMENT = [
   ZESTMONEY,
   GETSIMPL,
   FLEXIPAY,
-  PAYTM,
   MAESTRO,
   STATE_BANK_OF_INDIA,
   BANK_OF_BAHRAIN_AND_KUWAIT,
