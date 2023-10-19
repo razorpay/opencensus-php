@@ -499,7 +499,6 @@ class GatewayController extends Controller
                                 [
                                     'payment_id' => $payment->getId(),
                                     'merchant_id' => $payment->getMerchantId(),
-                                    'response_code' => $input['ResponseCode'],
                                 ]);
 
                             return [
