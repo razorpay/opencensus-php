@@ -168,6 +168,12 @@ class XEInvoice extends Core
     {
         $eInvoiceData = [];
 
+        $invoiceEntity = $this->repo->merchant_e_invoice->fetchByInvoiceNumberAndDocumentType(
+            $merchantId, $invoiceNumber, DocumentTypes::INV);
+        
+        $invoiceIssueTime = Carbon::createFromTimestamp($invoiceEntity->getCreatedAt(), Timezone::IST)
+            ->format('d/m/Y');
+
         foreach($this->xDocumentTypes as $documentType)
         {
             $eInvoiceEntity = $this->repo->merchant_e_invoice->fetchGeneratedEInvoiceFromInvoiceNumberTypeAndDocumentType($merchantId, $invoiceNumber, $type, $documentType);
@@ -177,9 +183,6 @@ class XEInvoice extends Core
                 continue;
             }
 
-            $invoiceIssueTime = Carbon::createFromTimestamp($eInvoiceEntity->getCreatedAt(), Timezone::IST)
-                    ->format('d/m/Y');
-
             $eInvoiceData[$documentType] = [
                 self::IRN                         => $eInvoiceEntity->getGspIrn(),
                 self::SIGNED_QR_CODE              => $eInvoiceEntity->getGspSignedQrCode(),
@@ -188,6 +191,8 @@ class XEInvoice extends Core
                 self::INVOICE_NUMBER_ISSUE_DATE   => $invoiceIssueTime,
             ];
         }
+
+        return $eInvoiceData;
     }
 
     public function shouldGenerateEInvoice(Merchant\Entity $merchant, $fromTimestamp) : bool

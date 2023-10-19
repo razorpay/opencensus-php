@@ -12,8 +12,8 @@ use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Merchant\Invoice as MerchantInvoice;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-
 
 
 class MerchantBankingInvoiceTest extends TestCase
@@ -2490,10 +2490,28 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        // 4. download invoice for RSPL (Razorpay) and assert response
+        // 4. set up E-Invoice entity for assert
+        $invoiceNumber = (new MerchantInvoice\Entity)->generateInvoiceNumberForX('10000000000000', '0721', false);
+
+        $eInvoice = (new MerchantInvoice\EInvoice\Repository)->fetchByInvoiceNumber('10000000000000', $invoiceNumber)->first();
+
+        $this->fixtures->edit('merchant_e_invoice', $eInvoice->getId(), [
+            'status'            => 'generated',
+            'gsp_irn'           => 'dummy-irn',
+            'gsp_qr_code_url'   => 'dummy-qr-code'
+        ]);
+
+        // 5. download invoice for RSPL (Razorpay) and assert response
         $this->ba->proxyAuth();
 
-        $this->mockPdfGeneratorAndUfhService();
+        $this->mockPdfGeneratorAndUfhService([
+            'e_invoice_details' => [
+                'INV' => [
+                    'Irn'       => 'dummy-irn',
+                    'QRCodeUrl' => 'dummy-qr-code'
+                ]
+            ],
+        ]);
 
         $request = [
             'url'       => '/reports/invoice/banking',
@@ -3148,14 +3166,26 @@ class MerchantBankingInvoiceTest extends TestCase
     }
 
     // mocks PDF and UFH service
-    protected function mockPdfGeneratorAndUfhService()
+    protected function mockPdfGeneratorAndUfhService($expectedData)
     {
         $tempFile = fopen("testFile.txt", "w");
         fclose($tempFile);
 
         $pdfMock = \Mockery::mock('RZP\Models\Invoice\PdfGenerator')->makePartial();
         $this->app->instance('invoice_pdf_generator', $pdfMock);
-        $pdfMock->shouldReceive('generateBankingInvoice')->times(1)->andReturn('testFile.txt');
+        
+        if (empty($expectedData))
+        {
+            $pdfMock->shouldReceive('generateBankingInvoice')->andReturn('testFile.txt');
+        }
+        else
+        {
+            $pdfMock->shouldReceive('generateBankingInvoice')
+                ->withArgs(function($data) use ($expectedData) {
+                    $this->assertArraySelectiveEquals($expectedData, $data);
+                    return true;
+                })->andReturn('testFile.txt');
+        }      
 
         $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
         $this->app->instance('ufh.service', $ufhService);
