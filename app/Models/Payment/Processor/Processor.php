@@ -1046,6 +1046,11 @@ class Processor
                 return false;
             }
 
+            if ($this->isExternalAltIdPayment($input)) {
+
+                return true;
+            }
+
             //transaction from cryptogram value
             $input[Payment\Entity::CARD][Card\Entity::NUMBER] = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
             $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
@@ -10237,6 +10242,16 @@ class Processor
             boolval($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === true;
     }
 
+    /**
+     * @param $input
+     * @return bool
+     */
+    private function isExternalAltIdPayment($input): bool
+    {
+        return is_null($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false &&
+            boolval($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false &&
+            empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === false;
+    }
 
     /**
      * @param $input
