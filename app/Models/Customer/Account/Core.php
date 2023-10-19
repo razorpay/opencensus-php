@@ -865,14 +865,13 @@ class Core extends Base\Core
      */
     public function recordAddressConsent1cc($input)
     {
-        if(Session()->has($this->mode . '_app_token') === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
-        }
-
         $appToken = Session()->get($this->mode . '_app_token');
 
         $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
+        if (empty($appToken) && empty($globalCustomerId)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
 
         list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
             ['app_token' => $appToken, Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId],
@@ -947,16 +946,15 @@ class Core extends Base\Core
         $ex = '';
 
         try{
-
-            if(Session()->has($this->mode . '_app_token') === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
-            }
-
-            $appToken = Session()->get($this->mode . '_app_token');
+            $appToken = session()->get($this->mode . '_app_token');
 
             $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
+            if (empty($appToken) && empty($globalCustomerId)) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                );
+            }
 
             Customer\Validator::validateCreateGlobalAddress($input);
 
@@ -1046,15 +1044,15 @@ class Core extends Base\Core
         $ex = [];
 
         try {
-
-            if(Session()->has($this->mode . '_app_token') === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
-            }
             $appToken = Session()->get($this->mode . '_app_token');
 
             $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
+            if (empty($appToken) && empty($globalCustomerId)) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                );
+            }
 
             Customer\Validator::validateEditGlobalAddress($input);
             list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
@@ -1390,7 +1388,7 @@ class Core extends Base\Core
             return [$customer, null];
         }
 
-        if (empty($input[Payment\Entity::APP_TOKEN]) === true)
+        if (empty($input[Payment\Entity::APP_TOKEN]) && empty($input[Payment\Entity::GLOBAL_CUSTOMER_ID]))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
@@ -1400,21 +1398,31 @@ class Core extends Base\Core
                 ]);
         }
 
-        $appToken = (new AppToken\Core)->getAppByAppTokenId(
-            $input[Payment\Entity::APP_TOKEN], $merchant);
+        $appTokenCustomerId = '';
+        $appToken = null;
 
-        if ($appToken === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_APP_TOKEN_NOT_GLOBAL,
-                null,
-                [
-                    'customer_id' => $customer->getId(),
-                    'app_token_merchant_id' => $appToken->getMerchantId()
-                ]);
+        if (!empty($input[Payment\Entity::GLOBAL_CUSTOMER_ID])) {
+            $appTokenCustomerId = $input[Payment\Entity::GLOBAL_CUSTOMER_ID];
+        } elseif (!empty($input[Payment\Entity::APP_TOKEN])) {
+            $appToken = (new AppToken\Core)->getAppByAppTokenId(
+                $input[Payment\Entity::APP_TOKEN],
+                $merchant
+            );
+
+            if ($appToken === null) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_APP_TOKEN_NOT_GLOBAL,
+                    null,
+                    [
+                        'customer_id' => $customer->getId(),
+                        'app_token_merchant_id' => $appToken->getMerchantId()
+                    ]
+                );
+            }
+
+            $appTokenCustomerId = $appToken->getCustomerId();
         }
 
-        $appTokenCustomerId = $appToken->getCustomerId();
         $customerId = $customer->getId();
 
         if ($appTokenCustomerId !== $customerId)

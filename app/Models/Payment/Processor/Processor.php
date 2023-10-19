@@ -546,6 +546,9 @@ class Processor
 
     protected $sendDopplerFeedback = true;
 
+    /** @var RequestContextV2 */
+    protected $requestContext;
+
     /**
      * Array of error codes upon which paypal maybe suggested as a backup option
      */
@@ -608,6 +611,8 @@ class Processor
         $this->verifyRefundStatus = null;
 
         $this->secureCacheDriver = $this->getDriver();
+
+        $this->requestContext = $this->app['request.ctx.v2'];
     }
 
     public function flushPaymentObjects()
@@ -934,9 +939,7 @@ class Processor
                 {
                     try {
                         // First fetch the relevant customer (global or local)
-                        /** @var RequestContextV2 $requestContext */
-                        $requestContext = $this->app['request.ctx.v2'];
-                        $globalCustomerId = optional($requestContext->passportUtil)->getGlobalCustomerId() ?: '';
+                        $globalCustomerId = optional($this->requestContext->passportUtil)->getGlobalCustomerId() ?: '';
 
                         $getCustomerInput = [
                             Payment\Entity::CUSTOMER_ID => $input[Payment\Entity::CUSTOMER_ID] ?? '',
@@ -2111,9 +2114,7 @@ class Processor
             $this->checkAndFillSavedAppToken($input);
         }
 
-        /** @var RequestContextV2 $requestContext */
-        $requestContext = $this->app['request.ctx.v2'];
-        $globalCustomerId = optional($requestContext->passportUtil)->getGlobalCustomerId() ?: '';
+        $globalCustomerId = optional($this->requestContext->passportUtil)->getGlobalCustomerId() ?: '';
 
         $getCustomerInput = [
             Payment\Entity::CUSTOMER_ID => $input[Payment\Entity::CUSTOMER_ID] ?? '',
@@ -2933,11 +2934,14 @@ class Processor
             return;
         }
 
-        $appTokenPresent = $this->isAppTokenPresent();
-
         $this->subscription = $this->app['module']
                                    ->subscription
-                                   ->fetchSubscriptionInfo($input, $payment->merchant, false, $appTokenPresent);
+                                   ->fetchSubscriptionInfo(
+                                       $input,
+                                       $payment->merchant,
+                                       false,
+                                       $this->isGlobalCustomerLoggedIn(),
+                                   );
 
         if ($this->subscription->isExternal() === true)
         {
@@ -9597,8 +9601,14 @@ class Processor
         }
     }
 
-    protected function isAppTokenPresent(): bool
+    protected function isGlobalCustomerLoggedIn(): bool
     {
+        $globalCustomerId = optional($this->requestContext->passportUtil)->getGlobalCustomerId() ?: '';
+
+        if ($globalCustomerId !== '') {
+            return true;
+        }
+
         if ($this->request->hasSession() === false)
         {
             return false;
