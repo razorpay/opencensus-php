@@ -2126,6 +2126,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 }
 
                 break;
+
+            case Method::FPX:
+                $acquirerData = [
+                    'fpx_data' => json_decode($this->getAttribute(self::REFERENCE2), true),
+                    'arn' => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
         }
 
         // flipkart use case
