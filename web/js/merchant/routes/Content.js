@@ -636,7 +636,11 @@ class Content extends Component {
           <Route
             path="partners/*"
             element={
-              <RouteGuard additionalCondition={(user) => user.isPartner()}>
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isPartner() && user.isAllowedView('partner_navlinks')
+                }
+              >
                 <PartnerDashboard />
               </RouteGuard>
             }

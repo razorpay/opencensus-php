@@ -28,17 +28,7 @@ export default {
   payments_batch_uploads: [OWNER, ADMIN, MANAGER, OPERATIONS, PARTNER],
   refunds_batch_uploads: [OWNER, ADMIN, MANAGER, OPERATIONS, PARTNER],
   settlements: [OWNER, ADMIN, MANAGER, RBL_SUPERVISOR],
-  invoices: [
-    OWNER,
-    ADMIN,
-    MANAGER,
-    OPERATIONS,
-    SELLERAPP,
-    SELLERAPP_PLUS,
-    AGENT,
-    RBL_SUPERVISOR,
-    PARTNER,
-  ],
+  invoices: [OWNER, ADMIN, MANAGER, OPERATIONS, SELLERAPP, SELLERAPP_PLUS, AGENT, RBL_SUPERVISOR],
   items: [OWNER, ADMIN, MANAGER, SELLERAPP, AGENT, SELLERAPP_PLUS],
   payment_links: [
     OWNER,

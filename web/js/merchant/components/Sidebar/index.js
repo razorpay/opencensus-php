@@ -377,6 +377,7 @@ class PartnerSidebarComponent extends Component {
     return (
       <div className={`nav-group ${fuxEnabledClass}`}>
         <MainNavLinkGroup
+          additionalCondition={(currentUser) => currentUser.isAllowedView('partner_navlinks')}
           title={<>{isPartnershipFUX ? null : <i className="i i-partner text-primary" />}Partner</>}
           onToggleClick={this.toggle('partnerOpen')}
           value={this.state.partnerOpen}

@@ -164,14 +164,15 @@ export default {
   developers_console: [OWNER, ADMIN],
 
   // partner dashboard permissions
-  submerchants: [OWNER, ADMIN, MANAGER, PARTNER],
-  partner_settings: [OWNER, ADMIN, MANAGER, PARTNER],
-  earnings: [OWNER, ADMIN, MANAGER, PARTNER],
+  submerchants: [OWNER, ADMIN, MANAGER],
+  partner_settings: [OWNER, ADMIN, MANAGER],
+  earnings: [OWNER, ADMIN, MANAGER],
   partner_applications: [OWNER, MANAGER, ADMIN],
-  partner_home: [OWNER, PARTNER],
+  partner_home: [OWNER],
   loans: [OWNER, ADMIN],
   cash_advance: [OWNER, ADMIN],
   b2b_payments: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT],
+  partner_navlinks: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT],
 
   // optimizer
   optimizer: [OWNER, ADMIN, MANAGER, OPERATIONS],
