@@ -4863,6 +4863,7 @@ class Gateway
             self::WALLET_BAJAJ,
             self::WALLET_PAYPAL,
             self::OPTIMIZER_RAZORPAY,
+            self::WALLET_AIRTELMONEY,
         ];
 
         $acquirerGateways = [

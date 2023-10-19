@@ -4652,6 +4652,7 @@ class Processor
             Payment\Gateway::WALLET_AMAZONPAY,
             Payment\Gateway::WALLET_BAJAJ,
             Payment\Gateway::WALLET_PAYPAL,
+            Payment\Gateway::WALLET_AIRTELMONEY,
         ];
 
         if (((in_array($method, $cpsEnabledMethods, true) === false) or
