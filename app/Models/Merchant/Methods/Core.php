@@ -37,6 +37,7 @@ use RZP\Models\Pricing\Feature as Feature;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Services\KafkaProducer;
 use RZP\Models\Emi\CreditEmiProvider;
+use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -83,6 +84,16 @@ class Core extends Base\Core
 
         ]
     ];
+
+    const defaultDebitEmiProvidersWhitelisted = [
+
+        Entity::DEBIT_EMI_PROVIDERS  => [
+
+            DebitProvider::ICIC => '1'
+
+        ]
+    ];
+
     const defaultCardlessEmiProvidersWhitelisted = [
 
         Entity::CARDLESS_EMI_PROVIDERS  => [
@@ -938,6 +949,7 @@ class Core extends Base\Core
                         EmiType::DEBIT  => '1',
                     ];
                     $methods->setMethods(self::defaultCreditEmiProvidersWhitelisted);
+                    $methods->setMethods(self::defaultDebitEmiProvidersWhitelisted);
                 }
             }
             if ($key === Entity::PAYLATER and $value === true)

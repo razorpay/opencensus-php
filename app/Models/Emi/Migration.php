@@ -8,6 +8,7 @@ use Config;
 use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
 
@@ -70,15 +71,39 @@ class Migration
     {
         if ($this->isCpsFetchEnabled() == false)
         {
-            return null;
+            if($action === Migration::CREATE or $action === Migration::DELETE)
+            {
+                if($this->shouldWriteToCPS($emiPlan) === false)
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
 
         return $this->migrationRequestHandler($action, $emiPlan, $id, $input);
     }
 
+    function shouldWriteToCPS($emiPlan): bool
+    {
+        $bank = $emiPlan->getBank();
+        $type = $emiPlan->getType();
+
+        if ($bank === IFSC::ICIC and $type === Type::DEBIT)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     function migrationRequestHandler($action, $emiPlan, $id = '', $input = [], $ignoreFailure = false)
     {
         $response = [];
+
 
         try {
             switch ($action) {
@@ -153,13 +178,11 @@ class Migration
                 ]);
         }
 
-        return null;
-
-//        throw new Exception\ServerErrorException('emi_plan sync call failed',
-//            ErrorCode::SERVER_ERROR_CARD_PAYMENT_SERVICE_EMI_PLAN_SYNC_CALL_FAILED, [
-//                'id' => ($emiPlan == null ) ? $emiPlan->getId() : $id ,
-//                'merchant'  => ($emiPlan == null ) ? $emiPlan->getMerchantId() : '' ,
-//            ]);
+        throw new Exception\ServerErrorException('emi_plan sync call failed',
+            ErrorCode::SERVER_ERROR_CARD_PAYMENT_SERVICE_EMI_PLAN_SYNC_CALL_FAILED, [
+                'id' => ($emiPlan != null ) ? $emiPlan->getId() : $id ,
+                'merchant'  => ($emiPlan != null ) ? $emiPlan->getMerchantId() : '' ,
+            ]);
     }
 
     public function getPlansFromCps($input)

@@ -525,7 +525,7 @@ class Service extends Base\Service
 
                 $provider = $plan->bank;
 
-                return ($enabledProviders[$provider] === 0);
+                return (isset($enabledProviders[$provider]) == false  or $enabledProviders[$provider] === 0);
             });
 
 
@@ -537,7 +537,7 @@ class Service extends Base\Service
 
                 $provider = $plan->bank;
 
-                return ($enabledProviders[$provider] === 0);
+                return (isset($enabledProviders[$provider]) == false  or $enabledProviders[$provider] === 0);
             });
 
         }

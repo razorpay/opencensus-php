@@ -857,6 +857,9 @@ class AffordabilityMigrationService extends Base\Service
 
             }
             catch(\Throwable $ex)
+
+
+
             {
                 $this->trace->traceException($ex,
                     Trace::ERROR,

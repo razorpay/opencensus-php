@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Http\RequestHeader;
 use RZP\Models\Card;
+use RZP\Models\Emi;
 use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -517,6 +518,7 @@ class PGRouter
         $this->currentEndPoint = self::PGRouterFetchPayment;
 
         $card = null;
+        $emiPlan = null;
 
         $response = $this->sendRequest($endpoint, Requests::GET, [], false, 2, true);
 
@@ -540,7 +542,19 @@ class PGRouter
                 unset($response['body']['data']['payment']['card']);
             }
 
+            if (isset($response['body']['data']['payment']['emi_plan']) === true)
+            {
+                $response['body']['data']['payment']['emi_plan']['id'] = $response['body']['data']['payment']['emi_plan_id'];
+
+                $emiPlan = (new Emi\Entity)->forceFill($response['body']['data']['payment']['emi_plan']);
+
+                $emiPlan->setExternal(true);
+
+                unset($response['body']['data']['payment']['emi_plan']);
+            }
+
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
+
 
             if ($payment->isUpi() === true)
             {
@@ -554,6 +568,11 @@ class PGRouter
             if ($card !== null)
             {
                 $payment->card()->associate($card);
+            }
+
+            if ($emiPlan !== null)
+            {
+                $payment->emiPlan()->associate($emiPlan);
             }
 
             if ($payment->isFailed() === false)

@@ -11,11 +11,13 @@ class DebitProvider
     const HDFC = 'HDFC';
     const KKBK = 'KKBK';
     const INDB = 'INDB';
+    const ICIC = 'ICIC';
 
     protected static $providers = [
         self::HDFC,
         self::KKBK,
         self::INDB,
+        self::ICIC,
     ];
 
 
@@ -23,6 +25,7 @@ class DebitProvider
         self::HDFC => 1,
         self::KKBK => 2,
         self::INDB => 3,
+        self::ICIC => 4,
     ];
 
     public static function checkProviderValidity($provider)

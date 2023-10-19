@@ -453,6 +453,8 @@ class Processor
 
     const ENABLE_REARCH_PAYMENTS_FLOW = 'enable_rearch_payments_flow';
 
+    const ENABLE_REARCH_EMI_PAYMENTS_FLOW = 'enable_rearch_emi_payments_flow';
+
     const CAPTURE_VERIFY_METRO_TOPIC        = 'rearch-capture-verify';
 
     const SODEXO = 'sodexo';
@@ -757,7 +759,8 @@ class Processor
 
             if (($this->route->isRearchRoute($currentRouteName) == false) or
                 (empty($input[Payment\Entity::METHOD]) === true) or
-                ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD) or
+                (($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD) and
+                ($input[Payment\Entity::METHOD] !== Payment\METHOD::EMI)) or
                 (empty($input[Payment\Entity::RECURRING]) === false) or
                 (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) or
                 (empty($input[Payment\Entity::INVOICE_ID]) === false) or
@@ -814,6 +817,15 @@ class Processor
 
                 }
                 return false;
+            }
+
+            if ($input[Payment\Entity::METHOD] == Payment\METHOD::EMI)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::ENABLE_REARCH_EMI_PAYMENTS_FLOW, $this->mode);
+                if ($result !== 'on')
+                {
+                    return false;
+                }
             }
 
             // check if eligible banking org id to redirect to card's re-arch
@@ -932,6 +944,11 @@ class Processor
             //Check for saved card token payments
             if(empty($input[Payment\Entity::TOKEN]) === false)
             {
+                if ($input[Payment\Entity::METHOD] == Payment\METHOD::EMI)
+                {
+                    return false;
+                }
+
                 $tokenId = $input[Payment\Entity::TOKEN];
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
 
@@ -1088,6 +1105,18 @@ class Processor
                 }
             }
 
+            // check if emi instruments are supported on re-arch
+            if (($input[Payment\Entity::METHOD] == Payment\METHOD::EMI) and
+                $this->canRouteEmiThroughRearch($iin) === false)
+            {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "check_for_emi_instrument_reach_onboard",
+                    "type" => $iin->getType(),
+                    "issuer" => $iin->getIssuer(),
+                ]);
+                return false;
+            }
+
             if ($merchant->isFeeBearerCustomerOrDynamic() === true )
             {
                 if ($feeBearerResult !== 'on') {
@@ -1233,6 +1262,20 @@ class Processor
                 Trace::CRITICAL,
                 TraceCode::REARCH_CRITIERIA_CHECK_FAILED,
                 []);
+        }
+
+        return false;
+    }
+
+    protected function canRouteEmiThroughRearch($iin): bool
+    {
+        $supportedIssuers = [
+            IFSC::ICIC
+        ];
+
+        if (($iin->getType() === Card\Type::DEBIT) and in_array($iin->getIssuer(), $supportedIssuers, true) === true)
+        {
+            return true;
         }
 
         return false;

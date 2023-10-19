@@ -782,7 +782,7 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
-        $this->fixtures->merchant->enableDebitEmiProviders();
+        $this->fixtures->merchant->enableDebitEmiProviders('10000000000000', ['HDFC' => 1, 'ICIC' => 1]);
 
         $this->fixtures->emiPlan->create(
             [
@@ -794,20 +794,33 @@ class CheckoutPreferencesTest extends TestCase
                 'duration'    => 3,
             ]);
 
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101312',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'ICIC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
         $response = $this->getPreferences();
 
         $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
+        $this->assertArrayHasKey('ICIC_DC', $response['methods']['emi_options']);
+
     }
 
     public function testGetCheckoutPreferencesForDebitEmiProviders()
     {
         $this->fixtures->merchant->enableEmiDebit();
 
-        $this->fixtures->merchant->enableDebitEmiProviders();
+        $this->fixtures->merchant->enableDebitEmiProviders('10000000000000', ['HDFC' => 1, 'ICIC' => 1]);
 
         $response = $this->getPreferences();
 
-        $this->assertArraySelectiveEquals(['HDFC' => 1], $response['methods']['debit_emi_providers']);
+        $this->assertArraySelectiveEquals(['HDFC' => 1, 'ICIC' => 1], $response['methods']['debit_emi_providers']);
 
         $this->assertTrue($response['methods']['emi_types']['debit']);
 
