@@ -3961,7 +3961,7 @@ trait PaymentTrait
             "yespay",
             "slice",
             "trio",
-
+            "fifferedal",
         ];
 
         return $vpaHandles;
