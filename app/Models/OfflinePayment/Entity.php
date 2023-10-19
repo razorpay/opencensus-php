@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Payment\Entity        $payment
@@ -18,6 +19,7 @@ use RZP\Models\VirtualAccount;
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
     //PID is payer_instrument_details , PD is payer_details
     const ID                           = 'id';
     const CHALLAN_NUMBER               = 'challan_number';

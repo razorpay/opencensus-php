@@ -22,6 +22,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 use RZP\Models\Payment\PaymentMeta\MismatchAmountReason;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -33,7 +34,7 @@ use RZP\Models\Payment\Refund\Constants as RefundConstants;
  */
 class Entity extends Base\PublicEntity
 {
-    use HasBalance;
+    use HasBalance, AsvGetAttribute;
     use NotesTrait;
 
     const ID                     = 'id';

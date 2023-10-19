@@ -3,9 +3,12 @@
 namespace RZP\Models\Event;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
+    use AsvGetAttribute;
+
     const ID                    = 'id';
     const EVENT                 = 'event';
     const MERCHANT_ID           = 'merchant_id';

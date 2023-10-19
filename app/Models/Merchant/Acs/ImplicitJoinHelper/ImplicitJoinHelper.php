@@ -17,6 +17,12 @@ class ImplicitJoinHelper
      */
     protected $trace;
 
+    const ASSOCIATED_RELATIONS = [
+        "merchant",
+        "parent",
+        "parentMerchant"
+    ];
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -42,9 +48,9 @@ class ImplicitJoinHelper
 
         $repo = app('repo');
         $relationData = $repo->$repositoryInstance->$repositoryMethod($classInstance->$fetchMethod(), $entityName);
-        if($relationName == "merchant")
+        if(in_array($relationName, self::ASSOCIATED_RELATIONS, true) === true)
         {
-            $classInstance->merchant()->associate($relationData);
+            $classInstance->$relationName()->associate($relationData);
         }
         else
         {
@@ -54,9 +60,9 @@ class ImplicitJoinHelper
         return $relationData;
     }
 
-    public function getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, $repositoryInstance, $repositoryMethod)
+    public function getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, $repositoryInstance, $repositoryMethod, $fetchMethod='getMerchantId')
     {
-        return $this->getRelationAttribute($classInstance, $entityName, $relationName, $repositoryInstance, $repositoryMethod, 'getMerchantId');
+        return $this->getRelationAttribute($classInstance, $entityName, $relationName, $repositoryInstance, $repositoryMethod, $fetchMethod);
     }
 
     public function getRelationAttributeById($classInstance, $entityName, $relationName, $repositoryInstance, $repositoryMethod)
@@ -95,9 +101,9 @@ class ImplicitJoinHelper
         return $this->getRelationAttributeById($classInstance, $entityName, $relationName, 'merchant', 'findForImplicitJoin');
     }
 
-    public function getMerchantAttributeByMerchantId($classInstance, $entityName, $relationName = 'merchant')
+    public function getMerchantAttributeByMerchantId($classInstance, $entityName, $relationName = 'merchant', $fetchMethod = "getMerchantId")
     {
-        return $this->getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, 'merchant', 'findForImplicitJoin');
+        return $this->getRelationAttributeByMerchantId($classInstance, $entityName, $relationName, 'merchant', 'findForImplicitJoin', $fetchMethod);
     }
 }
 

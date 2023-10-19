@@ -207,7 +207,7 @@ class ValidatorTest extends BaseTest
         $mockMerchant = \Mockery::mock($merchant)->makePartial();
         $mockMerchant->shouldReceive('isInternational')->once()->andReturn(false);
 
-        $ppi->merchant = $mockMerchant;
+        $ppi->merchant()->associate($mockMerchant);
 
         $this->assignEntityValueThroughReflection($ppi);
 

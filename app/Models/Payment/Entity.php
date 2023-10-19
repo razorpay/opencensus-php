@@ -68,6 +68,7 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 use RZP\Models\Payment\Refund\TransactionTrackerMessages;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 use RZP\Models\PaymentsUpi;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 
 /**
@@ -94,7 +95,7 @@ use RZP\Models\Payment\Processor\Constants as PaymentConstants;
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
-    use NotesTrait, ExternalOwner, ExternalEntity, DualWrite;
+    use NotesTrait, ExternalOwner, ExternalEntity, DualWrite, AsvGetAttribute;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';

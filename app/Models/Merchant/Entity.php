@@ -3662,7 +3662,7 @@ class Entity extends Base\PublicEntity
 
         if (empty($attributes[self::PARENT_ID]) === false)
         {
-            $parentMerchant = $this->parent()->get()->first();
+            $parentMerchant = $this->parent;
             $attributes[Constants::PARENT_NAME] = $parentMerchant->getAttribute(self::NAME);
         }
 
@@ -4084,6 +4084,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $name;
+    }
+
+    public function getParentAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, "parent", 'getParentId');
     }
 
     /**

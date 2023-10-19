@@ -11,13 +11,14 @@ use RZP\Models\Settings;
 use RZP\Models\Merchant;
 use RZP\Models\PaymentLink;
 use RZP\Models\Store\Entity as StoreEntity;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property PaymentLink\Entity $paymentLink
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const PAYMENT_LINK_ID   = 'payment_link_id';
     const ITEM_ID           = 'item_id';

@@ -6,10 +6,12 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, AsvGetAttribute;
 
     const MERCHANT_ID          = 'merchant_id';
 
@@ -45,6 +47,11 @@ class Entity extends Base\PublicEntity
     public function parentMerchant()
     {
         return $this->belongsTo(Merchant\Entity::class, self::PARENT_MERCHANT_ID);
+    }
+
+    public function getParentMerchantAttribute()
+    {
+        return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, "parentMerchant", 'getParentMerchantId');
     }
 
 }

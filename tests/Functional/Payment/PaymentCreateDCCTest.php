@@ -1949,11 +1949,11 @@ class PaymentCreateDCCTest extends TestCase
         ];
         $paymentMetaEntity = (new \RZP\Models\Payment\PaymentMeta\Core)->create($paymentMetaInput);
         $paymentMetaEntity->payment()->associate($payment);
-        $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods();
+        $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods()->makePartial();
         $mockService->shouldReceive('isFeatureEnabled')->with('send_dcc_compliance')->andReturn(true);
         $mockService->shouldReceive('isFeatureEnabled')->andReturn(false);
         $mockService->shouldReceive('isAVSEnabledInternationalMerchant')->andReturn(false);
-        $payment->merchant = $mockService;
+        $payment->merchant()->associate($mockService);
         $methodRepoMock = \Mockery::mock('\RZP\Models\Merchant\Methods\Repository');
         $methodRepoMock->shouldReceive('toArray')->andReturn([]);
 
@@ -1979,11 +1979,11 @@ class PaymentCreateDCCTest extends TestCase
         ];
         $paymentMetaEntity = (new \RZP\Models\Payment\PaymentMeta\Core)->create($paymentMetaInput);
         $paymentMetaEntity->payment()->associate($payment);
-        $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods();
+        $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods()->makePartial();
         $mockService->shouldReceive('isFeatureEnabled')->with('send_dcc_compliance')->andReturn(true);
         $mockService->shouldReceive('isFeatureEnabled')->andReturn(false);
         $mockService->shouldReceive('isAVSEnabledInternationalMerchant')->andReturn(false);
-        $payment->merchant = $mockService;
+        $payment->merchant()->associate($mockService);
         $methodRepoMock = \Mockery::mock('\RZP\Models\Merchant\Methods\Repository');
         $methodRepoMock->shouldReceive('toArray')->andReturn([]);
 
@@ -2268,7 +2268,7 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals("USD", $cardCurrency);
         $this->assertNotNull($responseContent['all_currencies']);
         $this->assertNotNull($currencyRequestId);
-        
+
         // Check Markup Percentage for USD Currency
         $this->assertEquals($cardUSDMarkup, $responseContent['all_currencies']['USD']['conversion_percentage']);
 

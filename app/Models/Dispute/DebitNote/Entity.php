@@ -5,6 +5,7 @@ namespace RZP\Models\Dispute\DebitNote;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Constants as RZPConstants;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
  * @property Merchant\Entity $merchant
@@ -12,7 +13,7 @@ use RZP\Constants as RZPConstants;
  */
 class Entity extends Base\PublicEntity
 {
-
+    use AsvGetAttribute;
 
     const BASE_AMOUNT = 'base_amount';
     const ADMIN_ID    = 'admin_id';

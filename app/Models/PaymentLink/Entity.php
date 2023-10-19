@@ -19,10 +19,11 @@ use Illuminate\Support\Facades\Config;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
+use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, AsvGetAttribute;
     use SoftDeletes;
 
     const MERCHANT_ID        = 'merchant_id';
