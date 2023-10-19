@@ -15247,8 +15247,12 @@ class Route
             'create_risk_action',
             'merchant_workflow_clarification',
 
+            // FIRS Endpoints
+            'firs_document_fetch',
+            'request_internal_firs',
             'firs_document_download',
             'pxb_document_fetch',
+
             'country_fetch',
             'state_fetch',
 
