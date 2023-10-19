@@ -6,6 +6,7 @@ use Mail;
 use Mockery;
 
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Adjustment\Status;
 use RZP\Models\Transfer;
 use RZP\Constants\Entity;
@@ -2768,5 +2769,413 @@ class TransferTest extends TestCase
         $this->assertEquals('processed', $transfer->getStatus());
 
         TransferProcess::dispatch(EnvMode::TEST, $transfer->getSourceId(), 'payment');
+    }
+
+
+    public function initialiseLedger($merchantBalance = 0, $feeCredits = 0, $amountCredits = 0, $fetchAccountRequests = 1)
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times($fetchAccountRequests)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => sprintf('%s.000000', $merchantBalance),
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => sprintf('%s.000000', $feeCredits),
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => sprintf('%s.000000', $amountCredits),
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        return $mockLedger;
+    }
+
+    public function testCreateDirectTransferWithIKeyHeaderLedgerReverseShadow($ikeyValue = 'unique-ikey', $amount = null)
+    {
+        $headers = [
+            'HTTP_' . RequestHeader::X_TRANSFER_IDEMPOTENCY => $ikeyValue,
+        ];
+
+        $mockLedger = $this->initialiseLedger(1000000, 0, 0);
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->fixtures->merchant->addFeatures([ 'pg_ledger_reverse_shadow'], '10000000000001');
+
+        if (empty($amount) === false)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['amount'] = $amount;
+        }
+
+        $expectedJournalPayload = [
+            "currency" => "",
+            "transactor_event" =>  "transfer_processed",
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG",
+            "journals" => [
+                [
+                    "merchant_id"=>"10000000000000",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "1000",
+                        "base_amount" => "1000",
+                        "merchant_payable_amount" => "1000",
+                        "merchant_balance_amount" => "1000",
+                        "tax" => "0",
+                        "transfer_commission" => "0",
+                    ],
+                    "additional_params"=>["entry_type"=>"debit"]
+                ],
+                [
+                    "merchant_id"=>"10000000000001",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "1000",
+                        "base_amount" => "1000",
+                        "merchant_payable_amount" => "1000",
+                        "merchant_balance_amount" => "1000",
+                    ],
+                    "additional_params"=>["entry_type"=>"credit"]
+                ]
+            ],
+        ];
+
+        $mockLedger->shouldReceive('createBulkJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload)
+            {
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['journals'][0]['money_params'], $journalPayload['journals'][0]['money_params']);
+                $this->assertEquals($expectedJournalPayload['journals'][1]['money_params'], $journalPayload['journals'][1]['money_params']);
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andReturn([
+                'code' => 200,
+                'body' => [
+                    "journals"=> [
+                        [
+                            "id"=> "MopI0tL6gDzBe6",
+                            "created_at"=> "1697447934",
+                            "updated_at"=> "1697447934",
+                            "merchant_id"=> "",
+                            "amount"=> "13757",
+                            "base_amount"=> "13757",
+                            "currency"=> "INR",
+                            "tenant"=> "PG",
+                            "transactor_id"=> "trf_MooQ9OMQJdZI3d",
+                            "transactor_event"=> "transfer_processed",
+                            "transaction_date"=> "1697444875",
+                            "ledger_entry"=> [
+                                [
+                                    "id"=> "MopI0tNlyVsICK",
+                                    "created_at"=> "1697447934",
+                                    "updated_at"=> "1697447934",
+                                    "merchant_id"=> "Kkd0zXqqYyNBLh",
+                                    "journal_id"=> "MopI0tL6gDzBe6",
+                                    "account_id"=> "KNIZxfkC0t9wJT",
+                                    "amount"=> "13757",
+                                    "base_amount"=> "13757",
+                                    "type"=> "debit",
+                                    "currency"=> "INR",
+                                    "balance"=> "",
+                                    "balance_updated"=> false,
+                                    "account_entities"=> [
+                                        "account_type"=> [
+                                            "payable"
+                                        ],
+                                        "fund_account_type"=> [
+                                            "merchant_va_merchant"
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    "id"=> "MopI0tNmzEwohI",
+                                    "created_at"=> "1697447934",
+                                    "updated_at"=> "1697447934",
+                                    "merchant_id"=> "Kkd0zXqqYyNBLh",
+                                    "journal_id"=> "MopI0tL6gDzBe6",
+                                    "account_id"=> "KoAnIvRweUzEFa",
+                                    "amount"=> "13757",
+                                    "base_amount"=> "13757",
+                                    "type"=> "credit",
+                                    "currency"=> "INR",
+                                    "balance"=> "128725508.000000",
+                                    "balance_updated"=> true,
+                                    "account_entities"=> [
+                                        "account_type"=> [
+                                            "payable"
+                                        ],
+                                        "fund_account_type"=> [
+                                            "merchant_balance"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            "id"=> "MopI0tcz3YJFZS",
+                            "created_at"=> "1697447934",
+                            "updated_at"=> "1697447934",
+                            "merchant_id"=> "",
+                            "amount"=> "13791",
+                            "base_amount"=> "13791",
+                            "currency"=> "INR",
+                            "tenant"=> "PG",
+                            "transactor_id"=> "trf_MooQ9OMQJdZI3d",
+                            "transactor_event"=> "transfer_processed",
+                            "transaction_date"=> "1697444875",
+                            "ledger_entry"=> [
+                                [
+                                    "id"=> "MopI0tfC05hUWx",
+                                    "created_at"=> "1697447934",
+                                    "updated_at"=> "1697447934",
+                                    "merchant_id"=> "IDVkQFXRWGybl9",
+                                    "journal_id"=> "MopI0tcz3YJFZS",
+                                    "account_id"=> "KoAYVJwu2nd4Jx",
+                                    "amount"=> "28",
+                                    "base_amount"=> "28",
+                                    "type"=> "credit",
+                                    "currency"=> "INR",
+                                    "balance"=> "314745055.000000",
+                                    "balance_updated"=> true,
+                                    "account_entities"=> [
+                                        "account_type"=> [
+                                            "cash"
+                                        ],
+                                        "fund_account_type"=> [
+                                            "rzp_transfer_fee"
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    "id"=> "MopI0tfD3bRsnw",
+                                    "created_at"=> "1697447934",
+                                    "updated_at"=> "1697447934",
+                                    "merchant_id"=> "IDVkQFXRWGybl9",
+                                    "journal_id"=> "MopI0tcz3YJFZS",
+                                    "account_id"=> "KoAYVBdA2cIrps",
+                                    "amount"=> "6",
+                                    "base_amount"=> "6",
+                                    "type"=> "credit",
+                                    "currency"=> "INR",
+                                    "balance"=> "143606046.000000",
+                                    "balance_updated"=> true,
+                                    "account_entities"=> [
+                                        "account_type"=> [
+                                            "payable"
+                                        ],
+                                        "fund_account_type"=> [
+                                            "rzp_gst"
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    "id"=> "MopI0tfDY2FDv5",
+                                    "created_at"=> "1697447934",
+                                    "updated_at"=> "1697447934",
+                                    "merchant_id"=> "IDVkQFXRWGybl9",
+                                    "journal_id"=> "MopI0tcz3YJFZS",
+                                    "account_id"=> "KNIZxfkC0t9wJT",
+                                    "amount"=> "13757",
+                                    "base_amount"=> "13757",
+                                    "type"=> "credit",
+                                    "currency"=> "INR",
+                                    "balance"=> "",
+                                    "balance_updated"=> false,
+                                    "account_entities"=> [
+                                        "account_type"=> [
+                                            "payable"
+                                        ],
+                                        "fund_account_type"=> [
+                                            "merchant_va_merchant"
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    "id"=> "MopI0tfE1HxJdG",
+                                    "created_at"=> "1697447934",
+                                    "updated_at"=> "1697447934",
+                                    "merchant_id"=> "IDVkQFXRWGybl9",
+                                    "journal_id"=> "MopI0tcz3YJFZS",
+                                    "account_id"=> "KoAYV3CBjmb8l2",
+                                    "amount"=> "13791",
+                                    "base_amount"=> "13791",
+                                    "type"=> "debit",
+                                    "currency"=> "INR",
+                                    "balance"=> "16089554434.000000",
+                                    "balance_updated"=> true,
+                                    "account_entities"=> [
+                                        "account_type"=> [
+                                            "payable"
+                                        ],
+                                        "fund_account_type"=> [
+                                            "merchant_balance"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+
+
+        $this->ba->privateAuth();
+
+        $transfer = $this->startTest();
+
+        $ikey = $this->getDbLastEntity(Entity::IDEMPOTENCY_KEY);
+
+        $this->assertEquals($transfer['id'], 'trf_' . $ikey->getSourceId());
+        $this->assertEquals('processed', $transfer['status']);
+        $this->assertEquals($ikeyValue, $ikey->getIdempotencyKey());
+
+        return $transfer;
+    }
+
+    public function testDirectTransferCreateNonRetryableError($ikeyValue = 'unique-ikey')
+    {
+        $headers = [
+            'HTTP_' . RequestHeader::X_TRANSFER_IDEMPOTENCY => $ikeyValue,
+        ];
+
+        $mockLedger = $this->initialiseLedger(1000000, 0, 0);
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->fixtures->merchant->addFeatures([ 'pg_ledger_reverse_shadow'], '10000000000001');
+
+        if (empty($amount) === false)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['amount'] = $amount;
+        }
+
+        $expectedJournalPayload = [
+            "currency" => "",
+            "transactor_event" =>  "transfer_processed",
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG",
+            "journals" => [
+                [
+                    "merchant_id"=>"10000000000000",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "1000",
+                        "base_amount" => "1000",
+                        "merchant_payable_amount" => "1000",
+                        "merchant_balance_amount" => "1000",
+                        "tax" => "0",
+                        "transfer_commission" => "0",
+                    ],
+                    "additional_params"=>["entry_type"=>"debit"]
+                ],
+                [
+                    "merchant_id"=>"10000000000001",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "1000",
+                        "base_amount" => "1000",
+                        "merchant_payable_amount" => "1000",
+                        "merchant_balance_amount" => "1000",
+                    ],
+                    "additional_params"=>["entry_type"=>"credit"]
+                ]
+            ],
+        ];
+
+        $mockLedger->shouldReceive('createBulkJournal')
+            ->times(1)
+            ->withArgs(function($journalPayload, $requestHeaders, $throwException) use ($expectedJournalPayload)
+            {
+                $this->assertArrayHasKey('transactor_id',$journalPayload);
+                $this->assertEquals($expectedJournalPayload['transactor_event'], $journalPayload['transactor_event']);
+                $this->assertEquals($expectedJournalPayload['journals'][0]['money_params'], $journalPayload['journals'][0]['money_params']);
+                $this->assertEquals($expectedJournalPayload['journals'][1]['money_params'], $journalPayload['journals'][1]['money_params']);
+                $this->assertArrayHasKey('idempotency-key', $requestHeaders);
+                $this->assertEquals('reverse-shadow', $requestHeaders['Ledger-Integration-Mode']);
+                $this->assertEquals('PG', $requestHeaders['ledger-tenant']);
+
+                $this->assertTrue($throwException);
+
+                return true;
+            })
+            ->andThrow(new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                [],
+                "record_already_exist: BAD_REQUEST_RECORD_ALREADY_EXISTS"
+            ));
+
+        try
+        {
+            $this->ba->privateAuth();
+
+            $this->startTest();
+        }
+        catch(\Exception $e)
+        {
+            $this->assertNotNull($e);
+            $transfersCreated = $this->getDbEntities('transfer');
+            $this->assertEquals(0, count($transfersCreated));
+        }
+
     }
 }

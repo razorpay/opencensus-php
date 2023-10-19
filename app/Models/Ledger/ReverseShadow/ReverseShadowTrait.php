@@ -293,7 +293,7 @@ trait ReverseShadowTrait
         ];
     }
 
-    private function createJournalInLedger(array $journalPayload) : array
+    private function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false) : array
     {
         $app = App::getFacadeRoot();
 
@@ -314,11 +314,20 @@ trait ReverseShadowTrait
         {
             try
             {
-                $response = $ledgerService->createJournal($journalPayload, $requestHeaders, true);
+                if ($isBulkJournalRequest === false)
+                {
+                    $response = $ledgerService->createJournal($journalPayload, $requestHeaders, true);
 
-                $responseBody = $response[LedgerService::RESPONSE_BODY];
+                    $responseBody = $response[LedgerService::RESPONSE_BODY];
+                }
+                else
+                {
+                    $response = $ledgerService->createBulkJournal($journalPayload, $requestHeaders, true);
 
-                $trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE, $response);
+                    $responseBody = $response[LedgerService::RESPONSE_BODY]['journals'];
+                }
+
+                $trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE, $responseBody);
 
                 return $responseBody;
 
@@ -326,6 +335,7 @@ trait ReverseShadowTrait
             catch (\Exception $e)
             {
                 $err = $e->getError() ? $e->getError()->toPublicArray() : [];
+
                 $toRetry = $this->handleSyncLedgerJournalCreateFailures($journalPayload,  $err, LedgerOutboxConstants::SYNC);
 
                 if ($toRetry === true)
@@ -557,5 +567,49 @@ trait ReverseShadowTrait
         }
 
         return false;
+    }
+
+    public function determineJournalIdForAPITransaction($journal, $debitJournalFundAccountType, $creditJournalFuncAccountType)
+    {
+        $debitJournals = array_filter($journal, function($item) use ($debitJournalFundAccountType) {
+            return $this->filterByFundAccountTypeAndEntryType($item, $debitJournalFundAccountType, Constants::ENTRY_TYPE_DEBIT);
+        });
+
+        $creditJournals = array_filter($journal, function($item) use ($creditJournalFuncAccountType) {
+            return $this->filterByFundAccountTypeAndEntryType($item, $creditJournalFuncAccountType, Constants::ENTRY_TYPE_CREDIT);
+        });
+
+        $creditJournalId = '';
+        $debitJournalId = '';
+
+        foreach ($debitJournals as $debitJournal) {
+            $debitJournalId = $debitJournal['id'];
+        }
+
+        foreach ($creditJournals as $creditJournal) {
+            $creditJournalId = $creditJournal['id'];
+        }
+
+        return [$creditJournalId, $debitJournalId];
+    }
+
+    private function filterByFundAccountTypeAndEntryType($item, $fundAccountType, $entryType)
+    {
+        $searchResults = [];
+
+        if (isset($item['ledger_entry']))
+        {
+            foreach ($item['ledger_entry'] as $ledgerEntry)
+            {
+                if (($ledgerEntry['type'] === $entryType) and
+                    (isset($ledgerEntry['account_entities']['fund_account_type'])) and
+                    (in_array($fundAccountType, $ledgerEntry['account_entities']['fund_account_type'])))
+                {
+                    $searchResults[] = $item;
+                    break;
+                }
+            }
+        }
+        return $searchResults;
     }
 }

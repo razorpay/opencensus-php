@@ -836,8 +836,6 @@ class PGRouter
                 ]);
         }
 
-        $this->currentEndPoint = "";
-
         return $this->parseResponse($decodedResponse, $response->status_code, $throwExceptionOnFailure, $endpoint);
     }
 
@@ -1129,7 +1127,7 @@ class PGRouter
         $dimensions = [
             "status_code"           => $statusCode,
             "internal_error_code"   => $internalErrorCode,
-            "route"                 => $endpoint
+            "route"                 => $this->currentEndPoint
         ];
         $this->trace->count(self::PG_ROUTER_FAILURE_STATUS_CODE, $dimensions);
 

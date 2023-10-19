@@ -1552,4 +1552,9 @@ class Service extends Base\Service
 
         return null;
     }
+
+    public function createTransactionForTransfer(array $input)
+    {
+        return $this->core->createInternalTransactionForTransfer($input);
+    }
 }

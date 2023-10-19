@@ -178,9 +178,10 @@ class Constants
 
     const JOURNAL_PAYLOAD               = 'JOURNAL_PAYLOAD';
 
-    const CREATE_TXN_FOR_REFUND_TASK          = 'create_transaction_for_refund';
-    const CREATE_REFUND_TXN_API               = 'create-payment-transaction-event';
-    const CREATE_TRANSACTION_FOR_ADJUSTMENT   = 'create_transaction_for_adjustment';
+    const CREATE_TXN_FOR_REFUND_TASK               = 'create_transaction_for_refund';
+    const CREATE_REFUND_TXN_API                    = 'create-payment-transaction-event';
+    const CREATE_TRANSACTION_FOR_ADJUSTMENT        = 'create_transaction_for_adjustment';
+    const CREATE_TRANSACTION_FOR_DIRECT_TRANSFER   = 'create_transaction_for_direct_transfer';
 
     const PRODUCER_KEY  = 'producer_key';
     const TOPIC         = 'topic';

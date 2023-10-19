@@ -39,18 +39,15 @@ trait Transfer
 
         $this->processCurrencyConversionsForTransfer($originPayment, $payment);
 
-        $isDirectTransfer = $transfer['source_type'] === 'merchant';
-
-        $processViaReverseShadowAsync = false;
+        $processViaLedgerReverseShadow = false;
 
         if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
-            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true ) and
-            ($isDirectTransfer === false))
+            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
         {
-            $processViaReverseShadowAsync = true;
+            $processViaLedgerReverseShadow = true;
         }
 
-        if ($processViaReverseShadowAsync === false)
+        if ($processViaLedgerReverseShadow === false)
         {
             $txnCore = new Transaction\Core;
 

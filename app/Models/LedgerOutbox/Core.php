@@ -1292,48 +1292,4 @@ class Core extends Base\Core
 
         return ['success' => true];
     }
-
-    private function determineJournalIdForAPITransaction($journal, $debitJournalFundAccountType, $creditJournalFuncAccountType)
-    {
-        $debitJournals = array_filter($journal, function($item) use ($debitJournalFundAccountType) {
-            return $this->filterByFundAccountTypeAndEntryType($item, $debitJournalFundAccountType, Constants::DEBIT);
-        });
-
-        $creditJournals = array_filter($journal, function($item) use ($creditJournalFuncAccountType) {
-            return $this->filterByFundAccountTypeAndEntryType($item, $creditJournalFuncAccountType, Constants::CREDIT);
-        });
-
-        $creditJournalId = '';
-        $debitJournalId = '';
-
-        foreach ($debitJournals as $debitJournal) {
-            $debitJournalId = $debitJournal['id'];
-        }
-
-        foreach ($creditJournals as $creditJournal) {
-            $creditJournalId = $creditJournal['id'];
-        }
-
-        return [$creditJournalId, $debitJournalId];
-    }
-
-    private function filterByFundAccountTypeAndEntryType($item, $fundAccountType, $entryType)
-    {
-        $searchResults = [];
-
-        if (isset($item['ledger_entry']))
-        {
-            foreach ($item['ledger_entry'] as $ledgerEntry)
-            {
-                if (($ledgerEntry['type'] === $entryType) and
-                    (isset($ledgerEntry['account_entities']['fund_account_type'])) and
-                    (in_array($fundAccountType, $ledgerEntry['account_entities']['fund_account_type'])))
-                {
-                    $searchResults[] = $item;
-                    break;
-                }
-            }
-        }
-        return $searchResults;
-    }
 }

@@ -475,7 +475,13 @@ class Core extends Base\Core
     {
         $transfer = $this->buildTransferEntity($source, $to, $input, $merchant);
 
-        return $this->createTransactionForTransfer($transfer);
+        // Create transfer transaction only if reverse shadow is not enabled
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            return $this->createTransactionForTransfer($transfer);
+        }
+
+        return $transfer;
     }
 
     protected function buildTransferEntity(
@@ -943,6 +949,11 @@ class Core extends Base\Core
         $input[Transfer\Entity::NOTES] = $laNotes;
 
         $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $originPayment, $transfer);
+
+        // call bulk journal creation in sync
+        // If success then mark transfer as processed.
+        // If it fails then halt the process and send a failure response.
+        $this->createLedgerEntriesForTransferReverseShadowInSync($transfer, $transferPayment);
 
         $transfer->setProcessed();
 
@@ -1432,7 +1443,7 @@ class Core extends Base\Core
         TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType, $isReverseShadow, $transferInput)->delay($delaySecs);
     }
 
-    public function  createTransferTransactionsInReverseShadow(Payment\Entity $sourcePayment, array $transferInput)
+    public function  createTransferTransactionsInReverseShadow($sourcePayment, array $transferInput)
     {
         $this->repo->transaction(function() use ($sourcePayment, $transferInput)
         {
@@ -1455,7 +1466,8 @@ class Core extends Base\Core
             if ($oldTransfer->hasTransaction() !== true)
             {
                 // create debit  transaction with source as transfer
-                $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function () use ($oldTransfer, $transferInput) {
+                $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function () use ($oldTransfer, $transferInput)
+                {
                     return $this->createTransactionForTransfer($oldTransfer, $transferInput[LedgerConstants::DEBIT_TRANSACTION_ID]);
                 });
             }
@@ -1822,5 +1834,54 @@ class Core extends Base\Core
         );
 
         return ($variant === 'on');
+    }
+
+    public function createInternalTransactionForTransfer(array $input)
+    {
+        $transferId = $input["transfer_id"];
+
+        $transferJournalId = $input['transfer_journal_id'];
+
+        $paymentJournalId = $input['payment_journal_id'];
+
+        $transfer = $this->repo->transfer->findOrFailPublic($transferId);
+
+        $input = [
+            LedgerConstants::DEBIT_TRANSACTION_ID  => $transferJournalId,
+            LedgerConstants::CREDIT_TRANSACTION_ID => $paymentJournalId,
+            LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
+        ];
+
+        $this->createTransferTransactionsInReverseShadow(null, $input);
+
+        return true;
+    }
+
+    private function createLedgerEntriesForTransferReverseShadowInSync(Entity $transfer, Payment\Entity $transferPayment)
+    {
+        if (isset($transferPayment) === false)
+        {
+            return;
+        }
+
+        $transferMerchant = $transfer->merchant;
+
+        $paymentMerchant = $transferPayment->merchant;
+
+        if (($transferMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            or ($paymentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
+        {
+            return;
+        }
+
+        [$fee, $tax] = (new ReverseShadowTransfersCore())->createLedgerEntriesForTransferReverseShadowInSync($transfer, $transferPayment);
+
+        $this->trace->info(TraceCode::DIRECT_TRANSFER_LEDGER_ENTRIES_SUCCESS, [
+            LedgerConstants::TRANSFER_ID => $transfer->getId(),
+            LedgerConstants::PAYMENT_ID => $transferPayment->getId(),
+            LedgerConstants::MERCHANT_ID => $transfer->getMerchantId(),
+        ]);
+
+        return $transfer;
     }
 }

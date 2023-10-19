@@ -2,8 +2,13 @@
 
 namespace RZP\Models\Ledger\ReverseShadow\Transfers;
 
+use RZP\Constants\Metric;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use Ramsey\Uuid\Uuid;
+use RZP\Models\Ledger\Constants;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
@@ -11,8 +16,9 @@ use RZP\Models\Pricing\Fee;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Balance\BalanceConfig;
-use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Services\KafkaProducer;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -28,9 +34,8 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    public function createBulkTransactionMessageForOrderAndPaymentTransfer($transfer, $transferPayment, $merchantAccountBalances, $fee, $tax): array
+    public function createBulkTransactionMessageForTransfer($transfer, $transferPayment, $merchantAccountBalances, $fee, $tax): array
     {
-
         $transferDebitJournal = $this->createTransactionMessageForDebitJournal($transfer, $merchantAccountBalances, $fee, $tax);
 
         $transferCreditJournal = $this->createTransactionMessageForCreditJournal($transfer, $transferPayment);
@@ -178,9 +183,10 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($transfer);
 
-        $transactionMessage = $this->createBulkTransactionMessageForOrderAndPaymentTransfer($transfer, $transferPayment, $merchantAccountBalances, $fee, $tax);
+        $transactionMessage = $this->createBulkTransactionMessageForTransfer($transfer, $transferPayment, $merchantAccountBalances, $fee, $tax);
 
         $transactorId = $transactionMessage[LedgerConstants::TRANSACTOR_ID];
+
         $transactorEvent = $transactionMessage[LedgerConstants::TRANSACTOR_EVENT];
 
         $payloadName = $this->getPayloadName($transactorId, $transactorEvent);
@@ -188,6 +194,35 @@ class Core extends Base\Core
         $outboxPayload = $this->prepareOutboxPayload($payloadName, $transactionMessage);
 
         $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
+
+        return [$fee, $tax];
+    }
+
+    public function createLedgerEntriesForTransferReverseShadowInSync($transfer, $transferPayment)
+    {
+        $ledgerService = $this->app['ledger'];
+
+        $merchantAccountBalances = $this->getMerchantAccountBalances($ledgerService, $transfer->getMerchantId());
+
+        list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($transfer);
+
+        $journalPayload = $this->createBulkTransactionMessageForTransfer($transfer, $transferPayment, $merchantAccountBalances, $fee, $tax);
+
+        $journalResponse = $this->createJournalInLedger($journalPayload, true);
+
+        [$creditJournalId, $debitJournalId] = $this->determineJournalIdForAPITransaction($journalResponse, "merchant_balance", "merchant_balance" );
+
+        if((empty($creditJournalId)) or
+            (empty($debitJournalId)))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_EXPECTED_FUND_ACCOUNT_TYPE_NOT_PRESENT,
+                null,
+                [
+                    LedgerConstants::TRANSFER_ID      => $transfer->getId(),
+                ]);
+        }
+
+        $this->pushTransferDataToKafkaForAPITransactionCreation($transfer, $transferPayment,$creditJournalId, $debitJournalId);
 
         return [$fee, $tax];
     }
@@ -233,6 +268,68 @@ class Core extends Base\Core
 
         return $maxNegative;
 
+    }
+
+
+    private function pushTransferDataToKafkaForAPITransactionCreation($transfer, $transferPayment, $creditJournalId, $debitJournalId)
+    {
+        if (($this->app->runningUnitTests() === true))
+        {
+            return;
+        }
+
+        $producerKey =  $transfer->getId().'_'.$transferPayment->getId();
+
+        $data = [
+            'transfer_id' => $transfer->getId(),
+            'payment_id' => $transferPayment->getId(),
+            'transfer_journal_id' => $debitJournalId,
+            'payment_journal_id' => $creditJournalId
+
+        ];
+
+        $message = [
+            Constants::KAFKA_MESSAGE_DATA      => $data,
+            Constants::KAFKA_MESSAGE_TASK_NAME  => Constants::CREATE_TRANSACTION_FOR_DIRECT_TRANSFER
+        ];
+
+        $topic = env('CREATE_REFUND_TXN_API', Constants::CREATE_REFUND_TXN_API);
+
+        try
+        {
+            $kafkaProducer = (new KafkaProducer($topic, stringify($message), $producerKey));
+
+            $kafkaProducer->Produce();
+
+            $this->trace->info(TraceCode::KAFKA_TRANSFER_API_TXN_PUSH_SUCCESS, [
+                Constants::PRODUCER_KEY => $producerKey,
+                Constants::TOPIC        => $topic,
+                Constants::MESSAGE      => $message
+            ]);
+
+            $this->trace->count(Metric::KAFKA_TRANSFER_API_TXN_PUSH_FAILURE, [
+                Constants::TOPIC        => $topic,
+            ]);
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->count(Metric::KAFKA_TRANSFER_API_TXN_PUSH_FAILURE, [
+                Constants::TOPIC        => $topic,
+            ]);
+
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::KAFKA_TRANSFER_API_TXN_PUSH_FAILURE,
+                [
+                    Constants::PRODUCER_KEY => $producerKey,
+                    Constants::TOPIC        => $topic,
+                    Constants::MESSAGE      => $message
+                ]);
+
+            throw $ex;
+        }
     }
 
 }

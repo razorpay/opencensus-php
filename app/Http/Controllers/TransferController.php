@@ -192,4 +192,13 @@ class TransferController extends Controller
 
         return ApiResponse::json($transfer);
     }
+
+    public function createTransactionForTransfer() {
+
+        $input = Request::all();
+
+        $this->service()->createTransactionForTransfer($input);
+
+        return ApiResponse::json(['success' => true]);
+    }
 }

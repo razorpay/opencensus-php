@@ -1090,6 +1090,7 @@ class Route
         'adj_add_bulk'                             => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
         'adj_add_batch'                            => ['post',     'adjustments/batch',                              'AdjustmentController@postAdjustmentBatch'                          ],
         'adj_transaction_create'                   => ['post',     'adjustments/transaction_create',                 'AdjustmentController@adjustmentsTransactionCreate'                          ],
+        'transfer_transaction_create'              => ['post',     'transfers/transaction/create',                   'TransferController@createTransactionForTransfer'],
         // adj_custom_create_cron is used to create adjustments for offer amount. Currently used for adjusting offers created for NC-EMI
         'adj_custom_create_cron'                   => ['post',     'adjustments/create/cron',                        'AdjustmentController@createCustomAdjustments'                      ],
         'mock_hdfc_enroll'                         => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
@@ -5319,6 +5320,7 @@ class Route
         'payments_api_backfill',
         'refunds_reversal_create',
         'adj_transaction_create',
+        'transfer_transaction_create',
         'merchant_entities_info',
         'merchant_submit_internal',
         'merchant_document_upload_internal',
@@ -16486,6 +16488,7 @@ class Route
             'internal_sign_payload',
             'internal_generate_coproto',
             'adj_transaction_create',
+            'transfer_transaction_create',
             'refund_scrooge_transaction_create',
             'internal_token_create',
             'customer_fetch_by_id_internal',
