@@ -118,6 +118,7 @@ class UpdateContactMobile extends React.Component {
 
   onContactMobileUpdate = (newContactMobile) => {
     this.contactMobile = newContactMobile;
+    this.props.closeModal();
     this.props.openModal({
       size: 'small',
       component: this.getContactMobileTwoFactorVerificationUI(),
@@ -125,16 +126,18 @@ class UpdateContactMobile extends React.Component {
   };
 
   onEmailOtpVerificationComplete = () => {
-    this.props.closeModal();
-    this.props.openModal({
+    const { contactMobile, isNewAccountAndSettingsPage, closeModal, openModal } = this.props;
+    closeModal();
+    openModal({
       size: 'small',
+      isNew: true,
       component: (
         <EditContactMobileForm
           onContactMobileUpdate={this.onContactMobileUpdate}
           otpAuthToken={this.state.otpAuthToken}
-          contactMobile={this.props.contactMobile}
+          contactMobile={contactMobile}
           onClose={this.onCloseClick}
-          isNewAccountAndSettingsPage={this.props.isNewAccountAndSettingsPage}
+          isNewAccountAndSettingsPage={isNewAccountAndSettingsPage}
         />
       ),
     });

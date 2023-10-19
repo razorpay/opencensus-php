@@ -50,6 +50,7 @@ describe('Merchant Profile Section Version 2', () => {
   const renderApp = ({ props = {}, initialState }) =>
     render(<AccountDetails {...defaultProps} {...props} />, {
       initialState,
+      showModal: true,
     });
 
   beforeEach(() => {

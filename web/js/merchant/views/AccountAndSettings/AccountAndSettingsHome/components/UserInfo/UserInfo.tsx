@@ -9,10 +9,10 @@ import {
 } from './styled';
 import { Text } from '@razorpay/blade/components';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { UserInfoPropsI } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+import { UserInfoPropsInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import { truncatedString } from 'common/utils/rzp-utils';
 
-const UserInfo = ({ infoData, onClick, isMobile }: UserInfoPropsI): JSX.Element => {
+const UserInfo = ({ infoData, onClick, isMobile }: UserInfoPropsInterface): JSX.Element => {
   return (
     <UserInfoContainer>
       {infoData.map((each, index) => {

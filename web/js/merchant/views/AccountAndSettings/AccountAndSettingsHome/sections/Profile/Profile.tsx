@@ -9,6 +9,7 @@ import lazy from 'merchant/routes/LazyLoader';
 import { ACTION_QUERY_PARAM_KEY } from 'merchant/views/Account/Profile/deeplink-constants';
 import { getRole } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/config/profile';
 import {
+  HANDLERS,
   InfoDataInterface,
   PersonalProfileFields,
   ProfilePropsInterface,
@@ -20,6 +21,8 @@ import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import { FORM_MAP } from './handlers';
+import { getEmailStatus } from 'merchant/reducers/team';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const ProfileViewV1 = lazy(() => import(/* webpackChunkName: "ProfileViewV1" */ './views/v1'));
 const ProfileViewV2 = lazy(() => import(/* webpackChunkName: "ProfileViewV2" */ './views/v2'));
@@ -64,25 +67,39 @@ const Profile = (props: ProfilePropsInterface): JSX.Element => {
   const { isMobile, openModal, user, profile } = props;
   const context = useTwoFactorVerificationContext();
 
-  const handleEditClick = ({
-    id,
-    queryParam,
-    handlerType,
-    isCriticalFlowEnabled,
-    selfServeActionName,
-    analyticsEventInfo,
-    value,
-  }: InfoDataInterface): void => {
+  const handleEditClick = (data: InfoDataInterface): void => {
+    const {
+      id,
+      queryParam,
+      handlerType,
+      isCriticalFlowEnabled,
+      selfServeActionName,
+      analyticsEventInfo,
+      value,
+    } = data;
     const { attributes = {}, Component: FormComponent } = FORM_MAP[id]?.({
       props,
       id,
       handlerType,
     });
     const screen = Modules.AccountAndSettings;
-
+    const entity = { ...data, ...attributes };
+    const isUpdateEmailFlow =
+      entity?.id === PersonalProfileFields.EMAIL && entity.handlerType === HANDLERS.UPDATE;
+    const isUpdateDisplayNameFlow = entity?.id === PersonalProfileFields.DISPLAY_NAME;
     const modalConfig = {
       size: 'small',
-      component: <FormComponent {...attributes} screen={screen} isNewAccountAndSettingsPage />,
+      isNew: isUpdateEmailFlow || isUpdateDisplayNameFlow,
+      component: (
+        <SuspenseWithLoader>
+          <FormComponent
+            {...attributes}
+            entity={entity}
+            screen={screen}
+            isNewAccountAndSettingsPage
+          />
+        </SuspenseWithLoader>
+      ),
       ...(queryParam
         ? {
             queryParams: {
@@ -145,7 +162,14 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
-    { ...ProfileActions, ...ModalActions, updateSession, showNotification, updateUser },
+    {
+      ...ProfileActions,
+      ...ModalActions,
+      updateSession,
+      showNotification,
+      updateUser,
+      getEmailStatus,
+    },
     dispatch,
   );
 };

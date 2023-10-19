@@ -81,6 +81,8 @@ type UserProperties = {
   name: string;
   user: {
     name: string;
+    email?: string;
+    contact_mobile?: string;
   };
   merchant: {
     hold_funds: boolean;

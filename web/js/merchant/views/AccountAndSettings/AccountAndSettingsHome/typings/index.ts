@@ -11,7 +11,6 @@ import {
   WebsiteAppSettingsFields,
   InternationalSettingsFields,
 } from './section';
-import { Store } from 'common/typings';
 import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
 
 export type isMobile = boolean | undefined;
@@ -181,17 +180,10 @@ export type ActualInfoDataInterface = Omit<
   'getValue' | 'shouldEdit' | 'isVisible'
 >;
 
-export interface UserInfoPropsI {
+export interface UserInfoPropsInterface {
   isMobile?: isMobile;
   infoData: InfoDataInterface[];
   onClick: (arg0: InfoDataInterface) => void;
-}
-
-export interface UserInfoPropsInterface extends UserInfoPropsI {
-  updateMerchantConfig: () => Promise<UpdateMerchantConfigI>;
-  updateSession: () => void;
-  showNotification: () => void;
-  user: Store['session']['user'];
 }
 
 export interface AdditionalContextInterface extends FeatureInterface {
@@ -242,7 +234,7 @@ export interface ProfilePropsInterface {
 
 export interface FormConfigInterface {
   attributes?: Record<string, unknown>;
-  Component: (props: FormConfigInterface['attributes']) => JSX.Element;
+  Component: (props) => JSX.Element;
 }
 
 export interface FormPayloadConfigInterface {
@@ -264,11 +256,19 @@ export interface ProfileViewpropsInterface {
   profile: Record<string, unknown>;
 }
 
-export interface ActiveModalI {
+export interface ActiveModalI extends InfoDataInterface {
   id: PersonalProfileFields;
   displayName: string;
+  onEmailUpdate: (
+    args: { email: string; setContactEmail: boolean; setIsLoading: (arg: boolean) => void },
+    callback?: () => void,
+  ) => void;
+  onEmailAdd: (
+    args: { email: string; otpAuthToken: string; setIsLoading: (arg: boolean) => void },
+    callback?: () => void,
+  ) => void;
   updateMerchantConfig: (
-    args: { display_name?: string; name?: string },
-    callback: () => void,
+    args: { display_name?: string; name?: string; setIsLoading: (arg: boolean) => void },
+    callback?: () => void,
   ) => void;
 }

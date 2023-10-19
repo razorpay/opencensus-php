@@ -1,10 +1,8 @@
 import { Box } from '@razorpay/blade/components';
-import { Modules } from 'common/constant/enums';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import * as ProfileActions from 'merchant/reducers/profile';
 import { updateSession } from 'merchant/reducers/session';
-import { ACTION_QUERY_PARAM_KEY } from 'merchant/views/Account/Profile/deeplink-constants';
 import { getRole } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/config/profile';
 import { FORM_MAP } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/Profile/handlers';
 import DetailsViewCard from 'merchant/views/AccountAndSettings/BusinessSettings/components/DetailsViewCard';
@@ -21,21 +19,20 @@ import {
   getUserAccountDetails,
   makeAnalytics,
 } from './utils';
-import ModalForm from 'merchant/views/AccountAndSettings/common/components/ModalForm';
 import {
   PersonalProfileFields,
-  ActiveModalI,
+  HANDLERS,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+import { getEmailStatus } from 'merchant/reducers/team';
+import { ACTION_QUERY_PARAM_KEY } from 'merchant/views/Account/Profile/deeplink-constants';
+import { Modules } from 'common/constant/enums';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const screen = Modules.BusinessSettings;
 
 const AccountDetails = (props): JSX.Element => {
-  const [activeModal, setActiveModal] = React.useState<ActiveModalI | null>(null);
-
-  const { openModal, user, isMobile } = props;
-
+  const { openModal, user, isMobile, closeModal } = props;
   const context = useTwoFactorVerificationContext();
-
   const userRole = getRole({ user });
   const ownerDetails = getOwnerDetails({ userRole, user });
   const userDetails = getUserAccountDetails({ user });
@@ -48,10 +45,24 @@ const AccountDetails = (props): JSX.Element => {
         id,
         handlerType,
       });
-
+      const entity = { ...data, ...attributes };
+      const isAddEmailFlow =
+        entity?.id === PersonalProfileFields.EMAIL && entity.handlerType === HANDLERS.ADD;
+      const isContactMobileEdit = entity?.id === PersonalProfileFields.CONTACT_MOBILE;
       const modalConfig = {
         size: 'small',
-        component: <FormComponent {...attributes} screen={screen} isNewAccountAndSettingsPage />,
+        isNew: !isAddEmailFlow && !isContactMobileEdit,
+        component: (
+          <SuspenseWithLoader>
+            <FormComponent
+              {...attributes}
+              entity={entity}
+              closeModal={closeModal}
+              screen={screen}
+              isNewAccountAndSettingsPage
+            />
+          </SuspenseWithLoader>
+        ),
         ...(queryParam
           ? {
               queryParams: {
@@ -73,33 +84,10 @@ const AccountDetails = (props): JSX.Element => {
           isNewAccountAndSettingsPage: true,
         });
       } else {
-        // eslint-disable-next-line no-lonely-if
-        if (id === PersonalProfileFields.DISPLAY_NAME || id === PersonalProfileFields.NAME) {
-          setActiveModal({ ...data, ...attributes });
-        } else {
-          openModal(modalConfig);
-        }
+        openModal(modalConfig);
       }
     }
   };
-
-  const onUpdateClick = (userInput) => {
-    const id = activeModal!.id;
-    switch (id) {
-      case PersonalProfileFields.DISPLAY_NAME:
-        return activeModal!.updateMerchantConfig?.({ display_name: userInput }, () => {
-          setActiveModal(null);
-        });
-      case PersonalProfileFields.NAME:
-        return activeModal!.updateMerchantConfig?.({ name: userInput }, () => {
-          setActiveModal(null);
-        });
-      default:
-        return null;
-    }
-  };
-
-  const onModalClose = () => setActiveModal(null);
 
   const queryparamMap = getQueryParamMapping({ userDetails, handleEditAction });
   const WrapperComponent = !isMobile ? StyledTabContentContainer : React.Fragment;
@@ -116,12 +104,6 @@ const AccountDetails = (props): JSX.Element => {
           {ownerDetails && <DetailsViewCard title="Owner’s Account Details" info={ownerDetails} />}
         </Box>
       </TriggerOnQueryParamMatch>
-      <ModalForm
-        showModal={!!activeModal}
-        onModalDismiss={onModalClose}
-        onUpdateClick={onUpdateClick}
-        entity={activeModal}
-      />
     </WrapperComponent>
   );
 };
@@ -140,6 +122,7 @@ const mapDispatchToProps = (dispatch) =>
       updateSession,
       updateUser,
       updateUserName,
+      getEmailStatus,
     },
     dispatch,
   );
