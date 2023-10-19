@@ -2084,11 +2084,11 @@ class BankingAccountServiceTest extends TestCase
         $ba = (new \RZP\Models\BankingAccountService\Core())->generateInMemoryBankingAccount($merchant->getId(), $input);
 
         $this->assertNotEmpty($ba->balance);
-        
+
         $this->assertNotEmpty($ba->merchant);
 
         $this->assertArraySelectiveEquals($expected, $ba->toArray());
-        
+
         // case where banking_account.status is not ACTIVE at BAS
         $input['application_status'] = 'account_activation';
 
@@ -2099,10 +2099,24 @@ class BankingAccountServiceTest extends TestCase
         $ba = (new \RZP\Models\BankingAccountService\Core())->generateInMemoryBankingAccount($merchant->getId(), $input);
 
         $this->assertNotEmpty($ba->balance);
-        
+
         $this->assertNotEmpty($ba->merchant);
 
         $this->assertArraySelectiveEquals($expected, $ba->toArray());
+    }
+
+    public function testMultiCaSearch()
+    {
+        $this->fixtures->create('banking_account', [
+            'merchant_id'   => 'Lx9w1GwyFQLTsl',
+            'account_type'  => 'nodal',
+            'id'            => 'Lx9w1GwyFQLTsl',
+            'status'        => 'activated'
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     private function assertNotificationsForStatusChange(array $bankingAccount, string $status)

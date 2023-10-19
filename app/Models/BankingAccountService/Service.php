@@ -262,6 +262,11 @@ class Service extends Base\Service
             }
         }
 
+        if ($path === BasService::MULTI_CA_SEARCH_PATH)
+        {
+            return $this->multiCaSearch($input);
+        }
+
         return $response;
     }
 
@@ -1864,6 +1869,33 @@ class Service extends Base\Service
         }
 
         return $balance->bankingAccount->getFtsFundAccountId();
+    }
+
+    /**
+     * @param array $queryParams
+     *
+     * @return array|null
+     * @throws \Throwable
+     */
+    public function multiCaSearch(array $queryParams)
+    {
+        $basResponse = $this->bankingAccountService->multiCaLeadsSearch($queryParams);
+
+        if(empty($basResponse))
+        {
+            return [];
+        }
+
+        $vaEnabledMerchantIds = $this->repo->banking_account->fetchMerchantIdsWithActivatedNodalAccount(
+            array_pluck($basResponse, Constants::MERCHANT_ID)
+        );
+
+        foreach ($basResponse as $index => $application)
+        {
+            $basResponse[$index][Constants::VA_ENABLED] = in_array($application[Constants::MERCHANT_ID], $vaEnabledMerchantIds, true);
+        }
+
+        return $basResponse;
     }
 
     public function rblMigrationBas(array $input) : array

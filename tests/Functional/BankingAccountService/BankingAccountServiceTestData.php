@@ -1296,4 +1296,38 @@ return [
             'content' => []
         ],
     ],
+
+    'testMultiCaSearch' => [
+        'request'   => [
+            'url'       => '/bas/lms/admin/ca-applications',
+            'method'    => 'GET',
+            'content'   => [
+                'merchant_id'   => 'Lx9w1GwyFQLTsl'
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+                [
+                    'merchant_id'   => 'Lx9w1GwyFQLTsl',
+                    'name'          => 'ABC Pvt Ltd',
+                    'va_enabled'    => true,
+                    'banking_account_applications'  => [
+                        'id'            => 'Lx9w1GwyFQLTsb',
+                        'partner_bank'  => 'RBL',
+                        'created_at'    => 1691573646844,
+                        'business'      => [
+                            'id'    => 'Lx9w1GwyFQLTsa',
+                            'name'  => 'ABC Pvt Ltd',
+                        ],
+                        'banking_account'   => [
+                            'id'                => 'Lx9w1GwyFQLTsl',
+                            'channel'           => 'RBL',
+                            'account_number'    => '1232312313',
+                            'IFSC'              => 'RBL0121212'
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
 ];

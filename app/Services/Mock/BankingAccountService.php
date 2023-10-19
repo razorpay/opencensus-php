@@ -1384,4 +1384,31 @@ class BankingAccountService
             'business_id'   => 'MgqKFy7ypqYtO5'
         ];
     }
+
+    public function multiCaLeadsSearch(array $queryParams) : array|null
+    {
+        return [
+            [
+                'merchant_id'   => 'Lx9w1GwyFQLTsl',
+                'name'          => 'ABC Pvt Ltd',
+                'banking_account_applications'  => [
+                    'id'            => 'Lx9w1GwyFQLTsb',
+                    'partner_bank'  => 'RBL',
+                    'created_at'    => 1691573646844,
+                    'business'      => [
+                        'id'    => 'Lx9w1GwyFQLTsa',
+                        'name'  => 'ABC Pvt Ltd',
+                        // there are other business fields but keeping this mock simple for brevity
+                    ],
+                    'banking_account'   => [
+                        'id'                => 'Lx9w1GwyFQLTsl',
+                        'channel'           => 'RBL',
+                        'account_number'    => '1232312313',
+                        'IFSC'              => 'RBL0121212'
+                        // there are other banking_account fields but keeping this mock simple for brevity
+                    ]
+                ]
+            ]
+        ];
+    }
 }

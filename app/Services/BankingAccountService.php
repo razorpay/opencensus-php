@@ -44,6 +44,7 @@ class BankingAccountService
     const CREATE_BUSINESS                           = 'business';
     const CREATE_RBL_ONBOARDING_APPLICATION         = 'business/%s/apply';
     const SEARCH_LEADS_PATH                         = 'admin/leads/search';
+    const MULTI_CA_SEARCH_PATH                      = 'admin/ca-applications';
     const BULK_ASSIGN_ACCOUNT_MANAGER               = 'admin/banking_accounts/bulk_assign_account_manager';
     const RBL_ACCOUNT_OPENING_WEBHOOK               = 'webhooks/rbl/account_opening';
 
@@ -269,7 +270,7 @@ class BankingAccountService
     public function rblMigrationBas($request)
     {
         $path = 'admin/migrate_rbl_account';
-        
+
         $response = $this->sendRequestAndProcessResponse($path, 'POST', $request);
 
         return $response['data'];
@@ -848,6 +849,33 @@ class BankingAccountService
                                          [
                                              'id' => $applicationId
                                          ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @param array $queryParams
+     *
+     * @return array|null
+     * @throws \Throwable
+     */
+    public function multiCaLeadsSearch(array $queryParams) : array|null
+    {
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse(self::MULTI_CA_SEARCH_PATH, self::GET, [], [], $queryParams, false);
+
+            return $response[self::DATA];
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_SERVICE_MULTI_CA_SEARCH_ERROR,
+                [
+                    'queryParams' => $queryParams
+                ]);
 
             throw $e;
         }

@@ -192,6 +192,26 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * select merchant_id from banking_accounts
+     * where merchant_id in ['mid1', 'mid2']
+     * and status = 'activated'
+     * and account_type = 'nodal'
+     *
+     *
+     * @param array $merchantIds
+     * @return mixed
+     */
+    public function fetchMerchantIdsWithActivatedNodalAccount(array $merchantIds)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Entity::STATUS, Status::ACTIVATED)
+                    ->where(Entity::ACCOUNT_TYPE, AccountType::NODAL)
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
     public function fetchBankingAccountsWithMatchingMerchantName(Merchant\Entity $merchant, string $bankingAccountId, string $channel = Channel::RBL, string $accountType = AccountType::CURRENT)
     {
         $merchantNameColumn = $this->repo->merchant->dbColumn(Merchant\Entity::NAME);

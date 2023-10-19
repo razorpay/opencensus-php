@@ -189,4 +189,6 @@ class Constants
     const REGISTERED_ADDRESS_DETAILS    = 'registered_address_details';
 
     const ADDRESS_PIN_CODE              = 'address_pin_code';
+
+    const VA_ENABLED = 'va_enabled';
 }
