@@ -447,6 +447,11 @@ class Processor
     const S2S_IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER = 'ivr_otp_s2s_card_payments_via_pg_router_v2';
 
     /**
+     * Razorx flag to indicate if a ajax payment should go via PG Router and CPS or just via API service for payments with offer
+     */
+    const ROUTE_OFFER_PAYMENTS_TO_REARCH_CPS = 'route_offer_payments_to_rearch_cps';
+
+    /**
      * Razorx flag to block merchant on re-arch flow for payments card
      */
     const BLOCK_MERCHANTS_ON_REARCH_CPS = 'block_merchant_on_rearch_cps';
@@ -849,17 +854,41 @@ class Processor
                 $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER,
                     $order->getId(), $this->merchant);
 
-                // offers are not supported in initial ramp
-                if ((empty($order) === false) and
-                    (($order->hasOffers() === true) or
-                        ($order->isDiscountApplicable() === true)))
-                {
+                if ((empty($order) === false) and ($order->isDiscountApplicable() === true)) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "offers_and_discounts",
+                        'reason' => "discounts",
                         'merchant_id' => $merchant->getId(),
                     ]);
-
                     return false;
+                }
+
+                // If offer is not forced, we expect it in the payment input. If it is
+                // not present there, we assume the customer is opting to not use an offer.
+                if ((empty($order) === false) and
+                    ($order->hasOffers() === true && $order->isOfferForced() === true))
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "offers",
+                        'merchant_id' => $merchant->getId(),
+                        'order_id' => $order->getId(),
+                    ]);
+                    return false;
+                }
+                else {
+                    $offerExpResult = $this->app->razorx->getTreatment($merchant->getId(), self::ROUTE_OFFER_PAYMENTS_TO_REARCH_CPS, $this->mode);
+                    if ($offerExpResult != 'on') {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "offers",
+                            'merchant_id' => $merchant->getId(),
+                            'order_id' => $order->getId(),
+                        ]);
+                        return false;
+                    }
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_SUCCESS_REASON, [
+                        'reason' => "offers",
+                        'merchant_id' => $merchant->getId(),
+                        'order_id' => $order->getId(),
+                    ]);
                 }
 
                 if (empty($order) === false and ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or

@@ -8758,6 +8758,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REARCH_CRITIERIA_CHECK_FAILED                         = 'REARCH_CRITIERIA_CHECK_FAILED';
     const REARCH_CRITIERIA_SAVE_CARD_CHECK_FAILED               = 'REARCH_CRITIERIA_SAVE_CARD_CHECK_FAILED';
     const REARCH_ROUTING_CRITERIA_FAILED_REASON                 = 'REARCH_ROUTING_CRITERIA_FAILED_REASON';
+    const REARCH_ROUTING_CRITERIA_SUCCESS_REASON                = 'REARCH_ROUTING_CRITERIA_SUCCESS_REASON';
     const FORCE_ROUTE_THROUGH_REARCH                            = 'FORCE_ROUTE_THROUGH_REARCH';
     const REARCH_ROUTING_CRITERIA_FAILED_INPUT_REASON           = 'REARCH_ROUTING_CRITERIA_FAILED_INPUT_REASON';
 
@@ -10555,7 +10556,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CROSS_BORDER_METRICS_PUSH_FAILED                       = "CROSS_BORDER_METRICS_PUSH_FAILED";
     const CROSS_BORDER_METRICS_PUSH_SUCCESS                       = "CROSS_BORDER_METRICS_PUSH_SUCCESS";
-    
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
