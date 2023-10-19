@@ -2380,7 +2380,10 @@ class Route
 
         // Route cron APIs
         'order_transfer_process_pending'                    => ['post',     'order_transfers/process_pending',                  'TransferController@processPendingOrderTransfers'                   ],
+        'order_transfer_process_rearch'                    => ['post',      'order_transfers/process_rearch',                   'TransferController@processOrderTransferForRearch'                   ],
         'order_transfer_process_pending_key_merchants'      => ['post',     'order_transfers/process_pending/key_merchants',    'TransferController@processPendingOrderTransfersForKeyMerchants'    ],
+        'order_transfer_process_created'                    => ['post',     'order_transfers/process_created',    'TransferController@processCreatedOrderTransfers'    ],
+        
         'order_transfer_process_failed'                     => ['post',     'order_transfers/process_failed',                   'TransferController@processFailedOrderTransfers'                    ],
         'payment_transfer_process_pending'                  => ['post',     'payment_transfers/process_pending',                'TransferController@processPendingPaymentTransfers'                 ],
         'payment_transfer_process_pending_key_merchants'    => ['post',     'payment_transfers/process_pending/key_merchants',  'TransferController@processPendingPaymentTransfersForKeyMerchants'  ],
@@ -5727,6 +5730,7 @@ class Route
         'mailing_list_remove_suspended_merchant',
         'order_transfer_process_pending',
         'order_transfer_process_pending_key_merchants',
+        'order_transfer_process_created',
         'order_transfer_process_failed',
         'payment_transfer_process_pending',
         'payment_transfer_process_pending_key_merchants',
@@ -6089,6 +6093,7 @@ class Route
         'internal_sign_payload',
         'internal_generate_coproto',
         'update_token_on_authorized',
+        'order_transfer_process_rearch',
 
 
 
@@ -15733,6 +15738,7 @@ class Route
             'mailing_list_remove_suspended_merchant',
             'order_transfer_process_pending',
             'order_transfer_process_pending_key_merchants',
+            'order_transfer_process_created',
             'order_transfer_process_failed',
             'payment_transfer_process_pending',
             'payment_transfer_process_pending_key_merchants',
@@ -16491,6 +16497,7 @@ class Route
             'transfer_transaction_create',
             'refund_scrooge_transaction_create',
             'internal_token_create',
+            'order_transfer_process_rearch',
             'customer_fetch_by_id_internal',
         ],
 

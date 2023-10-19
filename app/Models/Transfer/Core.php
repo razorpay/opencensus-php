@@ -1190,6 +1190,24 @@ class Core extends Base\Core
         $this->repo->saveOrFailCollection($transfers);
     }
 
+    public function fetchTransfersAndMoveToPending(Order\Entity $order)
+    {
+        $transfers = $this->repo
+                          ->transfer
+                          ->fetchBySourceTypeAndIdAndMerchant(Constant::ORDER,  $order->getId(), $order->merchant , [Status::FAILED]);
+
+        if (empty($transfers) === true)
+        {
+            return;
+        }
+
+        $transfers = $transfers->where(Entity::ATTEMPTS, '<', Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS);
+
+        $transfers->callOnEveryItem('setPending');
+
+        $this->repo->saveOrFailCollection($transfers);
+    }
+
     /**
      * @throws SettlementStatusUpdateException
      */
@@ -1370,6 +1388,12 @@ class Core extends Base\Core
              ($merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)))
         {
             $delaySecs = 15 * 60; // 15 minutes
+        }
+
+        if (($sourceType === Constant::ORDER) and
+            ($payment->isExternal() === true))
+        {
+            $delaySecs = 5 * 60; // 15 minutes
         }
 
         if ($this->app['api.route']->getCurrentRouteName() === 'payment_transfer_batch')

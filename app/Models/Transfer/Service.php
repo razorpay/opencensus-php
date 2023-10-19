@@ -554,6 +554,42 @@ class Service extends Base\Service
         return $this->processOrderTransfers($orderIds, $syncProcessing);
     }
 
+    public function processCreatedOrderTransfers(array $input)
+    {
+        $limit = (int) ($input['limit'] ?? 300);
+
+        $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
+
+        $startTime = microtime();
+
+        $orderIds = $this->repo->transfer->fetchCreatedOrderTransfers($limit, $olderThanMinutes);
+
+        $endTime = microtime();
+
+        $this->trace->info(
+            TraceCode::CREATED_ORDER_TRANSFERS_FOR_KEY_MERCHANTS_FETCHED,
+            [
+                'order_ids'      => $orderIds,
+                'time_taken'     => ($endTime - $startTime),
+                'count'          => array_count_values($orderIds),
+                'sync'           => $syncProcessing,
+                'older_than_min' => $olderThanMinutes
+            ]
+        );
+
+        foreach ($orderIds as $orderId)
+        {        
+            $order = $this->repo->order->findOrFail($orderId);
+
+            if (empty($order) === false)
+            {
+                $this->core->fetchTransfersAndMoveToPending($order);
+            }
+        }
+
+        return $this->processOrderTransfers($orderIds, false);
+    }
+
     /**
      * @param array $input
      * @return int
@@ -752,6 +788,19 @@ class Service extends Base\Service
         return $this->processOrderTransfers($orderIds, $syncProcessing);
     }
 
+    public function processOrderTransfersForRearch(array $input)
+    {
+        $paymentId = $input['payment_id'];
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $paymentProcessor = new Payment\Processor\Processor($payment->merchant);
+
+        $paymentProcessor->processTransferIfApplicable($payment);
+
+        return ['status' => 'ok'];
+    }
+
     protected function processOrderTransfers(array $orderIds, bool $syncProcessing = false)
     {
         $transferOrderIds = [];
@@ -780,19 +829,22 @@ class Service extends Base\Service
                     ]);
             }
 
-            if ($order === null) {
+            if ($order === null)
+            {
                 continue;
             }
 
             $payment = $this->repo->payment->getCapturedPaymentForOrder($order->getId());
 
-            if ($payment === null) {
+            if ($payment === null)
+            {
                 $this->core->fetchTransfersAndIncrementAttempts($order);
 
                 continue;
             }
 
-            if ((new PaymentProcessor($payment->merchant))->shouldProcessOrderTransfer($payment) === false) {
+            if ((new PaymentProcessor($payment->merchant))->shouldProcessOrderTransfer($payment) === false)
+            {
                 $this->core->fetchTransfersAndIncrementAttempts($order);
 
                 continue;

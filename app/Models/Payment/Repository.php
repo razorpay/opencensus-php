@@ -2541,7 +2541,7 @@ EOT;
             $payment = $this->newQueryWithConnection($connectionType)->whereNotNull(Entity::CAPTURED_AT)
                             ->where(Entity::ORDER_ID, '=', $orderId)
                             ->first();
-        }
+        }   
 
         return $payment;
     }

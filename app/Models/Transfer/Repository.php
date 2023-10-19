@@ -5,6 +5,7 @@ namespace RZP\Models\Transfer;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Order;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
@@ -238,6 +239,39 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function fetchCreatedOrderTransfers(int $count, int $minutes)
+    {
+        $orderId        = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
+        $paymentStatus  = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+        $OrderStatus    = $this->repo->payment->dbColumn(Order\Entity::STATUS);
+        $merchantId     = $this->repo->transfer->dbColumn(Entity::MERCHANT_ID);
+        $sourceId       = $this->repo->transfer->dbColumn(Entity::SOURCE_ID);
+        $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
+        $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
+
+        $query = $this->newQueryOnSlave();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getPaymentFetchReplicaConnection();
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query
+                    ->join(Table::PAYMENT, $sourceId, '=', $orderId)
+                    ->select(Entity::SOURCE_ID)
+                    ->where(Entity::SOURCE_TYPE, Constant::ORDER)
+                    ->where($transferStatus, Status::CREATED)
+                    ->where($orderStatus, Order\Status::PAID)
+                    ->where($paymentStatus, Payment\Status::CAPTURED)
+                    ->where($updatedAt, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
+                    ->limit($count)
+                    ->distinct()
+                    ->pluck(Entity::SOURCE_ID)
+                    ->toArray();
+    }
+
     /**
      * Query: SELECT DISTINCT `source_id` FROM `transfers` WHERE `source_type` = $sourceType AND
      * `status` = 'failed' AND `processed_at` < ? AND `attempts` < 4 LIMIT $count
@@ -376,8 +410,11 @@ class Repository extends Base\Repository
         $transfer->source()->associate($order);
     }
 
-    public function fetchPlatformFeeTransferDetailsForMerchant(string $merchantId, array $linkedAccounts, int $beginTimestamp, int $endTimestamp)
+    public function fetchPlatformFeeTransferDetailsForMerchant(string $merchantId, array $linkedAccounts, int $month, int $year)
     {
+        $startOfMonth   = Carbon::create($year, $month);
+        $endOfMonth     = Carbon::create($year, $month, $startOfMonth->daysInMonth, 23, 59, 59);
+
         $transferIdCol          = $this->dbColumn((Entity::ID));
         $transferToIdCol        = $this->dbColumn(Entity::TO_ID);
         $transferToTypeCol      = $this->dbColumn(Entity::TO_TYPE);
@@ -395,7 +432,7 @@ class Repository extends Base\Repository
                       ->join(Table::TRANSACTION, $trxnEntityIdCol, '=', $transferIdCol)
                       ->where($transferToTypeCol, '=', 'merchant')
                       ->whereIn($transferStatusCol, [Status::PROCESSED, Status::REVERSED, Status::PARTIALLY_REVERSED])
-                      ->whereBetween($trxnCreatedAtCol, [$beginTimestamp, $endTimestamp]);
+                      ->whereBetween($trxnCreatedAtCol, [$startOfMonth->timestamp, $endOfMonth->timestamp]);
 
         // for platform transfers, the transfer recipient should not be a linked account of the merchant
         // here, the transfer recipient is actually a linked account of partner
