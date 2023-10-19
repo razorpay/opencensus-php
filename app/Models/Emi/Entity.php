@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
 
 
     // These are the valid durations that emi plan can have
-    const VALID_DURATIONS = [2, 3, 6, 9, 12, 18, 24];
+    const VALID_DURATIONS = [2, 3, 6, 9, 12, 18, 24, 36];
 
     protected $entity           = 'emi_plan';
 

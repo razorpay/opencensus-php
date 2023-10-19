@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Entity::NETWORK                 => 'required_without_all:bank,cobranding_partner|max:5|in:AMEX,BAJAJ',
         Entity::COBRANDING_PARTNER      => 'required_without_all:bank,network|in:onecard',
         Entity::TYPE                    => 'sometimes|in:credit,debit',
-        Entity::DURATION                => 'required|integer|in:2,3,6,9,12,18,24',
+        Entity::DURATION                => 'required|integer|in:2,3,6,9,12,18,24,36',
         Entity::RATE                    => 'required|integer|min:0',
         Entity::METHODS                 => 'sometimes|in:card,wallet,netbanking',
         Entity::MIN_AMOUNT              => 'sometimes|integer|min:100',
@@ -32,11 +32,21 @@ class Validator extends Base\Validator
     );
 
     // 2 month duration is only valid for bajaj
+    // 36 months duration is only valid for IDFC
     protected function validateDuration($input)
     {
         if (isset($input[Entity::DURATION]) && $input[Entity::DURATION] == 2)
         {
             if (isset($input[Entity::NETWORK]) === true && $input[Entity::NETWORK] === 'BAJAJ')
+            {
+                return;
+            }
+            throw new Exception\BadRequestValidationFailureException('The selected duration is invalid.');
+        }
+
+        if (isset($input[Entity::DURATION]) && $input[Entity::DURATION] == 36)
+        {
+            if (isset($input[Entity::BANK]) === true && $input[Entity::BANK] === 'IDFB')
             {
                 return;
             }
