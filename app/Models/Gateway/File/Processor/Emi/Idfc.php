@@ -217,8 +217,8 @@ class Idfc extends Base
 
         $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
 
-        if ((isset($beamResponse['success']) === false) or
-            ($beamResponse['success'] === null))
+        if ((isset($beamResponse['error']) === true) and
+            (empty($beamResponse['error']) === false))
         {
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
