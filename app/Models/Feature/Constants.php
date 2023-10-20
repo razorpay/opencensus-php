@@ -1926,6 +1926,11 @@ class Constants
     /* Merchant feature flag to show custom convenience fee message on checkout*/
     const CustomMessageForCFB = 'custom_message_for_cfb';
 
+    /**
+     * Feature flag to enable merchants for LRS travel transactions
+     */
+    const LRSTravelFlow = 'lrs_travel_flow';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1989,6 +1994,7 @@ class Constants
         self::REMOVE_RAZORPAY_BRANDING,
         DcsConstants::ShowSingleDCCCurrency,
         DcsConstants::LRSEducationFlow,
+        self::LRSTravelFlow,
         DcsConstants::LRSImportFeeBreakup,
         self::CustomMessageForCFB,
     ];
@@ -2560,6 +2566,7 @@ class Constants
         self::OPGSP_IMPORT_FLOW               => true,
         DcsConstants::ImportSettlement        => true,
         DcsConstants::LRSEducationFlow        => true,
+        self::LRSTravelFlow                   => true,
         DcsConstants::LRSImportFeeBreakup     => true,
         self::ONE_CLICK_OVERRIDE_THEME        => true,
         self::PP_CUSTOM_DOMAIN                => true,
@@ -3735,6 +3742,11 @@ class Constants
         DcsConstants::LRSEducationFlow => [
             'feature'       => DcsConstants::LRSEducationFlow,
             'display_name'  => 'Feature to enable LRS for Education flow',
+            'documentation' => '',
+        ],
+        self::LRSTravelFlow => [
+            'feature'       => self::LRSTravelFlow,
+            'display_name'  => 'Feature to enable LRS for Travel flow',
             'documentation' => '',
         ],
         DcsConstants::LRSImportFeeBreakup => [
