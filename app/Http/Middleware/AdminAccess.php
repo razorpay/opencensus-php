@@ -86,7 +86,7 @@ class AdminAccess
 
         $this->validateAdminBelongsToSameOrg($routeName, $admin, $request);
 
-        $merchant = $this->getMerchant($request);
+        $merchant = $this->getMerchantUsingRouteParams($request);
 
         $authorized = $this->policyChecker($routeName, $admin, $merchant);
 
@@ -99,7 +99,7 @@ class AdminAccess
         return $next($request);
     }
 
-    private function setOrgType(string $orgId = null)
+    public function setOrgType(string $orgId = null)
     {
         if (empty($orgId) === false)
         {
@@ -137,7 +137,6 @@ class AdminAccess
             ($admin->org->isCrossOrgAccessEnabled() === true))
         {
             $crossOrgId = $this->getCrossOrgIdForRoute($request);
-
             $this->ba->setCrossOrgId($crossOrgId);
 
             return true;
@@ -178,6 +177,7 @@ class AdminAccess
      */
     private function getOrgIdForRoute($request)
     {
+
         $orgId = $this->router->current()->parameter('orgId');
 
         if ($orgId === null)
@@ -201,19 +201,26 @@ class AdminAccess
         if ($orgId === null)
         {
             $orgHostname = $request->headers->get(self::ORG_HOSTNAME_HEADER_KEY);
-
-            if (!empty($orgHostname))
-            {
-                /** @var Org\Entity $org */
-                $org = $this->ba->fetchOrgByHostname($orgHostname);
-
-                $orgId = $org->getPublicId();
-
-                $this->ba->setOrgHostName($orgHostname);
-            }
+            $orgId = $this->resolveOrgIdFromHostname($orgHostname);
         }
 
         return $orgId;
+    }
+
+    public function resolveOrgIdFromHostname($orgHostname): ?string
+    {
+        if (!empty($orgHostname))
+        {
+            /** @var Org\Entity $org */
+            $org = $this->ba->fetchOrgByHostname($orgHostname);
+
+            $orgId = $org->getPublicId();
+
+            $this->ba->setOrgHostName($orgHostname);
+
+            return $orgId;
+        }
+        return null;
     }
 
     /*
@@ -239,17 +246,17 @@ class AdminAccess
         ];
     }
 
-    private function getMerchant($request)
+    private function getMerchantUsingRouteParams($request)
     {
         $params = $request->route()->parameters();
+        return $this->getMerchant(is_array($params) ? $params['mid'] : null);
+    }
 
-        $merchant = null;
-
-        if (empty($params['mid']) === false)
+    public function getMerchant($merchant_id)
+    {
+        if (empty($merchant_id) === false)
         {
-            $mid = $params['mid'];
-
-            $merchant = $this->repo->merchant->findOrFailPublic($mid);
+            $merchant = $this->repo->merchant->findOrFailPublic($merchant_id);
         }
         else
         {
@@ -259,6 +266,8 @@ class AdminAccess
 
         return $merchant;
     }
+
+
 
     private function policyChecker($routeName, $admin, $merchant = null)
     {

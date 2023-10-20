@@ -20,6 +20,8 @@ app/Http/Edge/                                                @razorpay/spine-ed
 app/Http/Middleware/Authenticate.php                          @razorpay/spine-edge
 app/Http/Middleware/DecodePassportJwt.php                     @razorpay/spine-edge
 app/Http/Middleware/StripQueryParam.php                       @razorpay/spine-edge
+app/Http/Middleware/UserAccess.php                            @razorpay/spine-edge
+app/Http/Middleware/AdminAccess.php                           @razorpay/spine-edge
 app/Http/Middleware/Throttle.php                              @razorpay/spine-edge
 app/Http/Throttle/                                            @razorpay/spine-edge
 app/Http/OAuth.php                                            @razorpay/spine-edge
@@ -69,6 +71,7 @@ app/Services/UpiPayment/                               @razorpay/techupicore
 app/Services/AuthService.php                           @razorpay/spine-edge
 app/Services/CheckoutService.php                       @razorpay/checkout-backend-leads
 app/Services/Mock/CheckoutService.php                  @razorpay/checkout-backend-leads
+app/Services/Edge/                                     @razorpay/spine-edge
 
 #
 # Gateways
@@ -78,6 +81,11 @@ app/Gateway/Upi/Icici                                  @razorpay/qr-code-devs
 app/Gateway/Upi/Yesbank                                @razorpay/qr-code-devs
 app/Gateway/Upi                                        @razorpay/techupicore sharma.nikhil@razorpay.com kalpana.meena@razorpay.com
 
+
+#
+# Unit Tests
+#
+tests/Unit/Edge/                                       @razorpay/spine-edge
 
 #
 # Functional Tests

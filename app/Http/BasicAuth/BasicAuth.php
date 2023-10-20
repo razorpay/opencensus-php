@@ -49,6 +49,7 @@ use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Account\Entity as Account;
 
 use RZP\Trace\Tracer;
+use Symfony\Component\HttpFoundation\HeaderBag;
 
 /**
  * Class BasicAuth
@@ -502,11 +503,11 @@ class BasicAuth
         $this->passportFromJob             = "";
     }
 
-    public function setCredentials()
+    public function setCredentials(string $key = null, string $secret = null, string $accountId = null)
     {
-        $key = $this->request->getUser();
+        $key = $key ?? $this->request->getUser();
 
-        $secret = $this->request->getPassword();
+        $secret = $secret ?? $this->request->getPassword();
 
         if (($key === null) and
             ($secret === null))
@@ -547,7 +548,7 @@ class BasicAuth
             );
         }
 
-        return $this->checkAndSetAccountId();
+        return $this->checkAndSetAccountId($accountId);
     }
 
     public function checkAndSetKeyId($key)
@@ -683,7 +684,27 @@ class BasicAuth
      */
     public function checkAndSetAccountId(string $accountId = null)
     {
-        // set source of account id to metrics
+        $accountId = $accountId ?? $this->fetchAccountId();
+
+        if (empty($accountId) === true)
+            return null;
+
+        if ($this->verifyAccountId($accountId) === false)
+        {
+            return $this->invalidAccountId($accountId);
+        }
+
+        $this->authCreds->creds[self::ACCOUNT_ID] = $accountId;
+
+        $callbackKey = $this->getCallbackKeyWithAccountId($accountId);
+
+        $this->authCreds->setPublicKey($callbackKey);
+
+        return null;
+    }
+
+    private function fetchAccountId()
+    {
         app('request.ctx')->setAccountIdSource();
         $accountId = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
 
@@ -702,18 +723,7 @@ class BasicAuth
             $this->removeRequestKey(self::ACCOUNT_ID);
         }
 
-        if ($this->verifyAccountId($accountId) === false)
-        {
-            return $this->invalidAccountId($accountId);
-        }
-
-        $this->authCreds->creds[self::ACCOUNT_ID] = $accountId;
-
-        $callbackKey = $this->getCallbackKeyWithAccountId($accountId);
-
-        $this->authCreds->setPublicKey($callbackKey);
-
-        return null;
+        return $accountId;
     }
 
     public function getCallbackKeyWithAccountId(string $accountId): string
@@ -1229,34 +1239,11 @@ class BasicAuth
     protected function setAdminAuthIfApplicable()
     {
         $adminToken = $this->request->header(self::ADMIN_TOKEN_HEADER);
-
-        if ($adminToken !== null)
-        {
+        if ($adminToken !== null) {
             // Remove the token so that subsequent code has no
             // access to it (prevents logging, etc.)
             $this->request->headers->remove(self::ADMIN_TOKEN_HEADER);
-
-            $token = $this->fetchAdminToken($adminToken);
-
-            if ($token->getAdminId() !== null)
-            {
-                $this->setAdminTrue();
-
-                $this->admin = $token->admin;
-
-                $this->adminOrgId = $this->admin->getOrgId();
-
-                $this->setPassportConsumerClaims(
-                    self::PASSPORT_CONSUMER_TYPE_ADMIN,
-                    $this->admin->getId(),
-                    true,
-                    ['org_id' => $this->adminOrgId]
-                );
-
-                return;
-            }
-
-            return $this->authCreds->invalidApiKey();
+            return $this->fetchAndSetAdminUsingToken($adminToken);
         }
 
         // `Route::$admin` contains routes that should strictly
@@ -1268,6 +1255,31 @@ class BasicAuth
         {
             return $this->authCreds->invalidApiKey();
         }
+    }
+
+    public function fetchAndSetAdminUsingToken(string $adminToken)
+    {
+        $token = $this->fetchAdminToken($adminToken);
+
+        if ($token->getAdminId() !== null)
+        {
+            $this->setAdminTrue();
+
+            $this->admin = $token->admin;
+
+            $this->adminOrgId = $this->admin->getOrgId();
+
+            $this->setPassportConsumerClaims(
+                self::PASSPORT_CONSUMER_TYPE_ADMIN,
+                $this->admin->getId(),
+                true,
+                ['org_id' => $this->adminOrgId]
+            );
+
+            return null;
+        }
+
+        return $this->authCreds->invalidApiKey();
     }
 
     public function deviceAuth()
@@ -1671,9 +1683,9 @@ class BasicAuth
         }
     }
 
-    protected function setDashboardHeaders()
+    public function setDashboardHeaders(array $headers = null): void
     {
-        $headers = $this->request->headers;
+        $headers = $headers ? new HeaderBag($headers) : $this->request->headers;
 
         $this->dashboardHeaders = [
             // String 'true' or null
@@ -1710,9 +1722,8 @@ class BasicAuth
         return $this->dashboardHeaders;
     }
 
-    protected function verifyInternalAppSecret(string $password = null)
+    public function verifyInternalAppSecret(string $password = null)
     {
-
         $secret = $password ?? $this->authCreds->getSecret();
 
         $internalApps = $this->internalAppConfigs;
@@ -2259,7 +2270,7 @@ class BasicAuth
         $this->type = $type;
     }
 
-    protected function setType($type)
+    public function setType($type)
     {
         $this->type = $type;
     }
@@ -2274,14 +2285,14 @@ class BasicAuth
         $this->creds[self::PUBLIC_KEY] = $publicKey;
     }
 
-    protected function setProxyTrue()
+    public function setProxyTrue()
     {
         $this->proxy = true;
 
         $this->setAppAuth(true);
     }
 
-    protected function setAppAuth(bool $value)
+    public function setAppAuth(bool $value)
     {
         $this->appAuth = $value;
     }
@@ -2637,7 +2648,7 @@ class BasicAuth
         return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
     }
 
-    protected function isKeyBlank()
+    public function isKeyBlank()
     {
         return ($this->authCreds->creds[AuthCreds::KEY_ID] === '');
     }
@@ -2783,7 +2794,7 @@ class BasicAuth
         // For Private auth requests - $this->merchant should be set
         if (($this->isPrivateAuth() === true) and
             (empty($this->authCreds->getMerchant()) === false) and
-            (
+             (
                 ($this->authCreds->getMerchant()->isMarketplace() === true) or
                 ($this->authCreds->getMerchant()->isPartner())
             ))
