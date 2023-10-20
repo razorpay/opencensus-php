@@ -1029,19 +1029,6 @@ class Core extends Base\Core
 
     }
 
-    //Function which returns location id from where orders will be fulfilled for Wingreen Merchant
-    public function getLocationIDForStateAndCountry(string $stateCode, string $countryCode): int {
-        if(strtolower($countryCode) === 'in')
-        {
-            switch(strtolower($stateCode)) {
-                case 'karnataka' : return 80770269487;
-                case 'maharashtra' : return 80770236719;
-                default : return 80770367791; //Delhi Location used for other than karnataka and Maharashtra
-            }
-        }
-        return 80770236719; //Mumbai Location used for international orders.
-    }
-
     public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi,array $utmParameters=[], array $orderMeta = [], array $nectorCoinsResponse = []): array
     {
         $start = millitime();
@@ -2744,10 +2731,10 @@ class Core extends Base\Core
             $customerDetails = $rzpOrder['customer_details'];
             $shippingAddress = $customerDetails['shipping_address'];
             $body = [
-                'merchant_id' => $this->merchant->getId(),
+                'merchant_id'      => $this->merchant->getId(),
                 'shopify_order_id' => $shopifyOrder['order']['id'],
-                'location_id' => $this->getLocationIDForStateAndCountry($shippingAddress['state'],$shippingAddress['country']),
-                'order_id' => $rzpOrder['id'],
+                'address'          => $shippingAddress,
+                'order_id'         => $rzpOrder['id'],
             ];
 
             $path = self::MAGIC_CHECKOUT_SERVICE_PATH . '/' . self::MOVE_ORDER;
