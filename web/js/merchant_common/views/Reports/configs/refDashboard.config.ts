@@ -53,8 +53,13 @@ export const getReportsDashboardConfig = (
             const { isSupportRole, isOptimizerRZPVASEnabled, isPaymentPageFileUploadEnabled } =
               session.user;
             const REPORT_CONFIG_TYPE = reportConfigType(i18);
-            const inCheck = REPORT_CONFIG_TYPE?.[name] ?? REPORT_CONFIG_TYPE?.[type];
-            const isI18TagFound = inCheck && session.user.findTag(inCheck);
+            /**
+             * For reports, we check whether the corresponding tag is enabled
+             * by matching either the name or type. If the tag is enabled,
+             * we return false to remove that report from the rendering list,
+             * effectively hiding it from view.
+             */
+            const isI18TagFound = REPORT_CONFIG_TYPE?.[name] || REPORT_CONFIG_TYPE?.[type];
 
             switch (true) {
               case isI18TagFound:

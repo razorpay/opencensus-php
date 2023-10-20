@@ -221,10 +221,15 @@ class GenerateReportPanel extends React.PureComponent {
     if (user?.findTag) {
       allConfigs = allConfigs.filter((config) => {
         const REPORT_CONFIG_TYPE = reportConfigType(i18);
+        /**
+         * For reports, we check whether the corresponding tag is enabled
+         * by matching either the name or type. If the tag is enabled,
+         * we return false to remove that report from the rendering list,
+         * effectively hiding it from view.
+         */
         const configType = REPORT_CONFIG_TYPE[config.type];
         const configName = REPORT_CONFIG_TYPE[config.name];
-        const i18TagFound =
-          (configType && user.findTag(configType)) || (configName && user.findTag(configName));
+        const i18TagFound = configType || configName;
         if (i18TagFound) return false;
         if (config?.name === 'Monthly Invoice Report' && user.isSupportRole) return false;
         if (config?.name === 'Optimiser Settlements' && user.isOptimizerRZPVASEnabled) return false;
