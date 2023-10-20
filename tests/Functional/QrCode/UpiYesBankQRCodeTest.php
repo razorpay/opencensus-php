@@ -385,8 +385,8 @@ class UpiYesBankQRCodeTest extends TestCase
 
         if ($qrCodeEntity['provider'] === 'upi_qr')
         {
-            $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
-            $this->assertEquals('RZPY' . $qrCodeEntity['reference'] . 'qrv2', $trValue);
+            $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+            $this->assertEquals('RZPY' . $qrCodeEntity['reference'] . 'qrv2', $intentParam['tr']);
         }
 
         if($qrCodeEntity['usage'] === 'single_use')
@@ -409,7 +409,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true);
         $qrCodeEntity     = $this->getLastEntity('qr_code', true);
         $upi              = $this->getLastEntity('upi', true);
-        $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
 
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals(300, $payment['amount']);
@@ -419,7 +419,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals($qrCodeEntity['reference'], $qrPayment['qr_code_id']);
         $this->assertEquals($qrCodeEntity['reference'], $qrPayment['merchant_reference']);
         $this->assertEquals($paymentRequestEntity['description'], $qrPayment['notes']);
-        $this->assertEquals($upi['merchant_reference'], $trValue);
+        $this->assertEquals($upi['merchant_reference'], $intentParam['tr']);
         $this->assertEquals('107611570997', $upi['npci_reference_id']);
 
         if ($qrCodeEntity['usage'] === 'single_use')

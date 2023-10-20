@@ -128,6 +128,23 @@ class Generator extends QrCode\Generator
                     }
 
                     return $vpa;
+
+                }
+                case Gateway::UPI_KOTAK:
+                {
+                    if ((empty($qrCode->getCloseBy()) === false) or ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === true))
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_CREATE_KOTAK);
+                    }
+
+                    $vpa = $terminal->getVpa();
+
+                    if ((empty($vpa) === true) or ($vpa === null))
+                    {
+                        throw new InvalidArgumentException('VPA is required for generating QR');
+                    }
+
+                    return $vpa;
                 }
 
                 // For test mode on prod, check vpa/ gatewayMerchantId2 fields whereever the vpa is available.
@@ -193,6 +210,10 @@ class Generator extends QrCode\Generator
                 }
                 break;
 
+            case Gateway::UPI_KOTAK:
+                $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+                break;
+
             default:
                 $refId = self::TR_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
         }
@@ -208,7 +229,7 @@ class Generator extends QrCode\Generator
             ->terminal
             ->getById($this->terminalId);
 
-        return $this->generateRefId($qrCode,$terminal);
+        return $this->generateRefId($qrCode,$terminal, $refId);
     }
 
     public function ifPrefixAdditionExperimentInTREnabled($merchantId)
@@ -225,7 +246,7 @@ class Generator extends QrCode\Generator
         return false;
     }
 
-    private function generateRefId($qrCode, $terminal)
+    private function generateRefId($qrCode, $terminal, $refId)
     {
         $input = [
             'qr_code'  => $qrCode->toArray(),
@@ -299,6 +320,11 @@ class Generator extends QrCode\Generator
         if ($qrCode->hasFixedAmount())
         {
             $content[Base\IntentParams::TXN_AMOUNT] = $qrCode->getAmount() / 100;
+        }
+
+        if((str_contains($vpa, '@kotak') === true) and ($qrCode->getUsageType() === UsageType::SINGLE_USE))
+        {
+            $content[Base\IntentParams::TRANSACTION_ID] = $qrCode->getId();
         }
 
         $content = array_merge($content, InvoiceDetails::getTaxDetails($qrCode));

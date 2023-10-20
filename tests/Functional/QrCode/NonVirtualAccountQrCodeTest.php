@@ -1737,11 +1737,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         if ($usageType === UsageType::MULTIPLE_USE)
         {
-            $this->assertStringContainsString('mode=01', $response['image_content']);
+            $this->assertStringContainsString('mode=19', $response['image_content']);
         }
         else
         {
-            $this->assertStringContainsString('mode=15', $response['image_content']);
+            $this->assertStringContainsString('mode=22', $response['image_content']);
         }
     }
 

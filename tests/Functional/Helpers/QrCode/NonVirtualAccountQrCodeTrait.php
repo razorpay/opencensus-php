@@ -264,13 +264,13 @@ trait NonVirtualAccountQrCodeTrait
         $this->makeRequestAndGetContent($request);
     }
 
-    private function getTRFieldFromString($qrString)
+    private function getIntentParamsFromQRString($qrString)
     {
         $queryString = parse_url($qrString, PHP_URL_QUERY);
 
         parse_str($queryString, $params);
 
-        return $params['tr'];
+        return $params;
     }
 
     private function makeUpiPaymentInternal($request)
