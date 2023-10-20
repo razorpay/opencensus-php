@@ -951,11 +951,7 @@ class Processor
                 return false;
             }
 
-            //checking it here since we don't have to call the exp. twice
-            $feeBearerResult = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-            $isMerchantCustomerOrDynamicFeeBearer = $merchant->isFeeBearerCustomerOrDynamic();
-
-            if ($merchant->isFeeBearerDynamic() === true && $feeBearerResult === 'on') {
+            if ($merchant->isFeeBearerDynamic() === true) {
                 // Re-calculates fees on the amount, using a dummy payment creation flow.
                 // This sets re-calculated fee and amount value (in paise) in $input.
                 // Hence, saving original amount as amount.
@@ -981,7 +977,7 @@ class Processor
                 $tokenId = $input[Payment\Entity::TOKEN];
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
 
-                if ($result === 'on' && ($feeBearerResult === "on" || $isMerchantCustomerOrDynamicFeeBearer === false))
+                if ($result === 'on')
                 {
                     try {
                         // First fetch the relevant customer (global or local)
@@ -1153,14 +1149,7 @@ class Processor
 
             if ($merchant->isFeeBearerCustomerOrDynamic() === true )
             {
-                if ($feeBearerResult !== 'on') {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "check_for_customer_or_dynamic_fee_bearer_rearch",
-                        'merchant_id' => $merchant->getId(),
-                        '$feeBearerResult' => $feeBearerResult,
-                    ]);
-                }
-                return ($feeBearerResult === 'on');
+                return true;
             }
 
             if ((app()->runningUnitTests() === true) and
