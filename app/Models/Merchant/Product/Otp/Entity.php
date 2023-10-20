@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Product\Otp;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Acs\Traits\AsvMerchantDetailGetAttribute;
+
 
 /**
  * Class Entity
@@ -15,6 +17,7 @@ use RZP\Models\Merchant\Detail;
  */
 class Entity extends Base\PublicEntity
 {
+    use AsvMerchantDetailGetAttribute;
 
     const ID                         = 'id';
     const MERCHANT_ID                = 'merchant_id';

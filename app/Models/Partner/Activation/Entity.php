@@ -6,13 +6,14 @@ use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Merchant\Acs\Traits\AsvMerchantDetailGetAttribute;
 
 /**
  * @property Merchant\Detail\Entity  $merchantDetail
  */
 class Entity extends Base\PublicEntity
 {
-    use AsvGetAttribute;
+    use AsvGetAttribute, AsvMerchantDetailGetAttribute;
 
     const MERCHANT_ID               = 'merchant_id';
     const ACTIVATION_STATUS         = 'activation_status';

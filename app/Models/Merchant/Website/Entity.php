@@ -8,7 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\BusinessType;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
-
+use RZP\Models\Merchant\Acs\Traits\AsvMerchantDetailGetAttribute;
 /**
  * Class Entity
  *
@@ -19,7 +19,7 @@ use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
  */
 class Entity extends Base\PublicEntity
 {
-    use TransactionalModelEvents\TransactionalAwareEvents;
+    use TransactionalModelEvents\TransactionalAwareEvents, AsvMerchantDetailGetAttribute;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
