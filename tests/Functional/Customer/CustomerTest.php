@@ -1242,6 +1242,55 @@ class CustomerTest extends TestCase
         );
     }
 
+    public function testFetchPaymentByContactOnSupportPageWhenLRSFlowIsEnabled()
+    {
+        $this->ba->directAuth();
+
+        $this->mockSession();
+
+        $request = array(
+            'url' => '/apps/payments?mode=test',
+            'method' => 'get',
+        );
+
+        $this->fixtures->merchant->addFeatures(['lrs_education_flow']);
+
+        // Current Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'     => '+919988776655',
+            'merchant_id' => '10000000000000',
+            'status'      => 'captured',
+            'method'      => 'card',
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'     => '9988776655',
+            'merchant_id' => '10000000000000',
+            'status'      => 'failed',
+            'method'      => 'card',
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $paymentDetails = $this->getPaymentDetailsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertContains($payment2->getPublicId(), $paymentIds);
+
+        $this->assertEquals('card', $paymentDetails[$payment1->getPublicId()]['method']);
+
+        $this->assertEquals('captured', $paymentDetails[$payment1->getPublicId()]['status']);
+
+        $this->assertEquals('failed', $paymentDetails[$payment2->getPublicId()]['status']);
+
+        $this->assertEquals(true, $paymentDetails[$payment1->getPublicId()]['is_lrs_transaction']);
+
+        $this->assertEquals(true, $paymentDetails[$payment2->getPublicId()]['is_lrs_transaction']);
+    }
+
     public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInExpectsPaymentsWithCustomerContact()
     {
         $this->ba->directAuth();
