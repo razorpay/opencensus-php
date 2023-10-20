@@ -3451,15 +3451,7 @@ class MerchantController extends Controller
 
         try
         {
-            if (isset($input['reference_id']) && isset($input['reference_type'])) // serviceability using checkout id flow
-            {
-                $response = (new Merchant\ShippingInfo\ShopifyShippingProvider())->getShippingInfo($input);
-            }
-            else
-            {
-                $response = (new Merchant\ShippingInfo\Service())->getShippingInfo($input);
-            }
-
+            $response = (new Merchant\ShippingInfo\Service())->getShippingInfo($input);
             return ApiResponse::json($response);
         }
         catch (\Throwable $ex)

@@ -919,12 +919,6 @@ class Service extends Base\Service
             }
         }
 
-        // If shipping engine is enabled, we will override shipping using checkout Id flow.
-        $shippingEngineEnabled = $this->merchant->get1ccConfigFlagStatus(Type::SHIPPING_ENGINE);
-        if ($shippingEngineEnabled === true) {
-            $response[Constants::ONE_CC_SHIPPING_USING_CHECKOUT] = false;
-        }
-        
         return $response;
     }
 

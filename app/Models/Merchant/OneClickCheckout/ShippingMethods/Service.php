@@ -20,8 +20,7 @@ class Service extends Base\Service
         string $orderId,
         string $merchantId,
         $notes,
-        ?string $shippingVariant,
-        ?string $shopifyCheckoutId
+        ?string $shippingVariant
     )
     {
         $request = [
@@ -29,8 +28,7 @@ class Service extends Base\Service
             'order'             => [
                 'id' => explode('_', $orderId)[1],
                 'line_items_total' => $lineItemsTotal,
-                'notes' => $notes,
-                'shopify_checkout_id' => $shopifyCheckoutId,
+                'notes' => $notes
             ],
             'merchant_id'       => $merchantId,
             'shipping_provider_id' => $shippingProviderId,
