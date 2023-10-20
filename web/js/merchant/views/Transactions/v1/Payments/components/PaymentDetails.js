@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
@@ -26,6 +26,7 @@ import lazy from 'merchant/routes/LazyLoader';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import { isPlatformTransaction } from 'merchant/views/Transactions/v1/Payments/Utils/platformUtils';
 import { OptimizerDetails } from 'merchant/views/Transactions/v1/Payments/components/OptimizerDetails';
+import PaymentDownloadSwiftCopy from 'merchant/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy/DownloadSwiftCopy';
 import PaymentMethod from 'merchant/views/Transactions/v1/Payments/components/PaymentMethod';
 import PaymentProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentProvider';
 import PaymentRefund from 'merchant/views/Transactions/v1/Payments/components/PaymentRefund';
@@ -658,6 +659,12 @@ function PaymentDetails(props) {
                     page="Payment Detail"
                   />
                 )}
+
+              <ShowWhen additionalCondition={() => user.isLRSEducationFlow}>
+                <EntityDetailRow label="Documents">
+                  <PaymentDownloadSwiftCopy paymentId={payment.id} />
+                </EntityDetailRow>
+              </ShowWhen>
             </div>
           </div>
         </div>

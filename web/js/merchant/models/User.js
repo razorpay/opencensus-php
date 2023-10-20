@@ -2081,6 +2081,10 @@ export default class User {
     return this.isFeatureEnabled('dynamic_pl_offset');
   }
 
+  get isLRSEducationFlow() {
+    return this.isFeatureEnabled('lrs_education_flow');
+  }
+
   get isOmniChannelMerchant() {
     const variant = getSplitzExperimentVariant('omni_channel_merchants');
     return variant?.name === 'show-ezetap-txn';

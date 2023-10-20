@@ -403,4 +403,18 @@ describe('User model', () => {
       expect(user.isDynamicPlOffset).toBe(false);
     });
   });
+
+  describe('isLRSEducationFlow', () => {
+    test('should return true when lrs_education_flow is enabled', () => {
+      user.isFeatureEnabled = jest.fn().mockReturnValueOnce(true);
+
+      expect(user.isLRSEducationFlow).toBe(true);
+    });
+
+    test('should return false when lrs_education_flow is disabled', () => {
+      user.isFeatureEnabled = jest.fn().mockReturnValueOnce(false);
+
+      expect(user.isLRSEducationFlow).toBe(false);
+    });
+  });
 });

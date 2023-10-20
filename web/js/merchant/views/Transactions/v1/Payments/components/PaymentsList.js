@@ -1,17 +1,8 @@
 import React from 'react';
-import {
-  getKeysSeparatedByPipe,
-  getCommonAnalyticsProperties,
-  getURLQueryParams,
-} from 'common/utils/rzp-utils';
+
+import { withRouter } from 'common/deprecated/withRouter';
 // eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
-import DocsLink from 'merchant/components/DocsLink';
-import EmptyList from 'merchant/components/EmptyList';
-import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
-import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import PaymentsListFilter from 'merchant/views/Transactions/v1/Payments/components/PaymentsListFilter';
-import { analyticsTrack } from 'common/utils/analytics';
 import {
   paymentId,
   amount,
@@ -21,14 +12,26 @@ import {
   status,
   paymentReceiverType,
 } from 'common/ui/item/pair';
+import { analyticsTrack } from 'common/utils/analytics';
+import {
+  getKeysSeparatedByPipe,
+  getCommonAnalyticsProperties,
+  getURLQueryParams,
+} from 'common/utils/rzp-utils';
+import DocsLink from 'merchant/components/DocsLink';
+import EmptyList from 'merchant/components/EmptyList';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ListContainer from 'merchant/containers/ListContainer';
-import { withRouter } from 'common/deprecated/withRouter';
-import PaymentFailureAnalysis from './PaymentFailureAnalysis';
 import {
   selfServerTrack,
   selfServeTrackResult,
 } from 'merchant/views/Transactions/v1/AnalyticsTrack';
 import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
+import downloadSwiftCopy from 'merchant/views/Transactions/v1/Payments/components/PaymentDownloadSwiftCopy';
+import PaymentsListFilter from 'merchant/views/Transactions/v1/Payments/components/PaymentsListFilter';
+import PaymentsTable from 'merchant/views/Transactions/v1/Payments/components/PaymentsTable';
+
+import PaymentFailureAnalysis from './PaymentFailureAnalysis';
 
 const EmptyRoutesComponent = () => (
   <EmptyList
@@ -183,6 +186,11 @@ class PaymentsListContainer extends ListContainer {
     const cols = [_paymentId(initiatePage), amount, email, contact, createdAt, status];
     /* istanbul ignore else */
     if (isOmniChannelMerchant) cols.splice(4, 0, paymentReceiverType);
+
+    // if LRS Education feature flag is enabled, then show download swift copy column
+    if (user.isLRSEducationFlow) {
+      cols.push(downloadSwiftCopy);
+    }
     return cols;
   };
 
