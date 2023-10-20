@@ -7,4 +7,7 @@ class Constants
     const MERCHANT_CREDIT_TYPE_MUTEX_PREFIX = 'merchant_credit_type_';
     const MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT = 30; // seconds
     const MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT = 5;
+
+    const START_TIME            = "start_time";
+    const END_TIME              = "end_time";
 }

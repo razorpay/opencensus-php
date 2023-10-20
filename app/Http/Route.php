@@ -4317,8 +4317,9 @@ class Route
         // Creates refund reversal for ledger timed out refunds
         'refunds_reversal_create'                       => ['post',  'refunds/reversal_create', 'RefundController@reversalCreateForVirtualRefund'],
         // Ledger Outbox cron
-        'ledger_outbox_retry'                           => ['post',           'ledger_outbox/retry',                               'LedgerOutboxController@postRetryFailedReverseShadowTransactions'],
-        'ledger_outbox_partition_cron'           => ['post',      'ledger/outbox/partition',                    'LedgerOutboxController@createLedgerOutboxPartition'              ],
+        'ledger_outbox_retry'                           => ['post',      'ledger_outbox/retry',                     'LedgerOutboxController@postRetryFailedReverseShadowTransactions'],
+        'ledger_outbox_partition_cron'                  => ['post',      'ledger/outbox/partition',                 'LedgerOutboxController@createLedgerOutboxPartition'              ],
+        'expire_amount_credits'                         => ['post',      'amount_credits/expire',         'MerchantController@expireAmountCreditsInPgLedger'],
 
         // Recon service proxy route
         'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
@@ -6276,6 +6277,7 @@ class Route
         'terminal_toggle_internal',
         // Ledger Outbox
         'ledger_outbox_retry',
+        'expire_amount_credits',
         'workflow_config_create_internal',
         'downtime_auto_resolve_cron',
         'merchant_validate_public_auth_over_internal_auth',
@@ -15883,6 +15885,8 @@ class Route
             'order_outbox_partition_cron',
 
             'adj_custom_create_cron',
+
+            'expire_amount_credits',
         ],
 
         'subscriptions' => [
@@ -18292,6 +18296,7 @@ class Route
         'ledger_outbox_retry'                               => HeartBeatLagChecker::MASTER,
         'order_outbox_retry'                                => HeartBeatLagChecker::MASTER,
         'qr_code_fetch_multiple'                            => HeartbeatLagChecker::SLAVE,
+        'expire_amount_credits'                             => HeartBeatLagChecker::MASTER,
         'get_all_country_dashboard_config'                  => HeartBeatLagChecker::MASTER,
         'get_country_dashboard_config'                      => HeartBeatLagChecker::MASTER,
         'edit_country_dashboard_config'                     => HeartBeatLagChecker::MASTER,

@@ -103,6 +103,37 @@ return [
         ]
     ],
 
+    'testAmountCreditExpirySuccess' => [
+        'request' => [
+            'url' => '/reminders/send/test/credit/amount_credits_expiry/MDgIwwZ7dNLFvV',
+            'method' => 'post',
+            'content' => [
+                'reminder_count' => 1,
+            ]
+        ],
+
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testAmountCreditExpiryFailureJournalPresent' => [
+        'request' => [
+            'url' => '/reminders/send/test/credit/amount_credits_expiry/MDgIwwZ7dNLFvV',
+            'method' => 'post',
+            'content' => [
+                'reminder_count' => 1,
+            ]
+        ],
+
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testSendNegativeBalanceReminderBalanceIsPositive' => [
         'request' => [
             'url' => '/reminders/send/test/merchant/negative_balance/100ghi000ghi00',
@@ -229,7 +260,7 @@ return [
                 'success'   => true
             ],
             'status_code' => 200
-        ]   
+        ]
     ]
 
 ];

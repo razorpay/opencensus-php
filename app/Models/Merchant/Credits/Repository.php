@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Credits;
 
 use Carbon\Carbon;
 
+use Illuminate\Database\Eloquent\Collection;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -577,5 +578,24 @@ class Repository extends Base\Repository
             ->where(Entity::EXPIRED_AT, '>' ,Carbon::Now()->getTimestamp())
             ->pluck(Entity::ID)
             ->toArray();
+    }
+
+    /**
+     * Fetches records from the 'credits' table that have type as amount_credits and will expire
+     * between the specified start and end time.
+
+     *
+     * @return PublicCollection
+     */
+    public function fetchAmountCreditsExpiringWithinDateRange($startTime, $endTime): PublicCollection
+    {
+        $merchantsCredits = $this->newQuery()
+            ->where(Entity::TYPE, '=', Type::AMOUNT)
+            ->where(Entity::VALUE, '>', 0)
+            ->where(Entity::EXPIRED_AT, '>=' , $startTime)
+            ->where(Entity::EXPIRED_AT, '<=' , $endTime)
+            ->get();
+
+        return $merchantsCredits;
     }
 }

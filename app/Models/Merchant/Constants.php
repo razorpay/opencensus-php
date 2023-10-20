@@ -1966,4 +1966,20 @@ final class Constants
     public const CACHEABLE_METHODS = 0;
     public const EMI_AND_OFFERS = 1;
     public const APP_META = 2;
+
+    // amount credits expiry cron constants
+
+    // From the current time, start time buffer will be subtracted to obtain start time.
+    // From the current time, end time buffer will be added to obtain end time.
+    // Note - the values are in seconds.
+    const AMOUNT_CREDIT_REGISTER_DEFAULT_START_TIME_BUFFER = 300;
+    const AMOUNT_CREDIT_REGISTER_DEFAULT_END_TIME_BUFFER = 172800;
+
+    const AMOUNT_CREDITS_EXPIRY_NAMESPACE       = "amount_credits_expiry";
+
+    const ENTRY_COUNT   = "entry_count";
+    const REMINDER_DATA = "reminder_data";
+    const EXPIRED_AT    = "expired_at";
+    const CALLBACK_URL  = "callback_url";
+    const CREDIT        = "credit";
 }

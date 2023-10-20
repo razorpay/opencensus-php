@@ -141,6 +141,17 @@ class Core extends Base\Core
 
         $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
 
+        // We will not create any transaction in case of amount credits expiry
+        if($transactorEvent === LedgerConstants::AMOUNT_CREDITS_EXPIRY_EVENT)
+        {
+            $this->trace->info(TraceCode::AMOUNT_CREDITS_EXPIRY_JOURNAL_CREATION_SUCCESS, [
+                LedgerConstants::DATA   => $journal
+            ]);
+
+            $this->softDelete($transactorId, $transactorEvent);
+            return;
+        }
+
         try
         {
             $this->handleTransactionCreationOnAcknowledgement($journal, $transactorId, $transactorEvent, false);
@@ -1025,6 +1036,25 @@ class Core extends Base\Core
                         LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
                         Constants::SOURCE                 => Constants::CRON
                     ]);
+
+
+                    // We will not create any transaction in case of amount credits expiry
+                    if($transactorEvent === LedgerConstants::AMOUNT_CREDITS_EXPIRY_EVENT)
+                    {
+                        $this->trace->info(TraceCode::AMOUNT_CREDITS_EXPIRY_JOURNAL_CREATION_SUCCESS, [
+                            LedgerConstants::DATA   => $journal
+                        ]);
+
+                        $isDeleted = $this->updateRetryCountAndSoftDelete($entry, $retries);
+
+                        if ($isDeleted === true)
+                        {
+                            $successful++;
+                            array_push($successfulIds, $transactorId);
+                        }
+
+                        continue;
+                    }
 
                     try
                     {

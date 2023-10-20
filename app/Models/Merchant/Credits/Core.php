@@ -7,9 +7,12 @@ use Mail;
 
 use RZP\Exception;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Constants;
+use RZP\Models\Merchant\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Promotion;
@@ -448,6 +451,91 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::PG_LEDGER_ENTRY_FAILED,
                 ['credit_id'             => $creditsLog->getId(),]);
+        }
+    }
+
+
+    /**
+     * registers reminders for amount credits to be expired in next 2 days
+     *
+     * @return array
+     */
+    public function registerReminderForExpiringAmountCredit($input): array
+    {
+        $now = time();
+
+        $startTimestamp = $input[Credits\Constants::START_TIME] ?? $now - Constants::AMOUNT_CREDIT_REGISTER_DEFAULT_START_TIME_BUFFER;
+        $endTimestamp = $input[Credits\Constants::END_TIME] ?? $now + Constants::AMOUNT_CREDIT_REGISTER_DEFAULT_END_TIME_BUFFER;
+
+        $amountCredits = $this->repo->credits->fetchAmountCreditsExpiringWithinDateRange($startTimestamp, $endTimestamp);
+
+        $this->trace->info(TraceCode::FETCH_EXPIRING_AMOUNT_CREDITS,
+            [
+                Constants::ENTRY_COUNT => count($amountCredits),
+            ]
+        );
+
+        foreach ($amountCredits as $entry) {
+            $entry->reload();
+
+            $this->registerAmountCreditExpiryReminder($entry);
+        }
+
+        return [];
+    }
+
+    protected function registerAmountCreditExpiryReminder(Credits\Entity $credit)
+    {
+        $namespace = Constants::AMOUNT_CREDITS_EXPIRY_NAMESPACE;
+
+        $url = sprintf('reminders/send/%s/credit/%s/%s', $this->mode, $namespace, $credit->getId());
+
+        $request = [
+            LedgerConstants::NAMESPACE     => $namespace,
+            LedgerConstants::ENTITY_ID     => $credit->getId(),
+            LedgerConstants::ENTITY_TYPE   => Constants::CREDIT,
+            Constants::REMINDER_DATA => [
+                Constants::EXPIRED_AT => $credit->getExpiredAt(),
+            ],
+            Constants::CALLBACK_URL  => $url,
+        ];
+
+        $merchant = $credit->merchant;
+
+        // Reminders not created for merchants that are not onboarded onto reverse shadow
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $response = $this->app['reminders']->createReminder($request, Merchant\Account::SHARED_ACCOUNT );
+
+            $reminderId = array_get($response, 'id');
+
+            $this->trace->count(Metric::PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_CREATED, [
+                'mode' => $this->mode,
+            ]);
+
+            $this->trace->info(TraceCode::PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_CREATED, [
+                'credit_id'   => $credit->getId(),
+                'reminder_id' => $reminderId,
+            ]);
+        }
+        catch (\Throwable $exception) {
+
+            $this->trace->count(Metric::PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_FAILURE, [
+                'mode' => $this->mode,
+            ]);
+
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_FAILURE,
+                [
+                    'entity_id'     => $credit->getId(),
+                ]);
         }
     }
 }

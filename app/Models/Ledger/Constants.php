@@ -204,4 +204,14 @@ class Constants
     const TRANSFER_ID           = 'transfer_id';
     const DEBIT_TRANSACTION_ID  = 'debit_transaction_id';
     const CREDIT_TRANSACTION_ID = 'credit_transaction_id';
+
+
+    const CREDITS_PREFIX    = "credits_";
+    const DATA              = "data";
+    const ENTITY            = "entity";
+    const NAMESPACE         = "namespace";
+    const EXPIRY_AMOUNT     = "expiry_amount";
+    const ENTITY_ID         = "entity_id";
+
+    const AMOUNT_CREDITS_EXPIRY_EVENT   = "amount_credits_expiry";
 }

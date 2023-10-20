@@ -321,6 +321,17 @@ return [
         ],
     ],
 
+    'testAmountCreditsExpiryReminderRegistrationFlow' => [
+        'request' => [
+            'url' => '/amount_credits/expire/',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteCreditsLog' => [
         'request' => [
             'url' => '/merchants/10000000000000/credits/',

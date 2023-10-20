@@ -173,4 +173,20 @@ class AmountCreditsTest extends TestCase
 
         $this->assertEquals($expiryDate, $creditsLog['expired_at']);
     }
+
+    public function testAmountCreditsExpiryReminderRegistrationFlow()
+    {
+        $expiryDate = Carbon::now()->addDays(1)->getTimestamp();
+        $this->fixtures->create('credits', [
+            'merchant_id' => '10000000000000',
+            'value' => 1500 ,
+            'campaign' => 'test amount credits expiry',
+            'type' => 'amount',
+            'expired_at' => $expiryDate
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
 }

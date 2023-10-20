@@ -254,4 +254,9 @@ class Service extends Base\Service
     {
         return $this->repo->credits->findByCampaignId($campaignId, $merchantId);
     }
+
+    public function expireAmountCreditsInPgLedger(array $input)
+    {
+        return (new Credits\Core)->registerReminderForExpiringAmountCredit($input);
+    }
 }

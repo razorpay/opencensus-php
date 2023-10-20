@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Reminders;
 
+use Carbon\Carbon;
 use Mail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
@@ -107,6 +108,79 @@ class ReminderTest extends TestCase
 
         $nbReminder = $this->getDbEntityById('merchant_reminders', '100mno000mno00');
         $this->assertEquals(1, $nbReminder->getReminderCount());
+    }
+
+
+    public function testAmountCreditExpirySuccess()
+    {
+        Mail::fake();
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $expiryDate = Carbon::now()->addDays(1)->getTimestamp();
+
+        $this->fixtures->create('credits', [
+            'id'            => "MDgIwwZ7dNLFvV",
+            'merchant_id'   => '10000000000000',
+            'value'         => 1500 ,
+            'campaign'      => 'test amount credits expiry',
+            'type'          => 'amount',
+            'expired_at'    => $expiryDate
+        ]);
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andReturnValues([
+                [
+                    'code' => 400,
+                    'body' => null,
+                ]
+            ]);
+
+        $this->startTest();
+
+        $ledgerOutboxEntry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull($ledgerOutboxEntry);
+
+        $this->assertEquals("credits_MDgIwwZ7dNLFvV-amount_credits_expiry", $ledgerOutboxEntry["payload_name"]);
+    }
+
+    public function testAmountCreditExpiryFailureJournalPresent()
+    {
+        Mail::fake();
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $expiryDate = Carbon::now()->addDays(1)->getTimestamp();
+
+        $this->fixtures->create('credits', [
+            'id'            => "MDgIwwZ7dNLFvV",
+            'merchant_id'   => '10000000000000',
+            'value'         => 1500 ,
+            'campaign'      => 'test amount credits expiry',
+            'type'          => 'amount',
+            'expired_at'    => $expiryDate
+        ]);
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andReturnValues([
+                [
+                    'code' => 200,
+                    'body' => [
+                        "id"    => "ghgIXwZ7dDL6v4"
+                    ],
+                ]
+            ]);
+
+        $this->startTest();
+
+        $ledgerOutboxEntry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNull($ledgerOutboxEntry);
     }
 
     public function testSendNegativeBalanceReminderBalanceIsPositive()

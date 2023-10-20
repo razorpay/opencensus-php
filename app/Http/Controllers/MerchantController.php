@@ -1301,6 +1301,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function expireAmountCreditsInPgLedger(Credits\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->expireAmountCreditsInPgLedger($input);
+
+        return ApiResponse::json($response);
+    }
+
 // --------------------- End Credits API Handlers -----------------------------------------
 
     public function getBvsValidationArtefactDetails(string $merchantId, string $validationArtefact)
