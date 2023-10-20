@@ -82,12 +82,6 @@ class Service
 
         $response =  $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
 
-        $this->app['shipping_service_merchant_config']->disableShopifyAsShippingProvider([
-            'merchant_ids' => [
-                $merchantId,
-            ]
-        ]);
-
         return $response;
     }
 
@@ -111,19 +105,6 @@ class Service
         $params = self::PARAMS[self::DELETE_SHIPPING_PROVIDER];
 
         $response =  $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
-
-        try
-        {
-            $this->handleShopifyAssignment($merchantId);
-        }
-        catch (\Exception $e)
-        {
-            $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_ASSIGNMENT_FAILED);
-
-            $this->app['trace']->count(Metric::SHOPIFY_FULFILLMENT_UPDATE_WEBHOOK_ASSIGNMENT_FAILED_COUNT, [
-                    'type'  =>  'webhook_switch'
-            ]);
-        }
 
         return $response;
 

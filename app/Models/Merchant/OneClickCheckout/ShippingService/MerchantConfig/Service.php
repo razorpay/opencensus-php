@@ -143,29 +143,17 @@ class Service
                 $listMerchantConfigRequest = [
                     'merchant_id'  =>  $merchant_id,
                 ];
-                $orderSyncConfig = null;
+
                 $fulfillmentEventConfig = null;
 
                 $listMerchantConfigResponse = $this->list($listMerchantConfigRequest);
 
-                foreach ($listMerchantConfigResponse['merchant_configs'] as $merchantConfig) {
-                    if($merchantConfig['type'] === self::OrderSyncConfig)
-                    {
-                        $orderSyncConfig = $merchantConfig;
-                    }
+                foreach ($listMerchantConfigResponse['merchant_configs'] as $merchantConfig)
+                {
                     if($merchantConfig['type'] === self::FulfillmentEventConfig)
                     {
                         $fulfillmentEventConfig = $merchantConfig;
                     }
-                }
-
-                if ($input['type'] !== 'switch' && isset($orderSyncConfig) &&
-                    isset($orderSyncConfig['enabled_shipping_providers']) &&
-                    count($orderSyncConfig['enabled_shipping_providers']) > 0)
-                {
-
-                    $response[$merchant_id] = 'MERCHANT CONNECTED LOGISTICS PARTNER';
-                    continue;
                 }
 
                 $this->sendWebhookCreateRequest($configs['shop_id'], $configs['oauth_token']);
@@ -177,6 +165,7 @@ class Service
                         'enabled_platform' => 'shopify'
                     )
                 );
+
                 if (isset($fulfillmentEventConfig))
                 {
                     $this->updateByType($merchantConfigCreateRequest);
@@ -246,7 +235,6 @@ class Service
                 }
                 if(isset($fulfillmentEventConfig))
                 {
-
                     $merchantConfigCreateRequest = array(
                         'merchant_id' => $merchant_id,
                         'type' => 'fulfillment_event_config',
@@ -257,8 +245,6 @@ class Service
 
                     $this->updateByType($merchantConfigCreateRequest);
                 }
-
-                $this->app['shipping_provider_service']->connect(['merchant_id' => $merchant_id]);
 
                 $response[$merchant_id] = 'SUCCESS';
             }
