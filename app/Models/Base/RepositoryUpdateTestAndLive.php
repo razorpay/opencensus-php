@@ -10,6 +10,7 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Base as AsvSdkIntegration;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps;
 
 trait RepositoryUpdateTestAndLive
 {
@@ -402,10 +403,13 @@ trait RepositoryUpdateTestAndLive
                 return false;
             }
 
-            return (new AsvRouter())->shouldRouteWriteRequestToAccountService(
+            if ((new AsvMaps\WriteEnabledOnAsv)->checkIfWriteEnabled($this::class, $function) === false) {
+                return false;
+            }
+
+            return ($this->asvRouter)->shouldRouteWriteRequestToAccountService(
                 $this::class, $function, $entity->getId()
             );
-
         } catch (\Throwable $th) {
             return false;
         }

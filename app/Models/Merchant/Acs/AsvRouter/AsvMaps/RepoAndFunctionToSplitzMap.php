@@ -85,6 +85,8 @@ final class RepoAndFunctionToSplitzMap
 
     );
 
+    public const ROUTE_WRITE_FLOW_TO_ASV = SplitzConstant::SPLITZ_SEND_WRITE_TO_ASV;
+
     public static function getExperimentName(string $repoClass, string $functionName): string
     {
         if (isset(self::MAP[$repoClass]) === true) {
@@ -99,5 +101,9 @@ final class RepoAndFunctionToSplitzMap
     public static function isExperimentRemoved(string $experimentName): bool
     {
         return self::SPLITZ_REMOVAL_MAP[$experimentName] ?? false;
+    }
+
+    public static function getExperimentNameForWriteMigration(): string {
+        return self::ROUTE_WRITE_FLOW_TO_ASV;
     }
 }

@@ -436,16 +436,22 @@ class RepositoryTest extends TestCase
         // false, false
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $this->setSplitzWithOutputForBulk(["false", "false"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($emailEntity2);
 
         // true, false
         $this->setSplitzWithOutputForBulk(["true", "false"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($emailEntity2);
 
         // false, true
         $this->setSplitzWithOutputForBulk(["false", "true"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($emailEntity2);
 
@@ -453,6 +459,8 @@ class RepositoryTest extends TestCase
         * Test  3: The save or fail ASV should not be reached if Splitz throws exception.
         */
         $this->setSplitzWithOutputForBulk(["false", "true"], 1, true);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($emailEntity2);
 
@@ -469,6 +477,8 @@ class RepositoryTest extends TestCase
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $merchantEmail->getAsvSdkClient()->setWriteService($writeService);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($emailEntity1);
         self::assertEquals(10, $emailEntity1['created_at']);
         self::assertEquals(10, $emailEntity1['updated_at']);
@@ -486,6 +496,8 @@ class RepositoryTest extends TestCase
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $merchantEmail->getAsvSdkClient()->setWriteService($writeService);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($emailEntity2);
         self::assertEquals(10, $emailEntity2['created_at']);
         self::assertEquals(10, $emailEntity2['updated_at']);
@@ -503,6 +515,8 @@ class RepositoryTest extends TestCase
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $merchantEmail->getAsvSdkClient()->setWriteService($writeService);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($emailEntity3);
         self::assertEquals(10, $emailEntity3['created_at']);
         self::assertEquals(10, $emailEntity3['updated_at']);
@@ -525,6 +539,8 @@ class RepositoryTest extends TestCase
         with($saveRequest)->
         willThrowException(new \RZP\Exception\BaseException("I am ASV Exception.", "ASV_SERVER_ERROR"));
         $merchantEmail->getAsvSdkClient()->setWriteService($writeService);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         try {
             $repo->saveOrFail($emailEntity3);
             self::fail("Exception was expected.");

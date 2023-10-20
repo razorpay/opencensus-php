@@ -834,18 +834,24 @@ class RepositoryTest extends RepositoryTestHelper
         // false, false
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $this->setSplitzWithOutputForBulk(["false", "false"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($merchantDetailEntity2);
 
 
         // true, false
         $this->setSplitzWithOutputForBulk(["true", "false"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($merchantDetailEntity2);
 
 
         // false, true
         $this->setSplitzWithOutputForBulk(["false", "true"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($merchantDetailEntity2);
 
@@ -854,6 +860,8 @@ class RepositoryTest extends RepositoryTestHelper
         * Test  3: The save or fail ASV should not be reached if Splitz throws exception.
         */
         $this->setSplitzWithOutputForBulk(["false", "true"], 1, true);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($merchantDetailEntity2);
 
@@ -873,6 +881,7 @@ class RepositoryTest extends RepositoryTestHelper
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $merchantDetail->getAsvSdkClient()->setWriteService($writeService);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($merchantDetailEntity1);
         self::assertEquals(10, $merchantDetailEntity1['created_at']);
         self::assertEquals(10, $merchantDetailEntity1['updated_at']);
@@ -894,6 +903,7 @@ class RepositoryTest extends RepositoryTestHelper
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $merchantDetail->getAsvSdkClient()->setWriteService($writeService);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($merchantDetailEntity2);
 
         self::assertEquals(10, $merchantDetailEntity2['created_at']);
@@ -916,6 +926,7 @@ class RepositoryTest extends RepositoryTestHelper
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $merchantDetail->getAsvSdkClient()->setWriteService($writeService);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($merchantDetailEntity3);
         self::assertEquals(10, $merchantDetailEntity3['created_at']);
         self::assertEquals(10, $merchantDetailEntity3['updated_at']);
@@ -937,13 +948,13 @@ class RepositoryTest extends RepositoryTestHelper
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $this->setSplitzWithOutputForBulk(["true", "true"],1);
         $writeService = $this->getWriteMockClient();
-        $writeService->
-        expects($this->once())->
-        method("save")->
-        with($saveRequest)->
-        willThrowException(new \RZP\Exception\BaseException("I am ASV Exception.", "ASV_SERVER_ERROR"));
+        $writeService->expects($this->once())->method("save")
+            ->with($saveRequest)
+            ->willThrowException(new \RZP\Exception\BaseException("I am ASV Exception.", "ASV_SERVER_ERROR"));
         $merchantDetail->getAsvSdkClient()->setWriteService($writeService);
         try {
+            $repo =  new Repository();
+            $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
             $repo->saveOrFail($merchantDetailEntity3);
             self::fail("Exception was expected.");
         } catch (\Exception $e) {

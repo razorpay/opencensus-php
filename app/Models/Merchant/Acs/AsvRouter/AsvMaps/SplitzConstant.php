@@ -59,4 +59,6 @@ final class SplitzConstant
 
     const SPLITZ_ADDRESS_SAVE_OR_FAIL = 'splitz_experiment_address_save_or_fail';
     const SPLITZ_SEND_PARTNER_WRITE_TO_ASV = 'splitz_send_partner_write_to_asv';
+
+    const SPLITZ_SEND_WRITE_TO_ASV = 'splitz_send_write_to_asv';
 }

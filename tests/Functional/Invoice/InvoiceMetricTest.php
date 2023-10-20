@@ -28,7 +28,7 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->exactly(14))
+        $mock->expects($this->exactly(15))
             ->method('count')
             ->withConsecutive(
                 [
@@ -68,11 +68,19 @@ class InvoiceMetricTest extends TestCase
                     ],
                 ],
                 [
+                    'account_service_check_write_flow_result',
+                    1,
+                    [
+                        'routeOrWorkerName' => 'invoice_fetch_multiple',
+                        'isWriteFlow'  => false
+                    ],
+                ],
+                [
                     'account_service_check_exclusion_flow_result',
                     1,
                     [
                         'routeOrWorkerName' => 'invoice_fetch_multiple',
-                        'isExclusionFlow'  => true
+                        'isExclusionFlow'  => false
                     ],
                 ],
                 [

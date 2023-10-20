@@ -395,17 +395,23 @@ class RepositoryTest extends RepositoryTestHelper
         // false, false
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $this->setSplitzWithOutputForBulk(["false", "false"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($stakeholderEntity2);
 
 
         // true, false
         $this->setSplitzWithOutputForBulk(["true", "false"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($stakeholderEntity2);
 
         // false, true
         $this->setSplitzWithOutputForBulk(["false", "true"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($stakeholderEntity2);
 
@@ -413,6 +419,8 @@ class RepositoryTest extends RepositoryTestHelper
         * Test  3: The save or fail ASV should not be reached if Splitz throws exception.
         */
         $this->setSplitzWithOutputForBulk(["false", "true"], 1, true);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
         $repo->saveOrFail($stakeholderEntity2);
 
@@ -435,6 +443,8 @@ class RepositoryTest extends RepositoryTestHelper
         $stakeholder->getAsvSdkClient()->setWriteService($writeService);
 
         $stakeholderEntity1->audit_id = "testtesttest";
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($stakeholderEntity1);
         self::assertEquals(10, $stakeholderEntity1['created_at']);
         self::assertEquals(10, $stakeholderEntity1['updated_at']);
@@ -456,6 +466,8 @@ class RepositoryTest extends RepositoryTestHelper
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $stakeholder->getAsvSdkClient()->setWriteService($writeService);
         $stakeholderEntity2->audit_id = "testtesttest";
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($stakeholderEntity2);
         self::assertEquals(10, $stakeholderEntity2['created_at']);
         self::assertEquals(10, $stakeholderEntity2['updated_at']);
@@ -474,6 +486,8 @@ class RepositoryTest extends RepositoryTestHelper
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $stakeholder->getAsvSdkClient()->setWriteService($writeService);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($stakeholderEntity3);
         self::assertEquals(10, $stakeholderEntity3['created_at']);
         self::assertEquals(10, $stakeholderEntity3['updated_at']);
@@ -499,6 +513,8 @@ class RepositoryTest extends RepositoryTestHelper
         with($saveRequest)->
         willThrowException(new \RZP\Exception\BaseException("I am ASV Exception.", "ASV_SERVER_ERROR"));
         $stakeholder->getAsvSdkClient()->setWriteService($writeService);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         try {
             $stakeholderEntity3->audit_id = "testtesttest";
             $repo->saveOrFail($stakeholderEntity3);

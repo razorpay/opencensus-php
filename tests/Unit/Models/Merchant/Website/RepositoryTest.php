@@ -344,16 +344,22 @@ class RepositoryTest extends RepositoryTestHelper
         // false, false
         WriteEnabledOnAsv::$SAVE_OR_FAIL[Repository::class] = true;
         $this->setSplitzWithOutputForBulk(["false", "false"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($websiteEntity2);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
 
         // true, false
         $this->setSplitzWithOutputForBulk(["true", "false"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($websiteEntity2);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
 
         // false, true
         $this->setSplitzWithOutputForBulk(["false", "true"], 1);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($websiteEntity2);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
 
@@ -361,6 +367,8 @@ class RepositoryTest extends RepositoryTestHelper
         * Test  3: The save or fail ASV should not be reached if Splitz throws exception.
         */
         $this->setSplitzWithOutputForBulk(["false", "true"], 1, true);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($websiteEntity2);
         $this->getWriteMockClient()->expects($this->never())->method("save")->willReturn([$saveResponse, null]);
 
@@ -377,6 +385,8 @@ class RepositoryTest extends RepositoryTestHelper
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $merchantWebsite->getAsvSdkClient()->setWriteService($writeService);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($websiteEntity1);
         self::assertEquals(10, $websiteEntity1['created_at']);
         self::assertEquals(10, $websiteEntity1['updated_at']);
@@ -395,6 +405,8 @@ class RepositoryTest extends RepositoryTestHelper
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $merchantWebsite->getAsvSdkClient()->setWriteService($writeService);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($websiteEntity2);
 
         self::assertEquals(10, $websiteEntity2['created_at']);
@@ -414,6 +426,8 @@ class RepositoryTest extends RepositoryTestHelper
         $writeService = $this->getWriteMockClient();
         $writeService->expects($this->once())->method("save")->with($saveRequest)->willReturn([$saveResponse, null]);
         $merchantWebsite->getAsvSdkClient()->setWriteService($writeService);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         $repo->saveOrFail($websiteEntity3);
         self::assertEquals(10, $websiteEntity3['created_at']);
         self::assertEquals(10, $websiteEntity3['updated_at']);
@@ -434,6 +448,8 @@ class RepositoryTest extends RepositoryTestHelper
         with($saveRequest)->
         willThrowException(new \RZP\Exception\BaseException("I am ASV Exception.", "ASV_SERVER_ERROR"));
         $merchantWebsite->getAsvSdkClient()->setWriteService($writeService);
+        $repo =  new Repository();
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isWriteFlowOrFailure', 1, true, null);
         try {
             $repo->saveOrFail($websiteEntity3);
             self::fail("Exception was expected.");
