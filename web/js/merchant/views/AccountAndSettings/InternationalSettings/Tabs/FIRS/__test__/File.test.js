@@ -19,12 +19,13 @@ const renderApp = (props = {}) => {
 describe('Tests for File component', () => {
   const { month, year } = dateObject;
 
-  test('File name, month, year and download button should be visible', () => {
-    renderApp({ ...dateObject, file: fileObject });
+  test('File name, order, month, year and download button should be visible', () => {
+    const order = 1;
+    renderApp({ ...dateObject, file: { ...fileObject, order } });
 
     //correct file name should be visible
     expect(
-      screen.getByText(`${FileName[fileObject.document_type]} - ${month} ${year}`),
+      screen.getByText(`${FileName[fileObject.document_type]} ${order} - ${month} ${year}`),
     ).toBeInTheDocument();
 
     //download button should be visible

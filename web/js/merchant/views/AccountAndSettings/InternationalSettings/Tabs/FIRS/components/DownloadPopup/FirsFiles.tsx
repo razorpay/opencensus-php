@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text, Link } from '@razorpay/blade/components';
+import { Box, Text, Link, ChevronDownIcon, ChevronUpIcon } from '@razorpay/blade/components';
 
 import { pluralize } from 'common/utils/rzp-utils';
 import File from 'merchant/views/AccountAndSettings/InternationalSettings/Tabs/FIRS/components/DownloadPopup/File';
@@ -45,11 +45,6 @@ const FirsFiles = (): React.ReactElement => {
           <Text type="subdued">
             Bank FIRS ({bankFirs.length || 'No'} {pluralize('file', bankFirs.length)} available)
           </Text>
-          {bankFirs.length > 3 && (
-            <Link variant="button" onClick={toggleShowAll}>
-              {shouldShowAll ? 'Collapse' : 'Show'} all
-            </Link>
-          )}
         </Box>
         <Box>
           {bankFirs.map((file, index) => {
@@ -62,6 +57,19 @@ const FirsFiles = (): React.ReactElement => {
             </Text>
           )}
         </Box>
+        {bankFirs.length > 3 && (
+          <Box display="flex" justifyContent="center">
+            <Link
+              variant="button"
+              onClick={toggleShowAll}
+              marginRight="spacing.2"
+              icon={shouldShowAll ? ChevronUpIcon : ChevronDownIcon}
+              iconPosition="right"
+            >
+              Show {shouldShowAll ? 'less' : 'all'}
+            </Link>
+          </Box>
+        )}
       </Box>
 
       {internalFirs.length > 0 && (

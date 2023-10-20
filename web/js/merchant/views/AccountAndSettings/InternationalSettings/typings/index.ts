@@ -13,6 +13,7 @@ export type FirsFileType = {
   merchant_id: string;
   file_store_id: string | null;
   file_status: string;
+  order?: number;
 };
 
 export type MonthlyDataType = {

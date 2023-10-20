@@ -24,7 +24,7 @@ import { downloadFirsFile } from 'merchant/views/AccountAndSettings/Internationa
 import { FilePropsT } from 'merchant/views/AccountAndSettings/InternationalSettings/typings';
 
 const File = ({ file, month, year }: FilePropsT) => {
-  const { file_status, document_type, id } = file;
+  const { file_status, document_type, id, order } = file;
 
   const [isDownloading, setIsDownloading] = useState(false);
   const { setError } = useFirsContext();
@@ -54,7 +54,8 @@ const File = ({ file, month, year }: FilePropsT) => {
       <Box display="flex" alignItems={{ base: 'center' }}>
         <ReportsIcon color="feedback.icon.neutral.lowContrast" size="medium" />
         <Text marginLeft="spacing.3">
-          {FileName[document_type]} - {month} {year}
+          {FileName[document_type]}
+          {order ? ` ${order}` : ''} - {month} {year}
         </Text>
       </Box>
       {file_status === FileStatus.PROCESSING ? (

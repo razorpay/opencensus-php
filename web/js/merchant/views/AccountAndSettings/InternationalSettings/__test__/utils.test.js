@@ -23,6 +23,7 @@ import {
   isMonthValid,
   getFirsDetails,
   updateFirsDataObject,
+  addIndexToUniqueFiles,
   getCategorizedFirsFiles,
   isRequestFirsEnabled,
 } from 'merchant/views/AccountAndSettings/InternationalSettings/utils';
@@ -358,9 +359,37 @@ describe('Tests for updateFirsDataObject', () => {
   });
 });
 
+describe('Tests for addIndexToUniqueFiles', () => {
+  test('Should return file with no order if only single file is passed', () => {
+    const bankFiles = generateBankFirs(BANK_FILES);
+
+    expect(addIndexToUniqueFiles(bankFiles)).toStrictEqual(bankFiles);
+  });
+
+  test('Should return files with correct order when multiple files of same type are passed', () => {
+    const bankFiles = generateBankFirs(Array(3).fill(FileType.FIRS_FILE));
+
+    expect(addIndexToUniqueFiles(bankFiles)).toStrictEqual(
+      bankFiles.map((file, index) => ({ ...file, order: index + 1 })),
+    );
+  });
+
+  test('Should return files with correct order when multiple files of different type are passed', () => {
+    const firsFiles = generateBankFirs(Array(3).fill(FileType.FIRS_FILE));
+    const firsFirstDataFiles = generateBankFirs(Array(3).fill(FileType.FIRS_FIRSTDATA_FILE));
+
+    expect(addIndexToUniqueFiles([...firsFiles, ...firsFirstDataFiles])).toStrictEqual([
+      ...firsFiles.map((file, index) => ({ ...file, order: index + 1 })),
+      ...firsFirstDataFiles.map((file, index) => ({ ...file, order: index + 1 })),
+    ]);
+  });
+});
+
 describe('Tests for getCategorizedFirsFiles', () => {
   test('When only bank firs are passed', () => {
-    const bankFirs = generateBankFirs(BANK_FILES);
+    const bankFirs = generateBankFirs(BANK_FILES).sort((file1, file2) =>
+      file1.document_type.localeCompare(file2.document_type),
+    );
     const response = getCategorizedFirsFiles(bankFirs);
 
     expect(response).toStrictEqual({

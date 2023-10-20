@@ -1,3 +1,4 @@
+import { groupBy } from 'common/utils/rzp-utils';
 import {
   FileType,
   FileStatus,
@@ -199,6 +200,33 @@ export const updateFirsDataObject = (
 };
 
 /**
+ * This function loops through the files passed and add index
+ * to the unique files
+ * @param files - bank to add index to
+ * @returns
+ */
+export const addIndexToUniqueFiles = (files: Array<FirsFileType>): Array<FirsFileType> => {
+  const fileCounts = groupBy(files, 'document_type');
+  let indexedFiles: Array<FirsFileType> = [];
+
+  Object.keys(fileCounts).forEach((key) => {
+    const array = fileCounts[key];
+
+    if (array.length === 1) indexedFiles.push(array[0]);
+    else {
+      indexedFiles = indexedFiles.concat(
+        array.map((file, index) => {
+          file.order = index + 1;
+          return file;
+        }),
+      );
+    }
+  });
+
+  return indexedFiles;
+};
+
+/**
  * Categorizes data based on document_type
  * @param files
  * @returns
@@ -207,7 +235,7 @@ export const getCategorizedFirsFiles = (
   files: Array<FirsFileType>,
 ): GetCategorizedFirsFilesType => {
   const internalFirs: Array<FirsFileType> = [];
-  const bankFirs: Array<FirsFileType> = [];
+  let bankFirs: Array<FirsFileType> = [];
 
   for (const file of files) {
     if (
@@ -226,6 +254,10 @@ export const getCategorizedFirsFiles = (
     if (file.document_type === FileType.FIRS_INTERNAL_FILE) return 1;
     return -1;
   });
+
+  // Sorting the bank firs files to keep same files together
+  bankFirs.sort((file1, file2) => file1.document_type.localeCompare(file2.document_type));
+  bankFirs = addIndexToUniqueFiles(bankFirs);
 
   // Find the internal FIRS file
   const internalFirsFile = files.find((file) => file.document_type === FileType.FIRS_INTERNAL_FILE);

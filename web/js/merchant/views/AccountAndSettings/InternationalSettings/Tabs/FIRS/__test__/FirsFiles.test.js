@@ -94,12 +94,12 @@ describe('Tests for FirsFiles component when only bank FIRS are available', () =
     //show all click
     await userEvent.click(screen.getByText('Show all'));
     await waitFor(() => {
-      expect(screen.getByText('Collapse all')).toBeInTheDocument();
+      expect(screen.getByText('Show less')).toBeInTheDocument();
     });
     expect(screen.getAllByTestId('file-row')).toHaveLength(bankFirs.length);
 
     //collapse all click
-    await userEvent.click(screen.getByText('Collapse all'));
+    await userEvent.click(screen.getByText('Show less'));
     await waitFor(() => {
       expect(screen.getByText('Show all')).toBeInTheDocument();
     });
