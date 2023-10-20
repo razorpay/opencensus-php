@@ -684,19 +684,7 @@ class Service extends Base\Service
     {
         return Tracer::inSpan(['name' => 'payment_page.ppi.update.updating'], function() use($paymentPageId)
         {
-
-            $unpaidAmount = $this->repo->payment_page_record->findByPaymentPageIdAndStatus($paymentPageId);
-
-            $response[PaymentPageRecord\Entity::TOTAL_PENDING_PAYMENTS] = count($unpaidAmount);
-
-            $revenue = 0;
-            foreach ($unpaidAmount as $amount) {
-            $revenue = $revenue + $amount['amount'];
-            }
-
-            $response[PaymentPageRecord\Entity::TOTAL_PENDING_REVENUE] = $revenue;
-
-            return $response;
+            return $this->repo->payment_page_record->findByPaymentPageIdAndStatus($paymentPageId);
         });
 
     }

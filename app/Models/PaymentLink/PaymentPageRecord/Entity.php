@@ -115,6 +115,10 @@ class Entity extends Base\PublicEntity
         self::CUSTOM_FIELD_SCHEMA,
     ];
 
+    protected $defaults = [
+        self::TOTAL_AMOUNT => 0
+    ];
+
     public static $secondary_ref_ids = [
         self::SECONDARY_1,
         self::SECONDARY_2,
@@ -138,6 +142,11 @@ class Entity extends Base\PublicEntity
         Status::validateStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setTotalAmount(int $totalAmount)
+    {
+        $this->setAttribute(self::TOTAL_AMOUNT, $totalAmount);
     }
 
     public static function isSecondaryRefId(String $name)

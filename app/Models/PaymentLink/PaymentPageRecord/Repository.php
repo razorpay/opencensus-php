@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use Illuminate\Support\Facades\DB;
 use RZP\Models\Batch\Entity as Batch;
 use RZP\Models\PaymentLink\Entity as PaymentLink;
 use RZP\Models\PaymentLink\PaymentPageRecord\Status as STATUS;
@@ -33,12 +34,17 @@ class Repository extends Base\Repository
     {
         PaymentLink::silentlyStripSign($payment_page_id);
 
-        return $this->newQuery()
-            ->select(Entity::AMOUNT)
+        $query = $this->newQuery()
             ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
-            ->where(Entity::STATUS, STATUS::UNPAID)
-            ->get()
-            ->toArray();
+            ->where(Entity::STATUS, STATUS::UNPAID);
+
+        $total_pending_revenue = $query->sum(Entity::AMOUNT);
+        $total_pending_payments = $query->count();
+
+        return [
+            Entity::TOTAL_PENDING_PAYMENTS => $total_pending_payments,
+            Entity::TOTAL_PENDING_REVENUE => $total_pending_revenue,
+        ];
     }
 
     // query is executed on replica as it could get expensive

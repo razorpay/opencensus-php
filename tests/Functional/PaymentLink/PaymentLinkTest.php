@@ -692,7 +692,7 @@ class PaymentLinkTest extends TestCase
             'email_notify'   => TRUE,
             'Email' => '',
             'Phone' => 1231231235,
-            'DOB' => 'test',
+            'DOB' => 'test123',
             'Address' => '',
             'item1' => 1234,
             'item2' => 12323
@@ -995,6 +995,8 @@ class PaymentLinkTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($testData["request"]);
 
+        $testData["request"]["content"]["DOB"] = "test1234";
+
         $content = $this->makeRequestAndGetContent($testData["request"]);
 
         $this->assertEquals($content["error_description"], 'Primary Reference ID should be unique');
@@ -1218,6 +1220,164 @@ class PaymentLinkTest extends TestCase
 
         $this->assertEquals('paid',$entityArray['status']);
 
+
+    }
+
+
+    public function testPaymentPageStatusUpdateForTotalAmount()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $testData = $this->testData['setUpPaymentPageForFileUpload'];
+
+        $testData['request']['content']['payment_page_items'] = [
+            [
+                PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                    'name'        =>  'amount',
+                    Item\Entity::AMOUNT => 5000,
+                    'currency'    => 'INR',
+                ],
+                'mandatory'         => true,
+            ],
+            [
+                PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                    'name'        =>  'testName2',
+                    Item\Entity::AMOUNT => 10000,
+                    'currency'    => 'INR',
+                ],
+                'mandatory'         => false,
+            ]
+        ];
+
+        $resp = $this->startTest($testData);
+
+        $paymentLink = (new PaymentLink\Repository())->findByPublicId($resp['id']);
+
+        $paymentPageItems = (new PaymentLink\PaymentPageItem\Repository())->fetchByPaymentLinkIdAndMerchant($paymentLink->getId(), '10000000000000');
+
+        $this->createPaymentPageRecords($paymentLink->getId());
+
+        $entity = $this->getDbLastEntity('payment_page_record');
+
+        $entityArray = $entity->toArray();
+
+        // verify total_amount is initially 0
+        $this->assertEquals(0, $entityArray['total_amount']);
+
+        $this->createOrderForPaymentLink($paymentPageItems);
+
+        $orderEntity = $this->getDbLastEntity("order");
+
+        $order = $orderEntity;
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order, Payment\Status::CAPTURED,[
+            'pri__ref__id'  => '1234567890',
+            'sec__ref__id_1' => '123456789',
+            'email' => 'abc@abc.com',
+            'phone' => '1234567890',
+        ]);
+
+        $entity = $this->getDbLastEntity('payment_page_record');
+
+        $entityArray = $entity->toArray();
+
+        $this->assertEquals('paid',$entityArray['status']);
+
+        $this->assertEquals(15000, $entityArray['total_amount']);
+    }
+
+    public function testCreatePaymentPageEditExpireBy()
+    {
+        $id = $this->setUpPaymentPageForFileUpload();
+
+        $expireBy = Carbon::now(Timezone::IST)->addDays(30)->getTimestamp();
+
+        $request  = [
+            'url'     => '/payment_pages/' . $id,
+            'method'  => 'patch',
+            'content' => [
+                "expire_by"     =>  $expireBy,
+            ],
+        ];
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($id, $res['id']);
+    }
+
+
+    public function testPaymentPageRecordAllErrors()
+    {
+        $id = $this->setupPaymentPageForUDFSchemaValidations();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        // first record with no errors
+        $testData['request']['content'] = [
+            'amount'         => '101',
+            'sms_notify'     => TRUE,
+            'email_notify'   => TRUE,
+            'Email' => 'test@test.com',
+            'Phone' => 1231231234,
+            'Primary Reference Id' => 'test123123',
+            'Secondary Reference Id' => 'test123',
+            'URL' => 'https://razorpay.com',
+            'PAN' => 'ABCDP1234X',
+            'DOB' => '16 Jun, 2023',
+            'Amount 2' => 1234.56
+        ];
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($resp["error_code"], "");
+        $this->assertEquals($resp["error_description"], "");
+
+
+        // second record with all errors
+        // 1. Duplicate primary and sec_ref id's
+        // 2. Email and contact in wrong format
+        // 3. Price < Rs.1
+        // 4. Missing mandatory fields
+        $testData['request']['content'] = [
+            'amount'         => '10',
+            'sms_notify'     => TRUE,
+            'email_notify'   => TRUE,
+            'Email' => 'testtest.com',
+            'Phone' => 12,
+            'Primary Reference Id' => 'test123123',
+            'Secondary Reference Id' => 'test123',
+            'PAN' => 'ABCDP1234X',
+            'DOB' => '16 Jun, 2023',
+            'Amount 2' => 1234.56
+        ];
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->makeRequestAndGetContent($testData["request"]);
+
+
+        $expectedErrorMessage = "Primary Reference ID should be unique
+Mandatory field entry missing for URL
+The validation failed for url,email,phone
+Payment amount is lesser than the minimum amount allowed
+Secondary reference id should be unique, duplicate value for test123";
+
+        $this->assertEquals($resp["error_code"], "BAD_REQUEST_VALIDATION_FAILURE");
+        $this->assertEquals($expectedErrorMessage, $resp["error_description"]);
+
+        // ensure second payment_page_record is not created
+
+        $res = $this->getDbLastEntity('payment_page_record');
+
+        $res = \DB::connection('test')->select("select * from payment_page_records");
+
+        $this->assertEquals(1, count($res));
     }
 
     public function testPaymentPageRecordForFileUpload()

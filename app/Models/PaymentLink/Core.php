@@ -290,6 +290,12 @@ class Core extends Base\Core
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT);
             }
 
+            // if the input doesn't has udf_schema or payment_page_items, then we can skip these checks
+            if (($paymentLink !== null) and (isset($input[Entity::SETTINGS][Entity::UDF_SCHEMA]) == false))
+            {
+                return;
+            }
+
             $this->trace->info(
                     TraceCode::PAYMENT_PAGE_BULK_UPLOAD,
                     [
@@ -1696,6 +1702,8 @@ class Core extends Base\Core
                 $paymentPageRecord = $this->repo->payment_page_record->findByPaymentPageAndPrimaryRefIdOrFail($paymentLink->getId(),$priRefId);
 
                 $paymentPageRecord->setStatus(PaymentPageRecord\Status::PAID);
+
+                $paymentPageRecord->setTotalAmount($payment->getAdjustedAmountWrtCustFeeBearer());
 
                 $this->repo->saveOrFail($paymentPageRecord);
             }

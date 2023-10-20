@@ -6825,12 +6825,15 @@ return [
                 'Phone'          => '0987654321',
                 'sms_notify'     => TRUE,
                 'email_notify'   => TRUE,
-                'DOB'            => '0987654321'
+                'DOB'            => '0987654321',
+                'amount'         => 100
             ],
         ],
         'response' => [
             'content' => [
-                'error_description' => 'Mandatory field entry missing for Primary reference id'
+                'error_description' =>
+                    'Mandatory field entry missing for Primary reference id
+The validation failed for pri__ref__id'
                 ]
             ],
             'status_code' => 200,
@@ -6851,7 +6854,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'error_description' => 'Mandatory field entry missing for amount'
+                'error_description' => 
+                'Mandatory field entry missing for amount
+Payment amount is lesser than the minimum amount allowed'
                 ]
             ],
             'status_code' => 200,

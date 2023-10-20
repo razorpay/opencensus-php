@@ -39,15 +39,19 @@ class Core extends Base\Core
             unset($input[Entity::EMAIL_NOTIFY]);
         }
 
+        $errors = [];
+
         try
         {
-            $modifiedInput = $this->modifyInputForPaymentPageRecord($paymentPage, $batchId, $input);
+            $modifiedInput = $this->modifyInputForPaymentPageRecord($paymentPage, $batchId, $input, $errors);
+
+            if (count($errors) > 0)
+            {
+                throw new BadRequestValidationFailureException(implode("\n", $errors));
+            }
         }
         catch (\Throwable $ex)
         {
-
-            //TODO:Create dummy payment page record id for the payment page in question
-
 
             $this->trace->traceException(
                 $ex,
@@ -99,7 +103,7 @@ class Core extends Base\Core
         return $paymentPageRecord;
     }
 
-    public function uniqueRefIdValidations(array $input): array
+    public function uniqueRefIdValidations(array $input, array &$errors): array
     {
         $secondaryRefId1 = $input[Entity::SECONDARY_1];
 
@@ -109,7 +113,7 @@ class Core extends Base\Core
 
         if ($primaryRefId === $secondaryRefId1)
         {
-            throw new BadRequestValidationFailureException(
+            array_push($errors,
                 'Secondary reference id cannot be same as primary reference id');
         }
 
@@ -117,7 +121,7 @@ class Core extends Base\Core
 
         if ($rowCount !== 0)
         {
-            throw new BadRequestValidationFailureException(
+            array_push($errors,
                 'Secondary reference id should be unique, duplicate value for '. $secondaryRefId1);
         }
 
@@ -128,15 +132,15 @@ class Core extends Base\Core
      * @throws BadRequestValidationFailureException
      * @throws BadRequestException
      */
-    public function modifyInputForPaymentPageRecord(Base\Entity $paymentPage, string $batch_id, array $input)
+    public function modifyInputForPaymentPageRecord(Base\Entity $paymentPage, string $batch_id, array $input, array &$errors)
     {
         $id = PaymentLink::stripDefaultSign($paymentPage->getId());
 
-        $response = $this->setUdfParameters($id, $input);
+        $response = $this->setUdfParameters($id, $input, $errors);
 
-        $this->validateUDFWithRegex($paymentPage, $input);
+        $this->validateUDFWithRegex($paymentPage, $input, $errors);
 
-        $response = $this->setAmountParameters($paymentPage, $response, $input);
+        $response = $this->setAmountParameters($paymentPage, $response, $input, $errors);
 
         $response[Entity::PAYMENT_LINK_ID] = $id;
 
@@ -144,7 +148,7 @@ class Core extends Base\Core
 
         $response = $this->populateCustomFieldSchema($id, $response);
 
-        $response = $this->uniqueRefIdValidations($response);
+        $response = $this->uniqueRefIdValidations($response, $errors);
 
         $batch_id = Batch::silentlyStripSign($batch_id);
         $response[Entity::BATCH_ID] = $batch_id;
@@ -157,7 +161,7 @@ class Core extends Base\Core
     /**
      * @throws BadRequestValidationFailureException
      */
-    public function validateUDFWithRegex(Base\Entity $paymentPage, array $input)
+    public function validateUDFWithRegex(Base\Entity $paymentPage, array $input, array &$errors)
     {
         $id = PaymentLink::stripDefaultSign($paymentPage->getId());
 
@@ -187,18 +191,17 @@ class Core extends Base\Core
 
         $udfSchemaEntity = new UdfSchema($paymentPage);
 
-        $errors = $udfSchemaEntity->validate($allUdfEntries, true);
+        $validationErrors = $udfSchemaEntity->validate($allUdfEntries, true);
 
-        if($errors !== null)
+        if($validationErrors !== null)
         {
-            $data = array_unique(array_column($errors, 'property'));
+            $data = array_unique(array_column($validationErrors, 'property'));
 
-            throw new BadRequestValidationFailureException("The validation failed for ".implode(',',$data));
+            array_push($errors,"The validation failed for ".implode(',',$data));
         }
-
     }
 
-    public function setUdfParameters(string $id, array $input)
+    public function setUdfParameters(string $id, array $input, array &$errors)
     {
 
         $udf_schema = (new Settings())->getSettings($id, 'payment_link', PaymentLink::UDF_SCHEMA);
@@ -216,8 +219,7 @@ class Core extends Base\Core
             if (($udf[Entity::REQUIRED] === true) and
                 (!in_array($udf[PaymentLink::TITLE],$keys)))
             {
-                throw new BadRequestValidationFailureException(
-                    'Mandatory field entry missing for '.$udf[PaymentLink::TITLE]);
+                array_push($errors, 'Mandatory field entry missing for '.$udf[PaymentLink::TITLE]);
             }
 
             // storing all secondary_ref_id's also in the form of name: value mapping,
@@ -246,8 +248,7 @@ class Core extends Base\Core
 
                 if($isUnique === false)
                 {
-                    throw new BadRequestValidationFailureException(
-                        'Primary Reference ID should be unique');
+                    array_push($errors, 'Primary Reference ID should be unique');
                 }
 
                 $response[Entity::PRIMARY_REFERENCE_ID] = $input[$udf[PaymentLink::TITLE]];
@@ -272,7 +273,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function setAmountParameters(Base\Entity $paymentLink, array $resp, array $input)
+    public function setAmountParameters(Base\Entity $paymentLink, array $resp, array $input, array &$errors)
     {
         $payment_page_items = $this->repo->payment_page_item->fetchByPaymentLinkIdAndMerchant($paymentLink->getId(), $paymentLink->getMerchantId());
 
@@ -288,26 +289,23 @@ class Core extends Base\Core
             if (($paymentPageItem[Entity::MANDATORY] === true) and
                 (!in_array($item[PaymentLink::NAME],$keys)))
             {
-                throw new BadRequestValidationFailureException(
+                array_push($errors,
                     'Mandatory field entry missing for '.$item[PaymentLink::NAME]);
             }
 
             $other_details[$item[PaymentLink::NAME]] = $input[$item[PaymentLink::NAME]];
 
-            //will add only mandatory price fields in amount
-                if($paymentPageItem[Entity::MANDATORY] === true)
-                {
-                    $resp[Entity::AMOUNT] = $resp[Entity::AMOUNT] + $input[$item[PaymentLink::NAME]];
-                }
+            // add all price fields in amount
 
-            $resp[Entity::TOTAL_AMOUNT] = $resp[Entity::TOTAL_AMOUNT] + $input[$item[PaymentLink::NAME]];
-
+            $resp[Entity::AMOUNT] = $resp[Entity::AMOUNT] + $input[$item[PaymentLink::NAME]];
         }
+
+        // total_amount will be populated when a payment is captured for this record
+        $resp[Entity::TOTAL_AMOUNT] = 0;
 
         if ($resp[Entity::AMOUNT] < 100)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT);
+            array_push($errors, 'Payment amount is lesser than the minimum amount allowed');
         }
 
         $other_details = array_merge($resp[Entity::OTHER_DETAILS],$other_details);
