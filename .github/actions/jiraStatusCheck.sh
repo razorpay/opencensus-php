@@ -26,7 +26,8 @@ else
     echo "Jira issue is approved."
     exit 0
   else
-    echo "Jira issue is not approved."
+    echo "Jira issue is not approved. If your Jira issue is approved and the check is still failing, please add/remove a
+    label (preferred approach if you don't want to re-trigger BVTs) or push a new commit to your PR."
     exit 1
   fi
 fi
