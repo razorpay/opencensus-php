@@ -9,6 +9,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Exception\LogicException;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -41,6 +42,8 @@ class UpiKotakQRCodeTest extends TestCase
         $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
 
         $this->fixtures->create('terminal:dedicated_upi_kotak_terminal');
+
+        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
 
         $this->getDedicatedTerminalSplitzResponseForVariantON();
     }
@@ -190,4 +193,43 @@ class UpiKotakQRCodeTest extends TestCase
             'LiveAccountMer');
     }
 
+    public function testCloseKotakQrWithCloseQrOnDemandFlagEnabled(): void
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
+
+        $qrCode = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer');
+
+        $this->fixtures->on('live')->merchant->addFeatures([FeatureConstants::CLOSE_QR_ON_DEMAND], 'LiveAccountMer');
+
+        $this->closeQrCode($qrCode['id']);
+    }
+
+    public function testCloseKotakQrWithCloseQrOnDemandFlagDisabled(): void
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
+
+        $qrCode = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer');
+
+        $this->closeQrCode($qrCode['id']);
+    }
 }

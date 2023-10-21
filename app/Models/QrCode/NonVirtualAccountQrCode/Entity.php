@@ -361,6 +361,7 @@ class Entity extends QrCode\Entity
     public function isClosed()
     {
         // TODO: remove check on close by once QR expiry goes live
+        // Note: If reminder service fails to call to close this QR after expiry time, QR will not be closed on demand
         return ($this->getAttribute(self::STATUS) === Status::CLOSED) or
                (($this->getAttribute(self::CLOSE_BY) !== null) and
                 (Carbon::now()->getTimestamp() >= $this->getAttribute(self::CLOSE_BY)));
