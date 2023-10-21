@@ -3,6 +3,7 @@
 namespace RZP\Services\TaxPayments;
 
 use Mail;
+use Request;
 use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -261,7 +262,7 @@ class Service
                 {
                     // check for RBL CAs on BAS
                     $bankingAccount = (new \RZP\Models\BankingAccount\Service())->fetchAccountByMerchantIdAccountNumberChannel(
-                        $merchant->getId(), 
+                        $merchant->getId(),
                         $accountNumber,
                         \RZP\Models\BankingAccountService\Channel::RBL);
                 }
