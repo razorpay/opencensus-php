@@ -382,7 +382,10 @@ class Processor
      * Razorx flag to indicate if a payment with save option on custom/razorpayjs should go via PG Router and CPS or just via API service
      */
     const SAVED_CARD_PAYMENTS_VIA_PGROUTER_V2 = 'saved_card_payments_via_pg_router_v2';
-
+    /**
+     * Razorx flag to indicate if a payment with charge account should go via PG Router and CPS or just via API service
+     */
+    const CHARGE_ACCOUNT_CARD_PAYMENTS_VIA_PGROUTER = 'charge_account_card_payments_via_pg_router';
     /**
      * Razorx flag to indicate if a banking Org ID card payment should go via PG Router and CPS or just via API service
      */
@@ -755,6 +758,11 @@ class Processor
 
             if ($this->isRearchBVTRequest() === true || $this->isRearchDarkRequest() === true)
             {
+                if ((empty($input[Payment\Entity::METHOD]) === true) or
+                ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD))
+                {
+                    return false;
+                }
                 if(empty($input[Payment\Entity::TOKEN]) === false)
                 {
                     $this->preProcessTokenisedPaymentRequestForRearch($input, $merchant);
@@ -771,7 +779,6 @@ class Processor
                 (empty($input[Payment\Entity::INVOICE_ID]) === false) or
                 (empty($input[Payment\Entity::TOKEN_ID]) === false) or
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
-                (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
                 ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF'))
                 )
             {
@@ -824,6 +831,20 @@ class Processor
                 return false;
             }
 
+            if (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::CHARGE_ACCOUNT_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+                if ($result !== 'on')
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_INPUT_REASON, [
+                        'inputField' => 'charge_account',
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+                    return false;
+                }
+                $this->setChargeAccountMerchantFeatures($input);
+            }
+          
             if ($input[Payment\Entity::METHOD] == Payment\METHOD::EMI)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::ENABLE_REARCH_EMI_PAYMENTS_FLOW, $this->mode);
@@ -1288,6 +1309,36 @@ class Processor
         }
 
         return false;
+    }
+
+    protected function setChargeAccountMerchantFeatures(& $input)
+    {
+        if (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === true)
+        {
+            return;
+        }
+
+        $terminal = $this->repo->terminal->
+        findMerchantIdByGatewayMerchantID($input[Payment\Entity::CHARGE_ACCOUNT]);
+
+        if ($terminal !== null)
+        {
+            $input[Payment\Entity::CHARGE_ACCOUNT] = $terminal->getMerchantId();
+        }
+
+        $merchant = $this->repo->merchant->find($input[Payment\Entity::CHARGE_ACCOUNT]);
+
+        if ($merchant === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_CHARGE_ACCOUNT,
+                null,
+                [
+                    'charge_account'   => $input[Payment\Entity::CHARGE_ACCOUNT],
+                ]);
+        }
+
+        $input["charge_account_merchant_features"] = $merchant->getEnabledFeatures();
     }
 
     protected function canRouteEmiThroughRearch($iin): bool
