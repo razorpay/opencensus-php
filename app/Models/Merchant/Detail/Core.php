@@ -2524,7 +2524,8 @@ class Core extends Base\Core
                     'response' => $pgosResponse
                 ]);
 
-                return $pgosResponse['data'];
+                $merchantDetails = $this->getMerchantDetails($merchant);
+                return $merchantDetails;
             }
             catch (\Throwable $exception)
             {
