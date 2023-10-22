@@ -9,6 +9,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { fetchDisputes } from 'merchant/reducers/collection';
 import { accept, fetchOpen } from 'merchant/reducers/disputes/details';
+import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const ConfirmModal = (props) => {
@@ -22,9 +23,15 @@ const ConfirmModal = (props) => {
     description,
     onConfirm,
     user,
+    isAdminAsMerchant,
   } = props;
   const splitz = useSplitzService();
   const version = isTransactionsV2Enabled(splitz, user) ? 'v2' : undefined;
+
+  React.useEffect(() => {
+    const { loading, error } = isAdminAsMerchant;
+    if (loading && error === null) dispatch(fetchIsAdminAsMerchant());
+  }, []);
 
   const handlePrimaryClick = () => {
     if (context === 'accept') {
@@ -35,6 +42,8 @@ const ConfirmModal = (props) => {
         properties: {
           timestamp: Date.now(),
           version,
+          disputeId: dispute.id,
+          isAdminAsMerchant: isAdminAsMerchant?.data,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
@@ -87,8 +96,6 @@ ConfirmModal.propTypes = {
 };
 
 export default connect(
-  (state) => ({ user: state.session.user }),
-  (dispatch) => ({
-    dispatch,
-  }),
+  (state) => ({ user: state.session.user, isAdminAsMerchant: state.profile.isAdminAsMerchant }),
+  (dispatch) => ({ dispatch }),
 )(ConfirmModal);

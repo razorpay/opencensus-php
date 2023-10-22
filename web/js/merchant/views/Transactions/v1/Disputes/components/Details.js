@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import { useSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
@@ -14,6 +15,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
 import roleList from 'merchant/helpers/permissions/roles-list';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
+import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 
 import ConfirmModal from './ConfirmModal';
 import ContestDispute from './ContestDispute';
@@ -44,6 +46,8 @@ const DisputeDetails = (props) => {
     closeModal,
     showNotification,
     user,
+    isAdminAsMerchant,
+    fetchIsAdminAsMerchant,
   } = props;
   const [showContest, setShowContest] = useState(!!dispute?.evidence);
   const contestRef = React.createRef();
@@ -76,6 +80,11 @@ const DisputeDetails = (props) => {
       setShowContest(false);
     }
   }, [dispute.evidence, dispute.id]);
+
+  React.useEffect(() => {
+    const { loading, error } = isAdminAsMerchant;
+    if (loading && error === null) fetchIsAdminAsMerchant();
+  }, []);
 
   const acceptDispute = () => {
     if (canUserTakeAction) {
@@ -127,6 +136,8 @@ const DisputeDetails = (props) => {
         properties: {
           timestamp: Date.now(),
           version,
+          disputeId: dispute.id,
+          isAdminAsMerchant: isAdminAsMerchant?.data,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
@@ -368,4 +379,9 @@ const DisputeDetails = (props) => {
   );
 };
 
-export default connect((state) => ({ user: state.session.user }), null)(DisputeDetails);
+const mapDispatchToProps = (dispatch) => bindActionCreators({ fetchIsAdminAsMerchant }, dispatch);
+
+export default connect(
+  (state) => ({ user: state.session.user, isAdminAsMerchant: state.profile.isAdminAsMerchant }),
+  mapDispatchToProps,
+)(DisputeDetails);
