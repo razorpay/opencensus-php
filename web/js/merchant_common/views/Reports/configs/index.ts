@@ -151,4 +151,10 @@ export const getCustomConfigs = (session?: SessionReducerState): CustomConfigTyp
   return customConfigs;
 };
 
-export const MARKET_PLACE_CONFIG_TYPES = ['transactions', 'payments', 'refunds', 'settlements'];
+export const MARKET_PLACE_CONFIG_TYPES = [
+  'transactions',
+  'payments',
+  'refunds',
+  'settlements',
+  'transfers',
+];
