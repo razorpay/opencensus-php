@@ -2043,7 +2043,31 @@ class Service extends Base\Service
                     'updated_at'            => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
                 ]);
 
-                // 5. generate banking_account_account_managers
+                if (isset($partnerBankApplication['account_opening_details']['account_opening_ftnr']))
+                {
+                    if ($partnerBankApplication['account_opening_details']['account_opening_ftnr'] === 1)
+                    {
+                        $partnerBankApplication['account_opening_details']['account_opening_ftnr'] = true;
+                    }
+                    else
+                    {
+                        $partnerBankApplication['account_opening_details']['account_opening_ftnr'] = false;
+                    }
+                }
+
+                if (isset($partnerBankApplication['api_onboarding_details']['api_onboarding_ftnr']))
+                {
+                    if ($partnerBankApplication['api_onboarding_details']['api_onboarding_ftnr'] === 1)
+                    {
+                        $partnerBankApplication['api_onboarding_details']['api_onboarding_ftnr'] = true;
+                    }
+                    else
+                    {
+                        $partnerBankApplication['api_onboarding_details']['api_onboarding_ftnr'] = false;
+                    }
+                }
+
+                // 6. generate banking_account_account_managers
                 $bankingAccountAccountManagers = [];
                 // SALES_POC(spoc)
                 $spoc = $bankingAccount->spocs()->first();
@@ -2087,7 +2111,7 @@ class Service extends Base\Service
                     ];
                 }
 
-                // 6. generate comments
+                // 7. generate comments
                 $apiComments = $bankingAccount->getActivationComments();
 
                 $basComments = [];
@@ -2128,7 +2152,7 @@ class Service extends Base\Service
                     $basComments[] = $basComment;
                 }
 
-                // 7. generate application_status_logs
+                // 8. generate application_status_logs
                 $bankingAccountStates = $bankingAccount->getActivationStatusChangeLog();
 
                 $applicationStatusLogs = [];

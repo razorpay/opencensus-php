@@ -14069,6 +14069,8 @@ class BankingAccountTest extends TestCase
             'updated_at'    => max($bankingAccount->getAttribute('updated_at'), $activationDetail->getAttribute('updated_at')) * 1000,
         ]);
 
+        $expectedPartnerBankApplication['account_opening_details']['account_opening_ftnr'] = true;
+
         $expectedBankingAccountAccountManagers = [
             [
                 'rzp_admin_id'      => Org::SUPER_ADMIN,
