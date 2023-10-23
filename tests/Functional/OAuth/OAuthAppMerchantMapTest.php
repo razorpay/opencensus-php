@@ -11,6 +11,7 @@ use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Traits\MocksPartnershipsService;
 use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use function PHPUnit\Framework\assertNull;
 
@@ -21,6 +22,7 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use CreateLegalDocumentsTrait;
+    use MocksPartnershipsService;
 
     protected function setUp(): void
     {
@@ -61,11 +63,15 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $this->assertEquals($application->getId(), $testMapping['entity_id']);
     }
 
-    public function testOAuthAppMerchantMapWithDashboardAccess()
+    public function testOAuthAppMerchantMapWithDashboardAccessForSameSignUpSource()
     {
         $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
         $subMerchant = $this->createSubMerchantForOauth(true);
         list($partner, $partnerUser) = $this->createPartnerForOauth();
+
+        $this->fixtures->merchant->addFeatures(['pp_subm_dashboard_access'], $partner->getId());
+
+        $this->mockPartnershipsServiceTreatment($subMerchant->getId(),  $partner->getId(),'getSubmSignupSource');
 
         $this->expectstorkInvalidateAffectedOwnersCacheRequest($subMerchant->getId());
 
@@ -107,6 +113,46 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         list($partner, $partnerUser) = $this->createPartnerForOauth();
 
         $this->expectstorkInvalidateAffectedOwnersCacheRequest($subMerchant->getId());
+
+        $testDataToReplace = [
+            'request'  => [
+                'url'     => "/merchants/{$subMerchant->getId()}/applications",
+                'content' => [
+                    'application_id' => $application->getId(),
+                ]
+            ],
+            'response' => [
+                'content'     => [
+                    'merchant_id' => $subMerchant->getId(),
+                    'entity_id'   => $application->getId(),
+                ],
+            ],
+        ];
+
+        $this->startTest($testDataToReplace);
+
+        $liveMapping = $this->getMapping('live');
+        $testMapping = $this->getMapping('test');
+
+        $this->assertEquals($application->getId(), $liveMapping['entity_id']);
+        $this->assertEquals($application->getId(), $testMapping['entity_id']);
+
+        $liveUserMapping = $this->getMerchantUserMapping('live', $partnerUser->getId(), $subMerchant->getId());
+        $testUserMapping = $this->getMerchantUserMapping('test', $partnerUser->getId(), $subMerchant->getId());
+
+        $this->assertNull($liveUserMapping);
+        $this->assertNull($testUserMapping);
+    }
+
+    public function testOAuthAppMerchantMapDashboardAccessForDifferentSignUpSource()
+    {
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+        $subMerchant = $this->createSubMerchantForOauth(true);
+        list($partner, $partnerUser) = $this->createPartnerForOauth();
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest($subMerchant->getId());
+        $this->fixtures->merchant->addFeatures(['pp_subm_dashboard_access'], $partner->getId());
+        $this->mockPartnershipsServiceTreatment($subMerchant->getId(),  'RandomId123456','getSubmSignupSource');
 
         $testDataToReplace = [
             'request'  => [

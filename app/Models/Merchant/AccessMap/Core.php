@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
@@ -182,7 +183,12 @@ class Core extends Base\Core
             $merchantMapping =  $this->create($entityOwner, $merchant, $data);
             if ($dashboardAccess)
             {
-                $this->assignDashboardAccessForSubmerchants($entityOwner, $merchant);
+                $subMSignUpSource = $this->app->partnerships->getSubmSignupSource($merchant->getId());
+                $ppDashboardAccessFeature = $this->repo->feature->findByEntityTypeEntityIdAndName('merchant', $entityOwner->getId(), 'pp_subm_dashboard_access');
+                if($subMSignUpSource === $entityOwner->getId() and empty($ppDashboardAccessFeature))
+                {
+                    $this->assignDashboardAccessForSubmerchants($entityOwner, $merchant);
+                }
             }
 
             return $merchantMapping;

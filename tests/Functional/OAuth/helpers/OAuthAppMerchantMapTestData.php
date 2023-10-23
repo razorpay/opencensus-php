@@ -43,6 +43,27 @@ return [
         ],
     ],
 
+    'testOAuthAppMerchantMapDashboardAccessForDifferentSignUpSource' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000000/applications',
+            'method'  => 'POST',
+            'content' => [
+                'application_id' => '10000000000App',
+                'partner_id'     => '10000000000000',
+                'dashboard_access' => 'true'
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'merchant_id' => '10000000000000',
+                'entity_id'   => '10000000000App',
+                'entity_type' => 'application',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+
     'testOAuthAppMerchantMapWithDashboardAccessAndNoSubMPrimaryOwner' => [
         'request'  => [
             'url'     => '/merchants/10000000000000/applications',
@@ -63,7 +84,7 @@ return [
         ],
     ],
 
-    'testOAuthAppMerchantMapWithDashboardAccess' => [
+    'testOAuthAppMerchantMapWithDashboardAccessForSameSignUpSource' => [
         'request'  => [
             'url'     => '/merchants/10000000000000/applications',
             'method'  => 'POST',

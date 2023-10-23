@@ -468,6 +468,7 @@ class Constants
 
     const NC_EMAIL_OPT_OUT                = 'nc_email_opt_out';
     const NC_WHATSAPP_OPT_OUT             = 'nc_whatsapp_opt_out';
+    const PP_SUBM_DASHBOARD_ACCESS        = 'pp_subm_dashboard_access';
 
     /**
      * Feature flag to decide whether commission payout should happen
@@ -2221,6 +2222,7 @@ class Constants
         self::RETAIN_SUB_MERCHANT_NAME        => true,
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
         self::PARTNER_SUB_KYC_ACCESS          => true,
+        self::PP_SUBM_DASHBOARD_ACCESS        => true,
         self::SUBMERCHANT_ONBOARDING          => true,
         self::SUBMERCHANT_ONBOARDING_V2       => true,
         self::EXPOSE_FA_VALIDATION_UTR        => true,
