@@ -99,6 +99,7 @@ class Limit
         Type::TOKEN_HQ_CHARGE                            => 1000000,
         Type::PAYMENT_PAGE                          => 10000,
         Type::CREATE_WALLET_USER_CONTAINERS         => 1000000,
+        Type::ALT_ID_TERMINAL_ONBOARD              => 50000,
     ];
 
     /**
