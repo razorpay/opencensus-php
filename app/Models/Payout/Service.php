@@ -2731,6 +2731,10 @@ class Service extends Base\Service
                         }
 
                         $payoutBatch->push($exceptionData);
+
+                        $this->trace->count(Metric::BULK_PAYOUTS_PROCESSING_BAD_REQUEST_ERROR, [
+                            Constants\Metric::LABEL_ERROR_CODE => $exception->getCode(),
+                        ]);
                     }
                     catch (\Throwable $throwable)
                     {

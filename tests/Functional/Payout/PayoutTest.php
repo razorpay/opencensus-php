@@ -20944,6 +20944,19 @@ class PayoutTest extends OAuthTestCase
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Payout\Metric::BULK_PAYOUTS_PROCESSING_BAD_REQUEST_ERROR,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'error_code' => 'BAD_REQUEST_PAYOUT_INVALID_MODE'
+            ],
+        );
+
         $this->startTest();
 
         $payout      = $this->getDbEntity('payout', ['idempotency_key' => 'batch_abc124']);
@@ -20965,6 +20978,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($contact['id'], $fundAccount['source_id']);
         $this->assertEquals('vpa', $fundAccount['account_type']);
         $this->assertEquals('batch_abc124', $fundAccount['idempotency_key']);
+
+        $this->assertTrue($boolMetricCaptured);
     }
 
     public function testCreateBulkPayoutWithErrorInFundAccountData()
