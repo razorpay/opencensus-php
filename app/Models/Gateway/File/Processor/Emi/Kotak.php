@@ -50,9 +50,7 @@ class Kotak extends Base
                 'Settlement Time'            => '', // Non Mandatory
                 'Interest Rate'              => '', // Non Mandatory
                 'Discount / Cashback %'      => '0.00%',
-                'Discount / Cashback Amount' => '0',
-                'Instant Subvention'         => '0',
-                'Instant Cashback'           => '0'
+                'Discount / Cashback Amount' => '0'
             ];
 
             $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
