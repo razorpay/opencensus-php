@@ -142,6 +142,8 @@ class CareProxyController extends Controller
 
     const SAV_FETCH_FD_TICKETS = 'twirp/rzp.care.sav.v1.SavService/FetchFdTickets';
 
+    const SAV_FETCH_FD_GROUPS = 'twirp/rzp.care.sav.v1.SavService/FetchFdGroups';
+
     const SAV_FETCH_FD_KB_ARTICLE = 'twirp/rzp.care.sav.v1.SavService/FetchFdKbArticle';
 
     const SAV_CREATE_ALERT = 'twirp/rzp.care.sav.v1.AlertManagementService/CreateAlert';
@@ -198,6 +200,7 @@ class CareProxyController extends Controller
         self::SAV_FETCH_PROBABLE_REASONS              => Name::VIEW_ALL_ENTITY,
         self::FRESHDESK_MERCHANT_GET_TICKETS          => Name::VIEW_ALL_ENTITY,
         self::SAV_FETCH_FD_TICKETS                    => Name::VIEW_ALL_ENTITY,
+        self::SAV_FETCH_FD_GROUPS                     => Name::VIEW_ALL_ENTITY,
         self::SAV_FETCH_MERCHANT_STATS                => Name::VIEW_ALL_ENTITY,
         self::ADMIN_CREATE_ENTITY                     => Name::MANAGE_CARE_SERVICE_CALLBACK,
         self::SAV_FETCH_RESPONSE_SUGGESTION           => Name::VIEW_ALL_ENTITY,
@@ -308,6 +311,7 @@ class CareProxyController extends Controller
         self::ADMIN_CREATE_ENTITY,
         self::SAV_FETCH_RESPONSE_SUGGESTION,
         self::SAV_FETCH_FD_TICKETS,
+        self::SAV_FETCH_FD_GROUPS,
         self::SAV_FETCH_FD_KB_ARTICLE,
         self::SAV_CREATE_ALERT,
         self::SAV_UPDATE_ALERT,
