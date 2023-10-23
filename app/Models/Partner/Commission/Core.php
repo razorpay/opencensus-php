@@ -11,6 +11,7 @@ use RZP\Models\EntityOrigin;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Constants\HyperTrace;
@@ -37,6 +38,7 @@ class Core extends Base\Core
     const COMMISSIONS_BULK_CAPTURE_LIMIT = 200;
 
     const COMMISSIONS_TRANSACTION_FETCH_LIMIT = 5000;
+    const COMMISSION_CAPTURE_MUTEX_TIMEOUT = 300; // in seconds
 
     public function build(
         ?Base\PublicEntity $source,
@@ -160,16 +162,24 @@ class Core extends Base\Core
      * @return array
      * @throws LogicException
      */
-    protected function createCommission(CommissionSourceInterface  $sourceEntity)
+    protected function createCommission(CommissionSourceInterface $sourceEntity)
     {
         $calculator = new Calculator($sourceEntity);
 
         if ($calculator->shouldCreateCommission() === false)
         {
+            // TODO: send event even if commission is not applicable.
+            // $this->app['partnerships']->sendPaymentCaptureEvent([], [], $sourceEntity, $experimentMode);
+
             return [[], []];
         }
 
-        $calculator->calculateAndSaveCommission();
+        $partnerId = $calculator->getPartner()->getId();
+        $experimentMode = $calculator->getCalculatorExperimentMode($partnerId);
+        $reverseOrCutoff = $calculator->isCalculatorReverseShadowMode($partnerId, $experimentMode) || $calculator->isCalculatorCutoffMode($partnerId, $experimentMode);
+        $calculator->calculateAndSaveCommission(!$reverseOrCutoff);
+
+        $this->app['partnerships']->sendPaymentCaptureEvent($calculator->getCommissions(), $calculator->getCommissionComponents(), $sourceEntity, $experimentMode);
 
         return [$calculator->getCommissions(), $calculator->getCommissionComponents()];
     }
@@ -201,7 +211,9 @@ class Core extends Base\Core
                 $e,
                 Trace::ERROR,
                 TraceCode::PRTS_COMMISSION_CALCULATION_FAILED,
-                [$input]
+                [
+                    'input' => $input,
+                ]
             );
             $this->trace->count(Metric::PARTNERSHIP_COMMISSION_CALCULATION, ['success' => false]);
             $response = ['success' => false, 'data' => []];
@@ -486,33 +498,12 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            if($this->isCommissionReverseShadowEnabled($partner->getId()) === false)
-            {
-                CommissionCapture::dispatch($this->mode, $batch);
-            }
-            $this->app->partnerships->dispatchCommissionCaptureToPRTS($partner->getId(), $batch);
+            CommissionCapture::dispatch($this->mode, $batch);
         }
 
         return count($commissionIds);
     }
 
-    /**
-     * checks if commission reverse shadow is enabled for a partner
-     * @param string $partnerId
-     *
-     * @return bool
-     */
-    public function isCommissionReverseShadowEnabled(string $partnerId): bool
-    {
-         $properties = [
-            'id'            => $partnerId,
-            'experiment_id' => $this->app['config']->get('app.prts_commission_reverse_shadow_exp_id'),
-        ];
-
-        return (new Merchant\Core())->isSplitzExperimentEnable(
-            $properties, 'enable', TraceCode::COMMISSION_REVERSE_SHADOW_SPLITZ_ERROR
-        );
-    }
     public function bulkCaptureByPartner(array $input): int
     {
         (new Validator)->validateInput('bulk_capture', $input);
@@ -608,10 +599,6 @@ class Core extends Base\Core
     {
         $traceCode = null;
 
-        if($this->isCommissionReverseShadowEnabled($commission->partner->getId()) === true)
-        {
-            $traceCode = TraceCode::COMMISSION_TRANSACTION_SKIPPED_REVERSE_SHADOW;
-        }
         if ($commission->isCaptured() === true)
         {
             $traceCode = TraceCode::COMMISSION_TRANSACTION_ALREADY_CAPTURED;
@@ -686,4 +673,221 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * This flow is called from reverse-shadow of commissions-calculator
+     * This will create and capture commission in idempotent way
+     * This will get called from kafka job processor and also as API call from reverse-shadow retry cron
+     *
+     * @param array $input
+     *    {
+     *    "id": "outbox_id",
+     *    "payload" : "{}",
+     *    "created_at" : 0,
+     *    }
+     *
+     * @return array
+     */
+    public function createAndCaptureFromPRTS(array $input): array
+    {
+        try
+        {
+            $payloadStr = $input[Constants::PAYLOAD];
+            $payload    = json_decode($payloadStr, true);
+
+            $id = $payload['commission'][Entity::ID];
+            $resource   = 'COMMISSION_CREATE_' . $id;
+            $commission = $this->app['api.mutex']->acquireAndRelease(
+                $resource, function() use ($input, $payload, $id) {
+                // return existing commission if commission with same ID already exists
+                $commission = $this->repo->commission->find($id);
+                if (isset($commission) === false)
+                {
+                    $timeNow = millitime();
+                    // save commission
+                    $commission = new Entity;
+                    $commission->fillSelectAttributes($payload['commission'], Entity::$prtsFillable);
+                    $this->repo->saveOrFail($commission);
+
+                    // save commission component
+                    $commissionComponent = new Component\Entity;
+                    $commissionComponent->fillSelectAttributes($payload['commission_component'], Component\Entity::$prtsFillable);
+                    $this->repo->saveOrFail($commissionComponent);
+
+                    $lag = $timeNow - $input[Constants::CREATED_AT];
+                    $this->trace->histogram(Metric::REVERSE_SHADOW_COMMISSION_CREATE_LAG, $lag, ['mode' => $this->mode]);
+                }
+                else
+                {
+                    $this->trace->info(
+                        TraceCode::COMMISSION_ALREADY_CREATED,
+                        [
+                            'commission_id' => $commission->getId(),
+                            'mode'          => $this->mode,
+                        ]
+                    );
+                }
+
+                return $commission;
+            },
+                self::COMMISSION_CAPTURE_MUTEX_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+            );
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::COMMISSION_CREATE_FAILED,
+                [
+                    'mode'  => $this->mode,
+                    'input' => $input,
+                ]
+            );
+            $error = $this->buildError($e->getCode(), $e->getMessage());
+
+            return $this->buildAckResponse(null, $error, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+
+        // capture commission
+        return $this->captureFromPRTS($input, $commission, true);
+    }
+
+    /**
+     * This flow is called from partnership service in commission cut-off mode
+     * This will capture commission in idempotent way
+     * This will get called from kafka job processor and also as API call from reverse-shadow retry cron
+     *
+     * @param array       $input
+     * @param Entity|null $commission
+     * @param bool        $updateStatus
+     *
+     * @return array
+     */
+    public function captureFromPRTS(array $input, Entity $commission = null, bool $updateStatus = false): array
+    {
+        try
+        {
+            // if called directly from API
+            if ($commission === null)
+            {
+                $payloadStr = $input[Constants::PAYLOAD];
+                $payload    = json_decode($payloadStr, true);
+                $commission = new Entity;
+                $commission->fillSelectAttributes($payload['commission'], Entity::$prtsFillable);
+            }
+
+            // if commission should be captured or not
+            if ($this->checkIfProceedCapture($commission) === false)
+            {
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($commission->getId());
+                if (isset($txn) === true)
+                {
+                    return $this->buildAckResponse(['captured' => true, 'transaction_id' => $txn->getKey()], null, $input[Entity::ID], $input[Constants::CREATED_AT]);
+                }
+            }
+
+            $resource = 'COMMISSION_CAPTURE_' . $commission->getId();
+
+            $txnId = $this->app['api.mutex']->acquireAndRelease(
+                $resource, function() use ($input, $commission, $updateStatus) {
+                return $this->repo->transaction(function() use ($input, $commission, $updateStatus) {
+                    $this->trace->info(
+                        TraceCode::COMMISSION_TRANSACTION_CREATE_REQUEST,
+                        [
+                            'commission_id' => $commission->getId(),
+                            'mode'          => $this->mode,
+                        ]
+                    );
+
+                    // check if transaction already captured
+                    $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($commission->getId());
+
+                    if (isset($txn) === true)
+                    {
+                        $this->trace->info(TraceCode::COMMISSION_TRANSACTION_ALREADY_CAPTURED,
+                                           [
+                                               'commission_id'  => $commission->getId(),
+                                               'transaction_id' => $txn->getKey(),
+                                               'mode'           => $this->mode,
+                                           ]
+                        );
+
+                        return $txn->getKey();
+                    }
+
+                    list($txn, $feeSplit) = Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE_CORE], function() use ($commission) {
+                        return (new Transaction\Core)->createTransactionForSource($commission);
+                    });
+
+                    $this->repo->saveOrFail($txn);
+
+                    $this->trace->info(
+                        TraceCode::COMMISSION_TRANSACTION_CREATED,
+                        [
+                            'commission_id'  => $commission->getId(),
+                            'transaction_id' => $txn->getKey(),
+                            'mode'           => $this->mode,
+                        ]
+                    );
+
+                    if ($updateStatus === true)
+                    {
+                        // update commission status to captured
+                        $commission->setStatus(Status::CAPTURED);
+                        $this->repo->saveOrFail($commission);
+
+                        $this->trace->info(
+                            TraceCode::COMMISSION_STATUS_UPDATED,
+                            [
+                                'commission_id'  => $commission->getId(),
+                                'transaction_id' => $txn->getKey(),
+                                'mode'           => $this->mode,
+                            ]
+                        );
+                    }
+                    $this->trace->count(Metric::COMMISSION_CAPTURE_TOTAL, $commission->getMetricDimensions());
+
+                    return $txn->getKey();
+                });
+            },
+                self::COMMISSION_CAPTURE_MUTEX_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
+
+            return $this->buildAckResponse(['captured' => true, 'transaction_id' => $txnId], null, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::COMMISSION_TRANSACTION_CREATE_FAILED,
+                [
+                    'mode'  => $this->mode,
+                    'input' => $input,
+                ]
+            );
+            $error = $this->buildError($e->getCode(), $e->getMessage());
+
+            return $this->buildAckResponse(null, $error, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+    }
+
+    private function buildAckResponse(?array $response = null, ?array $error = null, ?string $id = null, ?int $createdAt = null): array
+    {
+        return [
+            "id"         => $id ?? null,
+            "response"   => $response ?? null,
+            "created_at" => $createdAt ?? null,
+            "error"      => $error ?? null,
+        ];
+    }
+
+    private function buildError(string $code, string $message): array
+    {
+        return [
+            "code"    => $code,
+            "message" => $message,
+        ];
+    }
 }

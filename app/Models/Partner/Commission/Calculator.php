@@ -151,6 +151,7 @@ class Calculator extends Base\Core
 
     protected $merchantPricingComponents = [];
 
+
     /**
      * Calculator constructor.
      *
@@ -331,6 +332,7 @@ class Calculator extends Base\Core
         return $this->taxComponents;
     }
 
+
     // ==================================== SETTERS ====================================
 
     /**
@@ -446,6 +448,7 @@ class Calculator extends Base\Core
     {
         $this->taxComponents = $taxComponents;
     }
+
 
     // ====================================== END ======================================
 
@@ -668,14 +671,17 @@ class Calculator extends Base\Core
      *
      * @throws LogicException
      */
-    public function calculateAndSaveCommission()
+    public function calculateAndSaveCommission(bool $save = true)
     {
         // Ensure that this is being called within a database transaction
         assertTrue ($this->repo->commission->isTransactionActive());
 
         $this->calculate();
 
-        $this->saveCommission();
+        if ($save)
+        {
+            $this->saveCommission();
+        }
     }
 
     /**
@@ -1613,4 +1619,61 @@ class Calculator extends Base\Core
 
         return [$commissionFee, $commissionTax];
     }
+
+    public function getCalculatorExperimentMode(string $partnerId): ?string
+    {
+        try
+        {
+            $requestData = ['mid' => $partnerId, 'mode' => $this->mode];
+
+            $properties = [
+                'id'            => $partnerId,
+                'experiment_id' => $this->app['config']->get('app.prts_commission_calculator_exp_id'),
+                'request_data'  => json_encode($requestData),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            return $response['response']['variant']['name'] ?? null;
+        }
+        catch (\Exception $e)
+        {
+            $id        = $properties['id'] ?? null;
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+
+            return null;
+        }
+    }
+
+    public function isCalculatorShadowMode(string $partnerId, string $variant = null): bool
+    {
+        if (isset($variant) === false)
+        {
+            $variant = $this->getCalculatorExperimentMode($partnerId);
+        }
+
+        return $variant === Constants::SHADOW_MODE;
+    }
+
+    public function isCalculatorReverseShadowMode(string $partnerId, string $variant = null): bool
+    {
+        if (isset($variant) === false)
+        {
+            $variant = $this->getCalculatorExperimentMode($partnerId);
+        }
+
+        return $variant === Constants::REVERSE_SHADOW_MODE;
+    }
+
+    public function isCalculatorCutoffMode(string $partnerId, string $variant = null): bool
+    {
+        if (isset($variant) === false)
+        {
+            $variant = $this->getCalculatorExperimentMode($partnerId);
+        }
+
+        return $variant === Constants::CUTOFF_MODE;
+    }
+
 }

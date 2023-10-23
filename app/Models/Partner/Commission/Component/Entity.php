@@ -58,6 +58,21 @@ class Entity extends Base\PublicEntity
         self::PRICING_TYPE
     ];
 
+    public static array $prtsFillable = [
+        self::ID,
+        self::COMMISSION_ID,
+        self::MERCHANT_PRICING_PLAN_RULE_ID,
+        self::MERCHANT_PRICING_FIXED,
+        self::MERCHANT_PRICING_PERCENTAGE,
+        self::MERCHANT_PRICING_AMOUNT,
+        self::COMMISSION_PRICING_PLAN_RULE_ID,
+        self::COMMISSION_PRICING_FIXED,
+        self::COMMISSION_PRICING_PERCENTAGE,
+        self::COMMISSION_PRICING_AMOUNT,
+        self::PRICING_FEATURE,
+        self::PRICING_TYPE
+    ];
+
     public function commission()
     {
         return $this->belongsTo(Commission\Entity::class);

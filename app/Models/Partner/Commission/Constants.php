@@ -8,9 +8,15 @@ use RZP\Models\Merchant\Detail\Status as DetailStatus;
 
 class Constants
 {
-    const PAYMENT = 'payment';
-    const PAYOUT  = 'payout';
-    const REFUND  = 'refund';
+    const PAYMENT    = 'payment';
+    const PAYOUT     = 'payout';
+    const REFUND     = 'refund';
+    const DATA       = 'data';
+    const PAYLOAD    = 'payload';
+    const CREATED_AT = 'created_at';
+
+    const CREATE_AND_CAPTURE = 'create_and_capture';
+    const CAPTURE            = 'capture';
 
     const COMMISSION_BREAK_UP_PREFIX = 'commission_';
 
@@ -20,13 +26,13 @@ class Constants
     const RESELLER_SUBMERCHANT_LIMIT = 3;
 
     // analytics constants
-    const TO                  = 'to';
-    const FROM                = 'from';
-    const QUERY_TYPE          = 'query_type';
-    const AGGREGATE_DAILY     = 'aggregate_daily'; // day wise commission aggregates
-    const AGGREGATE_DETAIL    = 'aggregate_detail'; // aggregate break up details for given day
-    const SUBVENTION_DAILY    = 'subvention_daily'; // day wise subvention aggregates
-    const SUBVENTION_DETAIL   = 'subvention_detail'; // subvention break up details for given day
+    const TO                = 'to';
+    const FROM              = 'from';
+    const QUERY_TYPE        = 'query_type';
+    const AGGREGATE_DAILY   = 'aggregate_daily'; // day wise commission aggregates
+    const AGGREGATE_DETAIL  = 'aggregate_detail'; // aggregate break up details for given day
+    const SUBVENTION_DAILY  = 'subvention_daily'; // day wise subvention aggregates
+    const SUBVENTION_DETAIL = 'subvention_detail'; // subvention break up details for given day
 
     const TOTAL_COMMISSION = 'total_commission';
     const TOTAL_TAX        = 'total_tax';
@@ -36,9 +42,9 @@ class Constants
     const TDS              = 'tds';
     const TDS_PERCENTAGE   = 'tds_percentage';
 
-    const PAYMENT_ID       = 'payment_id';
-    const REFUND_ID        = 'refund_id';
-    CONST REFUND_AMOUNT    = 'refund_amount';
+    const PAYMENT_ID    = 'payment_id';
+    const REFUND_ID     = 'refund_id';
+    const REFUND_AMOUNT = 'refund_amount';
 
     const FIXED    = 'fixed';
     const VARIABLE = 'variable';
@@ -46,7 +52,7 @@ class Constants
     const ADJUSTMENT_TDS_DESCRIPTION = 'Tds deduction on commission payout';
 
     const NEW_COMMISSION_LOGIC_TIMESTAMP = 1693872000;
-    const DEFAULT_SIGNUP_SOURCE = 'rzpDefaultPartner';
+    const DEFAULT_SIGNUP_SOURCE          = 'rzpDefaultPartner';
 
 
     // line item names
@@ -57,21 +63,21 @@ class Constants
     const BANKING_COMMISSION = 'banking_commission';
 
     //sms templates for Partner activation status
-    const PARTNER_ACTIVATED_TEMPLATE               = 'Partner_commission_invoice.Activated';
-    const PARTNER_UNDER_REVIEW_TEMPLATE            = 'Partner_commission_invoice.Under_review';
-    const PARTNER_NEEDS_CLARIFICATION_TEMPLATE     = 'Partner_commission_invoice.Needs_clarification';
-    const PARTNER_DEFAULT_TEMPLATE                 = 'Partner_commission_invoice.Null';
-    const PARTNER_INVOICE_AUTO_APPROVED_TEMPLATE   = 'Partner_commission_invoice.Auto_Approved';
+    const PARTNER_ACTIVATED_TEMPLATE             = 'Partner_commission_invoice.Activated';
+    const PARTNER_UNDER_REVIEW_TEMPLATE          = 'Partner_commission_invoice.Under_review';
+    const PARTNER_NEEDS_CLARIFICATION_TEMPLATE   = 'Partner_commission_invoice.Needs_clarification';
+    const PARTNER_DEFAULT_TEMPLATE               = 'Partner_commission_invoice.Null';
+    const PARTNER_INVOICE_AUTO_APPROVED_TEMPLATE = 'Partner_commission_invoice.Auto_Approved';
 
-    const COMMISSION_COMPUTED_ZERO_EVENT_NAME      =  'commission_computed_zero';
-    const COMMISSION_COMPUTED_NEGATIVE_EVENT_NAME  =  'commission_computed_negative';
+    const COMMISSION_COMPUTED_ZERO_EVENT_NAME     = 'commission_computed_zero';
+    const COMMISSION_COMPUTED_NEGATIVE_EVENT_NAME = 'commission_computed_negative';
 
-    const COMMISSIONS_EVENTS_TOPIC        =  'events.commission-events.v1.';
-    const COMMISSION_EVENTS               =  'commission-events';
-    const COMMISSION_EVENTS_VERSION       =  'v1';
-    const INVOICE_AUTO_APPROVED           = 'invoice_auto_approved';
+    const COMMISSIONS_EVENTS_TOPIC  = 'events.commission-events.v1.';
+    const COMMISSION_EVENTS         = 'commission-events';
+    const COMMISSION_EVENTS_VERSION = 'v1';
+    const INVOICE_AUTO_APPROVED     = 'invoice_auto_approved';
 
-    const COMMISSION_SYNC_OUTBOX_JOB      = 'partnerships.commission_sync.v1';
+    const COMMISSION_SYNC_OUTBOX_JOB = 'partnerships.commission_sync.v1';
 
     const VALID_PARTNER_STATUS_EMAIL_TEMPLATES = [
         DetailStatus::ACTIVATED,
@@ -81,37 +87,41 @@ class Constants
     ];
 
     const COMMISSION_INVOICE_ISSUED_SMS_TEMPLATE = [
-        self::INVOICE_AUTO_APPROVED            => self::PARTNER_INVOICE_AUTO_APPROVED_TEMPLATE,
-        DetailStatus::ACTIVATED                => self::PARTNER_ACTIVATED_TEMPLATE,
-        DetailStatus::UNDER_REVIEW             => self::PARTNER_UNDER_REVIEW_TEMPLATE,
-        DetailStatus::NEEDS_CLARIFICATION      => self::PARTNER_NEEDS_CLARIFICATION_TEMPLATE,
-        Merchant\Constants::DEFAULT            => self::PARTNER_DEFAULT_TEMPLATE,
+        self::INVOICE_AUTO_APPROVED       => self::PARTNER_INVOICE_AUTO_APPROVED_TEMPLATE,
+        DetailStatus::ACTIVATED           => self::PARTNER_ACTIVATED_TEMPLATE,
+        DetailStatus::UNDER_REVIEW        => self::PARTNER_UNDER_REVIEW_TEMPLATE,
+        DetailStatus::NEEDS_CLARIFICATION => self::PARTNER_NEEDS_CLARIFICATION_TEMPLATE,
+        Merchant\Constants::DEFAULT       => self::PARTNER_DEFAULT_TEMPLATE,
     ];
 
     //sms templates for commission reminders
-    const PARTNER_ACTIVATED_REMINDER_SMS_TEMPLATE               = 'Partner_commission_invoice_reminder.Activated';
-    const PARTNER_UNDER_REVIEW_REMINDER_SMS_TEMPLATE            = 'Partner_commission_invoice_reminder.Under_review';
-    const PARTNER_NEEDS_CLARIFICATION_REMINDER_SMS_TEMPLATE     = 'Partner_commission_invoice_reminder.Needs_clarification';
-    const PARTNER_DEFAULT_REMINDER_SMS_TEMPLATE                 = 'Partner_commission_invoice_reminder.Null';
+    const PARTNER_ACTIVATED_REMINDER_SMS_TEMPLATE           = 'Partner_commission_invoice_reminder.Activated';
+    const PARTNER_UNDER_REVIEW_REMINDER_SMS_TEMPLATE        = 'Partner_commission_invoice_reminder.Under_review';
+    const PARTNER_NEEDS_CLARIFICATION_REMINDER_SMS_TEMPLATE = 'Partner_commission_invoice_reminder.Needs_clarification';
+    const PARTNER_DEFAULT_REMINDER_SMS_TEMPLATE             = 'Partner_commission_invoice_reminder.Null';
 
     const COMMISSION_INVOICE_REMINDER_SMS_TEMPLATE = [
-        DetailStatus::ACTIVATED                => self::PARTNER_ACTIVATED_REMINDER_SMS_TEMPLATE,
-        DetailStatus::UNDER_REVIEW             => self::PARTNER_UNDER_REVIEW_REMINDER_SMS_TEMPLATE,
-        DetailStatus::NEEDS_CLARIFICATION      => self::PARTNER_NEEDS_CLARIFICATION_REMINDER_SMS_TEMPLATE,
-        Merchant\Constants::DEFAULT            => self::PARTNER_DEFAULT_REMINDER_SMS_TEMPLATE,
+        DetailStatus::ACTIVATED           => self::PARTNER_ACTIVATED_REMINDER_SMS_TEMPLATE,
+        DetailStatus::UNDER_REVIEW        => self::PARTNER_UNDER_REVIEW_REMINDER_SMS_TEMPLATE,
+        DetailStatus::NEEDS_CLARIFICATION => self::PARTNER_NEEDS_CLARIFICATION_REMINDER_SMS_TEMPLATE,
+        Merchant\Constants::DEFAULT       => self::PARTNER_DEFAULT_REMINDER_SMS_TEMPLATE,
     ];
     /**
      * Used for bulk capture
      */
     const PARTNER_IDS = 'partner_ids';
 
-    const INVOICE_ID  = 'invoice_id';
+    const INVOICE_ID = 'invoice_id';
 
-    const MERCHANT_ID    = 'merchant_id';
-    const PARTNER_CONFIGS = 'partner_configs';
-    const PARTNER_DETAILS = 'partner_details';
-    const SHOULD_CREDIT_GST   = 'should_credit_gst';
-    const TAX_COMPONENTS = 'tax_components';
+    const MERCHANT_ID       = 'merchant_id';
+    const PARTNER_CONFIGS   = 'partner_configs';
+    const PARTNER_DETAILS   = 'partner_details';
+    const SHOULD_CREDIT_GST = 'should_credit_gst';
+    const TAX_COMPONENTS    = 'tax_components';
+
+    const SHADOW_MODE         = 'shadow';
+    const REVERSE_SHADOW_MODE = 'reverse-shadow';
+    const CUTOFF_MODE         = 'cutoff';
 
     /**
      * List of entities for which the commission can be rolled out.

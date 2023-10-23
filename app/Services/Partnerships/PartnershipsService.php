@@ -115,6 +115,8 @@ class PartnershipsService extends Base\Service
 
     const MAX_RETRY_COUNT = 2;
 
+
+
     /**
      * @var string
      */
@@ -343,81 +345,27 @@ class PartnershipsService extends Base\Service
     }
 
     /**
-     * Dual write Commission in Partnerships service by pushing job to the queue using pushRaw.
-     * @param   Entity  $commission The commission
-     * @return  void
+     * @param array $response
+     * @param string  $action
+     * Pushing ack event to queue for partnerships ack_job consumer
      */
-    public function createCommissionDualWrite(Entity $commission): void
+    public function dispatchAckToPRTS(array $response, string $action): void
     {
         try
         {
-            if(! $this->isDualWriteExpEnabled($commission))
-            {
-                return;
-            }
-
-            $commissionComponent = $this->repo->commission_component->findByCommissionId($commission->getId())->first();
-            $data       = [
-                'commission'           => $commission->attributesToArray(),
-                'commission_component' => optional($commissionComponent)->toArray()
-            ];
-
-            $data['commission']['notes'] = (object) ($data['commission']['notes']);
-
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($data) {
-
-                $this->pushRawJob($data, self::COMMISSION_DUAL_WRITE_QUEUE_CONFIG_KEY);
-
-                $this->trace->count(Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH, ['event_name' => 'commission_dual_write', 'success' => true]);
-            }));
+            $this->pushRawJob($response, self::COMMISSION_CAPTURE_SHADOW_PHASE_QUEUE_CONFIG_KEY);
+            $this->trace->count(Metric::PRTS_ACK_EVENT_DISPATCH, ['event_name' => $action, 'success' => true]);
         }
         catch (\Exception $e)
         {
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::PRTS_COMMISSION_DUAL_WRITE_FAILED,
-                [ $commission->toArrayPublic() ]
+                TraceCode::PRTS_ACK_EVENT_DISPATCH_FAILED,
+                $response
             );
-
-            $this->trace->count(Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH, ['event_name' => 'commission_dual_write', 'success' => false]);
-        }
-    }
-
-    /**
-     * @param string $partnerId
-     * @param array  $commissionIds
-     * This function is used to dispatch the commission capture event to PRTS service when admin actions are triggered
-     */
-    public function dispatchCommissionCaptureToPRTS(string $partnerId, array $commissionIds): void
-    {
-        try
-        {
-            if (!$this->isShadowCommissionPhaseExpEnabled($partnerId))
-            {
-                return;
-            }
-
-            $data = [
-                'commission_ids' => $commissionIds
-            ];
-
-            \Event::dispatch(new TransactionalClosureEvent(function() use ($data) {
-                // Job will be dispatched only if the transaction commits.
-                $this->pushRawJob($data, self::COMMISSION_CAPTURE_SHADOW_PHASE_QUEUE_CONFIG_KEY);
-
-                $this->trace->count(Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH, ['event_name' => 'commission_capture', 'success' => true]);
-            }));
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::PRTS_COMMISSION_SHADOW_PHASE_FAILED,
-                $data
-            );
-            $this->trace->count(Metric::PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH, ['event_name' => 'commission_capture', 'success' => false]);
+            $this->trace->count(Metric::PRTS_ACK_EVENT_DISPATCH, ['event_name' => $action, 'success' => false]);
+            throw $e;
         }
     }
 
@@ -429,16 +377,16 @@ class PartnershipsService extends Base\Service
      *
      * @return  void
      */
-    public function createCommissionShadowPhase(array $commissions, array $components, PaymentEntity $payment): void
+    public function sendPaymentCaptureEvent(array $commissions, array $components, PaymentEntity $payment, string $experimentMode): void
     {
         try
         {
-            if (empty($commissions) == true || !$this->isShadowCommissionPhaseExpEnabled($commissions[0][Entity::PARTNER_ID]))
+            if (empty($commissions) === true || isset($experimentMode) === false)
             {
                 return;
             }
 
-            $payload = CommissionCreateEventDataUtil::getPayloadForCommissionCreate($commissions, $components, $payment);
+            $payload = CommissionCreateEventDataUtil::getPayloadForCommissionCreate($commissions, $components, $payment, $experimentMode);
 
             \Event::dispatch(new TransactionalClosureEvent(function() use ($payload) {
                 try

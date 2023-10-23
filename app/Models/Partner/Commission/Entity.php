@@ -43,6 +43,26 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey  = self::ID;
 
+    public static array $prtsFillable = [
+        self::ID,
+        self::SOURCE_TYPE,
+        self::SOURCE_ID,
+        self::PARTNER_ID,
+        self::PARTNER_CONFIG_ID,
+        self::TYPE,
+        self::STATUS,
+        self::DEBIT,
+        self::CREDIT,
+        self::CURRENCY,
+        self::FEE,
+        self::TAX,
+        self::RECORD_ONLY,
+        self::MODEL,
+        self::NOTES,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
     protected $fillable = [
         self::FEE,
         self::TAX,

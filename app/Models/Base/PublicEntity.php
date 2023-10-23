@@ -1055,4 +1055,15 @@ class PublicEntity extends UniqueIdEntity
             return '';
         }
     }
+
+    public function fillSelectAttributes(array $input, array $attributes)
+    {
+        foreach ($input as $key => $value)
+        {
+            if (in_array($key, $attributes))
+            {
+                $this->setAttribute($key, $value);
+            }
+        }
+    }
 }

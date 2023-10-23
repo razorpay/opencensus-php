@@ -216,7 +216,8 @@ class DEventsKafkaConsumer extends Command
         foreach ($topics as $topic)
         {
             if (str_contains($topic, KafkaMessageProcessor::PGOS_PROD_CDC_EVENTS) or
-                str_contains($topic, KafkaMessageProcessor::PGOS_STAGE_CDC_EVENTS))
+                str_contains($topic, KafkaMessageProcessor::PGOS_STAGE_CDC_EVENTS) or
+                (str_contains($topic, 'api_outbox') && str_contains($topic, 'partnerships')))
             {
                 $appMode = env('APP_MODE', 'prod');
 
@@ -287,6 +288,11 @@ class DEventsKafkaConsumer extends Command
         if (str_contains($topic, 'outbox_jobs_api'))
         {
             $topic = 'outbox_jobs_api';
+        }
+
+        if (str_contains($topic, 'api_outbox') && str_contains($topic, 'partnerships'))
+        {
+            $topic = KafkaMessageProcessor::PARTNERSHIPS_OUTBOX_EVENTS;
         }
 
         $isProcessed = $this->messageProcessor->process($topic, $payload, $this->mode);

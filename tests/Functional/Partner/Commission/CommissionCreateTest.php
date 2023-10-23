@@ -133,8 +133,9 @@ class CommissionCreateTest extends TestCase
      * 4. also verifies the partner to which commission is granted
      */
     public function testVirtualAccountForAggregatorCommissionForBankTransfer() {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $partnerId = Constants::DEFAULT_MERCHANT_ID;
+        $this->shadowCommissionCreate($partnerId);
+
         $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
 
         $client = $this->setUpNonPurePlatformPartnerAndSubmerchant($partnerId, $subMerchantId);
@@ -190,8 +191,8 @@ class CommissionCreateTest extends TestCase
      * 4. also verifies the partner to which commission is granted
      */
     public function testVirtualAccountForAggregatorCommissionForQrCode() {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $partnerId = Constants::DEFAULT_MERCHANT_ID;
+        $this->shadowCommissionCreate($partnerId);
         $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
 
         $client = $this->setUpNonPurePlatformPartnerAndSubmerchant($partnerId, $subMerchantId);
@@ -240,7 +241,6 @@ class CommissionCreateTest extends TestCase
 
     public function testImplicitVariableOnPaymentCapture()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $testData = $this->setUpCommissionCreate();
 
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
@@ -334,6 +334,26 @@ class CommissionCreateTest extends TestCase
         $this->assertCount(0, $commissions);
     }
 
+    public function testImplicitVariableOnPaymentCaptureReverseShadow()
+    {
+        $testData = $this->setUpCommissionCreate([], false);
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        $this->assertEmptyCommission();
+    }
 
     /***
      * This function validates the following
@@ -588,7 +608,6 @@ class CommissionCreateTest extends TestCase
     {
         Mail::fake();
 
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
         $this->mockPartnershipsServiceTreatment([], [], 'updateInvoiceStatusAsync');
         $testData = $this->setUpCommissionCreateForRefunds();
@@ -759,7 +778,7 @@ class CommissionCreateTest extends TestCase
 
     public function testCommissionTransactionChannelOnPaymentCaptureForMalaysainMerchants()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $testData = $this->setupCommissionCreateForMalaysianMerchant();
 
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
@@ -1142,7 +1161,7 @@ class CommissionCreateTest extends TestCase
     public function testInvoiceCompleteFlow()
     {
         Mail::fake();
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
         $this->mockPartnershipsServiceTreatment([], [], 'updateInvoiceStatusAsync');
 
@@ -1252,7 +1271,6 @@ class CommissionCreateTest extends TestCase
     public function testInvoiceApprovalFor3MonthOld()
     {
         Mail::fake();
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
         $this->mockPartnershipsServiceTreatment([], [], 'updateInvoiceStatusAsync');
 
@@ -1392,7 +1410,6 @@ class CommissionCreateTest extends TestCase
     public function testInvoiceCreateWithout3SubMtusBeforeUpdatedTnc()
     {
         Mail::fake();
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
         $testData = $this->setUpCommissionCreate();
 
@@ -2370,7 +2387,6 @@ class CommissionCreateTest extends TestCase
 
     public function testImplicitFixedOnPaymentCapture()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $testData = $this->setUpCommissionCreate();
 
         $this->createConfigForPartnerApp(
@@ -2408,7 +2424,6 @@ class CommissionCreateTest extends TestCase
      */
     public function testImplicitFixedCommissionCalculate()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $testData = $this->setUpCommissionCreate();
 
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
@@ -2513,7 +2528,6 @@ class CommissionCreateTest extends TestCase
      */
     public function testExplicitOnPaymentCapture()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $testData = $this->setUpCommissionCreate();
 
         $this->createConfigForPartnerApp(
@@ -2547,7 +2561,7 @@ class CommissionCreateTest extends TestCase
 
     public function testPlatformPartnerCustomPricingPlan()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         list($application) = $this->createPurePlatFormMerchantAndSubMerchant();
 
         $input = [
@@ -2615,7 +2629,6 @@ class CommissionCreateTest extends TestCase
      */
     public function testExplicitCommissionCalculate()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $testData = $this->setUpCommissionCreate();
 
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
@@ -2734,7 +2747,7 @@ class CommissionCreateTest extends TestCase
      */
     public function testExplicitPricingRuleAbsent()
     {
-        $testData = $this->setUpCommissionCreate();
+        $testData = $this->setUpCommissionCreate([], false);
 
         $this->fixtures->create('pricing', [
             'plan_id'      => '180PartnerPlan',
@@ -2769,7 +2782,6 @@ class CommissionCreateTest extends TestCase
      */
     public function testImplicitVariableAndExplicit()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $testData = $this->setUpCommissionCreate();
 
         $this->createConfigForPartnerApp(
@@ -2960,7 +2972,7 @@ class CommissionCreateTest extends TestCase
      */
     public function testCustomerBearerExplicitOnPaymentCapture()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->createPurePlatFormMerchantAndSubMerchant();
 
         $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
@@ -3012,7 +3024,7 @@ class CommissionCreateTest extends TestCase
      */
     public function testCustomerBearerOnExistingAuthorizedPayment()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->createPurePlatFormMerchantAndSubMerchant();
 
         $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
@@ -3070,7 +3082,6 @@ class CommissionCreateTest extends TestCase
 
     public function testImplicitVariableAndExplicitForSubvention()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $testData = $this->setUpCommissionCreate();
 
         $this->createConfigForPartnerApp(
@@ -3104,7 +3115,6 @@ class CommissionCreateTest extends TestCase
      */
     public function testImplicitVariableAndExplicitPostpaid()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $testData = $this->setUpCommissionCreate();
 
         $this->createConfigForPartnerApp(
@@ -3137,7 +3147,6 @@ class CommissionCreateTest extends TestCase
      */
     public function testGSTForPaymentsLessThan2K()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
         $testData = $this->setUpCommissionCreate(['amount' => 1000 * 100]);
 
         $this->createConfigForPartnerApp(
@@ -3179,12 +3188,14 @@ class CommissionCreateTest extends TestCase
 
         if($mockSourceId)
         {
+            $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
             $this->mockPartnershipsServiceTreatment([], Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'getSubmSignupSource');
         }
         else
         {
             $this->mockPartnershipsServiceTreatment([], '', 'getSubmSignupSource');
         }
+
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
@@ -3200,6 +3211,7 @@ class CommissionCreateTest extends TestCase
 
     protected function setUpCommissionCreateForRefunds($paymentAttributes = [])
     {
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->createPurePlatFormMerchantAndSubMerchant();
 
         $this->createImplicitPricingPlan();
@@ -3338,6 +3350,19 @@ class CommissionCreateTest extends TestCase
         }
 
         return [$payment, $commissionByType];
+    }
+
+    protected function assertEmptyCommission()
+    {
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
+
+        $this->assertEmpty($commissions);
+
+        return $payment;
     }
 
     protected function assertCommisionAndTransactionData(string $type, int $totalCount = 1)
@@ -3501,7 +3526,7 @@ class CommissionCreateTest extends TestCase
      */
     public function testCreateCommissionForBharatQrCode()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_MERCHANT_ID);
         $partnerId = Constants::DEFAULT_MERCHANT_ID;
         $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
 
@@ -3544,7 +3569,7 @@ class CommissionCreateTest extends TestCase
 
     public function testInvoiceCreateWithAutoApproval()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
         $this->mockPartnershipsServiceTreatment([], [], 'updateInvoiceStatusAsync');
 
@@ -3577,7 +3602,7 @@ class CommissionCreateTest extends TestCase
 
     public function testInvoiceCreateWithAutoApprovalDisabled()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
 
         $testData = $this->setUpCommissionCreateWith3MTU();
@@ -3609,7 +3634,7 @@ class CommissionCreateTest extends TestCase
 
     public function testInvoiceCreateAutoApprovalFailedGSTINPresent()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
 
         $testData = $this->setUpCommissionCreateWith3MTU();
@@ -3641,7 +3666,7 @@ class CommissionCreateTest extends TestCase
 
     public function testInvoiceCreateAutoApprovalWithGSTINPresentResellerFailed()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
 
         $testData = $this->setUpCommissionCreateWith3MTU();
@@ -3680,7 +3705,7 @@ class CommissionCreateTest extends TestCase
 
     public function testInvoiceCreateAutoApprovalWithGSTINPresentResellerSuccess()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
         $this->mockPartnershipsServiceTreatment([], [], 'updateInvoiceStatusAsync');
 
@@ -3722,7 +3747,7 @@ class CommissionCreateTest extends TestCase
 
     public function testInvoiceCreateAutoApprovalFailedResellerKYCNotApproved()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
 
         $testData = $this->setUpCommissionCreateWith3MTU();
@@ -3753,7 +3778,7 @@ class CommissionCreateTest extends TestCase
 
     public function testInvoiceCreateAutoApprovalSuccessForNonReseller()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
         $this->mockPartnershipsServiceTreatment([], [], 'updateInvoiceStatusAsync');
 
@@ -3785,7 +3810,7 @@ class CommissionCreateTest extends TestCase
 
     public function testInvoiceCreateAutoApprovalFailedForNonResellerKYCStatus()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
 
         $testData = $this->setUpCommissionCreateWith3MTU();
@@ -3814,7 +3839,7 @@ class CommissionCreateTest extends TestCase
 
     public function testInvoiceCreateAutoApprovalFailedExpNotEnabled()
     {
-        $this->mockPartnershipsServiceTreatment([], [], 'createCommissionShadowPhase');
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockPartnershipsServiceTreatment([], [], 'createInvoiceShadowPhase');
 
         $testData = $this->setUpCommissionCreateWith3MTU();
@@ -4009,24 +4034,6 @@ class CommissionCreateTest extends TestCase
         $this->mockSplitzTreatment($input, $output);
     }
 
-    private function mockPartnershipServiceShadowPhaseExp(string $merchantId)
-    {
-        $input = [
-            "experiment_id" => "MC39BcG9NndaVH",
-            "id"            => $merchantId,
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-    }
-
     private function mockPartnerSubMtuDatalakeQuery(string $partnerId, string $mtuCount=Invoice\Constants::GENERATE_INVOICE_MIN_SUB_MTU_COUNT )
     {
         $datalakeMock = Mockery::mock(DataLakePresto::class)->makePartial();
@@ -4057,5 +4064,125 @@ class CommissionCreateTest extends TestCase
         ];
 
         $this->mockSplitzTreatment($input, $output);
+    }
+
+    protected function shadowCommissionCreate(string $partnerId)
+    {
+        $this->enableExperimentForCommissionCalculator($partnerId, 'shadow');
+        $this->mockPartnershipsServiceTreatment([], '', 'sendPaymentCaptureEvent');
+    }
+
+    protected function enableExperimentForCommissionCalculator(string $partnerId, string $experimentMode)
+    {
+        $requestData = ['mid' => $partnerId, 'mode' => 'test'];
+
+        $input = [
+            "experiment_id" => "MfqJZFKvIyWLRR",
+            "id"            => $partnerId,
+            "request_data"  => json_encode($requestData),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $experimentMode,
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+    }
+
+    public function testCreateAndCaptureFromPRTS()
+    {
+        $actualResponse = $this->doPartnershipsClientAPICalls();
+
+        $commission          = $this->getDbEntityById('commission', Constants::DEFAULT_IMPLICIT_PRICING_PLAN);
+        $commissionComponent = $this->getDbEntityById('commission_component', Constants::DEFAULT_IMPLICIT_PRICING_PLAN);
+        $commTransaction     = $this->getDbEntityById('transaction', $commission['transaction_id']);
+        $this->assertEquals('captured', $commission->getStatus());
+        $this->assertEquals(true, $commTransaction->getOnHold());
+        $this->assertEquals(Constants::DEFAULT_IMPLICIT_PRICING_PLAN, $commissionComponent->getCommissionId());
+        $this->assertEquals($commission['transaction_id'], $actualResponse['response']['transaction_id']);
+    }
+
+    public function testCaptureFromPRTS()
+    {
+        $actualResponse = $this->doPartnershipsClientAPICalls();
+
+        $commTransaction = $this->getDbLastEntity('transaction');
+        $this->assertEquals(true, $commTransaction->getOnHold());
+        $this->assertEquals($commTransaction['id'], $actualResponse['response']['transaction_id']);
+    }
+
+    public function testCreateAndCaptureFromPRTSAlreadyCreatedCommission()
+    {
+        $actualResponse = $this->doPartnershipsClientAPICalls(true);
+
+        $commTransaction = $this->getDbLastEntity('transaction');
+        $this->assertEquals(true, $commTransaction->getOnHold());
+        $this->assertEquals($commTransaction['id'], $actualResponse['response']['transaction_id']);
+    }
+
+    public function testCreateAndCaptureFromPRTSAlreadyCreatedAndCapturedCommission()
+    {
+        $this->doPartnershipsClientAPICalls(false, 'testCreateAndCaptureFromPRTS');
+
+        $data            = $this->testData[__FUNCTION__];
+        $actualResponse  = $this->runRequestResponseFlow($data);
+        $commTransaction = $this->getDbLastEntity('transaction');
+        $this->assertEquals(true, $commTransaction->getOnHold());
+        $this->assertEquals($commTransaction['id'], $actualResponse['response']['transaction_id']);
+    }
+
+    public function testCaptureFromPRTSAlreadyCapturedCommission()
+    {
+        $this->doPartnershipsClientAPICalls(false, 'testCreateAndCaptureFromPRTS');
+
+        $data            = $this->testData[__FUNCTION__];
+        $actualResponse  = $this->runRequestResponseFlow($data);
+        $commTransaction = $this->getDbLastEntity('transaction');
+        $this->assertEquals(true, $commTransaction->getOnHold());
+        $this->assertEquals($commTransaction['id'], $actualResponse['response']['transaction_id']);
+    }
+
+    protected function doPartnershipsClientAPICalls($createCommission = false, ?string $function = null)
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+        $this->createImplicitPricingPlan();
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'id'               => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+                'implicit_plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $defaultPaymentAttributes = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'amount'      => 3000 * 100,
+        ];
+        $payment                  = $this->fixtures->create('payment:captured', $defaultPaymentAttributes);
+
+        if ($createCommission === true)
+        {
+            $this->fixtures->create('commission:commission_and_sync_es', [
+                'id'                => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+                'source_id'         => $payment['id'],
+                'partner_id'        => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'partner_config_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+        }
+
+        $this->ba->partnershipServiceAuth();
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name  = $function ?? $trace[1]['function'];
+        $data  = $this->testData[$name];
+
+        $payload                               = $data['request']['content']['payload'];
+        $updatedPayload                        = str_replace('{payment_id}', $payment['id'], $payload);
+        $data['request']['content']['payload'] = $updatedPayload;
+
+        return $this->startTest($data);
     }
 }

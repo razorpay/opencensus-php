@@ -124,4 +124,22 @@ class CommissionController extends Controller
         return ApiResponse::json($response);
 
     }
+
+    public function createAndCaptureFromPRTS()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createAndCaptureFromPRTS($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function captureFromPRTS()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->captureFromPRTS($input);
+
+        return ApiResponse::json($response);
+    }
 }

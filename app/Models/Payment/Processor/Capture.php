@@ -1227,9 +1227,7 @@ trait Capture
         $feeBearer = $payment->getFeeBearer(true);
         try
         {
-            list($commissions, $components) = (new Commission\Core)->createFromCapturedPayment($payment);
-
-            $this->app->partnerships->createCommissionShadowPhase($commissions, $components, $payment);
+            (new Commission\Core)->createFromCapturedPayment($payment);
         }
         catch (\Throwable $e)
         {

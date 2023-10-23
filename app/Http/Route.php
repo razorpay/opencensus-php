@@ -3325,7 +3325,9 @@ class Route
         'fetch_partner_commission_invoice_feature' => ['get',     'partner/commission_invoice_feature',       'CommissionInvoiceController@fetchPartnersWithCommissionInvoiceFeature'    ],
         'partnerships_service_proxy'               => ['post',    'partnerships/{path?}',                     'EdgeProxyController@proxy'                                                ],
         'prts_fetch_merchant_entities'             => ['get',     'internal/partnerships/merchant',             'PartnerController@fetchPartnerRelatedEntitiesForPRTS'                     ],
-        'calculate_commission'                     => ['post',    'internal/calculate_commission',                       'CommissionController@calculateCommission'                                  ],
+        'calculate_commission'                     => ['post',    'internal/calculate_commission',                       'CommissionController@calculateCommission'                      ],
+        'internal_create_and_capture_commission'   => ['post',    'internal/create_and_capture_commission',              'CommissionController@createAndCaptureFromPRTS'                 ],
+        'internal_capture_commission'              => ['post',    'internal/capture_commission',                         'CommissionController@captureFromPRTS'                          ],
 
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
@@ -6248,6 +6250,8 @@ class Route
         'prts_fetch_merchant_entities',
         'fetch_partner_commission_invoice_feature',
         'calculate_commission',
+        'internal_create_and_capture_commission',
+        'internal_capture_commission',
         'internal_entity_origin_fetch',
 
         'create_ledger_journal_batch',
@@ -16408,6 +16412,8 @@ class Route
             'prts_fetch_merchant_entities',
             'internal_entity_origin_fetch',
             'calculate_commission',
+            'internal_create_and_capture_commission',
+            'internal_capture_commission',
         ],
 
         'terminals_service' => [

@@ -82,6 +82,7 @@ final class Metric
 
     // PRTS service metrics and dimensions
     const PRTS_COMMISSIONS_SHADOW_PHASE_EVENT_DISPATCH = 'prts_commissions_shadow_phase_event_dispatch';
+    const PRTS_ACK_EVENT_DISPATCH                      = 'prts_ack_event_dispatch';
 
 
     const PARTNERSHIP_COMMISSION_CALCULATION   = 'partnership_commission_calculation';
@@ -103,4 +104,5 @@ final class Metric
 
     const PARTNER_CALLBACK_EVENTS_RECEIVED_TOTAL = 'partner_callback_events_received_total';
     const PARTNER_CALLBACK_EVENTS_RECEIVED_FAILURE_TOTAL = 'partner_callback_events_received_failure_total';
+    const REVERSE_SHADOW_COMMISSION_CREATE_LAG   = 'reverse_shadow_commission_create_lag';
 }

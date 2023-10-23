@@ -626,6 +626,8 @@ return array(
 
     'prts_commission_reverse_shadow_exp_id' => env('PRTS_COMMISSION__REVERSE_SHADOW_EXP_ID'),
 
+    'prts_commission_calculator_exp_id' => env('PRTS_COMMISSION_CALCULATOR_EXP_ID'),
+
     'new_commission_logic_exp_id'           => env('NEW_COMMISSION_LOGIC_EXP_ID'),
 
     'commission_invoice_events_to_kafka_exp_id'  => env('COMMISSION_INVOICE_EVENTS_TO_KAFKA_EXP_ID'),

@@ -21,7 +21,7 @@ class CommissionCreateEventDataUtil
      *
      * @return array
      */
-    public static function getPayloadForCommissionCreate(array $commissions, array $components, PaymentEntity $payment): array
+    public static function getPayloadForCommissionCreate(array $commissions, array $components, PaymentEntity $payment, string $experimentMode): array
     {
         $commissionsPayload = [];
         foreach ($commissions as $index => $commission)
@@ -52,7 +52,8 @@ class CommissionCreateEventDataUtil
             'product_metadata' => self::getProductMetaData($payment),
             'auth'             => [
                 'application_id' => app('basicauth')->getOAuthApplicationId()
-            ]
+            ],
+            'exp_mode'         => $experimentMode,
         ];
     }
 

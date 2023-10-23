@@ -81,7 +81,19 @@ class Validator extends Base\Validator
         'partner_details'
     ];
 
-    public function validateQueryType($attribute, $value)
+    protected static $createAndCaptureFromPrtsRules = [
+        Constants::CREATED_AT => 'required',
+        Constants::PAYLOAD    => 'required|string',
+        Entity::ID            => 'required|string|size:14',
+    ];
+
+    protected static $captureFromPrtsRules          = [
+        Constants::CREATED_AT => 'required',
+        Constants::PAYLOAD    => 'required|string',
+        Entity::ID            => 'required|string|size:14',
+    ];
+
+   public function validateQueryType($attribute, $value)
     {
         if (Constants::isValidQueryType($value) === false)
         {

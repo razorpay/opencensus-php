@@ -113,7 +113,6 @@ class Service extends Base\Service
         return Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE_CORE], function () use ($commission, $id) {
 
             $commission = $this->core()->capture($commission)->toArrayPublic();
-            $this->app->partnerships->dispatchCommissionCaptureToPRTS($commission[Entity::PARTNER_ID], [$id]);
             return $commission;
 
         });
@@ -233,5 +232,19 @@ class Service extends Base\Service
 
         return $response;
 
+    }
+
+    public function createAndCaptureFromPRTS(array $input): array
+    {
+        (new Validator())->validateInput('create_and_capture_from_prts', $input);
+
+        return $this->core()->createAndCaptureFromPRTS($input);
+    }
+
+    public function captureFromPRTS(array $input): array
+    {
+        (new Validator())->validateInput('capture_from_prts', $input);
+
+        return $this->core()->captureFromPRTS($input);
     }
 }

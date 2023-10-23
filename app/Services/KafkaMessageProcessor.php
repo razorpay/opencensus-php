@@ -28,6 +28,7 @@ class KafkaMessageProcessor
     const PGOS_STAGE_CDC_EVENTS               = 'cdc_events_mysql_stage_pg_onboarding';
     const PGOS_PROD_CDC_EVENTS               = 'cdc_events_mysql_prod_pg_onboarding';
     const PARTNER_WEBHOOK_CALLBACK_EVENTS = "partner_webhook_callback_events";
+    const PARTNERSHIPS_OUTBOX_EVENTS      = "api_outbox_partnerships";
 
     const ASV_MERCHANT_UPDATE_EVENTS = 'asv-merchant-update-events';
 
@@ -169,6 +170,8 @@ class KafkaMessageProcessor
                 return new KafkaJobs\PartnerWebhookEventHandlerJob($payload, $mode);
             case self::ASV_MERCHANT_UPDATE_EVENTS:
                 return new KafkaJobs\AsvMerchantUpdateJob($payload, $mode);
+            case self::PARTNERSHIPS_OUTBOX_EVENTS:
+                return new KafkaJobs\PartnershipsOutboxEventHandlerJob($payload, $mode);
 
             default:
                 return null;
