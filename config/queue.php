@@ -715,6 +715,10 @@ return [
         'live'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_COMMON_5'),
     ],
 
+    'turbo_upi_payee_callback_executor' => [
+        'live'       => env('AWS_TURBO_UPI_PAYEE_CALLBACK_EXECUTOR_LIVE_QUEUE'),
+    ],
+
     'turbo_upi_error_mapping_updater' => [
         'live'       => env('AWS_TURBO_UPI_ERROR_MAPPING_UPDATER_LIVE_QUEUE'),
     ],

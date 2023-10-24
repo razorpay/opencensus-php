@@ -396,6 +396,8 @@ class ConfigKey
 
     const UPI_TURBO_POPULAR_BANK_LIST           = self::PREFIX . 'upi_turbo_popular_bank_list';
 
+    const UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME   = self::PREFIX . 'upi_turbo_payee_execution_hold_time';
+
     const RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA = self::PREFIX . 'rx_block_non_2fa_non_baas_for_ca';
 
     // OD balance related keys for direct account

@@ -13,6 +13,8 @@ class Constants
     const TIMEOUTS           = 'timeouts';
     const OLIVE_SDK_TIMEOUT  = 'olive_sdk_timeout';
 
+    const TURBO_PAYEE_EXECUTION_HOLD_TIME  = 2;
+
     private static array $defaultTimeouts = [
         self::OLIVE_SDK_TIMEOUT => 30
     ];

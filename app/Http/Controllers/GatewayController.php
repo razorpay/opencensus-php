@@ -36,14 +36,17 @@ use RZP\Models\UpiMandate\Entity;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Upi\Base as BaseUpi;
+use RZP\Gateway\Upi\Axis as AxisUpi;
 use Illuminate\Http\RedirectResponse;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Jobs\TurboPayeeCallbackExecutor;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Gateway\Utility as GatewayUtility;
 use RZP\Gateway\Netbanking\Base\Repository;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
+use RZP\Models\P2p\Preferences as P2pPreferences;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
 use RZP\Models\Merchant\Repository as MerchantRepository;
@@ -472,6 +475,10 @@ class GatewayController extends Controller
                 }
                 else
                 {
+                    if($this->isAxisOliveCallbackWithFailedPayment($input, $gatewayDriver)) {
+                        return $this->holdTurboPayeeCallbackExecution($input, $mode, $startTime, $gatewayDriver);
+                    }
+
                     $payment = $this->repo->payment->findByPublicId($paymentId);
 
                     if ($this->shouldSkipUpiICICICallback($payment, $mode, $input) === true)
@@ -2183,6 +2190,62 @@ class GatewayController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * This function will return true if the callback is from upi_axisolive and the payment is failed
+     * otherwise, it return false
+     * @param $input array
+     * @param $gatewayDriver string
+     * @return bool
+     */
+    private function isAxisOliveCallbackWithFailedPayment(array $input, string $gatewayDriver) {
+        return ($gatewayDriver === Gateway::UPI_AXISOLIVE
+        && $input[AxisUpi\Constants::DATA] !== null
+        && $input[AxisUpi\Constants::DATA][Payment\Entity::UPI] !== null
+        && $input[AxisUpi\Constants::DATA][Payment\Entity::UPI][AxisUpi\Constants::STATUS_CODE] !== AxisUpi\Constants::PAYMENT_SUCCESS_STATUS_CODE);
+    }
+
+    /**
+     * This function will push the payee callback to the worker with delay as configured in the Turbo payee execution hold time
+     * @param $input array
+     * @param $mode string
+     * @param $startTime float
+     * @param $gatewayDriver string
+     * @return array
+     */
+    private function holdTurboPayeeCallbackExecution(array $input, string $mode, float $startTime, string $gatewayDriver) {
+        try
+        {
+            $executionHoldTime = Admin\ConfigKey::get(Admin\ConfigKey::UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME, -1);
+
+            if($executionHoldTime === -1) {
+                $this->trace()->info(TraceCode::TURBO_PAYEE_EXECUTION_HOLD_TIME_NOT_FOUND_IN_CACHE, [
+                    'action' => 'Turbo payee execution hold time value not found in cache'
+                ]);
+                $executionHoldTime = P2pPreferences\Constants::TURBO_PAYEE_EXECUTION_HOLD_TIME;
+            }
+
+            TurboPayeeCallbackExecutor::dispatch(
+                $input,
+                $mode,
+                $startTime,
+                $gatewayDriver)
+                ->delay($executionHoldTime);
+            return [
+                'success' => true,
+            ];
+        }
+        catch (\Throwable $th)
+        {
+            $this->trace->traceException(
+                $th,
+                Trace::CRITICAL,
+                TraceCode::TURBO_PUSH_PAYEE_CALLBACK_ASYNC_FAILED);
+            return [
+                'success' => false,
+            ];
+        }
     }
 
     /**
