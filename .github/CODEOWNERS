@@ -52,7 +52,7 @@ app/Models/Reversal/                                   @razorpay/Payouts-core
 app/Models/Terminal/Sorters/                           @razorpay/TechRulesRouting
 app/Models/Terminal/AuthSelector.php                   @razorpay/TechRulesRouting
 app/Models/Terminal/Selector.php                       @razorpay/TechRulesRouting
-app/Models/Transfer/                                   mohamed.safwan@razorpay.com
+app/Models/Transfer/                                   @razorpay/enterprise-apps
 app/Models/TrustedBadge                                @razorpay/checkout-backend-leads
 app/Models/FundTransfer/M2P/M2PConfigs.php             chirag.chiranjib@razorpay.com
 app/Models/Consumer/                                          @razorpay/spine-edge
@@ -92,7 +92,7 @@ tests/Unit/Edge/                                       @razorpay/spine-edge
 #
 
 tests/Functional/QrCode/                               @razorpay/qr-code-devs
-tests/Functional/Transfer/                             @razorpay/Payouts-core
+tests/Functional/Transfer/                             @razorpay/enterprise-apps
 tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
 tests/Functional/Key/                                  @razorpay/spine-edge
 tests/Functional/Edge/                                 @razorpay/spine-edge
