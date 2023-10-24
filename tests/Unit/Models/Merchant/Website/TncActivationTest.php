@@ -19,6 +19,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Tests\Functional\Authorization;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -30,6 +31,7 @@ use Illuminate\Support\Facades\Mail;
 
 class TncActivationTest extends TestCase
 {
+    use PartnerTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
@@ -1042,6 +1044,154 @@ class TncActivationTest extends TestCase
         $this->assertArrayHasKey('merchant_website_details', $websiteDetail);
     }
 
+    // Allow partner to create website section
+    public function testMerchantCreateWebsiteSectionDetailsSectionForPartner()
+    {
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+        $this->fixtures->merchant->edit($merchant->getId(), ['partner_type' => 'aggregator']);
+
+
+        $input = [
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 1,
+                    "website"        => [
+                        "https://hello.com" => [
+                            "url" => "https://hello.co.in/contact_us"
+                        ]
+                    ]
+                ]
+            ]];
+
+        $websiteDetail = (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+
+        $this->assertArraySubset([
+                                     "merchant_website_details" => [
+                                         "contact_us" => [
+                                             "section_status" => 1,
+                                             "status"         => null,
+                                             "website"        => [
+                                                 "https://hello.com" => [
+                                                     "url" => "https://hello.co.in/contact_us"
+                                                 ]
+                                             ]
+                                         ]
+                                     ]], $websiteDetail);
+
+        $this->assertArrayNotHasKey('admin_website_details', $websiteDetail);
+
+    }
+
+    // Allow subM to create website section
+    public function testMerchantCreateWebsiteSectionDetailsSectionForSubM()
+    {
+        $partner = $this->createMerchant(['business_website' => 'https://hello.com'],false);
+        $this->fixtures->merchant->edit($partner->getId(), ['partner_type' => 'reseller']);
+        $app = $this->createOAuthApplication(['merchant_id' => $partner->getId(), 'partner_type' => 'reseller']);
+        list($subMerchant, $accessMap) = $this->createSubMerchant($partner, $app);
+        $this->app['basicauth']->setMerchant($subMerchant);
+
+        $input = [
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 1,
+                    "website"        => [
+                        "http://www.example.com/" => [
+                            "url" => "http://www.example.com/contact_us"
+                        ]
+                    ]
+                ]
+            ]];
+
+        $websiteDetail = (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+
+        $this->assertArraySubset([
+                                     "merchant_website_details" => [
+                                         "contact_us" => [
+                                             "section_status" => 1,
+                                             "status"         => null,
+                                             "website"        => [
+                                                 "http://www.example.com/" => [
+                                                     "url" => "http://www.example.com/contact_us"
+                                                 ]
+                                             ]
+                                         ]
+                                     ]], $websiteDetail);
+
+        $this->assertArrayNotHasKey('admin_website_details', $websiteDetail);
+
+    }
+
+    //Partner add website section from admin dashboard
+    public function testAdminCreateWebsiteSectionDetailsPartner()
+    {
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com'],false);
+        $this->fixtures->merchant->edit($merchant->getId(), ['partner_type' => 'aggregator']);
+
+        $input = [
+            "section_name" => "refund",
+            "url_type"     => "website",
+            "url"          => "https://hello.com",
+            "section_url"  => "http://hello.com/refund"
+
+        ];
+
+        $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant->getId(), $input);
+
+        $this->assertArraySubset([
+                                     "isWebsiteSectionsApplicable" => true,
+                                     "isGracePeriodApplicable"     => false,
+                                     "admin_website_details" => [
+                                         "website"                     => [
+                                             'https://hello.com' => [
+                                                 "refund" => [
+                                                     "url" => "http://hello.com/refund"
+                                                 ]
+                                             ]
+                                         ]
+                                     ]
+                                 ], $websiteDetail);
+
+        $this->assertArrayHasKey('admin_website_details', $websiteDetail);
+        $this->assertArrayHasKey('merchant_website_details', $websiteDetail);
+    }
+
+    //subM add website section from admin dashboard
+    public function testAdminCreateWebsiteSectionDetailsSubMerchant()
+    {
+        $partner = $this->createMerchant(['business_website' => 'https://hello.com'],false);
+        $this->fixtures->merchant->edit($partner->getId(), ['partner_type' => 'reseller']);
+        $app = $this->createOAuthApplication(['merchant_id' => $partner->getId(), 'partner_type' => 'reseller']);
+        list($subMerchant, $accessMap) = $this->createSubMerchant($partner, $app);
+
+        $input = [
+            "section_name" => "refund",
+            "url_type"     => "website",
+            "url"          => "http://www.example.com/",
+            "section_url"  => "http://www.example.com/refund"
+
+        ];
+
+        $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($subMerchant->getId(), $input);
+
+        $this->assertArraySubset([
+                                     "isWebsiteSectionsApplicable" => true,
+                                     "isGracePeriodApplicable"     => false,
+                                     "admin_website_details" => [
+                                         "website"                     => [
+                                             'http://www.example.com/' => [
+                                                 "refund" => [
+                                                     "url" => "http://www.example.com/refund"
+                                                 ]
+                                             ]
+                                         ]
+                                     ]
+                                 ], $websiteDetail);
+
+        $this->assertArrayHasKey('admin_website_details', $websiteDetail);
+        $this->assertArrayHasKey('merchant_website_details', $websiteDetail);
+    }
+
     public function testAdminCreateWebsiteSectionDetailsInvalidData()
     {
         $merchant = $this->createMerchant(['business_website' => 'https://hello.com'],false);
@@ -1311,6 +1461,67 @@ class TncActivationTest extends TestCase
         $this->assertEquals(false, $response);
 
     }
+
+    // Validate website section applicable for partner
+    public function testIsWebsiteSectionsApplicableForPartner()
+    {
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+
+        $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
+                                                        "shipping_period"          => "3-5 days",
+                                                        "refund_request_period"    => "3-5 days",
+                                                        "refund_process_period"    => "3-5 days",
+                                                        "additional_data"          => [
+                                                            "support_contact_number" => "9980004017",
+                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
+                                                        ],
+                                                        "merchant_website_details" => [
+                                                            "contact_us" => [
+                                                                "section_status" => 3
+                                                            ]
+                                                        ]]);
+
+        $input = [
+            "section_name"     => "contact_us",
+            "action"           => "publish",
+            "merchant_consent" => true
+        ];
+
+        $websiteDetail = (new Merchant\Website\Service)->postWebsiteSectionAction($input);
+        //enable business banking
+
+        $response = (new Merchant\Website\Service)->isWebsiteSectionsApplicable($merchant, false);
+        $this->assertEquals(true, $response);
+
+    }
+
+    // Validate website section applicable for subM
+    public function testIsWebsiteSectionsApplicableForSubM()
+    {
+        $partner = $this->createMerchant(['business_website' => 'https://hello.com'],false);
+        $this->fixtures->merchant->edit($partner->getId(), ['partner_type' => 'reseller']);
+        $app = $this->createOAuthApplication(['merchant_id' => $partner->getId(), 'partner_type' => 'reseller']);
+        list($subMerchant, $accessMap) = $this->createSubMerchant($partner, $app);
+
+        $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $subMerchant->getId(),
+                                                        "shipping_period"          => "3-5 days",
+                                                        "refund_request_period"    => "3-5 days",
+                                                        "refund_process_period"    => "3-5 days",
+                                                        "additional_data"          => [
+                                                            "support_contact_number" => "9980004017",
+                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
+                                                        ],
+                                                        "merchant_website_details" => [
+                                                            "contact_us" => [
+                                                                "section_status" => 3
+                                                            ]
+                                                        ]]);
+
+        $response = (new Merchant\Website\Service)->isWebsiteSectionsApplicable($subMerchant, false);
+        $this->assertEquals(true, $response);
+
+    }
+
     //test isWebsiteSectionsApplicable for public
     public function testIsWebsiteSectionsApplicableForPublicPages()
     {

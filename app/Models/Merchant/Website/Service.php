@@ -281,7 +281,7 @@ class Service extends Base\Service
                 //by pass the condition if it is for public page links
                 if ($isPublicView === false)
                 {
-                    if ((new Merchantcore)->isRegularMerchant($merchant) === false)
+                    if ($this->isMerchantApplicableForWebsiteSections($merchant) === false)
                     {
                         return false;
                     }
@@ -656,6 +656,23 @@ class Service extends Base\Service
         ]);
 
         return $response;
+    }
+
+    public function isMerchantApplicableForWebsiteSections(MerchantEntity $merchant): bool
+    {
+        // RazorpayX
+        if ($merchant->isBusinessBankingEnabled() === true)
+        {
+            return false;
+        }
+
+        // Linked Accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private function generateSupportDetails($merchantDetails, array &$response)
