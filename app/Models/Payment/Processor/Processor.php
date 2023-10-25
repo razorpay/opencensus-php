@@ -751,12 +751,6 @@ class Processor
                 return false;
             }
 
-            if ((app()->isEnvironmentQA() === true) and
-                ($this->mode === Mode::LIVE))
-            {
-                return false;
-            }
-
             if ($this->isRearchBVTRequest() === true || $this->isRearchDarkRequest() === true)
             {
                 if ((empty($input[Payment\Entity::METHOD]) === true) or
@@ -769,6 +763,12 @@ class Processor
                     $this->preProcessTokenisedPaymentRequestForRearch($input, $merchant);
                 }
                 return true;
+            }
+
+            // moving this check here to route all the QA checks to API which are not satisfied by the above check which routes rearch tests to automation.
+            if (app()->isEnvironmentQA() === true)
+            {
+                return false;
             }
 
             if (($this->route->isRearchRoute($currentRouteName) == false) or
@@ -896,22 +896,24 @@ class Processor
                     ]);
                     return false;
                 }
-                else {
+
+                if (empty($order) === false and $order->hasOffers() === true) {
                     $offerExpResult = $this->app->razorx->getTreatment($merchant->getId(), self::ROUTE_OFFER_PAYMENTS_TO_REARCH_CPS, $this->mode);
                     if ($offerExpResult != 'on') {
                         $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                            'reason' => "offers",
+                            'reason' => "offers_blocked",
                             'merchant_id' => $merchant->getId(),
                             'order_id' => $order->getId(),
                         ]);
                         return false;
                     }
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_SUCCESS_REASON, [
-                        'reason' => "offers",
-                        'merchant_id' => $merchant->getId(),
-                        'order_id' => $order->getId(),
-                    ]);
                 }
+
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_SUCCESS_REASON, [
+                    'reason' => "offers",
+                    'merchant_id' => $merchant->getId(),
+                    'order_id' => $order->getId(),
+                ]);
 
                 if (empty($order) === false and ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or
                     ($order->invoice !== null))
