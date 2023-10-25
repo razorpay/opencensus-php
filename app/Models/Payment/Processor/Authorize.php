@@ -753,12 +753,12 @@ trait Authorize
 
             $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
 
-            if(($payment->isMethodCardOrEmi() === true && $payment->isInternational() === false &&  isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false ) || (str_starts_with(strtolower($rzpTestCaseID),'ALT_ID')))
+            if(($payment->isMethodCardOrEmi() === true && $payment->isInternational() === false &&  isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false ))
              {
 
                 //call alt id and set trivia 2 for alt id
 
-                if ($this->isAltIdExperimentEnabled($payment, 'app.alt_id_live_mode_experiment_id') === true )
+                if ((str_starts_with(strtolower($rzpTestCaseID),'alt_id')) || $this->isAltIdExperimentEnabled($payment, 'app.alt_id_live_mode_experiment_id') === true )
                     {
 
                     // rupay save=1 flow and recurring  will happen via token pan and cryptogram
