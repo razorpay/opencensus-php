@@ -20,9 +20,9 @@ class Validator extends Base\Validator
         Constants::API_KEY                  => 'required|max:512',
         Constants::API_SECRET               => 'required|max:512',
         Constants::OAUTH_TOKEN              => 'required|max:512',
-        Constants::STOREFRONT_ACCESS_TOKEN  => 'required|max:512',
+        Constants::STOREFRONT_ACCESS_TOKEN  => 'sometimes|max:512',
         Constants::DELEGATE_ACCESS_TOKEN    => 'sometimes|max:512',
-        Constants::APP_NAME                 => 'sometimes|max:512|in:sopc'
+        Constants::APP_NAME                 => 'sometimes|max:512|in:sopc,rcod'
     ];
 
     protected static $updateWoocommerceConfigRules = [
@@ -44,7 +44,8 @@ class Validator extends Base\Validator
         Constants::CLIENT_ID                => 'required|max:512',
         Constants::ADMIN_ACCESS_TOKEN       => 'required|max:512',
         Constants::STOREFRONT_ACCESS_TOKEN  => 'required|max:512',
-        Constants::DELEGATE_ACCESS_TOKEN    => 'sometimes|max:512'
+        Constants::DELEGATE_ACCESS_TOKEN    => 'sometimes|max:512',
+        Constants::APP_NAME                 => 'sometimes|max:512|in:sopc,rcod'
     ];
 
     // NOTE: Decide whether we keep `.myshopify.com` in the value or not
