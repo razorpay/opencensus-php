@@ -153,6 +153,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         $rrn = $this->getReferenceNumber($row);
 
+        $arn = $row[ReconciliationFields::ARN] ?? null;
         // Not reporting missing rrn value in MIS, because it
         // is quite frequent, and doesn't hamper recon flow.
         if ((empty($rrn) === false)                            and
@@ -165,7 +166,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             return $rrn;
         }
 
-        return null;
+        return $arn;
     }
 
 
@@ -445,18 +446,6 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
      * This is done because for reporting purposes, we need reference number in payment entity.
      * @param $rowDetails
      */
-    protected function setPaymentAcquirerData($rowDetails)
-    {
-        if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false)
-        {
-            $this->setPaymentReference1($rowDetails[BaseReconciliate::REFERENCE_NUMBER]);
-        }
-
-        if (empty($rowDetails[BaseReconciliate::AUTH_CODE]) === false)
-        {
-            $this->setPaymentReference2($rowDetails[BaseReconciliate::AUTH_CODE]);
-        }
-    }
 
     /**
      * The card_fss entity ref column should be updated with rrn
