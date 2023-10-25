@@ -74,6 +74,7 @@ class Error extends Support\Fluent
     const PUBLIC_ERROR_CODE     = 'code';
     const HTTP_STATUS_CODE      = 'http_status_code';
     const DESCRIPTION           = 'description';
+    const ERROR_CODE            = 'error_code';
     const ERROR_DESCRIPTION     = 'error_description';
     const FIELD                 = 'field';
     const ERROR_CLASS           = 'class';

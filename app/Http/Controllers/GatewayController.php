@@ -2431,18 +2431,33 @@ class GatewayController extends Controller
         return null;
     }
 
-    public function callbackPayerUPIAxisOlive()
+    public function callbackPayerUPIAxisOlive($gatewayDriver)
     {
-        $input   = Request::all();
         $content = Request::getContent();
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_PAYER_CALLBACK, [
-            'input'   => $input,
-            'content' => $content
+            'content'        => $content,
+            'gateway_driver' => $gatewayDriver
         ]);
 
-        return [
-            'success' => true
-        ];
+        $gateway = $this->app['gateway']->gateway($gatewayDriver);
+
+        $payerCallBackDecrypted = [];
+
+        try
+        {
+            $payerCallBackDecrypted = $this->preProcessServerCallback($gateway, $content, $gatewayDriver);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException($exception, Logger::CRITICAL, TraceCode::PAYER_CALLBACK_DECRYPTION_FAILED,
+                                         [
+                                             'gateway' => $gatewayDriver
+                                         ]);
+        }
+
+        $response = (new Payment\Service())->processGatewayPayerCallBack(Gateway::UPI_AXISOLIVE, $payerCallBackDecrypted);
+
+        return ApiResponse::json($response);
     }
 }

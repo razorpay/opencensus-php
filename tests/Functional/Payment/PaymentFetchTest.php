@@ -2423,6 +2423,47 @@ class PaymentFetchTest extends TestCase
         );
     }
 
+    public function testErrorAttributesForTurboUpiPaymentsInPaymentFetch()
+    {
+        $this->enableInAppPaymentMethodOnMerchant();
+        $paymentRequest = $this->getDefaultUpiBlockIntentPaymentArray();
+        $paymentRequest['upi']['flow'] = 'in_app';
+        $payment1 = $this->doAuthPaymentViaAjaxRoute($paymentRequest);
+
+        $paymentId = $payment1['payment_id'];
+
+        $reference17 = [
+            'payer' => [
+                'public_error_code' => 'BAD_REQUEST_ERROR',
+                'error_description' => 'You have entered an incorrect PIN on the UPI app. Please retry with the correct PIN.',
+                'error_reason'      => 'incorrect_pin',
+                'primary'           => true // as payment status moved to authorized
+            ]
+        ];
+
+        $this->fixtures->edit('payment', substr($paymentId, 4), [
+            'reference17' => json_encode($reference17)
+        ]);
+
+        $fetchedPayment = $this->fetchPayment($paymentId);
+
+        $this->assertEquals('BAD_REQUEST_ERROR', $fetchedPayment['error_code']);
+        $this->assertEquals('You have entered an incorrect PIN on the UPI app. Please retry with the correct PIN.', $fetchedPayment['error_description']);
+        $this->assertEquals('incorrect_pin', $fetchedPayment['error_reason']);
+
+        //Now we update primary flag to false and assert that payment error details are not picked from payer callback
+        $reference17['payer']['primary'] = false;
+        $this->fixtures->edit('payment', substr($paymentId, 4), [
+            'reference17' => json_encode($reference17)
+        ]);
+
+        $fetchedPayment = $this->fetchPayment($paymentId);
+
+        $this->assertNull($fetchedPayment['error_code']);
+        $this->assertNull($fetchedPayment['error_description']);
+        $this->assertNull($fetchedPayment['error_reason']);
+    }
+
     public function enableInAppPaymentMethodOnMerchant()
     {
         $methods = [

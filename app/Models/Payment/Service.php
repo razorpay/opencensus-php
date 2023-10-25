@@ -7573,4 +7573,73 @@ class Service extends Base\Service
 
         return false;
     }
+
+    public function processGatewayPayerCallBack($gateway, $callbackPayload)
+    {
+        $successResponse = [
+            'success' => true
+        ];
+
+        $failureResponse = [
+            'success' => false
+        ];
+
+        $upiData = $callbackPayload['data'][\RZP\Gateway\Upi\Base\Entity::UPI] ?? null;
+
+        if ($upiData === null)
+        {
+            return $failureResponse;
+        }
+
+        $axisTxnId  = $upiData[\RZP\Gateway\Upi\Base\Entity::NPCI_TXN_ID];
+        $statusCode = $upiData[\RZP\Gateway\Upi\Base\Entity::STATUS_CODE];
+
+        if ($statusCode === '00')
+        {
+            return $successResponse;
+        }
+
+        /** @var Payment\Entity $payment */
+        [$payment, $mode] = $this->repo->payment->fetchTurboUpiPaymentByReference1($axisTxnId);
+
+        if ($payment === null)
+        {
+            $this->trace->error(TraceCode::TURBO_PAYMENT_FETCH_FAILED,
+                                [
+                                    'reference1' => $axisTxnId
+                                ]);
+
+            return $failureResponse;
+        }
+        else
+        {
+            $this->trace->info(TraceCode::TURBO_PAYMENT_FETCH_SUCCESSFUL,
+                               [
+                                   'id'          => $payment->getId(),
+                                   'merchant_id' => $payment->getMerchantId(),
+                                   'status'      => $payment->getStatus(),
+                                   'mode'        => $mode
+                               ]);
+        }
+
+        try
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $merchant = $payment->merchant;
+
+            (new Payment\Processor\Processor($merchant))->updateTurboPaymentWithPayerCallBack($payment, $statusCode);
+
+            return $successResponse;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException($exception, Trace::CRITICAL, TraceCode::PAYER_CALLBACK_PROCESSING_FAILED,
+                                         [
+                                             'gateway' => $gateway,
+                                         ]);
+        }
+
+        return $failureResponse;
+    }
 }

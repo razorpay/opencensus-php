@@ -17,6 +17,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
 use RZP\Models\Order\ProductType;
+use RZP\Models\Upi\Turbo\Utils;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -6258,21 +6259,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     private function setUpiIfApplicable(array &$data, string $action = null)
     {
-        if (($this->getMethod() === Payment\Method::UPI) and
-            ($this->getReference2() !== null))
+        if ($this->getMethod() !== Payment\Method::UPI)
+        {
+            return;
+        }
+
+        if ($this->getReference2() !== null)
         {
             $data[self::UPI][self::PAYER_ACCOUNT_TYPE] = $this->getReference2();
         }
 
-        if ($this->getMethod() === Payment\Method::UPI)
-        {
-            $data[self::UPI][self::VPA] = $this->getVpa();
+        $data[self::UPI][self::VPA] = $this->getVpa();
 
-            $this->assignUPIFlow($data, $action);
-        }
+        $this->assignUPIFlowAndErrorDetails($data, $action);
     }
 
-    private function assignUPIFlow(array &$data, $action)
+    private function assignUPIFlowAndErrorDetails(array &$data, $action)
     {
         $app = App::getFacadeRoot();
 
@@ -6284,12 +6286,31 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($app['basicauth']->isProxyAuth() === true
             or $app['basicauth']->isAdminAuth() === true
             or $app['basicauth']->isPrivateAuth() === true
-            or $action === Constants::WEBHOOK) {
+            or $action === Constants::WEBHOOK)
+        {
             $upiMetadata = $this->getUpiMetadata();
 
-            if (isset($upiMetadata) === true and $upiMetadata->getFlow() === Flow::IN_APP)
+            if (isset($upiMetadata) === false or $upiMetadata->getFlow() !== Flow::IN_APP)
             {
-                $data[self::UPI][UpiMetadata\Entity::FLOW] = $upiMetadata->getFlow();
+                return;
+            }
+
+            $data[self::UPI][UpiMetadata\Entity::FLOW] = $upiMetadata->getFlow();
+            $reference17 = json_decode($this->getReference17(), true) ?? [];
+
+            if ((empty($reference17['payer']) === true) or
+                ($reference17['payer']['primary'] === false))
+            {
+                return;
+            }
+
+            $data[self::ERROR_REASON]      = $reference17['payer'][self::ERROR_REASON];
+            $data[self::ERROR_CODE]        = $reference17['payer'][\RZP\Models\Upi\Turbo\Constants::PUBLIC_ERROR_CODE];
+            $data[self::ERROR_DESCRIPTION] = $reference17['payer'][Error::ERROR_DESCRIPTION];
+
+            if ($app['basicauth']->isAdminAuth() === true)
+            {
+                $data[self::INTERNAL_ERROR_CODE] = $reference17['payer'][self::INTERNAL_ERROR_CODE];
             }
         }
     }

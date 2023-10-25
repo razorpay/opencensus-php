@@ -32,6 +32,8 @@ class Gateway extends Base\Gateway
      */
     const MOCK_ROUTE    = 'mock_upi_payment';
 
+    const AXISOLIVE_PAYER_CALLBACK_ROUTE = 'gateway_payment_callback_payer_axisolive';
+
     protected $shouldMapLateAuthorized = true;
 
     protected $shouldRetryForAction = true;

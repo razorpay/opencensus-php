@@ -2541,7 +2541,7 @@ EOT;
             $payment = $this->newQueryWithConnection($connectionType)->whereNotNull(Entity::CAPTURED_AT)
                             ->where(Entity::ORDER_ID, '=', $orderId)
                             ->first();
-        }   
+        }
 
         return $payment;
     }
@@ -4793,5 +4793,32 @@ EOT;
             ->join(Table::DISPUTE, $pid, '=', $disputePaymentIdColumn)
             ->where($disputeIdColumn, '=', $disputeId)
             ->pluck(\RZP\Models\Payment\Entity::GATEWAY);
+    }
+
+    public function fetchTurboUpiPaymentByReference1($reference1)
+    {
+        $payment = $this->newQueryWithConnection(Connection::LIVE)
+                        ->where(Payment\Entity::METHOD, '=', Payment\Method::UPI)
+                        ->where(Payment\Entity::GATEWAY, '=', Gateway::UPI_AXISOLIVE)
+                        ->where(Payment\Entity::REFERENCE1, '=', $reference1)
+                        ->first();
+
+        if ($payment !== null)
+        {
+            return [$payment, Connection::LIVE];
+        }
+
+        $payment =  $this->newQueryWithConnection(Connection::TEST)
+                         ->where(Payment\Entity::METHOD, '=',Payment\Method::UPI)
+                         ->where(Payment\Entity::GATEWAY, '=', Gateway::UPI_AXISOLIVE)
+                         ->where(Payment\Entity::REFERENCE1, '=', $reference1)
+                         ->first();
+
+        if ($payment !== null)
+        {
+            return [$payment, Connection::TEST];
+        }
+
+        return [null, null];
     }
 }

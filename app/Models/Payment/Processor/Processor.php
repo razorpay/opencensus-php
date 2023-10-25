@@ -69,6 +69,7 @@ use RZP\Models\Payment\Flow;
 use RZP\Jobs\TransferProcess;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Metric;
+use RZP\Models\Upi\Turbo\Utils;
 use RZP\Services\KafkaProducer;
 use RZP\Models\Payment\Status;
 use RZP\Models\UpiMandate\Core;
@@ -10519,5 +10520,47 @@ class Processor
         $discountRatio = $payment->getDiscountRatioIfApplicable();
 
         return (int) round($discountRatio * $transactionAmount);
+    }
+
+    public function updateTurboPaymentWithPayerCallBack(Payment\Entity $payment, $statusCode)
+    {
+        $errorDetails = Utils::getErrorDetailsFromGatewayStatusCode(Payment\Gateway::UPI_AXISOLIVE, $statusCode);
+
+        if (empty($errorDetails) === true)
+        {
+            return;
+        }
+
+        $this->setPayment($payment);
+
+        $this->mutex->acquireAndRelease(
+            $this->getCallbackMutexResource($payment),
+            function() use ($payment, $errorDetails) {
+                $this->repo->transaction(function() use ($payment, $errorDetails)
+                {
+                    $this->lockForUpdateAndReload($payment);
+
+                    $reference17 = json_decode($payment->getReference17(), true) ?? [];
+
+                    $reference17['payer'] = $errorDetails;
+
+                    $reference17['payer']['primary'] = ($payment->getStatus() === Payment\Status::CREATED);
+
+                    $payment->setReference17(json_encode($reference17));
+
+                    $this->repo->saveOrFail($payment);
+
+                    $this->trace->info(TraceCode::TURBO_PAYMENT_REFERENCE17_UPDATE_SUCCESSFUL,
+                                       [
+                                           'action'      => 'payer_callback',
+                                           'reference17' => $reference17,
+                                       ]);
+                });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
     }
 }

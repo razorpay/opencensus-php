@@ -835,6 +835,14 @@ trait Authorize
                     $request = $this->callGatewayAuthorize($payment, $terminalGatewayInput);
                 }
 
+                if (($payment->isInAppUPI() === true) and
+                    (empty($request['data']['npci_txn_id']) === false))
+                {
+                    $payment->setReference1($request['data']['npci_txn_id']);
+
+                    $this->repo->saveOrFail($payment);
+                }
+
                 if ((isset($request['status']) == true) and ($request['status'] == 'authenticated'))
                 {
                     $this->updatePaymentAuthenticated($request);

@@ -254,12 +254,19 @@ trait CommonGatewayTrait
     {
         $gatewayInput = $this->getInputForPreProcess($input);
 
+        $action = 'pre_process';
+
+        if (app('api.route')->getCurrentRouteName() === Gateway::AXISOLIVE_PAYER_CALLBACK_ROUTE)
+        {
+            $action = 'payer_' . $action;
+        }
+
         $mozart = $this->getUpiMozartGatewayWithModeFromEnvironment();
 
         $result = $mozart->sendUpiMozartRequest(
             $gatewayInput,
             TraceCode::GATEWAY_PRE_PROCESS_CALLBACK,
-            'pre_process'
+            $action
         );
 
         $response = new Response($result['data'] ?? []);
