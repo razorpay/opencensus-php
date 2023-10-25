@@ -182,28 +182,6 @@ return [
         ],
     ],
 
-    'testFetchSubVirtualAccountsForProxy' => [
-        'request' => [
-            'url'    => '/sub_virtual_accounts',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'id'                    => 'subva_HM8yTa58wo3qRZ',
-                        'entity'                => 'sub_virtual_account',
-                        'active'                => true,
-                        'master_account_number' => '2224440041626905',
-                        'sub_account_number'    => '2323230041626906',
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'testDisableSubVirtualAccount' => [
         'request'       => [
             'content'   => [
@@ -844,6 +822,59 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testFetchSubVirtualAccounts_ClosingBalance_Shared' => [
+        'request' => [
+            'url'    => '/sub_virtual_accounts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'entity'                => 'sub_virtual_account',
+                        'active'                => true,
+                        'master_account_number' => '2323230041626907',
+                        'sub_account_number'    => '2323230041626906',
+                        'sub_account_type'      => 'default',
+                        'sub_account_balance'   => 1000,
+                        'name'                  => 'Sub Merchant 1',
+                    ],
+                    [
+                        'entity'                => 'sub_virtual_account',
+                        'active'                => false,
+                        'master_account_number' => '2323230041626907',
+                        'sub_account_number'    => '2323230041626908',
+                        'sub_account_type'      => 'default',
+                        'sub_account_balance'   => 2020,
+                        'name'                  => 'Fin Lease'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchSubVirtualAccounts_Shared_Exception' => [
+        'request' => [
+            'url'    => '/sub_virtual_accounts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR,
         ],
     ],
 

@@ -7,8 +7,10 @@ use Mockery;
 use Carbon\Carbon;
 
 use RZP\Services\RazorXClient;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\Dcs\Features\Service;
+use RZP\Models\SubVirtualAccount\Metric;
 use RZP\Models\SubVirtualAccount\Constants;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -17,6 +19,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class SubVirtualAccountsTest extends TestCase
 {
+    use TestsMetrics;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
@@ -91,17 +94,6 @@ class SubVirtualAccountsTest extends TestCase
     public function testFetchSubVirtualAccountsForAdmin()
     {
         $this->ba->adminAuth();
-
-        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
-
-        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRY', 'active' => false]);
-
-        $this->startTest();
-    }
-
-    public function testFetchSubVirtualAccountsForProxy()
-    {
-        $this->ba->proxyAuth();
 
         $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
 
@@ -784,8 +776,6 @@ class SubVirtualAccountsTest extends TestCase
 
         $this->fixtureSetUpForSubVirtualAccount();
 
-        $this->fixtures->merchant->addFeatures([Features::ASSUME_MASTER_ACCOUNT]);
-
         $this->fixtures->create('sub_virtual_account', [
             'master_account_number' => '2323230041626907',
             'sub_account_number'    => '2323230041626906',
@@ -832,6 +822,87 @@ class SubVirtualAccountsTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testFetchSubVirtualAccounts_ClosingBalance_Shared()
+    {
+        Carbon::setTestNow();
+
+        $this->fixtureSetUpForSubVirtualAccount();
+
+        $this->fixtures->create('sub_virtual_account', [
+            'master_account_number' => '2323230041626907',
+            'sub_account_number'    => '2323230041626906',
+            'sub_account_type'      => 'default',
+            'sub_merchant_id'       => '100abc000abc01',
+            'master_merchant_id'    => '10000000000000',
+            'name'                  => 'Sub Merchant 1',
+            'active'                => true,
+            'created_at'            => Carbon::now()->subSeconds(30)->getTimestamp(),
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id' => '100xyz000xyz01',
+            'display_name' => 'Fin Lease',
+            'name' => 'Sub Merchant 2',
+        ]);
+
+        $this->fixtures->create('balance', [
+            'id' => random_alphanum_string(14),
+            'merchant_id' => '100xyz000xyz01',
+            'type' => 'banking',
+            'account_type' => 'shared',
+            'account_number' => '2323230041626908',
+            'balance' => 2020,
+        ]);
+
+        $this->fixtures->create('sub_virtual_account', [
+            'master_account_number' => '2323230041626907',
+            'sub_account_number'    => '2323230041626908',
+            'sub_account_type'      => 'default',
+            'sub_merchant_id'       => '100xyz000xyz01',
+            'master_merchant_id'    => '10000000000000',
+            'name'                  => 'Sub Merchant 2',
+            'active'                => false,
+            'created_at'            => Carbon::now()->subSeconds(60)->getTimestamp(),
+        ]);
+
+        $subBalance = $this->getDbEntity('balance', ['merchant_id' => '100abc000abc01' , 'account_type' => 'shared']);
+
+        $this->fixtures->edit('balance', $subBalance->getId(), ['balance' => 1000]);
+
+        $this->fixtures->edit('merchant', '100abc000abc01', ['name' => 'Sub Merchant 1', 'display_name' => null]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchSubVirtualAccounts_Shared_Exception()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRZ']);
+
+        $this->fixtures->create('sub_virtual_account', ['id' => 'HM8yTa58wo3qRY', 'active' => false]);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Metric::SUB_VIRTUAL_ACCOUNT_FETCH_MULTIPLE_FAILURE,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+            ],
+        );
+
+        // Balance is not created for Sub Virtual Account. Hence, this should fail
+        // while fetch balance
+        $this->startTest();
+
+        $this->assertTrue($boolMetricCaptured);
     }
 
     public function testFetchSubVirtualAccountCreditTransfers()

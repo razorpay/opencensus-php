@@ -15,6 +15,7 @@ class Metric extends Core
     const SUB_MERCHANT_NOT_LIVE_OR_EQUIVALENT_TOTAL             = 'sub_merchant_not_live_or_equivalent_total';
     const SUB_MERCHANT_LIMIT_ADDITION_EXCEPTIONS_TOTAL          = 'sub_merchant_limit_addition_exceptions_total';
     const SUB_ACCOUNT_CREDIT_TRANSFER_PROCESSING_FAILURES_TOTAL = 'sub_account_credit_transfer_processing_failures_total';
+    const SUB_VIRTUAL_ACCOUNT_FETCH_MULTIPLE_FAILURE            = 'sub_virtual_account_fetch_multiple_failure';
 
     public function pushMetrics($metricName, $dimensions)
     {

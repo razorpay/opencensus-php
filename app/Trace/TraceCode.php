@@ -3967,6 +3967,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for Sub virtual account CRUD
     const SUB_VIRTUAL_ACCOUNT_CREATED                                    = 'SUB_VIRTUAL_ACCOUNT_CREATED';
     const SUB_VIRTUAL_ACCOUNT_CREATE_REQUEST                             = 'SUB_VIRTUAL_ACCOUNT_CREATE_REQUEST';
+    const SUB_VIRTUAL_ACCOUNT_FETCH_MULTIPLE_FAILURE                     = 'SUB_VIRTUAL_ACCOUNT_FETCH_MULTIPLE_FAILURE';
     const SUB_VIRTUAL_ACCOUNT_TRANSFER_REQUEST                           = 'SUB_VIRTUAL_ACCOUNT_TRANSFER_REQUEST';
     const SUB_VIRTUAL_ACCOUNT_TRANSFER_RESPONSE                          = 'SUB_VIRTUAL_ACCOUNT_TRANSFER_RESPONSE';
     const SUB_VIRTUAL_ACCOUNT_ENABLE_DISABLE_REQUEST                     = 'SUB_VIRTUAL_ACCOUNT_ENABLE_DISABLE_REQUEST';

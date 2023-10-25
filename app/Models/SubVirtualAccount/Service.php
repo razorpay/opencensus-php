@@ -73,7 +73,7 @@ class Service extends Base\Service
     }
 
     /**This route is for proxy route. We need to return
-     * only active accounts on merchant dashboard
+     * both active and inactive accounts on merchant dashboard
      *
      * @return array
      */
@@ -81,7 +81,6 @@ class Service extends Base\Service
     {
         $input = [
             Entity::MASTER_MERCHANT_ID => $this->merchant->getId(),
-            Entity::ACTIVE             => true
         ];
 
         $subVirtualAccounts = $this->core->fetchMultiple($input);

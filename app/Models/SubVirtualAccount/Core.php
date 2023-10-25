@@ -121,31 +121,55 @@ class Core extends Base\Core
 
     public function fetchMultiple(array $input)
     {
-        $this->repo->sub_virtual_account->setMerchantIdRequiredForMultipleFetch(false);
-
-        if (($this->app['basicauth']->isProxyAuth() === true) and
-            ($this->merchant->isFeatureEnabled(Feature\Constants::ASSUME_MASTER_ACCOUNT) === true))
+        try
         {
-            unset($input[Entity::ACTIVE]);
-        }
+            $this->repo->sub_virtual_account->setMerchantIdRequiredForMultipleFetch(false);
 
-        $subVirtualAccounts = $this->repo->sub_virtual_account->fetch($input);
+            $subVirtualAccounts = $this->repo->sub_virtual_account->fetch($input);
 
-        /** @var Entity $subVirtualAccount */
-        foreach ($subVirtualAccounts as $subVirtualAccount)
-        {
-            if ($subVirtualAccount->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT)
-            {
-                $subMerchant = $subVirtualAccount->subMerchant;
+            /** @var Entity $subVirtualAccount */
+            foreach ($subVirtualAccounts as $subVirtualAccount) {
+                $routeName = $this->app['api.route']->getCurrentRouteName();
 
-                $subAccountBalance = $subMerchant->sharedBankingBalance;
+                /**
+                 * Balance fetch for sub_account happens in following cases
+                 * 1. If sub_account_type is sub_direct_account.
+                 * 2. If route is sub_virtual_account_list. This route is merchant dashboard route.
+                 * This method is used by sub_virtual_account_list_admin route as well.
+                 */
+                if (($subVirtualAccount->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT) or
+                    ($routeName === 'sub_virtual_account_list')) {
+                    $subMerchant = $subVirtualAccount->subMerchant;
 
-                $currentAvailableBalance = $subAccountBalance->getBalanceWithLockedBalanceFromLedger();
+                    $subAccountBalance = $subMerchant->sharedBankingBalance;
 
-                $subVirtualAccount->setClosingBalance($currentAvailableBalance);
+                    $currentAvailableBalance = $subAccountBalance->getBalanceWithLockedBalanceFromLedger();
 
-                $subVirtualAccount->setName($subMerchant->getDisplayNameElseName());
+                    $subVirtualAccount->setClosingBalance($currentAvailableBalance);
+
+                    $subVirtualAccount->setName($subMerchant->getDisplayNameElseName());
+                }
             }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::SUB_VIRTUAL_ACCOUNT_FETCH_MULTIPLE_FAILURE,
+                [
+                    'input' => $input,
+                ]);
+
+            $this->trace->count(Metric::SUB_VIRTUAL_ACCOUNT_FETCH_MULTIPLE_FAILURE);
+
+            throw new Exception\ServerErrorException(
+                'Sub Virtual Accounts Fetch Multiple Failure',
+                ErrorCode::SERVER_ERROR,
+                [
+                    'message' => $ex->getMessage(),
+                    'code' => $ex->getCode(),
+                ]);
         }
 
         return $subVirtualAccounts;
