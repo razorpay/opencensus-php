@@ -1196,7 +1196,7 @@ class MerchantDetailTest extends OAuthTestCase
             self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
 
             // check the NC url sent in email
-            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/onboarding/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
             $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
 
             return true;
@@ -1274,7 +1274,7 @@ class MerchantDetailTest extends OAuthTestCase
             self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
 
             // check the NC url sent in email
-            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?partnerId=' . $partner->getId(), $data['ncUrl']);
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/onboarding/needs-clarification?partnerId=' . $partner->getId(), $data['ncUrl']);
             $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
 
             return true;
@@ -1435,7 +1435,7 @@ class MerchantDetailTest extends OAuthTestCase
             self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
 
             // check the NC url sent in email
-            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?partnerId=' . $partner2->getId(), $data['ncUrl']);
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/onboarding/needs-clarification?partnerId=' . $partner2->getId(), $data['ncUrl']);
             $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
 
             return true;
@@ -12370,7 +12370,7 @@ We look forward to transacting with you!
             As a next step, we request you to go to your Razorpay dashboard and take the action required as per the given instructions immediately.
             Please note, you will not be able to collect payments from customers or receive it in your bank account until the required details are updated.";
 
-        $bottomUrlParam = 'sub-merchant/needs-clarification?applicationId=' . $app->getId();
+        $bottomUrlParam = 'sub-merchant/onboarding/needs-clarification?applicationId=' . $app->getId();
 
         $expectedInput = [
             'button_url_param'  => $bottomUrlParam,
@@ -12388,7 +12388,7 @@ We look forward to transacting with you!
             self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
 
             // check the NC url sent in email
-            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/onboarding/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
             $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_not_live', $mail->getTemplate());
 
             return true;
@@ -12493,7 +12493,7 @@ We look forward to transacting with you!
             As a next step, we request you to go to your Razorpay dashboard and take the action required as per the given instructions immediately.
             Please note, you will not be able to collect payments from customers or receive it in your bank account until the required details are updated.";
 
-        $bottomUrlParam = 'sub-merchant/needs-clarification?applicationId=' . $app->getId();
+        $bottomUrlParam = 'sub-merchant/onboarding/needs-clarification?applicationId=' . $app->getId();
 
         $expectedInput = [
             'button_url_param'  => $bottomUrlParam,
@@ -12511,7 +12511,7 @@ We look forward to transacting with you!
             self::assertNotEmpty(env('EASY_DASHBOARD_URL'));
 
             // check the NC url sent in email
-            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
+            $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/onboarding/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
             $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_not_live', $mail->getTemplate());
 
             return true;

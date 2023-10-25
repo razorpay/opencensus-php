@@ -332,13 +332,13 @@ class Handler extends BaseHandler
                     {
                         $partnerId = $partner->getId();
 
-                        $ncUrlPath =  'sub-merchant/needs-clarification?partnerId=' . $partnerId;
+                        $ncUrlPath =  'sub-merchant/onboarding/needs-clarification?partnerId=' . $partnerId;
                     }
                     else if ($partnerType === MerchantConstants::PURE_PLATFORM)
                     {
                         $appId = $accessMap->getEntityId();
 
-                        $ncUrlPath =  'sub-merchant/needs-clarification?applicationId=' . $appId;
+                        $ncUrlPath =  'sub-merchant/onboarding/needs-clarification?applicationId=' . $appId;
                     }
                 }
             }
