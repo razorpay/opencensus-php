@@ -105,8 +105,8 @@ class VerifyCsrfToken extends BaseVerifier
             // If the graph query is to seek org information
             // skip CSRF token check
             if ((isset($queryData) === true) and
-                ($this->isOperationName(self::ORGANISATION_INFORMATION, $queryData) === true) or
-                ($this->isOperationName(self::ORGANISATION_INFORMATION_BY_DOMAIN, $queryData) === true))
+                (($this->isOperationName(self::ORGANISATION_INFORMATION, $queryData) === true) or
+                 ($this->isOperationName(self::ORGANISATION_INFORMATION_BY_DOMAIN, $queryData) === true)))
             {
                 return $next($request);
             }
