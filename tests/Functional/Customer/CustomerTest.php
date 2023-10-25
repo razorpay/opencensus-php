@@ -1358,6 +1358,20 @@ class CustomerTest extends TestCase
         $this->assertEquals('pending', $paymentDetails[$payment2->getPublicId()]['status']);
 
         $this->assertEquals('failed', $paymentDetails[$payment3->getPublicId()]['status']);
+
+        $this->assertEquals('hdfc', $paymentDetails[$payment1->getPublicId()]['gateway']);
+
+        $this->assertEquals('hdfc', $paymentDetails[$payment2->getPublicId()]['gateway']);
+
+        $this->assertEquals('hdfc', $paymentDetails[$payment3->getPublicId()]['gateway']);
+
+        $this->assertFalse($paymentDetails[$payment1->getPublicId()]['optimizer_payment']);
+
+        $this->assertFalse($paymentDetails[$payment2->getPublicId()]['optimizer_payment']);
+
+        $this->assertFalse($paymentDetails[$payment3->getPublicId()]['optimizer_payment']);
+
+
     }
 
     public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInExpectsPaymentsExcludingTransferWithoutTransferIdWithCustomerContact()
@@ -1379,6 +1393,7 @@ class CustomerTest extends TestCase
             'merchant_id' => '10000000000000',
             'status'      => 'captured',
             'method'      => 'card',
+            'gateway'     => null,
         ]);
 
         $payment2 = $this->fixtures->create('payment', [
@@ -1427,6 +1442,15 @@ class CustomerTest extends TestCase
         $this->assertEquals('captured', $paymentDetails[$payment1->getPublicId()]['status']);
 
         $this->assertEquals('pending', $paymentDetails[$payment2->getPublicId()]['status']);
+
+        $this->assertNull($paymentDetails[$payment1->getPublicId()]['gateway']);
+
+        $this->assertEquals('hdfc',$paymentDetails[$payment2->getPublicId()]['gateway']);
+
+        $this->assertFalse($paymentDetails[$payment1->getPublicId()]['optimizer_payment']);
+
+        $this->assertFalse($paymentDetails[$payment2->getPublicId()]['optimizer_payment']);
+
     }
 
     public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInExpectsPaymentsExcludingTransferWithTransferIdWithCustomerContact()
@@ -1507,6 +1531,15 @@ class CustomerTest extends TestCase
         $this->assertEquals('captured', $paymentDetails[$payment1->getPublicId()]['status']);
 
         $this->assertEquals('pending', $paymentDetails[$payment2->getPublicId()]['status']);
+
+        $this->assertEquals('hdfc', $paymentDetails[$payment1->getPublicId()]['gateway']);
+
+        $this->assertEquals('hdfc', $paymentDetails[$payment2->getPublicId()]['gateway']);
+
+        $this->assertFalse($paymentDetails[$payment1->getPublicId()]['optimizer_payment']);
+
+        $this->assertFalse($paymentDetails[$payment2->getPublicId()]['optimizer_payment']);
+
     }
 
     public function testFetchPaymentByContactOnSupportPageWhenUserNotLoggedInExpectsFailureWithUnauthorizedException()
@@ -1602,7 +1635,13 @@ class CustomerTest extends TestCase
 
         $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
 
+        $paymentDetails = $this->getPaymentDetailsFromSupportPageFetchPaymentResponse($response);
+
         $this->assertContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertFalse($paymentDetails[$payment1->getPublicId()]['optimizer_payment']);
+
+        $this->assertEquals('hdfc', $paymentDetails[$payment1->getPublicId()]['gateway']);
 
         $this->assertNotContains($payment2->getPublicId(), $paymentIds);
     }
@@ -1641,7 +1680,25 @@ class CustomerTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
+        $paymentDetails = $this->getPaymentDetailsFromSupportPageFetchPaymentResponse($response);
+
         $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertEquals('hdfc', $paymentDetails[$payment1->getPublicId()]['gateway']);
+
+        $this->assertEquals('hdfc', $paymentDetails[$payment2->getPublicId()]['gateway']);
+
+        $this->assertEquals('hdfc', $paymentDetails[$payment3->getPublicId()]['gateway']);
+
+        $this->assertEquals('hdfc', $paymentDetails[$payment4->getPublicId()]['gateway']);
+
+        $this->assertFalse($paymentDetails[$payment1->getPublicId()]['optimizer_payment']);
+
+        $this->assertFalse($paymentDetails[$payment2->getPublicId()]['optimizer_payment']);
+
+        $this->assertFalse($paymentDetails[$payment3->getPublicId()]['optimizer_payment']);
+
+        $this->assertFalse($paymentDetails[$payment4->getPublicId()]['optimizer_payment']);
 
         // Payments ordered by created_at
         $this->assertEquals(
@@ -1966,6 +2023,59 @@ class CustomerTest extends TestCase
         $this->ba->checkoutServiceProxyAuth();
 
         $this->startTest();
+    }
+
+    public function testFetchPaymentByContactOnSupportPageAndCheckWhetherThePaymentIsAnOptimizerPayment()
+    {
+        $this->ba->directAuth();
+        $this->mockSession();
+
+        $request = [
+            'url'    => '/apps/payments?mode=test',
+            'method' => 'get',
+        ];
+
+        // Create a terminal with the 'optimizer' type
+        $terminal = $this->fixtures->create('terminal', [
+            'id'                    => 'AqdfGh5460opVt',
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'paytm',
+            'gateway_terminal_id'   => '12344',
+            'type'                  => [
+                'optimizer' => '1',
+            ],
+        ]);
+
+        $payment1 = $this->fixtures->create('payment', [
+            'merchant_id' => '10000000000000',
+            'contact'     => '+919988776655',
+            'terminal_id' => 'AqdfGh5460opVt',
+            'gateway'     => $terminal->gateway,
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'merchant_id' => '10000000000000',
+            'contact'     => '+919988776655',
+            'gateway'     => 'payu',
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $paymentDetails = $this->getPaymentDetailsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertEquals('paytm', $paymentDetails[$payment1->getPublicId()]['gateway']);
+
+        $this->assertTrue($paymentDetails[$payment1->getPublicId()]['optimizer_payment']);
+
+        $this->assertContains($payment2->getPublicId(), $paymentIds);
+
+        $this->assertEquals('payu', $paymentDetails[$payment2->getPublicId()]['gateway']);
+
+        $this->assertFalse($paymentDetails[$payment2->getPublicId()]['optimizer_payment']);
     }
 
     protected function getPaymentIdsFromSupportPageFetchPaymentResponse(array $response): array
