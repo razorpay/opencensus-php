@@ -318,6 +318,23 @@ jobs:
           SKIP_DEVSTACK: false
         run: |
           sh ./.github/actions/triggerDevstack.sh
+      - name: Run ITF E2E Tests on Devstack with Successful Build Image Workflow
+        if: env.WORKFLOW_STATUS == 'success'
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: "https://e2e-test-orchestrator.dev.razorpay.in/twirp/rzp.e2e_test_orchestrator.suite_execution.v1.SuiteExecutionAPI/Create"
+          username: ${{ secrets.E2E_ORCHESTRATOR_USERNAME }}
+          password: ${{ secrets.E2E_ORCHESTRATOR_PASSWORD }}
+          method: "POST"
+          data: >
+            {
+              "service_under_test": "api",
+              "commit_id": "${{ steps.pr_info.outputs.latest_commit }}",
+              "end_to_end_tests_branch_ref": "master",
+              "status": "Pending",
+              "config_overrides": "{}"
+            }
+
       - name: Post comment for devstack initated
         if: success() && env.WORKFLOW_STATUS == 'success'
         uses: mshick/add-pr-comment@v1
@@ -376,40 +393,3 @@ jobs:
               "context": "'"$STATUS_CONTEXT"'"
             }' \
             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.pr_info.outputs.latest_commit }}"
-
-  trigger-e2e-execution:
-    name: Trigger E2E Execution
-    runs-on:
-      - self-hosted
-      - api
-      - X64
-    needs: [ pull_request_approved ]
-    if: ${{ (github.event.review.state == 'approved' || contains(github.event.pull_request.labels.*.name, 'approved')) }}
-    steps:
-      - name: Retrieve Latest Commit ID for E2E
-        id: pr_info_e2e
-        run: |
-          echo "Sleeping for 10 seconds..."
-          sleep 10
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}"
-          API_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.CI_BOT_TOKEN }}" "$API_URL")
-          LATEST_COMMIT=$(echo "$API_RESPONSE" | jq --raw-output .head.sha)
-          echo "::set-output name=latest_commit::$LATEST_COMMIT"
-      - name: Print Lastest Commit id from PR for E2E - Debugging Step
-        run: echo ${{ steps.pr_info_e2e.outputs.latest_commit }}
-      - name: Run ITF E2E Tests
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: "https://e2e-test-orchestrator.dev.razorpay.in/twirp/rzp.e2e_test_orchestrator.suite_execution.v1.SuiteExecutionAPI/Create"
-          username: ${{ secrets.E2E_ORCHESTRATOR_USERNAME }}
-          password: ${{ secrets.E2E_ORCHESTRATOR_PASSWORD }}
-          method: "POST"
-          data: >
-            {
-              "service_under_test": "api",
-              "commit_id": "${{ steps.pr_info_e2e.outputs.latest_commit }}",
-              "end_to_end_tests_branch_ref": "master",
-              "status": "Pending",
-              "config_overrides": "{}"
-            }
