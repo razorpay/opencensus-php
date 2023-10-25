@@ -4067,7 +4067,7 @@ trait Authorize
 
     protected function validateLRSDataIfApplicable(Payment\Entity $payment)
     {
-        if ($payment->merchant->isLRSEducationFlowEnabled() === false)
+        if ($payment->merchant->isLRSFlowEnabled() === false)
         {
             return;
         }
@@ -4605,7 +4605,7 @@ trait Authorize
 
     protected function setConvertCurrencyIfLrsEducationEnabled(&$payment)
     {
-        if ($payment->merchant->isLRSEducationFlowEnabled() === true)
+        if ($payment->merchant->isLRSFlowEnabled() === true)
         {
             $payment->setConvertCurrency(true);
         }
@@ -4615,7 +4615,7 @@ trait Authorize
      */
     protected function preProcessLRSInputs(array $input, Payment\Entity $payment): void
     {
-        if ($payment->merchant->isLRSEducationFlowEnabled() === true)
+        if ($payment->merchant->isLRSFlowEnabled() === true)
         {
 
             $paymentMetaInput = [
@@ -5111,7 +5111,7 @@ trait Authorize
 
         // For card and App method payments, check all conditions
         // and for rest payment methods check only if currency != INR
-        if (!$merchant->isLRSEducationFlowEnabled() && ($currency !== $merchant->getCurrency() && !$merchant->isCustomerFeeBearerAllowedOnInternational()) &&
+        if (!$merchant->isLRSFlowEnabled() && ($currency !== $merchant->getCurrency() && !$merchant->isCustomerFeeBearerAllowedOnInternational()) &&
             ((($payment->getMethod() != Method::CARD) && ($payment->getMethod() != Method::APP)) ||
              ($merchant->isDCCEnabledInternationalMerchant() === false ||
               $payment->isInternational() === false)))
@@ -5169,9 +5169,9 @@ trait Authorize
         if (($merchant->isFeeBearerCustomerOrDynamic() and
             $currency !== $merchant->getCurrency()) and
             ($payment->isInternational() or
-                $merchant->isLRSEducationFlowEnabled()))
+                $merchant->isLRSFlowEnabled()))
         {
-            if($merchant->isCustomerFeeBearerAllowedOnInternational() or $merchant->isLRSEducationFlowEnabled())
+            if($merchant->isCustomerFeeBearerAllowedOnInternational() or $merchant->isLRSFlowEnabled())
             {
                 $amount = $amount - $payment->getFee();
             }
@@ -5188,7 +5188,7 @@ trait Authorize
             }
         }
 
-        if($merchant->isLRSEducationFlowEnabled() === true)
+        if($merchant->isLRSFlowEnabled() === true)
         {
             $input['is_lrs_merchant'] = true;
             /**
@@ -5200,7 +5200,7 @@ trait Authorize
         }
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $merchant->getCurrency(), $input);
 
-        if($merchant->isLRSEducationFlowEnabled() === true)
+        if($merchant->isLRSFlowEnabled() === true)
         {
             unset($input['is_lrs_convert_amount']);
         }
@@ -5224,9 +5224,9 @@ trait Authorize
         if (($merchant->isFeeBearerCustomerOrDynamic() and
             $currency !== $merchant->getCurrency()) and
             ($payment->isInternational() or
-                $merchant->isLRSEducationFlowEnabled()))
+                $merchant->isLRSFlowEnabled()))
         {
-            if($merchant->isCustomerFeeBearerAllowedOnInternational() or $merchant->isLRSEducationFlowEnabled())
+            if($merchant->isCustomerFeeBearerAllowedOnInternational() or $merchant->isLRSFlowEnabled())
             {
                 $baseFee = (new Currency\Core)->getBaseAmount($payment->getFee(), $currency, $merchant->getCurrency(), $input);
                 $baseAmount = $baseAmount + $baseFee;

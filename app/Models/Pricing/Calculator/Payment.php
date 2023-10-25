@@ -1011,7 +1011,7 @@ class Payment extends Base
             }
 
             $input = [];
-            if ($this->entity->merchant->isLRSEducationFlowEnabled() === true)
+            if ($this->entity->merchant->isLRSFlowEnabled() === true)
             {
                 $input['is_lrs_merchant'] = true;
                 $input['order_id'] = $this->entity->getOrderAttribute()['id'];

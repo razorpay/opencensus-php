@@ -86,7 +86,7 @@ class Core extends Base\Core
             ($input[Entity::TYPE] === Type::ORG_SETTLEMENT) and
             (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false) and
                 $merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false) and
-                $merchant->isLRSEducationFlowEnabled() === false)
+                $merchant->isLRSFlowEnabled() === false)
         {
           throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
         }
@@ -653,7 +653,7 @@ class Core extends Base\Core
         $bankValidator = 'addBankAccount';
 
         if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true or
-            $merchant->isLRSEducationFlowEnabled() === true)
+            $merchant->isLRSFlowEnabled() === true)
         {
             $bankValidator = 'addInternationalBankAccount';
             $notes = [];
@@ -678,7 +678,7 @@ class Core extends Base\Core
             $ba = $ba->build($input,$bankValidator);
 
         if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false and
-            $merchant->isLRSEducationFlowEnabled() === false and ($authType !== 'migrated'))
+            $merchant->isLRSFlowEnabled() === false and ($authType !== 'migrated'))
         {
             $ba->getValidator()->validateIfscCode($input, $mode);
         }
@@ -985,7 +985,7 @@ class Core extends Base\Core
         }
 
         if (($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true) or (
-                $merchant->isLRSEducationFlowEnabled() === true))
+                $merchant->isLRSFlowEnabled() === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
         }

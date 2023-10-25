@@ -1871,7 +1871,7 @@ class Core extends Base\Core
         $formattedPaymentDetails['payment']['status'] = $payment->getStatus();
         $formattedPaymentDetails['business_support_details'] = $paymentDetails['business_support_details'];
         $formattedPaymentDetails['payment']['merchant_logo'] = $paymentDetails['merchant_logo'];
-        if ($payment->merchant->isLRSEducationFlowEnabled() === true)
+        if ($payment->merchant->isLRSFlowEnabled() === true)
         {
             $formattedPaymentDetails['payment']['is_lrs_transaction'] = true;
         }

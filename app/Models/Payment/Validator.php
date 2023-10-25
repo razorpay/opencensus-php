@@ -2099,7 +2099,7 @@ class Validator extends Base\Validator
     protected function failIfLRSEnabledPayment(Entity $payment)
     {
         $app = App::getFacadeRoot();
-        if ($payment->merchant->isLRSEducationFlowEnabled() === true and
+        if ($payment->merchant->isLRSFlowEnabled() === true and
             !$app['basicauth']->isCrossBorderApp())
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_INVALID_CAPTURE);

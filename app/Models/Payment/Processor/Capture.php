@@ -1472,7 +1472,7 @@ trait Capture
         if (($payment->isFeeBearerCustomer() === true) and
             (($payment->merchant->isCustomerFeeBearerAllowedOnInternational() and
             $payment->isInternational() === true) or
-            ($payment->merchant->isLRSEducationFlowEnabled())))
+            ($payment->merchant->isLRSFlowEnabled())))
         {
             // set and fee values from txn as it will have INR For Both DCC or MCC or LRS Payments
             $payment->setFee($txn->getFee());

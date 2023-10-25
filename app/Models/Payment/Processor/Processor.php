@@ -699,7 +699,7 @@ class Processor
 
     private function isLRSEducationMerchant(): bool
     {
-        return $this->merchant->isLRSEducationFlowEnabled();
+        return $this->merchant->isLRSFlowEnabled();
     }
 
     private function canRouteThroughRearchFlow(array & $input)
@@ -845,7 +845,7 @@ class Processor
                 }
                 $this->setChargeAccountMerchantFeatures($input);
             }
-          
+
             if ($input[Payment\Entity::METHOD] == Payment\METHOD::EMI)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::ENABLE_REARCH_EMI_PAYMENTS_FLOW, $this->mode);
@@ -2621,7 +2621,7 @@ class Processor
 
     protected function syncCallToPCBPaymentStatus($payment):void
     {
-        if ($payment->merchant->isLRSEducationFlowEnabled() === false || $payment->status !== Payment\Status::AUTHORIZED)
+        if ($payment->merchant->isLRSFlowEnabled() === false || $payment->status !== Payment\Status::AUTHORIZED)
         {
             return;
         }
@@ -4122,7 +4122,7 @@ class Processor
         //
         $payment = $this->buildPaymentEntity($input);
 
-        if($payment->merchant->isLRSEducationFlowEnabled() === true)
+        if($payment->merchant->isLRSFlowEnabled() === true)
         {
             $order = $this->repo->order->findByPublicId($input['order_id']);
             $payment->order()->associate($order);
@@ -4141,7 +4141,7 @@ class Processor
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
-        if ($payment->merchant->isLRSEducationFlowEnabled() === true)
+        if ($payment->merchant->isLRSFlowEnabled() === true)
         {
             $input['lrs_inr_fee'] = $fee;
             $input['lrs_inr_tax'] = $tax;
@@ -4204,7 +4204,7 @@ class Processor
             'currency'        => (isset($input['dcc_applied']) && $input['dcc_applied']) ? $input['dcc_currency'] : $input['currency'],
         ];
 
-        if ($payment->merchant->isLRSEducationFlowEnabled() === true) {
+        if ($payment->merchant->isLRSFlowEnabled() === true) {
             $data['fees'] = $input['lrs_inr_fee'];
             $data['tax'] = $input['lrs_inr_tax'];
             $data['currency'] = Currency\Currency::INR;
@@ -8382,7 +8382,7 @@ class Processor
      */
     protected function shouldAutoCapture(Payment\Entity $payment): array
     {
-        if ($payment->merchant->isLRSEducationFlowEnabled() === true)
+        if ($payment->merchant->isLRSFlowEnabled() === true)
         {
             $response['should_auto_capture'] = false;
 

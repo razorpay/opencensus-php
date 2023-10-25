@@ -50,6 +50,49 @@ class CBMerchantTest extends TestCase
         parent::setUp();
     }
 
+    public function testAddBankAccountLrsTravelFlow()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures(['lrs_travel_flow']);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testEditBankAccountLrsTravelFlow()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures(['lrs_travel_flow']);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testBankAccountLrsTravelFlowWithoutAdmin()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(10000000000000);
+
+        $this->fixtures->merchant->addFeatures(['lrs_travel_flow']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser['id']);
+
+        $this->startTest();
+    }
+
     public function testAddBankAccountLrsEducationFlow()
     {
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);

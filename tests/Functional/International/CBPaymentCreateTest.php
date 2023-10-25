@@ -879,6 +879,36 @@ class CBPaymentCreateTest extends TestCase
         $this->assertSame('authorized', $lastPayment['status']);
     }
 
+    public function testLRSTravelPaymentPositive()
+    {
+        $this->fixtures->merchant->addFeatures(['lrs_travel_flow', 'tpv']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
+
+        $this->setMockForPCBClient();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['currency'] = 'USD';
+        $order = $this->createOrder([
+            'amount' => $payment['amount'],
+            'currency' => $payment['currency'],
+            'bank_account' => [
+                'account_number' => '765432123456789',
+                'name' => 'test user',
+                'ifsc' => 'ICIC0006561',
+            ],
+        ]);
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['order_id'] = $order['id'];
+        $payment['bank'] = 'ICIC';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $lastPayment = $this->getLastEntity('payment');
+
+        $this->assertSame('authorized', $lastPayment['status']);
+    }
+
     public function setMockForPCBClient()
     {
         $mockResponseGetLRSQuote =[
