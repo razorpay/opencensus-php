@@ -1,17 +1,18 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { compose, bindActionCreators } from 'redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import {
   getReceiptDetails,
   sendReceipt,
   saveReceipt,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { compose, bindActionCreators } from 'redux';
 
 class PaymentReceipt extends Component {
   state = {
@@ -161,7 +162,12 @@ class PaymentReceipt extends Component {
 
     if (hash) {
       hash = hash.substring(1);
-      const allowedModules = ['paymentpages', 'paymentbuttons', 'subscription_buttons'];
+      const allowedModules = [
+        'paymentpages',
+        'paymentbuttons',
+        'subscription_buttons',
+        'batchpaymentpages',
+      ];
 
       return allowedModules.indexOf(hash) > -1;
     }

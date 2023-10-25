@@ -13,7 +13,7 @@ import QuickStepGuide, {
   QuickGuideCloseBtn,
 } from 'merchant/components/QuickGuide/QuickStepGuide';
 
-import { getQuickGuideData } from './data';
+import { getQuickGuideData, getBatchQuickGuideData } from './data';
 
 const { done, locked, active, loading } = PossibleStatuses;
 
@@ -25,7 +25,7 @@ class PaymentPagesQuickGuide extends React.Component {
   };
 
   render() {
-    const { className = '' } = this.props;
+    const { className, isBatchPaymentPages } = this.props;
     const { paymentPageStatus, paymentReceiveStatus } = getStatus(this.props);
 
     const CloseBtn = this.getCloseBtn(paymentReceiveStatus === done);
@@ -36,7 +36,35 @@ class PaymentPagesQuickGuide extends React.Component {
       activeStep = 1;
     }
 
-    return (
+    return isBatchPaymentPages ? (
+      <QuickStepGuide
+        activeStep={activeStep}
+        class={`PaymetPages ${className} batch-payment-page`}
+        title={Title}
+        closeBtn={CloseBtn}
+      >
+        <QuickGuideStep
+          status="done"
+          step="PaymentPage"
+          feature={RZPFeatures.PP}
+          {...getBatchQuickGuideData.paymentPage}
+        />
+
+        <QuickGuideStep
+          status="locked"
+          step="PaymentPage"
+          feature={RZPFeatures.PP}
+          {...getBatchQuickGuideData.uploadFile}
+        />
+
+        <QuickGuideStep
+          status="active"
+          step="PaymentReceive"
+          feature={RZPFeatures.PP}
+          {...getBatchQuickGuideData.receivePayments}
+        />
+      </QuickStepGuide>
+    ) : (
       <QuickStepGuide
         activeStep={activeStep}
         class={`PaymetPages ${className}`}

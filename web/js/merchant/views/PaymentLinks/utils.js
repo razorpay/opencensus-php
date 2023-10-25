@@ -24,3 +24,25 @@ export const convertExcelToObj = async (url) => {
   const ws = wb.Sheets[wb.SheetNames[0]]; // Get the first worksheet.
   return utils.sheet_to_json(ws); // Generate objects.
 };
+
+export const getStatsTableForBatchPLV2 = ({ stats, processedCount }) => {
+  return [
+    [
+      { title: 'Total rows processed', value: processedCount },
+      {
+        title: 'Records successfully uploaded',
+        value: stats.created || 0,
+      },
+    ],
+    [
+      {
+        title: 'Paid',
+        value: <span class="text-success">{stats.paid || 0}</span>,
+      },
+      {
+        title: 'Unpaid',
+        value: <span class="text-danger">{stats.expired || 0}</span>,
+      },
+    ],
+  ];
+};

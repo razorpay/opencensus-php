@@ -346,6 +346,22 @@ describe('Batch Payment Pages -> Details page', () => {
   test('should render payment page details page', async () => {
     const defaultProps = {
       id: 'pl_validid',
+      isBatchPaymentPages: false,
+    };
+    renderApp(defaultProps, 'pl_validid');
+    await waitForLoadingToFinish();
+    await waitFor(() => {
+      expect(screen.getByText('Share Page')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Page URL')).toBeInTheDocument();
+    expect(screen.getByText('Page Status')).toBeInTheDocument();
+    expect(screen.getByText('Total Payments')).toBeInTheDocument();
+    expect(screen.getByText('Total revenue')).toBeInTheDocument();
+  });
+
+  test('should render batch payment page details page', async () => {
+    const defaultProps = {
+      id: 'pl_validid',
       isBatchPaymentPages: true,
     };
     renderApp(defaultProps, 'pl_validid');
@@ -355,8 +371,12 @@ describe('Batch Payment Pages -> Details page', () => {
     });
     expect(screen.getByText('Page URL')).toBeInTheDocument();
     expect(screen.getByText('Page Status')).toBeInTheDocument();
-    expect(screen.getByText('Created by')).toBeInTheDocument();
+    expect(screen.getByText('Paid Count')).toBeInTheDocument();
+    expect(screen.getByText('Paid Amount')).toBeInTheDocument();
+    expect(screen.getByText('Unpaid Count')).toBeInTheDocument();
+    expect(screen.getByText('Unpaid Amount')).toBeInTheDocument();
   });
+
   test('should show error while getting pending payments', async () => {
     const defaultProps = {
       id: 'pl_invalidid',

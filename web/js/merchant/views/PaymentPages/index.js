@@ -17,6 +17,8 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 
 import { RouteGuard } from 'merchant/components/ShowWhen';
 
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+
 @connect((state) => {
   return {
     paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
@@ -25,8 +27,9 @@ import { RouteGuard } from 'merchant/components/ShowWhen';
 })
 export default class PaymentPagesContainer extends Component {
   render() {
-    const { user } = this.props;
+    const { user, location } = this.props;
     const { isQuickGuideOpen, showOnboarding } = this.props.paymentPageProductOnBoarding;
+    const isBatchPaymentPages = location?.pathname === BATCH_PAYMENT_PAGES_BASE_URL;
 
     if (showOnboarding && !user.isOrgAxis) {
       return <OnBoarding />;
@@ -37,7 +40,9 @@ export default class PaymentPagesContainer extends Component {
         <div className="banner-container">
           <DashboardBanner />
         </div>
-        {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
+        {isQuickGuideOpen && (
+          <QuickGuide className="QuickGuide-v2" isBatchPaymentPages={isBatchPaymentPages} />
+        )}
         <ErrorBoundary resetOnProps>
           <Routes>
             <Route

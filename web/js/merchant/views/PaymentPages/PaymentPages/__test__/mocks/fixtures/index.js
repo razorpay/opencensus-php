@@ -101,6 +101,12 @@ export const paymentPageDetails = {
     enable_custom_serial_number: '0',
     enable_80g_details: '0',
     theme: 'light',
+    goal_tracker: {
+      is_active: '1',
+      meta_data: {
+        goal_end_timestamp: 1679834405,
+      },
+    },
   },
 };
 

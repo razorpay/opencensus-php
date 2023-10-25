@@ -1,52 +1,48 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
 import moment from 'moment';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
-import { classList } from 'common/utils/rzp-utils';
-import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
-
-import TestModeBanner from 'merchant/components/TestModeBanner';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
-import Definition from 'common/ui/Definition';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import Time from 'common/ui/Time';
+import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
+import Definition from 'common/ui/Definition';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import Tooltip from 'common/ui/Tooltip';
+import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
+import { classList } from 'common/utils/rzp-utils';
 import CopyLink from 'merchant/components/CopyLink';
-
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import MagicCheckoutLabel from 'merchant/components/MagicCheckout/MagicCheckoutLabel';
+import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import { addPollInstance, saveReportConfigs } from 'merchant/reducers/reports';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import {
+  EditExpiry,
+  EditNotes,
+} from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/index';
+import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
+import DropdownSettings from 'merchant/views/PaymentPages/PaymentPages/Details/DropdownSettings';
+import PaymentsList from 'merchant/views/PaymentPages/PaymentPages/Details/PaymentsList';
+import track from 'merchant/views/PaymentPages/PaymentPages/Details/track';
+import DonationGoalTrackerPreview from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/DonationGoalTrackerPreview';
+import { parseGoalTrackerAmountValues } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/helpers';
+import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditStock';
+import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
+import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import {
   trackDetailViewEdits,
   trackShareActions,
 } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import { sendLink, exportReportCSV } from 'merchant/views/PaymentPages/PaymentPages/model';
-import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
-import track from 'merchant/views/PaymentPages/PaymentPages/Details/track';
-
-import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditStock';
-
-import {
-  EditExpiry,
-  EditNotes,
-} from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/index';
-import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
-import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
-
-import PaymentsList from 'merchant/views/PaymentPages/PaymentPages/Details/PaymentsList';
-import Button from 'common/new-ui/Button';
-import Tooltip from 'common/ui/Tooltip';
-import DropdownSettings from 'merchant/views/PaymentPages/PaymentPages/Details/DropdownSettings';
-import DonationGoalTrackerPreview from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/DonationGoalTrackerPreview';
-import { parseGoalTrackerAmountValues } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/helpers';
-import MagicCheckoutLabel from 'merchant/components/MagicCheckout/MagicCheckoutLabel';
-import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
 import { getProductBaseLink } from 'merchant/views/PaymentPages/PaymentPages/utils';
-import Spinner from 'common/ui/Spinner';
-import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { getBatchStatsTable } from 'merchant/views/PaymentPages/PaymentPages/helpers';
 
 // import mockPaymentPage from '../../Wysiwyg/data-mock';
 
@@ -99,9 +95,7 @@ export default class PaymentPagesV3Entity extends React.Component {
 
   getStatsTable(paymentPageEntity) {
     const { captured_payments_count, total_amount_paid, currency } = paymentPageEntity;
-    const { pendingPayments, isBatchPaymentPages } = this.props;
-    const { total_pending_payments, total_pending_revenue } = pendingPayments;
-    let paymentContent = [
+    return [
       {
         title: 'Total Payments',
         value: captured_payments_count,
@@ -111,20 +105,6 @@ export default class PaymentPagesV3Entity extends React.Component {
         value: <Amount value={total_amount_paid} currency={currency} />,
       },
     ];
-    if (isBatchPaymentPages) {
-      const pendingPaymentContent = [
-        {
-          title: 'Total Pending Payments',
-          value: total_pending_payments,
-        },
-        {
-          title: 'Total Pending Revenue',
-          value: <Amount value={total_pending_revenue} currency={currency} />,
-        },
-      ];
-      paymentContent = [].concat(paymentContent).concat(pendingPaymentContent);
-    }
-    return paymentContent;
   }
 
   saveLongPollInstances = (reportId, pollInstance) => {
@@ -303,6 +283,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       isNoExpiryMandatory,
       isBatchPaymentPages,
       hasPendingPayments,
+      pendingPayments,
     } = this.props;
     const { isExportInProgress } = this.state;
 
@@ -328,6 +309,12 @@ export default class PaymentPagesV3Entity extends React.Component {
     }
 
     const isDownloadReport = !isStorefrontPage && !isBatchPaymentPages;
+
+    const statsTable = isBatchPaymentPages
+      ? getBatchStatsTable({ paymentPageEntity, pendingPayments })
+      : this.getStatsTable(paymentPageEntity);
+    const isDonationGoalTrackerPreview =
+      paymentPageEntity?.settings?.goal_tracker?.is_active === '1' && !isBatchPaymentPages;
 
     return (
       <React.Fragment>
@@ -503,53 +490,53 @@ export default class PaymentPagesV3Entity extends React.Component {
               </div>
 
               <div className="item-details">
-                {paymentPageEntity.settings &&
-                  paymentPageEntity.settings.goal_tracker &&
-                  paymentPageEntity.settings.goal_tracker.is_active === '1' && (
-                    <DonationGoalTrackerPreview
-                      {...paymentPageEntity.settings.goal_tracker}
-                      meta_data={parseGoalTrackerAmountValues(
-                        paymentPageEntity.settings.goal_tracker.meta_data,
-                      )}
-                      endDate={moment.unix(
-                        paymentPageEntity.settings.goal_tracker.meta_data.goal_end_timestamp,
-                      )}
-                      currency={paymentPageEntity.currency}
-                    />
-                  )}
-                <div className="table-container">
-                  {paymentPageEntity.payment_page_items.map((pi, ix) => (
-                    <div className="table" key={ix}>
-                      <div>
-                        <b>{pi.item.name}</b>
+                {isDonationGoalTrackerPreview ? (
+                  <DonationGoalTrackerPreview
+                    {...paymentPageEntity.settings.goal_tracker}
+                    meta_data={parseGoalTrackerAmountValues(
+                      paymentPageEntity.settings.goal_tracker.meta_data,
+                    )}
+                    endDate={moment.unix(
+                      paymentPageEntity.settings.goal_tracker.meta_data.goal_end_timestamp,
+                    )}
+                    currency={paymentPageEntity.currency}
+                  />
+                ) : null}
+                {!isBatchPaymentPages ? (
+                  <div className="table-container">
+                    {paymentPageEntity.payment_page_items.map((pi, ix) => (
+                      <div className="table" key={ix}>
+                        <div>
+                          <b>{pi.item.name}</b>
+                        </div>
+                        <div>
+                          <div className="title">Revenue</div>
+                          <Amount
+                            value={pi.total_amount_paid}
+                            currency={paymentPageEntity.currency}
+                          />
+                        </div>
+                        <div>
+                          <div className="title">Price</div>
+                          <Amount value={pi.item.amount} currency={paymentPageEntity.currency} />
+                        </div>
+                        <div className="item-details-units">
+                          <div className="title">Units Sold</div>
+                          <EditStock
+                            totalStock={pi.stock}
+                            quantitySold={pi.quantity_sold}
+                            editFn={editPaymentPage}
+                            paymentPageItemId={!isStorefrontPage ? pi.id : pi.catalog_id}
+                            trackerFn={trackStock}
+                            isRoleAllowedEdit={isRoleAllowedEdit}
+                            isStorefrontPage={isStorefrontPage}
+                            storefrontCatalogStatus={pi.catalog_status}
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <div className="title">Revenue</div>
-                        <Amount
-                          value={pi.total_amount_paid}
-                          currency={paymentPageEntity.currency}
-                        />
-                      </div>
-                      <div>
-                        <div className="title">Price</div>
-                        <Amount value={pi.item.amount} currency={paymentPageEntity.currency} />
-                      </div>
-                      <div className="item-details-units">
-                        <div className="title">Units Sold</div>
-                        <EditStock
-                          totalStock={pi.stock}
-                          quantitySold={pi.quantity_sold}
-                          editFn={editPaymentPage}
-                          paymentPageItemId={!isStorefrontPage ? pi.id : pi.catalog_id}
-                          trackerFn={trackStock}
-                          isRoleAllowedEdit={isRoleAllowedEdit}
-                          isStorefrontPage={isStorefrontPage}
-                          storefrontCatalogStatus={pi.catalog_status}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
@@ -582,7 +569,7 @@ export default class PaymentPagesV3Entity extends React.Component {
               <b className="bold">Transactions</b>
               {hasPendingPayments && <Spinner />}
               {!hasPendingPayments &&
-                this.getStatsTable(paymentPageEntity).map((st, ix) => (
+                statsTable.map((st, ix) => (
                   <div key={ix}>
                     {st.title}
                     <b className="bold">{st.value}</b>

@@ -340,6 +340,53 @@ export const fetchPaymentPageBatch = () => {
   );
 };
 
+export const fetchPaymentLinkBatch = () => {
+  server.use(
+    rest.get('*/merchant/api/:mode/batches/:id', (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: true,
+          data: {
+            created_at: 1692342065,
+            updated_at: 1692342066,
+            id: 'batch_MRRQJt3kVLxHjU',
+            entity_id: 'J1LL6RBx04m9It',
+            name: 'sample_pl_MREbR18TEYXeqv',
+            batch_type_id: 'payment_link_v2',
+            mode: 'live',
+            creator_id: 'J1LL6KNhnPcSGD',
+            creator_type: 'user',
+            is_scheduled: false,
+            upload_count: 0,
+            processed_count: 2,
+            failure_count: 0,
+            total_count: 2,
+            success_count: 2,
+            attempts: 0,
+            status: 'processed',
+            amount: 0,
+            processed_amount: 0,
+            schedule_time: null,
+            type: 'payment_link_v2',
+            entity: 'batch',
+            config: {
+              draft: 0,
+              version: '1.x',
+              sms_notify: 0,
+              email_notify: 0,
+              payment_page_id: 'pl_MREbR18TEYXeqv',
+              reminder_enable: 1,
+            },
+          },
+        }),
+        ctx.delay(10),
+      );
+    }),
+  );
+};
+
 export const fetchBatchStatsForPLV2 = () => {
   server.use(
     rest.get('*/merchant/api/:mode/payment_links/:batchID/batch', (req, res, ctx) => {

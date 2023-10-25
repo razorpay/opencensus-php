@@ -32,3 +32,19 @@ export const getQuickGuideData = {
     };
   },
 };
+
+export const getBatchQuickGuideData = {
+  paymentPage: {
+    title: '1. Create Payment Page',
+    content: 'Create your own custom page by adding data fields as required.',
+  },
+  uploadFile: {
+    title: '2. Upload File Based Data',
+    content: 'As per the fields created on the page, upload data via file upload and publish page.',
+  },
+  receivePayments: {
+    title: '3. Receive Payments',
+    content:
+      'Customers can enter pre defined input on the page and view details uploaded for them basis which they can make the payment using the mode of their choice.',
+  },
+};

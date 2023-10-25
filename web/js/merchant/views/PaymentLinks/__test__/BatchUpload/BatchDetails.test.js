@@ -3,6 +3,7 @@ import {
   fetchPaymentPageBatch,
   fetchBatchStatsForPLV2,
   fetchBatchPaymentLinks,
+  fetchPaymentLinkBatch,
 } from 'merchant/views/PaymentLinks/__test__/mocks/handlers';
 import { waitForLoadingToFinish, screen } from 'test-utils';
 
@@ -19,8 +20,8 @@ describe('PaymentLinksBatchDetailsContainer', () => {
     };
   });
 
-  test('should render batch details page"', async () => {
-    fetchPaymentPageBatch();
+  test('should render payment link batch details page', async () => {
+    fetchPaymentLinkBatch();
     fetchBatchStatsForPLV2();
     fetchBatchPaymentLinks();
     renderApp({
@@ -36,6 +37,35 @@ describe('PaymentLinksBatchDetailsContainer', () => {
     const paymentLinksCreatedEl = screen.getByText('Payment links created');
     const paidEl = screen.getByText('Paid');
     const expiredEl = screen.getByText('Expired');
+    const statusEl = screen.getByText('Status');
+    const createdAtEl = screen.getByText('Created At');
+    expect(labelEl).toBeInTheDocument();
+    expect(downReportCTA).toBeInTheDocument();
+    expect(totalRowsProcessedEl).toBeInTheDocument();
+    expect(paymentLinksCreatedEl).toBeInTheDocument();
+    expect(paidEl).toBeInTheDocument();
+    expect(expiredEl).toBeInTheDocument();
+    expect(statusEl).toBeInTheDocument();
+    expect(createdAtEl).toBeInTheDocument();
+  });
+
+  test('should render payment page batch details page', async () => {
+    fetchPaymentPageBatch();
+    fetchBatchStatsForPLV2();
+    fetchBatchPaymentLinks();
+    renderApp({
+      props: {
+        id: 'valid_batch_id',
+        isBatchCancelEnabled: false,
+      },
+    });
+    await waitForLoadingToFinish();
+    const labelEl = screen.getByText('Download the report containing all data.');
+    const downReportCTA = screen.getByText('Download Report');
+    const totalRowsProcessedEl = screen.getByText('Total rows processed');
+    const paymentLinksCreatedEl = screen.getByText('Records successfully uploaded');
+    const paidEl = screen.getByText('Paid');
+    const expiredEl = screen.getByText('Unpaid');
     const statusEl = screen.getByText('Status');
     const createdAtEl = screen.getByText('Created At');
     expect(labelEl).toBeInTheDocument();

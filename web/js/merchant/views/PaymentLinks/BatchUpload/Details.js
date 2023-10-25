@@ -19,6 +19,7 @@ import {
 } from 'merchant/reducers/batches';
 import { BATCH_TYPE } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { getStatsTableForBatchPLV2 } from 'merchant/views/PaymentLinks/utils';
 
 import track from './track';
 
@@ -32,11 +33,19 @@ const paymentLinkEmail = {
 const renderBatchDetails = (props) => {
   const { batch, stats, paymentlinks } = props;
   const { type } = batch;
-  const isBatchTypePaymentlinksV2 = type === 'payment_link_v2' || type === BATCH_TYPE;
+  const isBatchPaymentPage = type === BATCH_TYPE;
+  const isBatchTypePaymentlinksV2 = type === 'payment_link_v2';
+  const processedCount = batch ? batch.processed_count : null;
+  let statsTable = getStatsTable(stats);
 
-  const statsTable = isBatchTypePaymentlinksV2
-    ? getStatsTableForPLV2(stats, batch ? batch.processed_count : null)
-    : getStatsTable(stats);
+  if (isBatchPaymentPage) {
+    statsTable = getStatsTableForBatchPLV2({
+      stats,
+      processedCount,
+    });
+  } else if (isBatchTypePaymentlinksV2) {
+    statsTable = getStatsTableForPLV2(stats, processedCount);
+  }
 
   const showCancelBtn = batch.status === 'partially_processed' || batch.status === 'processed';
 
@@ -59,12 +68,14 @@ const renderBatchDetails = (props) => {
           <Time value={batch.created_at} />
         </EntityDetailRow>
       </div>
-      <PaymentLinksTable
-        totalItems={stats.issued_count}
-        paymentlinks={paymentlinks}
-        batchId={batch.id}
-        isPaymentlinksV2Enabled={isBatchTypePaymentlinksV2}
-      />
+      {!isBatchPaymentPage ? (
+        <PaymentLinksTable
+          totalItems={stats.issued_count}
+          paymentlinks={paymentlinks}
+          batchId={batch.id}
+          isPaymentlinksV2Enabled={isBatchTypePaymentlinksV2}
+        />
+      ) : null}
       <hr />
       {stats.batch_total > stats.issued_count && batch.status !== 'created' && (
         <LinksErrMessage
