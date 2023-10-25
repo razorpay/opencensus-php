@@ -2219,12 +2219,14 @@ class GatewayController extends Controller
         {
             $executionHoldTime = Admin\ConfigKey::get(Admin\ConfigKey::UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME, -1);
 
-            if($executionHoldTime === -1) {
-                $this->trace()->info(TraceCode::TURBO_PAYEE_EXECUTION_HOLD_TIME_NOT_FOUND_IN_CACHE, [
+            if($executionHoldTime === null || $executionHoldTime === -1) {
+                $this->trace->info(TraceCode::TURBO_PAYEE_EXECUTION_HOLD_TIME_NOT_FOUND_IN_CACHE, [
                     'action' => 'Turbo payee execution hold time value not found in cache'
                 ]);
                 $executionHoldTime = P2pPreferences\Constants::TURBO_PAYEE_EXECUTION_HOLD_TIME;
             }
+
+            $executionHoldTime = (int)$executionHoldTime;
 
             TurboPayeeCallbackExecutor::dispatch(
                 $input,

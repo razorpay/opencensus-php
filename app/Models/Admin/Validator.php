@@ -275,6 +275,7 @@ class Validator extends Base\Validator
         ConfigKey::UPI_TURBO_SDK_TIMEOUTS                                              => 'filled|array',
         ConfigKey::TURBO_SDK_ERROR_MAPPINGS_HASH                                       => 'filled|string',
         ConfigKey::TURBO_SDK_ERROR_MAPPINGS                                            => 'filled|array',
+        ConfigKey::UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME                                 => 'filled|integer',
     ];
 
     protected static $setRedisKeysRules = [

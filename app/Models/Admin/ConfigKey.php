@@ -608,6 +608,7 @@ class ConfigKey
         self::DEFAULT_PRICING_FOR_SWIFT,
         self::UPI_TURBO_POPULAR_BANK_LIST,
         self::CURRENCY_METHOD_LEVEL_DCC_MARKUP,
+        self::UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME,
     ];
 
     const REDIS_CONFIG_MAP = [
