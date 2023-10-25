@@ -5033,6 +5033,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
         }
 
+        if ($this->merchant->isLRSFlowEnabled())
+        {
+            $data['amount'] = $this->getGatewayAmount();
+            $data['currency'] = $this->getGatewayCurrency();
+        }
+
         if(($this->getGateway() === Gateway::WALLET_PAYPAL) or
             ($this->isWalletPaypal() === true))
         {
