@@ -2706,6 +2706,79 @@ return [
         ],
     ],
 
+    'testFetchPricingPlan' => [
+        'request' => [
+            'url' => '/pricing/plan/',
+            'method'  => 'GET',
+            'content' => [
+                'type' => 'pricing',
+                'skip_org_id_check' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'TestPlan2',
+                'entity' => 'pricing',
+                'count' => 4,
+                'rules' => [
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'MC',
+                        'payment_issuer'      => 'AXIS',
+                        'percent_rate'        => 0,
+                        'fixed_rate'          => 3000,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'debit',
+                        'payment_network'     => 'MAES',
+                        'payment_issuer'      => 'PUNB',
+                        'percent_rate'        => 250,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'ICIC',
+                        'percent_rate'        => 250,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'gateway'             => null,
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'SBIN',
+                        'percent_rate'        => 275,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetPricingPlan' => [
         'response' => [
             'content' => [

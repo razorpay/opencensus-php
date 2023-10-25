@@ -40,6 +40,15 @@ class PricingController extends Controller
         });
     }
 
+    public function fetchPlan($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getPlanById($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPlan($id)
     {
         $data = $this->service()->getPlanById($id);

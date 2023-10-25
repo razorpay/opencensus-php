@@ -1281,4 +1281,12 @@ class Authorization
 
         $this->proxy = false;
     }
+
+    public function pricingAppAuth($mode = 'test'): void
+    {
+        $collectionsServiceConfig = \Config::get('applications.pricing');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->appAuth('rzp_'. $mode, $pwd);
+    }
 }

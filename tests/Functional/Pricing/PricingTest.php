@@ -770,6 +770,18 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testFetchPricingPlan()
+    {
+        $id = $this->createPricingPlan2()['id'];
+        $testData = $this->testData[$this->getName()];
+        $testData['request']['url'] = $testData['request']['url'] . $id;
+
+        $this->ba->pricingAppAuth('test');
+
+        $this->startTest($testData);
+
+    }
+
     public function testGetPricingPlan()
     {
         $id = $this->createPricingPlan2()['id'];

@@ -930,6 +930,7 @@ class Route
         'pricing_get_gateway_plans'                => ['get',      'pricing/gateways',                               'PricingController@getGatewayPricingPlans'                          ],
         'pricing_supported_networks'               => ['get',      'pricing/networks',                               'PricingController@getSupportedNetworks'                            ],
         'pricing_get_plan'                         => ['get',      'pricing/{id}',                                   'PricingController@getPlan'                                         ],
+        'pricing_fetch_plan'                       => ['get',      'pricing/plan/{id}',                              'PricingController@fetchPlan'                                  ],
         'buy_pricing_get_plan'                     => ['get',      'buy_pricing/{id}',                               'PricingController@getBuyPricingPlan'                               ],
         'internal_buy_pricing_get_plan'            => ['get',      'internal/buy_pricing/{id}',                     'PricingController@getBuyPricingPlan'                              ],
         'pricing_add_plan_rule'                    => ['post',     'pricing/{id}/rule',                              'PricingController@postAddPlanRule'                                 ],
@@ -6208,6 +6209,8 @@ class Route
         'developer_console_maintenance',
 
         'pricing_get_vas_price',
+
+        'pricing_fetch_plan',
 
         'payout_update_tax_payment_id',
 
@@ -16722,6 +16725,7 @@ class Route
 
         'pricing' => [
             'pricing_get_vas_price',
+            'pricing_fetch_plan',
         ],
 
         'payout_link_customer_page' => [

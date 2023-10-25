@@ -602,10 +602,15 @@ class Service extends Base\Service
         // Return the new plan
         return $newplan;
     }
-
-    public function getPlanById($id)
+    public function getPlanById($id, array $input = [])
     {
-        $plan = $this->repo->pricing->getPlan($id);
+        $type = null;
+        if (empty($input[Pricing\Entity::TYPE]) === false) {
+            $type = $input[Pricing\Entity::TYPE];
+        }
+        $skipOrgIdCheck = filter_var($input['skip_org_id_check'], FILTER_VALIDATE_BOOLEAN);
+
+        $plan = $this->repo->pricing->getPlan($id, $type, skipOrgCheck:$skipOrgIdCheck);
 
         return $plan->toArrayPublic();
     }
