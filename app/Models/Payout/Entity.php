@@ -1732,7 +1732,7 @@ class Entity extends Base\PublicEntity
             ($this->getFeeType() !== Transaction\CreditType::REWARD_FEE) and
             ($this->getIsPayoutService() === false))
         {
-            (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($this);
+            (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($this, true);
         }
 
         $this->setAttribute(self::STATUS, $status);

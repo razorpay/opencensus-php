@@ -38,15 +38,16 @@ class Core extends Base\Core
     /**
      * Creates an entry into the fee_recovery table corresponding to a Payout/Reversal.
      * This function gets invoked at payout initiation and reversal creation.
+     * skipDedupe is true for debit fee recovery entry and calling function ensures that the debit entry creation is called only once
      *
      * @param Base\PublicEntity $entity
      *
      */
-    public function createFeeRecoveryEntityForSource(Base\PublicEntity $entity)
+    public function createFeeRecoveryEntityForSource(Base\PublicEntity $entity, bool $skipDedupe = false)
     {
         $this->mutex->acquireAndRelease(
             'fee_recovery_' . $entity->getId(),
-            function () use ($entity)
+            function () use ($entity, $skipDedupe)
             {
                 $feeRecoveryEntity = (new Entity)->build();
 
@@ -60,11 +61,13 @@ class Core extends Base\Core
 
                 $feeRecoveryEntity->entity()->associate($entity);
 
-                $skipCreation = $this->skipIfExistingFeeRecoveryDataExists($feeRecoveryEntity);
-
-                if ($skipCreation === true)
+                if ($skipDedupe === false)
                 {
-                    return;
+                    $skipCreation = $this->skipIfExistingFeeRecoveryDataExists($feeRecoveryEntity);
+
+                    if ($skipCreation === true) {
+                        return;
+                    }
                 }
 
                 $this->repo->saveOrFail($feeRecoveryEntity);
