@@ -2384,7 +2384,7 @@ class Route
         'order_transfer_process_rearch'                    => ['post',      'order_transfers/process_rearch',                   'TransferController@processOrderTransferForRearch'                   ],
         'order_transfer_process_pending_key_merchants'      => ['post',     'order_transfers/process_pending/key_merchants',    'TransferController@processPendingOrderTransfersForKeyMerchants'    ],
         'order_transfer_process_created'                    => ['post',     'order_transfers/process_created',    'TransferController@processCreatedOrderTransfers'    ],
-        
+
         'order_transfer_process_failed'                     => ['post',     'order_transfers/process_failed',                   'TransferController@processFailedOrderTransfers'                    ],
         'payment_transfer_process_pending'                  => ['post',     'payment_transfers/process_pending',                'TransferController@processPendingPaymentTransfers'                 ],
         'payment_transfer_process_pending_key_merchants'    => ['post',     'payment_transfers/process_pending/key_merchants',  'TransferController@processPendingPaymentTransfersForKeyMerchants'  ],
@@ -16467,7 +16467,8 @@ class Route
             'payment_fetch_card_metadata',
             'update_token_on_authorized',
             'internal_token_create',
-            'internal_transactions'
+            'internal_transactions',
+            'pricing_fetch_plan'
         ],
 
         'nbplus_payment_service' => [
@@ -16479,6 +16480,7 @@ class Route
         'upi_payment_service' => [
             'internal_payment_pricing',
             'internal_merchant_risk_notification',
+            'pricing_fetch_plan'
         ],
 
         'workflows' => [
