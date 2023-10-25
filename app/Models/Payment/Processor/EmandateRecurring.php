@@ -603,11 +603,18 @@ trait EmandateRecurring
         
         if($blockDate <= $endOfMonthDate)
         {
-            return $blockDate->getTimestamp();
+            return $this->modifyCooloffBasedOnPresentedDay($blockDate->getTimestamp());
         }
         else
         {
-            return $endOfMonthDate->getTimestamp();
+            return $this->modifyCooloffBasedOnPresentedDay($endOfMonthDate->getTimestamp());
         }
+    }
+    
+    public function modifyCooloffBasedOnPresentedDay($timestamp)
+    {
+        $startOfDay = Carbon::createFromTimestamp($timestamp)->tz('Asia/Kolkata')->startOfDay();
+        
+        return $startOfDay->addHours(9)->getTimestamp();
     }
 }
