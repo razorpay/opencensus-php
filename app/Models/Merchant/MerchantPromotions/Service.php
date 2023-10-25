@@ -25,6 +25,10 @@ use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\CouponProvider;
 
 class Service extends Base\Service
 {
+
+    const APPLY_COUPON                          = "apply";
+    const REDEEM_APPLY                          = "redeem";
+
     /**
      * Returns valid coupon codes retrieved from the merchant
      * @param array $input
@@ -246,6 +250,13 @@ class Service extends Base\Service
                 throw $e;
             }
 
+            $couponEngineRouting = $this->merchant->get1ccConfigFlagStatus(Constants::ONE_CC_COUPON_ENGINE);
+            if ($couponEngineRouting === true)
+            {
+                $input['merchant_id'] = $this->merchant->getId();
+                return (new CouponProvider\Service())->applyCoupon($input, self::REDEEM_APPLY);
+            }
+
             $routeToMagicCheckoutService = false;
             try {
                 $routeToMagicCheckoutService = $this->canRouteToMagicCheckoutService($input, $this->merchant);
@@ -256,7 +267,7 @@ class Service extends Base\Service
             if ($routeToMagicCheckoutService === true)
             {
                 $input['merchant_id'] = $this->merchant->getId();
-                return (new CouponProvider\Service())->applyCoupon($input);
+                return (new CouponProvider\Service())->applyCoupon($input, self::APPLY_COUPON);
             }
 
             $orderId = $input['order_id'];
@@ -471,6 +482,22 @@ class Service extends Base\Service
             $decodedResponse = [];
 
             $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+            $couponEngineRouting = $this->merchant->get1ccConfigFlagStatus(Constants::ONE_CC_COUPON_ENGINE);
+            if ($couponEngineRouting === true)
+            {
+                $input['merchant_id'] = $this->merchant->getId();
+                $input['code'] = $input['reference_id'];
+                $response = (new CouponProvider\Service())->removeCoupon($input);
+                $this->trace->info(TraceCode::MAGIC_REMOVE_COUPON_RESPONSE,
+                    [
+                        'response' =>  $response,
+                        'source' => 'magic_checkout_service',
+                    ]
+                );
+                return $response;
+
+            }
 
             $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta) {
                 return $orderMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;

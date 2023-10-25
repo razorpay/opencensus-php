@@ -9192,6 +9192,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_COUPONS_REQUEST                              = 'FETCH_COUPONS_REQUEST';
     const FETCH_COUPONS_ERROR                                = 'FETCH_COUPONS_ERROR';
     const REMOVE_COUPON_ERROR                                = 'REMOVE_COUPON_ERROR';
+    const MAGIC_REMOVE_COUPON_RESPONSE                       = 'MAGIC_REMOVE_COUPON_RESPONSE';
 
     const APPLY_GIFT_CARD_REQUEST                            = 'APPLY_GIFT_CARD_REQUEST';
     const APPLY_GIFT_CARD_REQUEST_ERROR                      = 'APPLY_GIFT_CARD_REQUEST_ERROR';

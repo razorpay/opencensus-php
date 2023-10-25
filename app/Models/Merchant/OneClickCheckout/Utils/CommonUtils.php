@@ -143,7 +143,8 @@ class CommonUtils extends Base\Core
         foreach ($promotions as $coupon) {
             if (isset($coupon[OrderOneCCFields::PROMOTIONS_TYPE]) === false ||
                     $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== OrderOneCCFields::GIFT_CARD &&
-                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::NECTOR_COINS) {
+                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::NECTOR_COINS &&
+                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::TYPE_COD_FEE_COUPON ) {
                     $discount = $coupon[OrderOneCCFields::PROMOTIONS_VALUE] ?? 0;
                     return $discount;
             }

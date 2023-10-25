@@ -38,14 +38,15 @@ class Constants
     const ONE_CC_HANDLE_DIGITAL_PRODUCT     = 'one_cc_handle_digital_product';
     const ONE_CC_GUPSHUP_CREDENTIALS        = 'one_cc_gupshup_credentials';
     const ONE_CC_ENABLE_GUPSHUP             = 'one_cc_enable_gupshup';
+    const COD_ENGINE                        = 'cod_engine';
+    const COD_ENGINE_TYPE                   = 'cod_engine_type';
+    const ONE_CC_PREPAY_COD_CONVERSION     = 'one_cc_prepay_cod_conversion';
+    const ONE_CC_COUPON_ENGINE              = 'one_cc_coupon_engine';
 
     // Shipping, serviceability and cod engine settings in MCS.
-    const COD_ENGINE       = 'cod_engine';
-    const COD_ENGINE_TYPE  = 'cod_engine_type';
+ 
     const SHIPPING_ENGINE  = 'shipping_engine';
 
-    const ONE_CC_PREPAY_COD_CONVERSION     = 'one_cc_prepay_cod_conversion';
-    const ONE_CC_COUPON_ENGINE             = "onc_cc_coupon_engine";
     // Settings and workflows defined for retargeting engine.
     const RETARGETING_SETTINGS             = "retargeting_settings";
 
@@ -225,8 +226,8 @@ class Constants
        self::ONE_CC_CAPTURE_GSTIN,
        self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
        self::ONE_CC_PREPAY_COD_CONVERSION,
-       self::ONE_CC_COUPON_ENGINE,
        self::SHIPPING_ENGINE,
+       self::ONE_CC_COUPON_ENGINE,
     ];
 
     const INTELLIGENCE_CONFIGS = [
@@ -345,4 +346,6 @@ class Constants
     const HIGH = 'high';
     const MEDIUM = 'medium';
     const LOW = 'low';
+
+    const TYPE_COD_FEE_COUPON = 'cod_fee';
 }

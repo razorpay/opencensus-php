@@ -7,6 +7,7 @@ use RZP\Models\Merchant\MerchantGiftCardPromotions\Service as MerchantGiftCardPr
 use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Order;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields as OrderOneCCFields;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -64,7 +65,9 @@ class Core extends Base\Core
 
         $totalGiftCardValueApplied = $this->calculateTotalGiftCardValue($promotions);
 
-        $adjustedCodFee = max(0, $lineItemsTotal - $couponValueApplied - $nectorCoinsApplied) + $totalTaxApplied + $shippingFee + $codFee - $totalGiftCardValueApplied - $finalCartAmount;
+        $discountOnCodFee = $this->getCodFeePromotionApplied($promotions);
+
+        $adjustedCodFee = max(0, $lineItemsTotal - $couponValueApplied - $nectorCoinsApplied) + $totalTaxApplied + $shippingFee + $codFee - $discountOnCodFee - $totalGiftCardValueApplied - $finalCartAmount;
 
         return [
             Order1cc\Fields::NET_PRICE => $finalCartAmount,
@@ -99,4 +102,17 @@ class Core extends Base\Core
         }
         return $taxDetails['total_tax'] ?? 0;
     }
+
+    protected function getCodFeePromotionApplied($promotions)
+    {
+        $discount = 0;
+
+        foreach ($promotions as  $coupon) {
+            if (isset($coupon[OrderOneCCFields::PROMOTIONS_TYPE]) === false ||  $coupon[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::TYPE_COD_FEE_COUPON) {
+                $discount += $coupon[Order1cc\Fields::PROMOTIONS_VALUE];
+            }
+        }
+        return $discount;
+    }
 }
+
