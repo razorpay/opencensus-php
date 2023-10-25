@@ -151,7 +151,7 @@ class Repository extends Base\Repository
 
         if (empty($payout) === true)
         {
-            $payout = (new DualWrite\Payout())->getAPIPayoutFromPayoutService($id);
+            $payout = (new DualWrite\Payout())->getAPIPayoutFromPayoutService($id, true);
         }
 
         return $payout;

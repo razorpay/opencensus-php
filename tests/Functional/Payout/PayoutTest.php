@@ -9,6 +9,7 @@ use Queue;
 use Redis;
 use Config;
 use Mockery;
+use RZP\Jobs\EsSync;
 use RZP\Services\Mock\Stork;
 use \WpOrg\Requests\Response;
 use Razorpay\Edge\Passport\Passport;
@@ -751,6 +752,18 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEmpty($idempotencyKeyBefore['source_id']);
 
+        $this->fixtures->on('live')->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
+        Queue::fake(EsSync::class);
+
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $this->ba->payoutInternalAppAuth('live');
@@ -865,6 +878,8 @@ class PayoutTest extends OAuthTestCase
         $data = json_decode($payoutMetadata->meta_value);
 
         $this->assertEquals($timestamp, $data->timestamp);
+
+        Queue::assertPushed(EsSync::class, 1);
     }
 
     public function testDualWriteForPayoutServicePayoutWithApiIdempotencyKeyNotPresent()

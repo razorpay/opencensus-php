@@ -46,7 +46,7 @@ class Payout extends Base
         return $payout;
     }
 
-    public function getAPIPayoutFromPayoutService(string $id)
+    public function getAPIPayoutFromPayoutService(string $id, bool $sync = false)
     {
         $payoutServicePayouts = $this->repo->payout->getPayoutServicePayout($id);
 
@@ -73,7 +73,7 @@ class Payout extends Base
 
         $payout = new Entity;
 
-        $payout->setRawAttributes($this->attributes, true);
+        $payout->setRawAttributes($this->attributes, $sync);
 
         $payout->setIsPayoutService(1);
 
