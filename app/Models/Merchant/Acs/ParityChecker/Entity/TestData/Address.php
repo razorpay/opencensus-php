@@ -74,7 +74,7 @@ class Address implements TestDataInterface
                     "source_id" => "i am long value not 14 chars",
                 ],
                 Constant::API_EXPECTED_EXCEPTION => "SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'source_id'",
-                Constant::ASV_EXPECTED_EXCEPTION => "base: db_error: Error 1406: Data too long for column 'source_id'",
+                Constant::ASV_EXPECTED_EXCEPTION => "db_error: Error 1406: Data too long for column 'source_id'",
             ],
         ];
     }

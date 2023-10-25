@@ -165,7 +165,7 @@ class MerchantEmail implements TestDataInterface
                    "merchant_id" => $reusableId,
                ],
                Constant::API_EXPECTED_EXCEPTION => "",
-               Constant::ASV_EXPECTED_EXCEPTION => "base: unique_constraint_violation: Error 1062: Duplicate entry"
+               Constant::ASV_EXPECTED_EXCEPTION => "bad_request: Error 1062: Duplicate entry"
            ],
            [
                Constant::API_BUILD_ATTRIBUTES => [
@@ -181,7 +181,7 @@ class MerchantEmail implements TestDataInterface
                    "merchant_id" => $reusableId,
                ],
                Constant::API_EXPECTED_EXCEPTION => "SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry",
-               Constant::ASV_EXPECTED_EXCEPTION => "base: unique_constraint_violation: Error 1062: Duplicate entry"
+               Constant::ASV_EXPECTED_EXCEPTION => "bad_request: Error 1062: Duplicate entry"
            ],
         ];
     }

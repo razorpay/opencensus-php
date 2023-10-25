@@ -87,7 +87,7 @@ class Stakeholder implements TestDataInterface
                         "bvs_probe_id" => "longerthan30charslongerthan30charslongerthan30charslongerthan30charslongerthan30chars"
                     ],
                     Constant::API_EXPECTED_EXCEPTION => "SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'bvs_probe_id' at",
-                    Constant::ASV_EXPECTED_EXCEPTION => "base: db_error: Error 1406: Data too long for column 'bvs_probe_id'"
+                    Constant::ASV_EXPECTED_EXCEPTION => "db_error: Error 1406: Data too long for column 'bvs_probe_id'"
                 ],
         ];
     }

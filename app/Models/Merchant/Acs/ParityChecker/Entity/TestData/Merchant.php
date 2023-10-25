@@ -191,7 +191,7 @@ class Merchant implements TestDataInterface
                     "brand_color" =>  "MANTHAN SURKAR LONG STRING"
                 ],
                  Constant::API_EXPECTED_EXCEPTION => "SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'brand_color'",
-                 Constant::ASV_EXPECTED_EXCEPTION => "base: db_error: Error 1406: Data too long for column 'brand_color' at row 1"
+                 Constant::ASV_EXPECTED_EXCEPTION => "db_error: Error 1406: Data too long for column 'brand_color' at row 1"
             ],
         ];
     }

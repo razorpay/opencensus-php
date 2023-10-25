@@ -84,7 +84,7 @@ class BusinessDetail implements TestDataInterface
                     "id" => Helper::getUniqueIdCallBack(),
                 ],
                 Constant::API_EXPECTED_EXCEPTION => "SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'blacklisted_products_category'",
-                Constant::ASV_EXPECTED_EXCEPTION => "base: db_error: Error 1406: Data too long for column 'blacklisted_products_category' at"
+                Constant::ASV_EXPECTED_EXCEPTION => "db_error: Error 1406: Data too long for column 'blacklisted_products_category' at"
             ],
         ];
     }

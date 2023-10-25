@@ -301,7 +301,7 @@ class MerchantDetails implements TestDataInterface
                     "merchant_id" => Helper::getUniqueIdCallBack(),
                     "authorized_signatory_dob"=> "1243",
                 ],
-                Constant::ASV_EXPECTED_EXCEPTION => "base: db_error: Error 1292: Incorrect date value: '1243' for column 'authorized_signatory_dob'",
+                Constant::ASV_EXPECTED_EXCEPTION => "db_error: Error 1292: Incorrect date value: '1243' for column 'authorized_signatory_dob'",
                 Constant::API_EXPECTED_EXCEPTION => "SQLSTATE[22007]: Invalid datetime format: 1292 Incorrect date value: '1243' for column 'authorized_signatory_dob",
             ],
         ];
