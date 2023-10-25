@@ -1614,6 +1614,12 @@ class Header
     const WALLET_CONTAINER_LOAD_NOTES = 'Notes (Optional)';
     const WALLET_CONTAINER_LOAD_EXPIRY_DATE = 'Expiry Date (YYYY/MM/DD) (Optional)';
 
+    // Wallet create container reversal batch headers
+    const WALLET_CONTAINER_LOAD_ID = "Load ID";
+    const WALLET_CONTAINER_REVERSAL_AMOUNT = 'Reversal Amount (In Paise)';
+    const WALLET_CONTAINER_REVERSAL_REFERENCE_ID = 'Reference ID (Optional)';
+    const WALLET_CONTAINER_REVERSAL_DESCRIPTION = 'Description (Optional)';
+    const WALLET_CONTAINER_REVERSAL_NOTES = 'Notes (Optional)';
 
     // consent collection for creation of local tokens
     //input
@@ -1650,9 +1656,15 @@ class Header
 
     // mandatory headers for wallet container load batch
     const MANDATORY_HEADERS_FOR_WALLET_CONTAINER_LOADS = [
-           Header::WALLET_CONTAINER_LOAD_USER_ID,
+        Header::WALLET_CONTAINER_LOAD_USER_ID,
         Header::WALLET_CONTAINER_LOAD_PROGRAM_ID,
         Header::WALLET_CONTAINER_LOAD_AMOUNT
+    ];
+
+    // mandatory headers for wallet container reversal batch
+    const MANDATORY_HEADERS_FOR_WALLET_CONTAINER_REVERSALS = [
+        Header::WALLET_CONTAINER_LOAD_ID,
+        Header::WALLET_CONTAINER_REVERSAL_AMOUNT
     ];
 
 
@@ -5470,6 +5482,19 @@ class Header
             ],
             self::OUTPUT => []
         ],
+
+        TYPE::CREATE_WALLET_CONTAINER_REVERSALS => [
+            self::INPUT => [
+                self::WALLET_CONTAINER_LOAD_ID,
+                self::WALLET_CONTAINER_REVERSAL_AMOUNT,
+                self::WALLET_CONTAINER_REVERSAL_REFERENCE_ID,
+                self::WALLET_CONTAINER_REVERSAL_DESCRIPTION,
+                self::WALLET_CONTAINER_REVERSAL_NOTES
+            ],
+            self::OUTPUT => []
+        ],
+
+
         Type::PARTNER_SUBMERCHANT_REFERRAL_INVITE => [
             self::INPUT => [
                 self::NAME,
@@ -5697,6 +5722,11 @@ class Header
         if ($type === Type::CREATE_WALLET_USER_CONTAINERS)
         {
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_USERS);
+        }
+
+        if ($type === Type::CREATE_WALLET_CONTAINER_REVERSALS)
+        {
+            self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_CONTAINER_REVERSALS);
         }
 
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.

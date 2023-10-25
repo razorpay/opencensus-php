@@ -16,10 +16,11 @@ class Type
 
 
     // Wallet batch types
-    const CREATE_WALLET_ACCOUNTS        = 'create_wallet_accounts';
-    const CREATE_WALLET_LOADS           = 'create_wallet_loads';
-    const CREATE_WALLET_CONTAINER_LOADS = 'create_wallet_container_loads';
-    const CREATE_WALLET_USER_CONTAINERS = 'create_wallet_user_containers';
+    const CREATE_WALLET_ACCOUNTS            = 'create_wallet_accounts';
+    const CREATE_WALLET_LOADS               = 'create_wallet_loads';
+    const CREATE_WALLET_CONTAINER_LOADS     = 'create_wallet_container_loads';
+    const CREATE_WALLET_USER_CONTAINERS     = 'create_wallet_user_containers';
+    const CREATE_WALLET_CONTAINER_REVERSALS = 'create_wallet_container_reversals';
 
     //Cod eligibility attribute batch
     const ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST = 'one_cc_cod_eligibility_attribute_whitelist_upsert';
@@ -599,6 +600,7 @@ class Type
         self::PARTNER_SUBMERCHANT_REFERRAL_INVITE,
         self::CREATE_WALLET_USER_CONTAINERS,
         self::IRCTC_SETTLEMENT,
+        self::CREATE_WALLET_CONTAINER_REVERSALS
     ];
 
     /**
@@ -694,7 +696,8 @@ class Type
         self::CREATE_WALLET_LOADS,
         self::CREATE_WALLET_CONTAINER_LOADS,
         self::PARTNER_SUBMERCHANT_REFERRAL_INVITE,
-        self::CREATE_WALLET_USER_CONTAINERS
+        self::CREATE_WALLET_USER_CONTAINERS,
+        self::CREATE_WALLET_CONTAINER_REVERSALS
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
