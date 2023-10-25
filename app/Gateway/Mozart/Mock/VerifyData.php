@@ -14,6 +14,11 @@ class VerifyData extends Base\Mock\Server
 {
     public function upi_airtel($entities)
     {
+        if ($entities['payment']['vpa'] === 'unexpected@sbi')
+        {
+            return $this->upiMozartV2($entities);
+        }
+
         $response = [
             'data' =>
                 [
@@ -853,12 +858,12 @@ class VerifyData extends Base\Mock\Server
                     "amount_authorized" => 50000
                 ],
                 "status"            => "verify_successful",
-                "error"             => null,
-                "next"              => [],
-                "success"           => true,
-                "external_trace_id" => "DUMMY_REQUEST_ID",
-                "mozart_id"         => "DUMMY_MOZART_ID"
-            ]
+            ],
+            "error"             => null,
+            "next"              => [],
+            "success"           => true,
+            "external_trace_id" => "DUMMY_REQUEST_ID",
+            "mozart_id"         => "DUMMY_MOZART_ID"
         ];
 
         if ($vpa === 'unexpectedPayment@kotak')
@@ -871,8 +876,8 @@ class VerifyData extends Base\Mock\Server
 
         switch ($case) {
             case 'failedunexpectedpayment@test':
-                $response['data']['success'] = false;
-                $response['data']['error']   = [
+                $response['success'] = false;
+                $response['error']   = [
                     'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING,
                     'gateway_error_code'        => 'T01',
                     'gateway_error_desc'        => 'Transaction Pending'

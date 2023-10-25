@@ -856,7 +856,7 @@ trait CommonGatewayTrait
 
         $this->assertAmount($paymentAmount, $actualAmount);
 
-        $status = $content['data']['success'];
+        $status = $content['success'];
 
         $this->checkUnexpectedPaymentResponseStatus($status);
     }

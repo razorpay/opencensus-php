@@ -809,4 +809,178 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
 
         $this->assertNull($upiEntity);
     }
+
+    /**
+     * Test authorize failed payment by verify
+     */
+    public function testVerifyAuthorizeFailedPayment_ART()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        // rrn to be used
+        $rrn = '22712135190';
+
+        $this->gateway = 'upi_airtel';
+
+        $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status'                => 'failed',
+                'authorized_at'         => null,
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+            ]);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $content['payment']['id']              =  $payment['id'];
+
+        $content['upi']['gateway']             = "upi_airtel";
+
+        $content['upi']['npci_reference_id']   = '22712135190';
+
+        $content['meta']['force_auth_payment'] = false;
+
+        $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertNotNull($updatedPayment['reference16']);
+
+        $this->assertEquals('22712135190', $updatedPayment['reference16']);
+
+        $this->assertNotEmpty($updatedPayment['transaction_id']);
+
+        $this->assertEquals(true, $response['success']);
+    }
+
+    /**
+     * Test force authorize failed payment through ART
+     */
+    public function testForceAuthorizeFailedPayment_ART()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        // rrn to be used
+        $rrn = '22712135190';
+
+        $this->gateway = 'upi_airtel';
+
+        $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status'                => 'failed',
+                'authorized_at'         => null,
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+            ]);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $content['payment']['id']              =  $payment['id'];
+
+        $content['upi']['gateway']             = "upi_airtel";
+
+        $content['upi']['npci_reference_id']   = '22712135190';
+
+        $content['meta']['force_auth_payment'] = true;
+
+        $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertNotNull($updatedPayment['reference16']);
+
+        $this->assertEquals('22712135190', $updatedPayment['reference16']);
+
+        $this->assertNotEmpty($updatedPayment['transaction_id']);
+
+        $this->assertEquals(true, $response['success']);
+    }
+
+    /**
+     * Tests unexpected payment creation
+     */
+    public function testUnexpectedPaymentCreation_ART()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+
+        $payment = $this->getLastEntity('payment', true);
+    }
+
+    /**
+     * Build unexpected payment create request
+     * @return array
+     */
+    protected function buildUnexpectedPaymentRequest()
+    {
+        $this->gateway = 'upi_airtel';
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->createAccount('100DemoAccount');
+        $this->fixtures->merchant->enableUpi('100DemoAccount');
+
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        // Unsetting fields which will not be present in UpiIcici MIS
+        unset($content['upi']['account_number']);
+        unset($content['upi']['ifsc']);
+        unset($content['upi']['npci_txn_id']);
+        unset($content['upi']['gateway_data']);
+        unset($content['upi']['gateway_merchant_id']);
+        unset($content['terminal']['gateway_merchant_id']);
+
+        $content['upi']['vpa']                       = 'unexpected@sbi';
+        $content['terminal']['gateway']              = 'upi_airtel';
+        $content['terminal']['gateway_merchant_id2'] = 'razorpay@mairtel';
+
+        return $content;
+    }
+
+    /**
+     * Helper to make authorize failed payment request
+     */
+    protected function makeAuthorizeFailedPaymentAndGetPayment(array $content)
+    {
+        $request = [
+            'url'      => '/payments/authorize/upi/failed',
+            'method'   => 'POST',
+            'content'  => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
 }

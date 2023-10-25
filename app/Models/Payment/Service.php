@@ -1987,6 +1987,13 @@ class Service extends Base\Service
             $merchantId = Merchant\Account::DEMO_PAGE_ACCOUNT;
         }
 
+        if ((empty($input['meta']['version']) === false) and
+            ($input['meta']['version'] === 'api_v2') and
+            empty($input['upi']['gateway_merchant_id']) === true)
+        {
+            $input['upi']['gateway_merchant_id'] = $terminal->getGatewayMerchantId();
+        }
+
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         return $this->getNewProcessor($merchant)
