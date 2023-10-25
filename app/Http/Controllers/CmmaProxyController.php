@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Request;
+use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Permission\Name;
 
 class CmmaProxyController extends BaseProxyController
@@ -119,14 +120,47 @@ class CmmaProxyController extends BaseProxyController
     protected function getHeadersForAdminRequest($body)
     {
         return [
-            'X-Admin-id'       => optional($this->ba->getAdmin())->getPublicId() ?? '',
-            'X-Admin-Name'     => optional($this->ba->getAdmin())->getName() ?? '',
-            'X-Task-Id'        => $this->app['request']->getTaskId(),
-            'Content-Type'     => 'application/json',
-            'Accept'           => 'application/json',
-            'Authorization'    => $this->getAuthorizationHeader(),
-            'X-Request-ID'     => Request::getTaskId(),
-            'X-Client-ID'      => $this->serviceConfig['client_id'] ?? ''
+            'X-Admin-id'            => optional($this->ba->getAdmin())->getPublicId() ?? '',
+            'X-Admin-Name'          => optional($this->ba->getAdmin())->getName() ?? '',
+            'X-Task-Id'             => $this->app['request']->getTaskId(),
+            'Content-Type'          => 'application/json',
+            'Accept'                => 'application/json',
+            'Authorization'         => $this->getAuthorizationHeader(),
+            'X-Request-ID'          => Request::getTaskId(),
+            'X-Client-ID'           => $this->serviceConfig['client_id'] ?? '',
+            'x-razorpay-request-id' => $this->app['request']->header(RequestHeader::X_RAZORPAY_REQUEST_ID) ?? Request::getTaskId(),
+        ];
+    }
+
+    protected function getHeadersForCronRequest($body)
+    {
+        return [
+            'Content-Type'          => 'application/json',
+            'Accept'                => 'application/json',
+            'Authorization'         => $this->getCronAuthorizationHeader(),
+            'X-Request-ID'          => Request::getTaskId(),
+            'X-Client-ID'           => $this->serviceConfig['client_id'] ?? '',
+            'x-razorpay-request-id' => $this->app['request']->header(RequestHeader::X_RAZORPAY_REQUEST_ID) ?? Request::getTaskId(),
+        ];
+    }
+
+    protected function getHeadersForDashboardRequest(array $body = [], string $id = '')
+    {
+        return [
+            'x-merchant-id'         => optional($this->ba->getMerchant())->getId() ?? $id,
+            'X-Merchant-Email'      => optional($this->ba->getMerchant())->getEmail() ?? '',
+            'x-user-id'             => optional($this->ba->getUser())->getId() ?? '',
+            'X-User-Role'           => $this->ba->getUserRole() ?? '',
+            'X-Auth-Type'           => 'proxy',
+            'x-otp'                 => $body['otp'] ?? '',
+            'X-Task-Id'             => $this->app['request']->getTaskId(),
+            'Content-Type'          => 'application/json',
+            'Accept'                => 'application/json',
+            'Authorization'         => $this->getAuthorizationHeader(),
+            'X-Client-ID'           => $this->serviceConfig['client_id'] ?? '',
+            'X-Request-ID'          => Request::getTaskId(),
+            'X-IP-Address'          => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
+            'x-razorpay-request-id' => $this->app['request']->header(RequestHeader::X_RAZORPAY_REQUEST_ID) ?? Request::getTaskId(),
         ];
     }
 }
