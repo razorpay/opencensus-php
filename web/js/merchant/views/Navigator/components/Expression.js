@@ -1,8 +1,10 @@
 import React from 'react';
-import Field from 'razorx/components/ui/Field';
-import InputField from 'common/ui/Forms/InputField';
-import Select from './Select';
+
 import Amount, { AmountTooltip } from 'common/ui/Amount';
+import InputField from 'common/ui/Forms/InputField';
+import Field from 'razorx/components/ui/Field';
+
+import Select from './Select';
 import { operators, getValue } from './util';
 
 export default class Expression extends React.Component {
@@ -202,6 +204,7 @@ export default class Expression extends React.Component {
                         ],
                       });
                     }}
+                    selectedOperator={this.props.expression.value}
                   />
                 );
                 if (

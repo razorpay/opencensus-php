@@ -16,6 +16,7 @@ const Select = (props) => {
     multiple,
     select,
     searchable,
+    selectedOperator,
   } = props;
 
   const [show, setShow] = useState(false);
@@ -65,6 +66,23 @@ const Select = (props) => {
     [options],
   );
 
+  const selectOption = (e, option) => {
+    if (selectedOperator === 'in') {
+      e.stopPropagation();
+    }
+    if (!option.disabled) {
+      if (!multiple) {
+        selected = { [option.id]: option };
+      } else if (selected[option.id]) {
+        delete selected[option.id];
+      } else {
+        selected[option.id] = option;
+      }
+      const value = Object.keys(selected).map((key) => selected[key]);
+      select(value);
+    }
+  };
+
   return (
     <div className="input-select-container" onClick={onToggle}>
       <input
@@ -102,19 +120,7 @@ const Select = (props) => {
                     <li
                       className={option.disabled ? 'disabled' : ''}
                       key={index}
-                      onClick={() => {
-                        if (!option.disabled) {
-                          if (!multiple) {
-                            selected = { [option.id]: option };
-                          } else if (selected[option.id]) {
-                            delete selected[option.id];
-                          } else {
-                            selected[option.id] = option;
-                          }
-                          const value = Object.keys(selected).map((key) => selected[key]);
-                          select(value);
-                        }
-                      }}
+                      onClick={(e) => selectOption(e, option)}
                     >
                       <div>
                         <div className="row">
