@@ -1768,7 +1768,10 @@ class Service extends Base\Service
                     ]
                 );
 
-                throw $ex;
+                if ($ex->getCode() !== ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE)
+                {
+                    throw $ex;
+                }
             }
         }
     }
