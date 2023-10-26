@@ -113,12 +113,6 @@ export const syncShopifyCoupons = (data: any): any => {
 };
 
 export const getSyncShopifyCouponsStatus = (): any => {
-  return Promise.resolve({
-    data: {
-      status: 'not-started',
-    },
-  });
-
   return merchantFetch({
     url: '1cc/dashboard/ce/coupons/sync',
     method: 'get',

@@ -33,6 +33,9 @@ export const collectionAction = (widgetsData, setWidgetsData, stateObject) => ({
               ].discountedItemsDisplayList.filter(
                 (prevItem: { id: any }) => prevItem.id !== item.id,
               ),
+              discountedItemsList: widgetsData[stateObject].discountedItemsList.filter(
+                (prevId: string) => prevId !== item.id,
+              ),
             },
           });
         }}
