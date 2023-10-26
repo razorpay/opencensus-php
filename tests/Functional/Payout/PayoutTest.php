@@ -36,6 +36,7 @@ use RZP\Models\Admin;
 use RZP\Models\Batch;
 
 use RZP\Models\Payout;
+use RZP\Models\Pricing;
 use RZP\Models\Feature;
 use RZP\Http\BasicAuth;
 use RZP\Constants\Mode;
@@ -125,6 +126,7 @@ use RZP\Models\PayoutsStatusDetails\Entity as PayoutsStatusDetailsEntity;
 use RZP\Services\PayoutService\OnHoldBeneEvent as OnHoldBeneEventService;
 use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMapEntity;
 use RZP\Models\Payout\Notifications\PayoutProcessedContactCommunication as PayoutProcessedNotification;
+use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Direct as DirectFundAccountPayoutProcessor;
 
 class PayoutTest extends OAuthTestCase
 {
@@ -38304,5 +38306,41 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($existingBankAccount->getId(), $payoutFtaBankAccount->getId());
     }
+
+    public function testCreatePayoutForTaxRecalculation()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+
+    public function testPayoutTaxRecalculation()
+    {
+        $feesWithoutTax = 150;
+        $tax = 28;
+
+        $feeSplit = (new \RZP\Models\Base\PublicCollection);
+
+        $feeBreakupFee = (new \RZP\Models\Transaction\FeeBreakup\Entity);
+        $feeBreakupFee->setAmount($feesWithoutTax);
+        $feeBreakupFee->setName('fee');
+
+        $feeBreakupTax = (new \RZP\Models\Transaction\FeeBreakup\Entity);
+        $feeBreakupTax->setAmount($tax);
+        $feeBreakupTax->setName('tax');
+
+        $feeSplit->add($feeBreakupFee);
+        $feeSplit->add($feeBreakupTax);
+
+        $feesWithTax = $feesWithoutTax + $tax;
+
+        list($fees, $recalculatedTax) = Pricing\PayoutFee::recalculateTaxForPayout($feesWithTax, $tax, $feeSplit);
+
+        $this->assertEquals(177, $fees);
+        $this->assertEquals(27, $recalculatedTax);
+        $this->assertEquals(27, $feeSplit[1]->amount); // Tax amount in fee breakup
+    }
+
 }
 

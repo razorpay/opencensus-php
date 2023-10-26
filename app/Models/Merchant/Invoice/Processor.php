@@ -1070,10 +1070,12 @@ class Processor extends Base\Core
         // charge from the Merchant
 
         $amount = ($bankingPayoutsFees - $bankingPayoutsTax) + ($bankingFAVsFees - $bankingFAVsTax);
-        $tax = $bankingPayoutsTax + $bankingFAVsTax;
+        // We are temporarily reverting back to calculating 18% of the fees(amount) 
+        // rather than showing what we have actually deducted - $bankingPayoutsTax + $bankingFAVsTax;
+        $tax = (int) round($amount * Constants::GST_PERCENTAGE);
 
         return [
-            Entity::TAX     => $tax, // Updating to remove the mismatch in tax invoice and fee deducted
+            Entity::TAX     => $tax,
             Entity::AMOUNT  => $amount
         ];
     }
@@ -1104,10 +1106,13 @@ class Processor extends Base\Core
         // charge from the Merchant
 
         $amount = ($reversalFees - $reversalTax) + ($bankingFailedPayoutsFees - $bankingFailedPayoutsTax);
-        $tax = $reversalTax + $bankingFailedPayoutsTax;
+
+        // We are temporarily reverting back to calculating 18% of the fees(amount) 
+        // rather than showing what we have actually deducted - $reversalTax + $bankingFailedPayoutsTax;
+        $tax = (int) round($amount * Constants::GST_PERCENTAGE);
 
         return [
-            Entity::TAX     => $tax, // Updating to remove the mismatch in tax invoice and fee deducted
+            Entity::TAX     => $tax,
             Entity::AMOUNT  => $amount
         ];
     }

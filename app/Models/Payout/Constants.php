@@ -108,4 +108,8 @@ class Constants
 
     const BALANCE                           = 'balance';
     const BALANCE_ENTITY                    = 'balance_entity';
+
+    const PAYOUT_FEE_TAX_PERCENTAGE         = 18;
+    const TAX                               = 'tax';
+
 }

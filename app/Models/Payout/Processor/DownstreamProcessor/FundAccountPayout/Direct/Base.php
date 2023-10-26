@@ -14,7 +14,6 @@ use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Credits;
-use RZP\Models\Feature\Constants;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
