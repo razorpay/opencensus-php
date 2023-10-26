@@ -93,6 +93,17 @@ const Activation = (props) => {
     const { name: field, value } = e.target;
     let updatedValue = value;
 
+    trackShorterKYCEvents({
+      objectName: 'Partner L1 Form',
+      actionName: 'Start',
+      screen: tabs[activeTab],
+      properties: {
+        partnerID: props.user?.merchant.id,
+        sectionName: tabs[activeTab],
+        fieldEntered: field,
+      },
+    });
+
     // since the value we get from event is a string this check converts it into boolean
     if (field === 'isOpAddressSameAsRegAddress') updatedValue = convertToBoolean(value);
     setFormState((state) => {
@@ -215,6 +226,15 @@ const Activation = (props) => {
       }
       setLoading(false);
     }
+    trackShorterKYCEvents({
+      objectName: 'Partner L1 Form',
+      actionName: 'Loaded',
+      screen: tabs[activeTab],
+      properties: {
+        partnerID: props.user?.merchant.id,
+        sectionName: tabs[activeTab],
+      },
+    });
     fetchData();
     addDropShield('.Activation--wizard');
     return () => {

@@ -30,6 +30,7 @@ import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/com
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import { INVITE_MERCHANT_STEPS } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/constants';
 import { useI18Service } from 'common/i18';
+import { trackShorterKYCEvents } from 'common/utils/analytics';
 
 const PurePlatformSwitchGuideLazy = React.lazy(
   () => import('merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch'),
@@ -80,6 +81,11 @@ const Home = ({
 
   useEffect(() => {
     loadData();
+    trackShorterKYCEvents({
+      objectName: 'Partner Dashboard',
+      actionName: 'Loaded',
+      screen: 'Partner Dashboard',
+    });
   }, []);
 
   const onAddMerchantSuccess = () => {
