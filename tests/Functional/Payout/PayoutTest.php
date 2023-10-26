@@ -10494,7 +10494,7 @@ class PayoutTest extends OAuthTestCase
 
         $payoutArray =  $payout->toArrayPublic();
         $this->assertEquals('payout_processed', $payoutArray['status_details']['reason']);
-        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.',
+        $this->assertEquals('Payout is processed and the money has been credited into the beneficiary account.',
                             $payoutArray['status_details']['description']);
 
     }
@@ -14430,7 +14430,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals('payout_processed', $statusDetails['reason']);
 
-        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.', $statusDetails['description']);
+        $this->assertEquals('Payout is processed and the money has been credited into the beneficiary account.', $statusDetails['description']);
 
         $this->ba->adminAuth();
 
@@ -18055,7 +18055,7 @@ class PayoutTest extends OAuthTestCase
                 $statusDetailsExpected = [
                     'reason'      => 'payout_processed',
                     'source'      => 'beneficiary_bank',
-                    'description' => 'Payout is processed and the money has been credited into the beneficiaries account.',
+                    'description' => 'Payout is processed and the money has been credited into the beneficiary account.',
                 ];
 
                 self::assertArraySubset($statusDetailsExpected, $statusDetails);
@@ -20382,7 +20382,7 @@ class PayoutTest extends OAuthTestCase
         $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
         $this->assertEquals('beneficiary_bank_rejected', $statusDetails['reason']);
-        $this->assertEquals('Payout failed at the beneficiary bank due to a technical issue. Please retry after 30 min.', $statusDetails['description']);
+        $this->assertEquals('Payout rejected by the beneficiary bank. Please contact the beneficiary bank.', $statusDetails['description']);
 
         $payoutResponse = $payout->toArrayPublic();
         $this->assertEquals('beneficiary_bank', $payoutResponse['status_details']['source']);
@@ -20622,7 +20622,7 @@ class PayoutTest extends OAuthTestCase
         $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
         $this->assertEquals('payout_processed', $statusDetails['reason']);
-        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.', $statusDetails['description']);
+        $this->assertEquals('Payout is processed and the money has been credited into the beneficiary account.', $statusDetails['description']);
 
         $payoutProcessedEventData = $this->testData[__FUNCTION__];
 
@@ -20671,7 +20671,7 @@ class PayoutTest extends OAuthTestCase
         $statusDetails = $this->getDbLastEntity('payouts_status_details', 'live');
 
         $this->assertEquals('payout_processed', $statusDetails['reason']);
-        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.', $statusDetails['description']);
+        $this->assertEquals('Payout is processed and the money has been credited into the beneficiary account.', $statusDetails['description']);
 
         $payoutProcessedEventData = $this->testData[__FUNCTION__];
 

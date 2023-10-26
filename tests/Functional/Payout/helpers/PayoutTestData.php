@@ -15424,7 +15424,7 @@ return [
                     'error'  => [
                         'source' => 'beneficiary_bank',
                         'reason' =>  'beneficiary_bank_rejected',
-                        'description' => 'Payout failed at the beneficiary bank due to a technical issue. Please retry after 30 min.'
+                        'description' => 'Payout rejected by the beneficiary bank. Please contact the beneficiary bank.'
                     ]
                 ],
             ],
@@ -15550,7 +15550,7 @@ return [
                     'error'          => [
                         'source' => 'business',
                         'reason' =>  'insufficient_funds',
-                        'description' => 'Your account does not have enough balance to carry out the payout operation.'
+                        'description' => 'Payout failed due to insufficient funds in your account.'
                     ]
                 ],
             ],
@@ -18026,7 +18026,7 @@ return [
                     'error'          => [
                         'source' => 'business',
                         'reason' =>  'insufficient_funds',
-                        'description' => 'Your account does not have enough balance to carry out the payout operation.'
+                        'description' => 'Payout failed due to insufficient funds in your account.'
                     ]
                 ],
             ],

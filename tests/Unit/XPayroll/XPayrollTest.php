@@ -108,7 +108,7 @@ class XPayrollTest extends TestCase
             'id'          => '1nvp2XPMmaRLwb',
             'status'      => 'processed',
             'reason'      => 'payout_processed',
-            'description' => 'Payout is processed and the money has been credited into the beneficiaries account.',
+            'description' => 'Payout is processed and the money has been credited into the beneficiary account.',
             'mode'        => 'system',
         ]);
 
@@ -122,7 +122,7 @@ class XPayrollTest extends TestCase
                 $statusDetailsExpected = [
                     'reason'      => 'payout_processed',
                     'source'      => 'beneficiary_bank',
-                    'description' => 'Payout is processed and the money has been credited into the beneficiaries account.',
+                    'description' => 'Payout is processed and the money has been credited into the beneficiary account.',
                 ];
 
                 self::assertEquals('1nvp2XPMmaRLwb', $statusDetailsId);

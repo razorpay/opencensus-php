@@ -14538,7 +14538,7 @@ class RblBankingAccountStatementTest extends TestCase
                         'status_details'  => [
                             'source' => 'gateway',
                             'reason' =>  'gateway_technical_error',
-                            'description' => 'Payout failed at the partner bank due to a technical issue. Please retry.'
+                            'description' => 'Payout failed due to a temporary technical issue at the partner bank. Please retry after 30 min.'
                         ]
                     ],
                 ],
