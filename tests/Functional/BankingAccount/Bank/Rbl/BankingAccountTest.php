@@ -606,11 +606,11 @@ class BankingAccountTest extends TestCase
         $this->app->instance('banking_account_service', $basMock);
     }
 
-    public function verifyCreateBankingAccountRblOnBasExperiment(bool $shouldCreateBusiness) {
+    public function verifyCreateBankingAccountRblOnBasExperiment(bool $businessExists, bool $shouldCreateBusiness, array $headers = []) {
 
         $attribute = ['activation_status' => 'activated', 'contact_email' => 'test@email.com'];
 
-        if (!$shouldCreateBusiness) {
+        if ($businessExists) {
             $attribute['bas_business_id'] = 'Le5mr3Cd8iwuvy';
         }
 
@@ -638,7 +638,9 @@ class BankingAccountTest extends TestCase
 
         $this->mockBankingAccountServiceCallsForRblOnBasExperiment($shouldCreateBusiness);
 
-        $response = $this->createBankingAccountFromDashboard([
+        $data = [
+            Entity::PINCODE => '560030',
+            Entity::CHANNEL => 'rbl',
             Entity::ACTIVATION_DETAIL => [
                 ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
                 ActivationDetail\Entity::SALES_TEAM => 'self_serve',
@@ -654,7 +656,18 @@ class BankingAccountTest extends TestCase
                     'gstin_prefilled_address' => 1,
                 ]
             ]
-        ], false, false);
+        ];
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/banking_accounts_dashboard',
+            'content' => $data,
+            'server'  => $headers
+        ];
+
+        Queue::fake();
+
+        $response = $this->makeRequestAndGetContent($request);
 
         $additionalDetails = $response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ADDITIONAL_DETAILS];
 
@@ -685,12 +698,24 @@ class BankingAccountTest extends TestCase
 
     public function testCreateBankingAccountRblOnBasExperimentBusinessDoesNotExist()
     {
-        $this->verifyCreateBankingAccountRblOnBasExperiment(true);
+        $this->verifyCreateBankingAccountRblOnBasExperiment(false, true);
     }
 
     public function testCreateBankingAccountRblOnBasExperimentBusinessAlreadyExists()
     {
-        $this->verifyCreateBankingAccountRblOnBasExperiment(false);
+        $this->verifyCreateBankingAccountRblOnBasExperiment(true, false);
+    }
+
+    public function testCreateBankingAccountRblOnBasExperimentAdminRequest()
+    {
+        $admin = $this->fixtures->create('admin', [
+            'org_id'  => '100000razorpay',
+            'email'   => 'shashank@razorpay.com',
+        ]);
+
+        $this->verifyCreateBankingAccountRblOnBasExperiment(true, true, [
+            'HTTP_X-Admin-Email'    => $admin->getEmail(),
+        ]);
     }
 
     public function testCreateBankingAccountFromMerchantDashboardServiceabilityExperiment()
@@ -14089,7 +14114,7 @@ class BankingAccountTest extends TestCase
                 'relationship_type' => 'RBL_BANK_POC'
             ],
         ];
-        
+
         $apiComment = $bankingAccount->getActivationComments()->first();
 
         $expectedComments = [

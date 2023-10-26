@@ -1982,13 +1982,13 @@ class BankingAccountServiceTest extends TestCase
         /** @var BasService $basMock */
         $basMock = Mockery::mock(\RZP\Services\BankingAccountService::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
-        $basMock->shouldReceive('fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails')->andReturns([
+        $basMock->shouldReceive('compositeListBankingAccounts')->andReturns([[
             'id'                          => 'GvZfe7jTGCWNTO',
             'account_number'              => '2224440041626905',
             'status'                      => 'ACTIVE',
             'account_type'                => 'current',
             'partner_bank'                => 'rbl'
-        ]);
+        ]]);
 
         $response = $basMock->fetchMultipleActivatedAccountDetails($merchant->getId());
 
@@ -2117,6 +2117,85 @@ class BankingAccountServiceTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+
+    public function verifyFetchMultipleBankingAccountsFromBas($mode = 'live')
+    {
+        // 1. create merchant_detail
+        $this->createMerchantDetailWithBusinessId([
+            'bas_business_id'   => 'Lx9w1GwyFQLTsq'
+        ]);
+
+        // 2. create balances for accounts stored on BAS
+        $balanceInput = [
+            [
+                'channel'           => 'rbl',
+                'account_number'    => '401509080395',
+            ],
+            [
+                'channel'           => 'icici',
+                'account_number'    => '401509080396',
+            ]
+        ];
+
+        foreach ($balanceInput as $input)
+        {
+            $this->fixtures->create('balance', array_merge(
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'balance'           => 200,
+            ], $input));
+        }
+
+        // 3. setup BA mock
+        $authMock = Mockery::mock(\RZP\Http\BasicAuth\BasicAuth::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $authMock->shouldReceive('getMode')->andReturn($mode);
+
+        $this->app->instance('basicauth', $authMock);
+
+        // 4. setup BAS mock
+        /** @var BasService $basMock */
+        $basMock = Mockery::mock(\RZP\Services\BankingAccountService::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $basMockService = new \RZP\Services\Mock\BankingAccountService($this->app);
+
+        $mockBasResponse = $basMockService->fetchMultipleBankingAccountsFromBas('10000000000000');
+
+        $inProgressRblAccount = $basMockService->getRblBankingAccountResponse([
+            'status'            => 'IN_PROGRESS',
+            'id'                => 'LVFoXUXt8aLGAc',
+            'account_number'    => '401509080397'
+        ]);
+
+        $basMock->shouldReceive('compositeListBankingAccounts')->andReturn(array_merge($mockBasResponse, [$inProgressRblAccount]));
+
+        $this->app->instance('banking_account_service', $basMock);
+
+        // 5. make request & assert all necessary banking_accounts are returned
+        $response = $basMock->fetchMultipleBankingAccountsFromBas('10000000000000');
+
+        if ($mode === 'live')
+        {
+            $this->assertEquals(array_merge($mockBasResponse, [$inProgressRblAccount]), $response);
+        }
+        else
+        {
+            $this->assertEquals($mockBasResponse, $response);
+        }
+    }
+
+    public function testFetchMultipleBankingAccountsFromBasLiveMode()
+    {
+        $this->verifyFetchMultipleBankingAccountsFromBas('live');
+    }
+
+    public function testFetchMultipleBankingAccountsFromBasTestMode()
+    {
+        $this->verifyFetchMultipleBankingAccountsFromBas('test');
     }
 
     private function assertNotificationsForStatusChange(array $bankingAccount, string $status)

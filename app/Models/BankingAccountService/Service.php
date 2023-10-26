@@ -363,17 +363,19 @@ class Service extends Base\Service
     /**
      * Fetches accounts from banking service based on merchantId
      *
+     * Only returns in-progress RBL banking_account and activated banking_accounts
+     *
      * @param $merchantId
      * @param $bankingAccounts
      *
      * @return Base\PublicCollection
      */
-    public function fetchAccountDetailsFromBas($merchantId, $bankingAccounts)
+    public function fetchMultipleBankingAccountsFromBas($merchantId, $bankingAccounts)
     {
         //To avoid login issue for the merchant if external call to banking_account_service fails.
         try
         {
-            $bankingAccountsFromBas = $this->bankingAccountService->fetchMultipleActivatedAccountDetails($merchantId);
+            $bankingAccountsFromBas = $this->bankingAccountService->fetchMultipleBankingAccountsFromBas($merchantId);
 
             $bankingAccounts = $this->core()->attachBasBankingAccount($merchantId, $bankingAccountsFromBas, $bankingAccounts);
         }
@@ -1320,7 +1322,7 @@ class Service extends Base\Service
     /**
      * @throws \Throwable
      */
-    public function createRblOnboardingApplicationOnBas(Merchant\Entity $merchant, array $input): array
+    public function createRblOnboardingApplicationOnBas(Merchant\Entity $merchant, array $input, \RZP\Models\Admin\Admin\Entity|null $admin): array
     {
         $businessId = '';
         $basInput   = $this->basDtoAdapter->fromApiInputToBasInput($input);
@@ -1338,9 +1340,9 @@ class Service extends Base\Service
         $merchantDetail = $merchant->merchantDetail;
         $businessId     = $merchantDetail->getBasBusinessId();
 
-        if (empty($businessId))
+        if (empty($businessId) || !empty($admin))
         {
-            // 1.1. business does not exist, create business on BAS
+            // 1.1. business does not exist or is an admin request, create business on BAS
             $response   = $this->bankingAccountService->createBusinessOnBas($basInput[Constants::BUSINESS]);
             $businessId = $response[Constants::ID];
 

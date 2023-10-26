@@ -68,6 +68,7 @@ class BankingAccountService
     const GET_BANKING_ACCOUNT_CREDENTIALS_BY_MERCHANT_ID_AND_ACCOUNT_NUMBER = 'merchant/%s/banking_account_by_account_number/%s/credentials';
     const COMPOSITE_APPLICATION_WITH_MERCHANT_ID_AND_ACCOUNT_NUMBER         = 'merchant/%s/composite-banking-accounts/%s';
     const GET_BANKING_ACCOUNT_DETAILS_BY_MERCHANT_ID_AND_ACCOUNT_NUMBER     = 'merchant/%s/banking_account_by_account_number/%s';
+    const COMPOSITE_LIST_BANKING_ACCOUNTS                                   = 'merchant/%s/composite-banking-accounts';
 
     protected $baseUrl;
 
@@ -108,37 +109,33 @@ class BankingAccountService
     {
         $repo = new BalanceRepo();
 
-        /**
-         * NOTE: __multi_ca__ Optimization
-         * Fetch all activated banking accounts from BAS using merchant ID
-         */
         $balances = $repo->getBalancesByMerchantIdChannelsAndAccountType($merchantId, Channel::getDirectTypeChannels(), AccountType::DIRECT);
 
-        // filtering balances here to avoid RBL CAs present on API from being included in BAS call
         $filteredBalances = [];
 
         foreach ($balances as $balance)
         {
             // $balance->bankingAccount would be empty for CAs stored in BAS
-            if (empty($balance->bankingAccount) === true)
+            if (empty($balance->bankingAccount))
             {
                 $filteredBalances[] = $balance;
             }
         }
 
-        if (count($filteredBalances) === 0)
+        if (empty($filteredBalances))
         {
             return [];
         }
 
-        $this->isBusinessExists($merchantId); // leaving this validation as at least 1 bas_business_id should exist
         $accounts = [];
-        foreach ($filteredBalances as $balance)
+
+        $basBankingAccounts = $this->fetchMultipleBankingAccountsFromBas($merchantId, $filteredBalances);
+
+        foreach ($basBankingAccounts as $account)
         {
-            $account = $this->fetchBankingAccountByAccountNumberAndChannelWithAdditionalDetails($merchantId, $balance->getAccountNumber(), $balance->getChannel());
             if ($account[Constants::STATUS] === "ACTIVE")
             {
-                array_push($accounts, $account);
+                $accounts[] = $account;
             }
         }
 
@@ -239,6 +236,70 @@ class BankingAccountService
     }
 
     /**
+     * Fetches accounts from banking-account-service based on merchantId
+     *
+     * Only returns in-progress RBL banking_account and activated banking_accounts
+     *
+     * @param $merchantId string
+     * @param $balances array
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchMultipleBankingAccountsFromBas(string $merchantId, array $balances = []): array
+    {
+        // 1. validate existence of business
+        $this->isBusinessExists($merchantId);
+
+        // 2. fetch all banking_accounts from BAS; terminated accounts are not returned here.
+        $basBankingAccounts = $this->compositeListBankingAccounts($merchantId);
+
+        if (empty($basBankingAccounts))
+        {
+            return [];
+        }
+
+        // 3. fetch balances from DB if $balance array is empty
+        if (empty($balances))
+        {
+            $repo = new BalanceRepo();
+
+            $balances = $repo->getBalancesByMerchantIdChannelsAndAccountType($merchantId, Channel::getDirectTypeChannels(), AccountType::DIRECT);
+        }
+
+        // pre-calculate account_number of interest
+        $accountNumbers = [];
+
+        foreach ($balances as $balance)
+        {
+            // $balance->bankingAccount would be empty for CAs stored in BAS
+            if (empty($balance->bankingAccount))
+            {
+                $accountNumbers[] = $balance->getAccountNumber();
+            }
+        }
+
+        // 4. filter $basBankingAccounts
+        $filteredBasBankingAccounts = [];
+
+        $isLiveMode = ($this->ba->getMode() === \RZP\Constants\Mode::LIVE);
+
+        foreach ($basBankingAccounts as $basBankingAccount)
+        {
+            if (in_array($basBankingAccount[Constants::ACCOUNT_NUMBER], $accountNumbers) &&
+                $basBankingAccount[Constants::STATUS] === "ACTIVE")
+            {
+                $filteredBasBankingAccounts[] = $basBankingAccount;
+            }
+            else if (strtolower($basBankingAccount[Constants::PARTNER_BANK]) === Channel::RBL && $isLiveMode)
+            {
+                $filteredBasBankingAccounts[] = $basBankingAccount;
+            }
+        }
+
+        return $filteredBasBankingAccounts;
+    }
+
+    /**
      * To be used internally
      *
      * Used by payouts service to read fts_fund_account_id
@@ -265,6 +326,41 @@ class BankingAccountService
         $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
 
         return $response['data'];
+    }
+
+    /**
+     * Returns array of all banking_accounts on BAS in the format expected by `generateInMemoryBankingAccount`
+     *
+     * @param string $merchantId
+     *
+     * @return array|null
+     */
+    protected function compositeListBankingAccounts(string $merchantId): array|null
+    {
+        $path = sprintf(self::COMPOSITE_LIST_BANKING_ACCOUNTS, $merchantId);
+
+        $headers = [
+            'X-Razorpay-MerchantId' => $merchantId,
+        ];
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], $headers, [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_COMPOSITE_LIST_ERROR,
+                                         [
+                                             'merchant_id' => $merchantId
+                                         ]);
+
+            throw $e;
+
+        }
     }
 
     public function rblMigrationBas($request)

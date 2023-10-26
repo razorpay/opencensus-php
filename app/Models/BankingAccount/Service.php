@@ -171,7 +171,9 @@ class Service extends Base\Service
 
         if ($this->app['basicauth']->isMobApp() and $this->core->checkRblOnBasExperimentEnabled($this->merchant->getId()))
         {
-            return $this->bankingAccountService->createRblOnboardingApplicationOnBas($this->merchant, $input);
+            $admin = $this->core->getAdminFromHeadersForMobApp();
+
+            return $this->bankingAccountService->createRblOnboardingApplicationOnBas($this->merchant, $input, $admin);
         }
 
         $this->validateOrgForBankingAccount($input[Entity::CHANNEL]);
@@ -718,7 +720,7 @@ class Service extends Base\Service
     {
         $bankingAccounts = $this->merchant->bankingAccounts;
 
-        $bankingAccounts = (new BankingAccountService\Service())->fetchAccountDetailsFromBas($this->merchant->getMerchantId(), $bankingAccounts);
+        $bankingAccounts = (new BankingAccountService\Service())->fetchMultipleBankingAccountsFromBas($this->merchant->getMerchantId(), $bankingAccounts);
 
         $bankingAccounts = $bankingAccounts->load(Entity::BALANCE);
 

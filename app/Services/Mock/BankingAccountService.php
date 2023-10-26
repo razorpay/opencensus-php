@@ -525,6 +525,11 @@ class BankingAccountService
         return $bankingAccounts;
     }
 
+    public function fetchMultipleBankingAccountsFromBas(string $merchantId)
+    {
+        return $this->fetchMultipleActivatedAccountDetails($merchantId);
+    }
+
     public function fetchMultipleActivatedAccountDetails(string $merchantId)
     {
         $balanceRepo = new BalanceRepo();
@@ -580,7 +585,7 @@ class BankingAccountService
         ], $attributes);
     }
 
-    private function getRblBankingAccountResponse(array $attributes): array
+    public function getRblBankingAccountResponse(array $attributes): array
     {
         return array_merge([
             // rbl account
