@@ -8,6 +8,7 @@ export interface InfiniteLoaderProps<ItemType> {
   queryKey: string;
   itemsKey: string;
   searchText?: string;
+  setHasErrorInFetchingProducts?: (arg: boolean) => void;
 }
 
 export type QueryParams = {

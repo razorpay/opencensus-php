@@ -353,3 +353,19 @@ export const CHECKOUT_SETTINGS = 'Checkout Settings';
 export const ANALYTICS_SETTINGS = 'Analytics Settings';
 export const WOOCOMMERCE_REST_API_URL =
   'https://woocommerce.github.io/woocommerce-rest-api-docs/?shell#authentication';
+
+export const WOOC_MAGIC_SHIPPING = 'magic-shipping-engine';
+
+export const WOOCOMMERCE_SHIPPING_SETTINGS_TYPE = [
+  {
+    label: 'Magic Shipping',
+    value: 'magic-shipping-engine',
+  },
+  {
+    label: 'Woocommerce Shipping',
+    value: 'wooc-shipping',
+  },
+];
+
+export const WOOC_SHIPPING_ENGINE_PLUGIN_UPDATE =
+  'Note: To use advance Shipping settings, please update your Razorpay WooCommerce plugin to version 4.5.6 or above.';

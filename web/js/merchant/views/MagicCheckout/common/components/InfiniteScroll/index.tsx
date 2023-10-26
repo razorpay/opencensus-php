@@ -16,6 +16,7 @@ const InfiniteScroll = <T extends Record<string, unknown>>({
   itemsKey,
   rowRenderer,
   spinner,
+  setHasErrorInFetchingProducts,
 }: InfiniteLoaderProps<T>): JSX.Element => {
   const [data, setData] = useState<T[]>([]);
   const [hasNext, setHasNext] = useState(true);
@@ -49,12 +50,18 @@ const InfiniteScroll = <T extends Record<string, unknown>>({
   const fetchData = (overrideParams?: QueryParams) => {
     setIsFetching(true);
     setError(null);
+    if (setHasErrorInFetchingProducts) {
+      setHasErrorInFetchingProducts(false);
+    }
     fetchFn(overrideParams)
       .then((response) => {
         updatePaginationAndItemsState(response);
       })
       .catch((err) => {
         setError(err);
+        if (setHasErrorInFetchingProducts) {
+          setHasErrorInFetchingProducts(true);
+        }
       })
       .finally(() => setIsFetching(false));
   };

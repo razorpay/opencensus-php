@@ -110,6 +110,7 @@ const ProductCategory = ({
 
   const handleClose = () => {
     setIsModalOpen(false);
+    closeModal();
   };
 
   const Component = () => {

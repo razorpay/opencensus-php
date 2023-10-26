@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
 import Spinner from 'common/ui/Spinner';
 import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
 import ProductItem from './Item';
@@ -12,7 +15,17 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { MODAL_MODES } from 'merchant/views/MagicCheckout/CODSettings/constants';
 import { ItemsCategory, Product } from './types';
+import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
+import { openModal } from 'merchant_common/reducers/modals';
 
+import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+
+const CredentialsModal = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "MagicCODCategorySettings" */ 'merchant/views/MagicCheckout/MagicSettings/manualReviewSettings/Woocommerce'
+    ),
+);
 interface ProductModalProps {
   entityType: 'cod' | 'shipping';
   category?: ItemsCategory;
@@ -25,6 +38,9 @@ interface ProductModalProps {
   updateCategory: (payload: ItemsCategory) => Promise<void>;
   closeModal: () => void;
   showNotification: (payload: Record<string, unknown>) => void;
+  platform: string;
+  updateSettings: (payload: Record<string, any>, isLoading: boolean) => any;
+  openModal: (arg: Record<string, any>) => any;
 }
 
 const ProductsModal = ({
@@ -39,18 +55,71 @@ const ProductsModal = ({
   closeModal,
   showNotification,
   productsUrl,
+  platform,
+  updateSettings,
+  openModal,
 }: ProductModalProps) => {
   const selectedCategory = category;
   const isEditMode = mode === MODAL_MODES.EDIT;
   const MODAL_HEADER = `${isEditMode ? 'Edit' : 'Create'} category`;
   const [searchText, setSearchText] = useState<string>('');
   const [products, setProducts] = useState<Record<string, unknown>[]>([]);
+  const [hasErrorInFetchingProducts, setHasErrorInFetchingProducts] = useState(false);
 
   useEffect(() => {
     if (selectedCategory?.items) {
       setProducts(selectedCategory.items);
     }
   }, [selectedCategory]);
+
+  const showAlertNotification = () => {
+    setHasErrorInFetchingProducts(false);
+    showNotification({
+      type: 'neutral',
+      message: 'Product categories can not be created. Please provide API credentials',
+      closeTimeout: 10000,
+      className: 'magic-notification',
+    });
+    closeModal();
+  };
+
+  const updateConfiguration = (payload: Record<string, any>) => {
+    const params = {
+      platform,
+      ...payload,
+    };
+    updateSettings(params, false).then(() => {
+      setHasErrorInFetchingProducts(false);
+      showNotification({
+        type: 'success',
+        message: 'Credentials saved successfully.',
+      });
+      closeModal();
+    });
+  };
+
+  const openCredsModal = () => {
+    openModal({
+      size: 'large',
+      className: `woocommerceManualSettingModal`,
+      component: (
+        <SuspenseWithLoader type="center">
+          <CredentialsModal
+            platform={PLATFORMS.VALUES.WOOCOMMERCE}
+            submitCredentials={(payload: Record<string, any>) => updateConfiguration(payload)}
+            modalDesc="Magic checkout needs your Woocommerce credentials to create product categories."
+            customCloseModal={showAlertNotification}
+          />
+        </SuspenseWithLoader>
+      ),
+    });
+  };
+
+  useEffect(() => {
+    if (hasErrorInFetchingProducts && platform === PLATFORMS.VALUES.WOOCOMMERCE) {
+      openCredsModal();
+    }
+  }, [hasErrorInFetchingProducts]);
 
   const handleSearch = (searchText) => {
     setSearchText(searchText);
@@ -126,8 +195,9 @@ const ProductsModal = ({
       ) : (
         <InfiniteLoader<Product>
           isCursorBased
-          pageSize={250}
+          pageSize={100}
           url={productsUrl}
+          setHasErrorInFetchingProducts={setHasErrorInFetchingProducts}
           rowRenderer={(item) => (
             <ProductItem
               isDisabled={
@@ -151,10 +221,15 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
       showNotification,
+      updateSettings: updateMagicSettings,
+      openModal,
     },
     dispatch,
   );
 
+const mapStateToProps = (state) => ({
+  platform: state.magic_settings.platform,
+});
 const Component: ({
   isOpen,
   category,
@@ -166,8 +241,8 @@ const Component: ({
   isCategoryFetching,
   loading,
   productsUrl,
-}: Omit<ProductModalProps, 'showNotification'>) => JSX.Element = connect(
-  null,
-  mapDispatchToProps,
-)(ProductsModal);
+}: Omit<
+  ProductModalProps,
+  'showNotification' | 'updateSettings' | 'openModal' | 'platform'
+>) => JSX.Element = connect(mapStateToProps, mapDispatchToProps)(ProductsModal);
 export default Component;

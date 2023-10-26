@@ -1,3 +1,4 @@
+import { Box, Heading } from '@razorpay/blade/components';
 import { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import isEmpty from 'lodash/isEmpty';
@@ -87,41 +88,51 @@ const ShippingForm = ({ settings, updateSettings }) => {
   }, []);
 
   return (
-    <div className="woocommerce-shipping-container">
-      <div className="padding-16">
-        <div className="display-flex align-center woo-url-wrapper">
-          <label className="wooc-url-label">URL for shipping info</label>
-          <Input
-            disabled={true}
-            required={true}
-            value={shippingUrl}
-            name="shipping_info_url"
-            placeholder="Enter API URL for shipping info"
-            id="shipping_info_url"
-            className="Magic-Settings--Input"
-          />
-        </div>
-        <FeeConfiguration
-          required={false}
-          type={FEE_RULES.COD_FEE_RULE}
-          updateUserFeeRule={updateRule}
-          feeRule={feeRule}
-        />
-        {shippingSettings.map((setting) => (
-          <SettingsToggle key={setting.label} setting={setting} onToggle={onToggle} />
-        ))}
-      </div>
-      <AsyncBtn.Primary
-        type="button"
-        isPending={settings.nestedTabsStatus === FETCH_STATUS.LOADING}
-        showLoader={settings.nestedTabsStatus === FETCH_STATUS.LOADING}
-        onClick={onSave}
-        disabled={!formValid}
-        className="settings-cta"
+    <>
+      <Box
+        padding="spacing.6"
+        paddingLeft="spacing.0"
+        paddingRight="spacing.0"
+        backgroundColor="surface.background.level2.lowContrast"
       >
-        Save Settings
-      </AsyncBtn.Primary>
-    </div>
+        <Heading size="large">Shipping Settings</Heading>
+      </Box>
+      <div className="woocommerce-shipping-container">
+        <div className="padding-16">
+          <div className="display-flex align-center woo-url-wrapper">
+            <label className="wooc-url-label">URL for shipping info</label>
+            <Input
+              disabled={true}
+              required={true}
+              value={shippingUrl}
+              name="shipping_info_url"
+              placeholder="Enter API URL for shipping info"
+              id="shipping_info_url"
+              className="Magic-Settings--Input"
+            />
+          </div>
+          <FeeConfiguration
+            required={false}
+            type={FEE_RULES.COD_FEE_RULE}
+            updateUserFeeRule={updateRule}
+            feeRule={feeRule}
+          />
+          {shippingSettings.map((setting) => (
+            <SettingsToggle key={setting.label} setting={setting} onToggle={onToggle} />
+          ))}
+        </div>
+        <AsyncBtn.Primary
+          type="button"
+          isPending={settings.nestedTabsStatus === FETCH_STATUS.LOADING}
+          showLoader={settings.nestedTabsStatus === FETCH_STATUS.LOADING}
+          onClick={onSave}
+          disabled={!formValid}
+          className="settings-cta"
+        >
+          Save Settings
+        </AsyncBtn.Primary>
+      </div>
+    </>
   );
 };
 
