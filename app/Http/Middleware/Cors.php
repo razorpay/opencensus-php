@@ -58,6 +58,9 @@ class Cors
         'easy_dashboard_domain' => [
             'url_config'    => 'app.easy_dashboard_url'
         ],
+        'easy_curlec_signup_domain' => [
+            'url_config'    => 'app.easy_curlec_signup_url'
+        ],
     ];
 
     protected function shouldAllowCors($request, $originHost) : bool
@@ -157,30 +160,30 @@ class Cors
             // For GET/POST requests, add CORS headers before sending
             // the response
             //
-            
+
             if($response instanceof StreamedResponse)
             {
                 foreach ($headers as $key => $value)
                 {
                     $response->headers->set($key, $value);
                 }
-                
+
                 $response->headers->set('X-Accel-Buffering', 'no');
-                
+
                 Trace::info(TraceCode::CHUNKED_DETAILS, [
                     'location' => 'cors_should_allow_cors',
                 ]);
-                
+
                 return $response;
             }
-            
+
             $response->withHeaders($headers);
 
             return $response;
         }
-        
+
         $response = $next($request);
-        
+
         if($response instanceof StreamedResponse)
         {
             $response->headers->set('X-Accel-Buffering', 'no');
@@ -189,7 +192,7 @@ class Cors
                 'location' => 'cors_should_not_allow_cors',
             ]);
         }
-        
+
         return $response;
     }
 }
