@@ -257,7 +257,6 @@ return [
 
         // Dashboard User Concurrent API call
         'DASHBOARD_USER_CONCURRENT_API_CALL' => env('DASHBOARD_USER_CONCURRENT_API_CALL', ''),
-        
         // Ecosystem Downtimes UI - Availability and Downtime
         'ECOSYSTEM_DOWNTIMES' => env('ECOSYSTEM_DOWNTIMES',''),
         'SUCCESS_RATE_ADMIN' => env('SUCCESS_RATE_ADMIN', ''),
@@ -275,7 +274,7 @@ return [
         'SEARCH_V2_PHASE_1' => env('SEARCH_V2_PHASE_1',''),
 
         'RECURRING_CARD_MULTI_FREQUENCY' => env('RECURRING_CARD_MULTI_FREQUENCY', ''),
-        
+
         'RECURRING_DEBIT_PATTERN' => env('RECURRING_DEBIT_PATTERN', ''),
 
         'CHECKOUT_ANALYTICS' => env('CHECKOUT_ANALYTICS',''),

@@ -1,0 +1,223 @@
+// Promotional Banner
+.OnBoarding--CouponEngine
+  padding: 0
+  background: #FFF
+
+  .Slider
+    max-height: unset
+    height: auto
+
+    @media (max-width 375px)
+      height: 102vh
+
+  .Landing--Image
+    overflow: hidden
+    z-index: 2
+    position: relative
+    background-color: #F4FDFF
+
+    img
+      width: 100%
+      max-width: 700px
+      min-width: 520px
+
+  .Product--Details
+    margin-top: 0
+    padding: 0 50px
+
+    @media (max-width 1024px)
+      padding: 0 24px
+
+    .refresh-note
+      position: absolute
+      bottom: 50px
+      font-size: 12px
+      font-weight: 400
+      font-style: italic
+
+      span
+        font-weight: 700
+
+    .Details-heading
+      margin: 32px 0 24px
+
+      .dash
+        border: 1.5px solid #2B83EA
+
+    .Details-title
+      font-size: 30px
+      line-height: 36px
+      margin: 16px 0 8px
+      font-weight: 800
+      // stylelint-disable-next-line
+      color: rgba(22, 47, 86, 0.87)
+
+      @media (max-width 1024px)
+        font-size: 28px
+
+    .Details-desc
+      margin-bottom: 30px
+      font-size: 14px
+      line-height: 18px
+      font-weight: 400
+      color: #7C8297
+
+    .Button-Container
+      bottom: 20px
+
+      @media (max-width 375px)
+        position: static
+        display: flex
+        justify-content: flex-end
+
+        button.Forward-Button
+          margin-top: 40px
+
+  .setup-others .Button-Container
+    bottom: 10px
+
+.enable-coupons-banner > .content
+  display: flex
+  background: #FFF
+  border: none
+  color: #5B666D
+  align-items: center
+  padding: 4px 15px 4px 4px
+  height: 100%
+
+.announcement-banner-container
+  padding: 12px 0;
+
+// feature tiles
+
+.caption
+  font-size: 16px
+  font-weight: 800
+  line-height: 17.6px
+  // stylelint-disable-next-line
+  color: rgba(22, 47, 86, 0.87)
+
+.benefit-tiles-grid
+  margin-top: 25px
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr))
+  max-width: 475px
+  gap: 28px 12px
+
+  @media (max-width 450px)
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr))
+    max-width: 475px
+    gap: 28px 11px
+
+  @media (max-width 375px)
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr))
+    max-width: 475px
+    gap: 28px 11px
+
+  .benefit-tile
+    width: 100%
+    height: 195px
+    display: flex
+    flex-direction: column
+    align-items: center
+    justify-content: start
+    background: #FFF
+    // stylelint-disable-next-line
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25)
+    position: relative
+    padding-top: 20px
+
+    @media (max-width 450px)
+      height: 100%
+      padding: 8px
+
+    .icon-wrapper
+      height: 62px
+      width: 62px
+      display: grid
+      place-content: center
+
+      @media (max-width 395px)
+        height: 32px
+
+    .benefit-content-wrapper
+      display: flex
+      flex-direction: column
+      align-items: center
+
+    .icon-img
+      height: 52px
+      width: 52px
+
+      @media (max-width 395px)
+        height: 30px
+        width: 30px
+
+    .benefit-metric
+      font-weight: 800;
+      font-size: 30px;
+      line-height: 110%;
+
+      @media (max-width 395px)
+        font-size: 16px;
+
+    .benefit-desc
+      font-weight: 400
+      font-size: 14px
+      text-align: center
+      margin-top: 5px
+      line-height: 18px
+      color: #7C8297
+      max-width: 18ch
+
+    .benefit-desc-complete
+      font-weight: 400
+      font-size: 14px
+      margin-top: 5px
+      line-height: 18px
+      color: #7C8297
+      display: none
+
+      @media (max-width 395px)
+        font-size: 10px;
+
+.benefit-tiles-grid.tiles-expanded
+  max-width: 100%
+  margin-top: 16px
+  gap: 28px 18px
+
+  @media (max-width 1024px)
+    grid-template-rows: repeat(3, 1fr)
+    grid-template-columns: unset
+
+  @media (max-width 395px)
+    display: flex
+    flex-direction: column
+    gap: 16px 16px
+
+  .benefit-tile
+    height: 95px
+    flex-direction: row
+    padding: 16px
+    padding-top: 0
+
+    @media (max-width 395px)
+      height: 84px
+
+    .benefit-metric
+      display: none
+
+    .benefit-content-wrapper
+      width: 100%
+      margin-left: 12px
+      align-items: flex-start
+
+    .benefit-desc
+      max-width: 100%
+      text-align: left
+      margin-top: 0
+      font-size: 16px
+      font-weight: 800
+
+    .benefit-desc-complete
+      display: block

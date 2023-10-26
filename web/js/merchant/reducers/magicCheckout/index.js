@@ -58,6 +58,7 @@ const initialState = {
   cod_intelligence: null,
   cod_order_control: null,
   one_cc_prepay_cod_conversion: null,
+  one_cc_coupon_engine: null,
 };
 
 export default function magicCheckoutReducer(state = initialState, action) {
@@ -77,6 +78,7 @@ export default function magicCheckoutReducer(state = initialState, action) {
         cod_order_control: action.payload?.data?.manual_control_cod_order,
         one_cc_prepay_cod_conversion: action.payload?.data?.one_cc_prepay_cod_conversion,
         platform: action.payload?.data?.platform,
+        one_cc_coupon_engine: action.payload?.data?.one_cc_coupon_engine,
       });
     case `${FETCH_INTELLIGENCE_CONFIG}::PENDING`:
       return set(state, 'loading', true);

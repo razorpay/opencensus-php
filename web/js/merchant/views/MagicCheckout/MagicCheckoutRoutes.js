@@ -1,4 +1,5 @@
 import lazy from 'merchant/routes/LazyLoader';
+
 import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 import MagicSettings from 'merchant/views/MagicCheckout/Settings';
 import RTOAnalytics from 'merchant/views/MagicCheckout/RTOAnalytics';
@@ -6,6 +7,11 @@ import OrderStatusUpload from 'merchant/views/MagicCheckout/OrderStatusUpload';
 import ShopifyOrderEditing from 'merchant/views/MagicCheckout/ShopifyOrderEditing';
 import CODToPrepaidLinks from 'merchant/views/MagicCheckout/CODToPrepaid/CODToPrepaidLinks';
 import OrderAnalytics from 'merchant/views/MagicCheckout/OrderAnalytics';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+
+const CouponEngine = lazy(() =>
+  /* webpackChunkName: 'MagicCouponEngine' */ import('merchant/views/MagicCheckout/CouponEngine'),
+);
 
 const CODOrdersTab = lazy(() =>
   import(/* webpackChunkName: "MagicCODOrdersTab" */ 'merchant/views/MagicCheckout/CODOrdersTab'),
@@ -19,6 +25,7 @@ const CODOrdersTab = lazy(() =>
  * 4. Delivery Status upload
  * 5. Cod Orders
  * 6. Editing Orders
+ * 7. Coupon Engine
  *
  * Note: when adding a new tab, confirm the ordering with product first.
  */
@@ -68,6 +75,14 @@ const routes = [
     path: '/magic/order-editing',
     Component: ShopifyOrderEditing,
     condition: (_user) => _user.isMagicShopifyOrderEditEnabled,
+  },
+  {
+    tabName: 'Coupons',
+    path: '/magic/coupons',
+    Component: CouponEngine,
+    condition: (_user, abExperiments, platform) =>
+      abExperiments?.magic_coupon_engine?.variables?.result === 'on' &&
+      platform === PLATFORMS.VALUES.SHOPIFY,
   },
 ];
 

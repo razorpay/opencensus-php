@@ -57,6 +57,14 @@ export default {
     'M9iRe04lj27sdU',
   ],
 
+  magic_coupons_engine: [
+    // beta experiment id
+    'MKhTcpqsBvixkj',
+
+    // prod experiment id
+    'MKhbJ5VlupICIG',
+  ],
+
   magic_rto_analytics_v3: [
     //beta experiment id
     'M3ltpBNar0aDxZ',

@@ -6,6 +6,7 @@ import MagicIntelligenceTab from 'merchant/views/MagicCheckout/Settings/containe
 import CODSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/CODSettingsTab';
 import ShippingSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/ShippingSettingsTab';
 import CheckoutSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CheckoutSettingsTab';
+import CouponEngineSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CouponEngineSettingsTab';
 
 import NativeCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/native/CheckoutSettings';
 import NativeShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/native/ShippingWrapper';
@@ -81,6 +82,14 @@ export const TABS = {
       Component: AnalyticsSettings,
       condition: (_, abExperiments) =>
         abExperiments?.magic_analytics_setting?.variables?.result === 'on',
+    },
+    {
+      className: 'magic-checkout-settings',
+      path: '/magic/settings/coupons',
+      label: 'Coupon Settings',
+      Component: CouponEngineSettingsTab,
+      condition: (_, abExperiments) =>
+        abExperiments?.magic_coupon_engine?.variables?.result === 'on',
     },
   ],
   [PLATFORMS.WOOCOMMERCE]: [

@@ -40,6 +40,7 @@ import { codEngineHandlers } from 'merchant/views/MagicCheckout/CODSettings/__te
 import { magicOrderAnalyticsHandler } from 'merchant/views/MagicCheckout/OrderAnalytics/__tests__/mocks/handlers';
 import { partnerActivationHandler } from 'merchant/views/PartnerDashboard/Activation/__tests__/mocks/handlers';
 import { magicShopifyOrderEditingHandler } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/__test__/mocks/handlers';
+import { magicCouponEngineHandler } from 'merchant/views/MagicCheckout/CouponEngine/__test__/mocks/handlers';
 import { magicShippingEngineHandlers } from 'merchant/views/MagicCheckout/ShippingSettings/__tests__/mocks/handlers';
 
 export const handlers = [
@@ -872,5 +873,6 @@ export const handlers = [
   ...magicOrderAnalyticsHandler,
   ...partnerActivationHandler,
   ...magicShopifyOrderEditingHandler,
+  ...magicCouponEngineHandler,
   ...magicShippingEngineHandlers,
 ];

@@ -1,0 +1,21 @@
+export const DiscountTypes = [
+  {
+    label: 'Fixed Discount',
+    value: 'fixedAmount',
+  },
+  {
+    label: 'Percentage discount',
+    value: 'percentageDiscount',
+  },
+];
+
+export const DiscountCategories = [
+  {
+    label: 'Discount on all',
+    value: 'discountOnAll',
+  },
+  {
+    label: 'Rate Per Product',
+    value: 'ratePerProduct',
+  },
+];

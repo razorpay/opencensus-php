@@ -31,6 +31,7 @@ const initialState = {
   nestedTabsStatus: FETCH_STATUS.IDLE,
   showTabHeading: true,
   manualControlCodOrder: false,
+  one_cc_coupon_engine: null,
 };
 
 export default function magicSettingsReducer(state = initialState, action) {

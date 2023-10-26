@@ -322,6 +322,38 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'magic_coupon_engine',
+          experimentId: {
+            beta: 'MKhTcpqsBvixkj',
+            production: 'MKhbJ5VlupICIG',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
+          uniqueHashKey: 'magic_shopify_coupon_sync',
+          experimentId: {
+            beta: 'MsN8hpfoohpFo9',
+            production: 'MsN53IGTr8bm5u',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

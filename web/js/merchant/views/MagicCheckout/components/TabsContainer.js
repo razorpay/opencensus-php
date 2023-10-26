@@ -1,12 +1,14 @@
 import { useCallback } from 'react';
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
-import Spinner from 'common/ui/Spinner';
-import magicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
-import { RouteGuard } from 'merchant/components/ShowWhen';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
-import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+
 import { withRouter } from 'common/deprecated/withRouter';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { useSplitzService } from 'common/splitz';
+import Spinner from 'common/ui/Spinner';
+import { RouteGuard } from 'merchant/components/ShowWhen';
+import magicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
 
 let redirectPath;
 const RouteContainer = ({
@@ -16,6 +18,8 @@ const RouteContainer = ({
   isPrepayCODEnabled,
   platform,
 }) => {
+  const { abExperiments } = useSplitzService();
+
   const renderNav = useCallback(
     (item) => {
       if (
@@ -27,7 +31,7 @@ const RouteContainer = ({
       if (item.tabName === 'COD Orders' && !isCODOrderControlEnabled) return null;
       if (item.tabName === 'COD Order Conversion' && (platform === 'native' || !isPrepayCODEnabled))
         return null;
-      if (item.condition && !item.condition(user)) return null;
+      if (item.condition && !item.condition(user, abExperiments, platform)) return null;
       if (item.tabName === 'Edit Orders' && platform !== PLATFORMS.VALUES.SHOPIFY) return null;
       if (
         item.tabName === 'Settings' &&
@@ -44,8 +48,16 @@ const RouteContainer = ({
         </NavLink>
       );
     },
-    [redirectPath, user, isCODIntelligenceEnabled, isCODOrderControlEnabled, platform],
+    [
+      redirectPath,
+      user,
+      isCODIntelligenceEnabled,
+      isCODOrderControlEnabled,
+      platform,
+      abExperiments,
+    ],
   );
+
   return (
     <SuspenseWithLoader type="center">
       <tabbed-container>
@@ -67,7 +79,9 @@ const RouteContainer = ({
                       path={`${item.path.replace('/magic/', '')}/*`}
                       element={
                         <RouteGuard
-                          additionalCondition={(_user) => !item.condition || item.condition(_user)}
+                          additionalCondition={(_user) =>
+                            !item.condition || item.condition(_user, abExperiments, platform)
+                          }
                         >
                           <item.Component />
                         </RouteGuard>

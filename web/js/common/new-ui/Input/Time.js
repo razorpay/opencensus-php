@@ -1,3 +1,4 @@
+import React from 'react';
 import Datetime from 'react-datetime';
 import { classList } from 'common/utils/rzp-utils';
 
@@ -9,15 +10,17 @@ export default class TimePicker extends React.Component {
     value: this.props.defaultValue, // Moment object
   };
 
-  focus = e => {
+  focus = () => {
+    // eslint-disable-next-line react/no-unused-state
     this.setState({ focus: true });
   };
 
-  blur = e => {
+  blur = () => {
+    // eslint-disable-next-line react/no-unused-state
     this.setState({ focus: false });
   };
 
-  onChange = value => {
+  onChange = (value) => {
     this.setState({ value });
 
     this.props.onChange && this.props.onChange(value, this.props.name);
@@ -38,20 +41,16 @@ export default class TimePicker extends React.Component {
               onChange={this.onChange}
               inputProps={{
                 ...restDOMProps,
-                className: classList(
-                  'Input-el',
-                  this.props.addonAfter && 'Input-el--after'
-                ),
+                className: classList('Input-el', this.props.addonAfter && 'Input-el--after'),
               }}
               dateFormat={false}
               timeFormat="h:mm a"
               onFocus={this.focus}
               onBlur={this.blur}
+              timeConstraints={this.props.timeConstraints || {}}
             />
             {this.props.addonAfter && (
-              <span class="Input-addons  Input-addons--after">
-                {this.props.addonAfter}
-              </span>
+              <span class="Input-addons  Input-addons--after">{this.props.addonAfter}</span>
             )}
           </div>
         </div>
