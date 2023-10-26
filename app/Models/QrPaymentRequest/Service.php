@@ -95,6 +95,7 @@ class Service extends Base\Service
             switch ($gateway)
             {
                 case BaseConstants::UPI_YESBANK:
+                case BaseConstants::UPI_KOTAK:
                 {
                     $input = $input['data'];
 

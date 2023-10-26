@@ -190,6 +190,19 @@ class Gateway extends Base\Gateway
             }
         }
 
+        // If it is a Bharat QR payment, we don't intend to make a pay_init call for payment authorise
+        // But, we do want to create an UPI entity, as it is used for refunds later.
+        if ($this->isBharatQrPayment() === true)
+        {
+            $input[UpiEntity::NPCI_REFERENCE_ID]  = $input['data']['upi'][UpiEntity::NPCI_REFERENCE_ID] ?? '';
+            $input[UpiEntity::MERCHANT_REFERENCE] = $input['data']['upi'][UpiEntity::MERCHANT_REFERENCE] ?? '';
+            $input[UpiEntity::VPA]                = $input['data']['upi'][UpiEntity::VPA] ?? '';
+            $input[UpiEntity::TYPE]               = Type::PAY;
+
+            // As don't intend to make a pay_init call for payment authorise, thus we return here
+            return $this->createUpiEntityForQrPayment($input, Action::AUTHORIZE);
+        }
+
         list($response, $attributes) = $this->sendMozartRequestAndGetResponse(
             $input,
             TraceCode::GATEWAY_AUTHORIZE_REQUEST,

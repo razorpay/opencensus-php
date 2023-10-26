@@ -2524,6 +2524,7 @@ class Gateway
         self::ISG,
         self::WORLDLINE,
         self::UPI_YESBANK,
+        self::UPI_KOTAK,
     ];
 
     public static $upiTransferGateway = [

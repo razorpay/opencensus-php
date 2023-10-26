@@ -46,6 +46,8 @@ class UpiKotakQRCodeTest extends TestCase
         $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
 
         $this->getDedicatedTerminalSplitzResponseForVariantON();
+
+        $this->config['gateway.mock_upi_mozart'] = true;
     }
 
 
@@ -231,5 +233,199 @@ class UpiKotakQRCodeTest extends TestCase
             'LiveAccountMer');
 
         $this->closeQrCode($qrCode['id']);
+    }
+    public function runQrPaymentEntityAssertions($expected = true, $paymentRequestEntity = [], $upiRequestEntity = [], $mode = 'test'): void
+    {
+        $qrPayment        = $this->getLastEntity('qr_payment', true, $mode);
+        $payment          = $this->getLastEntity('payment', true, $mode);
+        $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true, $mode);
+        $qrCodeEntity     = $this->getLastEntity('qr_code', true, $mode);
+        $upi              = $this->getLastEntity('upi', true, $mode);
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals('107611570997', $payment['reference16']);
+
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeEntity['reference'], $qrPayment['qr_code_id']);
+        $this->assertEquals($qrCodeEntity['reference'], $qrPayment['merchant_reference']);
+        $this->assertEquals($paymentRequestEntity['description'], $qrPayment['notes']);
+        $this->assertEquals($upi['merchant_reference'], $intentParam['tr']);
+        $this->assertEquals('pullak@okhdfcbank', $upi['vpa']);
+        $this->assertEquals('107611570997', $upi['npci_reference_id']);
+
+        if ($qrCodeEntity['usage'] === 'single_use')
+        {
+            $this->assertEquals('closed', $qrCodeEntity['status']);
+        }
+        else
+        {
+            $this->assertEquals('active', $qrCodeEntity['status']);
+        }
+
+        if ($expected === true)
+        {
+            $this->assertEquals(null, $qrPaymentRequest['failure_reason']);
+            $this->assertEquals(true, $qrPaymentRequest['expected']);
+            $this->assertEquals('captured', $payment['status']);
+            $this->assertEquals(true, $qrPayment['expected']);
+        }
+        else
+        {
+            $this->assertEquals(false, $qrPaymentRequest['expected']);
+            $this->assertEquals('refunded', $payment['status']);
+            $this->assertEquals(false, $qrPayment['expected']);
+        }
+    }
+
+    public function testQrPaymentOnStaticQrCode()
+    {
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $response = $this->makeUpiKotakPayment($qrCodeEntity);
+
+        $this->runQrPaymentEntityAssertions(mode: 'live');
+
+        $this->assertTrue($response['success']);
+    }
+
+    public function testQrPaymentOnDynamicQrCode()
+    {
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $response = $this->makeUpiKotakPayment($qrCodeEntity);
+
+        $this->runQrPaymentEntityAssertions(mode: 'live');
+
+        $this->assertTrue($response['success']);
+    }
+
+    public function testQrPaymentOnInvalidQrCode()
+    {
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        // Changing the ID of the QR to make the request invalid
+        $qrCodeEntity['id'] = '1000RandomQrId';
+
+        $countOfQrPaymentRequestsBefore = count($this->getDbEntities(entity: 'qr_payment_request', mode: 'live'));
+        $countOfQrPaymentsBefore        = count($this->getDbEntities(entity: 'qr_payment', mode: 'live'));
+        $countOfPaymentsBefore          = count($this->getDbEntities(entity: 'payment', mode: 'live'));
+        $countOfUpiEntitiesBefore       = count($this->getDbEntities(entity: 'upi', mode: 'live'));
+
+        $response = $this->makeUpiKotakPayment($qrCodeEntity);
+
+        $countOfQrPaymentRequestsAfter = count($this->getDbEntities(entity: 'qr_payment_request', mode: 'live'));
+        $countOfQrPaymentsAfter        = count($this->getDbEntities(entity: 'qr_payment', mode: 'live'));
+        $countOfPaymentsAfter          = count($this->getDbEntities(entity: 'payment', mode: 'live'));
+        $countOfUpiEntitiesAfter       = count($this->getDbEntities(entity: 'upi', mode: 'live'));
+
+        $this->assertEquals($countOfUpiEntitiesBefore, $countOfUpiEntitiesAfter);
+        $this->assertEquals($countOfQrPaymentsBefore, $countOfQrPaymentsAfter);
+        $this->assertEquals($countOfQrPaymentRequestsBefore, $countOfQrPaymentRequestsAfter);
+        $this->assertEquals($countOfPaymentsBefore, $countOfPaymentsAfter);
+
+        $this->assertFalse($response['success']);
+    }
+
+    public function testMultipleQrPaymentsOnDynamicQrCode()
+    {
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $response = $this->makeUpiKotakPayment($qrCodeEntity, ['rrn' => '107611570998',]);
+
+        $this->assertTrue($response['success']);
+
+        $response = $this->makeUpiKotakPayment($qrCodeEntity);
+
+        $this->runQrPaymentEntityAssertions(expected: false, mode: 'live');
+
+        $this->assertTrue($response['success']);
+    }
+
+    public function testQrPaymentFailedCallback()
+    {
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $countOfQrPaymentRequestsBefore = count($this->getDbEntities(entity: 'qr_payment_request', mode: 'live'));
+        $countOfQrPaymentsBefore        = count($this->getDbEntities(entity: 'qr_payment', mode: 'live'));
+        $countOfPaymentsBefore          = count($this->getDbEntities(entity: 'payment', mode: 'live'));
+        $countOfUpiEntitiesBefore       = count($this->getDbEntities(entity: 'upi', mode: 'live'));
+
+        $response = $this->makeUpiKotakPayment($qrCodeEntity, ['statusCode' => '11', 'status' => 'FAILED']);
+
+        $countOfQrPaymentRequestsAfter = count($this->getDbEntities(entity: 'qr_payment_request', mode: 'live'));
+        $countOfQrPaymentsAfter        = count($this->getDbEntities(entity: 'qr_payment', mode: 'live'));
+        $countOfPaymentsAfter          = count($this->getDbEntities(entity: 'payment', mode: 'live'));
+        $countOfUpiEntitiesAfter       = count($this->getDbEntities(entity: 'upi', mode: 'live'));
+
+        $this->assertEquals($countOfUpiEntitiesBefore, $countOfUpiEntitiesAfter);
+        $this->assertEquals($countOfQrPaymentsBefore, $countOfQrPaymentsAfter);
+        $this->assertEquals($countOfQrPaymentRequestsBefore + 1, $countOfQrPaymentRequestsAfter);
+        $this->assertEquals($countOfPaymentsBefore, $countOfPaymentsAfter);
+
+        $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true, 'live');
+
+        $this->assertEquals(str_after($qrCodeEntity['id'], 'qr_'), $qrPaymentRequest['qr_code_id']);
+        $this->assertEquals('failed callback', $qrPaymentRequest['failure_reason']);
+        $this->assertArraySelectiveEquals(['source' => 'callback', 'request_from' => 'bank'], json_decode($qrPaymentRequest['request_source'], true));
+        $this->assertEquals('107611570997', $qrPaymentRequest['transaction_reference']);
+        $this->assertEquals(0, $qrPaymentRequest['is_created']);
+
+        // We return success as true in this case
+        $this->assertTrue($response['success']);
     }
 }

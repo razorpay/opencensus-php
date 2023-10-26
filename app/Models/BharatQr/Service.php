@@ -43,7 +43,7 @@ class Service extends Base\Service
 
     private function getDedicatedTerminalAndGatewayResponse($input, $gatewayClass, $gateway)
     {
-        $gatewayResponse = $gatewayClass->getQrData($input);
+        $gatewayResponse = $gatewayClass->getQrData($input, $gateway);
 
         $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
 
@@ -334,6 +334,9 @@ class Service extends Base\Service
 
             case Gateway::UPI_YESBANK:
                 return $gatewayResponse['callback_data']['data']['upi'][YesBankFields::MERCHANT_REFERENCE];
+
+            case Gateway::UPI_KOTAK:
+                return $gatewayResponse['callback_data']['data']['upi']['merchant_reference'];
         }
     }
 

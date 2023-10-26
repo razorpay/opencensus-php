@@ -482,6 +482,15 @@ class PreProcess extends Base\Mock\Server
 
     public function upi_kotak(array $entities): array
     {
+        $payload = json_decode($entities['gateway']['payload'], true);
+
+        // If the callback is related to qrv2 payments, we want to mock the preProcess response differently
+        if ((empty($payload['transactionreferencenumber']) === false) and
+            (str_ends_with($payload['transactionreferencenumber'], 'qrv2')))
+        {
+            return $this->upiQr($entities);
+        }
+
         return $this->upi($entities);
     }
 
@@ -538,5 +547,69 @@ class PreProcess extends Base\Mock\Server
 
         return $response;
 
+    }
+
+    protected function upiQr(array $entities): array
+    {
+        assertTrue($entities['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE);
+        $payload = json_decode($entities['gateway']['payload'], true);
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+        $amount = (string) $payload['amount'];
+
+        if ($payload['statusCode'] !== '00' or
+            $payload['status'] !== 'SUCCESS')
+        {
+            $response->setSuccess(false);
+        }
+
+        switch ($payload[Payment\Entity::DESCRIPTION])
+        {
+            case 'payment_failed':
+                $payload['statusCode'] = 'U30';
+                $response->setSuccess(false);
+                $response->setError([
+                                        'description'               => 'Debit has been failed',
+                                        'gateway_error_code'        => 'U30',
+                                        'gateway_error_description' => 'Debit has been failed',
+                                        'gateway_status_code'       => 200,
+                                        'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+                                    ]);
+                break;
+            case 'amount_mismatch':
+                $amount = '1001';
+        }
+
+        $response->mergeUpi([
+                                'gateway_payment_id' => $payload['transactionreferencenumber'],
+                                'merchant_reference' => $payload['refid'],
+                                'npci_reference_id'  => $payload['rrn'],
+                                'npci_response_code' => $payload['statusCode'],
+                                'npci_txn_id'        => $payload['transactionid'],
+                                'status_code'        => $payload['statusCode'],
+                                'vpa'                => $payload['payervpa'],
+                            ]);
+
+        $response->setPayment([
+                                  'currency'          => 'INR',
+                                  'amount_authorized' => (int) number_format(($amount * 100), 0, '.', ''),
+                              ]);
+
+        $response->setTerminal([
+                                   'gateway'             => 'upi_kotak',
+                                   'gateway_merchant_id' => $payload['merchantcode'],
+                                   'vpa'                 => $payload['payeevpa'],
+                               ]);
+
+        $data = $response->get('data');
+
+        $data['gateway_timestamp'] = $payload['transactionTimestamp'];
+
+        $response->setData($data);
+
+        $response = $response->toArray();
+
+        unset($response['next']);
+
+        return $response;
     }
 }

@@ -2,17 +2,23 @@
 
 namespace RZP\Gateway\Upi\Base;
 
+use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Gateway\Upi;
+use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Constants\Environment;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\UpiMetadata\Flow;
+use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\BharatQr\GatewayResponseParams as QrGatewayResponseParams;
 /**
  * CommonGatewayTrait
  * Trait Common
@@ -22,9 +28,16 @@ use RZP\Models\Payment\UpiMetadata\Flow;
  * @package RZP\Gateway\Upi\Base
  * @property $action
  * @property $input
+ * @property $qrPaymentMerchantRefSuffix
  */
 trait CommonGatewayTrait
 {
+    protected $qrPaymentMerchantRefSuffix = QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+
+    public static $qrCodePaymentGateways = [
+        Payment\Gateway::UPI_KOTAK,
+    ];
+
     /************** Payment Actions ************
 
      * @param array $input
@@ -331,7 +344,7 @@ trait CommonGatewayTrait
 
     protected function upiAuthorizePush($data)
     {
-        list ($paymentId, $content) = $data;
+        [$paymentId, $content] = $data;
 
         $response = new Response($content['data'] ?? []);
 
@@ -778,7 +791,7 @@ trait CommonGatewayTrait
 
     protected function upiAuthorizePushV2($input)
     {
-        list ($paymentId, $content) = $input;
+        [$paymentId, $content] = $input;
 
         // Create attributes for upi entity.
         $attributes = [
@@ -887,5 +900,213 @@ trait CommonGatewayTrait
         }
 
         return ((app()->isEnvironmentQA() === true) and (str_ends_with($rzpTestCaseID,'_rearchUPS') === true));
+    }
+
+    /**
+     * This is explicitly used when a gateway callback comes for a certain UPI gateway and we detect that the payment
+     * was actually made via the QR Code v2 flow.
+     * upi_icici and upi_yesbank have their own implementations of this method for now.
+     * This method is being released in a trial phase, hence the above overrides are not removed from their classes.
+     * upi_icici does not support the holy grail contract for qrV2 payments yet, and hence it will continue overriding.
+     * This method is also only applicable for upi_kotak for now, will be made general for all gateways in future releases.
+     * payer_account_type is not supported for now, thus it will affect CC on UPI payments.
+     * @param array       $input
+     * @param string|null $gateway
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     */
+    public function getQrData(array $input, string $gateway = null): array
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'input'   => $input,
+                'gateway' => $gateway,
+            ]
+        );
+
+        if ($gateway === null)
+        {
+            if (empty($this->gateway) === true)
+            {
+                $this->trace->error(
+                    TraceCode::GATEWAY_NOT_ENROLLED_ERROR,
+                    [
+                        'input'   => $input,
+                        'message' => 'Gateway does not support getQrData method',
+                        'merchant_reference' => $input['data']['upi'][Entity::MERCHANT_REFERENCE],
+                    ]
+                );
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
+                    null,
+                    $input,
+                    'Gateway does not support getQrData method'
+                );
+            }
+
+            $gateway = $this->gateway;
+        }
+
+        $qrData = null;
+
+        if (in_array($gateway, self::$qrCodePaymentGateways, true) === true)
+        {
+            $inputFields = $input['data'];
+
+            // Check if the payment was successful or not
+            // Make sure that Mozart is returning success as true in the response to make this work
+            if ($input[Payment\Gateway::SUCCESS] !== true)
+            {
+                $this->trace->error(
+                    TraceCode::QR_PAYMENT_FAILED_TRANSACTION_CALLBACK,
+                    [
+                        'notification_request' => $input,
+                        'gateway'              => $this->gateway
+                    ]);
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
+                    null,
+                    null,
+                    [
+                        'notification_request' => $input,
+                        'gateway'              => $this->gateway
+                    ]);
+            }
+
+            // Make sure that the Mozart response has all the fields necessary from below.
+            // Else, we will see errors here.
+            $qrData = [
+                // Amount is already expected to be converted to paise in Mozart
+                QrGatewayResponseParams::AMOUNT                => $inputFields['payment'][Payment\Entity::AMOUNT_AUTHORIZED],
+                QrGatewayResponseParams::VPA                   => $inputFields['upi'][Entity::VPA],
+                QrGatewayResponseParams::METHOD                => Payment\Method::UPI,
+                QrGatewayResponseParams::GATEWAY_MERCHANT_ID   => $inputFields['terminal'][\RZP\Models\Terminal\Entity::GATEWAY_MERCHANT_ID],
+                QrGatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($inputFields['upi'][Entity::MERCHANT_REFERENCE]),
+                QrGatewayResponseParams::PROVIDER_REFERENCE_ID => $inputFields['upi'][Entity::NPCI_REFERENCE_ID],
+                QrGatewayResponseParams::PAYEE_VPA             => $inputFields['terminal'][TerminalEntity::VPA],
+            ];
+
+            /* NOTE: payer_account_type to be figured out later, as Kotak has not provided any details
+            $payerAccountType = $this->getInternalPayerAccountType($inputFields);
+
+            if (isset($payerAccountType) === true)
+            {
+                $qrData[QrGatewayResponseParams::PAYER_ACCOUNT_TYPE] = $payerAccountType;
+            }
+            */
+
+            if (empty($inputFields['gateway_timestamp'] === false))
+            {
+                // Bad assumption for transaction time format
+                // Making it work for Kotak for now
+                // We will have to figure this out correctly once other gateways start using this.
+                // TODO: Ideally, this conversion should happen on Mozart.
+                $transactionTime = Carbon::createFromFormat('Y-m-d H:i:s.v', $inputFields['gateway_timestamp'],
+                                                            Timezone::IST);
+
+                if ($transactionTime !== false)
+                {
+                    $qrData[QrGatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
+                }
+            }
+
+            if (isset($input['data']['meta']) === true)
+            {
+                unset($input['data']['meta']);
+            }
+            if (isset($input['data']['_raw']) === true)
+            {
+                unset($input['data']['_raw']);
+            }
+        }
+
+        return [
+            'callback_data' => $input,
+            'qr_data'       => $qrData
+        ];
+    }
+
+    /**
+     * This function removes any prefix and suffix in the merchant reference string. This helps us isolate out the QR
+     * code ID for further processing.
+     * Each gateway should override the qrPaymentMerchantPrefix and qrPaymentMerchantSuffix to faciliate this method.
+     *
+     * NOTE- This should be moved to Mozart only when QR code has their own namespace on Mozart.
+     * Till then, we need the 'qrv2' suffix on API to differentiate UPI payments and QRv2 payments.
+     * @param string $merchantReference
+     *
+     * @return string
+     */
+    public function getQrPaymentMerchantReference($merchantReference)
+    {
+        //TODO: For the far future, make sure to have a proper length check for merchantReference string
+        // This is to avoid any complication due to the ref. string containing the prefix or suffix itself.
+        // Though this is very rare, better be safe than sorry.
+
+        // We expect gateways to define their own gateway prefix property for QR
+        if ((empty($this->qrPaymentMerchantRefPrefix) === false) and
+            (str_starts_with($merchantReference, $this->qrPaymentMerchantRefPrefix)))
+        {
+            $merchantReference = substr($merchantReference, strlen($this->qrPaymentMerchantRefPrefix));
+        }
+
+        // Although the suffix has been hard coded for qrv2 in this trait, gateway classes are free to override the
+        // property when needed. Just make sure that you are using the same suffix during QR code creation as well
+        if ((empty($this->qrPaymentMerchantRefSuffix)) === false and
+            (str_ends_with($merchantReference, $this->qrPaymentMerchantRefSuffix)))
+        {
+            // Can not use the function str_before() here
+            // This is to avoid the remote possibility that the ID itself contains the substring 'qrv2' :)
+            $merchantReference = substr($merchantReference, 0, -1 * strlen($this->qrPaymentMerchantRefSuffix));
+        }
+
+        return $merchantReference;
+    }
+
+    /**
+     * This function is used to create the UPI entity for a QR payment during payment authorise step.
+     * This is important as we need the UPI entity during refunds.
+     * NOTE- upi_icici and upi_yesbank use a different method, they shall be migrated here once holy grail contract is
+     * established for QR payments.
+     *
+     * Also, this method does not support refund or (deprecated) payout action as of now.
+     * @param $input
+     * @param $action
+     *
+     * @return array[]
+     */
+    protected function createUpiEntityForQrPayment($input, $action): array
+    {
+        $entity = new Entity;
+
+        $entity->setAmount($this->input['payment']['amount']);
+
+        $entity->setPaymentId($this->input['payment']['id']);
+
+        $entity->setAction($action);
+
+        // Acquirer is set to mozart similar to all other UPI payment gateways on Mozart
+        $entity->setAcquirer('mozart');
+
+        // Since this gateway name is used in the query to fetch relevant details for UPI payment refund, we need to set
+        // the proper gateway here.
+        // Question- Is it better to do it using the payment entity in the input or the terminal entity??
+        $entity->setGateway($input['terminal']->getGateway());
+
+        $entity->generate($input);
+
+        $entity->fill($input);
+
+        $this->repo->saveOrFail($entity);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::REFERENCE16 => $entity->getNpciReferenceId(),
+            ],
+        ];
     }
 }
