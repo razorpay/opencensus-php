@@ -2,6 +2,8 @@
 
 namespace RZP\Models\P2p\Preferences;
 
+use RZP\Models\P2p\BankAccount\Type as AccountType;
+
 class Constants
 {
     const MERCHANT     = 'merchant';
@@ -12,6 +14,7 @@ class Constants
     // Timeout related constants
     const TIMEOUTS           = 'timeouts';
     const OLIVE_SDK_TIMEOUT  = 'olive_sdk_timeout';
+    const SUPPORTED_PAYER_ACCOUNT_TYPES = 'supported_payer_account_types';
 
     const TURBO_PAYEE_EXECUTION_HOLD_TIME  = 2;
 
@@ -108,6 +111,11 @@ class Constants
         ]
     ];
 
+    private static $supportedPayerAccountTypes = [
+        AccountType::SAVINGS,
+        AccountType::CURRENT,
+    ];
+
     public static function getStaticPopularBanksList(): array
     {
         if((app()->isEnvironmentProduction() === true))
@@ -123,5 +131,10 @@ class Constants
     public static function getDefaultTimeoutsForSDK(): array
     {
         return self::$defaultTimeouts;
+    }
+
+    public static function getSupportedPayerAccountTypes(): array
+    {
+        return self::$supportedPayerAccountTypes;
     }
 }

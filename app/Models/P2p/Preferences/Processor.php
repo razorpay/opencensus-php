@@ -341,6 +341,9 @@ class Processor extends Base\Processor
                 ]
             );
         }
+
+        $preferencesResponse[Constants::FEATURES][Constants::SUPPORTED_PAYER_ACCOUNT_TYPES]
+            = Constants::getSupportedPayerAccountTypes();
     }
 
     private function setExperimentsInResponse(&$preferencesResponse)

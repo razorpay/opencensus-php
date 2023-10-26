@@ -77,6 +77,14 @@ class PreferencesTest extends TestCase
         $this->assertArraySelectiveEquals($timeouts, $response['timeouts']);
 
         $this->assertEquals('api', $response['metadata']['X-PG-Service']);
+
+        $this->assertArrayHasKey('features', $response);
+
+        $expectedPayerAccountTypes = [
+            Constants::SUPPORTED_PAYER_ACCOUNT_TYPES => Constants::getSupportedPayerAccountTypes()
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPayerAccountTypes, $response[Constants::FEATURES]);
     }
 
     public function testCreateBankAccountForCustomerForPreferences()
