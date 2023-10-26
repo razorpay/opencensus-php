@@ -243,6 +243,7 @@ class Validator extends Base\Validator
     protected static $scroogeRefundsReverseTransfersRules = [
         'payment_id'    => 'required|unsigned_id|size:14',
         'refund_type'   => 'required|string',
+        'transaction_create_input' => 'sometimes|array'
     ];
 
     protected $payment;

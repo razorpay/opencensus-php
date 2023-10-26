@@ -4635,16 +4635,38 @@ trait Refund
                     'process_reversals'                                   => $processReversals,
                 ]);
 
-            if ($processReversals === true)
-            {
-                try {
-                    $this->processRefundWithTransfers($input, true);
-                } catch (\Throwable $e) {
+            try {
+
+                $this->repo->transaction(function () use ($input, $processReversals, &$response) {
+                    if ($processReversals === true)
+                    {
+                        $this->processRefundWithTransfers($input, true);
+                    }
+
+                    if (isset($input['transaction_create_input']) === true)
+                    {
+                        $transactionCreateInput = $input['transaction_create_input'];
+
+                        $transactionCreateResponse = (new Payment\Refund\Service())->scroogeRefundsTransactionCreate($transactionCreateInput);
+
+                        $response['transaction_create_response'] = $transactionCreateResponse;
+
+                        if (empty($transactionCreateResponse['error']) === false)
+                        {
+                            $response['success'] = false;
+
+                            $response['error'] = $transactionCreateResponse['error'];
+                        }
+                    }
+
+                });
+            }
+             catch (\Throwable $e) {
                     $response['success'] = false;
 
                     $response['error']['code']=$e->getCode();
                     $response['error']['message']=$e->getMessage();
-                }
+
             }
         });
     }

@@ -1498,6 +1498,7 @@ class Service extends Base\Service
             'success' => true,
             'error'   => NULL,
             'transfer_payments' => [],
+            'transaction_create_response' => [],
         ];
 
         try
@@ -2685,7 +2686,7 @@ class Service extends Base\Service
      */
     protected function populateRefundDetailsForCustomer(array &$return, Payment\Entity $payment, bool $newRefundStatus = false )
     {
-        
+
         $refunds = $payment->refunds;
 
         $populateMessages = true;
