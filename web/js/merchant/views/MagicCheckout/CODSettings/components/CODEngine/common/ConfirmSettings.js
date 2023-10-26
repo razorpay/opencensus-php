@@ -25,7 +25,7 @@ const ConfirmSettings = ({
   setEditMode,
   closeModal,
 }) => {
-  const { platform, shop_id } = settings;
+  const { platform, shop_id, rcodEnabled, rcod = {} } = settings;
   const { configs, item_categories } = codEngineConfig;
   const saveSettings = () => {
     const params = {
@@ -36,6 +36,7 @@ const ConfirmSettings = ({
     if (platform === PLATFORMS.VALUES.SHOPIFY) {
       params.shop_id = shop_id;
     }
+
     if (isBasicCODEngine(configs.engine)) {
       if (configs.rate_slabs) {
         params.cod_engine_type = COD_ENGINE_TYPES.SLAB_RATE;
@@ -47,6 +48,19 @@ const ConfirmSettings = ({
     } else {
       params.cod_engine_type = COD_ENGINE_TYPES.LOCATION;
     }
+
+    if (rcodEnabled) {
+      delete params.cod_engine;
+      params.rcod = {
+        ...rcod,
+        enabled: configs.rcod,
+        configs: {
+          cod_engine_type: params.cod_engine_type,
+        },
+      };
+      delete params.cod_engine_type;
+    }
+
     updateSettings(params, false)
       .then(() => {
         showNotification({

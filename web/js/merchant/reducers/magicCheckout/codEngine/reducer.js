@@ -15,6 +15,7 @@ const initialState = {
   error: {},
   configs: {
     cod_engine: false,
+    rcod: false,
     engine: COD_ENGINES.BASIC,
     cod_engine_type: COD_ENGINE_TYPES.SLAB_ELIGIBILITY,
   },
@@ -199,6 +200,7 @@ export const magicCODSettingsReducer = (state = initialState, action) => {
     case ACTIONS.MAP_CATEGORIES_PENDING:
       return merge(state, { loading: { ...state.loading, mapping: true } });
     case ACTIONS.FETCH_CONFIG_ERROR:
+      return merge(state, initialState);
     case ACTIONS.UPSERT_FEE_RULES_ERROR:
     case ACTIONS.UPDATE_FEE_RULE_ERROR:
     case ACTIONS.DELETE_FEE_RULE_ERROR:

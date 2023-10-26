@@ -1,4 +1,4 @@
-export const validateBlocklistModalInfo = (maxRows, sampleUrl) => (
+export const validateBlocklistModalInfo = (maxRows, sampleUrl, isRCOD) => (
   <div className="modal-info">
     <h5 className="modal-info-heading">KEEP IN MIND</h5>
     <ol className="validate-modal-ul">
@@ -9,7 +9,7 @@ export const validateBlocklistModalInfo = (maxRows, sampleUrl) => (
         </a>
       </li>
       <li>The number of rows in the file should not exceed {maxRows}.</li>
-      <li>Please enter phone numbers with country code, e.g. +919988776655.</li>
+      {!isRCOD ? <li>Please enter phone numbers with country code, e.g. +919988776655.</li> : null}
     </ol>
   </div>
 );

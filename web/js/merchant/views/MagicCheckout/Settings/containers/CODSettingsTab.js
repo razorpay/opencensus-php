@@ -18,6 +18,7 @@ import {
   SWITCH_TEXTS,
   COD_SETTINGS_INFO,
   UPDATE_WOOC_PLUGIN_MSG,
+  RCOD_SETTINGS_INFO,
 } from 'merchant/views/MagicCheckout/Settings/constants';
 import {
   updateEngineConfig,
@@ -25,6 +26,7 @@ import {
   validateConfig,
   setEditMode,
 } from 'merchant/reducers/magicCheckout/codEngine/action';
+import { RCOD_APP_NAME, MAGIC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 
 const CODSettings = lazy(() =>
   import(/* webpackChunkName: "CODSettings" */ 'merchant/views/MagicCheckout/CODSettings'),
@@ -52,11 +54,11 @@ const CODSettingsTab = ({
   setEditMode,
   validateConfig,
 }) => {
-  const { cod_engine, platform, shop_id } = settings;
-  const [codSettings, setCodSettings] = useState(cod_engine);
-  const { zones, fee_rules } = cod_engine_config;
+  const { cod_engine, platform, shop_id, rcodEnabled, rcod = {} } = settings;
+  const [codSettings, setCodSettings] = useState(!rcodEnabled ? cod_engine : rcod.enabled);
+  const { zones, fee_rules = [], configs = {} } = cod_engine_config;
   useEffect(() => {
-    fetchSummary();
+    fetchSummary(true, rcodEnabled ? RCOD_APP_NAME : MAGIC_APP_NAME);
   }, []);
 
   const switchCODSettingsMode = (toggleState) => {
@@ -68,6 +70,19 @@ const CODSettingsTab = ({
 
     if (platform === PLATFORMS.VALUES.SHOPIFY) {
       params.shop_id = shop_id;
+
+      if (rcodEnabled) {
+        delete params.cod_engine;
+        params.rcod = {
+          enabled: !codSettings,
+        };
+
+        if (params.rcod.enabled) {
+          params.rcod.configs = {
+            cod_engine_type: configs.cod_engine_type,
+          };
+        }
+      }
     }
 
     const enableEngineConfigPromise = (params) =>
@@ -77,6 +92,13 @@ const CODSettingsTab = ({
           updateEngineConfig(params);
           resolve();
         } else {
+          if (rcodEnabled) {
+            // in rcod, we don't let user add zones
+            if (fee_rules.length) {
+              updateSettings(params, false);
+            }
+            params.rcod = true;
+          }
           updateEngineConfig(params);
           validateConfig('zones', true);
           validateConfig('fee_rules', true);
@@ -88,10 +110,17 @@ const CODSettingsTab = ({
     const disableEngineConfigPromise = (params) =>
       new Promise((resolve) => {
         updateSettings(params, false);
+        if (rcodEnabled) {
+          params.rcod = false;
+        }
         updateEngineConfig(params);
         resolve();
       });
-    const actionFn = params.cod_engine ? enableEngineConfigPromise : disableEngineConfigPromise;
+
+    const actionFn =
+      params.cod_engine || params.rcod?.enabled
+        ? enableEngineConfigPromise
+        : disableEngineConfigPromise;
     actionFn(params)
       .then(() => {
         showNotification({
@@ -136,7 +165,9 @@ const CODSettingsTab = ({
       <div className="header-wrapper">
         <div className="font-20 font-bold heading">Cash on delivery settings </div>
         <div className="font-14 subtext">
-          Configure zones, product catalogues, fees, and block unwanted pincodes and mobile numbers.
+          {!rcodEnabled
+            ? 'Configure zones, product catalogues, fees, and block unwanted pincodes and mobile numbers.'
+            : 'Configure fees and block unwanted pincodes.'}
         </div>
         <div className="cod-settings-toggle">
           <SettingsToggle
@@ -146,7 +177,7 @@ const CODSettingsTab = ({
         </div>
         <Box marginTop="spacing.4">
           <Text type="subdued" size="small">
-            {COD_SETTINGS_INFO}
+            {!rcodEnabled ? COD_SETTINGS_INFO : RCOD_SETTINGS_INFO}
           </Text>
           {settings.platform === PLATFORMS.VALUES.WOOCOMMERCE && (
             <StyledPluginUpdateWrapper>{UPDATE_WOOC_PLUGIN_MSG}</StyledPluginUpdateWrapper>
@@ -156,7 +187,7 @@ const CODSettingsTab = ({
       <div className="cod-settings">
         <ErrorBoundary team={Teams?.MAGIC_CHECKOUT} rank={Ranks.P0} resetOnProps>
           <SuspenseWithLoader type="center">
-            <CODSettings />
+            <CODSettings isRcod={rcodEnabled} />
           </SuspenseWithLoader>
         </ErrorBoundary>
       </div>

@@ -1,6 +1,13 @@
 import { COD_ENGINES, COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/constants';
 import { SERVICEABILITY_TYPES } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
 import countriesWithCodes from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/countries';
+import { RCOD_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
+
+export const determineCodEngineType = (rules = []) => {
+  const hasRates = rules.some((rule) => rule.fee > 0);
+
+  return hasRates ? COD_ENGINE_TYPES.SLAB_RATE : COD_ENGINE_TYPES.SLAB_ELIGIBILITY;
+};
 
 // formats zone api response - adds stateCount & countryName (country_code <-> countryName) to each zone to show them in the preview table
 export const buildZonesData = (zones = []) => {
@@ -22,7 +29,7 @@ export const buildZonesData = (zones = []) => {
 /*
 input => {
         "configs": {
-            "cod_engine": false,
+            "cod_engine": false, / "rcod": false, // in case of rcod app
             "cod_engine_type": "product",
             "shop_id": "magic-checkout-test-store-1"
         },
@@ -33,6 +40,7 @@ input => {
 output => {
         "configs": {
             "cod_engine": false,
+            "rcod": false,
             "cod_engine_type": "product",
             "engine_type": "advanced",
             "rate_slabs": true/false
@@ -45,18 +53,30 @@ output => {
 }
 */
 export const formatResponse = (data) => {
-  const { configs, fee_rules = [], item_categories = [] } = data;
+  const { configs = {}, fee_rules = [], item_categories = [] } = data;
   let { zones = [] } = data;
+  const isRcodData = configs.hasOwnProperty(RCOD_APP_NAME) && !configs.cod_engine;
+
+  if (isRcodData && fee_rules.length && !configs.cod_engine_type) {
+    /**
+     * In case the user saves the fee rules and disables the engine w/o
+     * hitting 'Save & apply', we won't get type the next time user
+     * tries to enable the engine
+     */
+    configs.cod_engine_type = determineCodEngineType(fee_rules);
+  }
+
   configs.engine =
     [COD_ENGINE_TYPES.PRODUCT, COD_ENGINE_TYPES.LOCATION].includes(configs.cod_engine_type) &&
     fee_rules?.length &&
-    zones?.length
+    zones?.length &&
+    !isRcodData
       ? COD_ENGINES.ADVANCED
       : COD_ENGINES.BASIC;
   configs.rate_slabs =
     configs.cod_engine_type && configs.cod_engine_type !== COD_ENGINE_TYPES.SLAB_ELIGIBILITY;
   if (zones?.length > 0) {
-    zones = buildZonesData(zones);
+    zones = isRcodData ? [] : buildZonesData(zones);
   }
   let mappingValidation = true;
   const hasFeeRules = zones?.length ? zones.every((z) => z.fee_rules?.length) : false;
@@ -72,7 +92,11 @@ export const formatResponse = (data) => {
     }
   }
   let editMode =
-    !configs.cod_engine || !zones || !fee_rules || zones?.length === 0 || fee_rules?.length === 0;
+    (!configs.cod_engine && !configs.rcod) ||
+    !zones ||
+    !fee_rules ||
+    (zones?.length === 0 && !isRcodData) ||
+    fee_rules?.length === 0;
   if (configs.engine === COD_ENGINES.ADVANCED) {
     if (
       (configs.cod_engine_type === COD_ENGINE_TYPES.LOCATION && !hasFeeRules) ||

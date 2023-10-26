@@ -3,6 +3,7 @@ import ListFilter from 'merchant/components/ListFilter';
 import {
   ATTRIBUTE_TYPE,
   HEADING_SUBTEXT,
+  RCOD_HEADING_SUBTEXT,
 } from 'merchant/views/MagicCheckout/MagicIntelligence/constants';
 
 export const EmptyComponent = (onUploadClick, txt, hasNoData) => () =>
@@ -40,6 +41,7 @@ const IntelligenceContainer = (props) => {
     setCount,
     skip,
     hasNoData,
+    isRCOD,
   } = props;
 
   const onSubmitHandler = () => {
@@ -64,7 +66,9 @@ const IntelligenceContainer = (props) => {
         <div className="row list-header">
           <div className="col-md-10 d-flex p--0">
             <label>{ctaText}</label>
-            <p className="list-header-subText">{HEADING_SUBTEXT[ctaText]}</p>
+            <p className="list-header-subText">
+              {isRCOD ? RCOD_HEADING_SUBTEXT[ctaText] : HEADING_SUBTEXT[ctaText]}
+            </p>
           </div>
           <div className="col-md-2 p--0">
             <span className="cta-container pull-right">

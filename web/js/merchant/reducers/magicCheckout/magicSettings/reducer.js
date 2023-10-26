@@ -1,6 +1,7 @@
 import { merge } from 'common/utils/immutable';
 import { transformToComponentFormat } from 'merchant/reducers/magicCheckout/magicSettings/utils';
 import { ACTIONS } from 'merchant/reducers/magicCheckout/magicSettings/actions';
+import { RCOD_APP_NAME, MAGIC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 
 const FETCH_STATUS = {
   IDLE: 'idle',
@@ -32,22 +33,42 @@ const initialState = {
   showTabHeading: true,
   manualControlCodOrder: false,
   one_cc_coupon_engine: null,
+  rcodEnabled: false,
+  apps_installed: [],
+  dashboard_view: MAGIC_APP_NAME,
+  rcod: {
+    enabled: false,
+  },
 };
 
 export default function magicSettingsReducer(state = initialState, action) {
   switch (action.type) {
     case ACTIONS.FETCH_MAGIC_SETTINGS_PENDING:
       return merge(state, { status: FETCH_STATUS.LOADING });
-    case ACTIONS.FETCH_MAGIC_SETTINGS_SUCCESS:
+    case ACTIONS.FETCH_MAGIC_SETTINGS_SUCCESS: {
+      const dashboardView =
+        (action.payload.data?.apps_installed || []).length === 1
+          ? action.payload.data.apps_installed[0]
+          : action.payload.data?.dashboard_view || MAGIC_APP_NAME;
+
+      const rcodEnabled =
+        (action.payload.data?.apps_installed || []).includes(RCOD_APP_NAME) &&
+        ((action.payload.data?.apps_installed || []).length === 1 ||
+          action.payload.data?.dashboard_view === RCOD_APP_NAME);
+
       return merge(state, {
         status: FETCH_STATUS.IDLE,
         ...action.payload.data,
-        manualControlCodOrder: action.payload.data.manual_control_cod_order,
+        manualControlCodOrder: rcodEnabled ? false : action.payload.data.manual_control_cod_order,
         platform: action.payload?.data?.platform || DEFAULT_SELECTED_PLATFORM,
         has_saved_config: !!action.payload.data?.platform,
         cod_slabs: transformToComponentFormat(action.payload.data?.cod_slabs),
         cod_engine: action.payload.data.cod_engine,
+        rcodEnabled,
+        apps_installed: action.payload.data?.apps_installed || [],
+        dashboard_view: dashboardView,
       });
+    }
     case ACTIONS.FETCH_MAGIC_SETTINGS_ERROR:
       return merge(state, { status: FETCH_STATUS.ERROR, error: action.payload });
     case ACTIONS.UPDATE_MAGIC_SETTINGS_PENDING: {
@@ -69,6 +90,9 @@ export default function magicSettingsReducer(state = initialState, action) {
         cod_slabs: action.data?.cod_slabs ? transformToComponentFormat(action.data.cod_slabs) : [],
         nested_view_type: NESTED_VIEW_TYPE.SETTINGS,
         nestedTabsStatus: FETCH_STATUS.IDLE,
+        rcodEnabled: action.data?.dashboard_view
+          ? action.data?.dashboard_view === RCOD_APP_NAME
+          : state.rcodEnabled,
       });
     case ACTIONS.UPDATE_MAGIC_SETTINGS_ERROR:
       return merge(state, {

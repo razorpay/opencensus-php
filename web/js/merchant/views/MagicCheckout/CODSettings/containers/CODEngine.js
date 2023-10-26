@@ -18,12 +18,13 @@ import { COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/const
 import { SERVICEABILITY_TYPES } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
 
 function CODEngine(props) {
-  const { codEngineConfig, openModal, validateConfig, setEditMode } = props;
+  const { codEngineConfig, openModal, validateConfig, setEditMode, settings } = props;
   const { configs, editMode, fee_rules, zones, item_categories } = codEngineConfig;
+  const { rcodEnabled } = settings;
 
   const handleSave = () => {
     let hasError = false;
-    if (zones.length === 0) {
+    if (!zones.length && !rcodEnabled) {
       validateConfig('zones', false);
       hasError = true;
     }
@@ -68,7 +69,9 @@ function CODEngine(props) {
       </div>
     );
 
-  if (!configs.cod_engine) return <EmptyView viewName="COD settings" />;
+  if ((rcodEnabled && !configs.rcod) || (!rcodEnabled && !configs.cod_engine)) {
+    return <EmptyView viewName="COD settings" />;
+  }
 
   return (
     <ErrorBoundary team={Teams?.MAGIC_CHECKOUT} rank={Ranks.P0} resetOnProps>
@@ -77,7 +80,9 @@ function CODEngine(props) {
           <div className="text-container">
             <Heading size="large">COD Settings</Heading>
             <Text type="subdued">
-              Configure COD eligibility, rate, zones, product catalogues, fees{' '}
+              {`Configure COD eligibility, rate, ${
+                !rcodEnabled ? 'zones, product catalogues, ' : ''
+              }fees`}
             </Text>
           </div>
           {!editMode ? <PreviewView handleEdit={() => setEditMode(true)} /> : <SettingsView />}

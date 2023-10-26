@@ -50,7 +50,7 @@ const openFileUpload = (validateBatch, openModal, provider, setProvider) => {
     ),
   });
 };
-const RTOHistoryUpload = ({ openModal, validateBatch, rtoHistoryData, fetchAll }) => {
+const RTOHistoryUpload = ({ openModal, validateBatch, rtoHistoryData, fetchAll, isRCOD }) => {
   const { error, loading, items, isUploadAllowed } = rtoHistoryData;
 
   const [provider, setProvider] = useState(null);
@@ -91,8 +91,8 @@ const RTOHistoryUpload = ({ openModal, validateBatch, rtoHistoryData, fetchAll }
           </span>
         )}
         <p className="sub-text">
-          Sharing order details for pre-Magic Checkout orders will enable you to get better COD
-          intelligence and RTO protection from Day 1.
+          Sharing order details for {`${isRCOD ? 'pre-MagicX' : 'pre-Magic Checkout'}`} orders will
+          enable you to get better COD intelligence and RTO protection from Day 1.
         </p>
       </div>
       {!items.length ? (
@@ -106,6 +106,7 @@ const RTOHistoryUpload = ({ openModal, validateBatch, rtoHistoryData, fetchAll }
 
 const mapStateToProps = (state) => ({
   rtoHistoryData: state.rtoHistoryUpload,
+  isRCOD: state.magicCheckout.rcod,
 });
 
 const mapDispatchToProps = (dispatch) =>

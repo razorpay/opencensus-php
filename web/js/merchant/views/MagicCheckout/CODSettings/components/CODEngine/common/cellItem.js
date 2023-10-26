@@ -42,6 +42,12 @@ export const slabRange = {
     )}`,
 };
 
+export const slabName = {
+  title: 'Name',
+  columnClass: 'text-left',
+  value: (item) => item?.name,
+};
+
 export const slatRate = {
   title: 'Fee',
   columnClass: 'text-left',

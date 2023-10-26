@@ -71,6 +71,7 @@ const MagicCheckout = ({
         isCODOrderControlEnabled={magicCheckout?.cod_order_control}
         isPrepayCODEnabled={magicCheckout?.one_cc_prepay_cod_conversion}
         platform={magicCheckout?.platform}
+        isRcodEnabled={magicCheckout?.rcod}
       />
     );
   }

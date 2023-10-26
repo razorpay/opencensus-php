@@ -42,7 +42,14 @@ const openBatchUploadModal = (createBatch, validateBatch, openModal) => {
   });
 };
 
-const OrderStatuses = ({ openModal, createBatch, validateBatch, fetchAll, orderStatusData }) => {
+const OrderStatuses = ({
+  openModal,
+  createBatch,
+  validateBatch,
+  fetchAll,
+  orderStatusData,
+  isRCOD,
+}) => {
   const { loading, items, error } = orderStatusData;
 
   useEffect(() => {
@@ -67,8 +74,9 @@ const OrderStatuses = ({ openModal, createBatch, validateBatch, fetchAll, orderS
           </button>
         </span>
         <p className="sub-text">
-          Upload delivery status periodically for orders placed via Magic Checkout to get better
-          reduction of RTOs via COD Intelligence and claim RTO Protection.
+          Upload delivery status periodically for orders placed via{' '}
+          {`${isRCOD ? 'Shopify' : 'Magic'}`} Checkout to get better reduction of RTOs via COD
+          Intelligence and claim RTO Protection.
         </p>
       </div>
       <OrderStatusList
@@ -83,6 +91,7 @@ const OrderStatuses = ({ openModal, createBatch, validateBatch, fetchAll, orderS
 
 const mapStateToProps = (state) => ({
   orderStatusData: state.orderStatusBatches,
+  isRCOD: state.magicCheckout.rcod,
 });
 
 const mapDispatchToProps = (dispatch) =>

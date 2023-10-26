@@ -1,12 +1,25 @@
-.platform-settings-container 
+.platform-settings-container
   padding: 24px
   width: 100%
 
-  .platform-settings 
-    
+  .platform-label
+    display: flex
+    align-items: center
+    min-width: 17%
+    margin-right: 24px
+
+    .i-info-outline
+      margin-top: 4px;
+      margin-left: 10px;
+      font-size: 18px;
+
+      .rzp-popover-content > .rzp-popover-body
+        font-style: normal
+
+  .platform-settings
     .platform-heading-container
-      border-bottom: 1px solid #5159781a
-      background: #fafcff
+      border-bottom: 1px solid #5159781A
+      background: #FAFCFF
 
       .platform-heading
         color: #344A6C
@@ -16,22 +29,10 @@
 
       .platform
         padding: 2px 4px
-        background: #162f560d
+        background: #162F560D
 
       .platform-details
         margin-right: 24px
-      
-      .platform-label
-        display: flex
-        align-items: center
-        min-width: 17%
-        margin-right: 24px
-        .i-info-outline
-          margin-top: 4px;
-          margin-left: 10px;
-          font-size: 18px;
-          .rzp-popover-content > .rzp-popover-body
-            font-style: normal
 
       .platform-edit
         color: #2B83EA
@@ -39,16 +40,22 @@
       .platform-edit-icon
         margin-right: 8px
 
-  .platform-cta-container 
+  .platform-cta-container
     justify-content: end
 
-    .platform-cta 
+    .platform-cta
       margin: 16px 0
       background: #0B70E7
       padding: 10px
 
+  .apps-toggle
+    margin-top: 24px
+
+    .Input
+      margin: 0
+
 .bg-settings
-  background: #fafcff
+  background: #FAFCFF
 
 .platform-settings-container
   .settings-cta

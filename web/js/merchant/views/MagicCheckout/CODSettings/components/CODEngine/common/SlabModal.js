@@ -15,16 +15,24 @@ import {
   getRangedRules,
 } from 'merchant/views/MagicCheckout/CODSettings/utils';
 import { paiseToRupees } from 'common/utils/rzp-utils';
+import { RCOD_APP_NAME, MAGIC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 
-function SlabModal({ cod_engine_config, closeModal, mode, id, upsertFeeRules, showNotification }) {
+function SlabModal({
+  cod_engine_config,
+  closeModal,
+  mode,
+  id,
+  upsertFeeRules,
+  showNotification,
+  isRCOD,
+}) {
   const editMode = mode === MODAL_MODES.EDIT;
   const { fee_rules, configs, loading } = cod_engine_config;
-  const hasRates = configs.rate_slabs || configs.engine === COD_ENGINES.ADVANCED;
   const [slabs, setSlabs] = useState([]);
   const MODAL_HEADER = `${editMode ? 'Edit' : 'Create'} COD eligibility slabs`;
   useEffect(() => {
     if (fee_rules.length) {
-      const slabs = formatRulesToSlabs(fee_rules);
+      const slabs = formatRulesToSlabs(fee_rules, isRCOD);
       if (!editMode) {
         const last_rule = fee_rules[fee_rules.length - 1];
         slabs.push({
@@ -37,11 +45,16 @@ function SlabModal({ cod_engine_config, closeModal, mode, id, upsertFeeRules, sh
             fee: '',
           },
         });
+
+        if (isRCOD) {
+          slabs[slabs.length - 1].name = '';
+          slabs[slabs.length - 1].error.name = '';
+        }
       }
 
       setSlabs(slabs);
     }
-  }, [fee_rules, id, mode, editMode]);
+  }, [fee_rules, id, mode, editMode, isRCOD]);
   const updateSlabs = (newSlabs) => {
     setSlabs(newSlabs);
   };
@@ -50,15 +63,25 @@ function SlabModal({ cod_engine_config, closeModal, mode, id, upsertFeeRules, sh
     return (
       slabs.length === 0 ||
       slabs?.some(
-        (slab) => slab?.error?.lte?.length || slab?.error?.gte?.length || slab?.error?.fee?.length,
+        (slab) =>
+          slab?.error?.lte?.length ||
+          slab?.error?.gte?.length ||
+          slab?.error?.fee?.length ||
+          slab?.error?.name?.length ||
+          (!slab?.name && isRCOD),
       )
     );
-  }, [slabs]);
+  }, [slabs, isRCOD]);
 
   const confirmSlabs = () => {
-    const rules = formatSlabsToFeeRules(slabs, hasRates);
+    const rules = formatSlabsToFeeRules(slabs, isRCOD);
     const payload = {};
-    payload.fee_rules = getRangedRules(rules, fee_rules, configs.engine === COD_ENGINES.ADVANCED);
+    payload.fee_rules = getRangedRules(
+      rules,
+      fee_rules,
+      configs.engine === COD_ENGINES.ADVANCED || isRCOD,
+    );
+    payload.app_type = isRCOD ? RCOD_APP_NAME : MAGIC_APP_NAME;
     upsertFeeRules(payload)
       .then(() => {
         showNotification({
@@ -107,6 +130,7 @@ function SlabModal({ cod_engine_config, closeModal, mode, id, upsertFeeRules, sh
 
 const mapStateToProps = (state) => ({
   cod_engine_config: state.magicCODEngine,
+  isRCOD: state.magic_settings.rcodEnabled,
 });
 
 const mapDispatchToProps = (dispatch) =>

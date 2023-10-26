@@ -12,6 +12,7 @@ const initState = {
   },
   magicCheckout: {
     cod_order_control: true,
+    rcod: false,
   },
   session: {
     user: {
@@ -110,5 +111,18 @@ describe('Nested vertical tabs component', () => {
       state: customState,
     });
     await waitFor(() => expect(screen.queryByText('Store Settings')).not.toBeInTheDocument());
+  });
+
+  test('should display COD and RTO settings if rcod is enabled', async () => {
+    const customState = {
+      magicCheckout: {
+        rcod: true,
+      },
+    };
+    render(<NestedVerticalTabs />, {
+      state: customState,
+    });
+    await waitFor(() => expect(screen.queryByText('COD Settings')).toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText('RTO Settings')).toBeInTheDocument());
   });
 });

@@ -9,6 +9,7 @@ import {
   zoneCountry,
   zoneName,
   zoneStates,
+  slabName,
 } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/cellItem';
 import Configuration from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration';
 
@@ -25,11 +26,11 @@ const PreviewItem = ({ label, children }) => (
     {children}
   </div>
 );
-const PreviewView = ({ cod_engine_config, handleEdit }) => {
+const PreviewView = ({ cod_engine_config, handleEdit, isRCOD }) => {
   const { configs, fee_rules, zones, item_categories } = cod_engine_config;
   const { rate_slabs, engine } = configs;
 
-  const isAdvanceView = engine === COD_ENGINES.ADVANCED;
+  const isAdvanceView = engine === COD_ENGINES.ADVANCED && !isRCOD;
   const mappingType = useMemo(() => {
     if (isAdvanceView) {
       if (item_categories.length) return MAPPING_TYPES.CATEGORY.label;
@@ -38,10 +39,15 @@ const PreviewView = ({ cod_engine_config, handleEdit }) => {
     return '';
   }, [item_categories, zones]);
 
-  const TABLE_COLUMNS = [slabRange];
+  const TABLE_COLUMNS = [];
+  if (isRCOD) {
+    TABLE_COLUMNS.push(slabName);
+  }
+  TABLE_COLUMNS.push(slabRange);
   if (cod_engine_config.configs.rate_slabs) {
     TABLE_COLUMNS.push(slatRate);
   }
+
   return (
     <div className="preview-view">
       <div className="preview-item">
@@ -52,9 +58,11 @@ const PreviewView = ({ cod_engine_config, handleEdit }) => {
           </Link>
         </div>
       </div>
-      <PreviewItem label="Type of setting">
-        <Text weight="bold">{engine}</Text>
-      </PreviewItem>
+      {!isRCOD ? (
+        <PreviewItem label="Type of setting">
+          <Text weight="bold">{engine}</Text>
+        </PreviewItem>
+      ) : null}
       {isAdvanceView ? (
         <PreviewItem label={`${mappingType} configuration`}>
           <Configuration isPreview />
@@ -62,7 +70,7 @@ const PreviewView = ({ cod_engine_config, handleEdit }) => {
       ) : (
         <>
           <PreviewItem label="COD eligibility slabs & fee">
-            <p className="rate-text">{rate_slabs ? 'Yes add COD fee' : 'No, don’t add COD fee'}</p>
+            <p className="rate-text">{rate_slabs ? 'Yes, add COD fee' : 'No, don’t add COD fee'}</p>
             {fee_rules ? (
               <DataTable
                 customClass={`settings-table ${TABLE_COLUMNS.length === 1 ? 'single-column' : ''}`}
@@ -74,17 +82,19 @@ const PreviewView = ({ cod_engine_config, handleEdit }) => {
             )}
           </PreviewItem>
 
-          <PreviewItem label="COD eligibility zones">
-            {zones ? (
-              <DataTable
-                customClass="settings-table"
-                items={cod_engine_config.zones}
-                columns={[zoneName, zoneCountry, zoneStates]}
-              />
-            ) : (
-              <Text weight="bold">Enabled for all shopify shipping zones</Text>
-            )}
-          </PreviewItem>
+          {!isRCOD ? (
+            <PreviewItem label="COD eligibility zones">
+              {zones ? (
+                <DataTable
+                  customClass="settings-table"
+                  items={cod_engine_config.zones}
+                  columns={[zoneName, zoneCountry, zoneStates]}
+                />
+              ) : (
+                <Text weight="bold">Enabled for all shopify shipping zones</Text>
+              )}
+            </PreviewItem>
+          ) : null}
         </>
       )}
     </div>
@@ -93,6 +103,7 @@ const PreviewView = ({ cod_engine_config, handleEdit }) => {
 
 const mapStateToProps = (state) => ({
   cod_engine_config: state.magicCODEngine,
+  isRCOD: state.magic_settings.rcodEnabled,
 });
 
 export default connect(mapStateToProps, null)(PreviewView);

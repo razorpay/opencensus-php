@@ -32,7 +32,7 @@ export const TabItem = ({
 
 const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
   const { platform, showTabHeading } = settings;
-  const { cod_order_control: isCODOrderControlEnabled } = magicCheckout;
+  const { cod_order_control: isCODOrderControlEnabled, rcod: isRCOD } = magicCheckout;
 
   const { abExperiments } = useSplitzService();
   let redirectPath;
@@ -48,6 +48,9 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
                 (!isCODOrderControlEnabled || !user.isMagicCODOrderAutomationEnabled)
               )
                 return null;
+
+              if (isRCOD && !item.onRCOD) return null;
+
               if (!redirectPath) {
                 redirectPath = item.path;
               }
@@ -67,6 +70,7 @@ const NestedVerticalTab = ({ settings, magicCheckout, user }) => {
             {TABS[platform].map((item) => {
               if (item.condition && !item.condition(user, abExperiments)) return null;
               if (item.label === 'COD Review Workflow' && !isCODOrderControlEnabled) return null;
+              if (isRCOD && !item.onRCOD) return null;
               const isIndex = item.path === '/magic/settings';
               return (
                 <Route

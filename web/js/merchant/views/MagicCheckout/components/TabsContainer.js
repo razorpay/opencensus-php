@@ -16,6 +16,7 @@ const RouteContainer = ({
   isCODIntelligenceEnabled,
   isCODOrderControlEnabled,
   isPrepayCODEnabled,
+  isRcodEnabled,
   platform,
 }) => {
   const { abExperiments } = useSplitzService();
@@ -39,6 +40,11 @@ const RouteContainer = ({
         !isCODOrderControlEnabled
       )
         return null;
+
+      if (!item.onRCOD && isRcodEnabled) {
+        return null;
+      }
+
       if (!redirectPath) {
         redirectPath = item.path;
       }
@@ -55,6 +61,7 @@ const RouteContainer = ({
       isCODOrderControlEnabled,
       platform,
       abExperiments,
+      isRcodEnabled,
     ],
   );
 

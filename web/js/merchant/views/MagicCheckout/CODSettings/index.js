@@ -21,7 +21,7 @@ const TabContent = ({ id, activeTab, children, className }) => {
   return activeTab === id ? <div className={`tabContent ${className}`}>{children}</div> : null;
 };
 
-const CODSettings = () => {
+const CODSettings = ({ isRcod }) => {
   const [activeTab, setActiveTab] = useState('cod-engine');
 
   return (
@@ -33,7 +33,7 @@ const CODSettings = () => {
               <TabNavItem
                 key={item.id}
                 id={item.id}
-                title={item.title}
+                title={isRcod ? item.rcodTitle || item.title : item.title}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
               />

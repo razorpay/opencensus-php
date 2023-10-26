@@ -15,6 +15,7 @@ import {
   slabRange,
   slatRate,
   actions,
+  slabName,
 } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/cellItem';
 import SettingsLabel from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/SettingsLabel';
 import PreventDeleteModal from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/PreventDeleteModal';
@@ -36,6 +37,7 @@ import {
   COD_ENGINE_TYPES,
   MAX_FEE_RULES,
 } from 'merchant/views/MagicCheckout/CODSettings/constants';
+import { RCOD_APP_NAME, MAGIC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 
 const SlabModal = lazy(() =>
   import(
@@ -50,6 +52,7 @@ function SlabRateSettings({
   showNotification,
   updateEngineConfig,
   deleteFeeRule,
+  isRCOD,
 }) {
   const { fee_rules, configs, validations } = codEngineConfig;
   const [errorText, setErrorText] = useState('');
@@ -87,7 +90,7 @@ function SlabRateSettings({
   };
 
   const deleteSlab = (id) => {
-    deleteFeeRule(id)
+    deleteFeeRule(id, isRCOD ? RCOD_APP_NAME : MAGIC_APP_NAME)
       .then(() => {
         showNotification({
           type: 'success',
@@ -132,8 +135,11 @@ function SlabRateSettings({
   };
 
   const TABLE_COLUMNS = [slabRange, actions({ onDeleteClick })];
-  if (configs.rate_slabs || configs.engine === COD_ENGINES.ADVANCED) {
-    TABLE_COLUMNS.splice(1, 0, slatRate);
+  if (isRCOD) {
+    TABLE_COLUMNS.splice(0, 0, slabName);
+  }
+  if (configs.rate_slabs || (configs.engine === COD_ENGINES.ADVANCED && !isRCOD)) {
+    TABLE_COLUMNS.splice(isRCOD ? 2 : 1, 0, slatRate);
   }
 
   return (
@@ -146,7 +152,7 @@ function SlabRateSettings({
       />
 
       <div className="cod-settings-toggle">
-        {isBasicCODEngine(configs.engine) ? (
+        {isBasicCODEngine(configs.engine) || isRCOD ? (
           <div className="slabs-radio">
             <Input.Radio
               name="slabs"
@@ -190,6 +196,7 @@ function SlabRateSettings({
 
 const mapStateToProps = (state) => ({
   codEngineConfig: state.magicCODEngine,
+  isRCOD: state.magic_settings.rcodEnabled,
 });
 
 const mapDispatchToProps = (dispatch) =>

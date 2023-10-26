@@ -1,4 +1,4 @@
-import { screen, render } from 'test-utils';
+import { screen, render, waitFor } from 'test-utils';
 import '@testing-library/jest-dom/extend-expect';
 import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
@@ -61,5 +61,27 @@ describe('Setting view', () => {
     const options = screen.getAllByRole('option');
     expect(screen.queryByText('Advanced')).toBeInTheDocument();
     expect(options.length).toBe(2);
+  });
+
+  test('should not render settings type when rcod is enabled', async () => {
+    const customState = {
+      magicCODEngine: {
+        ...initState.magicCODEngine,
+        configs: {
+          ...initState.magicCODEngine.configs,
+          cod_engine: false,
+          rcod: true,
+        },
+        zones: [],
+      },
+      magic_settings: {
+        ...initState.magic_settings,
+        cod_engine: false,
+        rcodEnabled: true,
+      },
+    };
+    render(<App state={customState} />);
+    const SettingsView = screen.queryByText('Type of setting');
+    await waitFor(() => expect(SettingsView).not.toBeInTheDocument());
   });
 });

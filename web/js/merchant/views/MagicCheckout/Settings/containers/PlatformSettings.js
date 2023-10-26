@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import {
   updatePageView,
   fetchMagicSettings,
+  updateMagicSettings,
 } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import Settings from 'merchant/views/MagicCheckout/MagicSettings';
 import {
@@ -23,6 +24,7 @@ const PlatformSettings = ({
   settings,
   merchantId,
   updatePage,
+  updateSettings,
   fetchSettings,
   displayNotification,
   user,
@@ -115,6 +117,7 @@ const PlatformSettings = ({
               <PlatformSubText
                 {...settings}
                 updatePage={handleUpdatePage}
+                updateSettings={updateSettings}
                 merchantId={merchantId}
                 user={user}
               />
@@ -143,6 +146,7 @@ const mapDispatchToProps = (dispatch) =>
       updatePage: updatePageView,
       fetchSettings: fetchMagicSettings,
       displayNotification: showNotification,
+      updateSettings: updateMagicSettings,
     },
     dispatch,
   );

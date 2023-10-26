@@ -50,3 +50,8 @@ export const HEADING_SUBTEXT = {
   Allowlist:
     'Allow good customers to never be denied the COD option based on their phone and email.',
 };
+
+export const RCOD_HEADING_SUBTEXT = {
+  Blocklist: 'Block high-risk customers from placing COD orders based on their zipcode.',
+  // we don't have allowlist in RCoD
+};

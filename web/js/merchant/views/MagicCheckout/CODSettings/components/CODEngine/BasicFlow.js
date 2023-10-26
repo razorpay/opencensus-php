@@ -1,11 +1,11 @@
 import React from 'react';
 import SlabRateSettings from './SlabRateSettings';
 import ZoneSetting from './ZoneSettings';
-function BasicFlow() {
+function BasicFlow({ isRcod }) {
   return (
     <>
       <SlabRateSettings />
-      <ZoneSetting />
+      {!isRcod ? <ZoneSetting /> : null}
     </>
   );
 }

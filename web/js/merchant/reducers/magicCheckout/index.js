@@ -1,9 +1,11 @@
 import { merge, set } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { RCOD_APP_NAME, MAGIC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 
 export const REFRESH_MAGIC_CHECKOUT_STATUS = 'REFRESH_MAGIC_CHECKOUT_STATUS';
 const FETCH_INTELLIGENCE_CONFIG = 'FETCH_INTELLIGENCE_CONFIG';
 const RESET_INTELLIGENCE_CONFIG = 'RESET_INTELLIGENCE_CONFIG';
+const UPDATE_APP_VIEW = 'TOGGLE_APP_VIEW';
 
 export const fetchMagicCheckoutStatus = (params) => {
   const url = 'merchant/checkout_details';
@@ -47,6 +49,13 @@ export const updateMagicCheckoutStatus = (data, params) => {
   };
 };
 
+export const updateAppView = (view = '') => {
+  return {
+    type: UPDATE_APP_VIEW,
+    view,
+  };
+};
+
 export const resetIntelligenceConfig = () => ({
   type: RESET_INTELLIGENCE_CONFIG,
 });
@@ -59,6 +68,9 @@ const initialState = {
   cod_order_control: null,
   one_cc_prepay_cod_conversion: null,
   one_cc_coupon_engine: null,
+  rcod: false,
+  dashboard_view: MAGIC_APP_NAME,
+  apps_installed: [],
 };
 
 export default function magicCheckoutReducer(state = initialState, action) {
@@ -79,6 +91,15 @@ export default function magicCheckoutReducer(state = initialState, action) {
         one_cc_prepay_cod_conversion: action.payload?.data?.one_cc_prepay_cod_conversion,
         platform: action.payload?.data?.platform,
         one_cc_coupon_engine: action.payload?.data?.one_cc_coupon_engine,
+        dashboard_view:
+          (action.payload.data?.apps_installed || []).length === 1
+            ? action.payload.data.apps_installed[0]
+            : action.payload.data?.dashboard_view || MAGIC_APP_NAME,
+        rcod:
+          (action.payload?.data?.apps_installed || []).includes(RCOD_APP_NAME) &&
+          ((action.payload?.data?.apps_installed || []).length === 1 ||
+            action.payload?.data?.dashboard_view === RCOD_APP_NAME),
+        apps_installed: action.payload?.data?.apps_installed || [],
       });
     case `${FETCH_INTELLIGENCE_CONFIG}::PENDING`:
       return set(state, 'loading', true);
@@ -86,6 +107,11 @@ export default function magicCheckoutReducer(state = initialState, action) {
       return set(state, 'loading', false);
     case RESET_INTELLIGENCE_CONFIG:
       return merge(state, { cod_intelligence: null, cod_order_control: null });
+    case UPDATE_APP_VIEW:
+      return merge(state, {
+        dashboard_view: action.view,
+        rcod: state.apps_installed.includes(RCOD_APP_NAME) && action.view === RCOD_APP_NAME,
+      });
     default:
       return state;
   }

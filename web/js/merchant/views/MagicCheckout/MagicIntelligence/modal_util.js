@@ -35,6 +35,7 @@ export const openBatchUploadModal = (...args) => {
     successText,
     list,
     modalSource,
+    isRCOD,
   ] = args;
 
   openModal({
@@ -52,7 +53,7 @@ export const openBatchUploadModal = (...args) => {
         createBatch={createBatch}
         validateBatch={validateBatch}
         gaEvents={gaEvents}
-        validateModalInfo={validateListModalInfo('1 million', SAMPLE_FILE)}
+        validateModalInfo={validateListModalInfo('1 million', SAMPLE_FILE, isRCOD)}
         maxFileSize={52428800} // 50MB
         successText={successText}
         batchListClass="list-upload"

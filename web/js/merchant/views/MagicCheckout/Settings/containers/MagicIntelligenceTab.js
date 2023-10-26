@@ -26,7 +26,7 @@ const MagicIntelligenceTab = ({
   merchantId,
   isPrepayCODEnabled,
 }) => {
-  const { cod_intelligence, platform, shop_id, manualControlCodOrder } = settings;
+  const { cod_intelligence, platform, shop_id, manualControlCodOrder, rcodEnabled } = settings;
   const [codIntelligence, setCodIntelligence] = useState(cod_intelligence || false);
   const [codOrderControl, setCodOrderControl] = useState(manualControlCodOrder || false);
 
@@ -214,18 +214,22 @@ const MagicIntelligenceTab = ({
             checked={codIntelligence}
             switchMode={() => onToggleClick('codIntelligence', codIntelligence)}
           />
-          <ManualReviewToggle
-            checked={codOrderControl}
-            switchMode={() => onToggleClick('manualReview', codOrderControl)}
-          />
-          <div className="rto-settings-info-container display-flex">
-            <i className="i i-info-outline intelligence-tooltip font-normal" />
-            <p className="info-text">Note: Only one configuration can be enabled at a time</p>
-          </div>
+          {!rcodEnabled && (
+            <>
+              <ManualReviewToggle
+                checked={codOrderControl}
+                switchMode={() => onToggleClick('manualReview', codOrderControl)}
+              />
+              <div className="rto-settings-info-container display-flex">
+                <i className="i i-info-outline intelligence-tooltip font-normal" />
+                <p className="info-text">Note: Only one configuration can be enabled at a time</p>
+              </div>
+            </>
+          )}
         </div>
       </div>
       <div className="magic-intelligence-shiprocket">
-        <MagicIntelligence />
+        <MagicIntelligence isRCOD={rcodEnabled} />
       </div>
     </div>
   );

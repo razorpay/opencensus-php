@@ -9,12 +9,14 @@ const routes = [
     id: 'delivery-tracking',
     component: <ShipRocketSettings providers={Object.keys(SHIPPING_PARTNERS)} magicIntelligence />,
     className: 'shipping-service',
+    onRCOD: true,
   },
   {
     title: 'Blocklist',
     id: 'blocklist',
     component: <BlockList />,
     className: 'list-container',
+    onRCOD: true,
   },
   {
     title: 'Allowlist',

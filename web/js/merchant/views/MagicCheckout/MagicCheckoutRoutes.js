@@ -36,17 +36,20 @@ const routes = [
     path: '/magic/settings',
     condition: (_user) => _user.isMagicSettingsEnabled,
     Component: MagicSettings,
+    onRCOD: true,
   },
   {
     tabName: 'Address',
     path: '/magic/address',
     condition: (_user) => _user.isBulkAddressUploadEnabled,
     Component: BulkAddressUpload,
+    onRCOD: true,
   },
   {
     tabName: 'Delivery Status',
     path: '/magic/delivery-status',
     Component: OrderStatusUpload,
+    onRCOD: true,
   },
   {
     tabName: 'RTO Analytics',
@@ -63,6 +66,7 @@ const routes = [
     tabName: 'COD Orders',
     path: '/magic/cod-orders',
     Component: CODOrdersTab,
+    onRCOD: true,
   },
   {
     tabName: 'COD Order Conversion',

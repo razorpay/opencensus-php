@@ -23,6 +23,7 @@ import {
   MAPPING_TYPES,
   SERVICEABILITY_TYPES,
 } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Configuration/constants';
+import { RCOD_APP_NAME, MAGIC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 
 const Modal = ({
   type,
@@ -34,6 +35,7 @@ const Modal = ({
   mapZonesToCategories,
   closeModal,
   showNotification,
+  isRCOD,
 }) => {
   const MODAL_HEADER = `${item.name} configuration`;
   const isMappingForZones = type === MAPPING_TYPES.ZONE;
@@ -82,7 +84,7 @@ const Modal = ({
     const actionFn = isMappingForZones ? mapFeeRulesToZones : mapZonesToCategories;
     actionFn(payload)
       .then(() => {
-        return fetchConfig(false); // false to prevent setting edit mode and redirecting back to preview view
+        return fetchConfig(false, isRCOD ? RCOD_APP_NAME : MAGIC_APP_NAME); // false to prevent setting edit mode and redirecting back to preview view
       })
       .then(() => {
         showNotification({
@@ -154,6 +156,7 @@ const Modal = ({
 
 const mapStateToProps = (state) => ({
   cod_engine_config: state.magicCODEngine,
+  isRCOD: state.magic_settings.rcodEnabled,
 });
 
 const mapDispatchToProps = (dispatch) =>

@@ -32,6 +32,8 @@ import {
 const gaEvents = setGaTrack('Dashboard - Magic Checkout - BU - bulk_blocklist_upsert');
 const SAMPLE_BLOCKLIST_UPLOAD_FILE =
   'https://cdn.razorpay.com/static/assets/magic-checkout/sample_blocklist_upload.csv';
+const SAMPLE_RCOD_BLOCKLIST_UPLOAD_FILE =
+  'https://cdn.razorpay.com/static/assets/magic-checkout/sample_rcod_blocklist_upload.csv';
 
 const initialState = {
   attributeType: '',
@@ -58,7 +60,8 @@ const BlockList = (props) => {
   const batchType = 'one_cc_cod_eligibility_attribute_blacklist_upsert';
   const successText = 'Blocklist upload initiated';
   const modalSource = 'Blocklist';
-  const list = ['zipcode', 'email', 'phone', 'ip'];
+  // todo - invert control of attributes to parent view?
+  const list = props.isRCOD ? ['zipcode'] : ['zipcode', 'email', 'phone', 'ip'];
 
   const {
     fetchAll,
@@ -69,6 +72,7 @@ const BlockList = (props) => {
     deleteBlocklist,
     uploadBlocklist,
     showNotification,
+    isRCOD,
   } = props;
 
   const skip = useRef(0);
@@ -149,7 +153,7 @@ const BlockList = (props) => {
       resetHandler,
       closeSuccessModal,
       gaEvents,
-      SAMPLE_BLOCKLIST_UPLOAD_FILE,
+      isRCOD ? SAMPLE_RCOD_BLOCKLIST_UPLOAD_FILE : SAMPLE_BLOCKLIST_UPLOAD_FILE,
       validateBlocklistModalInfo,
       ctaText,
       title,
@@ -157,6 +161,7 @@ const BlockList = (props) => {
       successText,
       list,
       modalSource,
+      isRCOD,
     );
   }, [
     createBatch,
@@ -167,6 +172,7 @@ const BlockList = (props) => {
     fetchAll,
     resetHandler,
     closeSuccessModal,
+    isRCOD,
   ]);
 
   const onDeleteClick = useCallback(
@@ -197,7 +203,7 @@ const BlockList = (props) => {
         ctaText="Blocklist"
         onUploadClick={onUploadClick}
         formName="blocklist"
-        list={['zipcode', 'email', 'phone', 'ip']}
+        list={list}
         resetHandler={resetHandler}
         count={count}
         attributeType={attributeType}
@@ -223,7 +229,7 @@ const BlockList = (props) => {
 };
 
 const mapStateToProps = (state) => {
-  return { ...state.magicBlocklist };
+  return { ...state.magicBlocklist, isRCOD: state.magic_settings.rcodEnabled };
 };
 
 const mapDispatchToProps = (dispatch) =>

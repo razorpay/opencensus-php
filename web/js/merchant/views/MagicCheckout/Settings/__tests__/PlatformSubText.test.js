@@ -82,4 +82,40 @@ describe('testing platform subtext component', () => {
       ).toBeInTheDocument();
     });
   });
+
+  test("shouldn't show app toggle if multiple apps are not installed", () => {
+    const customProps = {
+      nested_view_type: 'settings',
+      shop_id: 'test.myshopify.com',
+      platform: 'shopify',
+      user: {
+        isMagicWoocEnabled: true,
+        isShopifyMagicEnabled: true,
+      },
+      apps_installed: ['rcod'],
+      dashboard_view: 'rcod',
+    };
+
+    render(<App {...customProps} />);
+
+    expect(screen.queryByText('Toggle checkout platform')).not.toBeInTheDocument();
+  });
+
+  test('should show app toggle if multiple apps are installed', () => {
+    const customProps = {
+      nested_view_type: 'settings',
+      shop_id: 'test.myshopify.com',
+      platform: 'shopify',
+      user: {
+        isMagicWoocEnabled: true,
+        isShopifyMagicEnabled: true,
+      },
+      apps_installed: ['rcod', 'magic_checkout'],
+      dashboard_view: 'rcod',
+    };
+
+    render(<App {...customProps} />);
+
+    expect(screen.getByText('Toggle checkout platform:')).toBeInTheDocument();
+  });
 });

@@ -35,7 +35,7 @@ function SettingsView({
   clearFeeRules,
 }) {
   const { engine } = configs;
-  const { platform, shop_id } = settings;
+  const { platform, shop_id, rcodEnabled } = settings;
 
   const updateConfigAndRefetchSummary = () => {
     const params = {
@@ -81,6 +81,7 @@ function SettingsView({
       });
       return;
     }
+
     updateEngineConfig({
       engine: value,
       cod_engine_type: COD_ENGINE_TYPES.LOCATION,
@@ -89,23 +90,25 @@ function SettingsView({
 
   return (
     <div className="settings-view" data-testid="settings-view">
-      <div className="cod-setting-item">
-        <SettingsLabel
-          value="Type of setting"
-          required
-          popoverContent={POPOVER_CONTENT.setting_type}
-        />
-        <Input.Select
-          value={engine || {}}
-          size="small"
-          name="engine"
-          options={SETTINGS_OPTIONS}
-          onChange={onSettingTypeChange}
-          className="settings-select"
-        />
-      </div>
-      <BasicFlow />
-      {engine === COD_ENGINES.ADVANCED && <AdvancedFlow />}
+      {!rcodEnabled ? (
+        <div className="cod-setting-item">
+          <SettingsLabel
+            value="Type of setting"
+            required
+            popoverContent={POPOVER_CONTENT.setting_type}
+          />
+          <Input.Select
+            value={engine || {}}
+            size="small"
+            name="engine"
+            options={SETTINGS_OPTIONS}
+            onChange={onSettingTypeChange}
+            className="settings-select"
+          />
+        </div>
+      ) : null}
+      <BasicFlow isRcod={rcodEnabled} />
+      {engine === COD_ENGINES.ADVANCED && !rcodEnabled && <AdvancedFlow />}
     </div>
   );
 }

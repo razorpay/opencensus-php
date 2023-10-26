@@ -1,4 +1,5 @@
 import { merchantFetch } from 'merchant/utils/ajax';
+import { MAGIC_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 
 const REDUCER_NAMESPACE = 'COD_ENGINE';
 
@@ -74,11 +75,11 @@ export const ACTIONS = {
   MAP_CATEGORIES_ERROR: `${REDUCER_NAMESPACE}_MAP_CATEGORIES::ERROR`,
 };
 
-export const fetchConfig = (setEditMode = true) => {
+export const fetchConfig = (setEditMode = true, app_type = MAGIC_APP_NAME) => {
   return {
     type: ACTIONS.FETCH_CONFIG,
     payload: merchantFetch({
-      url: '1cc/shipping/cod/summary',
+      url: `1cc/shipping/cod/summary?app_type=${app_type}`,
     }),
     setEditMode,
   };
@@ -91,11 +92,11 @@ export const updateEngineConfig = (payload) => {
   };
 };
 
-export const deleteFeeRule = (rule_id) => {
+export const deleteFeeRule = (rule_id, app_type = MAGIC_APP_NAME) => {
   return {
     type: ACTIONS.DELETE_FEE_RULE,
     payload: merchantFetch({
-      url: `1cc/shipping/cod/fee_rule/${rule_id}`,
+      url: `1cc/shipping/cod/fee_rule/${rule_id}?app_type=${app_type}`,
       method: 'delete',
     }),
     rule_id,

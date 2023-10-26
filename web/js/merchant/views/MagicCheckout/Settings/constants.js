@@ -21,6 +21,17 @@ const AnalyticsSettings = lazy(() =>
   ),
 );
 
+export const APP_VIEW_RADIO_OPTIONS = [
+  {
+    label: 'Magic Checkout',
+    value: 'magic_checkout',
+  },
+  {
+    label: 'Shopify One-page Checkout(MagicX)',
+    value: 'rcod',
+  },
+];
+
 export const PLATFORMS = {
   SHOPIFY: 'shopify',
   WOOCOMMERCE: 'woocommerce',
@@ -44,6 +55,7 @@ export const TABS = {
       label: 'COD Settings',
       Component: CODSettingsTab,
       condition: (_user) => _user.isMagicCODEngineEnabled,
+      onRCOD: true,
     },
     {
       className: 'shipping-settings',
@@ -60,6 +72,7 @@ export const TABS = {
       label: 'RTO Settings',
       Component: MagicIntelligenceTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
     },
     {
       className: 'automation-settings',
@@ -213,7 +226,7 @@ export const SWITCH_TEXTS = {
     codIntelligence: {
       header: 'Disable COD Intelligence?',
       desc: 'Realtime review of COD orders will be disabled. All customers will see the COD option increasing the risk of RTO.',
-      secondaryCtaLabel: 'cancel',
+      secondaryCtaLabel: 'Cancel',
       primaryCtaLabel: 'Disable COD Intelligence',
     },
     manualReview: {
@@ -249,6 +262,9 @@ Shopify/WooC store.`;
 
 export const MAGIC_SHIPPING_DESCRIPTION = `Enabling Magic Shipping will bypass all shipping configurations from any plugins on your E-commerce platform and follow configurations added below.`;
 export const SHIPPING_SETTINGS_INFO = `Choose where you ship and how much you charge for shipping at checkout.`;
+
+export const RCOD_SETTINGS_INFO =
+  'Use this setting to enable COD on your store and configure the COD fees.';
 
 export const UPDATE_WOOC_PLUGIN_MSG =
   'Note: To use advance COD settings, please update your Razorpay WooCommerce plugin to version 4.5.6 or above.';

@@ -15,14 +15,14 @@ const SlabsHeader = ({ label, className }) => (
   </div>
 );
 
-function RateSlabs({ slabs, updateSlabs, configs, editMode }) {
-  const hasRates = configs.rate_slabs || configs.engine === COD_ENGINES.ADVANCED;
+function RateSlabs({ slabs, updateSlabs, configs, editMode, isRCOD }) {
+  const hasRates = configs.rate_slabs || (configs.engine === COD_ENGINES.ADVANCED && !isRCOD);
   const addSlabButton = useRef(null);
   const addMoreSlabs = useCallback(() => {
     const { lte } = slabs[slabs.length - 1];
     if (lte > 0) {
       const newSlabs = [...slabs];
-      newSlabs.push({
+      const addSlab = {
         gte: parseInt(lte, 10) + 1,
         lte: '',
         fee: 0,
@@ -31,10 +31,16 @@ function RateSlabs({ slabs, updateSlabs, configs, editMode }) {
           gte: '',
           fee: '',
         },
-      });
+      };
+      if (isRCOD) {
+        addSlab.name = '';
+        addSlab.error.name = '';
+      }
+      newSlabs.push(addSlab);
+
       updateSlabs(newSlabs);
     }
-  }, [slabs, updateSlabs]);
+  }, [slabs, updateSlabs, isRCOD]);
   useEffect(() => {
     addSlabButton?.current?.scrollIntoView({ behavior: 'smooth' });
   }, [slabs]);
@@ -55,7 +61,9 @@ function RateSlabs({ slabs, updateSlabs, configs, editMode }) {
     } = e.target;
     const parsedArrInd = parseInt(arrInd, 10);
     const nextInd = parsedArrInd + 1;
-    value = isNaN(parseInt(value, 10)) ? '' : parseInt(value, 10);
+    if (key !== 'name') {
+      value = isNaN(parseInt(value, 10)) ? '' : parseInt(value, 10);
+    }
     const newSlabs = [...slabs];
     newSlabs[arrInd][key] = value;
     if (value < 0) {
@@ -63,23 +71,37 @@ function RateSlabs({ slabs, updateSlabs, configs, editMode }) {
       updateSlabs(newSlabs);
       return;
     }
-    // no need for validation of range & lte,gte for fee input
+
+    if (key === 'name') {
+      value = value?.trim();
+      if (!value) {
+        newSlabs[arrInd].error[key] = 'Required';
+        updateSlabs(newSlabs);
+        return;
+      }
+      // no need for validation of range & lte,gte for name input
+      saveSlabs(newSlabs, arrInd, key);
+      return;
+    }
+
+    // no need for validation of range & lte,gte for fee
     if (key === 'fee') {
       saveSlabs(newSlabs, arrInd, key);
       return;
     }
+
     // check if slab in same range already exists
     const inRangeSlab = newSlabs.find(
       (s, idx) => parsedArrInd !== idx && value >= s.gte && value <= s.lte,
     );
-    if (inRangeSlab && isBasicCODEngine(configs.engine)) {
+    if (inRangeSlab && isBasicCODEngine(configs.engine) && !isRCOD) {
       newSlabs[arrInd].error[key] = 'Slab in range exists';
       updateSlabs(newSlabs);
       return;
     }
     if (key === 'lte') {
       // if next slab present (editing previous slab) - 0 to 100, 101 to 200, if slab with 100 is set as 100 then update next slab lower range to 102
-      if (newSlabs[nextInd]) {
+      if (newSlabs[nextInd] && !isRCOD) {
         if (newSlabs[nextInd].gte === value) {
           newSlabs[nextInd].gte += 1;
           if (value + 1 >= newSlabs[nextInd].lte) {
@@ -111,18 +133,23 @@ function RateSlabs({ slabs, updateSlabs, configs, editMode }) {
 
   useEffect(() => {
     if (!slabs || slabs.length === 0) {
-      updateSlabs([
-        {
-          gte: 0,
-          lte: 0,
-          fee: 0,
-          error: {
-            lte: 'Invalid value',
-            gte: '',
-            fee: '',
-          },
+      const initialVal = {
+        gte: 0,
+        lte: 0,
+        fee: 0,
+        error: {
+          lte: 'Invalid value',
+          gte: '',
+          fee: '',
         },
-      ]);
+      };
+
+      if (isRCOD) {
+        initialVal.name = '';
+        initialVal.error.name = '';
+      }
+
+      updateSlabs([initialVal]);
     }
   }, []);
 
@@ -131,6 +158,20 @@ function RateSlabs({ slabs, updateSlabs, configs, editMode }) {
       {slabs.map((item, index) => {
         return (
           <div key={index} className="display-flex slabs-form-wrapper">
+            {isRCOD ? (
+              <div className="slabs-input-container">
+                <SlabsHeader label="COD Method Name" />
+                <Input
+                  className="slabs-input"
+                  type="text"
+                  value={item.name || ''}
+                  data-key="name"
+                  data-arr-ind={index}
+                  onChange={handleSlabValueChange}
+                  propagatedError={item.error.name}
+                />
+              </div>
+            ) : null}
             <div className="slabs-input-container">
               <SlabsHeader label="Min Order Value" />
               <Input
@@ -187,5 +228,6 @@ function RateSlabs({ slabs, updateSlabs, configs, editMode }) {
 }
 const mapStateToProps = (state) => ({
   configs: state.magicCODEngine.configs,
+  isRCOD: state.magic_settings.rcodEnabled,
 });
 export default connect(mapStateToProps, null)(RateSlabs);
