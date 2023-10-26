@@ -273,6 +273,7 @@ class Service extends Base\Service
 
                 if (empty($decodedResponse['tax_details']) === false && $isTaxExpEnabled === true) {
                     $taxDetails = $decodedResponse['tax_details'];
+                    $taxDetails = $this->getTaxDetailsFromDraftOrder($order, $orderMeta, $address, $taxDetails);
                     unset($decodedResponse['tax_details']);
                 }
 
@@ -1303,4 +1304,77 @@ class Service extends Base\Service
             empty($evaluationResult['experiment_enabled']) === false &&
             $evaluationResult['experiment_enabled'] === true);
     }
+
+    public function getTaxDetailsFromDraftOrder($order, $orderMeta, $address, $taxDetails)
+    {
+        $promotions = $orderMeta->getValue()['promotions'] ?? [];
+        $promoPrefix = "offer_";
+
+        // Check if any offer-related promotions are applied
+        $offerEnginePromoApplied = array_filter($promotions, function ($obj) use ($promoPrefix) {
+            return str_starts_with($obj['reference_id'], $promoPrefix);
+        });
+
+        if (empty($offerEnginePromoApplied)) {
+            return $taxDetails;
+        }
+
+        try {
+            $orderMeta = $this->addCustomerDetailsToOrder($orderMeta, $address);
+
+            // Calculate the draft order
+            $calculateDraftOrder = (new Shopify\Core())->calculateDraftOrder($order, $orderMeta);
+
+            if (!empty($calculateDraftOrder) && !empty($calculateDraftOrder['tax_lines'])) {
+                $taxDetails['total_tax'] = $calculateDraftOrder['total_tax'];
+            }
+
+            return $taxDetails;
+        } catch (\Exception $ex) {
+            $this->trace->error(TraceCode::MAGIC_TAXES_EVALUATE_THROUGH_DRAFT_ORDER_ERROR,
+                [
+                    'code' => $ex->getCode(),
+                    'message' => $ex->getMessage(),
+                ]
+            );
+            return $taxDetails;
+        }
+    }
+
+    protected function addCustomerDetailsToOrder($orderMeta, $address)
+    {
+        $shippingFee = $address[Fields::SHIPPING_FEE] ?? 0;
+        $codFee = $address[Fields::COD_FEE] ?? 0;
+        $value = $orderMeta->getValue();
+        $defaultValue = 'default';
+
+        /*we are adding shipping address in customer details for fetching draft order to use taxes
+         since taxes rely only on state_code, state,country and zip, rest of the params are set to "deafult"
+         and these necessary params we will get from address.
+        */
+        $shippingAddress = [
+             'name' => $defaultValue,
+             'type' => 'shipping_address',
+             'line1' => $defaultValue,
+             'line2' => $defaultValue,
+             'zipcode' => $address['zipcode'],
+             'city'   => $address['city'],
+             'state' => $address['state'],
+             'country' => $address['country'],
+             'tag'    => $defaultValue,
+             'landmark' => $defaultValue,
+        ];
+
+        $value[Fields::SHIPPING_FEE] = $shippingFee;
+        $value[Fields::COD_FEE] = $codFee;
+
+        $value[Fields::CUSTOMER_DETAILS] = [
+            Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS => $shippingAddress
+        ];
+
+        $orderMeta->setValue($value);
+        
+        return $orderMeta;
+    }
 }
+
