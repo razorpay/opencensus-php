@@ -554,6 +554,7 @@ trait Authorize
         if($currentTerminal != null) {
             $requestData['terminal']['id'] = $currentTerminal['id'];
             $requestData['terminal']['gateway_merchant_id'] = $currentTerminal['gateway_merchant_id'];
+            $requestData['terminal']['gateway'] = $currentTerminal['gateway'];
         }
 
         if(isset($payment['merchant_id']))
