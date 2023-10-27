@@ -8055,7 +8055,7 @@ trait Authorize
      * @param Payment\Entity $payment
      * @param array          $callbackData
      */
-    protected function migrateTokenIfApplicable($payment, $callbackData): void
+    public function migrateTokenIfApplicable($payment, &$callbackData): void
     {
         $startTime = microtime(true);
 
@@ -8070,6 +8070,15 @@ trait Authorize
             {
                 $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
                     'method'     => $payment->isMethodCardOrEmi(),
+                    'token'      => $token->getId()
+                ]);
+                return;
+            }
+
+            if ($token->card->isRzpSavedCard() === false)
+            {
+                $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
+                    'reason'     => "Token is already migrated",
                     'token'      => $token->getId()
                 ]);
                 return;
@@ -8149,16 +8158,15 @@ trait Authorize
                 return;
             }
 
-            [$authReferenceNumber, $isTokenizationAllowed] = $this->getAuthenticationReferenceNumber($callbackData);
+            $authReferenceNumber = $this->getAuthenticationReferenceNumber($payment);
 
             if ($token->card->isRupay() === true)
             {
-                if ($isTokenizationAllowed === false or $authReferenceNumber === '')
+                if ($authReferenceNumber === '')
                 {
                     $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
                         'authReferenceNumber'  => $authReferenceNumber,
-                        'tokenizedAllowed'     => $isTokenizationAllowed,
-                        'token'      => $token->getId()
+                        'token'                => $token->getId()
                     ]);
 
                     $errorCode = ErrorCode::BAD_REQUEST_CARD_NOT_ELIGIBLE_FOR_TOKENISATION;
@@ -8225,7 +8233,9 @@ trait Authorize
                 'rupay_recurring'                 => $rupay_recurring
             ];
 
-            if ($payment['recurring'] === false && Environment::isEnvironmentQA($this->app['env']) === false){
+            // For Rupay we have to do token provison in sync so we don;t have to dispatch it sqs , $callbackData['sync'] paramter is being set from rearch input  and migrateTokenPostAuthenticationIfApplicable (non rearch)
+
+            if ($payment['recurring'] === false && Environment::isEnvironmentQA($this->app['env']) === false && $this->canRunRupayTokenMigrationInSync($token,$callbackData)){
 
                 $asyncTokenisationJobId = "paymentmigrate";
 
@@ -8241,11 +8251,18 @@ trait Authorize
                 return;
             }
 
-            $core->migrateToTokenizedCard($token, $cardInput, $payment);
+            [$tokenPanVaultToken, $tokenNumber , $cryptogramValue] = $core->migrateToTokenizedCard($token, $cardInput, $payment);
+
+            $callbackData['token_pan_vault_token'] = $tokenPanVaultToken;
+
+            $callbackData['token_number']          = $tokenNumber;
+
+            $callbackData['cryptogram_value']     = $cryptogramValue;
 
             (new Token\Metric())->pushMigrateMetrics($token, Metric::SUCCESS);
 
             (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::MIGRATE);
+
         }
         catch (\Throwable $e)
         {
@@ -8259,28 +8276,13 @@ trait Authorize
         }
     }
 
-    protected function getAuthenticationReferenceNumber($callbackData)
+
+// authentication reference number is need in token provsion call which we store in card's reference 4 during authentication
+    protected function getAuthenticationReferenceNumber($payment)
     {
-        $isTokenizationAllowed = false;
+        $authReferenceNumber =  $payment->card->getReference4();
 
-        $authReferenceNumber = '';
-
-        if (isset($callbackData['additional_products_supported']) === true)
-        {
-            $additionalProductsSupportedArr = explode(",", $callbackData);
-
-            if (in_array("05", $additionalProductsSupportedArr) === true)
-            {
-                $isTokenizationAllowed = true;
-            }
-        }
-
-        if (isset($callbackData['authentication_reference_number']) === true)
-        {
-            $authReferenceNumber = $callbackData['authentication_reference_number'];
-        }
-
-        return [$isTokenizationAllowed, $authReferenceNumber];
+        return $authReferenceNumber;
     }
 
     protected function postPaymentAuthenticateProcessing(Payment\Entity $payment): array
@@ -9623,6 +9625,10 @@ trait Authorize
         return $this->callGatewayFunction(Action::DEBIT, $gatewayInput);
     }
 
+    protected function canRunRupayTokenMigrationInSync($token,$callbackData)
+    {
+        return !($token->card->isRupay() === true && isset($callbackData['sync']) && $callbackData['sync'] === true);
+    }
     protected function callGatewayOtpGenerate(array $data, Payment\Entity $payment, $otpResend = false)
     {
         try
@@ -13119,6 +13125,7 @@ trait Authorize
      * @param  Payment\Entity  $payment
      * @return void
      */
+
     protected function createGlobalTokenIfApplicable(Payment\Entity $payment): void
     {
         try

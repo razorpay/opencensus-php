@@ -512,6 +512,7 @@ trait Callback
                 }
             }
 
+            $this->migrateTokenPostAuthenticationIfApplicable($payment,$token,$data, $input);
 
 
             // if razorx was enabled  and stored in cache during create payment call  then we will fetch alt id and process the payment using alt id for  rupay
@@ -679,6 +680,12 @@ trait Callback
         }
 
         return false;
+    }
+
+
+  private function isTokenizedPaymentsParameterAvailable($callbackData)
+    {
+        return !empty($callbackData['token_number']) && !empty($callbackData['cryptogram_value']) && !empty($callbackData['token_pan_vault_token']);
     }
 
     // headless exception handling
@@ -1195,6 +1202,90 @@ trait Callback
 
                 break;
         }
+    }
+
+    /*
+     * for rupay (paysecure) we have to do token provision after authentication and  use token details for authorization
+     */
+
+    protected function  migrateTokenPostAuthenticationIfApplicable(Payment\Entity $payment,$token , &$callbackData , &$input )
+    {
+            try {
+                if ($payment->isMethodCardOrEmi() == true && $payment->getSave() === true  && $payment->card->isRuPay() === true and $payment->getGateway() === Payment\Gateway::PAYSECURE  ) {
+
+                    $variantFlag = $this->app['razorx']->getTreatment($payment->getMerchantId(),
+                        RazorxTreatment::ALLOW_TOKEN_PROVISION_AFTER_AUTHENTICATION_FOR_RUPAY,
+                        $this->app['rzp.mode']);
+
+                    $this->trace->info(
+                        TraceCode::TOKEN_PROVISION_RESEQUENCING_RAZORX,
+                        [
+                            'variant'       => $variantFlag,
+                            'payment_id'    => $payment->getId()
+                        ]);
+
+                  if (strtolower($variantFlag) === 'on')
+                  {
+                    $this->storeSavedCardConsentIfPresent($payment);
+
+                    // For rupay we will be doing token provision/ migration in sync
+                    $callbackData['sync'] = true;
+
+                    $this->migrateTokenIfApplicable($payment, $callbackData);
+
+                    $token->reload()->card->reload();
+
+                    if ( $token->card->isNetworkTokenisedCard() === false || $this->isTokenizedPaymentsParameterAvailable($callbackData) === false)
+                        {
+                           throw new Exception\GatewayErrorException(
+                        ErrorCode::API_CUSTOMER_TOKEN_CREATION_ERROR,null,null,
+                        [
+                            'method'     =>$payment->getMethod(),
+                            'payment_id' => $payment->getId(),
+                            'token_id'   => $token->getId()
+                        ]);
+                        }
+
+
+                    $card = $payment->card;
+                    $card->setTokenExpiryMonth($token->card->getTokenExpiryMonth());
+                    $card->setTokenExpiryYear($token->card->getTokenExpiryYear());
+                    $card->setTokenIin(substr($callbackData['token_number'],0,9));
+                    $card->setVaultToken($callbackData['token_pan_vault_token']);
+                    $card->setTrivia('1');
+                    $this->repo->saveOrFail($card);
+                    $this->payment->reload();
+
+                    $card = array_merge(
+                        $card->toArray(),
+                        [
+                            'number'                            => $callbackData[Card\Entity::TOKEN_NUMBER],
+                            Card\Entity::CRYPTOGRAM_VALUE       => $callbackData[Card\Entity::CRYPTOGRAM_VALUE] ?? null,
+                            Card\Entity::TOKENISED              => true,
+                            Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
+
+                        ]);
+
+                    $input['card'] = $card;
+
+                  }
+                }
+        }
+         catch (Exception\BaseException $e)
+            {
+                $traceData = [
+                    'payment_id'   => $payment->getId(),
+                    'gateway'      => $payment->getGateway(),
+                ];
+
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::PAYSECURE_TOKEN_PROVISION_ERROR,
+                    $traceData);
+
+                    throw $e;
+            }
     }
 
     protected function addDiscountToPaymentIfApplicable(Payment\Entity $payment, $callbackData)

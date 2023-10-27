@@ -668,6 +668,9 @@ final class RazorxTreatment
     // This is to show the feedback collection popup for npci
     public const ALLOW_NPCI_FEEDBACK_POPUP_EMANDATE_FAILURE = "allow_npci_feedback_popup_emandate_failure";
 
+
+    public const ALLOW_TOKEN_PROVISION_AFTER_AUTHENTICATION_FOR_RUPAY = 'allow_token_provision_after_authentication_for_rupay';
+
     // This is to get the query data via WDA for emandate
     public const FETCH_PENDING_EMANDATE_REGISTRATION_FROM_WDA = "fetch_pending_emandate_registration_from_wda";
 

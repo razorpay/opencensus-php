@@ -2207,6 +2207,12 @@ class Core extends Base\Core
         $this->repo->saveOrFail($card);
 
         $this->repo->saveOrFail($token);
+
+        $tokenPanVaultToken = $serviceProviderTokens[0]['provider_data']['token_pan_vault_token'] ?? "";
+        $tokenPan           = $serviceProviderTokens[0]['provider_data']['token_number'] ?? "";
+        $cryptogramValue    = $serviceProviderTokens[0]['provider_data']['cryptogram_value'] ?? "";
+
+        return [$tokenPanVaultToken, $tokenPan, $cryptogramValue];
     }
 
     public function getIIN($input)

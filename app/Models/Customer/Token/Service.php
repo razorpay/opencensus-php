@@ -2162,6 +2162,49 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($token);
 
+
+        $isSync =  isset($input['additional_data']['sync']) && $input['additional_data']['sync'] === true;
+
+        if ( $isSync === true and $payment->card->isRuPay() === true and $payment->getGateway() === Payment\Gateway::PAYSECURE and $payment->isRecurring() === false ) {
+
+            $this->trace->info(
+                TraceCode::TOKEN_PROVISION_RESEQUENCING_RAZORX,
+                [
+                    'sync'          => $input['additional_data'],
+                    'payment_id'    => $payment->getId(),
+                    'rearch'        => true
+                ]);
+
+             // utilizing callbackData for input i.e sync , auth ref
+              $callbackData = null;
+
+              $callbackData['authentication_reference_number'] =  $payment->card->getReference4();
+
+
+              $callbackData['sync'] = $input['additional_data']['sync'] ?? "";
+
+              $payment->localToken()->associate($token);
+
+              (new Payment\Processor\Processor($token->merchant))->migrateTokenIfApplicable($payment, $callbackData);
+
+              $createTokenResponse = $token->toArrayPublic();
+
+              $createTokenResponse['vault_token']           = $token->card->getVaultToken();
+
+              $createTokenResponse['token_pan_vault_token'] = $callbackData['token_pan_vault_token'];
+
+              $createTokenResponse['token_number']          = $callbackData['token_number'];
+
+              $createTokenResponse['cryptogram_value']      = $callbackData['cryptogram_value'];
+
+              $createTokenResponse['token_expiry_month']     = $token->card->getTokenExpiryMonth();
+
+              $createTokenResponse['token_expiry_year']      = $token->card->getTokenExpiryYear();
+
+               return $createTokenResponse;
+
+        }
+
         $asyncTokenisationJobId = "paymentmigrate";
 
         $this->trace->info(TraceCode::TRACE_TOKEN_DISPATCH_LOG, [
