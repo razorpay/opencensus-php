@@ -88,6 +88,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BVS_VERIFICATION_ERROR                                = 'BVS_VERIFICATION_ERROR';
     const TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE             = 'TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE';
     const HTTP_REQUEST_RESPONSE_SIZE                            = 'HTTP_REQUEST_RESPONSE_SIZE';
+    const MERCHANT_HTTP_REQUEST_TOTAL                           = 'MERCHANT_HTTP_REQUEST_TOTAL';
+    const FAILED_TO_FETCH_MERCHANTS_FROM_CACHE                  = 'FAILED_TO_FETCH_MERCHANTS_FROM_CACHE';
 
     const SPLITZ_EXPERIMENT_RESULT                              = "SPLITZ_EXPERIMENT_RESULT";
 

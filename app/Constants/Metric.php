@@ -68,6 +68,10 @@ class Metric
     const MERCHANT_RELATED_ENTITIES_WRITE_TRAFFIC_TOTAL = 'merchant_related_entities_write_traffic_total';
     const RAVEN_REQUEST_FAILED                  = 'raven_request_failed';
 
+    //Merchant level metric
+    const MERCHANT_HTTP_REQUESTS_TOTAL                   = 'merchant_http_requests_total';
+    const MERCHANT_HTTP_REQUEST_LATENCY_MILLISECONDS     = 'merchant_http_request_latency_milliseconds.histogram';
+
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
     const HTTP_REQUEST_DURATION_MILLISECONDS    = 'http_request_duration_milliseconds.histogram';
@@ -127,6 +131,7 @@ class Metric
     const LABEL_ERROR_CODE                      = 'error_code';
     const LABEL_ROUTE_NAME                      = 'route_name';
     const LABEL_BANK_CODE                       = 'bank_code';
+    const LABEL_MERCHANT_ID                     = 'merchant_id';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';

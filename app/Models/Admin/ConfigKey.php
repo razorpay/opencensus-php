@@ -418,6 +418,8 @@ class ConfigKey
     // DCS READ ENABLED
     const DCS_READ_WHITELISTED_FEATURES           = self::PREFIX . 'dcs_reads_whitelisted_features';
 
+    const METRIC_MERCHANTS_LIST                   = self::PREFIX . 'metric_merchants_list';
+
     const UNEXPECTED_PAYMENT_DELAY_REFUND           = self::PREFIX . 'unexpected_payment_delay_refund';
 
     const DIRECT_TRANSFER_LIMITS                    = self::PREFIX . 'direct_transfer_limits';
@@ -600,6 +602,7 @@ class ConfigKey
         self::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA,
         self::RISK_FOH_TEAM_EMAIL_IDS,
         self::DCS_READ_WHITELISTED_FEATURES,
+        self::METRIC_MERCHANTS_LIST,
         self::UNEXPECTED_PAYMENT_DELAY_REFUND,
         self::DIRECT_TRANSFER_LIMITS,
         self::RX_CA_MISSING_STATEMENT_DETECTION_RBL,
