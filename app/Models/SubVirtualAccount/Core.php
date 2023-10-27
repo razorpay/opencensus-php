@@ -128,8 +128,11 @@ class Core extends Base\Core
             $subVirtualAccounts = $this->repo->sub_virtual_account->fetch($input);
 
             /** @var Entity $subVirtualAccount */
-            foreach ($subVirtualAccounts as $subVirtualAccount) {
+            foreach ($subVirtualAccounts as $subVirtualAccount)
+            {
                 $routeName = $this->app['api.route']->getCurrentRouteName();
+
+                $subMerchant = $subVirtualAccount->subMerchant;
 
                 /**
                  * Balance fetch for sub_account happens in following cases
@@ -138,15 +141,17 @@ class Core extends Base\Core
                  * This method is used by sub_virtual_account_list_admin route as well.
                  */
                 if (($subVirtualAccount->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT) or
-                    ($routeName === 'sub_virtual_account_list')) {
-                    $subMerchant = $subVirtualAccount->subMerchant;
-
+                    ($routeName === 'sub_virtual_account_list'))
+                {
                     $subAccountBalance = $subMerchant->sharedBankingBalance;
 
                     $currentAvailableBalance = $subAccountBalance->getBalanceWithLockedBalanceFromLedger();
 
                     $subVirtualAccount->setClosingBalance($currentAvailableBalance);
+                }
 
+                if ($subVirtualAccount->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT)
+                {
                     $subVirtualAccount->setName($subMerchant->getDisplayNameElseName());
                 }
             }

@@ -842,7 +842,7 @@ return [
                         'sub_account_number'    => '2323230041626906',
                         'sub_account_type'      => 'default',
                         'sub_account_balance'   => 1000,
-                        'name'                  => 'Sub Merchant 1',
+                        'name'                  => 'Sub VA 1',
                     ],
                     [
                         'entity'                => 'sub_virtual_account',
@@ -851,7 +851,7 @@ return [
                         'sub_account_number'    => '2323230041626908',
                         'sub_account_type'      => 'default',
                         'sub_account_balance'   => 2020,
-                        'name'                  => 'Fin Lease'
+                        'name'                  => 'Sub VA 2'
                     ],
                 ],
             ],

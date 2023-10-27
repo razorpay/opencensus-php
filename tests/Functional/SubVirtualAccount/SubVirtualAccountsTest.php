@@ -836,7 +836,7 @@ class SubVirtualAccountsTest extends TestCase
             'sub_account_type'      => 'default',
             'sub_merchant_id'       => '100abc000abc01',
             'master_merchant_id'    => '10000000000000',
-            'name'                  => 'Sub Merchant 1',
+            'name'                  => 'Sub VA 1',
             'active'                => true,
             'created_at'            => Carbon::now()->subSeconds(30)->getTimestamp(),
         ]);
@@ -862,7 +862,7 @@ class SubVirtualAccountsTest extends TestCase
             'sub_account_type'      => 'default',
             'sub_merchant_id'       => '100xyz000xyz01',
             'master_merchant_id'    => '10000000000000',
-            'name'                  => 'Sub Merchant 2',
+            'name'                  => 'Sub VA 2',
             'active'                => false,
             'created_at'            => Carbon::now()->subSeconds(60)->getTimestamp(),
         ]);
