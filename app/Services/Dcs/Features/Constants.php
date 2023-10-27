@@ -117,6 +117,7 @@ class Constants
     const CloseQrOnDemand    = 'close_api_enabled';
     const CorporateCardsIsAllowedToApply = 'corporatecards:is_allowed_to_apply';
     const CashAdvanceIsAllowedToApply = 'cashadvance:is_allowed_to_apply';
+    const CashAdvanceEmiIsAllowedToApply = 'cashadvance:loc_emi';
     const ShowCustomDccDisclosures = 'show_custom_dcc_disclosures';
     const DynamicCurrencyConversionCybs = 'dynamic_currency_conversion_cybs';
     const OneCCAutomaticAccountCreation = 'one_cc_automatic_account_creation';
@@ -369,6 +370,7 @@ class Constants
         self::CloseQrOnDemand => 'rzp/pg/merchant/upi/qr/QrCode',
         self::CorporateCardsIsAllowedToApply => 'rzp/capital/merchant/onboarding/corporatecards/EligibilityFeatures',
         self::CashAdvanceIsAllowedToApply => 'rzp/capital/merchant/onboarding/cashadvance/EligibilityFeatures',
+        self::CashAdvanceEmiIsAllowedToApply => 'rzp/capital/merchant/onboarding/cashadvance/EligibilityFeatures',
         self::OneCCAutomaticAccountCreation => 'rzp/pg/merchant/checkout/magic/Configuration',
         self::ValidateVpa => 'rzp/pg/merchant/upi/collect/Vpa',
         self::UseSavedVpa => 'rzp/pg/merchant/upi/collect/Vpa',
@@ -585,6 +587,7 @@ class Constants
         APIFeaturesConstants::CLOSE_QR_ON_DEMAND                            => self::CloseQrOnDemand,
         APIFeaturesConstants::CAPITAL_CARDS_ELIGIBLE                        => self::CorporateCardsIsAllowedToApply,
         APIFeaturesConstants::LOC                                           => self::CashAdvanceIsAllowedToApply,
+        APIFeaturesConstants::LOC_EMI                                       => self::CashAdvanceEmiIsAllowedToApply,
         APIFeaturesConstants::SHOW_CUSTOM_DCC_DISCLOSURES                   => self::ShowCustomDccDisclosures,
         APIFeaturesConstants::DYNAMIC_CURRENCY_CONVERSION_CYBS              => self::DynamicCurrencyConversionCybs,
         APIFeaturesConstants::ONE_CC_SHOPIFY_ACC_CREATE                     => self::OneCCAutomaticAccountCreation,

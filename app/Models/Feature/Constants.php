@@ -571,6 +571,11 @@ class Constants
     const LOC = 'loc';
 
     /**
+     * Gives access to apply for cash advance EMI
+     */
+    const LOC_EMI = 'loc_emi';
+
+    /**
      * Gives access to apply for capital card
      */
     const CAPITAL_CARDS_ELIGIBLE = 'capital_cards_eligible';
@@ -2278,6 +2283,7 @@ class Constants
         self::REDIRECT_TO_EARLYSALARY         => true,
         self::LOAN                            => true,
         self::LOC                             => true,
+        self::LOC_EMI                         => true,
         self::LOS                             => true,
         self::CAPITAL_CARDS_ELIGIBLE          => true,
         self::CARDS_TRANSACTION_LIMIT_1       => true,
@@ -3754,6 +3760,11 @@ class Constants
         DcsConstants::LRSImportFeeBreakup => [
             'feature'       => DcsConstants::LRSImportFeeBreakup,
             'display_name'  => 'Feature to show fee breakup for LRS transactions',
+            'documentation' => '',
+        ],
+        self::LOC_EMI => [
+            'feature'       => self::LOC_EMI,
+            'display_name'  => 'Loc Emi',
             'documentation' => '',
         ],
     ];
