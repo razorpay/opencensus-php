@@ -49,6 +49,7 @@ use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Service as DetailService;
 use RZP\Models\Merchant\Consent\Core as ConsentCore;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
+use RZP\Models\Merchant\Service as MerchantService;
 
 class Service extends Base\Service
 {
@@ -266,7 +267,7 @@ class Service extends Base\Service
         return $publicTncDetails;
     }
 
-    public function isWebsiteSectionsApplicable(MerchantEntity $merchant, $admin = false, bool $isPublicView = false)
+    public function isWebsiteSectionsApplicable(MerchantEntity $merchant, $admin = false, bool $isPublicView = false, bool $checkForNoCode = false)
     {
 
         try
@@ -358,6 +359,11 @@ class Service extends Base\Service
                     return true;
                 }
                 if (empty($businessDetail->getPlaystoreUrl()) === false)
+                {
+                    return true;
+                }
+
+                if ($checkForNoCode === true and (new MerchantService())->getWebsitePublishedUrl($merchant->getId()) != null)
                 {
                     return true;
                 }
@@ -2330,7 +2336,7 @@ class Service extends Base\Service
         // $admin is set as false because this url is accessed by the merchant hence $admin is passed as false
         // $publicView is being passed as true, as this is a public page we want to skip the check of regular merchant and razorpay org
 
-        if (empty($websiteDetail) === true or $this->isWebsiteSectionsApplicable($merchant, false, true) === false)
+        if (empty($websiteDetail) === true or $this->isWebsiteSectionsApplicable($merchant, false, true, true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }
@@ -2375,7 +2381,7 @@ class Service extends Base\Service
 
         $links = [];
 
-        if ($this->isWebsiteSectionsApplicable($merchant, false, true) === false)
+        if ($this->isWebsiteSectionsApplicable($merchant, false, true, true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PaymentLink;
 
+use App;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
@@ -44,6 +45,10 @@ class ViewSerializer extends Base\Core
      */
     protected $merchant;
 
+    protected $app;
+
+    protected $host;
+
     const RAZORX_PERFORMANCE_OPTIMISED = 'pp_optimised_web_vitals';
 
     const RAZORX_CROSSORIGIN_ENABLED = 'pp_crossorigin_enabled';
@@ -52,8 +57,13 @@ class ViewSerializer extends Base\Core
     {
         parent::__construct();
 
+        $app = App::getFacadeRoot();
+
+        $this->app = $app;
+
         $this->paymentLink = $paymentLink;
         $this->merchant    = $paymentLink->merchant;
+        $this->host = $this->app['config']->get('app.merchant_policies_subdomain');
     }
 
     /**
@@ -208,6 +218,8 @@ class ViewSerializer extends Base\Core
         $merchantTncLink = $merchantTncDetails === null ? null :
                         (new Website\Core)->getMerchantTncLink($this->merchant, $merchantTncDetails['id']);
 
+        $policyUrl = (new Merchant\Service())->getWebsitePublishedUrl($this->merchant->getId());
+
         return [
             'id'               => $this->merchant->getId(),
             'name'             => $this->merchant->getBillingLabel(),
@@ -224,6 +236,7 @@ class ViewSerializer extends Base\Core
             'support_mobile'   => $supportDetails['support_mobile'],
             'tnc_link'         => $merchantTncLink,
             'merchant_country_code' => $this->merchant->getCountry(),
+            'policy_url'        => $policyUrl,
         ];
     }
 

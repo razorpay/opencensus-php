@@ -45,6 +45,7 @@ use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Models\User\Core as UserCore;
 use RZP\Models\User\Service as UserService;
+use RZP\Models\Merchant\Website;
 use RZP\Services\Reporting;
 use Throwable;
 use Carbon\Carbon;
@@ -275,9 +276,17 @@ class Service extends Base\Service
 
     protected $pgosProxyController;
 
+    protected $host;
+
+    protected $app;
+
     public function __construct()
     {
         parent::__construct();
+
+        $app = App::getFacadeRoot();
+
+        $this->app = $app;
 
         $this->mutex = $this->app['api.mutex'];
 
@@ -286,6 +295,8 @@ class Service extends Base\Service
         $this->partnerService = new PartnerService();
 
         $this->pgosProxyController = new MerchantOnboardingProxyController();
+
+        $this->host = $this->app['config']->get('app.merchant_policies_subdomain');
     }
 
     /**
@@ -1927,7 +1938,34 @@ class Service extends Base\Service
 
         $response['currency_code'] = $this->merchant->getCurrency();
 
+        $response['policy_url'] = $this->getWebsitePublishedUrl($this->merchant->getId());;
+
         return $response;
+    }
+
+    public function getWebsitePublishedUrl($merchantId)
+    {
+        $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantId);
+
+        if (empty($websiteDetail) === true)
+        {
+            return null;
+        }
+
+        foreach (explode(',', Website\Constants::VALID_MERCHANT_SECTIONS) as $sectionName)
+        {
+            $sectionStatus = $websiteDetail->getSectionStatus($sectionName);
+
+            $publishedWebsite = $websiteDetail->getPublishedUrl($sectionName);
+
+            if ($sectionStatus === 3 and empty($publishedWebsite) === false)
+            {
+                return $this->host . '/policy/' . $websiteDetail->getId();
+            }
+
+        }
+
+        return null;
     }
 
     /**
