@@ -4,6 +4,7 @@ import React from 'react';
 import {
   AccountsBatchUpload,
   LoadsBatchUpload,
+  ReversalsBatchUpload,
 } from 'merchant/views/Wallet/BatchActions/BatchUpload';
 import { openModal } from 'merchant_common/reducers/modals';
 
@@ -40,7 +41,6 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
       <div
         data-testid="batch-type-option"
         className="panel panel-default"
-        style={{ marginBottom: 0 }}
         onClick={() =>
           openModal({
             component: <LoadsBatchUpload />,
@@ -54,6 +54,21 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
               <strong>Loads</strong>
             </div>
             <div>Load money into wallet for multiple customers at once.</div>
+          </div>
+          <i className="i-chevron-right pull-right text-primary" />
+        </div>
+      </div>
+      <div
+        data-testid="batch-type-option"
+        className="panel panel-default"
+        onClick={() => openModal({ component: <ReversalsBatchUpload />, size: 'large' })}
+      >
+        <div className="panel-body">
+          <div className="description">
+            <div className="text-primary">
+              <strong>Reversals</strong>
+            </div>
+            <div>Reverse wallet loads from multiple customers at once.</div>
           </div>
           <i className="i-chevron-right pull-right text-primary" />
         </div>

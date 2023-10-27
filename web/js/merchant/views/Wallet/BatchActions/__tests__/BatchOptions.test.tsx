@@ -5,6 +5,7 @@ import { render, getAllByTestId, fireEvent, screen } from '@testing-library/reac
 import {
   LoadsBatchUpload,
   AccountsBatchUpload,
+  ReversalsBatchUpload,
 } from 'merchant/views/Wallet/BatchActions/BatchUpload';
 import { CreateBatchOptions } from 'merchant/views/Wallet/BatchActions/BatchOptions';
 import { Provider } from 'react-redux';
@@ -29,7 +30,7 @@ describe('BatchOptions tests', () => {
   test('it should render expected options', () => {
     const { container } = render(<CreateBatchOptions openModal={jest.fn()} />);
 
-    expect(getAllByTestId(container, 'batch-type-option')).toHaveLength(2);
+    expect(getAllByTestId(container, 'batch-type-option')).toHaveLength(3);
   });
 
   test('it should call openModal with expected properties', async () => {
@@ -38,14 +39,19 @@ describe('BatchOptions tests', () => {
 
     await fireEvent.click(screen.getByText('Accounts'));
     await fireEvent.click(screen.getByText('Loads'));
+    await fireEvent.click(screen.getByText('Reversals'));
 
-    expect(mock).toHaveBeenCalledTimes(2);
+    expect(mock).toHaveBeenCalledTimes(3);
     expect(mock.mock.calls[0][0]).toEqual({
       component: <AccountsBatchUpload />,
       size: 'large',
     });
     expect(mock.mock.calls[1][0]).toEqual({
       component: <LoadsBatchUpload />,
+      size: 'large',
+    });
+    expect(mock.mock.calls[2][0]).toEqual({
+      component: <ReversalsBatchUpload />,
       size: 'large',
     });
   });
@@ -65,5 +71,17 @@ describe('BatchOptions tests', () => {
     expect(containerLoadOption).toBeInTheDocument();
     await fireEvent.click(containerLoadOption);
     expect(containerLoadOption).toBeInTheDocument();
+  });
+
+  test('it should display create batch reversals modal', () => {
+    render(
+      <Provider store={storeWithInitialState(storeState)}>
+        <BladeProvider themeTokens={paymentTheme}>
+          <ReversalsBatchUpload />
+        </BladeProvider>
+      </Provider>,
+    );
+
+    expect(screen.getByText('Create Batch Reversals')).toBeInTheDocument();
   });
 });

@@ -503,6 +503,7 @@ export const fetchAllWalletBatches = fetchBatches([
   'create_wallet_loads',
   'create_wallet_container_loads',
   'create_wallet_user_containers',
+  'create_wallet_container_reversals',
 ]);
 export const createWalletAccountsBatch = createBatch('create_wallet_accounts');
 export const validateWalletAccountsBatch = validateBatch('create_wallet_accounts');
@@ -512,6 +513,8 @@ export const createContainerLoadsBatch = createBatch('create_wallet_container_lo
 export const validateContainerLoadsBatch = validateBatch('create_wallet_container_loads');
 export const createUsersBatch = createBatch('create_wallet_user_containers');
 export const validateUsersBatch = validateBatch('create_wallet_user_containers');
+export const createReversalBatch = createBatch('create_wallet_container_reversals');
+export const validateReversalBatch = validateBatch('create_wallet_container_reversals');
 
 /* reducers */
 export const refundBatchesReducer = makeActionCollectionReducer(REFUND);

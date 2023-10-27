@@ -30,4 +30,5 @@ export const BATCH_TYPES = {
   CREATE_WALLET_LOADS: 'create_wallet_loads',
   CREATE_WALLET_ACCOUNTS: 'create_wallet_accounts',
   CREATE_WALLET_USERS_CONTAINERS: 'create_wallet_user_containers',
+  CREATE_WALLET_REVERSAL_CONTAINERS: 'create_wallet_reversal_containers',
 };

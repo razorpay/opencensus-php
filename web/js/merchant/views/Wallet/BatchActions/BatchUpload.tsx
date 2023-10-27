@@ -10,6 +10,8 @@ import {
   createContainerLoadsBatch,
   validateUsersBatch,
   createUsersBatch,
+  createReversalBatch,
+  validateReversalBatch,
 } from 'merchant/reducers/batches';
 import InputSelector from 'merchant/views/Wallet/BatchActions/components/InputSelector';
 import { BatchUploadWrapper } from 'merchant/views/Wallet/BatchActions/components/BatchUploadWrapper';
@@ -123,6 +125,27 @@ export const LoadsBatchUpload = connect(null, {
       createBatch={selectedBatch.selectedCreateBatch}
       validateBatch={selectedBatch.selectedValidateBatch}
       component={<InputSelector options={CREATE_LOADS_OPTIONS} setInput={setProvider} />}
+    />
+  );
+});
+
+export const ReversalsBatchUpload = connect(null, {
+  createBatch: createReversalBatch as () => void,
+  validateBatch: validateReversalBatch as () => void,
+})(({ createBatch, validateBatch }) => {
+  const sampleUrl = `/files/sample_create_wallet_container_reversals.xlsx`;
+
+  return (
+    <BatchUploadWrapper
+      batchType={BATCH_TYPES.CREATE_WALLET_REVERSAL_CONTAINERS}
+      docUrl={sampleUrl}
+      title="Create Batch Reversals"
+      points={[
+        'Load ID can be obtained from the response file if you have used batch load action or from transactions tab on dashboard.',
+        'This feature will work only if you are not using two factor authentication for wallet debit',
+      ]}
+      createBatch={createBatch}
+      validateBatch={validateBatch}
     />
   );
 });
