@@ -2120,7 +2120,10 @@ class Core extends Base\Core
         return $uploadedFile;
   }
 
-    public function createTokenForRearch($card, $cardInput, $merchant, $payment, $customer)
+  /*
+   * This function is not being used anywhere.
+   */
+    /*public function createTokenForRearch($card, $cardInput, $merchant, $payment, $customer)
     {
         $networkCode = $card->getNetworkCode();
 
@@ -2135,7 +2138,7 @@ class Core extends Base\Core
         list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($card, $merchant, $cardInput, $payment);
 
         return $this->createTokenforTokenisedCard($card, $serviceProviderTokens, $payment->merchant, $customer);
-    }
+    }*/
 
     public function fetchDualTokenStatus($serviceProviderTokens){
         $tokenStatus = null;
