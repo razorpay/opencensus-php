@@ -341,6 +341,7 @@ class MagicCheckoutProvider extends Base\Core
     }
 
     // only 1 object will exist in $addresses but we are iterating for future proof solution.
+    // cod_fee is kept as null since it gets overridden by cod engine.
     protected function disableCodForShippingOptions(array $shippingOptions): array
     {
         $addresses = &$shippingOptions['addresses'];
@@ -358,14 +359,15 @@ class MagicCheckoutProvider extends Base\Core
         return $shippingOptions;
     }
 
+    // The final response to FE must have cod_fee as a valid integer so we set it as Re 0.
     protected function forceDisableCodForAddress(array $address): array
     {
         $address['cod'] = false;
-        $address['cod_fee'] = null;
+        $address['cod_fee'] = 0;
         foreach ($address['shipping_methods'] as &$method)
         {
             $method['cod'] = false;
-            $method['cod_fee'] = null;
+            $method['cod_fee'] = 0;
         }
         return $address;
     }
