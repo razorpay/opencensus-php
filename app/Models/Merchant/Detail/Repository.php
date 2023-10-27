@@ -897,7 +897,7 @@ class Repository extends Base\Repository
      */
     public function getMerchantsWithRiskTags(): array
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->select(Entity::MERCHANT_ID)
             ->whereNotNull(Entity::FRAUD_TYPE)
             ->whereNot(Entity::FRAUD_TYPE, '')
