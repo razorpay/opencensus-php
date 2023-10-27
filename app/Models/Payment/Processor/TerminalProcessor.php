@@ -67,55 +67,6 @@ class TerminalProcessor extends Base\Core
             $terminalsSelected = $this->filterTerminalForRX($payment, $terminalsSelected);
         }
 
-        // blocking upi recurring tpv intent payments for icici terminal
-        if($payment->isUpiIntentRecurring() === true)
-        {
-            $merchant = $this->merchant;
-
-            if ($merchant === null)
-            {
-                $merchant = $this->repo->merchant->findByPublicId($payment->getMerchantId());
-            }
-
-            if ($merchant->isTPVRequired() === true)
-            {
-                if (count($terminalsSelected) > 1)
-                {
-                    $iciciTerminalId = null;
-
-                    foreach ($terminalsSelected as $id => $terminal)
-                    {
-                        if ($terminal['gateway'] === 'upi_icici')
-                        {
-                            $iciciTerminalId = $id;
-                        }
-                    }
-                    if ($iciciTerminalId != null)
-                    {
-                        unset($terminalsSelected[$iciciTerminalId]);
-                    }
-                }
-                else if ($terminalsSelected[0]['gateway'] === 'upi_icici')
-                {
-                    $this->trace->info(
-                        TraceCode::UPI_RECURRING_INTENT_TPV_NOT_SUPPORTED,
-                        [
-                            'message' => "autopay intent tpv payment creation not allowed",
-                            'paymentId' => $payment->getId(),
-                            'merchantId' => $payment->getMerchantId()
-                        ]
-                    );
-
-                    throw new Exception\BadRequestException(
-                        "SERVER_ERROR_INTENT_TPV_NOT_SUPPORTED",
-                        Payment\Entity::ORDER_ID,
-                        [
-                            'paymentId' => $payment->getId()
-                        ]);
-                }
-            }
-        }
-
         $this->populateTerminalSecretsIfApplicable($payment,$terminalsSelected);
 
         if ($options->getMultiple() === false)

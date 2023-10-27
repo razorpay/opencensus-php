@@ -245,11 +245,17 @@ class Core extends Base\Core
             if (empty($bankDetails[BankAccount\Entity::IFSC_CODE]) === false and
                 empty($bankDetails[BankAccount\Entity::ACCOUNT_NUMBER]) === false)
             {
-                $bankDetails[BankAccount\Entity::IFSC] = $bankDetails[BankAccount\Entity::IFSC_CODE];
+                $orderPayLoad[Order\Entity::BANK_ACCOUNT][Order\Entity::ACCOUNT_NUMBER] = $bankDetails[BankAccount\Entity::ACCOUNT_NUMBER];
+                $orderPayLoad[Order\Entity::BANK_ACCOUNT]['ifsc'] = $bankDetails[BankAccount\Entity::IFSC_CODE];
 
-                unset($bankDetails[BankAccount\Entity::IFSC_CODE]);
-
-                $orderPayLoad[Order\Entity::BANK_ACCOUNT] = $bankDetails;
+                if(isset($bankDetails[BankAccount\Entity::BENEFICIARY_NAME]))
+                {
+                    $orderPayLoad[Order\Entity::BANK_ACCOUNT]['name'] = $bankDetails[BankAccount\Entity::BENEFICIARY_NAME];
+                }
+                if(isset($bankDetails[BankAccount\Entity::NAME]))
+                {
+                    $orderPayLoad[Order\Entity::BANK_ACCOUNT]['name'] = $bankDetails[BankAccount\Entity::NAME];
+                }
             }
         }
 
