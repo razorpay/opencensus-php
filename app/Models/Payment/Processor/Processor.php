@@ -453,7 +453,7 @@ class Processor
     /**
      * Razorx flag to indicate if a ajax payment should go via PG Router and CPS or just via API service for payments with offer
      */
-    const ROUTE_OFFER_PAYMENTS_TO_REARCH_CPS = 'route_offer_payments_to_rearch_cps';
+    const ROUTE_OFFER_PAYMENTS_TO_REARCH_CPS = 'route_offer_payments_to_rearch_cps_v2';
 
     /**
      * Razorx flag to block merchant on re-arch flow for payments card
@@ -908,12 +908,6 @@ class Processor
                         return false;
                     }
                 }
-
-                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_SUCCESS_REASON, [
-                    'reason' => "offers",
-                    'merchant_id' => $merchant->getId(),
-                    'order_id' => $order->getId(),
-                ]);
 
                 if (empty($order) === false and ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or
                     ($order->invoice !== null))
