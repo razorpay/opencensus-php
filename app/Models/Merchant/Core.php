@@ -6023,7 +6023,11 @@ class Core extends Base\Core
     protected function deletePartnerDomainFeatures($partner)
     {
         $feature = $this->repo->feature->findByEntityTypeEntityIdAndName('merchant', $partner->getId(), Feature\Constants::GENERATE_PARTNER_INVOICE);
-        (new Feature\Core)->delete($feature, true);
+
+        if (empty($feature) === false)
+        {
+            (new Feature\Core)->delete($feature, true);
+        }
     }
 
     /**
