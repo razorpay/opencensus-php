@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Acs\AsvRouter;
 use App;
 use phpDocumentor\Reflection\Types\Self_;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Base\RepositoryManager;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Models\Merchant\Repository as MerchantRepository;
@@ -27,6 +28,10 @@ class AsvRouter
     const None = "none";
 
     const PARTNER_NOT_FOUND = "partner_not_found";
+
+    const CHANGE_ISOLATION_LEVEL = "change_isolation_level";
+
+    const REPOSITORY_MANAGER_ID  = "repository_manager";
 
     protected $app;
 
@@ -250,6 +255,15 @@ class AsvRouter
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             return false;
         }
+    }
+
+    public function shouldChangeIsolationLevelForCurrentRouteFromRepositoryManager(): bool
+    {
+        return $this->shouldRouteWriteRequestToAccountService(
+            repoClass: RepositoryManager::class,
+            functionName: self::CHANGE_ISOLATION_LEVEL,
+            id: self::REPOSITORY_MANAGER_ID
+        );
     }
 
     public function shouldRouteWriteRequestToAccountService($repoClass, $functionName, $id): bool

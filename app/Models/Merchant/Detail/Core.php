@@ -386,9 +386,16 @@ class Core extends Base\Core
 
                     $startTimePostAcquiringMutexLock = microtime(true);
 
-                    $this->repo->merchant->lockForUpdate($merchant->getId());
-
-                    $this->repo->merchant_detail->lockForUpdate($merchantDetails->getId());
+                    /*
+                     * Since the reads/writes for merchant entity are being migrated to ASV,
+                     * we no longer require the locks on API DB via API. This was originally added to solve
+                     * issues related to save on merchant details, where in the saved data was not reflected even though
+                     * the http request was successful. This however, never fixed the issue, and we have a mutex in the
+                     * start of transaction to prevent us from such scenarios. Hence, we are removing this as a part of
+                     * migrating the requests to ASV.
+                     */
+                   //  $this->repo->merchant->lockForUpdate($merchant->getId());
+                   //  $this->repo->merchant_detail->lockForUpdate($merchantDetails->getId());
 
                     $this->trace->info(TraceCode::MERCHANT_DB_LOCK_ACQUIRE_LATENCY, [
                         'acquired'                => true,

@@ -8889,6 +8889,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ASV_COMPARE_MATCHED                                   = 'ASV_COMPARE_MATCHED';
     const ASV_WRITE_EXCEPTION                                   = 'ASV_WRITE_EXCEPTION';
+
+    const ASV_CHANGE_ISOLATION_LEVEL_EXCEPTION                  = 'ASV_CHANGE_ISOLATION_LEVEL_EXCEPTION';
     const ASV_KAFKA_PUSH_MESSAGE                                = 'ASV_KAFKA_PUSH_MESSAGE';
     const ASV_FULL_SYNC_SPLITZ_ENABLED                          = 'ASV_FULL_SYNC_SPLITZ_ENABLED';
 

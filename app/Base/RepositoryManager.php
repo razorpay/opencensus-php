@@ -6,6 +6,7 @@ use Closure;
 use Illuminate;
 use Database\Connection;
 
+use RZP\Constants\Metric;
 use RZP\Models;
 use RZP\Gateway;
 use RZP\Exception;
@@ -15,6 +16,8 @@ use RZP\Constants\Entity;
 use RZP\Jobs\Context as WorkerContext;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Base\Database\Connectors\MySqlConnector;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter as AsvRouter;
+use Razorpay\Trace\Logger as Trace;
 
 /**
  * @property Models\Plan\Subscription\Repository                 $subscription
@@ -538,6 +541,8 @@ class RepositoryManager extends Illuminate\Support\Manager
         $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Mode::LIVE);
         $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Mode::TEST);
 
+        $this->changeTransactionIsolationLevelForAccountServiceRoutes();
+
         $this->db->connection(Mode::TEST)->beginTransaction();
         $this->db->connection(Mode::LIVE)->beginTransaction();
 
@@ -640,5 +645,44 @@ class RepositoryManager extends Illuminate\Support\Manager
     {
         $this->db
             ->select('SELECT /* comment: ' . $comment . ' */ 1;' );
+    }
+
+    /*
+     *
+     * We are migrating writes to account service, the default isolation level for transaction is REPEATABLE READS,
+     * that means, we cannot read any data that is saved in account service(Which Uses API DB only) within
+     * the transaction (The snapshot is saved at the first read, and is reused in any ongoing transaction).
+     *
+     * To solve this issue, for ASV routes, we are changing the isolation level to READ COMMITTED. This only affects
+     * the transaction started after the execution of this function. The nested transaction inherit the property of
+     * parent transaction, hence we do not need to override isolation level for nested transaction.
+     *
+     * The following is only applicable for specific list of routes which is maintained in ASV router class, the routes
+     * are also further controlled by Splitz Experiment.
+     *
+     */
+    private function changeTransactionIsolationLevelForAccountServiceRoutes(): void
+    {
+        try {
+
+            if ($this->isTransactionActive() === true
+                or
+                (new AsvRouter())->shouldChangeIsolationLevelForCurrentRouteFromRepositoryManager() === false) {
+                return;
+            }
+
+            $SET_TRANSACTION_READ_COMMITTED = "SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
+
+            $pdo = $this->db->connection(Mode::TEST)->getPdo();
+            $pdo->exec($SET_TRANSACTION_READ_COMMITTED);
+
+            $pdo = $this->db->connection(Mode::LIVE)->getPdo();
+            $pdo->exec($SET_TRANSACTION_READ_COMMITTED);
+
+            return;
+        } catch (\Throwable $ex) {
+            $this->app['trace']->traceException($ex, Trace::ERROR, TraceCode::ASV_CHANGE_ISOLATION_LEVEL_EXCEPTION);
+            $this->app['trace']->count(Metric::ASV_CHANGE_ISOLATION_LEVEL_EXCEPTION_TOTAL);
+        }
     }
 }
