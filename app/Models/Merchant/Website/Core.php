@@ -11,6 +11,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\Store\Core as StoreCore;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 
@@ -164,6 +165,53 @@ class Core extends Base\Core
             else
             {
                 return Constants::WEBSITE;
+            }
+        }
+    }
+
+    public function savePGOSDataToAPI(array $data)
+    {
+        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+
+        if ($splitzResult === 'variables')
+        {
+            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
+
+            $websitePolicyV2SplitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'policy_wizard_v2_exp_id');
+
+            // dual write only for below merchants
+            // merchants for whom pgos is serving onboarding requests
+            // merchants for whom website policy v2 experiment is enabled
+            // merchants who are not completely activated
+
+            if (($merchant->getService() === MerchantConstants::PGOS or
+                    $websitePolicyV2SplitzResult === 'variables') and
+                $merchant->merchantDetail->getActivationStatus() != Detail\Status::ACTIVATED)
+            {
+                $websiteDetails = (new Repository())->getWebsiteDetailsForMerchantId($data["merchant_id"]);
+
+                if (empty($websiteDetails) === false)
+                {
+                    unset($data[Entity::MERCHANT_ID]);
+
+                    unset($data[Entity::ID]);
+
+                    $websiteDetails->edit($data);
+
+                    $this->repo->saveOrFail($websiteDetails);
+                }
+                else
+                {
+                    $websiteDetails = new Entity;
+
+                    $websiteDetails->setId($data[Entity::ID]);
+
+                    unset($data[Entity::ID]);
+
+                    $websiteDetails->build($data);
+
+                    $this->repo->merchant_website->saveOrFail($websiteDetails);
+                }
             }
         }
     }

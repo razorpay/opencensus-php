@@ -718,6 +718,8 @@ return array(
 
     'magic_address_sorting_experiment_id' => env('MAGIC_ADDRESS_SORTING_EXP_ID'),
 
+    'policy_wizard_v2_exp_id' => env('POLICY_WIZARD_V2_EXP_ID'),
+
     'partner_bank_account_param_removal_exp_id' => env('PARTNER_BANK_ACCOUNT_PARAM_REMOVAL_EXP_ID'),
 
     'default_config_for_platform_partners_experiment_id' => env('DEFAULT_CONFIG_FOR_PLATFORM_PARTNERS_EXP_ID'),
