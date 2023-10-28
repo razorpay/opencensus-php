@@ -49,4 +49,16 @@ class Constants
     const TIMEOUT                                           = 'timeout';
     const SYNC_ONLY                                         = 'sync_only';
     const SUPER_ADMIN_WORKFLOW_CHECKER_EMAIL                = 'SUPER_ADMIN_WORKFLOW_CHECKER_EMAIL';
+    /*
+     * Bank account is not synced with gateway
+     */
+    const BANK_ACCOUNT_NOT_SYNCED                           = 0;
+    /*
+     * Bank account create is synced with gateway
+     */
+    const BANK_ACCOUNT_CREATE_SYNCED                        = 1;
+    /*
+     * Bank account deactivate is synced with gateway
+     */
+    const BANK_ACCOUNT_DEACTIVATE_SYNCED                    = 2;
 }

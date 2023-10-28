@@ -188,7 +188,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::MOBILE_BANKING_ENABLED => 'bool',
-        self::GATEWAY_SYNC           => 'bool'
     ];
 
     protected $ignoredRelations = [

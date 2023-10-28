@@ -48,6 +48,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\BankAccount\Constants as BankAccountConstants;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class VirtualAccountTest extends TestCase
@@ -410,7 +411,7 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($bankAccount['id'], $virtualAccount['bank_account_id']);
 
         $this->assertEquals('RATN0VAAPIS', $bankAccount['ifsc_code']);
-        $this->assertEquals(true, $bankAccount['is_gateway_sync']);
+        $this->assertEquals(BankAccountConstants::BANK_ACCOUNT_CREATE_SYNCED, $bankAccount['is_gateway_sync']);
     }
 
     public function testCreateVirtualAccountRBLWithWrongJsonFormat()
@@ -453,7 +454,7 @@ class VirtualAccountTest extends TestCase
         $this->assertNotNull( $virtualAccount['bank_account_id']);
         $this->assertEquals($bankAccount['id'], $virtualAccount['bank_account_id']);
         $this->assertEquals('RATN0VAAPIS', $bankAccount['ifsc_code']);
-        $this->assertEquals(false, $bankAccount['is_gateway_sync']);
+        $this->assertEquals(BankAccountConstants::BANK_ACCOUNT_NOT_SYNCED, $bankAccount['is_gateway_sync']);
     }
 
     public function testCreateVirtualAccountWithCustomAccountNumberLengthForMerchant()
@@ -2896,7 +2897,7 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($virtualAccount['status'], 'active');
 
         $this->assertEquals('RATN0VAAPIS', $bankAccount['ifsc_code']);
-        $this->assertEquals(false, $bankAccount['is_gateway_sync']);
+        $this->assertEquals(BankAccountConstants::BANK_ACCOUNT_NOT_SYNCED, $bankAccount['is_gateway_sync']);
 
         Queue::assertPushed(RblVirtualAccountForBanking::class, 1);
 
@@ -2908,14 +2909,14 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->testCreateVirtualAccountInBulk_Banking_RBL();
 
         $bankAccount = $this->getDbLastEntity('bank_account', 'live');
-        $this->assertEquals(false, $bankAccount['is_gateway_sync']);
+        $this->assertEquals(BankAccountConstants::BANK_ACCOUNT_NOT_SYNCED, $bankAccount['is_gateway_sync']);
 
         (new RblVirtualAccountForBanking(Mode::LIVE,
             $virtualAccount['id'],
             Action::CREATE_VIRTUAL_ACCOUNT_FOR_BANKING))->handle();
 
         $bankAccount->reload();
-        $this->assertEquals(true, $bankAccount['is_gateway_sync']);
+        $this->assertEquals(BankAccountConstants::BANK_ACCOUNT_CREATE_SYNCED, $bankAccount['is_gateway_sync']);
 
         return $virtualAccount;
     }
@@ -2926,7 +2927,7 @@ class VirtualAccountTest extends TestCase
 
         $bankAccount = $this->getDbLastEntity('bank_account', 'live');
 
-        $this->assertEquals(false, $bankAccount['is_gateway_sync']);
+        $this->assertEquals(BankAccountConstants::BANK_ACCOUNT_NOT_SYNCED, $bankAccount['is_gateway_sync']);
 
         $this->app['config']->set('gateway.mock_bt_rbl', true);
 

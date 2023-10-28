@@ -34,6 +34,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Jobs\RblVirtualAccountCreateProcess;
 use RZP\Models\Payout\Metric as PayoutMetric;
+use RZP\Models\BankAccount\Constants as BankAccountConstants;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status as QrStatus;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\UsageType as QrUsage;
@@ -116,13 +117,14 @@ class Core extends Base\Core
         $createVirtualvariant  = $this->app->razorx->getTreatment($merchant->getId(),
                                                                   RazorxTreatment::BT_RBL_CREATE_VIRTUAL_ACCOUNT,
                                                                   $this->mode);
+
         if (($createVirtualvariant == 'on')  and
             ($virtualAccount->isBalanceTypeBanking() === false) and
             ($virtualAccount->bankAccount !== null) and
             in_array($virtualAccount->bankAccount->getIfscCode(), Provider::getGatewaySyncProvider()))
         {
             $bankAccount = $virtualAccount->bankAccount;
-            $bankAccount->setIsGatewaySync(false);
+            $bankAccount->setIsGatewaySync(BankAccountConstants::BANK_ACCOUNT_NOT_SYNCED);
             $this->repo->bank_account->saveOrFail($bankAccount);
 
             RblVirtualAccountCreateProcess::dispatch($this->mode, $virtualAccount->getId());
@@ -133,7 +135,7 @@ class Core extends Base\Core
             $virtualAccount->bankAccount->getIfscCode() === Provider::getGatewaySyncProviderForRBLBanking())
         {
             $bankAccount = $virtualAccount->bankAccount;
-            $bankAccount->setIsGatewaySync(false);
+            $bankAccount->setIsGatewaySync(BankAccountConstants::BANK_ACCOUNT_NOT_SYNCED);
             $this->repo->bank_account->saveOrFail($bankAccount);
 
             try

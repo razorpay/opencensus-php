@@ -11,6 +11,7 @@ use RZP\Gateway\Mozart\Action;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Mozart\BTRblBanking;
+use RZP\Models\BankAccount\Constants as BankAccountConstants;
 
 class RblVirtualAccountForBanking extends Job
 {
@@ -209,7 +210,7 @@ class RblVirtualAccountForBanking extends Job
     protected function updateBankAccountGatewaySyncStatus()
     {
         $bankAccount = $this->virtualAccount->bankAccount;
-        $bankAccount->setIsGatewaySync(true);
+        $bankAccount->setIsGatewaySync(BankAccountConstants::BANK_ACCOUNT_CREATE_SYNCED);
 
         $this->repo->bank_account->saveOrFail($bankAccount);
     }
