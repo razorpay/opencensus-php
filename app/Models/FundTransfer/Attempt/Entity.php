@@ -399,11 +399,16 @@ class Entity extends Base\PublicEntity
             return $this->getRelation('card');
         }
 
-        $card = $this->card()->first();
-
-        if (empty($card) === false)
+        if ($this->hasCard() === true)
         {
-            return $card;
+            $card = $this->card()->first();
+
+            if (empty($card) === false)
+            {
+                $this->card()->associate($card);
+
+                return $card;
+            }
         }
 
         if ($this->hasCard() === true)
