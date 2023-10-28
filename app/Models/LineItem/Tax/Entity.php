@@ -31,6 +31,18 @@ class Entity extends Base\PublicEntity
         self::GROUP_NAME => null,
     ];
 
+    public static array $prtsFillable = [
+        self::ID,
+        self::TAX_ID,
+        self::LINE_ITEM_ID,
+        self::NAME,
+        self::RATE,
+        self::RATE_TYPE,
+        self::TAX_AMOUNT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,

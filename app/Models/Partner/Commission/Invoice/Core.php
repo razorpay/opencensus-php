@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use Mail;
 use RZP\Exception;
+use RZP\Jobs\CommissionOnHoldClear;
 use RZP\Mail\Merchant\CommissionInvoiceAutoApproved;
 use RZP\Models\Merchant\Detail\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
@@ -19,6 +20,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\HyperTrace;
@@ -37,6 +39,7 @@ use RZP\Jobs\CommissionInvoiceGenerate;
 use RZP\Mail\Merchant\CommissionInvoice;
 use RZP\Mail\Merchant\CommissionProcessed;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
+use RZP\Models\LineItem\Tax as LineItemTax;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Diag\Event\OnBoardingEvent;
 use RZP\Mail\Merchant\CommissionInvoiceIssued;
@@ -49,6 +52,9 @@ class Core extends Base\Core
     const COMMISSION_GENERATE_MID_LIMIT = 100;
     const COMMISSION_INVOICE_ACTION_DELAY = 120; // seconds
     const COMMISSION_INVOICE_GENERATE_MUTEX_TIMEOUT = 3600; // seconds
+    const COMMISSION_INVOICE_MUTEX_TIMEOUT = 300; // in seconds
+    const MUTEX_LOCK_TIMEOUT = 3000; // in seconds
+    const COMMISSIONS_TRANSACTION_FETCH_LIMIT = 2500;
 
     /**
      * @var PdfGenerator
@@ -1488,6 +1494,437 @@ class Core extends Base\Core
         }
         return (Constants::DEFAULT_PARTNER_INVOICE_REMINDER_EMAIL_TEMPLATE_PREFIX.'.'.$templateSuffix);
     }
+
+    // Below function are used for reverse shadow and cutoff
+    /**
+     * This flow is called from reverse-shadow of commissions-invoice issued
+     * This will create commission invoice in idempotent way
+     * This will get called from kafka job processor and also as API call from reverse-shadow retry cron
+     *
+     * @param array $input
+     *    {
+     *    "id": "outbox_id",
+     *    "payload" : "{}",
+     *    "created_at" : 0,
+     *    }
+     *
+     * @return array
+     */
+    public function createIssuedFromPRTS(array $input)
+    {
+        try
+        {
+            $payloadStr = $input[Constants::PAYLOAD];
+            $payload    = json_decode($payloadStr, true);
+
+            $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_PROCESS_REQUEST, ['payload' => $payload]);
+
+            $invoice = $this->createInvoiceForPRTS($input, $payload['Invoice']);
+
+            return $this->buildAckResponse(['processed' => true], null, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::COMMISSION_INVOICE_CREATE_FAILED,
+                [
+                    'mode'  => $this->mode,
+                    'input' => $input,
+                ]
+            );
+            $error = $this->buildError($e->getCode(), $e->getMessage());
+
+            return $this->buildAckResponse(null, $error, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+    }
+
+    public function createInvoiceAndFinanceWorkflowFromPRTS(array $input)
+    {
+        try
+        {
+            $payloadStr = $input[Constants::PAYLOAD];
+            $payload    = json_decode($payloadStr, true);
+
+            $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_PROCESS_REQUEST, ['payload' => $payload]);
+
+            $invoice = $this->createInvoiceForPRTS($input, $payload['Invoice']);
+
+            return $this->createFinanceWorkflowFromPRTS($input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::COMMISSION_INVOICE_CREATE_FAILED,
+                [
+                    'mode'  => $this->mode,
+                    'input' => $input,
+                ]
+            );
+            $error = $this->buildError($e->getCode(), $e->getMessage());
+
+            return $this->buildAckResponse(null, $error, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+    }
+
+    public function createFinanceWorkflowFromPRTS(array $input)
+    {
+        try
+        {
+            $payloadStr = $input[Constants::PAYLOAD];
+            $payload    = json_decode($payloadStr, true);
+
+            $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_PROCESS_REQUEST, ['payload' => $payload]);
+
+            Tracer::inspan(['name' => HyperTrace::TRIGGER_COMMISSION_INVOICE_ACTION, 'attributes' => $payload], function () use ($payload) {
+
+                $this->triggerFinanceWorkflowAction($payload['Invoice'], $payload['TdsPercentage']);
+            });
+
+            return $this->buildAckResponse(['processed' => true], null, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::COMMISSION_INVOICE_WORKFLOW_CREATE_FAILED,
+                [
+                    'mode'  => $this->mode,
+                    'input' => $input,
+                ]
+            );
+            $error = $this->buildError($e->getCode(), $e->getMessage());
+
+            return $this->buildAckResponse(null, $error, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+    }
+
+    public function createInvoiceAndSettlementTDSFromPRTS(array $input)
+    {
+        try
+        {
+            //create Invoice
+            $payloadStr = $input[Constants::PAYLOAD];
+            $payload    = json_decode($payloadStr, true);
+
+            $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_PROCESS_REQUEST, ['payload' => $payload]);
+
+            $invoice = $this->createInvoiceForPRTS($input, $payload['Invoice']);
+
+            $this->settlementTDSForPRTS($payload['Invoice'], $payload['TdsPercentage'], $payload['CreateTds']);
+
+            $invoice->setStatus(Status::PROCESSED);
+
+            $this->repo->saveOrFail($invoice);
+
+            return $this->buildAckResponse(['processed' => true], null, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::COMMISSION_INVOICE_SETTLEMENT_FAILED,
+                [
+                    'mode'  => $this->mode,
+                    'input' => $input,
+                ]
+            );
+            $error = $this->buildError($e->getCode(), $e->getMessage());
+
+            return $this->buildAckResponse(null, $error, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+    }
+
+    public function settlementTDSFromPRTS(array $input)
+    {
+        try
+        {
+            $payloadStr = $input[Constants::PAYLOAD];
+            $payload    = json_decode($payloadStr, true);
+
+            $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_PROCESS_REQUEST, ['payload' => $payload]);
+
+            $this->settlementTDSForPRTS($payload['Invoice'],$payload['TdsPercentage'],$payload['CreateTds']);
+
+            return $this->buildAckResponse(['processed' => true], null, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::COMMISSION_INVOICE_SETTLEMENT_FAILED,
+                [
+                    'mode'  => $this->mode,
+                    'input' => $input,
+                ]
+            );
+            $error = $this->buildError($e->getCode(), $e->getMessage());
+
+            return $this->buildAckResponse(null, $error, $input[Entity::ID], $input[Constants::CREATED_AT]);
+        }
+    }
+
+    /**
+     * @param $input
+     * @param $payload
+     * @return Entity
+     */
+    private function createInvoiceForPRTS($input, $payload): Entity
+    {
+        $resource   = 'COMMISSION_INVOICE_CREATE_' . $payload[Entity::ID];
+
+        return $this->app['api.mutex']->acquireAndRelease(
+            $resource, function() use ($input, $payload)
+            {
+                // return existing commission if commission with same ID already exists
+                $invoice = $this->repo->commission_invoice->find($payload[Entity::ID]);
+                if (isset($invoice) === false)
+                {
+                    $timeNow = millitime();
+
+                    $invoice = $this->repo->transaction(function() use ($payload)
+                    {
+                        // save commission invoice
+                        $invoice = new Entity;
+                        $invoice->fillSelectAttributes($payload, Entity::$prtsFillable);
+                        $this->repo->saveOrFail($invoice);
+
+                        // save commission line items
+                        foreach ($payload['line_items'] as $lineIt)
+                        {
+                            // add merchant id in line items
+                            $lineIt[LineItem\Entity::MERCHANT_ID] = $payload[LineItem\Entity::MERCHANT_ID];
+                            $lineIt[LineItem\Entity::AMOUNT] = $lineIt[LineItem\Entity::GROSS_AMOUNT];
+                            $lineIt[LineItem\Entity::NET_AMOUNT] = $lineIt[LineItem\Entity::GROSS_AMOUNT];
+                            $lineIt[LineItem\Entity::QUANTITY] = 1;
+
+                            $lineItem = new LineItem\Entity;
+                            $lineItem->fillSelectAttributes($lineIt, LineItem\Entity::$prtsFillable);
+                            $this->repo->saveOrFail($lineItem);
+
+                            // save commission line items tax
+                            foreach ($lineIt['Taxes'] as $lineItemTx)
+                            {
+                                $lineItemTax = new LineItemTax\Entity;
+                                $lineItemTax->fillSelectAttributes($lineItemTx, LineItemTax\Entity::$prtsFillable);
+                                $this->repo->saveOrFail($lineItem);
+                            }
+                        }
+
+                        // save filestore
+                        $filestore = [
+                            FileStore\Entity::MERCHANT_ID => $payload[FileStore\Entity::MERCHANT_ID],
+                            FileStore\Entity::TYPE => FileStore\Type::COMMISSION_INVOICE,
+                            FileStore\Entity::ENTITY_ID => $payload[FileStore\Entity::ID],
+                            FileStore\Entity::ENTITY_TYPE => FileStore\Type::COMMISSION_INVOICE,
+                            FileStore\Entity::EXTENSION => FileStore\Format::PDF,
+                            FileStore\Entity::MIME => 'application/pdf',
+                            FileStore\Entity::SIZE => 1,//read it later from request
+                            FileStore\Entity::NAME => str_replace(".pdf", "", $payload['file_details']['location'] . $payload['file_details']['fileName']),
+                            FileStore\Entity::STORE => FileStore\Store::S3,
+                            FileStore\Entity::LOCATION => $payload['file_details']['location'] . $payload['file_details']['fileName'],
+                            FileStore\Entity::BUCKET => $payload['file_details']['bucketName'],
+                            FileStore\Entity::REGION => 'ap-south-1',
+                            FileStore\Entity::CREATED_AT => $payload[FileStore\Entity::CREATED_AT],
+                            FileStore\Entity::UPDATED_AT => $payload[FileStore\Entity::UPDATED_AT],
+                        ];
+
+                        $file = new FileStore\Entity;
+                        $file->fillSelectAttributes($filestore, FileStore\Entity::$prtsFillable);
+                        $this->repo->saveOrFail($file);
+
+                        return $invoice;
+                    });
+
+                    $lag = $timeNow - $payload[Constants::CREATED_AT];
+                    $this->trace->histogram(PartnerMetric::REVERSE_SHADOW_COMMISSION_INVOICE_CREATE_LAG, $lag, ['mode' => $this->mode]);
+
+                }
+                else
+                {
+                    $this->trace->info(
+                        TraceCode::COMMISSION_INVOICE_ALREADY_CREATED,
+                        [
+                            'commission_id' => $invoice->getId(),
+                            'mode'          => $this->mode,
+                        ]
+                    );
+
+                    if ($invoice->getStatus() != $payload[Entity::STATUS])
+                    {
+                        $invoice->setStatus($payload[Entity::STATUS]);
+
+                        $this->repo->saveOrFail($invoice);
+                    }
+                }
+
+                return $invoice;
+            },
+            self::COMMISSION_INVOICE_MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+    }
+
+    private function triggerFinanceWorkflowAction($payload, $tdsPercentage)
+    {
+        $routePermission = Permission::COMMISSION_PAYOUT;
+
+        $this->trace->info(
+            TraceCode::COMMISSION_INVOICE_ACTION_TRIGGER_WORKFLOW,
+            [
+                'invoice_id' => $payload[Entity::ID],
+                'merchant_id' => $payload[Entity::MERCHANT_ID],
+            ]);
+
+        $totalCommission = $payload[Entity::GROSS_AMOUNT] - $payload[Entity::TAX_AMOUNT];
+        $totalTax        = $payload[Entity::TAX_AMOUNT];
+
+        if(isset($tdsPercentage) && $tdsPercentage['IsSet'] === true)
+        {
+            $tdsPer = $tdsPercentage['Value'];
+
+            $totalTds = (int) round(($tdsPer * $totalCommission) / 10000);
+        }
+        else
+        {
+            $core = new Commission\Core;
+
+            $partner = $this->repo->merchant->findOrFail($payload[Entity::MERCHANT_ID]);
+
+            list($totalTds, $tdsPer) = $core->calculateTds($partner, $totalCommission);
+        }
+
+        $netAmount       = $totalCommission + $totalTax - $totalTds;
+
+        $dirtyData = [
+            Entity::ID          => [$payload[Entity::ID]],
+            Entity::MERCHANT_ID => [$payload[Entity::MERCHANT_ID]],
+            Entity::MONTH       => [$payload[Entity::MONTH]],
+            Entity::YEAR        => [$payload[Entity::YEAR]],
+            Entity::STATUS      => Status::APPROVED,
+            Commission\Constants::TOTAL_TAX        => $totalTax,
+            Commission\Constants::TOTAL_TDS        => $totalTds,
+            Commission\Constants::TOTAL_COMMISSION => $totalCommission,
+            Commission\Constants::TOTAL_NET_AMOUNT => $netAmount,
+            Commission\Constants::TDS_PERCENTAGE   => ($tdsPer/100),
+        ];
+
+        // test for both retry and ack approval. It'll break while callback the url
+        $this->app['workflow']
+            ->setPermission($routePermission)
+            ->setRouteName('commissions_invoice_status_change')
+            ->setRouteParams([$payload[Entity::ID]])
+            ->setController('RZP\Http\Controllers\CommissionInvoiceController@changeStatus')
+            ->setMethod('PUT')
+            ->setDirty($dirtyData)
+            ->setEntityAndId('commission_invoice', $payload[Entity::ID])
+            ->handle();
+    }
+
+    public function settlementTDSForPRTS($payload, $tdsPercentage, $createTds = true)
+    {
+        $resource   = 'COMMISSION_INVOICE_SETTLEMENT_' . $payload[Entity::ID];
+
+        $this->app['api.mutex']->acquireAndRelease(
+            $resource,
+            function () use ($payload, $tdsPercentage, $createTds)
+            {
+                $timeStarted = microtime(true);
+                $partnerId = $payload[Entity::MERCHANT_ID];
+                $timestamps    = $this->convertMonthAndYearToTimeStamp($payload[Entity::MONTH], $payload[Entity::YEAR]);
+
+                $fromTimestamp = $timestamps[Commission\Constants::FROM];
+                $endTimestamp  = $timestamps[Commission\Constants::TO];
+
+                $core = new Commission\Core;
+
+                $afterId = null;
+
+                $partner = $this->repo->merchant->findOrFail($partnerId);
+
+                $batchCount = 1;
+
+                while (true)
+                {
+                    $this->trace->info(TraceCode::COMMISSION_TRANSACTION_FETCH_START, ['batch_count' => $batchCount]);
+
+                    // fetch txns in batches and process
+                    $transactions = $this->repo->transaction->fetchUnsettledCommissionTransactions(
+                        $partner,
+                        $fromTimestamp,
+                        $endTimestamp,
+                        self::COMMISSIONS_TRANSACTION_FETCH_LIMIT,
+                        $afterId);
+
+                    if ($transactions->isEmpty() === true)
+                    {
+                        break;
+                    }
+
+                    $afterId = $transactions->last()->getId();
+
+                    CommissionOnHoldClear::dispatch($this->mode, $transactions->getIds());
+
+                    $batchCount++;
+                }
+
+                if ($createTds === true)
+                {
+                    $totalCommission = $payload[Entity::GROSS_AMOUNT] - $payload[Entity::TAX_AMOUNT];
+                    $totalTax        = $payload[Entity::TAX_AMOUNT];
+
+                    if(isset($tdsPercentage) && $tdsPercentage['IsSet'] === true)
+                    {
+                        $tdsPercentage = $tdsPercentage['Value'];
+
+                        $totalTds = (int) round(($tdsPercentage * $totalCommission) / 10000);
+                    }
+                    else
+                    {
+                        list($totalTds, $tdsPercentage) = $core->calculateTds($partner, $totalCommission);
+                    }
+
+                    $summary['total_tax']        = $totalTax;
+                    $summary['total_commission'] = $totalCommission;
+                    $summary['total_tds']        = $totalTds;
+                    $summary['tds_percentage']   = $tdsPercentage;
+
+                    $this->trace->info(TraceCode::COMMISSION_TDS_SETTLEMENT_SUMMARY, $summary);
+
+                    if ($totalTds > 0)
+                    {
+                        $core->createCommissionTds($partner, $totalTds);
+                    }
+                }
+            },
+            static::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_COMMISSION_TDS_SETTLEMENT_OPERATION_IN_PROGRESS);
+    }
+
+    private function buildAckResponse(?array $response = null, ?array $error = null, ?string $id = null, ?int $createdAt = null): array
+    {
+        return [
+            "id"         => $id ?? null,
+            "response"   => $response ?? null,
+            "created_at" => $createdAt ?? null,
+            "error"      => $error ?? null,
+        ];
+    }
+
+    private function buildError(string $code, string $message): array
+    {
+        return [
+            "code"    => $code,
+            "message" => $message,
+        ];
+    }
+
     public function getCommissionInvoiceExperimentMode(string $partnerId): ?string
     {
         try

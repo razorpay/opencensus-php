@@ -92,4 +92,13 @@ class CommissionInvoiceController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function processInvoiceFromPRTS()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processInvoiceFromPRTS($input);
+
+        return ApiResponse::json($data);
+    }
 }

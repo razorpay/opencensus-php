@@ -806,11 +806,11 @@ class Core extends Base\Core
                     if (isset($txn) === true)
                     {
                         $this->trace->info(TraceCode::COMMISSION_TRANSACTION_ALREADY_CAPTURED,
-                                           [
-                                               'commission_id'  => $commission->getId(),
-                                               'transaction_id' => $txn->getKey(),
-                                               'mode'           => $this->mode,
-                                           ]
+                            [
+                                'commission_id'  => $commission->getId(),
+                                'transaction_id' => $txn->getKey(),
+                                'mode'           => $this->mode,
+                            ]
                         );
 
                         return $txn->getKey();

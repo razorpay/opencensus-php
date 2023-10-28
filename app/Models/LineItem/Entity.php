@@ -104,6 +104,24 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT,
     ];
 
+    public static array $prtsFillable = [
+        self::ID,
+        self::NAME,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::CURRENCY,
+        self::MERCHANT_ID,
+        self::GROSS_AMOUNT,
+        self::AMOUNT,
+        self::NET_AMOUNT,
+        self::QUANTITY,
+        self::TAX_AMOUNT,
+        self::TAX_RATE,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+
     protected $public = [
         self::ID,
         // Uncomment later when required

@@ -3350,6 +3350,7 @@ class Route
         'invoice_on_hold_clear_bulk'               => ['put',      'commissions/invoice/on_hold_clear/bulk',         'CommissionInvoiceController@clearOnHoldForInvoiceBulk'             ],
         'commissions_invoice_reminder'             => ['post',     'commissions/invoice/send_reminders',             'CommissionInvoiceController@sendInvoiceReminders'                  ],
         'fetch_partner_sub_mtu'                    => ['post',     'partner/sub_mtu/bulk',                           'CommissionInvoiceController@fetchPartnerSubMtusCount'                  ],
+        'internal_process_commissions_invoice'     => ['post',     'internal/commissions_invoice/process',           'CommissionInvoiceController@processInvoiceFromPRTS'],
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
@@ -5307,7 +5308,7 @@ class Route
 
         // Generate and send NIUM settlements file via manual trigger
         'generate_nium_settlement_file_admin',
- 	    'fetch_customer_eligibility',
+        'fetch_customer_eligibility',
         'fetch_customer_eligibility_by_id',
 
         '1cc_address_ingestion_config_get',
@@ -6256,6 +6257,7 @@ class Route
         'internal_create_and_capture_commission',
         'internal_capture_commission',
         'internal_entity_origin_fetch',
+        'internal_process_commissions_invoice',
 
         'create_ledger_journal_batch',
 
@@ -6265,7 +6267,7 @@ class Route
 
         '1cc_update_shipping_provider_config',
 
-	    'merchant_fetch_methods_internal',
+        'merchant_fetch_methods_internal',
 
         'get_or_create_customer_internal',
 
@@ -16417,6 +16419,7 @@ class Route
             'calculate_commission',
             'internal_create_and_capture_commission',
             'internal_capture_commission',
+            'internal_process_commissions_invoice',
         ],
 
         'terminals_service' => [

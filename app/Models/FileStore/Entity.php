@@ -63,6 +63,23 @@ class Entity extends Base\PublicEntity
         self::METADATA,
     ];
 
+    public static array  $prtsFillable = [
+        self::MERCHANT_ID,
+        self::TYPE,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::EXTENSION,
+        self::MIME,
+        self::SIZE,
+        self::NAME,
+        self::STORE,
+        self::LOCATION,
+        self::BUCKET,
+        self::REGION,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,

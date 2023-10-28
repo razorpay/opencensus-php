@@ -263,10 +263,10 @@ class PartnershipsService extends Base\Service
         try
         {
             if ($this->isPrtsInvoiceSyncEnabled($partnerId))
-             {
+            {
                 $path = self::UPDATE_INVOICE_STATUS;
                 PartnershipServiceAsync::dispatch($parameters, $path);
-             }
+            }
         }
         catch(\Throwable $e)
         {
@@ -464,10 +464,10 @@ class PartnershipsService extends Base\Service
                 {
                     // Job will be dispatched only after the transaction commits.
                     $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHING,
-                                       [
-                                           'mode'     => $this->mode,
-                                           'payload'  => $jobPayload,
-                                       ]
+                        [
+                            'mode'     => $this->mode,
+                            'payload'  => $jobPayload,
+                        ]
                     );
                     $messageId = $this->pushRawJob($jobPayload, 'prts_common');
                     $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHED, [
@@ -489,8 +489,8 @@ class PartnershipsService extends Base\Service
         catch (\Exception $ex)
         {
             $this->trace->error(TraceCode::PRTS_COMMISSION_INVOICE_DISPATCHING_ERROR, [
-               'error'      => $ex->getMessage(),
-               'invoice_id' => $invoice->getId(),
+                'error'      => $ex->getMessage(),
+                'invoice_id' => $invoice->getId(),
             ]);
             $this->trace->count(Metric::PRTS_COMMISSION_INVOICE_PUSH,['success'=> false]);
         }
@@ -531,17 +531,17 @@ class PartnershipsService extends Base\Service
                     $this->trace->error(TraceCode::PRTS_CREATE_SIGNUP_SOURCE_DISPATCHING_ERROR, [
                         'error'   => $ex->getMessage(),
                         'payload' => $jobPayload,
-                     ]);
+                    ]);
                     $this->trace->count(Metric::PRTS_CREATE_SIGNUP_SOURCE_PUSH,['success'=> false]);
-             }
+                }
             }));
         }
         catch (\Exception $ex)
         {
             $this->trace->error(TraceCode::PRTS_CREATE_SIGNUP_SOURCE_DISPATCHING_ERROR, [
-               'error'      => $ex->getMessage(),
-               'partner_id' => $partnerId,
-               'merchant_id'=> $merchantId,
+                'error'      => $ex->getMessage(),
+                'partner_id' => $partnerId,
+                'merchant_id'=> $merchantId,
             ]);
             $this->trace->count(Metric::PRTS_CREATE_SIGNUP_SOURCE_PUSH,['success'=> false]);
         }
@@ -586,10 +586,10 @@ class PartnershipsService extends Base\Service
                 {
                     // Job will be dispatched only after the transaction commits.
                     $this->trace->info(TraceCode::PRTS_UPSERT_OAUTH_REFERRAL_LINK_DISPATCHING,
-                                       [
-                                           'mode'    => $this->mode,
-                                           'payload' => $jobPayload,
-                                       ]
+                        [
+                            'mode'    => $this->mode,
+                            'payload' => $jobPayload,
+                        ]
                     );
                     $messageId = $this->pushRawJob($jobPayload, 'prts_common');
                     $this->trace->info(TraceCode::PRTS_UPSERT_OAUTH_REFERRAL_LINK_DISPATCHED, [

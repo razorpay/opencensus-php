@@ -136,4 +136,44 @@ class Service extends Base\Service
 
         return $this->repo->commission_invoice->fetchPartnerSubMtuCountFromDataLake($input[Constants::PARTNER_IDS],$input[Constants::INVOICE_MONTH]);
     }
+
+    public function processInvoiceFromPRTS(array $input): array
+    {
+        (new Validator)->validateInput('process_invoice_prts', $input);
+
+        $action = $input[constants::ACTION];
+        $invoiceCore = new Core;
+
+        $response = [];
+
+        switch ($action)
+        {
+            case Constants::CREATE_ISSUED:
+                $response = $invoiceCore->createIssuedFromPRTS($input);
+                break;
+
+            case Constants::CREATE_AND_FINANCE_WORKFLOW:
+                $response = $invoiceCore->createInvoiceAndFinanceWorkflowFromPRTS($input);
+                break;
+
+            case Constants::FINANCE_WORKFLOW:
+                $response = $invoiceCore->createFinanceWorkflowFromPRTS($input);
+                break;
+
+            case Constants::CREATE_AND_SETTLEMENT:
+                $response = $invoiceCore->createInvoiceAndSettlementTDSFromPRTS($input);
+                break;
+
+            case Constants::SETTLEMENT:
+                $response = $invoiceCore->settlementTDSFromPRTS($input);
+                break;
+
+            default:
+                $this->trace->error(TraceCode::PRTS_EVENT_INVALID_ACTION, [
+                    'input' => $input,
+                ]);
+        }
+
+        return $response;
+    }
 }

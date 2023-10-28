@@ -54,6 +54,22 @@ class Entity extends Base\PublicEntity
         self::TAX_AMOUNT   => 'int',
     ];
 
+    public static array $prtsFillable = [
+        self::ID,
+        self::MERCHANT_ID,
+        self::MONTH,
+        self::YEAR,
+        self::GROSS_AMOUNT,
+        self::TAX_AMOUNT,
+        self::BALANCE_ID,
+        self::STATUS,
+        self::NOTES,
+        self::TNC,
+        self::PDF,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
     protected $fillable = [
         self::MONTH,
         self::YEAR,

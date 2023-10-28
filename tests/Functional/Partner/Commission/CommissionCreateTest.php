@@ -143,8 +143,8 @@ class CommissionCreateTest extends TestCase
         $this->enableVirtualAccountQrcodeAndMethods($subMerchantId, $client->getApplicationId());
 
         $this->fixtures->pricing->createBankTransferPercentPricingPlan([
-           'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
-           'percent_rate' => 200,
+            'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            'percent_rate' => 200,
         ]);
         $this->fixtures->pricing->createBankTransferPercentPricingPlan([
             'plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
@@ -200,9 +200,9 @@ class CommissionCreateTest extends TestCase
         $this->enableVirtualAccountQrcodeAndMethods($subMerchantId, $client->getApplicationId());
 
         $this->fixtures->pricing->createUpiTransferPricingPlan([
-           'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
-           'percent_rate' => 200,
-           'receiver_type' => 'qr_code',
+            'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            'percent_rate' => 200,
+            'receiver_type' => 'qr_code',
         ]);
         $this->fixtures->pricing->createUpiTransferPricingPlan([
             'plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
@@ -592,7 +592,7 @@ class CommissionCreateTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-       // make request for refund for the payment
+        // make request for refund for the payment
         $this->fixtures->edit('payment', $payment['id'], ['merchant_id' => Constants::DEFAULT_MERCHANT_ID]);
 
         $response = $this->reverseCommissionForRefund($payment['id'], $payment['amount']*0.5, false);
@@ -1313,7 +1313,7 @@ class CommissionCreateTest extends TestCase
         $invoice = $this->getDbLastEntity('commission_invoice');
 
         $this->fixtures->base->editEntity('commission_invoice',  $invoice['id'],
-              ['month' => $month ,'year'=> $year]);
+            ['month' => $month ,'year'=> $year]);
 
         // check that invoice is created with line items and amounts
         $invoice = $this->getDbLastEntity('commission_invoice');
@@ -2302,7 +2302,7 @@ class CommissionCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_MERCHANT_ID);
 
-         $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
         $this->ba->partnershipServiceAuth();
 
@@ -2315,7 +2315,7 @@ class CommissionCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_MERCHANT_ID);
 
-         $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
         $this->ba->partnershipServiceAuth();
 
@@ -2443,9 +2443,9 @@ class CommissionCreateTest extends TestCase
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
 
         $input = $this->getPayloadForCommissionCalculatorAPI($payment['id'],
-                                                             Constants::DEFAULT_PLATFORM_MERCHANT_ID,
-                                                             Pricing::DEFAULT_COMMISSION_PLAN_ID,
-                                                             Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID
+            Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            Pricing::DEFAULT_COMMISSION_PLAN_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID
         );
         $response = (new Commission\Service())->calculateCommissionFromPricingDetails($input);
 
@@ -2847,7 +2847,7 @@ class CommissionCreateTest extends TestCase
                 'fee_bearer' => 'customer',
             ]);
 
-       $this->fixtures->pricing->editDefaultCommissionPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+        $this->fixtures->pricing->editDefaultCommissionPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $this->fixtures->pricing->editTwoPercentPricingPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
@@ -3537,15 +3537,15 @@ class CommissionCreateTest extends TestCase
 
         // set up implict pricing plan
         $this->fixtures->pricing->createUpiTransferPricingPlan([
-                                                                   'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
-                                                                   'percent_rate' => 200,
-                                                                   'receiver_type' => 'qr_code',
-                                                               ]);
+            'plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            'percent_rate' => 200,
+            'receiver_type' => 'qr_code',
+        ]);
         $this->fixtures->pricing->createUpiTransferPricingPlan([
-                                                                   'plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
-                                                                   'percent_rate' => 100,
-                                                                   'receiver_type' => 'qr_code',
-                                                               ]);
+            'plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            'percent_rate' => 100,
+            'receiver_type' => 'qr_code',
+        ]);
         $this->createConfigForPartnerApp($client->getApplicationId(), null, [
             'implicit_plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
         ]);
@@ -4184,5 +4184,170 @@ class CommissionCreateTest extends TestCase
         $data['request']['content']['payload'] = $updatedPayload;
 
         return $this->startTest($data);
+    }
+
+    public function testCreateInvoiceIssuedFromPRTS()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest($testData);
+
+        $this->assertInvoiceEntityCreation('issued');
+    }
+
+    public function testCreateInvoiceAndFinanceWorkflowFromPRTS()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest($testData);
+
+        $this->assertInvoiceEntityCreation('under_review');
+
+        $app = App::getFacadeRoot();
+        $this->assertEquals($app['workflow']->getRouteName(), 'commissions_invoice_status_change');
+    }
+
+    public function testCreateInvoiceAndFinanceWorkflowFromPRTSAlreadyCreatedInvoice()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $testData = $this->testData['testCreateInvoiceIssuedFromPRTS'];
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest($testData);
+
+        $testData = $this->testData['testCreateInvoiceAndFinanceWorkflowFromPRTS'];
+
+        $this->startTest($testData);
+
+        $this->assertInvoiceEntityCreation('under_review');
+
+        $app = App::getFacadeRoot();
+        $this->assertEquals($app['workflow']->getRouteName(), 'commissions_invoice_status_change');
+    }
+
+    public function testCreateInvoiceAndSettlementTDSFromPRTS()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest($testData);
+
+        $this->assertInvoiceEntityCreation('processed');
+    }
+
+    public function testCreateFinanceWorkflowFromPRTS()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest($testData);
+
+        $invoices = $this->getDbEntities('commission_invoice');
+        $this->assertCount(0, $invoices);
+
+        $app = App::getFacadeRoot();
+        $this->assertEquals($app['workflow']->getRouteName(), 'commissions_invoice_status_change');
+    }
+
+    public function testSettlementTDSFromPRTS()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest($testData);
+
+        $invoices = $this->getDbEntities('commission_invoice');
+        $this->assertCount(0, $invoices);
+    }
+
+    public function testReverseShadowCompleteFlowFromPRTS()
+    {
+        // invoices created with issued status
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $testData = $this->testData['testCreateInvoiceIssuedFromPRTS'];
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest($testData);
+
+        $this->assertInvoiceEntityCreation('issued');
+
+        // merchant approved and updated status to under_review
+        $testData = $this->testData['testCreateInvoiceAndFinanceWorkflowFromPRTS'];
+
+        $this->startTest($testData);
+
+        $this->assertInvoiceEntityCreation('under_review');
+
+        $app = App::getFacadeRoot();
+        $this->assertEquals($app['workflow']->getRouteName(), 'commissions_invoice_status_change');
+
+        // after creation of workflow invoice updated to approved status and request for settlement
+        $testData = $this->testData['testCreateInvoiceAndSettlementTDSFromPRTS'];
+
+        $this->startTest($testData);
+
+        $this->assertInvoiceEntityCreation('processed');
+    }
+
+    protected function assertInvoiceEntityCreation($status)
+    {
+        $invoices = $this->getDbEntities('commission_invoice');
+        $this->assertCount(1, $invoices);
+
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => 7,
+            'year' => 2023,
+            'status' => $status,
+            'gross_amount' => 1264,
+            'tax_amount' => 193,
+        ];
+
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+
+        $lineItemExpectedData = [
+            [
+                'amount' => 1264,
+                'gross_amount' => 1264,
+                'tax_amount' => 193,
+                'net_amount' => 1264,
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($lineItemExpectedData, $invoice->lineItems->toArray());
+
+        $filestore = $this->getDbLastEntity('file_store');
+
+        $filestoreExpectedData = [
+            'name' => 'pdfs/commission/fileName',
+            'location' => 'pdfs/commission/fileName.pdf',
+            'bucket' => 'S3BucketName',
+        ];
+
+        $this->assertArraySelectiveEquals($filestoreExpectedData, $filestore->toArray());
     }
 }

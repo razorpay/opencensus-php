@@ -12,6 +12,15 @@ class Constants
     const PARTNER_IDS   = 'partner_ids';
     const INVOICE_MONTH = 'invoice_month';
     const REMINDER      = 'reminder';
+    const PAYLOAD       = 'payload';
+    const CREATED_AT    = 'created_at';
+    const ACTION        = 'action';
+
+    const CREATE_AND_SETTLEMENT       = 'create_and_settlement';
+    const SETTLEMENT                  = 'settlement';
+	const CREATE_ISSUED               = 'create_issued';
+	const CREATE_AND_FINANCE_WORKFLOW = 'create_and_finance_workflow';
+	const FINANCE_WORKFLOW            = 'finance_workflow';
 
     const SKIP_PROCESSED        = 'skip_processed';
     const UPDATE_INVOICE_STATUS = 'update_invoice_status';

@@ -43,6 +43,13 @@ class Validator extends Base\Validator
         Constants::SKIP_PROCESSED        => 'sometimes|boolean',
     ];
 
+    protected static $processInvoicePrtsRules          = [
+        Constants::ACTION     => 'required',
+        Constants::CREATED_AT => 'required',
+        Constants::PAYLOAD    => 'required|string',
+        Entity::ID            => 'required|string|size:14',
+    ];
+
     public function validateAction($attribute, $key)
     {
         Status::validateStatus($key);
