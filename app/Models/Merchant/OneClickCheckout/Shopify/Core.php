@@ -934,7 +934,7 @@ class Core extends Base\Core
 
             $placeOrderStart = millitime();
 
-            if ($draftOrderFlowEnabled === true || $this->isCouponEngineOrder($orderMeta))
+            if ($draftOrderFlowEnabled === true)
             {
                 $this->trace->info(
                     TraceCode::SHOPIFY_RETRY_DRAFT_ORDER_FLOW_STARTED,
@@ -1029,15 +1029,6 @@ class Core extends Base\Core
 
     }
 
-    protected function isCouponEngineOrder(array $ometa): bool {
-        foreach ($ometa["promotions"] ?? [] as $key => $promo) {
-            if (isset($promo["reference_id"]) && strpos($promo["reference_id"], "offer_") == 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi,array $utmParameters=[], array $orderMeta = [], array $nectorCoinsResponse = []): array
     {
         $start = millitime();
@@ -1062,7 +1053,7 @@ class Core extends Base\Core
 
             $draftOrderFlowEnabled = $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_DRAFT_ORDER);
 
-            if ($draftOrderFlowEnabled === true || $this->isCouponEngineOrder($orderMeta))
+            if ($draftOrderFlowEnabled === true)
             {
                 $this->trace->info(
                     TraceCode::SHOPIFY_DRAFT_ORDER_FLOW_STARTED,
