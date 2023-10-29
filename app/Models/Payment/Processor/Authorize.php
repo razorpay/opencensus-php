@@ -12620,7 +12620,12 @@ trait Authorize
         string $currency,
         int $amountAuthorized): bool
     {
-        $diff = ($amountAuthorized - $payment->getAmount());
+        $paymentAmount = $payment->getAmount();
+        if ($payment->merchant->isLRSFlowEnabled())
+        {
+            $paymentAmount = $payment->getGatewayAmount();
+        }
+        $diff = ($amountAuthorized - $paymentAmount);
 
         if ($diff === 0)
         {

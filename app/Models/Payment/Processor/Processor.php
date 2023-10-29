@@ -4139,9 +4139,7 @@ class Processor
 
         if ($payment->merchant->isLRSFlowEnabled() === true)
         {
-            $input['lrs_inr_fee'] = $fee;
-            $input['lrs_inr_tax'] = $tax;
-            $input['lrs_inr_amount'] = (new Currency\Core)->reverseLRSEducationFee($input, $fee, $tax);
+            (new Currency\Core)->reverseLRSEducationFee($input, $fee, $tax);
         }
         else
         {

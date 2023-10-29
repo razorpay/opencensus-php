@@ -253,7 +253,7 @@ class Core extends Base\Core
         $tax = (int) ceil(($tax / $rate) * $denominationFactor);
     }
 
-    public function reverseLRSEducationFee($input, &$fee, &$tax)
+    public function reverseLRSEducationFee(&$input, &$fee, &$tax)
     {
         $param = [
             'order_id' => $input['order_id'],
@@ -269,7 +269,11 @@ class Core extends Base\Core
         $denominationFactor = $denominationFactorInputCurr/$denominationFactorInr;
         $fee = (int) ceil(($fee / $rate) * $denominationFactor);
         $tax = (int) ceil(($tax / $rate) * $denominationFactor);
-        return (int)$lrs_quote['data']['converted_amount'];
+
+        // this is required to show the correct amount on checkout screen
+        $input['lrs_inr_fee'] = (int)ceil($fee * $lrs_quote['data']['exchange_rate']);
+        $input['lrs_inr_tax'] = (int)ceil($tax * $lrs_quote['data']['exchange_rate']);
+        $input['lrs_inr_amount'] = (int)$lrs_quote['data']['converted_amount'];
     }
 
     protected function getMccReverseRateAndDenominationFactor($input)
