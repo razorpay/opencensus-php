@@ -1648,9 +1648,8 @@ class Core extends Detail\Core
      * @param array $merchantIds
      * @param array $requiredEntities [merchant,merchant_details,tax_components,partner_activation,commission_balance]
      *
-     * @return array
      */
-    public function fetchPartnerRelatedEntitiesForPRTS(array $merchantIds, array $requiredEntities): array
+    public function fetchPartnerRelatedEntitiesForPRTS(array $merchantIds, array $requiredEntities)
     {
         $result    = [];
         $relations = [];
@@ -1668,12 +1667,12 @@ class Core extends Detail\Core
         ]);
         $merchants =  $this->repo->merchant->findManyWithRelations($merchantIds, $relations);
         foreach ($merchants as $merchant) {
-            if (empty($merchant) == false and $merchant->isPartner())
+            if (empty($merchant) == false)
             {
                 $result[] = $this->buildPartnershipResponseForMerchant($merchant, $requiredEntities);
             }
         }
-        return $result;
+        return empty($result) ? '' : $result;
     }
 
     public function updateNcOptOutForPartner(array $input)
@@ -1832,11 +1831,11 @@ class Core extends Detail\Core
         return $partnerDomainProperties;
     }
 
-    private function buildMerchantDetailsArray(Merchant\Entity $merchant): array
+    private function buildMerchantDetailsArray(Merchant\Entity $merchant)
     {
         $merDetail = $merchant->merchantDetail;
         if ($merDetail == null) {
-            return [];
+            return null;
         }
         return [
             Entity::ID        => $merDetail->getContactMobile(),
@@ -1858,20 +1857,20 @@ class Core extends Detail\Core
         return $taxComponent;
     }
 
-    private function buildCommissionBalanceArray(Merchant\Entity $merchant): array
+    private function buildCommissionBalanceArray(Merchant\Entity $merchant)
     {
         $commBalance = $merchant->commissionBalance;
         if ($commBalance == null) {
-            return [];
+            return null;
         }
         return [ Balance\Entity::BALANCE_ID => $commBalance->getId() ];
     }
 
-    private function buildPartnerActivationArray(Merchant\Entity $merchant): array
+    private function buildPartnerActivationArray(Merchant\Entity $merchant)
     {
         $partnerActivation = $merchant->partnerActivation;
         if ($partnerActivation == null) {
-            return [];
+            return null;
         }
         return [Activation\Entity::ACTIVATION_STATUS => $partnerActivation->getActivationStatus() ];
     }

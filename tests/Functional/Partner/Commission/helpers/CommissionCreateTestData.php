@@ -1100,7 +1100,9 @@ return [
             'url'    => '/partner/commission_invoice_feature',
         ],
         'response' => [
-            'content'     => ['1000000000plat','10000000000000','100nonplatform'],
+            'content'     => [
+                'partner_ids' => ['1000000000plat','10000000000000','100nonplatform'],
+            ],
             'status_code' => 200,
         ],
     ],
@@ -1111,7 +1113,9 @@ return [
             'url'    => '/partner/commission_invoice_feature?limit=1&after_id=',
         ],
         'response' => [
-            'content'     => ['1000000000plat'],
+            'content'     => [
+                'partner_ids' => ['1000000000plat'],
+            ],
             'status_code' => 200,
         ],
     ],

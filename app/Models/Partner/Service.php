@@ -509,9 +509,8 @@ class Service extends Base\Service
      * fetches all the required entities for partnership service
      * @param array $input
      *
-     * @return array
      */
-    public function fetchPartnerRelatedEntitiesForPRTS(array $input): array
+    public function fetchPartnerRelatedEntitiesForPRTS(array $input)
     {
         $merchantIds = explode(',',$input['ids']);
         $requiredEntities = explode(',',$input['expand']);

@@ -124,7 +124,12 @@ class Core extends Base\Core
      */
     public function fetchPartnersWithCommissionInvoiceFeature(int $limit, string $afterId) : array
     {
-         return $this->repo->feature->fetchPaginatedPartnerIdsWithFeature(Feature\Constants::GENERATE_PARTNER_INVOICE, $afterId, $limit);
+        $features = $this->repo->feature->fetchPaginatedPartnerIdsWithFeature(Feature\Constants::GENERATE_PARTNER_INVOICE, $afterId, $limit);
+
+        $afterId = $features->last()->getId();
+
+        $mIds = $features->pluck(Feature\Entity::ENTITY_ID)->toArray();
+        return ['partner_ids' => $mIds, 'after_id' => $afterId];
     }
 
     public function changeInvoiceStatus(Entity $invoice, $input)

@@ -178,12 +178,12 @@ class Repository extends Base\Repository
 
     /**
      * @param string $featureName
-     * @param int    $skip
-     * @param int    $limit
+     * @param string $afterId
+     * @param int $limit
      *
-     * @return array
+     * @return Collection
      */
-    public function fetchPaginatedPartnerIdsWithFeature(string $featureName, string $afterId, int $limit): array
+    public function fetchPaginatedPartnerIdsWithFeature(string $featureName, string $afterId, int $limit)
     {
         $query =  $this->newQueryOnSlave()
                     ->where(Entity::NAME, $featureName)
@@ -195,8 +195,7 @@ class Repository extends Base\Repository
         {
             $query->where(Entity::ID, '>', $afterId);
         }
-        return $query->pluck(Entity::ENTITY_ID)
-            ->toArray();
+        return $query->get();
     }
 
     public function findMerchantWithFeatures(string $merchantId, array $featureNames)
