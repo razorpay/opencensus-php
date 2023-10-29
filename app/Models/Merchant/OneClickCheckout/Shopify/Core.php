@@ -64,6 +64,9 @@ class Core extends Base\Core
 
     const MAGIC_CHECKOUT_SERVICE_DRAFT_ORDER_PATH = 'v1/draftorder';
 
+    const MAGIC_CHECKOUT_SERVICE_PAYLOAD_MATCH_PATH = 'v1/payload/match';
+
+
     protected $monitoring;
 
     public function __construct()
@@ -1042,6 +1045,23 @@ class Core extends Base\Core
         $client = $this->getShopifyClientByMerchant();
 
         $body = $this->getCreateOrderPayload($rzpOrder, $rzpPayment, $utmParameters, $nectorCoinsResponse);
+
+        try
+        {
+            $this->matchAPIAndMCSPayload($orderId, $rzpPayment['id'], $body, $fromShopifyApi, 'create_shopify_order_request_payload');
+        }
+        catch (\Exception $payloadDiffException)
+        {
+            $this->trace->info(
+                TraceCode::SHOPIFY_COMPUTE_API_MCS_PAYLOAD_DIFF_ERROR,
+                [
+                    'type'       => 'create_shopify_order_request_payload_error',
+                    'order_id'   => $orderId,
+                    'payment_id' => $rzpPayment['id'],
+                    'error'      => $payloadDiffException->getMessage(),
+                ]
+            );
+        }
 
         $isSEwithCouponApplied = $body['script_with_coupon_applied'];
 
@@ -2799,5 +2819,39 @@ class Core extends Base\Core
         // This is required because further down the code, json_decode function is being used to decode the string to json
         // In order to minimise the number of changes done to complete checkout API we are json_encoding the order response which will be json_decoded later
         return json_encode($order);
+    }
+
+    protected function matchAPIAndMCSPayload(string $rzpOrderId, string $rzpPaymentID, $payload, bool $fromShopifyApi, string $payloadType): void
+    {
+        $merchantId = $this->merchant->getId();
+
+        $input = array(
+            'rzp_order_id'      => $rzpOrderId,
+            'payload'           => $payload,
+            'merchant_id'       => $merchantId,
+            'type'              => $payloadType,
+            'rzp_payment_id'    => $rzpPaymentID,
+            'source'            => $fromShopifyApi?'api':'sqs',
+        );
+
+
+        $requestUri = self::MAGIC_CHECKOUT_SERVICE_PAYLOAD_MATCH_PATH;
+
+        try
+        {
+            $this->app['magic_checkout_service_client']->sendRequest($requestUri, $input, Requests::POST);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::SHOPIFY_COMPUTE_API_MCS_PAYLOAD_DIFF_ERROR,
+                [
+                    'type'       => 'api_mcs_payload_compute_diff_error',
+                    'order_id'   => $rzpOrderId,
+                    'payment_id' => $rzpPaymentID,
+                    'error'      => $e->getMessage(),
+                ]
+            );
+        }
     }
 }
