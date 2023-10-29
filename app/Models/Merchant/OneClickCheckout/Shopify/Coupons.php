@@ -135,7 +135,7 @@ class Coupons extends Base\Core
         return ['promotions' => $promotions];
     }
 
-    public function applyCoupon($input, $checkoutId)
+    public function applyCoupon($input, $checkoutId, $orderId = null)
     {
         $client = $this->getShopifyClientByMerchant();
 
@@ -171,7 +171,17 @@ class Coupons extends Base\Core
 
         $promotions = [];
 
-        // This is required to handle the combination discount feature
+        $isValidCoupon  = $this->isValidCombinationCoupon($orderId, $checkoutId, $checkout['discountApplications']['edges']);
+
+        // Will restrict non combination coupon applied on top of automatic discount.
+        if($isValidCoupon === false)
+        {
+            (new Coupons)->removeCoupon($checkoutId);
+
+            return $this->getInvalidCouponApplicationResponse($input, $response, self::APPLY_COUPON_NOT_APPLICABLE);
+        }
+
+        // This check is required to handle the combination discount feature
         foreach ($checkout['discountApplications']['edges'] as $key => $edge) {
             
             if(isset($edge['node']['code']) === true)
@@ -186,7 +196,20 @@ class Coupons extends Base\Core
             return $this->getInvalidCouponApplicationResponse($input, $response, self::APPLY_COUPON_NOT_APPLICABLE);
         }
 
-        $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']['amount']) * 100;
+        // Based on type of discount the final discount amount is calculated.
+        if(isset($promotions['value']['amount'])) {
+
+            $value = (new Utils)->formatNumber($promotions['value']['amount']) * 100;
+
+        }elseif(isset($promotions['value']['percentage']) && $promotions['targetSelection'] != 'ENTITLED') {
+
+            $discountAmount = ($promotions['value']['percentage'] / 100) * $checkout['lineItemsSubtotalPrice']['amount'];
+            $value = (new Utils)->formatNumber($discountAmount) * 100;
+
+        }else {
+
+            $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']['amount']) * 100;
+        }
 
         $tax =  ((new Utils)->formatNumber($checkout['totalTax']['amount']) * 100);
 
@@ -253,6 +276,29 @@ class Coupons extends Base\Core
             ],
             'status_code' => 200,
         ];
+    }
+
+    // Validate the applied coupon is combination coupon, if it's applied with automatic coupon.
+    protected function isValidCombinationCoupon($orderId, $checkoutId, $discountsNode)
+    {
+        $order = (new RzpOrders())->findOrderByIdAndMerchant($orderId);
+
+        $rzpOrder = $order->toArrayPublic();
+
+        if(isset($rzpOrder['notes']['Script_Discount_Title']) && $rzpOrder['notes']['Script_Discount_Amount'] > 0 && $rzpOrder['notes']['discount_source'] === 'Automatic' && count($discountsNode) === 1)
+        {
+            $autoDiscountTitle = $rzpOrder['notes']['Script_Discount_Title'];
+
+            foreach ($discountsNode as $key => $edge) {
+
+                if(isset($edge['node']['title']) === false || $edge['node']['title'] !== $autoDiscountTitle)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     // Removes coupon from Shopify Checkout

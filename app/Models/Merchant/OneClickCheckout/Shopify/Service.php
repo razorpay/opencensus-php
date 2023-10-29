@@ -1089,7 +1089,7 @@ class Service extends Base\Service
             }
         }
 
-        $applyCouponResponse =  (new Coupons)->applyCoupon($input, $checkoutId);
+        $applyCouponResponse =  (new Coupons)->applyCoupon($input, $checkoutId, $orderId);
         // In case a coupon is created dynamically but not applicable, we override the
         // default error message to allow plugins to specific error messages themselves.
         if (isset($applyCouponResponse['response']['failure_reason']) and
