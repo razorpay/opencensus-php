@@ -339,7 +339,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateLast4($input)
     {
-        if ( empty($input['number']) === false and empty($input['tokenised']) === false)
+        if ( (empty($input['number']) === false and empty($input['tokenised']) === false) or $this->isExternalAltIdPayment($input))
         {
             $tokenlast4 = substr($input['number'], -4);
             $this->setAttribute(self::TOKEN_LAST_4, $tokenlast4);
@@ -364,8 +364,8 @@ class Entity extends Base\PublicEntity
         {
             $iin = substr($input['number'], 0, 6);
 
-            if ((empty($input[self::IS_TOKENIZED_CARD]) === false) and
-                ($input[self::IS_TOKENIZED_CARD] === true))
+            if (((empty($input[self::IS_TOKENIZED_CARD]) === false) and
+                ($input[self::IS_TOKENIZED_CARD] === true)) or $this->isExternalAltIdPayment($input))
             {
                 $tokenizedRange = substr($input['number'], 0, 9);
                 $iin = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iin;
@@ -378,6 +378,13 @@ class Entity extends Base\PublicEntity
         {
             $this->setAttribute(self::IIN, $input['iin']);
         }
+    }
+
+    public static function isExternalAltIdPayment($input): bool
+    {
+        return is_null($input[Card\Entity::TOKENISED]) === false &&
+            boolval($input[Card\Entity::TOKENISED]) === false &&
+            empty($input[Card\Entity::CRYPTOGRAM_VALUE]) === false;
     }
 
     protected function generateType($input)
@@ -406,6 +413,11 @@ class Entity extends Base\PublicEntity
             (boolval($input['tokenised']) === true))
         {
             $this->setAttribute(self::TRIVIA, "1");
+        }
+
+        if ($this->isExternalAltIdPayment($input))
+        {
+            $this->setAttribute(self::TRIVIA, "2");
         }
     }
 

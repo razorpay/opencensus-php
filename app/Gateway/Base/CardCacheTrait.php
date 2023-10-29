@@ -121,7 +121,7 @@ trait CardCacheTrait
             $input['card'][Card\Entity::TOKEN_PROVIDER]   = $data[Card\Entity::TOKEN_PROVIDER];
         }
 
-        if ($input['card'][Card\Entity::TRIVIA] === '2'){
+        if (($input['card'][Card\Entity::TRIVIA] === '2') && Card\Entity::isExternalAltIdPayment($input['card']) === false){
 
             $altIdData = $this->getAltIdDetailsFromCache($input);
 

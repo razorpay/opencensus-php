@@ -60,7 +60,12 @@ class Core extends Base\Core
             }
 
             // this will set card's iin field with actual card bin not with the token pan's iin
-            $input[Card\Entity::IS_TOKENIZED_CARD] = true;
+
+            if (Card\Entity::isExternalAltIdPayment($input) === false)
+            {
+                $input[Card\Entity::IS_TOKENIZED_CARD] = true;
+            }
+
         }
 
         // Unset Billing Address if present in card entity since it's not stored in card entity.
@@ -809,9 +814,10 @@ class Core extends Base\Core
     {
         $iinNumber = $card->getAttributes()[Card\Entity::IIN];
 
-        if ((empty($input[Card\Entity::TOKENISED]) === false) and
+        if (((empty($input[Card\Entity::TOKENISED]) === false) and
             (boolval($input[Card\Entity::TOKENISED]) === true) and
-            (array_key_exists('number', $input) === true))
+            (array_key_exists('number', $input) === true)) or
+            Card\Entity::isExternalAltIdPayment($input))
         {
             $tokenizedRange = substr($input['number'], 0, 9);
 
@@ -1616,7 +1622,7 @@ class Core extends Base\Core
 
     public function setTokenExpiryMonthAndYear($input, bool $isRzpX)
     {
-        return (empty($input[Entity::TOKENISED]) === false and  boolval($input[Entity::TOKENISED]) === true);
+        return ((empty($input[Entity::TOKENISED]) === false and  boolval($input[Entity::TOKENISED]) === true) or Card\Entity::isExternalAltIdPayment($input));
     }
 
     public function checkIfVaultTokenIsNull($card, bool $compositePayoutSaveOrFail)
