@@ -136,4 +136,43 @@ class ShieldTest extends TestCase
 
         $this->assertEquals($appUrls, $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_APP_URLS]);
     }
+
+    public function testMerchantDetailPresentWithAdditionalWebsites()
+    {
+        $populateMerchantDetailsMethod = $this->setMethod('populateMerchantDetails');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $additional_websites = ['https://www.xyz.com', 'https://www.abc.com'];
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'additional_websites' => $additional_websites,
+        ]);
+
+        $payloadDetails = [];
+
+        $populateMerchantDetailsMethod->invokeArgs(new Shield($this->app), [$merchant, &$payloadDetails]);
+
+        $this->assertEquals($additional_websites, $payloadDetails[ShieldConstants::ADDITIONAL_WEBSITES]);
+
+    }
+
+    public function testMerchantDetailPresentWithoutAdditionalWebsites()
+    {
+        $populateMerchantDetailsMethod = $this->setMethod('populateMerchantDetails');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+        ]);
+
+        $payloadDetails = [];
+
+        $populateMerchantDetailsMethod->invokeArgs(new Shield($this->app), [$merchant, &$payloadDetails]);
+
+        $this->assertEquals([], $payloadDetails[ShieldConstants::ADDITIONAL_WEBSITES]);
+
+    }
 }

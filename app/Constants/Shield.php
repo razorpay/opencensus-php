@@ -99,6 +99,7 @@ final class Shield
     const ORDER_CANCEL_URL              = 'order_cancel_url';
     const ORDER_REFERER_URL             = 'order_referer_url';
     const ORDER_DOMAIN                  = 'order_domain';
+    const ADDITIONAL_WEBSITES           = 'additional_websites';
 
     const IS_PARTNER_INITIATED_PAYMENT = 'is_partner_initiated_payment';
     const EARLY_SETTLEMENT_ENABLED     = 'early_settlement_enabled';

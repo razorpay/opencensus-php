@@ -237,6 +237,8 @@ class Shield
 
         $payloadDetails[ShieldConstants::ORG_ID] = $merchant->getOrgId();
 
+        $payloadDetails[ShieldConstants::ADDITIONAL_WEBSITES] = $merchant->merchantDetail->getAdditionalWebsites() ?? [];
+
         $this->populateEarlySettlementDetails($merchant, $payloadDetails);
 
         $this->populateWhiteListedDomains($merchant, $payloadDetails);
@@ -288,12 +290,12 @@ class Shield
         $payloadDetails[ShieldConstants::METHOD] = $payment->getMethod();
 
         // add checkout session id from device fingerprint
-        if(isset($input[ShieldConstants::DEVICE_FINGERPRINT]) === true && 
+        if(isset($input[ShieldConstants::DEVICE_FINGERPRINT]) === true &&
            isset($input[ShieldConstants::DEVICE_FINGERPRINT][ShieldConstants::CHECKOUT_SESSION_ID]) === true)
         {
             $payloadDetails[ShieldConstants::CHECKOUT_SESSION_ID] = $input[ShieldConstants::DEVICE_FINGERPRINT][ShieldConstants::CHECKOUT_SESSION_ID];
         }
-        
+
         $billingAddress = null;
 
         if(isset($input[Payment\Entity::BILLING_ADDRESS]) === true)
@@ -312,7 +314,7 @@ class Shield
             $payloadDetails[ShieldConstants::BILLING_ADDRESS_LINE_1]      = isset($billingAddress[Address\Entity::LINE1]) ? $billingAddress[Address\Entity::LINE1] : null;
             $payloadDetails[ShieldConstants::BILLING_ADDRESS_LINE_2]      = isset($billingAddress[Address\Entity::LINE2]) ? $billingAddress[Address\Entity::LINE2] : null ;
             $payloadDetails[ShieldConstants::BILLING_ADDRESS_CITY]        = isset($billingAddress[Address\Entity::CITY])  ? $billingAddress[Address\Entity::CITY] : null ;
-            
+
             $postalCode = $billingAddress[ShieldConstants::POSTAL_CODE] ?? $billingAddress[ShieldConstants::ZIPCODE] ?? null;
 
             $payloadDetails[ShieldConstants::BILLING_ADDRESS_POSTAL_CODE] = $postalCode;
@@ -400,7 +402,7 @@ class Shield
         }
 
         $cartInfo = $payment->order->getCartInfoOrderMeta();
-        
+
         if(isset($cartInfo) === false)
         {
             return;
