@@ -66,7 +66,7 @@ class Reconciliate extends Base\Reconciliate
             }
         }
 
-        if (strpos($fileName, self::REFUND) !== false)
+        if (strpos($fileName, self::REV) !== false)
         {
             $typeName = self::REFUND;
         }

@@ -213,7 +213,7 @@ class Base extends Core
         self::NETBANKING_UBI           => [],
         self::NETBANKING_AUSF          => [],
         self::NETBANKING_AUSF_CORP     => [],
-        self::NETBANKING_KOTAK_V2      => ['bankalerts@kotak.com'],
+        self::NETBANKING_KOTAK_V2      => ['kotakpgrecon@kotak.com'],
         self::NETBANKING_NSDL          => [],
         self::JIOMONEY                 => [],
         self::EBS                      => [],

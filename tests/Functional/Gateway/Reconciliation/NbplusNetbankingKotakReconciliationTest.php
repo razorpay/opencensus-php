@@ -89,7 +89,7 @@ class NbplusNetbankingKotakReconciliationTest extends StaticCallbackNbplusGatewa
 
         $reconFile = $this->generateRefundReconFile($data, $data2);
 
-        $fileName = 'PG_ONLINE_REFUND_'.Carbon::today()->format("d-m-Y").'.txt';
+        $fileName = 'OSRAZORPAY_'.Carbon::today()->format("Ymd").'_REV.txt';
 
         $uploadedFile = $this->createUploadedFile($reconFile['local_file_path'], $fileName, "text/plain");
 

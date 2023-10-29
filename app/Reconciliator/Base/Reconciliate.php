@@ -37,6 +37,7 @@ class Reconciliate extends Base\Core
     const COMBINED       = 'combined';
     const MANUAL         = 'manual';
     const EMANDATE_DEBIT = 'emandate_debit';
+    const REV            = 'rev';
 
     // Before sending requests to scrooge api, we
     // need to break them into chunks of this size
