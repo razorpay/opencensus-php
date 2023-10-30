@@ -482,14 +482,26 @@ class AmountWithdraw extends React.Component {
 
   getRepayableAmount = () => {
     const withdrawalConfigurationDetails = this.props?.withdrawalConfigurationDetails?.data;
-    const { interest, auto_collection = false } = withdrawalConfigurationDetails?.configuration;
+    const {
+      interest,
+      auto_collection = false,
+      roi_frequency,
+    } = withdrawalConfigurationDetails?.configuration;
     const startDay = moment();
+
+    let roi = parseInt(interest, 10) / 100;
+
+    if (roi_frequency === 'YEARLY') {
+      roi = roi / 12 / 30;
+    }
+
+    if (roi_frequency === 'MONTHLY') {
+      roi = roi / 30;
+    }
 
     const selectedDate = this.getDueDate().endOf('day');
 
     const diffDays = selectedDate.diff(startDay, 'days');
-
-    const roi = parseInt(interest, 10) / 100;
 
     const isInterestTypeReducing = this.isInterestTypeReducing();
 
