@@ -8,12 +8,19 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode\RequestSource;
 
 class Metric extends Base\Core
 {
-    const QR_CODE_CREATE_SUCCESS            = 'qr_code_create_success';
-    const QR_CODE_CREATE_FAILED             = 'qr_code_create_failed';
-    const QR_CODE_CREATE_LATENCY            = 'qr_code_create_latency';
-    const QR_CODE_CREATE_LATENCY_WIHTOUT_GW = 'qr_code_create_latency_without_gw';
-    const QR_CODE_CLOSE_SUCCESS             = 'qr_code_close_success';
-    const QR_CODE_CLOSE_FAILED              = 'qr_code_close_failed';
+    const QR_CODE_CREATE_SUCCESS                    = 'qr_code_create_success';
+    const QR_CODE_CREATE_FAILED                     = 'qr_code_create_failed';
+    const QR_CODE_CREATE_LATENCY                    = 'qr_code_create_latency';
+    const QR_CODE_REMINDER_REGISTRATION_LATENCY     = 'qr_code_reminder_registration_latency';
+    const QR_CODE_REMINDER_RESPONSE_STATUS_CODE     = 'qr_code_reminder_response_status_code';
+    const QR_PAYMENT_CREATION_SOURCE                = 'qr_payment_creation_source';
+    const QR_CODE_CREATE_LATENCY_WIHTOUT_GW         = 'qr_code_create_latency_without_gw';
+    const QR_CODE_CLOSE_SUCCESS                     = 'qr_code_close_success';
+    const QR_CODE_CLOSE_FAILED                      = 'qr_code_close_failed';
+    const QR_STATUS_CHECK_REMINDER_CALLBACK_LATENCY = 'qr_status_check_reminder_callback_latency';
+    const QR_STATUS_CHECK_GATEWAY_LATENCY           = 'qr_status_check_gateway_latency';
+    const QR_STATUS_CHECK_PAYMENT_CREATION_FAILURE  = 'qr_status_check_payment_creation_failure';
+    const QR_STATUS_CHECK_SQS_MESSAGE_DISPATCH_FAILED = 'qr_status_check_sqs_message_dispatch_failed';
 
     const LABEL_MERCHANT_ID   = 'merchant_id';
     const LABEL_CLOSE_REASON  = 'close_reason';

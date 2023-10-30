@@ -4,6 +4,7 @@ namespace RZP\Models\QrPaymentRequest;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\QrCode\Metric;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Generator;
@@ -56,6 +57,18 @@ class Core extends Base\Core
             ]
         );
 
+        //QR Payment creation counter metric source wise
+        if (!empty($qrPaymentRequest->getAttribute(Entity::REQUEST_SOURCE)) === true)
+        {
+            $reqSource = (json_decode($qrPaymentRequest->getAttribute(Entity::REQUEST_SOURCE), true));
+            if (isset($reqSource['source']) === true)
+            {
+                $dimensions = [
+                    'source' => $reqSource['source'],
+                ];
+                $this->trace->count(Metric::QR_PAYMENT_CREATION_SOURCE, $dimensions);
+            }
+        }
         return $qrPaymentRequest;
     }
 
@@ -89,6 +102,7 @@ class Core extends Base\Core
 
         if (method_exists($gatewayClass, 'getQrPaymentStatus') === true)
         {
+            $startTimeMs = microtime(true) * 1000;
             try
             {
                 $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
@@ -103,6 +117,18 @@ class Core extends Base\Core
                     TraceCode::QR_STATUS_CHECK_MOZART_SERVICE_UNEXPECTED_RESPONSE,
                     ['id' => $qrCode->getId()]
                 );
+            }
+            finally
+            {
+                // Histogram metrics for status check gateway latency
+                $gatewayProcessingTimeMs = (microtime(true) * 1000) - $startTimeMs;
+                $gateway = '';
+                if (isset($resp) === true and isset($resp['gateway']) === true)
+                {
+                    $gateway = $resp['gateway'];
+                }
+                $this->trace->histogram(Metric::QR_STATUS_CHECK_GATEWAY_LATENCY, $gatewayProcessingTimeMs,
+                                        ['gateway' => $gateway]);
             }
         }
 

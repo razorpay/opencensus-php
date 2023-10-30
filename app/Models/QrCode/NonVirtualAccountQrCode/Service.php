@@ -388,6 +388,7 @@ class Service extends QrCode\Service
 
     public function handleReminderForQrCode($qrCode)
     {
+        $startTimeMs = microtime(true) * 1000;
         if (empty($qrCode->getCloseBy()))
         {
             return;
@@ -412,6 +413,31 @@ class Service extends QrCode\Service
         catch(\Exception $ex)
         {
             $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::QR_CODE_REMINDER_CREATION_FAILED, $request);
+        }
+        finally
+        {
+            // Histogram metrics for Reminder registration latency
+            $processingTimeMs = (microtime(true) * 1000) - $startTimeMs;
+
+            $this->trace->histogram(Metric::QR_CODE_REMINDER_REGISTRATION_LATENCY, $processingTimeMs,
+                                    ['namespace' => Constants::REMINDER_NAMESPACE]);
+
+            //Counter metrics for reminders response status codes
+            $status = 500;
+
+            if (isset($response) === true and
+                isset($response['status_code']) === true)
+            {
+                $status = $response['status_code'];
+            }
+
+            $dimensions = [
+                'namespace'   => Constants::REMINDER_NAMESPACE,
+                'status_code' => $status
+            ];
+
+            $this->trace->count(Metric::QR_CODE_REMINDER_RESPONSE_STATUS_CODE, $dimensions);
+
         }
     }
 
@@ -483,6 +509,7 @@ class Service extends QrCode\Service
             ];
 
             $merchantId = Account::SHARED_ACCOUNT;
+            $startTimeMs = microtime(true) * 1000;
 
             $response = $this->app['reminders']->createReminder($request, $merchantId);
 
@@ -494,6 +521,29 @@ class Service extends QrCode\Service
                 Trace::CRITICAL,
                 TraceCode::QR_CODE_STATUS_CHECK_REMINDER_CREATION_FAILED,
                 $request);
+        }
+        finally
+        {
+            // Histogram metrics for Reminder registration latency
+            $processingTimeMs = (microtime(true) * 1000) - $startTimeMs;
+            $this->trace->histogram(Metric::QR_CODE_REMINDER_REGISTRATION_LATENCY, $processingTimeMs,
+                                    ['namespace' => Constants::REMINDER_NAMESPACE_FOR_STATUS_CHECK]);
+
+            //Counter metrics for reminders response status codes
+            $status = 500;
+
+            if (isset($response) === true and
+                isset($response['status_code']) === true)
+            {
+                $status = $response['status_code'];
+            }
+
+            $dimensions = [
+                'namespace'   => Constants::REMINDER_NAMESPACE_FOR_STATUS_CHECK,
+                'status_code' => $status
+            ];
+
+            $this->trace->count(Metric::QR_CODE_REMINDER_RESPONSE_STATUS_CODE, $dimensions);
         }
     }
 
@@ -573,7 +623,7 @@ class Service extends QrCode\Service
      * @param string $qrCodeId The ID of the QR code to be validated
      * @return bool Returns true if the QR needs to be dispatched for Status Check
      */
-    public function validateQrForStatusCheckInit(string $qrCodeId): bool
+    public function validateQrForStatusCheckInit(string $qrCodeId, $input = null): bool
     {
         /**
          * @var $qrCode Entity
@@ -591,6 +641,22 @@ class Service extends QrCode\Service
 
             return false;
         }
+
+        //Counter metrics for Reminder callback latency SLA breach cases
+        if (isset($input) === true and isset($input['reminder_count']) === true)
+        {
+            $qrCreationTime = $qrCode->getCreatedAt();
+            $reminderCount  = $input['reminder_count']; //indicates which reminder is this
+
+            //calculate difference between qr creation and reminder callback time (latency)
+            $difference = microtime(true) - $qrCreationTime;
+            $dimensions = [
+                'reminder_count'    => $reminderCount,
+                'reminder_callback' => $difference
+            ];
+            $this->trace->count(Metric::QR_STATUS_CHECK_REMINDER_CALLBACK_LATENCY, $dimensions);
+        }
+
         $this->app['basicauth']->setMerchantById($qrCode->getMerchantId());
 
         // Check if there are no payments associated
@@ -645,7 +711,7 @@ class Service extends QrCode\Service
         $response = false;
 
         // If the validations fail, we return true to reminders to stop sending further reminders
-        if ($this->validateQrForStatusCheckInit($id) === false)
+        if ($this->validateQrForStatusCheckInit($id, $input) === false)
         {
             $response = true;
         }

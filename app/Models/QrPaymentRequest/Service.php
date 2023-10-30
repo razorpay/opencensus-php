@@ -5,6 +5,7 @@ namespace RZP\Models\QrPaymentRequest;
 use Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\QrCode\Metric;
 use RZP\Models\Payment\Method;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
@@ -83,6 +84,22 @@ class Service extends Base\Service
                     TraceCode::QR_STATUS_CHECK_PAYMENT_CREATION_FAILED,
                     ['id' => $qrCode->getId()]
                 );
+
+                $errorMessage = '';
+                $gateway = '';
+                if ($e->getMessage() !== null)
+                {
+                    $errorMessage = $e->getMessage();
+                }
+                if (isset($gatewayData['gateway']) === true)
+                {
+                    $gateway = $gatewayData['gateway'];
+                }
+                $dimensions = [
+                    'error_message' => $errorMessage,
+                    'gateway'       => $gateway
+                ];
+                $this->trace->count(Metric::QR_STATUS_CHECK_PAYMENT_CREATION_FAILURE, $dimensions);
             }
         }
     }

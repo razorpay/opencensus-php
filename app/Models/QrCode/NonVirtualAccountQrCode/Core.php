@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\QrStatusCheck;
 use RZP\Models\EntityOrigin;
+use RZP\Models\QrCode\Metric;
 use RZP\Constants\HyperTrace;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Account;
@@ -281,6 +282,9 @@ class Core extends QrCode\Core
         catch (\Throwable $e)
         {
             $this->trace->traceException($e, Trace::CRITICAL, TraceCode::QR_STATUS_CHECK_DISPATCH_FAILED, ['id' => $id]);
+
+            $dimensions = [];
+            $this->trace->count(Metric::QR_STATUS_CHECK_SQS_MESSAGE_DISPATCH_FAILED, $dimensions);
         }
 
         return false;
