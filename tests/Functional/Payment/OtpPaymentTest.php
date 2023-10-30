@@ -61,6 +61,11 @@ class OtpPaymentTest extends TestCase
                                     return 'off';
                                 }
 
+                                 if (str_contains($feature, 'alt_') === true)
+                                {
+                                    return 'off';
+                                }
+
                                 return 'on';
                             }));
     }

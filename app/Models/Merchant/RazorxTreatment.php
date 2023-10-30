@@ -404,6 +404,19 @@ final class RazorxTreatment
      */
     const PAYMENT_GATEWAY_CAPTURE_ASYNC_MC = 'payment_gateway_capture_asyc_mc';
 
+
+ /**
+     * Experiment to indicate if a payment should go via alt id
+     */
+    const NON_REARCH_ALT_ID = 'non_rearch_alt_';
+
+
+     /**
+     * Experiment to indicate if a recurring payment should go via alt id
+     */
+    const NON_REARCH_RECURRING_ALT_ID = 'non_rearch_recurring_alt_id';
+
+
     /**
      * Experiment to indicate if a payment should go via capture queue for Visa and other n/ws like Amex,Diner etc.
      */

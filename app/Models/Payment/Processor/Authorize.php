@@ -754,28 +754,31 @@ trait Authorize
 
             $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
 
-            if(($payment->isMethodCardOrEmi() === true && $payment->isInternational() === false &&  isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false ))
+            if(($payment->isMethodCardOrEmi() === true &&  isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false ))
              {
+                 //Check for Non-IN BINS and Non-IN Merchants
 
-                //call alt id and set trivia 2 for alt id
+                 if(isset($payment->card->iinRelation) && $payment->card->iinRelation->getCountry() === 'IN' && isset($payment->merchant) && $payment->merchant->getCountry() === 'IN') {
 
-                if ((str_starts_with(strtolower($rzpTestCaseID),'alt_id')) || $this->isAltIdExperimentEnabled($payment, 'app.alt_id_live_mode_experiment_id') === true )
-                    {
-
-                    // rupay save=1 flow and recurring  will happen via token pan and cryptogram
-                        if ($payment->card->isRuPay() === true &&  $payment->isRecurring() === false  && $payment->getSave() === false)
+                    //call alt id and set trivia 2 for alt id
+                    if ((str_starts_with(strtolower($rzpTestCaseID),'alt_id')) || $this->isAltIdExperimentEnabled($payment) === true )
                         {
 
-                            $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
+                        // paysecure rupay save=1 flow and recurring  will happen via token pan and cryptogram
+                            if ($payment->card->isRuPay() === true &&  $payment->getGateway() === GATEWAY::PAYSECURE && $payment->isRecurring() === false  && $payment->getSave() === false)
+                            {
 
-                             //caching razorx response since we need to fetch alt id callback based on this response , during /authorize call we need to send guest checkout indicator thats why we need this razorx call here
-                             $this->cache->put($rupayRazorxCacheKey,"on", self::RUPAY_ALT_ID_RAZORX_TTL);
+                                $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
+
+                                 //caching razorx response since we need to fetch alt id callback based on this response , during /authorize call we need to send guest checkout indicator thats why we need this razorx call here
+                                 $this->cache->put($rupayRazorxCacheKey,"on", self::RUPAY_ALT_ID_RAZORX_TTL);
+                            }
+                            else if ($payment->getGateway() !== GATEWAY::PAYSECURE)
+                            {
+                                $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
+                            }
                         }
-                        else
-                        {
-                            $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);
-                        }
-                    }
+                 }
             }
 
             // passing $terminalGateawyInput and $gatewayInput
@@ -985,62 +988,64 @@ trait Authorize
         return $request;
     }
 
-    public function isAltIdExperimentEnabled($payment, $experimentId): bool
+    public function isAltIdExperimentEnabled($payment): bool
     {
-
        try {
-            $properties = [
-                'id'            => $payment->getMerchantId(),
-                'experiment_id' => $this->app['config']->get($experimentId),
-                  'request_data' => json_encode(
-                        [
-                            'merchant_id'   => $payment->getMerchantId(),
-                            'issuer'        => $payment->card->getIssuer(),
-                            'gateway'       => $payment->getGateway(),
-                            'network'       => $payment->card->getNetwork(),
-                            'network_code'  => $payment->card->getNetworkCode(),
-                            'acquirer'      => $payment->terminal->getGatewayAcquirer(),
-                            'recurring'     => $payment->isRecurring(),
-                            'save'          => $payment->getSave(),
-                            'auth_type'     => $payment->getAuthType(),
-                            'terminal_id'   => $payment->getTerminalId()
-                        ]),
-            ];
 
-            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-            $this->trace->info(TraceCode::SPLITZ_EXPERIMENT_RESULT,
-                    [
-                        'properties'   =>  $properties,
-                        'response'     =>  $response,
-                        'payment_id'   =>  $payment->getId()
+       // no need to fetch alt id for auto  recurring
+           if ( $payment->getRecurringType() === RecurringType::AUTO)
+           {
+                return false;
+           }
 
-                    ]);
+           $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
 
-            if ($response['response']['variant'] !== null)
-                {
-                    $variables = $response['response']['variant']['variables'] ?? [];
+           $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
 
-                    foreach ($variables as $variable)
-                    {
-                        $key   = $variable['key'] ?? '';
-                        $value = $variable['value'] ?? '';
-                        if (($key == "result") and
-                            ($value == "on"))
-                        {
-                            return true;
-                        }
-                    }
-                }
+           $this->trace->info(TraceCode::ALT_ID_RAZORX_RESULT, [
+            'payment_id'  => $payment->getId(),
+            'feature'  => $razorxFeature,
+            'variant'  => $variant
+        ]);
+
+          if (strtolower($variant) !== "on")
+          {
+                return false;
+          }
+
+          if (strtolower($variant) === "on" && $payment->isRecurring() === false)
+            {
+                return true;
+            }
+
+
+           $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_RECURRING_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
+
+           $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+
+           $this->trace->info(TraceCode::RECURRING_ALT_ID_RAZORX_RESULT, [
+            'payment_id'  => $payment->getId(),
+            'feature'     => $razorxFeature,
+             'variant'  => $variant
+           ]);
+
+             if (strtolower($variant) === "on")
+              {
+                    return true;
+              }
+
+              return false;
+
             }  catch (\Exception $e)
                 {
                     $this->trace->traceException(
                         $e,
                         null,
-                        TraceCode::ALT_ID_FETCH_SPLITZ_EVALUATE_ERROR
+                        TraceCode::ALT_ID_FETCH_RAZORX_ERROR
                     );
+                    return false;
                 }
-        return false;
     }
 
     protected function fetchAltIdData(array $input, array & $gatewayInput, Payment\Entity $payment, array & $terminalGatewayInput, $currentTerminal = null)

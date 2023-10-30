@@ -10505,29 +10505,23 @@ class PaymentCreateTest extends TestCase
             ->will($this->returnCallback(
                 function ($mid, $feature)
                 {
-                    if ($feature === 'alt_id_sharp')
+                     if (str_contains($feature, 'alt_') === true)
                     {
                         return 'on';
                     }
+
                     return 'off';
                 }));
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                    "variables" => [
-                    [
-                        'key' => 'result',
-                        'value' => 'on',
+        $this->fixtures->iin->create([
+                    'iin'     => '459156',
+                    'country' => 'IN',
+                    'issuer'  => 'PUNB',
+                    'network' => 'Visa',
+                    'flows'   => [
+                        '3ds'          => '1',
                     ]
-                ]
-                ]
-            ]
-        ];
-
-
-        $this->mockAllSplitzTreatment($output);
+                ]);
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4591560071865620';
         $payment['card']['expiry_year'] = '2028';
@@ -11595,29 +11589,12 @@ class PaymentCreateTest extends TestCase
             ->will($this->returnCallback(
                 function ($mid, $feature)
                 {
-                    if ($feature === 'alt_id_sharp')
+                     if (str_contains($feature, 'alt_') === true)
                     {
                         return 'on';
                     }
                     return 'off';
                 }));
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                    "variables" => [
-                    [
-                        'key' => 'result',
-                        'value' => 'on',
-                    ]
-                ]
-                ]
-            ]
-        ];
-
-
-        $this->mockAllSplitzTreatment($output);
 
         $this->fixtures->iin->create([
             'iin'     => '607384',

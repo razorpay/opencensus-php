@@ -106,6 +106,12 @@ class PaysecureGatewayTest extends TestCase
                         return 'off';
                     }
 
+                     if ($feature === 'non_rearch_alt__RUPAY_paysecure_rbl')
+                    {
+                        return 'off';
+                    }
+
+
                     if ($feature === RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1)
                     {
                         return 'off';
@@ -426,6 +432,7 @@ class PaysecureGatewayTest extends TestCase
                 'id' => 'AqdfGh5460opaI',
                 'merchant_id' => '10000000000000',
                 'gateway' => 'hitachi',
+                'gateway_acquirer'  => 'rbl',
                 'enabled' => 1,
                 'type' =>
                     [

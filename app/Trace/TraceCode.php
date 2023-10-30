@@ -5451,7 +5451,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_ALT_ID_REQUEST                                  = 'VAULT_ALT_ID_REQUEST';
     const VAULT_ALT_ID_RESPONSE                                 = 'VAULT_ALT_ID_RESPONSE';
     const VAULT_ALT_ID_REQUEST_FETCH_ERROR                      = 'VAULT_ALT_ID_REQUEST_FETCH_ERROR';
-    const ALT_ID_FETCH_SPLITZ_EVALUATE_ERROR                    = 'ALT_ID_FETCH_SPLITZ_EVALUATE_ERROR';
+    const ALT_ID_FETCH_RAZORX_ERROR                             = 'ALT_ID_FETCH_RAZORX_ERROR';
+    const ALT_ID_RAZORX_RESULT                                  = 'ALT_ID_RAZORX_RESULT';
+    const RECURRING_ALT_ID_RAZORX_RESULT                        = 'ALT_ID_RAZORX_RESULT';
     const VAULT_TOKEN_ERROR                                     = 'VAULT_TOKEN_ERROR';
     const VAULT_TOKEN_CREATE_INIT                               = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE                           = 'VAULT_TOKEN_CREATE_COMPLETE';
