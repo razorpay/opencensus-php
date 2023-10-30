@@ -3710,6 +3710,12 @@ class MerchantController extends Controller
         }
     }
 
+    public function updateInternal1ccConfig($merchantId)
+    {
+        $input = Request::all();
+        return (new Merchant\OneClickCheckout\Config\Service())->updateInternal1ccConfig($merchantId, $input);
+    }
+
     public function getCheckout1ccConfig()
     {
         return (new Merchant\OneClickCheckout\Config\Service())->getCheckout1ccConfig();

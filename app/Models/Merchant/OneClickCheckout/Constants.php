@@ -50,6 +50,25 @@ class Constants
     // Settings and workflows defined for retargeting engine.
     const RETARGETING_SETTINGS             = "retargeting_settings";
 
+    // Shopify Razorpay COD App configs
+    const RAZORPAY_COD = 'rcod';
+
+    // A config to maintain what are the apps installed by merchant
+    // Currently this will be only applicable to shopify and
+    // hold value as 1 and the value json will hold value either one or both
+    // of magic_checkout ond rcod in array format.
+    // This Config will be populated at the time when merchant installs
+    // Razorpay COD App. This and dashboard_view config will be
+    // collectively used by FE to decide which view should be rendered
+    // for merchants in merchant dashboard.
+    const APPS_INSTALLED = 'apps_installed';
+
+    // It holds the value either magic_checkout or razorpay_cod and
+    // will be updated by FE depending on merchant toggles across apps
+    // in merchant dashboard and the same app UI for merchant dashboard
+    // will be rendered on next visit of merchant.
+    const DASHBOARD_VIEW = 'dashboard_view';
+
     // gift card configs
     const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
     const ONE_CC_GIFT_CARD_RESTRICT_COUPON = 'one_cc_gift_card_restrict_coupon';

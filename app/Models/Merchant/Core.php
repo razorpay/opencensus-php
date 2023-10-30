@@ -8515,6 +8515,32 @@ class Core extends Base\Core
         );
     }
 
+    public function upsertMerchant1ccConfig(string $type, string $value, array $value_json=[])
+    {
+        $config = $this->repo->merchant_1cc_configs->findByMerchantAndConfigType(
+            $this->merchant->getId(),
+            $type
+        );
+        if ($config === null)
+        {
+            $input = [
+                'config'     => $type,
+                'value'      => $value,
+                'value_json' => $value_json,
+            ];
+            return  (new Merchant1ccConfig\Core())->createAndSaveConfig($this->merchant, $input);
+        }
+
+        if ($config->getValue() !== $value || sizeof(array_merge(array_diff($config['value_json'], $value_json), array_diff($value_json, $config['value_json'])))>0)
+        {
+            $config->setValue($value);
+            $config['value_json'] = $value_json;
+            $config->update();
+        }
+
+        return $config;
+    }
+
     public function associateMerchant1ccIntelligenceConfig(string $type, string $value, array $value_json = [])
     {
         $input = [

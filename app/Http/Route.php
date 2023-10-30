@@ -4427,6 +4427,7 @@ class Route
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
         '1cc_configs_update'                        => ['post',       '1cc/merchant/configs',                                  'MerchantController@update1ccConfig'],
+        'internal_1cc_configs_update'               => ['post',       'internal/1cc/merchants/{id}/configs',                  'MerchantController@updateInternal1ccConfig'],
         '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
         '1cc_prepay_cod_configs_get'                => ['get',        '1cc/prepay/configs',                           'MerchantController@get1ccPrepayCodConfig'],
         'internal_1cc_prepay_cod_configs_get'       => ['get',        'internal/1cc/merchants/{id}/prepay_configs',            'MerchantController@getInternal1ccPrepayCodConfig'],
@@ -6323,7 +6324,8 @@ class Route
         'adj_custom_create_cron',
 
         // Edge
-        'third_party_authenticate'
+        'third_party_authenticate',
+        'internal_1cc_configs_update'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -16830,6 +16832,7 @@ class Route
         'magic_checkout_service' => [
             'internal_1cc_prepay_cod_configs_get',
             'internal_1cc_configs_get',
+            'internal_1cc_configs_update',
             'update_shopify_1cc_credentials',
             '1cc_get_shopify_configs',
             '1cc_get_woocommerce_configs',

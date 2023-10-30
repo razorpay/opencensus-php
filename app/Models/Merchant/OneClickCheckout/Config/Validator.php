@@ -64,6 +64,10 @@ class Validator extends Base\Validator
         "cod_engine_type"                => 'sometimes|string|in:slab_eligibility,slab_charges,location,product',
         'one_cc_prepay_cod_conversion'   => 'sometimes|array',
         "shipping_engine"                => 'sometimes|boolean',
+        "rcod"                           => 'sometimes|array',
+        "dashboard_view"                 => 'sometimes|string|in:magic_checkout,rcod',
+        "apps_installed"                 => 'sometimes|array|min:1|max:2',
+        "apps_installed.*"               => 'string|distinct:ignore_case|in:magic_checkout,rcod'
     ];
 
     protected static $shippingProviderRules = [
@@ -79,21 +83,21 @@ class Validator extends Base\Validator
     protected static $gettingShopifyConfigByKeyIdRules = [
         'key_id' => 'required|string',
         'keys'   => 'sometimes|string|custom:keys',
-        'app_name' => 'sometimes|string|in:sopc'
+        'app_name' => 'sometimes|string|in:sopc,rcod'
     ];
 
     protected static $gettingShopifyConfigByShopIdRules = [
         'shop_id' => 'required|string',
         'mode'    => 'sometimes|string|in:live,test',
         'keys'    => 'sometimes|string|custom:keys',
-        'app_name' => 'sometimes|string|in:sopc'
+        'app_name' => 'sometimes|string|in:sopc,rcod'
     ];
 
     protected static $gettingShopifyConfigByMerchantIdRules = [
         'merchant_id' => 'required|string|size:14',
         'mode'        => 'sometimes|string|in:live,test',
         'keys'        => 'sometimes|string|custom:keys',
-        'app_name' => 'sometimes|string|in:sopc'
+        'app_name' => 'sometimes|string|in:sopc,rcod'
     ];
 
     protected static $gettingWoocommerceConfigRules = [
@@ -151,6 +155,14 @@ class Validator extends Base\Validator
         Constants::CONFIGS.'.'.Constants::DISCOUNT.'.'.Constants::MINIMUM_ORDER_VALUE   => 'required_with:configs.discount|integer',
         Constants::CONFIGS.'.'.Constants::COMMUNICATION.'.'.Constants::EXPIRE_SECONDS   => 'required_with:configs.communication|integer',
         Constants::CONFIGS.'.'.Constants::COMMUNICATION.'.'.Constants::METHODS          => 'required_with:configs.communication|array|in:whatsapp,checkout'
+    ];
+
+    // validator rules for Razorpay COD shopify APP config
+    protected static $razorpayCODRules = [
+        Constants::ENABLED       => 'required|boolean',
+        Constants::CONFIGS       => 'required_if:enabled,true|array|custom:rcod_configs',
+        Constants::CONFIGS.'.'.Constants::COD_ENGINE_TYPE => 'required_if:enabled,true|string|in:slab_eligibility,slab_charges',
+        Constants::CONFIGS.'.'.Constants::COD_INTELLIGENCE => 'sometimes|boolean'
     ];
 
     /**
@@ -253,6 +265,23 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestValidationFailureException(self::MERCHANT_CONFIG_KEY_NOT_ALLOWED);
             }
+        }
+    }
+
+    /**
+     * @throws ExtraFieldsException
+     */
+    public function validateRCodConfigs($attribute ,array $input)
+    {
+        $invalidKeys = array_keys(array_diff_key($input, [
+                Constants::COD_INTELLIGENCE      => '',
+                Constants::COD_ENGINE_TYPE => '',
+            ]
+        ));
+
+        if (count($invalidKeys) > 0)
+        {
+            $this->throwExtraFieldsException($invalidKeys);
         }
     }
 }

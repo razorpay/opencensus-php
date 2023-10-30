@@ -247,6 +247,8 @@ class Service extends Base\Service
                     }
                 }
 
+                $updatedManualControlCodOrderFlag = isset($input[Type::MANUAL_CONTROL_COD_ORDER]) &&
+                    $input[Type::MANUAL_CONTROL_COD_ORDER] === true;
                 if ($updatePlatform === Constants::NATIVE)
                 {
                     if ((!(isset($input[Type::USERNAME]) && isset($input[Type::PASSWORD]) && isset($input[Type::ORDER_STATUS_UPDATE_URL]))) &&
@@ -316,6 +318,26 @@ class Service extends Base\Service
                     );
                 }
 
+                if ($updatePlatform === Constants::SHOPIFY)
+                {
+                    if (isset($input[Constants::DASHBOARD_VIEW]))
+                    {
+                        (new Core)->upsertMerchant1ccConfig(
+                            Constants::DASHBOARD_VIEW,
+                            $input[Constants::DASHBOARD_VIEW]
+                        );
+                    }
+
+                    if (isset($input[Constants::APPS_INSTALLED]))
+                    {
+                        (new Core)->upsertMerchant1ccConfig(
+                            Constants::APPS_INSTALLED,
+                            true,
+                            $input[Constants::APPS_INSTALLED]
+                        );
+                    }
+                }
+
                 if (isset($input[Constants::COD_ENGINE_TYPE]) && ($updatePlatform === Constants::SHOPIFY || $updatePlatform === Constants::WOOCOMMERCE)) {
                     (new Core)->associateMerchant1ccConfig(
                         Constants::COD_ENGINE_TYPE,
@@ -356,6 +378,57 @@ class Service extends Base\Service
                         'BUY_NOW_ENABLED/DISABLED' => $buyNowValue
                     ]);
             }
+        }
+
+        $this->updateRazorpayCodConfigsIfApplicable($input);
+    }
+
+    protected function updateRazorpayCodConfigsIfApplicable($input)
+    {
+        if( $input[Constants::PLATFORM] === Constants::SHOPIFY && isset($input[Constants::RAZORPAY_COD]) === true)
+        {
+            $razorpayCOD = $input[Constants::RAZORPAY_COD];
+
+            (new Validator())->validateInput('razorpayCOD', $razorpayCOD);
+
+            $value = $razorpayCOD[Constants::ENABLED] ? '1' : '0';
+            $valueJSON = $razorpayCOD[Constants::CONFIGS] ?? [];
+
+            $config = $this->merchant->get1ccConfig(Constants::RAZORPAY_COD);
+
+            if ($config === null)
+            {
+                $input = [
+                    'config'     => Constants::RAZORPAY_COD,
+                    'value'      => $value,
+                    'value_json' => $valueJSON,
+                ];
+
+                return  (new Merchant\Merchant1ccConfig\Core())->createAndSaveConfig($this->merchant, $input);
+            }
+
+            $shouldUpdate = false;
+            if($config->getValue() !== $value)
+            {
+                $config->setValue($value);
+                $shouldUpdate = true;
+            }
+
+            // update value_json only if value is true since value json will be coming as
+            // empty when value is false, this is handled in this way to preserve the
+            // configs of the merchants, so next time when they enable it we can show
+            // previous configs.
+            if($value === '1' && sizeof(array_diff($valueJSON, $config['value_json']))>0)
+            {
+                $config['value_json'] = array_merge($config['value_json'], $valueJSON);
+                $shouldUpdate = true;
+            }
+
+            if ($shouldUpdate)
+            {
+                $config->update();
+            }
+            return $config;
         }
     }
 
@@ -490,6 +563,24 @@ class Service extends Base\Service
         ];
     }
 
+    protected function construct1ccRazorpayCODConfig($razorpayCODConfigs): array
+    {
+        if ($razorpayCODConfigs != null && $razorpayCODConfigs->getValueJson() != null)
+        {
+            $razorpayCODValueJSON = $razorpayCODConfigs->getValueJson();
+            $razorpayCODConfigsFlag = $razorpayCODConfigs->getValue() == '1';
+            return [
+                Constants::ENABLED => $razorpayCODConfigsFlag,
+                Constants::CONFIGS => $razorpayCODValueJSON,
+            ];
+        }
+
+        return [
+            Constants::ENABLED => false,
+            Constants::CONFIGS => null,
+        ];
+    }
+
     public function get1ccConfig($internal = false)
     {
         // Special handling for Shopify
@@ -509,6 +600,14 @@ class Service extends Base\Service
 
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::SHOPIFY)
         {
+            $shopifyAppsInstalledConfig = $this->merchant->get1ccConfig(Constants::APPS_INSTALLED);
+            $shopifyAppsInstalled = $shopifyAppsInstalledConfig !== null ? $shopifyAppsInstalledConfig['value_json'] : [];
+
+            $dashboardViewConfig = $this->merchant->get1ccConfig(Constants::DASHBOARD_VIEW);
+            $dashboardView = $dashboardViewConfig !== null ? $dashboardViewConfig->getValue() : "";
+
+            $razorpayCODConfig = $this->merchant->get1ccConfig(Constants::RAZORPAY_COD);
+
             $config = $this->repo->merchant_1cc_auth_configs->findByConfig(
                 $this->merchant->getId(),
                 Constants::SHOPIFY,
@@ -521,6 +620,27 @@ class Service extends Base\Service
                 Constants::SHOP_ID => '',
                 Constants::COD_ENGINE_TYPE => $codEngineType
             ];
+
+            if (sizeof($shopifyAppsInstalled) > 0)
+            {
+                $response = array_merge($response, [
+                    Constants::APPS_INSTALLED => $shopifyAppsInstalled
+                ]);
+            }
+
+            if (strlen($dashboardView) > 0)
+            {
+                $response = array_merge($response, [
+                    Constants::DASHBOARD_VIEW =>$dashboardView
+                ]);
+            }
+
+            if ($razorpayCODConfig !== null)
+            {
+                $response = array_merge($response, [
+                    Constants::RAZORPAY_COD => $this->construct1ccRazorpayCODConfig($razorpayCODConfig)
+                ]);
+            }
 
             $response = array_merge($response, $configFlagsResponse);
 
@@ -632,6 +752,18 @@ class Service extends Base\Service
         $this->app['basicauth']->setMerchant($this->merchant);
 
         return $this->get1ccConfig(true);
+    }
+
+    public function updateInternal1ccConfig($merchantId, $input)
+    {
+        if ($this->merchant === null && $this->app['basicauth']->isPrivilegeAuth() === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+
+            return $this->update1ccConfig($input);
+        }
     }
 
     /**
@@ -913,7 +1045,6 @@ class Service extends Base\Service
         {
             $configName = $config['config'];
             $configValue = $config->getValue() === '1';
-
             if (in_array($configName, Constants::CONFIG_FLAGS) === true) {
                 $response[$configName] =  $configValue;
             }
