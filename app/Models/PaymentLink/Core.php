@@ -3055,6 +3055,7 @@ class Core extends Base\Core
             'client_type'   => 'payment_pages',
             'entity_id'     => $paymentLink->getId(),
             'merchant_id'   => $paymentLink->getMerchantId(),
+            'business_name' => $this->merchant->getName(),
             'fields'        => [
                 [
                     'key'        => 'description',
