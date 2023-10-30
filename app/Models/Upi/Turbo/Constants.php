@@ -26,7 +26,7 @@ class Constants
         Error::ERROR_DESCRIPTION,
     ];
 
-    const FALLBACK_PUBLIC_ERROR_CODE   = "SYSTEM_ERROR";
+    const FALLBACK_PUBLIC_ERROR_CODE   = "UNKNOWN_ERROR";
     const FALLBACK_INTERNAL_ERROR_CODE = "FALLBACK_ERROR";
-    const FALLBACK_ERROR_DESCRIPTION   = "Something went wrong, please try again later. Any amount deducted will be refunded within 5-7 working days.";
+    const FALLBACK_ERROR_DESCRIPTION   = "Something went wrong, please try again.";
 }
