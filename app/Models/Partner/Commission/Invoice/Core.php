@@ -44,6 +44,7 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Diag\Event\OnBoardingEvent;
 use RZP\Mail\Merchant\CommissionInvoiceIssued;
 use RZP\Mail\Merchant\CommissionInvoiceReminder;
+use RZP\Models\Merchant\Detail\Status as DeStatus;
 use RZP\Models\Admin\Permission\Name as Permission;
 
 class Core extends Base\Core
@@ -290,6 +291,11 @@ class Core extends Base\Core
 
         $activationStatus = $data['activation_status'];
 
+        if ((in_array($activationStatus, DeStatus::PAYMENTS_ENABLED_STATUSES) === false) and ($merchant->isFundsOnHold() === false))
+        {
+            return;
+        }
+
         $templateName = Commission\Constants::COMMISSION_INVOICE_ISSUED_SMS_TEMPLATE[Merchant\Constants::DEFAULT];
 
         if(isset(Commission\Constants::COMMISSION_INVOICE_ISSUED_SMS_TEMPLATE[$activationStatus])=== true)
@@ -350,6 +356,11 @@ class Core extends Base\Core
         }
 
         $data = $this->getTemplateData($invoice, $pdfPath);
+
+        if ((in_array($data['activation_status'], DeStatus::PAYMENTS_ENABLED_STATUSES) === false) and ($merchant->isFundsOnHold() === false))
+        {
+            return;
+        }
 
         $data ['view'] = $this->getEmailTemplateView($merchant, Status::ISSUED, $data['activation_status']);
 
