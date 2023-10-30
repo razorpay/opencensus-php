@@ -855,6 +855,16 @@ class Processor
                 }
             }
 
+            if ((isset($input['auth_type']) === true) and ($input['auth_type'] === AuthType::SKIP))
+            {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "MOTO_Payment",
+                    'merchant_id' => $merchant->getId(),
+                    'banking_org_id' => $merchant->getOrgId(),
+                ]);
+                return false;
+            }
+
             // check if eligible banking org id to redirect to card's re-arch
             if ($merchant->isRazorpayOrgId() === false) {
                 $result = $this->app->razorx->getTreatment($merchant->getOrgId(), self::BANKING_ORG_ID_CARDS_PAYMENTS_VIA_PGROUTER, $this->mode);
