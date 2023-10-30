@@ -126,17 +126,14 @@ describe('Zone Modal', () => {
     expect(ZoneModal).toBeInTheDocument();
     const searchInput = screen.getByRole('textbox', { name: 'Select country, city, state' });
     await userEvent.type(searchInput, 'India');
-    await waitFor(
-      async () => {
-        const checkbox = await screen.findByRole('checkbox', { name: 'Andhra Pradesh' });
-        expect(checkbox).toBeInTheDocument();
-        if (checkbox) {
-          await userEvent.click(checkbox);
-        }
-        expect(screen.queryByRole('checkbox', { name: 'India' })).toBePartiallyChecked();
-      },
-      { timeout: 2500 },
-    );
+
+    const checkbox = await screen.findByRole('checkbox', { name: 'Andhra Pradesh' });
+
+    await userEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('checkbox', { name: 'India' })).toBePartiallyChecked();
+    });
   });
 
   test('should save zone', async () => {

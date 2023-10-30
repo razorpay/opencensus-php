@@ -89,11 +89,10 @@ describe('Shipping slab', () => {
     expect(screen.queryAllByText(/kg/i).length).toBe(2);
     expect(addCondition).not.toBeInTheDocument();
 
-    waitFor(async () => {
-      const deleteBtn = screen.getByRole('button', { name: 'delete' });
-      await userEvent.click(deleteBtn);
-      expect(screen.queryAllByText(/kg/i).length).toBe(0);
-    });
+    const deleteIcon = screen.getByTestId('deleteIcon');
+    await userEvent.click(deleteIcon);
+
+    expect(screen.queryAllByText(/kg/i).length).toBe(0);
   });
 
   test('should show invalid value', () => {
