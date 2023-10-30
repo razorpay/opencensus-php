@@ -64,7 +64,6 @@ class Core extends Base\Core
             throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
         }
 
-
         $this->app['diag']->trackPaymentEventV2(
             EventCode::PAYMENT_CARD_MANDATE_CREATE_INITIATED,
             $payment
@@ -74,8 +73,6 @@ class Core extends Base\Core
         {
             $input[Entity::SKIP_SUMMARY_PAGE] = true;
         }
-
-
 
         try
         {

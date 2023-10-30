@@ -65,6 +65,9 @@ class Constants
     const FAILURE_DESCRIPTION = 'failure_description';
     const CAPTURED_AT         = 'captured_at';
 
+    const ALTID          = 'altid';
+    const ALTID_PROVIDER = 'altid_provider';
+
     const NOTIFICATION_TYPE                          = 'type';
     const PAYMENT_ID                                 = 'payment_id';
     const NOTIFICATION_PRE_DEBIT_DETAILS             = 'pre_debit_details';

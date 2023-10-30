@@ -339,32 +339,25 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             $frequency = Constants::FREQUENCY_AS_PRESENTED;
         }
 
-        $startTime = $token->getStartTime();
-        if ($startTime === null)
-        {
-            $startTime = Carbon::now()->addDay()->getTimestamp();
-        }
+        $startTime = $token->getStartTime() ?? Carbon::now()->addDay()->getTimestamp();
 
-        $endTime = $token->getExpiredAt();
-        if ($endTime === null)
-        {
-            $endTime = $token->card->getExpiryTimestamp();
-        }
+        $endTime = $token->getExpiredAt() ?? $token->card->getExpiryTimestamp();
 
         $debitType = Constants::DEBIT_TYPE_VARIABLE_AMOUNT;
+
         if (empty($input['debit_type']) === false)
         {
             $debitType = $input['debit_type'];
         }
 
         $skipSummaryPage = false;
+
         if (empty($input['skip_summary_page']) === false)
         {
             $skipSummaryPage = $input['skip_summary_page'];
         }
 
-        if (($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::CARD_MANDATE_CORRECT_DETAILS_FETCH, $this->app['rzp.mode']) === 'on') and
-            ($payment->getSubscriptionId() !== null))
+        if ($payment->getSubscriptionId() !== null)
         {
             try
             {
@@ -389,49 +382,75 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             }
         }
 
+        $cardData = [
+            Constants::CARD_NUMBER       => $this->getCardNumber($card,$payment->getGateway()),
+            Constants::CARD_NAME         => $card->getName(),
+            Constants::CARD_EXPIRY_MONTH => stringify($card->getExpiryMonth()),
+            Constants::CARD_EXPIRY_YEAR  => substr(stringify($card->getExpiryYear()), -2)
+        ];
+
+        // Alt Id Card
+        if ($card->getTrivia() === '2')
+        {
+            // ToDo: Remove experiment post prod validation
+            $variant = $this->app->razorx->getTreatment(
+                $payment->getId(),
+                'recurring_mhq_altid_params',
+                $this->mode ?? 'live'
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                $cardData[Constants::ALTID]             = true;
+                $cardData[Constants::ALTID_PROVIDER]    = strtolower($card->getNetwork());
+                $cardData[Constants::CARD_EXPIRY_YEAR]  = substr(stringify($card->getTokenExpiryYear()), -2);
+                $cardData[Constants::CARD_EXPIRY_MONTH] = stringify($card->getTokenExpiryMonth());
+            }
+        }
 
         $inputResponse = [
-            Constants::AMOUNT       => $payment->getAmount(),
-            Constants::CURRENCY     => $payment->getCurrency(),
-            Constants::METHOD       => Constants::METHOD_CARD,
-            Constants::DEBIT_TYPE   => $debitType,
-            Constants::BUSINESS     => $payment->merchant->getName(),
-            Constants::MCC          => $payment->merchant->getCategory(),
-            Constants::MAX_AMOUNT   => $maxAmount,
-            Constants::START_TIME   => $startTime,
-            Constants::END_TIME     => $endTime,
-            Constants::FREQUENCY    => $frequency,
-            Constants::CALLBACK_URL => $url,
+            Constants::AMOUNT            => $payment->getAmount(),
+            Constants::CURRENCY          => $payment->getCurrency(),
+            Constants::METHOD            => Constants::METHOD_CARD,
+            Constants::DEBIT_TYPE        => $debitType,
+            Constants::BUSINESS          => $payment->merchant->getName(),
+            Constants::MCC               => $payment->merchant->getCategory(),
+            Constants::MAX_AMOUNT        => $maxAmount,
+            Constants::START_TIME        => $startTime,
+            Constants::END_TIME          => $endTime,
+            Constants::FREQUENCY         => $frequency,
+            Constants::CALLBACK_URL      => $url,
             Constants::SKIP_SUMMARY_PAGE => $skipSummaryPage,
-            Constants::CARD         => [
-                Constants::CARD_NUMBER       => $this->getCardNumber($card,$payment->getGateway()),
-                Constants::CARD_NAME         =>  $card->getName(),
-                Constants::CARD_EXPIRY_MONTH => stringify($card->getExpiryMonth()),
-                Constants::CARD_EXPIRY_YEAR  => substr(stringify($card->getExpiryYear()), -2)
-            ],
-            Constants::NOTES       => empty($input['notes']) ? null : $input['notes'],
+            Constants::CARD              => $cardData,
+            Constants::NOTES             => empty($input['notes']) ? null : $input['notes'],
         ];
 
         $isTokenPan = $token->card->isTokenPan();
 
-        if (($token->card->isRzpSavedCard() === false) or
-                ($isTokenPan === true))
+        if (($token->card->isRzpSavedCard() === false) or ($isTokenPan === true))
         {
-            try {
-                if ($isTokenPan === true){
+            try
+            {
+                if ($isTokenPan === true)
+                {
                     // In case of token requester merchant
                     $tokenInput = $token->card->buildTokenisedTokenForMandateHub($this->getCardNumber($token->card,$payment->getGateway()));
-                } else {
+                }
+                else
+                {
                     $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
                 }
+
                 $networkToken = $tokenInput['token'];
+
                 $inputResponse[Constants::TOKEN] = $networkToken;
+
                 unset($inputResponse[Constants::CARD]);
 
                 return $inputResponse;
-
-            } catch (Exception $e){
-
+            }
+            catch (Exception $e)
+            {
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,

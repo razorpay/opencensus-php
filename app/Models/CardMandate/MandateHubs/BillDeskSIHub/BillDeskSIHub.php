@@ -174,29 +174,9 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
      */
     protected function getRegisterInput(Payment\Entity $payment, CardMandate\Entity $cardMandate): array
     {
-
-        $variant = $this->app['razorx']->getTreatment(
-            $payment->getMerchantId(),
-            Merchant\RazorxTreatment::SIHUB_DISABLE_CARD_FLOW_POST_TOKENIZATION,
-            $this->mode
-        );
-
         $cardData = [];
 
-        if (strtolower($variant) !== 'on')
-        {
-            $card = $payment->card;
-
-            $cardData = $card->toArray();
-
-            $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card,$payment->getGateway());
-        }
-
-        $startTime = $payment->localToken->getStartTime();
-
-        if ($startTime === null) {
-            $startTime = Carbon::now()->addDay()->getTimestamp();
-        }
+        $startTime = $payment->localToken->getStartTime() ?? Carbon::now()->addDay()->getTimestamp();
 
         $tokenData = array_merge($payment->localToken->toArray(), [
             'frequency' =>  $payment->localToken->getFrequency(),
@@ -208,15 +188,9 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             $tokenData['frequency'] = Constants::FREQUENCY_AS_PRESENTED;
         }
 
-        $endTime = $payment->localToken->getExpiredAt();
+        $endTime = $payment->localToken->getExpiredAt() ?? $payment->card->getExpiryTimestamp();
 
-        if ($endTime === null)
-        {
-            $endTime = $card->getExpiryTimestamp();
-        }
-
-        if (($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::CARD_MANDATE_CORRECT_DETAILS_FETCH, $this->app['rzp.mode']) === 'on') and
-            ($payment->getSubscriptionId() !== null))
+        if ($payment->getSubscriptionId() !== null)
         {
             try
             {
@@ -247,7 +221,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             Constants::GATEWAY          => MandateHubs::BILLDESK_SIHUB,
             Constants::MERCHANT         => $payment->merchant->toArray(),
             Constants::TOKEN            => $tokenData,
-            Constants::CARD             => $cardData ?? null,
+            Constants::CARD             => $cardData,
             Constants::CARD_MANDATE     => $cardMandate->toArray(),
             Constants::END_TIME         => $endTime,
         ];
@@ -367,13 +341,14 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         return $this->getTokenDetails($payment, $inputResponse);
     }
 
-    protected function getTokenDetails(Payment\Entity $payment, array $inputResponse) {
-
+    protected function getTokenDetails(Payment\Entity $payment, array $inputResponse)
+    {
         $token = $payment->localToken;
 
         if ($token->card->isRzpSavedCard() == false)
         {
-            try {
+            try
+            {
                 if((isset($token->cardMandate)) and
                    ($token->cardMandate !== null) and
                    ($token->cardMandate->getVaultTokenPan() !== null))
@@ -386,14 +361,14 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
                 {
                     $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
 
-                    if((isset($token->cardMandate)) and
-                       ($token->cardMandate !== null))
+                    if (isset($token->cardMandate) === true)
                     {
                         (new CardMandate\Core())->storeVaultTokenPan($token->cardMandate, $tokenInput);
                     }
                 }
-                $networkToken = $tokenInput['token'];
-                $tokenData = array_merge($inputResponse[Constants::TOKEN], $networkToken);
+
+                $tokenData = array_merge($inputResponse[Constants::TOKEN], $tokenInput['token'] ?? []);
+
                 $inputResponse[Constants::TOKEN] = $tokenData;
 
                 if (isset($inputResponse[Constants::CARD]))
@@ -402,9 +377,9 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
                 }
 
                 return $inputResponse;
-
-            } catch (Exception $e){
-
+            }
+            catch (Exception $e)
+            {
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,
