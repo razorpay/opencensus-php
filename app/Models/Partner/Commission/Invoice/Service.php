@@ -42,9 +42,23 @@ class Service extends Base\Service
     public function changeStatus($id, array $input)
     {
         // if reverse shadow is enabled invoice status update should be done at prts
-        if((new Core)->isCommissionInvoiceReverseShadowOrCutoffEnabled($this->merchant->getId()))
+        $variant = (new Core)->getCommissionInvoiceExperimentMode($this->merchant->getId());
+        if($variant == 'reverse-shadow' or $variant == 'cutoff')
         {
-            return $this->app->partnerships->updateInvoiceStatus(['id'=> $id, 'status'=> $input[Entity::ACTION]]);
+            $response =  $this->app->partnerships->updateInvoiceStatus(['id'=> $id, 'status'=> $input[Entity::ACTION]]);
+            if($response['status_code'] == 200 && $variant != 'cutoff')
+            {
+                $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant);
+
+                $invoice->setStatus($input[Entity::ACTION]);
+
+                $this->repo->saveOrFail($invoice);
+
+            }
+            if($response['status_code'] != 404)
+            {
+                return $response;
+            }
         }
         $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant);
 
