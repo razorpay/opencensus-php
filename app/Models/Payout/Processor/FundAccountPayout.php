@@ -33,17 +33,20 @@ class FundAccountPayout extends Base
      */
     public function createPayout(array $input): Payout\Entity
     {
-        if (isset($input[Balance\Entity::BALANCE_ID]))
+        if (empty($this->balance) === false)
+        {
+            $balance = $this->balance;
+        }
+        elseif (isset($input[Balance\Entity::BALANCE_ID]))
         {
             /** @var Balance\Entity $balance */
             $balance = $this->repo->balance->findOrFailById($input[Balance\Entity::BALANCE_ID]);
-
-            if ($balance->getType() === Balance\Type::BANKING)
-            {
-                $payout = $this->createBankingPayout($input, $balance);
-            }
         }
 
+        if (empty($balance) === false and $balance->getType() === Balance\Type::BANKING)
+        {
+            $payout = $this->createBankingPayout($input, $balance);
+        }
         else
         {
             $payout = parent::createPayout($input);

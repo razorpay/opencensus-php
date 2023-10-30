@@ -206,13 +206,14 @@ class Base extends BaseCore
      *
      * @param array $input
      *
+     * @param Balance\Entity|null $balance
      * @return Payout\Entity
      * @throws BadRequestException
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws BadRequestValidationFailureException
      */
     public function createPayout(array $input): Payout\Entity
     {
-        $this->setPayoutBalance($input);
+        $this->setPayoutBalance($input, $this->balance);
 
         $this->preValidations();
 
@@ -427,11 +428,14 @@ class Base extends BaseCore
     /**
      * Creates a payout entity without any downstream processing (FTA creation, FTS transfer, etc)
      *
+     * @param array $input
+     * @param Balance\Entity|null $balance
+     * @return Entity
      * @throws BadRequestException
      */
     public function createPayoutEntityWithoutDownstreamProcessing(array $input): Payout\Entity
     {
-        $this->setPayoutBalance($input);
+        $this->setPayoutBalance($input, $this->balance);
 
         if (Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($this->balance, $this->merchant) === false)
         {
@@ -2622,13 +2626,13 @@ class Base extends BaseCore
         return class_basename(get_called_class());
     }
 
-    protected function setPayoutBalance(array $input, Balance\Entity $balance = null)
+    public function setPayoutBalance(array $input, Balance\Entity $balance = null)
     {
         if (empty($balance) === false)
         {
             $this->balance = $balance;
 
-            return;
+            return $this;
         }
 
         $balanceId = $input[Payout\Entity::BALANCE_ID] ?? null;
@@ -2641,6 +2645,8 @@ class Base extends BaseCore
         {
             $this->balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
         }
+
+        return $this;
     }
 
     protected function fireEventForPayoutStatus(Payout\Entity $payout)

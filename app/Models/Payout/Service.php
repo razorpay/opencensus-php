@@ -630,7 +630,7 @@ class Service extends Base\Service
                 $compositePayoutInputCreateEndTime - $compositePayoutInputCreateStartTime);
         }
 
-        $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal);
+        $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal, $balance);
 
         if ($isCompositePayout === true)
         {
@@ -1600,7 +1600,7 @@ class Service extends Base\Service
     public function fundAccountPayout2faForIciciCa(array $input): array
     {
         // Only allowed for Rx payouts, mandates account number
-        $this->processAccountNumber($input);
+        $balance = $this->processAccountNumber($input);
 
         (new Validator)->setStrictFalse()
             ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
@@ -1610,7 +1610,7 @@ class Service extends Base\Service
             $input[Entity::ORIGIN] = Entity::DASHBOARD;
         }
 
-        $payout = $this->core->createPayoutAndTriggerIciciOtp($input, $this->merchant);
+        $payout = $this->core->createPayoutAndTriggerIciciOtp($input, $this->merchant, $balance);
 
         return $payout->toArrayPublic();
     }

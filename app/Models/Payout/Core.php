@@ -428,8 +428,11 @@ class Core extends Base\Core
     public function createPayoutToFundAccount(array $input,
                                               Merchant\Entity $merchant,
                                               string $batchId = null,
-                                              bool $isInternal = false): Entity
+                                              bool $isInternal = false,
+                                              Balance\Entity $balance = null): Entity
     {
+
+
         $amountInfo = $this->getAmountInfoFromInput($input);
 
         $this->trace->info(
@@ -444,6 +447,7 @@ class Core extends Base\Core
                        ->setMerchant($merchant)
                        ->setBatch($batchId)
                        ->setInternal($isInternal)
+                       ->setPayoutBalance($input, $balance)
                        ->createPayout($input);
 
         if ($payout->getIsPayoutService() === false)
@@ -463,7 +467,9 @@ class Core extends Base\Core
      * @return Entity
      * @throws BadRequestException
      */
-    public function createPayoutAndTriggerIciciOtp(array $input, Merchant\Entity $merchant): Entity
+    public function createPayoutAndTriggerIciciOtp(array $input,
+                                                   Merchant\Entity $merchant,
+                                                   Balance\Entity $balance = null): Entity
     {
         $amountInfo = $this->getAmountInfoFromInput($input);
 
@@ -477,6 +483,7 @@ class Core extends Base\Core
 
         $payout = $this->getProcessor('fund_account_payout')
                        ->setMerchant($merchant)
+                       ->setPayoutBalance($input, $balance)
                        ->createPayoutEntityWithoutDownstreamProcessing($input);
 
         try
