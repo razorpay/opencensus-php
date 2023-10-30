@@ -45,7 +45,6 @@ import {
   trackIAClose,
   iaActivations,
 } from './ga';
-import Banner from 'common/ui/Banner';
 import RTracking from 'react-tracking';
 import { fetchVirtualAccounts } from 'merchant/reducers/virtualaccounts';
 import CardPaymentsBlockedModal from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Modal';
@@ -258,8 +257,6 @@ class HomeContainer extends Component {
         loading: true,
         items: [],
       },
-      dismissDiwaliPromotion: false,
-      hideDiwaliPromotion: getItem('hide_diwali_promotional_banner') || false,
       hasMinTransactionSD: false,
       referredMerchants: [],
       referredAmount: 0,
@@ -315,7 +312,6 @@ class HomeContainer extends Component {
     this.onExtraContentMount = this.onExtraContentMount.bind(this);
     this.onResize = debounce(this.onResize.bind(this), 500);
     this.onInstantActivationSuccess = this.onInstantActivationSuccess.bind(this);
-    this.onHideDiwaliPromotion = this.onHideDiwaliPromotion.bind(this);
     this.fetchRestrictionsIfAny = this.fetchRestrictionsIfAny.bind(this);
   }
 
@@ -911,22 +907,6 @@ class HomeContainer extends Component {
     }
   }
 
-  onHideDiwaliPromotion() {
-    setItem('hide_diwali_promotional_banner', true);
-    this.setState(
-      {
-        dismissDiwaliPromotion: true,
-      },
-      () => {
-        window.setTimeout(() => {
-          this.setState({
-            hideDiwaliPromotion: true,
-          });
-        }, 500);
-      },
-    );
-  }
-
   compareDate = (curr, prev) => {
     const currDate = moment(curr, 'DD/MM/YYYY');
     const prevDate = moment(prev, 'DD/MM/YYYY');
@@ -1077,8 +1057,6 @@ class HomeContainer extends Component {
 
     commonProps.showOnboardingBanner = user.isOrgAxis ? null : commonProps.showOnboardingBanner;
 
-    const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;
-
     const isPartnerOnBoardingModalShown = getItem(this.partnerOnBoardingToken);
 
     // if existing merchant or partner is coming via partner sign up page
@@ -1150,45 +1128,6 @@ class HomeContainer extends Component {
             <>
               {/* Lakshmi Vilas Bank Moratorium */}
               {user.isAccepted && hasLakhmiVilasBankAcc && <LakshmiVilasBankBanner />}
-
-              {this.props.user.isDiwaliPromoEnabled && !hideDiwaliPromotion && (
-                <div
-                  className={`diwali-promotion-banner v2-tour-banner${
-                    dismissDiwaliPromotion ? ' dismiss' : ''
-                  }`}
-                >
-                  <div className="banner-content">
-                    <Banner cta="View T&Cs">
-                      <span class="badge m-r">SPECIAL OFFER</span>
-                      <span>
-                        {this.props.user.transaction_value
-                          ? 'You are currently active at a slashed pricing of 1.75%! Make the most of it, benefits last till 31st January, 2019'
-                          : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
-                      </span>
-                      <span class="m-l btn-link">
-                        <ShowWhen
-                          additionalCondition={(_user) =>
-                            _user.isOrgAllowedFunctionality('external_links')
-                          }
-                        >
-                          <a
-                            href="https://razorpay.com/pricing"
-                            target="_blank"
-                            rel="noreferrer noopener"
-                          >
-                            <b>View T&#38;Cs</b>
-                          </a>
-                        </ShowWhen>
-                      </span>
-                    </Banner>
-                  </div>
-                  <div className="banner-close">
-                    <a className="banner-close-icon" onClick={this.onHideDiwaliPromotion}>
-                      <i className="i i-close" />
-                    </a>
-                  </div>
-                </div>
-              )}
             </>
           )}
           {isShowBankAccountWokrflow && <WorkflowStatus isHomepageWorkflow />}

@@ -92,7 +92,7 @@ export function getCommonAnalyticsProperties(user, config = {}) {
     };
   }
 
-  const mode = localStorage.getItem(`rzp_mode--${user.id}`);
+  const mode = localStorage?.getItem(`rzp_mode--${user.id}`);
   return {
     userId: user?.user?.id || 'Unknown',
     mode,

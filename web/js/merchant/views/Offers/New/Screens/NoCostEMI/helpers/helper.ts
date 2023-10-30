@@ -9,7 +9,7 @@ import {
 } from 'merchant/views/Offers/New/Screens/NoCostEMI/types';
 
 export const isLowCostExperimentEnabled = (experiment: ExperimentType): boolean =>
-  experiment.variables.result === 'on';
+  experiment?.variables?.result === 'on';
 
 /**
  * Helper function to get all tenures selected with low cost offer
