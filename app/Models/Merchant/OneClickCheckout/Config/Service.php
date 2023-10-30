@@ -977,9 +977,13 @@ class Service extends Base\Service
             $this->getModeAndSetDBConnectionForConfigs($input);
 
             $shopId = $input['shop_id'];
-
+            $appName = $input['app_name'] ?? '';
+            $lookupKey = Constants::SHOP_ID;
+            if($appName != '') {
+                $lookupKey = $appName."_".Constants::SHOP_ID;
+            }
             $merchantDetails = $this->repo->merchant_1cc_auth_configs->findLatestMerchantIdByPlatformConfigValue(
-                $shopId, Constants::SHOPIFY, Constants::SHOP_ID);
+                $shopId, Constants::SHOPIFY, $lookupKey);
 
             if ($merchantDetails === null)
             {
