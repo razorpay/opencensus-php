@@ -476,6 +476,12 @@ class BasicAuth
      */
     protected $accountIdFromBody = null;
 
+    /**
+     * Used to identify if passport attribute modification is allowed or not using public methods
+     * @var string
+     */
+    private $passportModificationAllowed = true;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -501,6 +507,7 @@ class BasicAuth
         $this->proxy                       = false;
         $this->passport                    = [];
         $this->passportFromJob             = "";
+        $this->passportModificationAllowed = true;
     }
 
     public function setCredentials(string $key = null, string $secret = null, string $accountId = null)
@@ -3337,6 +3344,9 @@ class BasicAuth
      */
     public function setPassport(Passport $passport): void
     {
+        if ( !$this->canModifyPassport() ){
+            return;
+        };
         // convert edge passport object to associative array since ba passport is an array
         // json_decode and json_encode will convert the object to associative array in full depth recursively
         // there will not be any error since we verified passport is valid already
@@ -3376,6 +3386,9 @@ class BasicAuth
      */
     public function setPassportMode(string $mode)
     {
+        if (!$this->canModifyPassport()){
+            return;
+        };
         $this->passport['mode'] = $mode;
     }
 
@@ -3386,6 +3399,9 @@ class BasicAuth
      */
     public function setPassportCredentialClaims(string $username, string $publicKey = null)
     {
+        if (!$this->canModifyPassport()){
+            return;
+        };
         // - credential.username is username from http basic auth.
         // - credential.public_key is for constructing callback urls, and as signer sdk argument. It is same as username for private auth.
         $this->passport['credential'] = ['username' => $username, 'public_key' => $publicKey];
@@ -3400,6 +3416,9 @@ class BasicAuth
      */
     public function setPassportConsumerClaims(string $type, string $id, bool $authenticated = false, array $meta = [])
     {
+        if ( !$this->canModifyPassport() ){
+            return;
+        };
         $this->passport['identified']    = true;
         $this->passport['authenticated'] = $authenticated;
         $this->passport['consumer']      = ['type' => $type, 'id' => $id];
@@ -3420,6 +3439,9 @@ class BasicAuth
      */
     public function setPassportOAuthClaims(string $ownerType, string $ownerId, string $clientId, string $appId, string $env)
     {
+        if (!$this->canModifyPassport()){
+            return;
+        };
         $this->passport['identified'] = true;
 
         $this->passport['oauth'] = [
@@ -3438,6 +3460,9 @@ class BasicAuth
      */
     public function setPassportImpersonationClaims(string $type, string $consumerId, string $consumerType = self::PASSPORT_CONSUMER_TYPE_MERCHANT)
     {
+        if ( !$this->canModifyPassport() ){
+            return;
+        };
         $this->passport['impersonation'] = ['type' => $type, 'consumer' => ['id' => $consumerId, 'type' => $consumerType]];
     }
 
@@ -3486,6 +3511,9 @@ class BasicAuth
      */
     public function setPassportRoles(array $roles)
     {
+        if (!$this->canModifyPassport()){
+            return;
+        };
         $this->passport['roles'] = $roles;
     }
 
@@ -3495,6 +3523,9 @@ class BasicAuth
      */
     public function setPassportAuthenticated(bool $authenticated)
     {
+        if (!$this->canModifyPassport()){
+            return;
+        };
         $this->passport['authenticated'] = $authenticated;
     }
 
@@ -3504,6 +3535,9 @@ class BasicAuth
      */
     public function setPassportDomain(string $domain)
     {
+        if (!$this->canModifyPassport()){
+            return;
+        };
         $this->passport['domain'] = $domain;
     }
 
@@ -3621,6 +3655,20 @@ class BasicAuth
 
             return '';
         }
+    }
+
+    public function setPassportModificationNotAllowed()
+    {
+        $this->passportModificationAllowed = false;
+    }
+
+    private function canModifyPassport(): bool {
+        if ( !$this->passportModificationAllowed ) {
+            $this->trace->warning(TraceCode::PASSPORT_MODIFICATION_NOT_ALLOWED, []);
+            //TODO: return false once all known integrations are fixed.
+            return true;
+        }
+        return true;
     }
 
 }
