@@ -412,6 +412,11 @@ class Processor
     const ALLOW_PG_LEDGER_MERCHANTS_ON_REARCH_UPS = 'allow_pg_ledger_merchants_on_rearch_ups';
 
     /**
+     * Razorx flag to allow offers on ups rearch flow
+     */
+    const ALLOW_OFFERS_ON_REARCH_UPS = 'allow_offers_on_rearch_ups';
+
+    /**
      * Razorx flag to indicate which method and gateway are supported by barricade service
      */
     const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
@@ -2060,8 +2065,8 @@ class Processor
 
             if (empty($order) === false)
             {
-                // Check if offers exist in the order
-                if ($order->hasOffers() === true)
+                // Check if offers exist in the order and can be routed to upi
+                if (($order->hasOffers() === true) and ($this->canRouteOfferThroughUPIRearch($input, $order) === false))
                 {
                     $routeViaReArch = false;
                     $dimensions[23] = 1;
@@ -10514,5 +10519,38 @@ class Processor
             20,
             1000,
             2000);
+    }
+
+    /**
+     * returns true if order with offer can be routed to upi rearch
+     *
+     * @param array $order
+     * @param Order\Entity $order
+     * @return boolean
+     */
+    private function canRouteOfferThroughUPIRearch(array $input, Order\Entity $order): bool
+    {
+        // This is already getting checked - but keeping here for safety as this is prerequisite for ramp and should be present here
+        if (empty($input[Payment\Entity::OFFER_ID]) === false)
+        {
+            return false;
+        }
+
+        if ($order->isOfferForced() === true)
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(), self::ALLOW_OFFERS_ON_REARCH_UPS,
+            $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_OFFERS_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'order' => $order->getId(),
+            'feature' => self::ALLOW_OFFERS_ON_REARCH_UPS,
+            'variant' => $variant,
+        ]);
+
+        return $variant === 'on';
     }
 }
