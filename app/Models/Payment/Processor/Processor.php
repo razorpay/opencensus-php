@@ -9,7 +9,6 @@ use Request;
 use RZP\Base\ConnectionType;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
-use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Services\Shield;
 use Neves\Events\TransactionalClosureEvent;
 use Route;
@@ -2572,8 +2571,6 @@ class Processor
                 $this->logRequestTime($payment, $startTime);
 
                 $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
-
-                $this->syncCallToPCBPaymentStatus($payment);
             }
 
             $this->saveUserConsentInRedis($input, $paymentData);
@@ -2625,56 +2622,7 @@ class Processor
         }
     }
 
-    protected function syncCallToPCBPaymentStatus($payment):void
-    {
-        if ($payment->merchant->isLRSFlowEnabled() === false || $payment->status !== Payment\Status::AUTHORIZED)
-        {
-            return;
-        }
 
-        try
-        {
-        $request = [
-            'order_id'   => $payment->getOrderId(),
-            'payment_id' => $payment->getId(),
-            'status'     => $payment->getStatus(),
-        ];
-
-        $this->app['payments-cross-border']->updatePaymentStatus($request);
-        }
-        catch(\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::PAYMENTS_CROSS_BORDER_PAYMENT_STATUS_UPDATE_ERROR,
-                []);
-            // Pushes to queue in case of failure only
-            $this->dispatchPaymentCreatedJobForLRS($payment);
-        }
-    }
-
-    protected function dispatchPaymentCreatedJobForLRS($payment):void
-    {
-        $body = [
-            'order_id' => $payment->getOrderId(),
-            'payment_id' => $payment->getId(),
-            'status' => $payment->getStatus(),
-        ];
-
-        $payload = [
-        'action' => CrossBorderCommonUseCases::UPDATE_PAYMENT_STATUS,
-        'body' => $body,
-
-        ];
-        $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DISPATCHED,
-            [
-                'payload' => $payload,
-            ]
-        );
-        CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60, 1000) % 601);
-
-    }
     protected function convert3ds2BrowserDetails(& $input): void
     {
        if(empty($input['browser']) === false){

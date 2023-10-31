@@ -15,6 +15,7 @@ use RZP\Constants\Country;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
 use RZP\Http\RequestHeader;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\NetbankingConfig;
@@ -7973,6 +7974,8 @@ trait Authorize
         $this->notifyIfCardSaved();
 
         $this->notifyAuthorized($wasFailed);
+
+        $this->syncCallToPXBPaymentStatus($this->payment);
     }
 
     protected function updateAuthorizedOrderStatus(Payment\Entity $payment)
@@ -13489,6 +13492,56 @@ trait Authorize
         }
 
         return false;
+    }
+
+    protected function syncCallToPXBPaymentStatus($payment):void
+    {
+        if ($payment->merchant->isLRSFlowEnabled() === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $request = [
+                'order_id'   => $payment->order->getId(),
+                'payment_id' => $payment->getId(),
+                'status'     => Payment\Status::AUTHORIZED,
+            ];
+            $this->app['payments-cross-border']->updatePaymentStatus($request);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENTS_CROSS_BORDER_PAYMENT_STATUS_UPDATE_ERROR,
+                []);
+            // Pushes to queue in case of failure only
+            $this->dispatchPaymentCreatedJobForLRS($payment);
+        }
+    }
+
+    protected function dispatchPaymentCreatedJobForLRS($payment):void
+    {
+        $body = [
+            'order_id' => $payment->order->getId(),
+            'payment_id' => $payment->getId(),
+            'status' => $payment->getStatus(),
+        ];
+
+        $payload = [
+            'action' => CrossBorderCommonUseCases::UPDATE_PAYMENT_STATUS,
+            'body' => $body,
+
+        ];
+        $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DISPATCHED,
+            [
+                'payload' => $payload,
+            ]
+        );
+        CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60, 1000) % 601);
+
     }
 
     protected function saveOpgspImportDataIfApplicable($payment)
