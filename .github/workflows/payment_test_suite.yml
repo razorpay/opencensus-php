@@ -4,7 +4,7 @@ jobs:
     runs-on:
       - api-micro-arm
     name: Cancel Previous Runs
-    timeout-minutes: 1
+    timeout-minutes: 3
     if: always()
     steps:
       - uses: styfle/cancel-workflow-action@0.9.0

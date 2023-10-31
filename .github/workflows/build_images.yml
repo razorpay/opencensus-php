@@ -5,7 +5,7 @@ jobs:
       - api-micro-arm
     name: Cancel Previous Runs
     if: always()
-    timeout-minutes: 1
+    timeout-minutes: 3
     steps:
       - uses: styfle/cancel-workflow-action@0.9.0
         if: github.ref != 'refs/heads/master'
