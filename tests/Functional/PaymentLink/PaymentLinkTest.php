@@ -785,7 +785,7 @@ class PaymentLinkTest extends TestCase
             'Secondary Reference Id' => 'test123',
             'URL' => 'https://razorpay.com',
             'PAN' => 'ABCDP1234X',
-            'DOB' => '16 Jun, 2023',
+            'DOB' => '16-07-2023',
             'Amount 2' => 1234.56
         ];
 
@@ -818,7 +818,7 @@ class PaymentLinkTest extends TestCase
             'Secondary Reference Id' => 'test123',
             'URL' => 'https://razorpay.com',
             'PAN' => 'ABCDP1234X',
-            'DOB' => '16 Jun, 2023',
+            'DOB' => '16-07-2023',
             'Amount 2' => 1234.56
         ];
 
@@ -852,7 +852,7 @@ class PaymentLinkTest extends TestCase
             'Primary Reference Id' => 'test123123',
             'Secondary Reference Id' => 'test123',
             'PAN' => 'ABCDP1234X',
-            'DOB' => '16 Jun, 2023',
+            'DOB' => '16-07-2023',
             'Amount 2' => 1234.56
         ];
 
@@ -886,7 +886,7 @@ class PaymentLinkTest extends TestCase
             'Primary Reference Id' => 'test123123',
             'Secondary Reference Id' => 'test123',
             'PAN' => 'ABCDP1234X',
-            'DOB' => '1612',
+            'DOB' => '16/07/2023',
             'Amount 2' => 1234.56
         ];
 
@@ -895,7 +895,8 @@ class PaymentLinkTest extends TestCase
         $resp = $this->makeRequestAndGetContent($testData["request"]);
 
         $this->assertEquals($resp["error_code"], "BAD_REQUEST_VALIDATION_FAILURE");
-        $this->assertEquals($resp["error_description"], "The validation failed for dob");
+        $this->assertEquals($resp["error_description"], "Invalid date format 16/07/2023
+The validation failed for dob");
     }
 
     // invalid pan
@@ -919,7 +920,7 @@ class PaymentLinkTest extends TestCase
             'Primary Reference Id' => 'test123123',
             'Secondary Reference Id' => 'test123',
             'PAN' => '123',
-            'DOB' => '16 Jun, 2023',
+            'DOB' => '16-07-2023',
             'Amount 2' => 1234.56
         ];
 
@@ -1327,7 +1328,7 @@ class PaymentLinkTest extends TestCase
             'Secondary Reference Id' => 'test123',
             'URL' => 'https://razorpay.com',
             'PAN' => 'ABCDP1234X',
-            'DOB' => '16 Jun, 2023',
+            'DOB' => '16-07-2023',
             'Amount 2' => 1234.56
         ];
 
@@ -1353,7 +1354,7 @@ class PaymentLinkTest extends TestCase
             'Primary Reference Id' => 'test123123',
             'Secondary Reference Id' => 'test123',
             'PAN' => 'ABCDP1234X',
-            'DOB' => '16 Jun, 2023',
+            'DOB' => '16-07-2023',
             'Amount 2' => 1234.56
         ];
 
@@ -1682,6 +1683,692 @@ Secondary reference id should be unique, duplicate value for test123";
 
         $this->startTest($this->testData[__FUNCTION__]);
     }
+
+    // form builder late fee tests
+    public function testCreatePaymentPageWithLateFeeConfig()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $res = $this->startTest();
+
+        $settings = \DB::connection('test')->select("select * from settings where entity_type = 'payment_page_item' and `key` = 'late_fee_config'")[0];
+
+        $this->assertEquals('{"late_fee_type": "flat_late_fee", "late_fee_order": 1}', $settings->value);
+
+        return $res['id'];
+    }
+
+    public function testCreatePaymentPageWithLateFeeConfigWithoutDueDate()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePaymentPageWithMoreThanOneLateFeeField()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePaymentPageWithInvalidLateFeeType()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePaymentPageLateFeeWithNoOtherPriceFIelds()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePaymentPageLateFeeWithMandatoryPriceField()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $this->startTest();
+    }
+
+    // edit late fee type
+    public function testUpdatePaymentPageWithLateFee()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id;
+
+        $settings = \DB::connection('test')->select("select * from settings where entity_type = 'payment_page_item' and `key` = 'late_fee_config'")[0];
+
+        $this->testData[__FUNCTION__]['request']['content']['payment_page_items'][0]['id'] = 'ppi_'. $settings->entity_id;
+
+        $this->startTest( $this->testData[__FUNCTION__]);
+
+        $settings = \DB::connection('test')->select("select * from settings where entity_type = 'payment_page_item' and `key` = 'late_fee_config'")[0];
+
+        $this->assertEquals('{"late_fee_type": "per_day_late_fee", "late_fee_order": 1}', $settings->value);
+    }
+
+    public function batchUploadRecord(string $paymentPageId, string $batchId, array $paymentPageRecord)
+    {
+        $request = [];
+
+        $request['url'] = '/payment_pages/'. $paymentPageId. '/create_record/'. $batchId;
+
+        $request['content'] = $paymentPageRecord;
+
+        $this->ba->batchAppAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    public function getValidDueDate()
+    {
+        // Get current date in IST timezone
+        $currentDate = Carbon::now('Asia/Kolkata');
+
+        // Add 2 days
+        $newDate = $currentDate->addDays(2);
+
+        // Format the date as 'd M, Y'
+        return $newDate->format('d-m-Y');
+    }
+
+
+    public function getPastDueDate()
+    {
+        // Get current date in IST timezone
+        $currentDate = Carbon::now('Asia/Kolkata');
+
+        // Subtract 3 days
+        $newDate = $currentDate->subDays(3);
+
+        // Format the date as 'd M, Y'
+        return $newDate->format('d-m-Y');
+    }
+
+    public function convertDate(string $date)
+    {
+        $timestamp = strtotime($date);
+
+        return date('d M, Y', $timestamp);
+    }
+
+    public function testBatchUploadLateFee()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        // Format the date as 'd M, Y'
+        $formattedDate = $this->getValidDueDate();
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'Due date' => $formattedDate,
+            'item1' => 100,
+            'Penalty Fee' => 10
+        ]);
+
+        $this->assertEquals('', '',$res['error_code']);
+
+        $this->assertEquals('', '',$res['error_description']);
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+
+        // verify late_Fee amount isn't added to amount
+        $this->assertEquals(100, $paymentPageRecord['amount']);
+
+        $formattedDate = $this->convertDate($formattedDate);
+
+        $this->assertEquals(
+            "{\"DOB\": \"test123\", \"item1\": \"100\", \"Due date\": \"$formattedDate\", \"sec__ref__id_1\": \"test123\", \"late_fee_prices\": {\"late_fee_rate_1\": \"10\"}}",
+            $paymentPageRecord['other_details']
+        );
+
+        $this->assertEquals('{"field_4": {"key": "DOB", "value": "test123", "dataType": "string"}, "field_5": {"key": "Due date", "value": "'.$formattedDate.'", "dataType": "string"}, "field_6": {"key": "item1", "value": "100", "dataType": "string"}, "field_7": {"key": "Late Fee Rate", "value": null, "dataType": "string"}}',$paymentPageRecord['custom_field_schema'] );
+    }
+
+    public function testBatchUploadLateFeeWithInvalidDueDate()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'Due date' => '16-06-2023',
+            'item1' => 100,
+            'Penalty Fee' => 10
+        ]);
+
+        $this->assertEquals($res["error_description"], "Due date  16 Jun, 2023 has already passed");
+    }
+
+
+    public function testBatchUploadLateFeeWithWithoutPriceField()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        $formattedDate = $this->getValidDueDate();
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'Due date' => $formattedDate,
+            'item1' => 100,
+        ]);
+
+        $this->assertEquals($res["error_description"], "Late fee price field should be present if due date is passed");
+    }
+
+    public function testBatchUploadLateFeeWithWithoutDueDate()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'item1' => 100,
+            'Penalty Fee' => 10
+        ]);
+
+        $this->assertEquals($res["error_description"], "Due date should be passed if late fee price field is passed");
+    }
+
+    // if both due date and price fields are not present, then its a valid case
+    public function testBatchUploadLateFeeWithWithoutDueDateAndPriceField()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'item1' => 100,
+        ]);
+
+        $this->assertEquals($res["error_description"], "");
+    }
+
+    public function testFetchRecordsForLateFee()
+    {
+
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        // Format the date as 'd M, Y'
+        $formattedDate = $this->getValidDueDate();
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'Due date' => $formattedDate,
+            'item1' => 100,
+            'Penalty Fee' => 10
+        ]);
+
+        $this->assertEquals('', '',$res['error_code']);
+
+        $this->assertEquals('', '',$res['error_description']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id . '/fetch_records';
+
+        $this->ba->directAuth();
+
+        $res = $this->makeRequestAndGetContent( [
+            'url' => '/payment_pages/'. $id. '/fetch_records',
+            'method' => 'post',
+            'content' => [
+                'pri__ref__id' => 1231231234,
+                'sec__ref__id_1' => 'test123',
+            ],
+        ]);
+
+        // late fee shouldn't be applied if due date hasn't passed yet
+        $this->assertEquals($res, [
+                'udf_data' => [
+                    'email' => "test@test.com",
+                    'pri__ref__id' => "1231231234",
+                    'phone' => "1231231234",
+                    'sec__ref__id_1' => "test123",
+                    'late__fee__due__date_1' => $this->convertDate($formattedDate)
+                ],
+                'price_fields' => [
+                    'item1' => "100"
+                ],
+                'payment_status' => "unpaid"
+            ]
+        );
+
+        // update the due date to past 3 days and check if late_fee price is sent in response
+        $passedDueDate = $this->getPastDueDate();
+
+        $updatedOtherDetails = json_encode([
+            'DOB' => 'test123',
+            'item1' => '100',
+            'Due date' => $this->convertDate($passedDueDate),
+            'sec__ref__id_1' => 'test123',
+            'late_fee_prices' => [
+                'late_fee_rate_1' => '10'
+            ]
+        ]);
+
+        $query = "update payment_page_records set other_details = :updatedOtherDetails where primary_reference_id = :primaryReferenceId";
+
+        \DB::connection('test')->update($query, [
+            'updatedOtherDetails' => $updatedOtherDetails,
+            'primaryReferenceId' => '1231231234'
+        ]);
+
+        $res = $this->makeRequestAndGetContent( [
+            'url' => '/payment_pages/'. $id. '/fetch_records',
+            'method' => 'post',
+            'content' => [
+                'pri__ref__id' => 1231231234,
+                'sec__ref__id_1' => 'test123',
+            ],
+        ]);
+
+        $this->assertEquals($res, [
+                'udf_data' => [
+                    'email' => "test@test.com",
+                    'pri__ref__id' => "1231231234",
+                    'phone' => "1231231234",
+                    'sec__ref__id_1' => "test123",
+                    'late__fee__due__date_1' => $this->convertDate($passedDueDate)
+                ],
+                'price_fields' => [
+                    'item1' => "100",
+                    'Penalty Fee' => "10"
+                ],
+               "additional_notes" => [
+                    "Late fee rate" => 10,
+                    "Late fee type" =>  "flat_late_fee"
+                ],
+                'payment_status' => "unpaid"
+            ]
+        );
+
+        // change 'flat_fee' to per_day' fee and verify the amount
+        $updatedLateFeeConfig = json_encode([
+            'late_fee_type' => 'per_day_late_fee',
+            'late_fee_order' => 1
+        ]);
+
+
+        $query = "update settings set `value` = :updatedLateFeeConfig where `key` = 'late_fee_config'";
+
+        \DB::connection('test')->update($query, [
+            'updatedLateFeeConfig' => $updatedLateFeeConfig,
+        ]);
+
+        $res = $this->makeRequestAndGetContent( [
+            'url' => '/payment_pages/'. $id. '/fetch_records',
+            'method' => 'post',
+            'content' => [
+                'pri__ref__id' => 1231231234,
+                'sec__ref__id_1' => 'test123',
+            ],
+        ]);
+
+        $this->assertEquals($res, [
+            'udf_data' => [
+                'email' => "test@test.com",
+                'pri__ref__id' => "1231231234",
+                'phone' => "1231231234",
+                'sec__ref__id_1' => "test123",
+                'late__fee__due__date_1' => $this->convertDate($passedDueDate)
+            ],
+            'price_fields' => [
+                'item1' => "100",
+                'Penalty Fee' => "30"
+            ],
+            "additional_notes" => [
+                "Late fee rate" => 10,
+                "Late fee type" =>  "per_day_late_fee"
+            ],
+            'payment_status' => "unpaid",
+        ]);
+
+        // late fee should be disabled on all reocrds on removing late_fee price field from payment page
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+
+        $this->ba->directAuth();
+
+        $res = $this->makeRequestAndGetContent( [
+            'url' => '/payment_pages/'. $id. '/fetch_records',
+            'method' => 'post',
+            'content' => [
+                'pri__ref__id' => 1231231234,
+                'sec__ref__id_1' => 'test123',
+            ],
+        ]);
+
+        $this->assertEquals($res, [
+            'udf_data' => [
+                'email' => 'test@test.com',
+                'pri__ref__id' => '1231231234',
+                'phone' => '1231231234',
+                'sec__ref__id_1' => 'test123'
+            ],
+            'price_fields' => [
+                'item1' => '100',
+            ],
+            'payment_status' => 'unpaid'
+        ]);
+    }
+
+    public function testOrderCreateForLateFee1()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        // Format the date as 'd M, Y'
+        $formattedDate = $this->getValidDueDate();
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'Due date' => $formattedDate,
+            'item1' => 100,
+            'Penalty Fee' => 10
+        ]);
+
+        $this->assertEquals('', '',$res['error_code']);
+
+        $this->assertEquals('', '',$res['error_description']);
+
+        // create order for this record before the due date has passed
+
+        $paymentPageItems = \DB::connection('test')->select("select * from payment_page_items");
+
+        $orderCreateRequest = [
+            'method' => 'POST',
+            'url' => '/payment_pages/' . $id . '/order',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[0]->id,
+                        'amount' => 100
+                    ]
+                ],
+                'notes' => [
+                    'pri__ref__id' => '1231231234',
+                    'email' => 'test@test.com',
+                    'phone' => '1231231234',
+                    'DOB' => 'test123'
+                ]
+            ]
+        ];
+
+        $this->ba->directAuth();
+
+        $res = $this->makeRequestAndGetContent($orderCreateRequest);
+
+        $this->assertEquals($res['order']['amount'], 100);
+
+        // update the due date to past 3 days and check if late_fee price is considered during order_create
+        $passedDueDate = $this->getPastDueDate();
+
+        $updatedOtherDetails = json_encode([
+            'DOB' => 'test123',
+            'item1' => '100',
+            'Due date' => $this->convertDate($passedDueDate),
+            'sec__ref__id_1' => 'test123',
+            'late_fee_prices' => [
+                'late_fee_rate_1' => '10'
+            ]
+        ]);
+
+        $query = "update payment_page_records set other_details = :updatedOtherDetails where primary_reference_id = :primaryReferenceId";
+
+        \DB::connection('test')->update($query, [
+            'updatedOtherDetails' => $updatedOtherDetails,
+            'primaryReferenceId' => '1231231234'
+        ]);
+
+
+        try
+        {
+            $res = $this->makeRequestAndGetContent($orderCreateRequest);
+
+            $this->assertTrue(false, 'should throw an exception for amount not mismatch');
+        }
+        catch(\Exception $e)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, $e->getCode());
+
+            $this->assertEquals("all the items must be present", $e->getMessage());
+        }
+
+    }
+
+    public function testOrderCreateForLateFee2()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        // Format the date as 'd M, Y'
+        $formattedDate = $this->getValidDueDate();
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'Due date' => $formattedDate,
+            'item1' => 10000,
+            'Penalty Fee' => 100
+        ]);
+
+        $this->assertEquals('', '',$res['error_code']);
+
+        $this->assertEquals('', '',$res['error_description']);
+
+        // update the due date to past 3 days and check if late_fee price is considered during order_create
+        $passedDueDate = $this->getPastDueDate();
+
+        $updatedOtherDetails = json_encode([
+            'DOB' => 'test123',
+            'item1' => '10000',
+            'Due date' => $this->convertDate($passedDueDate),
+            'sec__ref__id_1' => 'test123',
+            'late_fee_prices' => [
+                'late_fee_rate_1' => '100'
+            ]
+        ]);
+
+        $query = "update payment_page_records set other_details = :updatedOtherDetails where primary_reference_id = :primaryReferenceId";
+
+        \DB::connection('test')->update($query, [
+            'updatedOtherDetails' => $updatedOtherDetails,
+            'primaryReferenceId' => '1231231234'
+        ]);
+
+        $paymentPageItems = \DB::connection('test')->select("select * from payment_page_items");
+
+        // positive flow: include Penalty fee in request body
+        $orderCreateRequest = [
+            'method' => 'POST',
+            'url' => '/payment_pages/' . $id . '/order',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[0]->id,
+                        'amount' => 10000
+                    ],
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[1]->id,
+                        'amount' => 100
+                    ]
+                ],
+                'notes' => [
+                    'pri__ref__id' => '1231231234',
+                    'email' => 'test@test.com',
+                    'phone' => '1231231234',
+                    'DOB' => 'test1234'
+                ]
+            ]
+        ];
+
+        $this->ba->directAuth();
+
+        $res = $this->makeRequestAndGetContent($orderCreateRequest);
+
+        $this->assertEquals(10100, $res['order']['amount']);
+    }
+
+    public function testOrderCreateForLateFee3()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        // record without late fee
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'item1' => 10000
+        ]);
+
+        $this->assertEquals('', '',$res['error_code']);
+
+        $this->assertEquals('', '',$res['error_description']);
+
+
+        $paymentPageItems = \DB::connection('test')->select("select * from payment_page_items");
+
+        $orderCreateRequest = [
+            'method' => 'POST',
+            'url' => '/payment_pages/' . $id . '/order',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[0]->id,
+                        'amount' => 10000
+                    ]
+                ],
+                'notes' => [
+                    'pri__ref__id' => '1231231234',
+                    'email' => 'test@test.com',
+                    'phone' => '1231231234',
+                    'DOB' => 'test1234'
+                ]
+            ]
+        ];
+
+        $this->ba->directAuth();
+
+        $res = $this->makeRequestAndGetContent($orderCreateRequest);
+
+        $this->assertEquals(10000, $res['order']['amount']);
+    }
+
+    public function testPaymentPagePendingRevenueWithLateFee()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        // Format the date as 'd M, Y'
+        $formattedDate = $this->getValidDueDate();
+
+        // insert 3 records and check pending revenue before and after due date
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'Due date' => $formattedDate,
+            'item1' => 100,
+            'Penalty Fee' => 10
+        ]);
+
+        $this->assertEquals('', '',$res['error_code']);
+        $this->assertEquals('', '',$res['error_description']);
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231235,
+            'Phone' => '1231231234',
+            'DOB' => 'test124',
+            'Due date' => $formattedDate,
+            'item1' => 200,
+            'Penalty Fee' => 10
+        ]);
+
+        $this->assertEquals('', '',$res['error_code']);
+        $this->assertEquals('', '',$res['error_description']);
+
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231236,
+            'Phone' => '1231231234',
+            'DOB' => 'test125',
+            'Due date' => $formattedDate,
+            'item1' => 300,
+            'Penalty Fee' => 10
+        ]);
+
+        $this->assertEquals('', '',$res['error_code']);
+        $this->assertEquals('', '',$res['error_description']);
+
+        $this->ba->proxyAuth();
+
+        $pendingRevenueeRequest = [
+            'method' => 'GET',
+            'url' => '/payment_pages/'. $id . '/pending_payments/',
+            'content' => []
+        ];
+
+        $res = $this->makeRequestAndGetContent($pendingRevenueeRequest);
+
+        self::assertEquals(3, $res['total_pending_payments']);
+        self::assertEquals(600, $res['total_pending_revenue']);
+
+
+        // update the due date to past 3 days and check if late_fee price is considered during order_create
+        $passedDueDate = $this->getPastDueDate();
+
+        $updatedOtherDetails = json_encode([
+            'DOB' => 'test123',
+            'item1' => '100',
+            'Due date' => $this->convertDate($passedDueDate),
+            'sec__ref__id_1' => 'test123',
+            'late_fee_prices' => [
+                'late_fee_rate_1' => '10'
+            ]
+        ]);
+
+        $query = "update payment_page_records set other_details = :updatedOtherDetails where primary_reference_id = :primaryReferenceId";
+
+        \DB::connection('test')->update($query, [
+            'updatedOtherDetails' => $updatedOtherDetails,
+            'primaryReferenceId' => '1231231234'
+        ]);
+
+        $res = $this->makeRequestAndGetContent($pendingRevenueeRequest);
+
+        self::assertEquals(3, $res['total_pending_payments']);
+        self::assertEquals(600, $res['total_pending_revenue']);
+        self::assertEquals(10, $res['total_pending_late_fee']);
+
+    }
+
 
     public function testFetchPaymentLink()
     {

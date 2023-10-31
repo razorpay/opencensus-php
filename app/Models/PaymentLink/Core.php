@@ -332,8 +332,83 @@ class Core extends Base\Core
 
             $this->checkEmailAndContactTitles($udfSchemaNew);
 
+            $this->lateFeeValidations($input);
         }
 
+    }
+
+    public function lateFeeValidations(array $input)
+    {
+        $paymentPageItems = $input[Entity::PAYMENT_PAGE_ITEMS] ?? [];
+
+        $lateFeeFields = array_values(array_filter($paymentPageItems, function($item) {
+            if (isset($item[Entity::SETTINGS][PaymentPageRecord\Entity::LATE_FEE_CONFIG]) === true) {
+                return true;
+            }
+        }));
+
+
+        // if late_fee field is not set, skip further checks
+        if ((is_null($lateFeeFields) === true) or (count($lateFeeFields) === 0))
+        {
+            return;
+        }
+
+        // check 1: there must be at least 1 other price field than late fee
+        if (count($paymentPageItems) === 1)
+        {
+            throw new BadRequestValidationFailureException(
+                'There must be atleast 1 other price field than late fee');
+        }
+
+        // check 2: due date has to be sent mandatorily if late_fee price field is sewnt
+        $settings = $input[Entity::SETTINGS];
+
+        $udfSchema  = json_decode($settings[Entity::UDF_SCHEMA], true);
+
+        $lateFeeDueDate = array_first($udfSchema, function($json) {
+            return $json['name'] === PaymentPageRecord\Entity::LATE_FEE_DUE_DATE;
+        });
+
+        if (is_null($lateFeeDueDate) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Due date should be sent for late fee');
+        }
+
+        // check 3: due date should be of type date
+        if ($lateFeeDueDate['pattern'] !== 'date')
+        {
+            throw new BadRequestValidationFailureException(
+                'Due date should be type date');
+        }
+
+        // check 4: only one late_fee price field should be sent
+        if (count($lateFeeFields) > 1)
+        {
+            throw new BadRequestValidationFailureException(
+                'Only one late_fee field should be sent');
+        }
+
+        // check 5: validate late_fee_config schema
+        $lateFeeConfig = $lateFeeFields[0][Entity::SETTINGS][PaymentPageRecord\Entity::LATE_FEE_CONFIG];
+
+        $lateFeeConfig = json_decode($lateFeeConfig, true);
+
+        (new Validator)->validateInput('late_fee_config', $lateFeeConfig);
+
+        // check 6: Both late_fee_price_field and due date should be non-mandatory field
+        if ($lateFeeDueDate['required'] === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Late fee due date cannot be mandatory field');
+        }
+
+        if ($lateFeeFields[0]['mandatory'] === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Late fee price field cannot be mandatory field');
+        }
     }
 
     public function checkEmailAndContactTitles(array $udfSchema)
@@ -2922,6 +2997,120 @@ class Core extends Base\Core
         return $totalAmount;
     }
 
+
+    public function buildResponse(PaymentPageRecord\Entity $paymentPageRecord, array $udfSchema, Entity $paymentPage)
+    {
+        $response = [];
+
+        $paymentPageRecord = $paymentPageRecord->toArray();
+
+        $otherDetails = json_decode($paymentPageRecord['other_details'],true);
+
+        $udfData = [];
+
+        $lateFeeRate = null;
+
+        $lateFeeDueDateTitle = null;
+
+        // check if late_fee is enabled at record level
+        if (isset($otherDetails[PaymentPageRecord\Entity::LATE_FEE_PRICES]) === true)
+        {
+            $lateFeeRate = $otherDetails[PaymentPageRecord\Entity::LATE_FEE_PRICES][PaymentPageRecord\Entity::LATE_FEE_RATE_1];
+
+            unset($otherDetails[PaymentPageRecord\Entity::LATE_FEE_PRICES]);
+        }
+
+
+        foreach ($udfSchema as $udf)
+        {
+            // store the value of $lateFeeDueDate
+            if ($udf[Entity::NAME] === PaymentPageRecord\Entity::LATE_FEE_DUE_DATE)
+            {
+                $lateFeeDueDateTitle =  $udf[Entity::TITLE];
+            }
+
+            // get udf['name'] from ppr
+            if($udf[Entity::NAME] === PaymentPageRecord\Entity::PRIMARY_REF_ID)
+            {
+                $value = $paymentPageRecord[PaymentPageRecord\Entity::PRIMARY_REFERENCE_ID];
+
+                $udfData[$udf[Entity::NAME]] = $value;
+            }
+
+            else if ($udf[Entity::TITLE] === PaymentPageRecord\Entity::EMAIL_TITLE)
+            {
+                $udfData[$udf[Entity::NAME]] = $paymentPageRecord[PaymentPageRecord\Entity::EMAIL];
+            }
+
+            else if ($udf[Entity::TITLE] === PaymentPageRecord\Entity::PHONE_TITLE)
+            {
+                $udfData[$udf[Entity::NAME]] = $paymentPageRecord[PaymentPageRecord\Entity::CONTACT];
+            }
+
+            else
+            {
+
+                $udfData[$udf[Entity::NAME]] = $otherDetails[$udf[Entity::TITLE]];
+
+                unset($otherDetails[$udf[Entity::TITLE]]);
+            }
+        }
+
+
+        // consider only currently active price fields for page
+        $payment_page_items = $this->repo->payment_page_item->fetchByPaymentLinkIdAndMerchant($paymentPage->getId(), $paymentPage->getMerchantId());
+
+        $priceFields = [];
+
+        foreach ($payment_page_items as $paymentPageItem)
+        {
+            $item = $paymentPageItem->item;
+
+            if (isset($otherDetails[$item->name]) === true)
+            {
+                $priceFields[$item->name] = $otherDetails[$item->name];
+            }
+        }
+
+        if (($lateFeeRate !== null) and ($lateFeeDueDateTitle !== null))
+        {
+            // check if late_fee is enabled at page level
+            $payment_page_items = $this->repo->payment_page_item->fetchByPaymentLinkIdAndMerchant($paymentPage->getId(), $paymentPage->getMerchantId());
+
+            foreach ($payment_page_items as $paymentPageItem)
+            {
+                $item = $paymentPageItem->item;
+
+                if ($paymentPageItem->isLateFeePriceField() === true)
+                {
+                    $lateFeeType =  $paymentPageItem->getLateFeeType();
+
+                    $totalLateFee = (new PaymentPageRecord\Core())->getTotalLateFeeForRecord($lateFeeType, $lateFeeDueDateTitle, $paymentPageRecord);
+
+                    if ($totalLateFee !== null)
+                    {
+                        $priceFields[$item->name] = $totalLateFee;
+
+                        // Used to display these fields in report
+                        $response["additional_notes"] = [
+                            "Late fee rate" => $lateFeeRate,
+                            "Late fee type" => $paymentPageItem->getLateFeeType()
+                        ];
+                    }
+                }
+            }
+
+        }
+
+        $response['udf_data'] = $udfData;
+
+        $response['price_fields'] = $priceFields;
+
+        $response['payment_status'] = $paymentPageRecord[PaymentPageRecord\Entity::STATUS];
+
+        return $response;
+    }
+
     protected function modifyAndValidateInputToCreateLineItems(array $input, Entity $paymentLink)
     {
         $modifiedInput = [];
@@ -2930,8 +3119,8 @@ class Core extends Base\Core
 
         $PPIValidator = new PaymentPageItem\Validator();
 
-        if($paymentLink[PaymentLink::VIEW_TYPE] === ViewType::FILE_UPLOAD_PAGE) {
-
+        if($paymentLink[PaymentLink::VIEW_TYPE] === ViewType::FILE_UPLOAD_PAGE)
+        {
             $otherDetails = $this->getOtherDetailsFilteredKeyValuePairs($input, $paymentLink);
 
             $lineItemArray = $this->getAllLineItemsNameAmount($input, $paymentLink);
@@ -4116,7 +4305,8 @@ class Core extends Base\Core
 
     protected function getOtherDetailsFilteredKeyValuePairs(array $input, Entity $paymentLink) {
 
-        if(isset($input["notes"][PAYMENTLINK::PRI_REF_ID]) === false) {
+        if(isset($input["notes"][PAYMENTLINK::PRI_REF_ID]) === false)
+        {
             throw new BadRequestValidationFailureException(
                 'primary reference id is not sent in notes'
             );
@@ -4127,31 +4317,22 @@ class Core extends Base\Core
             $input["notes"][PAYMENTLINK::PRI_REF_ID]
         );
 
-        $paymentPageRecord = $paymentPageRecord->toArray();
+        $paymentPageRecord = $paymentPageRecord;
 
         $udfSchema = $paymentLink->getSettingsAccessor()->get(Entity::UDF_SCHEMA);
 
         $udfSchema = json_decode($udfSchema, true);
 
-        $otherDetails = json_decode($paymentPageRecord['other_details'],true);
+        $record = $this->buildResponse($paymentPageRecord, $udfSchema, $paymentLink);
 
-        foreach ($udfSchema as $udf)
+        if (isset($record["price_fields"]) === true)
         {
-            $udfData[$udf[Entity::NAME]] = $otherDetails[$udf[Entity::TITLE]];
-
-            unset($otherDetails[$udf[Entity::TITLE]]);
+            return $record["price_fields"];
         }
 
-        // Remove all {name: value} pairs of sec_ref_id's from otherdetails
-        foreach ($otherDetails as $key => $value)
-        {
-            if (PaymentPageRecord\Entity::isSecondaryRefId($key) === true)
-            {
-                unset($otherDetails[$key]);
-            }
-        }
-
-        return $otherDetails;
+        throw new BadRequestValidationFailureException(
+            'price fields not present in record'
+        );
     }
 
     protected function getAllLineItemsNameAmount(array $input,Entity $paymentLink){
@@ -4166,7 +4347,7 @@ class Core extends Base\Core
 
             $paymentPageItem = $this->repo->payment_page_item->findByIdAndPaymentLinkEntityOrFail(
                 $paymentPageItemId,
-                $paymentLink,
+                $paymentLink
             );
 
             $name = $paymentPageItem->item->getName();
@@ -4180,10 +4361,12 @@ class Core extends Base\Core
         return $lineItemArray;
     }
 
-    protected function validateLineItems(array $otherDetails, array $lineItemArray){
-
-        foreach ($otherDetails as $key => $value) {
-            if(isset($lineItemArray[$key]) === false) {
+    protected function validateLineItems(array $otherDetails, array $lineItemArray)
+    {
+        foreach ($otherDetails as $key => $value)
+        {
+            if(isset($lineItemArray[$key]) === false)
+            {
                 throw new BadRequestValidationFailureException(
                     'all the items must be present'
                 );

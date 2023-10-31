@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PaymentLink\PaymentPageRecord;
 
+use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
@@ -52,7 +53,6 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex)
         {
-
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,
@@ -136,7 +136,7 @@ class Core extends Base\Core
     {
         $id = PaymentLink::stripDefaultSign($paymentPage->getId());
 
-        $response = $this->setUdfParameters($id, $input, $errors);
+        $response = $this->setUdfParameters($paymentPage, $input, $errors);
 
         $this->validateUDFWithRegex($paymentPage, $input, $errors);
 
@@ -201,8 +201,9 @@ class Core extends Base\Core
         }
     }
 
-    public function setUdfParameters(string $id, array $input, array &$errors)
+    public function setUdfParameters(Base\Entity $paymentPage, array &$input, array &$errors)
     {
+        $id = PaymentLink::stripDefaultSign($paymentPage->getId());
 
         $udf_schema = (new Settings())->getSettings($id, 'payment_link', PaymentLink::UDF_SCHEMA);
 
@@ -220,6 +221,30 @@ class Core extends Base\Core
                 (!in_array($udf[PaymentLink::TITLE],$keys)))
             {
                 array_push($errors, 'Mandatory field entry missing for '.$udf[PaymentLink::TITLE]);
+            }
+
+            if (($udf['pattern'] === 'date') and (isset($input[$udf[PaymentLink::TITLE]]) == true))
+            {
+                $input[$udf[PaymentLink::TITLE]] = $this->validateAndConvertDateFormat($input[$udf[PaymentLink::TITLE]], $errors);
+            }
+
+            // check if late fee due date has already passed
+            if (($udf[PaymentLink::NAME] === Entity::LATE_FEE_DUE_DATE))
+            {
+               $lateFeeDueDate = $input[$udf[PaymentLink::TITLE]];
+
+               if ($lateFeeDueDate !== null)
+               {
+                   if ($this->hasDatePassed($lateFeeDueDate) === true)
+                   {
+                       array_push($errors,
+                           'Due date  '. $lateFeeDueDate . ' has already passed');
+                   }
+
+                   // check if corresponding late_fee_price_field is present
+                   $this->checkLateFeePriceFieldForDueDate($paymentPage, $input, $errors);
+               }
+
             }
 
             // storing all secondary_ref_id's also in the form of name: value mapping,
@@ -273,6 +298,24 @@ class Core extends Base\Core
         return $response;
     }
 
+    // Since batch doesn't support d M, Y date format, we take input as dd-mm-yyyy and convert it
+    function validateAndConvertDateFormat(string $dateString, array &$errors)
+    {
+        $pattern = '/^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$/';
+
+        // Use preg_match to check if the date string matches the pattern
+        if (preg_match($pattern, $dateString) !== 1)
+        {
+            array_push($errors, "Invalid date format ". $dateString);
+
+            return $dateString;
+        }
+
+        $timestamp = strtotime($dateString);
+
+        return date('d M, Y', $timestamp);
+    }
+
     public function setAmountParameters(Base\Entity $paymentLink, array $resp, array $input, array &$errors)
     {
         $payment_page_items = $this->repo->payment_page_item->fetchByPaymentLinkIdAndMerchant($paymentLink->getId(), $paymentLink->getMerchantId());
@@ -283,14 +326,33 @@ class Core extends Base\Core
 
         $keys = array_keys($input);
 
-        foreach ($payment_page_items as $paymentPageItem) {
-
+        foreach ($payment_page_items as $paymentPageItem)
+        {
             $item = $paymentPageItem->item;
+
             if (($paymentPageItem[Entity::MANDATORY] === true) and
                 (!in_array($item[PaymentLink::NAME],$keys)))
             {
                 array_push($errors,
                     'Mandatory field entry missing for '.$item[PaymentLink::NAME]);
+            }
+
+            if ($paymentPageItem->isLateFeePriceField() === true)
+            {
+                $lateFeeRate = $input[$item[PaymentLink::NAME]];
+
+                if ($lateFeeRate !== null)
+                {
+                    // currently only one late_fee_rate will be present
+                    $other_details[Entity::LATE_FEE_PRICES] = [
+                        Entity::LATE_FEE_RATE_1 =>  $input[$item[PaymentLink::NAME]]
+                    ];
+
+                    // check if the due date is present for corresponding late_fee_price_field
+                    $this->checkLateFeeDueDateForPriceField($paymentLink, $input, $errors);
+                }
+
+                continue;
             }
 
             $other_details[$item[PaymentLink::NAME]] = $input[$item[PaymentLink::NAME]];
@@ -316,6 +378,121 @@ class Core extends Base\Core
         return $resp;
     }
 
+    public function getTotalLateFeeForRecord(String $lateFeeType, String $lateFeeDueDateTitle, array $paymentPageRecord)
+    {
+        $otherDetails = json_decode($paymentPageRecord[Entity::OTHER_DETAILS],true);
+
+        $lateFeeDueDate = $otherDetails[$lateFeeDueDateTitle];
+
+        $lateFeeRate = $otherDetails[Entity::LATE_FEE_PRICES][Entity::LATE_FEE_RATE_1];
+
+        if (($lateFeeDueDate === null) or ($lateFeeRate === null))
+        {
+            return null;
+        }
+
+        if ($this->hasDatePassed($lateFeeDueDate) === false)
+        {
+            return null;
+        }
+
+        if ($lateFeeType === Entity::FLAT_LATE_FEE)
+        {
+            return $lateFeeRate;
+        }
+        else
+        {
+            $numberOfDays = $this->calculateDaysDifference($lateFeeDueDate);
+
+            return $numberOfDays * $lateFeeRate;
+        }
+    }
+
+    public function calculateDaysDifference(string $lateFeeDueDate): int
+    {
+        // Parse the input date
+        $lateFeeDueDate = Carbon::createFromFormat('d M, Y', $lateFeeDueDate);
+
+        // Get the current date
+        $currentDate = Carbon::now();
+
+        // Calculate the difference in days and round up
+        return ceil($currentDate->diffInDays($lateFeeDueDate, true));
+    }
+
+    public function hasDatePassed(string $inputDate)
+    {
+        // Parse the input date using the defined pattern
+        $parsedDate = Carbon::createFromFormat('d M, Y', $inputDate, 'Asia/Kolkata');
+
+        // Compare the dates
+        return $parsedDate->isPast();
+    }
+
+    // check if a price field is present for late_fee_due_Date
+    public function checkLateFeePriceFieldForDueDate(Base\Entity $paymentPage, array $input, array &$errors)
+    {
+        // currently only 1 late fee price field and due date can be presnt,
+        $payment_page_items = $this->repo->payment_page_item->fetchByPaymentLinkIdAndMerchant($paymentPage->getId(), $paymentPage->getMerchantId());
+
+        foreach ($payment_page_items as $paymentPageItem)
+        {
+            $item = $paymentPageItem->item;
+
+            if ($paymentPageItem->isLateFeePriceField() === true)
+            {
+                if (array_key_exists($item[PaymentLink::NAME],$input) === true)
+                {
+                    return;
+                }
+            }
+        }
+
+        array_push($errors,
+            'Late fee price field should be present if due date is passed');
+    }
+
+    // check if due_date is present for a corresponding late_fee_price_field
+    public function checkLateFeeDueDateForPriceField(Base\Entity $paymentPage, array $input, array &$errors)
+    {
+        $udfSchema = $paymentPage->getSettingsAccessor()->get(PaymentLink::UDF_SCHEMA);
+
+        $udfSchema = json_decode($udfSchema, true);
+
+        $lateFeeDueDate = array_first($udfSchema, function($json) {
+            return $json['name'] === Entity::LATE_FEE_DUE_DATE;
+        });
+
+        if ($lateFeeDueDate === null)
+        {
+            array_push($errors,
+                'Due date not set for payment page');
+        }
+
+        if (isset($input[$lateFeeDueDate['title']]) === false)
+        {
+            array_push($errors,
+                'Due date should be passed if late fee price field is passed');
+        }
+
+    }
+
+    // to generate next field title for custom_field_schema, eg: if input is field_8, output would be field_9
+    private function generateNextFieldTitle(string $title)
+    {
+        // Extract the numeric part from the input string
+        preg_match('/(\d+)$/', $title, $matches);
+        $numericPart = $matches[1] ?? 0;
+
+        // Increment the numeric part
+        $nextNumericPart = (int)$numericPart + 1;
+
+        // Combine it back with the original prefix
+        $nextTitle = preg_replace('/(\d+)$/', $nextNumericPart, $title);
+
+        return $nextTitle;
+    }
+
     public function populateCustomFieldSchema(string $id, array $response): array
     {
         $allFields = (new Settings())->getSettings($id, 'payment_link', PaymentLink::ALL_FIELDS);
@@ -326,6 +503,8 @@ class Core extends Base\Core
 
         $custom_field_schema = [];
 
+        $lastFieldTitle = '';
+
         foreach ($otherDetails as $title => $value)
         {
             if (array_key_exists($title, $allFields) === true)
@@ -333,7 +512,19 @@ class Core extends Base\Core
                 $fieldTitle = $allFields[$title];
 
                 $custom_field_schema[$fieldTitle] = ['key' => $title, 'value' => $value, 'dataType' => Constants::STRING];
+
+                $lastFieldTitle = $fieldTitle;
             }
+        }
+
+        // if other_details has late_fee_config, then it should its value in custom_field_schema so that it appears in report
+        if (isset($otherDetails[Entity::LATE_FEE_PRICES]) === true)
+        {
+            $lateFeeRate = $otherDetails[Entity::LATE_FEE_CONFIG][Entity::LATE_FEE_RATE_1];
+
+            $nextFieldTitle = $this->generateNextFieldTitle($lastFieldTitle);
+
+            $custom_field_schema[$nextFieldTitle] = ['key' => 'Late Fee Rate', 'value' => $lateFeeRate ,'dataType' => Constants::STRING];
         }
 
         $response[Entity::CUSTOM_FIELD_SCHEMA] = json_encode($custom_field_schema);

@@ -1436,6 +1436,485 @@ return [
         ],
     ],
 
+    'testCreatePaymentPageWithLateFeeConfig' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Primary reference id\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":8,\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"Phone\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}},{\"name\":\"late__fee__due__date_1\",\"required\":false,\"title\":\"Due date\",\"type\":\"string\",\"pattern\":\"date\",\"settings\":{\"position\":5}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'item1',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => FALSE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 1,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        => 'Penalty Fee',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                         "settings" => [
+                            "position" => 2,
+                            "late_fee_config" => "{\"late_fee_type\": \"flat_late_fee\", \"late_fee_order\": 1}"
+                         ],
+                        'mandatory'         => FALSE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 1,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreatePaymentPageWithLateFeeConfigWithoutDueDate' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Primary reference id\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":8,\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"Phone\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'item1',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        => 'Penality Fee',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        "settings" => [
+                            "position" => 2,
+                            "late_fee_config" => "{\"late_fee_type\": \"flat_late_fee\", \"late_fee_order\": 1}"
+                        ],
+                        'mandatory'         => FALSE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Due date should be sent for late fee',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testCreatePaymentPageWithMoreThanOneLateFeeField' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Primary reference id\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":8,\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"Phone\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}},{\"name\":\"late__fee__due__date_1\",\"required\":false,\"title\":\"Due date\",\"type\":\"string\",\"pattern\":\"date\",\"settings\":{\"position\":5}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'item1',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        => 'Penality Fee',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                         "settings" => [
+                            "position" => 2,
+                            "late_fee_config" => "{\"late_fee_type\": \"flat_late_fee\", \"late_fee_order\": 1}"
+                         ],
+                        'mandatory'         => FALSE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        => 'Penality Fee 2',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        "settings" => [
+                            "position" => 2,
+                            "late_fee_config" => "{\"late_fee_type\": \"fixed\", \"late_fee_order\": 2}"
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only one late_fee field should be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testCreatePaymentPageWithInvalidLateFeeType' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Primary reference id\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":8,\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"Phone\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}},{\"name\":\"late__fee__due__date_1\",\"required\":false,\"title\":\"Due date\",\"type\":\"string\",\"pattern\":\"date\",\"settings\":{\"position\":5}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'item1',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        => 'Penality Fee',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        "settings" => [
+                            "position" => 2,
+                            "late_fee_config" => "{\"late_fee_type\": \"some_type\", \"late_fee_order\": 1}"
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected late fee type is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentPageLateFeeWithNoOtherPriceFIelds' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Primary reference id\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":8,\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"Phone\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        => 'Penality Fee',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        "settings" => [
+                            "position" => 2,
+                            "late_fee_config" => "{\"late_fee_type\": \"flat_late_fee\", \"late_fee_order\": 1}"
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'There must be atleast 1 other price field than late fee',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testCreatePaymentPageLateFeeWithMandatoryPriceField' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Primary reference id\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":8,\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"Phone\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}},{\"name\":\"late__fee__due__date_1\",\"required\":false,\"title\":\"Due date\",\"type\":\"string\",\"pattern\":\"date\",\"settings\":{\"position\":5}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'item1',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => FALSE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 1,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        => 'Penalty Fee',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        "settings" => [
+                            "position" => 2,
+                            "late_fee_config" => "{\"late_fee_type\": \"flat_late_fee\", \"late_fee_order\": 1}"
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 1,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Late fee price field cannot be mandatory field',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePaymentPageWithLateFee' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'patch',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Primary reference id\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":8,\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"Phone\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}},{\"name\":\"late__fee__due__date_1\",\"required\":false,\"title\":\"Due date\",\"type\":\"string\",\"pattern\":\"date\",\"settings\":{\"position\":5}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                  [
+                        'item' => [
+                            'name'        =>  'item1',
+                            'description' => NULL,
+                            'amount'      => NULL 
+                        ],
+                         "settings" => [
+                            "position" => 2,
+                            "late_fee_config" => "{\"late_fee_type\": \"per_day_late_fee\", \"late_fee_order\": 1}"
+                        ],
+                        'mandatory'         => FALSE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'item2',
+                            'description' => NULL,
+                            'amount'      => NULL,   
+                            'currency'    => 'INR'
+
+                        ],
+                
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+
+    'testFetchRecordsForLateFee' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'patch',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Primary reference id\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":8,\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"Phone\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        => 'item1',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        "settings" => [
+                            "position" => 2,
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+
     'testInactivePaymentLinkSendNotification' => [
         'request'  => [
             'url'     => '/payment_pages/pl_100000000000pl/notify',

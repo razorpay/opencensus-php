@@ -3,6 +3,7 @@
 namespace RZP\Models\PaymentLink;
 
 use App;
+use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 use Razorpay\Trace\Logger as Trace;
 use Request;
@@ -437,7 +438,7 @@ class Service extends Base\Service
         try{
             $paymentPageRecord = $this->repo->payment_page_record->findByPaymentPageAndPrimaryRefIdOrFail($paymentLinkId, $priRefId);
         }
-        catch (\Throwable)
+        catch (\Throwable $e)
         {
             throw new BadRequestValidationFailureException(
                 'No Records Found');
@@ -451,7 +452,7 @@ class Service extends Base\Service
                 'Secondary Reference Id\'s Mismatch.');
         }
 
-        $response = $this->buildResponse($paymentPageRecord, $udfSchema);
+        $response = (new Core)->buildResponse($paymentPageRecord, $udfSchema, $paymentPage);
 
         return $response;
 
@@ -556,63 +557,6 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function buildResponse($paymentPageRecord, $udfSchema)
-    {
-        $response = [];
-
-        $paymentPageRecord = $paymentPageRecord->toArray();
-
-        $otherDetails = json_decode($paymentPageRecord['other_details'],true);
-
-        $udfData = [];
-
-        foreach ($udfSchema as $udf)
-        {
-            // get udf['name'] from ppr
-            if($udf[Entity::NAME] === PaymentPageRecord\Entity::PRIMARY_REF_ID)
-            {
-                $value = $paymentPageRecord[PaymentPageRecord\Entity::PRIMARY_REFERENCE_ID];
-
-                $udfData[$udf[Entity::NAME]] = $value;
-            }
-
-            else if ($udf[Entity::TITLE] === PaymentPageRecord\Entity::EMAIL_TITLE)
-            {
-                $udfData[$udf[Entity::NAME]] = $paymentPageRecord[PaymentPageRecord\Entity::EMAIL];
-            }
-
-            else if ($udf[Entity::TITLE] === PaymentPageRecord\Entity::PHONE_TITLE)
-            {
-                $udfData[$udf[Entity::NAME]] = $paymentPageRecord[PaymentPageRecord\Entity::CONTACT];
-            }
-
-            else
-            {
-
-                $udfData[$udf[Entity::NAME]] = $otherDetails[$udf[Entity::TITLE]];
-
-                unset($otherDetails[$udf[Entity::TITLE]]);
-            }
-        }
-
-        // Remove all {name: value} pairs of sec_ref_id's from otherdetails
-        foreach ($otherDetails as $key => $value)
-        {
-            if (PaymentPageRecord\Entity::isSecondaryRefId($key) === true)
-            {
-                unset($otherDetails[$key]);
-            }
-        }
-
-        $response['udf_data'] = $udfData;
-
-        $response['price_fields'] = $otherDetails;
-
-        $response['payment_status'] = $paymentPageRecord[PaymentPageRecord\Entity::STATUS];
-
-        return $response;
-    }
-
     public function createOrder(string $id, array $input)
     {
         $paymentLink = Tracer::inSpan(['name' => 'payment_page.order.create.get_payment_link'], function() use($id)
@@ -684,7 +628,47 @@ class Service extends Base\Service
     {
         return Tracer::inSpan(['name' => 'payment_page.ppi.update.updating'], function() use($paymentPageId)
         {
-            return $this->repo->payment_page_record->findByPaymentPageIdAndStatus($paymentPageId);
+            // check if late_fee is enabled for the page
+            $isLateFeeEnabledForPage = false;
+
+            $lateFeeType = null;
+
+            $id = Entity::silentlyStripSign($paymentPageId);
+
+            $paymentPage = $this->repo->payment_link->findOrFail($id);
+
+            $payment_page_items = $this->repo->payment_page_item->fetchByPaymentLinkIdAndMerchant($id, $paymentPage->getMerchantId());
+
+            foreach ($payment_page_items as $paymentPageItem)
+            {
+                if ($paymentPageItem->isLateFeePriceField() === true)
+                {
+                    $isLateFeeEnabledForPage = true;
+
+                    $lateFeeType = $paymentPageItem->getLateFeeType();
+                }
+            }
+
+            if ($isLateFeeEnabledForPage === false)
+            {
+                return $this->repo->payment_page_record->findByPaymentPageIdAndStatus($paymentPageId);
+            }
+
+            // get the title for due date field
+            $udfSchema = $paymentPage->getSettingsAccessor()->get(Entity::UDF_SCHEMA);
+
+            $udfSchema = json_decode($udfSchema, true);
+
+
+            foreach ($udfSchema as $udf)
+            {
+                // store the value of $lateFeeDueDate
+                if ($udf[Entity::NAME] === PaymentPageRecord\Entity::LATE_FEE_DUE_DATE) {
+                    $lateFeeDueDateTitle = $udf[Entity::TITLE];
+                }
+            }
+
+            return $this->repo->payment_page_record->totalPendingPaymentsWithLateFee($id, $lateFeeType, $lateFeeDueDateTitle);
         });
 
     }

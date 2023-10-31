@@ -45,6 +45,7 @@ class Entity extends Base\PublicEntity
     const CUSTOM_FIELD_SCHEMA   = 'custom_field_schema';
     const TOTAL_PENDING_PAYMENTS= 'total_pending_payments';
     const TOTAL_PENDING_REVENUE = 'total_pending_revenue';
+    const TOTAL_PENDING_LATE_FEE ='total_pending_late_fee';
 
     // get batches params
     const SKIP                  = 'skip';
@@ -56,6 +57,16 @@ class Entity extends Base\PublicEntity
     // fixed titles for email and contact
     const EMAIL_TITLE = "Email";
     const PHONE_TITLE = "Phone";
+
+    // late Fee fields
+    const LATE_FEE_CONFIG = 'late_fee_config';
+    const LATE_FEE_DUE_DATE = 'late__fee__due__date_1';
+    const LATE_FEE_RATE_1 = 'late_fee_rate_1';
+    const LATE_FEE_TYPE = 'late_fee_type';
+    const LATE_FEE_ORDER = 'late_fee_order';
+    const FLAT_LATE_FEE = 'flat_late_fee';
+    const PER_DAY_LATE_FEE = 'per_day_late_fee';
+    const LATE_FEE_PRICES = 'late_fee_prices';
 
     protected $generateIdOnCreate = true;
 

@@ -192,6 +192,11 @@ class Validator extends Base\Validator
         Entity::AMOUNT => 'required|mysql_unsigned_int|min_amount'
     ];
 
+    protected static $lateFeeConfigRules = [
+        PaymentPageRecord\Entity::LATE_FEE_TYPE => 'required|string|in:flat_late_fee,per_day_late_fee',
+        PaymentPageRecord\Entity::LATE_FEE_ORDER => 'required|int'
+    ];
+
     protected static $createSubscriptionRules = [
         Entity::PAYMENT_PAGE_ITEM_ID => 'required|string|size:18',
         Entity::NOTES       => 'sometimes|notes',

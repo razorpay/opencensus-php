@@ -11,6 +11,7 @@ use RZP\Models\Settings;
 use RZP\Models\Merchant;
 use RZP\Models\PaymentLink;
 use RZP\Models\Store\Entity as StoreEntity;
+use RZP\Models\PaymentLink\PaymentPageRecord;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
@@ -224,6 +225,32 @@ class Entity extends Base\PublicEntity
     public function getSettingsAccessor(): Settings\Accessor
     {
         return Settings\Accessor::for($this, Settings\Module::PAYMENT_PAGE_ITEM);
+    }
+
+    public function isLateFeePriceField()
+    {
+        $settings = $this->getSettings(PaymentPageRecord\Entity::LATE_FEE_CONFIG);
+
+        if ((is_string($settings) === true) and (empty($settings) === false))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getLateFeeType()
+    {
+        $settings = $this->getSettings(PaymentPageRecord\Entity::LATE_FEE_CONFIG);
+
+        $settings = json_decode($settings, true);
+
+        if ((empty($settings) === false))
+        {
+            return $settings[PaymentPageRecord\Entity::LATE_FEE_TYPE];
+        }
+
+        return null;
     }
 
     /**

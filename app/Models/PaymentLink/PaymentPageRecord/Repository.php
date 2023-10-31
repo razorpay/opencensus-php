@@ -47,6 +47,38 @@ class Repository extends Base\Repository
         ];
     }
 
+    public function totalPendingPaymentsWithLateFee(
+        String $PaymentPageId,
+        String $lateFeeType,
+        String $lateFeeDueDateTitle
+    ){
+        // process in batches of 1k records as this query could be expensive
+        $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::PAYMENT_LINK_ID, $PaymentPageId)
+            ->where(Entity::STATUS, STATUS::UNPAID)
+            ->chunk(1000, function ($records) use (&$total_pending_revenue, &$total_pending_payments, &$total_pending_late_fee, $lateFeeType, $lateFeeDueDateTitle)
+            {
+                foreach ($records as $record)
+                {
+                    $total_pending_revenue += $record->amount;
+                    $total_pending_payments++;
+
+                    $lateFee = (new Core())->getTotalLateFeeForRecord($lateFeeType, $lateFeeDueDateTitle, $record->toArray());
+
+                    if ($lateFee !== null)
+                    {
+                        $total_pending_late_fee += $lateFee;
+                    }
+                }
+            });
+
+        return [
+            Entity::TOTAL_PENDING_PAYMENTS => $total_pending_payments,
+            Entity::TOTAL_PENDING_REVENUE => $total_pending_revenue,
+            Entity::TOTAL_PENDING_LATE_FEE => $total_pending_late_fee,
+        ];
+    }
+
     // query is executed on replica as it could get expensive
     public function getMatchingRecordsCount(
         string $payment_page_id,
