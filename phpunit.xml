@@ -401,6 +401,27 @@
             <directory>./tests/Functional/QrCode</directory>
             <file>./tests/Functional/BharatQrPayment/BharatQrPaymentTest.php</file>
         </testsuite>
+        <testsuite name="Non VA QR Code Test Suite">
+            <file>./tests/Functional/QrCode/NonVirtualAccountQrCodeTest.php</file>
+        </testsuite>
+        <testsuite name="Bharat QR Payment Test Suite">
+            <file>./tests/Functional/BharatQrPayment/BharatQrPaymentTest.php</file>
+        </testsuite>
+        <testsuite name="UPI Yesbank QR Code Test Suite">
+            <file>./tests/Functional/QrCode/UpiYesBankQRCodeTest.php</file>
+        </testsuite>
+        <testsuite name="Checkout Orders Test Suite">
+            <file>./tests/Functional/CheckoutOrder/CheckoutOrdersTest.php</file>
+        </testsuite>
+        <testsuite name="QR Code Dedicated Terminal Test Suite">
+            <file>./tests/Functional/QrCode/QrCodeOnDedicatedTerminalTest.php</file>
+        </testsuite>
+        <testsuite name="QR Status Check Test Suite">
+            <file>./tests/Functional/QrCode/QrCodeStatusCheckTest.php</file>
+        </testsuite>
+        <testsuite name="QR Code Config Test Suite">
+            <file>./tests/Functional/QrCodeConfig/QrCodeConfigTest.php</file>
+        </testsuite>
         <testsuite name="Route Test Suite">
             <directory>./tests/Functional/Transfer/</directory>
             <directory>./tests/Functional/Payment/Transfers/</directory>

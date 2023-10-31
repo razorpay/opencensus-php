@@ -422,8 +422,8 @@ jobs:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
           SONAR_HOST: https://sonar.razorpay.com
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
-      - name: qr payment test suite
-        run: ci-assets/unit_coverage.sh
+      - name: Non VA QR Code Test Suite
+        run: ci-assets/route_unit_coverage.sh
         env:
           DB_LIVE_HOST: mysql
           DB_TEST_HOST: mysql
@@ -450,14 +450,190 @@ jobs:
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
-          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-          SONAR_HOST: https://sonar.razorpay.com
+          TEST_SUITE_NAME: "Non VA QR Code Test Suite"
+          CLOVER_NAME: non_va_qr
+          RUN_FIXTURES: true
+          RUN_FIXTURES_ONCE: true
+      - name: Bharat QR Payment Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Bharat QR Payment Test Suite"
+          CLOVER_NAME: bqr
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: UPI Yesbank QR Code Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "UPI Yesbank QR Code Test Suite"
+          CLOVER_NAME: yesbank_qr
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Checkout Orders Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "Checkout Orders Test Suite"
+          CLOVER_NAME: checkout_orders
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: QR Code Dedicated Terminal Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "QR Code Dedicated Terminal Test Suite"
+          CLOVER_NAME: qr_dedicated_terminal_test
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: QR Status Check Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "QR Status Check Test Suite"
+          CLOVER_NAME: qr_status_check
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
+      - name: Sonar Analysis
+        uses: sonarsource/sonarcloud-github-action@v1.6
+        env:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONARCLOUD_URL: https://sonar.razorpay.com
+          SONAR_HOST: https://sonar.razorpay.com
           GIT_COMMIT_ID: ${{ github.sha }}
           SONAR_PROJECT_ID: API_QR_PAYMENT_UT
-          TEST_SUITE_NAME: "QR Payment Test Suite"
-          SOURCE_DIR: /__w/api/api/app/Models/QrCode,/__w/api/api/app/Models/QrPayment,/__w/api/api/app/Models/BharatQr,/__w/api/api/app/Models/QrPaymentRequest
+          SOURCE_DIR: app/Models/QrCode,app/Models/QrPayment,app/Models/BharatQr,app/Models/QrPaymentRequest
           EXCLUDE_FILES: app/Models/QrCode/Upi/**
+        with:
+          args: >
+            -Dsonar.host.url=${{ env.SONAR_HOST }}
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_ID }}
+            -Dsonar.projectName=${{ env.SONAR_PROJECT_ID }}
+            -Dsonar.projectVersion=${{ env.GIT_COMMIT_ID }}
+            -Dsonar.login=${{ env.SONAR_TOKEN }}
+            -Dsonar.sources=${{ env.SOURCE_DIR }}
+            -Dsonar.php.coverage.reportPaths=clover_files/clover_cov_non_va_qr.xml,clover_files/clover_cov_bqr.xml,clover_files/clover_cov_yesbank_qr.xml,clover_files/clover_cov_checkout_orders.xml,clover_files/clover_cov_qr_dedicated_terminal_test.xml,clover_files/clover_cov_qr_status_check.xml
+            -Dsonar.exclusions=${{ env.EXCLUDE_FILES }}
     services:
       redis:
         credentials:

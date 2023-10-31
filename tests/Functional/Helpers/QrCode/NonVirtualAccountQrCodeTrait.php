@@ -6,7 +6,14 @@ use DB;
 use Mail;
 use Queue;
 use Mockery;
+use RZP\Error\ErrorCode;
+use RZP\Models\QrCode\Type;
 use RZP\Services\RazorXClient;
+use RZP\Services\SplitzService;
+use RZP\Models\Payment\Gateway;
+use RZP\Services\Mock\Reminders;
+use RZP\Exception\ServerErrorException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity;
 
 trait NonVirtualAccountQrCodeTrait
@@ -562,4 +569,141 @@ trait NonVirtualAccountQrCodeTrait
         return $content;
     }
 
+    public function runEntityAssertions($response)
+    {
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
+        $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+        $this->assertStringContainsString('qrmoremegast', $qrCodeEntity['qr_string']);
+        $this->assertStringContainsString('@icici', $qrCodeEntity['qr_string']);
+
+        if ($qrCodeEntity['fixed_amount'] === true)
+        {
+            $amount = $qrCodeEntity['amount'] / 100;
+
+            $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
+        }
+
+        if ($response['type'] === Type::BHARAT_QR)
+        {
+            $this->assertStringContainsString('0518' . substr($response['id'], 3) . 'qrv2', $qrCodeEntity['qr_string']);
+        }
+    }
+
+    public function runEntityAssertionsForDedicatedTerminalQr($response, $terminal, $mode = 'test')
+    {
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, $mode);
+
+        $this->assertEquals($qrCodeEntity['id'], $response['id']);
+
+        $vpa = null;
+        switch ($terminal->getGateway())
+        {
+            case Gateway::UPI_ICICI:
+            {
+                $vpa = $terminal->getGatewayMerchantId2();
+
+                switch ($qrCodeEntity['usage'])
+                {
+                    case "single_use":
+                    {
+                        $this->assertStringContainsString('icicirefID', $qrCodeEntity['qr_string']);
+
+                        break;
+                    }
+                    case "multiple_use":
+                    {
+                        $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
+                        $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+                        break;
+                    }
+                }
+                break;
+            }
+
+            default:
+            {
+                $vpa = $terminal->getVpa();
+
+                switch ($qrCodeEntity['usage'])
+                {
+                    case "single_use":
+                    {
+                        $this->assertStringContainsString('icicirefID', $qrCodeEntity['qr_string']);
+
+                        break;
+                    }
+                    case "multiple_use":
+                    {
+                        $tr = substr($response['id'], 3, 14) . 'qrv2';
+                        $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+
+        $this->assertStringContainsString($vpa, $qrCodeEntity['qr_string']);
+
+        if ($qrCodeEntity['fixed_amount'] === true)
+        {
+            $amount = $qrCodeEntity['amount'] / 100;
+
+            $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
+        }
+
+        if ($response['type'] === Type::BHARAT_QR)
+        {
+            $this->assertStringContainsString('0518' . substr($response['id'], 3) . 'qrv2', $qrCodeEntity['qr_string']);
+        }
+    }
+
+    public function enableRazorXTreatmentForCCOnUPI()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+               {
+                   if ($featureFlag === (RazorxTreatment::ALLOW_CC_ON_UPI_PRICING))
+                   {
+                       return 'on';
+                   }
+                   return 'control';
+               });
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
+    }
+
+    public function mockRemindersRequestForStatusCheck(&$count = 0, $fail = false)
+    {
+        $remindersMock = \Mockery::mock(Reminders::class)->makePartial();
+
+        $this->app->instance('reminders', $remindersMock);
+
+        if ($fail === true) {
+            $remindersMock->shouldReceive('createReminder')
+                          ->andThrow(new ServerErrorException('Test error', ErrorCode::SERVER_ERROR));
+        }
+        else {
+            $remindersMock->shouldReceive('createReminder')
+                          ->andReturnUsing(function ($input, $merchantId) use (&$count) {
+                              $count++;
+                              return ['id' => 'DErKK3a9tEGlph'];
+                          });
+        }
+    }
 }
