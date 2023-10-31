@@ -3784,9 +3784,7 @@ class Service extends Base\Service
 
         $contactData = $this->createContactForCompositePayout($input);
 
-        $contactId = $contactData[Contact\Entity::ID];
-
-        $fundAccountData = $this->createFundAccountForCompositePayout($input, $contactId);
+        $fundAccountData = $this->createFundAccountForCompositePayout($input, $contactData);
 
         $fundAccountId = $fundAccountData[FundAccount\Entity::ID];
 
@@ -3798,13 +3796,13 @@ class Service extends Base\Service
     // @TODO: refactor this/move it to FundAccount entity.
     protected function unsetSensitiveCardDetails(array $input): array
     {
-        $input = $this->trimCardNumberIfRequired($input);
-
         $fundAccountInput = $input[Entity::FUND_ACCOUNT] ?? [];
 
         if ((isset($fundAccountInput[FundAccount\Entity::CARD]) === true) and
             (is_array($fundAccountInput[FundAccount\Entity::CARD]) === true))
         {
+            $input = $this->trimCardNumberIfRequired($input);
+
             if (empty($fundAccountInput[FundAccount\Entity::CARD][Card\Entity::NUMBER]) === false)
             {
                 $input[Entity::FUND_ACCOUNT][FundAccount\Entity::CARD][Card\Entity::IIN] =
@@ -3826,13 +3824,15 @@ class Service extends Base\Service
         return $input[Entity::FUND_ACCOUNT ][Entity::CONTACT];
     }
 
-    protected function getInputForFundAccountCreateFromComposite(array $input, string $contactId): array
+    protected function getInputForFundAccountCreateFromComposite(array $input, Contact\Entity $contactEntity): array
     {
         $fundAccountInput = $input[Entity::FUND_ACCOUNT];
 
         unset($fundAccountInput[Entity::CONTACT]);
 
-        $fundAccountInput[FundAccount\Entity::CONTACT_ID] = $contactId;
+        $fundAccountInput[FundAccount\Entity::CONTACT_ID] = $contactEntity->getPublicId();
+
+        $fundAccountInput[FundAccount\Entity::CONTACT_ENTITY] = $contactEntity;
 
         return $fundAccountInput;
     }
@@ -3848,24 +3848,25 @@ class Service extends Base\Service
         return $payoutInput;
     }
 
-    protected function createContactForCompositePayout(array $input): array
+    protected function createContactForCompositePayout(array $input): Contact\Entity
     {
         $contactInput = $this->getInputForContactCreateFromComposite($input);
 
+        $contactInput['isComposite'] = true;
+
         $contactResponse = (new Contact\Service)->create($contactInput);
 
-        return $contactResponse[Constants\Entity::CONTACT];
+        return $contactResponse[Contact\Entity::CONTACT_ENTITY];
     }
 
-    protected function createFundAccountForCompositePayout(array $input, string $contactId): array
+    protected function createFundAccountForCompositePayout(array $input, Contact\Entity $contactEntity): array
     {
-        $fundAccountInput = $this->getInputForFundAccountCreateFromComposite($input, $contactId);
+        $fundAccountInput = $this->getInputForFundAccountCreateFromComposite($input, $contactEntity);
 
         $fundAccountResponse = (new FundAccount\Service)->create($fundAccountInput);
 
         return $fundAccountResponse[Constants\Entity::FUND_ACCOUNT]->toArrayPublic();
     }
-
 
     protected function trimCardNumberIfRequired(array $input)
     {

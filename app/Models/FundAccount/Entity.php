@@ -86,6 +86,9 @@ class Entity extends Base\PublicEntity
 
     const RESPONSE_CODE   = 'response_code';
 
+    //This is used in composite payout request to pass contact object to fund account create
+    const CONTACT_ENTITY = 'contact_entity';
+
     const FUND_ACCOUNT_RX_RETRY_COUNT = '2';
 
     const FUND_ACCOUNT_BULK_RX_RETRY_COUNT = '2';

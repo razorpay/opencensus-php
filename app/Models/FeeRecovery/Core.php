@@ -39,9 +39,10 @@ class Core extends Base\Core
      * Creates an entry into the fee_recovery table corresponding to a Payout/Reversal.
      * This function gets invoked at payout initiation and reversal creation.
      * skipDedupe is true for debit fee recovery entry and calling function ensures that the debit entry creation is called only once
-     *
      * @param Base\PublicEntity $entity
-     *
+     * @param bool $skipDedupe
+     * @throws BadRequestException
+     * @throws Exception\InvalidArgumentException
      */
     public function createFeeRecoveryEntityForSource(Base\PublicEntity $entity, bool $skipDedupe = false)
     {
@@ -65,7 +66,8 @@ class Core extends Base\Core
                 {
                     $skipCreation = $this->skipIfExistingFeeRecoveryDataExists($feeRecoveryEntity);
 
-                    if ($skipCreation === true) {
+                    if ($skipCreation === true)
+                    {
                         return;
                     }
                 }

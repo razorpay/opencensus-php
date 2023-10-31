@@ -54,8 +54,6 @@ class Core extends Base\Core
 
         (new Validator)->validateInput('create', $input);
 
-        $merchantId = $merchant->getId();
-
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {
             $result = $this->repo->contact->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],

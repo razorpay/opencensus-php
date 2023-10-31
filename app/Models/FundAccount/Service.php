@@ -71,7 +71,7 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
-        if (isset($input[Entity::CONTACT_ID]) === true)
+        if ((isset($input[Entity::CONTACT_ID]) === true) or (isset($input[Entity::CONTACT_ENTITY]) === true))
         {
             return $this->handleFundAccountCreationForContact($input);
         }
@@ -316,15 +316,23 @@ class Service extends Base\Service
      */
     protected function handleFundAccountCreationForContact(array $input)
     {
-        /** @var Contact\Entity $source */
-        $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+        if (isset($input[Entity::CONTACT_ENTITY]) === true)
+        {
+            $source = $input[Entity::CONTACT_ENTITY];
+
+            unset($input[Entity::CONTACT_ENTITY]);
+        }
+        else
+        {
+            /** @var Contact\Entity $source */
+            $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+        }
 
         if ($source->isActive() === false)
         {
             throw new BadRequestValidationFailureException(
                 'Fund accounts cannot be created on an inactive ' . $source->getEntity());
         }
-
 
         $createDuplicate = true;
 

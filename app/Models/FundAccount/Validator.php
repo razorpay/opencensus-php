@@ -63,6 +63,7 @@ class Validator extends Base\Validator
         Entity::CARD . '.' . Card\Entity::INTERNATIONAL  => 'sometimes:card|bool',
         Entity::CARD . '.' . Card\Entity::TRIVIA         => 'sometimes:card|string|nullable',
         Entity::BATCH_ID                                 => 'sometimes|string',
+        Entity::CONTACT_ENTITY                           => 'sometimes|Entity'
     ];
 
     protected static $beforeCreateRules = [

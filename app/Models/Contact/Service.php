@@ -75,10 +75,21 @@ class Service extends Base\Service
                 Entity::RESPONSE_CODE     => $responseCode,
             ]);
 
-        return [
-            Constants\Entity::CONTACT => $entity->toArrayPublic(),
-            Entity::RESPONSE_CODE     => $responseCode,
-        ];
+        if ($input['isComposite'] === true)
+        {
+            return [
+                Constants\Entity::CONTACT => $entity->toArrayPublic(),
+                Entity::CONTACT_ENTITY    => $entity,
+                Entity::RESPONSE_CODE     => $responseCode,
+            ];
+        }
+        else
+        {
+            return [
+                Constants\Entity::CONTACT => $entity->toArrayPublic(),
+                Entity::RESPONSE_CODE => $responseCode,
+            ];
+        }
     }
 
     public function createForCompositePayout(array $input,

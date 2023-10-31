@@ -65,6 +65,9 @@ class Entity extends Base\PublicEntity
     const CONTACT_EMAIL_PARTIAL_SEARCH = 'email.partial_search';
     const CONTACT_NUMBER_PARTIAL_SEARCH = 'contact.partial_search';
 
+    const IS_COMPOSITE = 'isComposite';
+    const CONTACT_ENTITY = 'contact_entity';
+
     protected $generateIdOnCreate = true;
 
     protected $isPSPayout = false;
