@@ -18,6 +18,7 @@ class GraphRequestAuthCheckV2
     const WHITELISTED_QUERY_SELECTORS = [
         'userAuthentication',
         'organisationInformation',
+        'organisationInformationByDomain',
         'registerEmail',
         'loginEmail',
         'loginTwoFactor',
@@ -44,6 +45,7 @@ class GraphRequestAuthCheckV2
     public function handle($request, Closure $next)
     {
         $start_time = microtime(true);
+
 
         $user = Auth::guard('user')->user();
 
