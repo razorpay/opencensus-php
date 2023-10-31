@@ -37,6 +37,21 @@ class PartnerConfigController extends Controller
         return ApiResponse::json($data);
     }
 
+
+    /**
+     * Get default partner config associated to a partner based on partner type
+     *
+     * @return mixed
+     */
+    public function getDefaultPartnerConfig()
+    {
+        $input = Request::all();
+
+        $data  = $this->service()->fetchDefaultPartnerConfig($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function bulkUpsert() {
 
         $input = Request::all();

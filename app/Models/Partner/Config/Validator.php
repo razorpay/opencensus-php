@@ -224,6 +224,15 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateExpandColumns(array $columns)
+    {
+        if (sizeof(array_intersect($columns, Constants::VALID_EXPAND_COLUMNS)) != sizeof($columns))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PARTNER_CONFIG_EXPAND_COLUMN);
+        }
+    }
+
+
     public function validatePartnerMetadata(string $attribute, $value)
     {
         if (isset($value) == false)

@@ -1591,6 +1591,43 @@ return [
         ],
     ],
 
+    'testFetchDefaultPartnerConfigWithPartnerIdByAuthServiceAppAuth' => [
+        'request'  => [
+            'url'     => '/partner_config/default',
+            'method'  => 'GET',
+            'content' => [
+                'partner_id' => 'DefaultPartner',
+                'expand'     => 'default_plan_id'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_type'             => 'merchant',
+                'entity_id'               => 'DefaultPartner',
+                'default_plan_id'         => 'SubmerchantPln',
+                'partner_metadata'        => [
+                    'brand_color'        => '0000FF',
+                    'text_color'         => '000FFF',
+                    'brand_name'         => 'google',
+                    'policy_url'         => 'https://www.xyz.com/terms',
+                    'policy_template_id' => '1hDYlICobzOCZt'
+                ],
+                'default_plan_id_details' => [
+                    'id'     => 'SubmerchantPln',
+                    'name'   => 'standard_plan',
+                    'entity' => 'pricing',
+                    'org_id' => 'org_100000razorpay',
+                    'rules'  => [
+                        'payment_method' => 'card',
+                        'percent_rate'   => 200,
+                        'fixed_rate'     => 0,
+                    ]
+
+                ]
+            ],
+        ],
+    ],
+
     'testFetchPartnerConfigByAuthServiceAppAuthForInvalidPartnerType' => [
         'request'  => [
             'url'     => '/partner_config_guest',

@@ -1893,6 +1893,43 @@ class PartnerConfigTest extends OAuthTestCase
         $this->checkResponseFieldsForProxyOrInternalAuth($response);
     }
 
+    /**
+     * The following testcase would validate the default partner config that is defined for a pure platform partner
+     */
+    public function testFetchDefaultPartnerConfigWithPartnerIdByAuthServiceAppAuth()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $partnerMeteData = [
+            'brand_color'   => '0000FF',
+            'text_color'    => '000FFF',
+            'brand_name'    => 'google',
+            'policy_url'    => 'https://www.xyz.com/terms',
+            'policy_template_id'    => '1hDYlICobzOCZt'
+        ];
+
+        $this->createConfigForPlatformPartner($partner->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData, Entity::DEFAULT_PLAN_ID => 'SubmerchantPln']);
+        $this->ba->authServiceAuth();
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['partner_id'] = $partner->getId();
+        $testData['request']['content']['expand'] = Entity::DEFAULT_PLAN_ID;
+
+        $response = $this->startTest($testData);
+
+    }
+
     public function testFetchPartnerConfigByAuthServiceAppAuthForInvalidPartnerType()
     {
         list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'aggregator']);

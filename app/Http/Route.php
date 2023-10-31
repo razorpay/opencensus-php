@@ -3265,6 +3265,7 @@ class Route
         'partner_config_edit'                      => ['put',      'partner_config/{id}',                            'PartnerConfigController@update'                                    ],
         'partner_config_edit_logo'                 => ['post',     'partner_config/{id}/logo',                       'PartnerConfigController@uploadLogo'                                ],
         'partner_config_fetch_guest'               => ['get',      'partner_config_guest',                           'PartnerConfigController@getConfig'                                 ],
+        'default_partner_config_fetch_guest'       => ['get',      'partner_config/default',                          'PartnerConfigController@getDefaultPartnerConfig'                                 ],
         'create_partner_sub_merchant_config'       => ['post',     'partner_configs/submerchant/config',             'PartnerConfigController@createPartnersSubMerchantConfig'           ],
         'update_partner_sub_merchant_config'       => ['put',      'partner_configs/submerchant/config',             'PartnerConfigController@updatePartnersSubMerchantConfig'           ],
         'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'                        ],
@@ -6284,6 +6285,7 @@ class Route
         'raw_address_create_bulk',
 
         'partner_config_fetch_guest',
+        'default_partner_config_fetch_guest',
         'terminal_toggle_internal',
         // Ledger Outbox
         'ledger_outbox_retry',
@@ -15533,7 +15535,7 @@ class Route
             'admin_reset_password',
             'user_confirm_by_data',
             'guest_pincode_get',
-            'partner_config_fetch_guest'
+            'partner_config_fetch_guest',
         ],
 
         'dashboard_internal' => [
@@ -16248,7 +16250,8 @@ class Route
             'merchant_get_org_details',
             'merchant_banking_accounts_webhook',
             'user_details_unified',
-            'partner_config_fetch_guest'
+            'partner_config_fetch_guest',
+            'default_partner_config_fetch_guest',
         ],
 
         'reporting' => [

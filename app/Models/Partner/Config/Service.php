@@ -6,6 +6,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -14,6 +15,7 @@ use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Feature as Feature;
+use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Partner\Config\Constants as PartnerConfigConstants;
 
 class Service extends Base\Service
@@ -201,6 +203,48 @@ class Service extends Base\Service
 
         return $configData;
     }
+
+    public function fetchDefaultPartnerConfig(array $input): array
+    {
+        $configData = [];
+        $validator  = (new Validator());
+        $core       = (new Core());
+        $columnsToExpand = [];
+        if (empty($input['expand']) === false)
+        {
+            $columnsToExpand = explode(',', $input['expand']);
+            $validator->validateExpandColumns($columnsToExpand);
+        }
+
+        $partner = $this->repo->merchant->findOrFailPublic($input['partner_id']);
+        if ($partner->isPurePlatformPartner() === true)
+        {
+
+            $config     = $core->fetchConfigForPlatformPartner($partner, null);
+            $configData = optional($config)->toArrayPublic(false);
+        }
+        else
+        {
+            $merchantApplicationCore = new MerchantApplications\Core();
+            $appType                 = $merchantApplicationCore->getDefaultAppTypeForPartner($partner);
+            $appIds                  = $merchantApplicationCore->getMerchantAppIds($partner->getId(), [$appType]);
+            if (empty($appIds) === false)
+            {
+                $defaultAppId = $appIds[0];
+                $application  = $this->applicationRepo->findOrFailPublic($defaultAppId);
+                $config = $core->fetch($application);
+                $configData = optional($config)->toArrayPublic();
+            }
+        }
+
+        if(empty($configData) === false and empty($columnsToExpand) === false)
+        {
+            $configData = $this->expandPartnerConfigDetails($configData, $columnsToExpand);
+        }
+
+        return $configData;
+    }
+
 
     /**
      * @param string $id
@@ -554,5 +598,25 @@ class Service extends Base\Service
         $config = $core->edit($id, $input);
 
         return $config->toArrayPublic();
+    }
+
+    private function expandPartnerConfigDetails(array $configData, array $columnsToExpand): array
+    {
+        $pricingService = (new Pricing\Service());
+        foreach ($columnsToExpand as $column)
+        {
+            $detailKey        = $column . "_details";
+            $planDetails      = $pricingService->getPlanById($configData[$column]);
+            $rules            = $planDetails['rules'];
+            $limitedRulesData = [];
+            foreach ($rules as $rule)
+            {
+                $limitedRulesData = array_merge($limitedRulesData, array_only($rule, PartnerConfigConstants::PRICING_PLAN_DETAIL_COLUMNS));
+            }
+            $planDetails['rules']   = $limitedRulesData;
+            $configData[$detailKey] = $planDetails;
+        }
+
+        return $configData;
     }
 }

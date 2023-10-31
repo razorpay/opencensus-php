@@ -345,7 +345,7 @@ class Entity extends PublicEntity
         return $this->getEntityType() == Constants::MERCHANT && $this->getAttribute(self::ORIGIN_TYPE) == Constants::MERCHANT ;
     }
 
-    public function toArrayPublic(): array
+    public function toArrayPublic($excludeProtectedFields = true): array
     {
         $app = App::getFacadeRoot();
 
@@ -353,7 +353,7 @@ class Entity extends PublicEntity
 
         // Don't return the whole entity if the request is not from admin for confidentiality
         if ($app['basicauth']->isAdminAuth() === false and
-            ($app['basicauth']->isDashboardApp() === true or $app['basicauth']->isAuthService() === true))
+            ($app['basicauth']->isDashboardApp() === true or $app['basicauth']->isAuthService() === true) and $excludeProtectedFields)
         {
             $response = array_only($response, Constants::PARTNER_CONFIG_PUBLIC);
 

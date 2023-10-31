@@ -4,6 +4,7 @@ namespace RZP\Models\Partner\Config;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\Admin\Permission\Name as Permission;
 
 class Constants
@@ -91,4 +92,22 @@ class Constants
         self::BRAND_COLOR  => '528FF0',
         self::TEXT_COLOR   => 'FFFFFF'
     ];
+
+    const VALID_EXPAND_COLUMNS = [Entity::EXPLICIT_PLAN_ID, Entity::IMPLICIT_PLAN_ID, Entity::DEFAULT_PLAN_ID];
+    const PRICING_PLAN_DETAIL_COLUMNS = [PricingEntity::PAYMENT_METHOD,
+                                         PricingEntity::PERCENT_RATE,
+                                         PricingEntity::FIXED_RATE,
+                                         PricingEntity::MIN_FEE,
+                                         PricingEntity::MAX_FEE,
+                                         PricingEntity::AMOUNT_RANGE_MAX,
+                                         PricingEntity::AMOUNT_RANGE_MIN,
+                                         PricingEntity::AMOUNT_RANGE_ACTIVE,
+                                         PricingEntity::AMOUNT_RANGE_MIN,
+                                         PricingEntity::FEE_BEARER,
+                                         PricingEntity::FEE_MODEL,
+                                         PricingEntity::CHANNEL,
+                                         PricingEntity::EXPIRED_AT,
+                                         PricingEntity::PAYMENT_METHOD_SUBTYPE,
+                                         PricingEntity::PAYMENT_ISSUER,
+        ];
 }
