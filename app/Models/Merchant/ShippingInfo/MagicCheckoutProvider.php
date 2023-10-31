@@ -145,7 +145,9 @@ class MagicCheckoutProvider extends Base\Core
         $isCodEligible = false;
         $codFee = 0;
         $shouldUseCodEngine = $this->shouldUseCodEngine($codEngineConfigs);
-        if (!$shouldUseCodEngine)
+        // In rare cases we have seen cod engine as enabled but cod_engine_type as not saved so adding a double check.
+        $codEngineType = $codEngineConfigs[Merchant1ccConfig\Type::COD_ENGINE_TYPE];
+        if (!$shouldUseCodEngine || empty($codEngineType))
         {
             // In case a merchant configures shipping engine but not cod engine (which is a 
             // pre-requisite), we must disable cod or the fee may default to Re 0.

@@ -444,6 +444,12 @@ class Service extends Base\Service
                             'exception' => $ex->getMessage(),
                         ])
                 );
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_RESPONSE_COUNT, [
+                    'serviceable'       => false,
+                    'cod'               => false,
+                    'platform'          => $dimensions['platform'] ?? 'unknown',
+                    'shipping_provider' => $dimensions['shipping_provider'] ?? 'unknown',
+                ]);
             }
         }
     }
