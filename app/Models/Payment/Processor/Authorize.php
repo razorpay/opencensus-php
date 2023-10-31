@@ -538,7 +538,7 @@ trait Authorize
     protected function setAltIdRequestData(array $input, array & $gatewayInput, Payment\Entity $payment, $currentTerminal)
     {
         $requestData = [];
-        if(!($payment->isCard() === true)){
+        if(!($payment->isMethodCardOrEmi() === true)){
             return $requestData;
         }
         if(isset($input['card']))
