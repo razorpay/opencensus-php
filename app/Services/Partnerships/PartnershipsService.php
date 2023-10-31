@@ -87,6 +87,7 @@ class PartnershipsService extends Base\Service
 
     const GET_INVOICE_SIGNED_URL = '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/GetPreSignedUrl';
 
+    const GET_MASKED_DATA = '/twirp/rzp.partnerships.masking.v1.MaskingAPI/MaskSensitiveData';
 
     const ACTIVATED = 'ACTIVATED';
 
@@ -610,6 +611,16 @@ class PartnershipsService extends Base\Service
             }));
         }
 
+    }
+
+    public function fetchMaskedData(string $payload, string $partnerId, string $eventName)
+    {
+        $input = [
+            'partner_id'     => $partnerId,
+            'event_name'     => $eventName,
+            'data'           => $payload,
+        ];
+        return $this->sendRequestWithRetry($input, self::GET_MASKED_DATA, Requests::POST);
     }
 
     private function isDualWriteExpEnabled(Entity $commission): bool

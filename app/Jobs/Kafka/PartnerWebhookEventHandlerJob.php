@@ -3,6 +3,7 @@
 namespace RZP\Jobs\Kafka;
 
 use App;
+use RZP\Events\Event;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Partner\Metric;
@@ -10,7 +11,9 @@ use RZP\Models\EntityOrigin\Core;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\EntityOrigin\Entity;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Services\Partnerships\PartnershipsService;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\EntityOrigin\Constants as EntityOriginConstants;
 use RZP\Models\Merchant\WebhookV2\Stork;
@@ -71,7 +74,7 @@ class PartnerWebhookEventHandlerJob extends Job
 
                 if (!empty($applicationId) && $applicationId === $input[EntityOriginConstants::APPLICATION_ID])
                 {
-                    $this->handleEvent($input, $applicationId);
+                    $this->handleEvent($input, $applicationId, $partnerId);
                 }
                 else
                 {
@@ -84,7 +87,7 @@ class PartnerWebhookEventHandlerJob extends Job
             }
             else
             {
-                $this->handleEvent($input, $input[EntityOriginConstants::APPLICATION_ID]);
+                $this->handleEvent($input, $input[EntityOriginConstants::APPLICATION_ID], $partnerId);
             }
         }
         catch (\Exception $e)
@@ -99,9 +102,11 @@ class PartnerWebhookEventHandlerJob extends Job
         }
     }
 
-    private function handleEvent(array $input, string $applicationId)
+    private function handleEvent(array $input, string $applicationId, string $partnerId)
     {
         $event = $this->getEventData($input, $applicationId);
+
+        $event['payload'] = $this->handleSensitiveData($event, $partnerId);
 
         (new Stork())->processEventForOwner($event);
 
@@ -123,6 +128,24 @@ class PartnerWebhookEventHandlerJob extends Job
         return $event;
     }
 
+    private function handleSensitiveData(array $event, string $partnerId)
+    {
+        $isExpEnabled = $this->isRestrictPIIExpEnabledForPartner($partnerId);
+
+        $payload = $event['payload'];
+
+        $eventName = $event['name'];
+
+        if ($isExpEnabled && $eventName == WebhookEvent::ORDER_PAID)
+        {
+            $result = (new PartnershipsService())->fetchMaskedData($payload, $partnerId, $eventName);
+
+            return $result['response']['masked_data'];
+        }
+
+        return $payload;
+    }
+
     private function getPartnerIdFromAppId(string $applicationId) : string
     {
         $application = $this->repoManager->merchant_application->fetchMerchantApplication($applicationId, MerchantConstants::APPLICATION_ID);
@@ -139,6 +162,18 @@ class PartnerWebhookEventHandlerJob extends Job
         $properties = [
             'id' => $partnerId,
             'experiment_id' => $app['config']->get($experimentName)
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    private function isRestrictPIIExpEnabledForPartner(string $partnerId) : bool
+    {
+        $app = App::getFacadeRoot();
+
+        $properties = [
+            'id' => $partnerId,
+            'experiment_id' => $app['config']->get('app.restrict_pii_data_access_experiment_id')
         ];
 
         return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
