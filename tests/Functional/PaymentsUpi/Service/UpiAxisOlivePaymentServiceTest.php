@@ -38,10 +38,8 @@ class UpiAxisOlivePaymentServiceTest extends UpiPaymentServiceTest
         $order = $this->createTpvOrder();
 
         $preferences = $this->getTurboPreferences($order[Entity::ID], '');
-
+        
         $this->assertArrayHasKey('tpv', $preferences);
-
-        $this->assertArrayHasKey('is_tpv', $preferences);
 
         $this->assertArrayHasKey('restrict_bank_accounts', $preferences["tpv"]);
 
@@ -66,7 +64,6 @@ class UpiAxisOlivePaymentServiceTest extends UpiPaymentServiceTest
 
         $this->assertArrayNotHasKey('tpv', $preferences);
 
-        $this->assertArrayNotHasKey('is_tpv', $preferences);
 
     }
 

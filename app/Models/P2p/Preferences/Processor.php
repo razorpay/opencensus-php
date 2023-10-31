@@ -61,9 +61,6 @@ class Processor extends Base\Processor
         // If TPV is enabled for the merchant
         if($this->context()->getMerchant()->isTPVRequired() === true)
         {
-            // marking is tpv flag as true
-            $preferencesResponse[Entity::IS_TPV] = true;
-
             $preferencesResponse[Entity::TPV] = $this->getTPVContents($input);
         }
 
@@ -328,6 +325,13 @@ class Processor extends Base\Processor
             $merchantId = $this->context()->getMerchant()->getId();
 
             $preferencesResponse[Constants::FEATURES] = app('dcs_config_service')->fetchConfiguration($key, $merchantId, $fields, $mode);
+
+            // If TPV is enabled for the merchant
+            if($this->context()->getMerchant()->isTPVRequired() === true)
+            {
+                // marking is tpv flag as true
+                $preferencesResponse[Constants::FEATURES] [Entity::TPV] = true;
+            }
         }
         catch (\Throwable $ex)
         {
