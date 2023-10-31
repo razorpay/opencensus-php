@@ -79,18 +79,20 @@ class AssignFeatures extends Job
                 }
 
                 $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_JOB_MERCHANT_IDS, [
-                    "entity_ids"  =>  $entityIds,
+                    "entity_ids"  =>  sizeof($entityIds),
                     'offset' => $offset,
                     'limit' => self::LIMIT
                 ]);
 
-                foreach ($entityIds as $entityId)
-                {
-                    AssignMerchantFeatures::dispatch($this->mode, $variant, $this->input['name'], $this->input['entity_type'], $entityId);
+                // Split $entityIds into chunks of 500
+                $entityIdChunks = array_chunk($entityIds, 500);
 
+                foreach ($entityIdChunks as $chunk) {
+                    AssignMerchantFeatures::dispatch($this->mode, $variant, $this->input['name'], $this->input['entity_type'], $chunk);
                     $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_FOR_MERCHANT_JOB_DISPATCHED, [
-                        "entity_id"   =>  $entityId
+                        "entity_ids_size" => sizeof($chunk)
                     ]);
+
                 }
             }
         }

@@ -13,20 +13,20 @@ class AssignMerchantFeatures extends Job
 
     protected $featureName;
 
-    protected $entityId;
+    protected $entityIds;
 
     protected $variant;
 
     protected $entityType;
 
-    public function __construct(string $mode, string $variant, $featureName, $entityType, $entityId)
+    public function __construct(string $mode, string $variant, $featureName, $entityType,array $entityIds)
     {
         parent::__construct($mode);
 
         $this->variant = $variant;
         $this->featureName = $featureName;
         $this->entityType = $entityType;
-        $this->entityId = $entityId;
+        $this->entityIds = $entityIds;
     }
 
     public function handle()
@@ -35,16 +35,7 @@ class AssignMerchantFeatures extends Job
 
         try
         {
-            $data = [
-                Entity::NAME => $this->featureName,
-                Entity::ENTITY_ID => $this->entityId,
-                Entity::ENTITY_TYPE => $this->entityType,
-            ];
-
-            $entity = (new Entity)->build($data);
-            $entity->setEntityId($this->entityId);
-            $entity->setEntityType($this->entityType);
-            app('dcs')->editFeature($entity, $this->variant , true, $this->mode);
+            app('dcs')->editFeatureInBulk($this->entityIds,$this->entityType,$this->featureName, $this->variant , true, $this->mode);
         }
         catch (\Exception $ex)
         {
@@ -68,7 +59,7 @@ class AssignMerchantFeatures extends Job
                 'job_attempts' => $this->attempts(),
                 'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.',
                 'feature_name' => $this->featureName,
-                'entity_id'    => $this->entityId,
+                'entity_id'    => $this->entityIds,
                 'mode'         => $this->mode,
             ]);
 

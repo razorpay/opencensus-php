@@ -166,6 +166,103 @@ class Service extends Base
         }
     }
 
+
+    /**
+     * throws Server exception in case of request failures
+     *
+     * @param array $entities
+     * @param string $entityType
+     * @param string $entityName
+     * @param string $variant
+     * @param bool $isAssignment
+     * @param string $mode
+     * @throws Exception\ServerErrorException
+     * @throws \Exception|\Throwable
+     */
+    public function editFeatureInBulk(array $entities,string $entityType,string $entityName, string $variant, bool $isAssignment, string $mode = Mode::TEST)
+    {
+        try {
+
+            $dimension = [
+                Entity::ENTITY_TYPE     => $entityType,
+                Entity::NAME            => $entityName,
+                'variant'               => $variant,
+                'mode'                  => $mode,
+                "is_assignment"         => $isAssignment
+            ];
+
+            if (str_starts_with($variant, 'on_direct_dcs') === false){
+                $this->trace->count(Metric::DCS_FEATURE_PROXY_EDIT_FAILURE_TOTAL, $dimension);
+                $ex = new ApiException("DCS feature proxy edit failed,variant is not on_direct_dcs");
+                $this->trace->traceException($ex);
+                throw $ex;
+            }
+            else {
+                $this->trace->count(Metric::DCS_FEATURE_PROXY_EDIT_TOTAL, $dimension);
+                try
+                {
+                    return $this->editProxyFeaturesInBulk($entities, $entityType, $entityName, $isAssignment, $mode);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->traceException($ex);
+                    $this->trace->count(Metric::DCS_FEATURE_PROXY_EDIT_FAILURE_TOTAL, $dimension);
+                    throw new ApiException("DCS feature proxy edit failed");
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->count(Metric::DCS_FEATURE_EDIT_FAILURE_TOTAL, $dimension);
+
+            if (DcsConstants::isNewFeature($variant) === true)
+            {
+                // throws exception in-case of some issue
+                throw $e;
+            }
+            elseif (DcsConstants::isReverseShadowFeature($variant) === true)
+            {
+                // throws exception in-case of some issue
+                throw $e;
+            }
+            elseif (DcsConstants::isShadowFeature($variant) === true)
+            {
+                // TODO handle shadow edit features failure
+                return;
+            }
+            elseif (str_starts_with($variant, 'on_direct_dcs') === true)
+            {
+                // throws exception in-case of some issue
+                throw $e;
+            }
+            return;
+        }
+    }
+
+
+    /**
+     * @param array $entities
+     * @param string $entityType
+     * @param string $entityName
+     * @param bool $isAssignment
+     * @param string $mode
+     * @throws ProxyApiException
+     */
+    public function editProxyFeaturesInBulk(array $entities,string $entityType,string $entityName, bool $isAssignment, string $mode = Mode::TEST): V1FeatureBulkEditResponse
+    {
+        $req = [
+            "features" => [
+                [
+                    "name" => $entityName,
+                    "entity_type" => $entityType,
+                ],
+            ],
+            "entity_ids" => $entities,
+
+        ];
+        return $this->callEditProxyFeatures($req,$isAssignment,$mode);
+    }
+
     /**
      * @param Entity $entity
      * @param bool $isAssignment
@@ -186,6 +283,16 @@ class Service extends Base
             ]
         ];
 
+        return $this->callEditProxyFeatures($req,$isAssignment,$mode);
+    }
+
+    /**
+     * @param array $req
+     * @param bool $isAssignment
+     * @param string $mode
+     * @throws ProxyApiException
+     */
+    private function callEditProxyFeatures(array $req,bool $isAssignment, string $mode = Mode::TEST){
         if ($isAssignment === true)
         {
             $proxyResponse = $this->client($mode)->Assign($req, $this->getAuditInfo());
@@ -196,7 +303,7 @@ class Service extends Base
         }
 
         if (($proxyResponse->getResponse() !== null) and
-            (sizeof($proxyResponse->getResponse()) === 1) and
+            (sizeof($proxyResponse->getResponse()) === sizeof($req['entity_ids'])) and
             ($proxyResponse->getResponse()[0]->getStatus() === "success"))
         {
             $this->trace->info(TraceCode::DCS_PROXY_EDIT_RESPONSE, [
@@ -689,6 +796,29 @@ class Service extends Base
         return ['enabled_ids' => $enabled_ids, 'returned_offset' => $response['returned_offset']];
     }
 
+    public function fetchEntityIdsByFeatureNameInChunksViaProxy(string $apiFeatureName,
+                                                        string $offset, string $limit,
+                                                        string $mode = Mode::TEST): array
+    {
+        $data = [
+            "name" => $apiFeatureName,
+            "limit" => $limit,
+            "offset" => $offset
+        ];
+
+        try
+        {
+            $dcsResponse = $this->client($mode)->aggregateFetchEntityIdsForName($data);
+
+            return ['enabled_ids' => $dcsResponse->getEntityIds(), 'returned_offset' => $dcsResponse->getOffset()];
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+        }
+
+        return ['enabled_ids' => [], 'returned_offset' => 0];
+    }
     /**
      * @throws ApiException
      * @throws ServerErrorException

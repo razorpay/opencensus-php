@@ -127,7 +127,8 @@ class ValidateFeaturesAPIAndDCS extends Job
 
             $dcsEntityIds = [];
             while (true) {
-                $response = $dcs->fetchEntityIdsByFeatureNameInChunks($feature, $dcsOffset, self::LIMIT, $this->mode);
+                $apiFeatureName = $entityType . ":" .$feature;
+                $response = $dcs->fetchEntityIdsByFeatureNameInChunksViaProxy($apiFeatureName, $dcsOffset, self::LIMIT, $this->mode);
 
                 $dcsEntityIds = array_merge($dcsEntityIds, $response['enabled_ids']);
 
@@ -142,6 +143,8 @@ class ValidateFeaturesAPIAndDCS extends Job
             $dcsDiff = array_diff($dcsEntityIds, $apiEntityIds);
 
             $this->trace->info(TraceCode::DCS_VALIDATE_FEATURES_API_AND_DCS_JOB_RESULT, [
+                'api_diff_size' => sizeof($apiDiff),
+                'dcs_diff_size' => sizeof($dcsDiff),
                 'api_diff' => $apiDiff,
                 'dcs_diff' => $dcsDiff
             ]);
@@ -153,14 +156,19 @@ class ValidateFeaturesAPIAndDCS extends Job
 
                 // if complete diff $apiDiff will be as ["id1", "id2"]
                 // if partial diff then $apiDiff will be as ["1" => "id1", "2" => "id2" ]
-                foreach ($apiDiff as $key => $entityId)
-                {
-                    AssignMerchantFeatures::dispatch($this->mode, $variant, $feature , $entityType, $entityId);
-                }
 
-                $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_FOR_MERCHANT_JOB_DISPATCHED, [
-                    "entity_id"   =>  $apiDiff
-                ]);
+                // Divide $apiDiff into batches of 500
+                $apiDiffChunks = array_chunk($apiDiff, 500);
+
+                foreach ($apiDiffChunks as $chunk) {
+                    // Call assign dcs api for each entity in the current chunk
+                    AssignMerchantFeatures::dispatch($this->mode, $variant, $feature, $entityType, $chunk);
+                    // Log information for the current chunk
+                    $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_FOR_MERCHANT_JOB_DISPATCHED, [
+                        "entity_ids_size" => sizeof($chunk)
+                    ]);
+
+                }
             }
 
             if ($assignDcsDiffToApi === true)
