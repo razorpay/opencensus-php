@@ -195,7 +195,8 @@ class ProviderCode
     const YESPAY             = 'yespay';
     const slice              = 'slice';
     const trio               = 'trio';
-    const fifederal         = 'fifederal';
+    const fifederal          = 'fifederal';
+    const mbk                = 'mbk';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -383,6 +384,7 @@ class ProviderCode
         self::slice              => 'NPCI',
         self::trio               => 'NPCI',
         self::fifederal          => 'NPCI',
+        self::mbk                => 'NPCI',
     ];
 
     /**

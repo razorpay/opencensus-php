@@ -3962,6 +3962,7 @@ trait PaymentTrait
             "slice",
             "trio",
             "fifederal",
+            "mbk",
         ];
 
         return $vpaHandles;
