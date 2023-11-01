@@ -9,6 +9,7 @@ use RZP\Models\Merchant\Cron\Jobs\FOHRemovalCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MonthFirstMtuCronJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Cron\Jobs\MtuTransactedCronJob;
+use RZP\Models\Merchant\Cron\Jobs\SalesforceRefinerCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SignupStartedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\WebAttributionCronJob;
 use RZP\Models\Merchant\Cron\Jobs\EmailNotVerfiedCronJob;
@@ -129,6 +130,8 @@ class Factory
                 return (new MerchantAutoKycFailureCronJob($input) );
             case Constants::SUBMERCHANT_FIRST_TRANSACTION:
                 return (new SubmerchantFirstTransactionCronJob($input));
+            case Constants::SALESFORCE_REFINER:
+                return (new SalesforceRefinerCronJob($input));
             case Constants::MERCHANT_AUTO_KYC_PASS_CRON_JOB_NAME:
                 RuntimeManager::setMaxExecTime(7200);
                 return (new MerchantAutoKycPassCronJob($input));

@@ -4152,6 +4152,14 @@ class Core extends Base\Core
 
         $this->sendPartnerInfoToSalesforce($partner);
 
+        $properties = [
+            'merchant_id'         => $partner->getId(),
+            'is_managed_account'  => false,
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyEvent(
+            $merchant, $properties);
+
         $this->trace->info(
             TraceCode::PARTNER_CREATION_SUCCESSFUL,
             [

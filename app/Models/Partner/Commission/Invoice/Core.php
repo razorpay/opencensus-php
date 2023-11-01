@@ -487,7 +487,7 @@ class Core extends Base\Core
         Mail::send($commissionInvoice);
     }
 
-    public function sendCommissionReminderMail(Base\PublicCollection $invoices = null, Merchant\Entity $partner = null, string $activationStatus = null)
+    public function  sendCommissionReminderMail(Base\PublicCollection $invoices = null, Merchant\Entity $partner = null, string $activationStatus = null)
     {
         $invoiceData = [];
 

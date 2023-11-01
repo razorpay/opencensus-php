@@ -476,9 +476,12 @@ class Service extends Base\Service
             CapturePartnershipConsents::dispatch($mode, $input, $merchantId, ConsentConstant::PARTNER_TYPE_SWITCH);
         }
     }
-    public function getPartnerSalesPOC()
+    public function getPartnerSalesPOC($merchantId = null)
     {
-        $merchantId = $this->merchant->getId();
+        if (empty($merchantId) === true)
+        {
+            $merchantId = $this->merchant->getId();
+        }
 
         $properties = [
             'id'            => $merchantId,

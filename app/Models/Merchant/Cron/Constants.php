@@ -29,6 +29,8 @@ class Constants
     const MERCHANT_FIRST_TRANSACTION_POST_EVENT_CRON                 = 'merchant-first-transaction-post-event-cron';
     const MERCHANT_AUTO_KYC_FAILURE_CRON_JOB_NAME                    = 'merchant_auto_kyc_failure_cron';
     const SUBMERCHANT_FIRST_TRANSACTION                              = 'transacted-submerchants';
+
+    const SALESFORCE_REFINER                                         = 'salesforce-refiner';
     const MERCHANT_AUTO_KYC_PASS_CRON_JOB_NAME                       = 'merchant_auto_kyc_pass_cron';
     const FOH_REMOVAL_CRON_JOB_NAME                                  = 'foh_removal_cron';
     const INTL_MERCHANTS_WA_NOTIFICATION_CRON_JOB                    = 'intl-merchants-wa-notification';
