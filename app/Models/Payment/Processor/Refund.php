@@ -988,6 +988,7 @@ trait Refund
      * Process refund on a payment that has Marketplace transfers
      * @param array $input
      * @param bool $rearchRefund indicates refunds re-arch flow, these refunds will be created via Scrooge
+     * @return array of arrays which contain reversal and refund entity in indexes 0 and 1 respectively
      *
      * @throws \Exception
      */
@@ -995,7 +996,7 @@ trait Refund
     {
         if (isset($input['reversals']) === false)
         {
-            return;
+            return [];
 
             // throw new Exception\BadRequestValidationFailureException(
             //         'The reversals parameter is required for this refund request');
@@ -1013,23 +1014,15 @@ trait Refund
                 return $results;
             });
 
-            foreach ($results as $result)
+            if ($rearchRefund !== true)
             {
-                $reversal = $result[0] ?? null;
-                $refund = $result[1] ?? null;
-
-                if (($rearchRefund === true) and (empty($refund) === false))
+                foreach ($results as $result)
                 {
-                    // attempt to populate the transaction ID in case of rearch refunds, to be used later in ledger push
-                    $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
-                    if (isset($txn) === true)
-                    {
-                        $refund->transaction()->associate($txn);
-                    }
+                    $reversal = $result[0] ?? null;
+                    $refund = $result[1] ?? null;
+
+                    (new ReversalCore())->createLedgerEntriesForRouteReversal($this->merchant, $reversal, $refund);
                 }
-
-                (new ReversalCore())->createLedgerEntriesForRouteReversal($this->merchant, $reversal, $refund);
-
             }
 
             (new TransferMetric)->pushReversalSuccessMetrics();
@@ -1045,7 +1038,7 @@ trait Refund
         // So skipping the Scrooge dispatch
         if ($rearchRefund === true)
         {
-            return;
+            return $results;
         }
 
         try
@@ -1066,6 +1059,8 @@ trait Refund
                 TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH_FAILED
             );
         }
+
+        return $results;
     }
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, array $input, Batch\Entity $batch = null, $batchId = null)
@@ -4636,11 +4631,12 @@ trait Refund
                 ]);
 
             try {
+                $results = $this->repo->transaction(function () use ($input, $processReversals, &$response) {
+                    $results = [];
 
-                $this->repo->transaction(function () use ($input, $processReversals, &$response) {
                     if ($processReversals === true)
                     {
-                        $this->processRefundWithTransfers($input, true);
+                        $results = $this->processRefundWithTransfers($input, true);
                     }
 
                     if (isset($input['transaction_create_input']) === true)
@@ -4649,6 +4645,17 @@ trait Refund
 
                         $transactionCreateResponse = (new Payment\Refund\Service())->scroogeRefundsTransactionCreate($transactionCreateInput);
 
+                        if ($transactionCreateResponse['data']['compensate_payment'] === true)
+                        {
+                            $payment = $this->repo->payment->findOrFailPublic($transactionCreateInput[RefundConstants::PAYMENT_ID]);
+
+                            // non rearch payment do not need compensate from Scrooge, as this txn block will be terminated
+                            if ($payment->isExternal() !== true)
+                            {
+                                $transactionCreateResponse['data']['compensate_payment'] = false;
+                            }
+                        }
+
                         $response['transaction_create_response'] = $transactionCreateResponse;
 
                         if (empty($transactionCreateResponse['error']) === false)
@@ -4656,17 +4663,49 @@ trait Refund
                             $response['success'] = false;
 
                             $response['error'] = $transactionCreateResponse['error'];
+
+                            throw new Exception\LogicException(
+                                $transactionCreateResponse['error']['message'],
+                                $transactionCreateResponse['error']['code'],
+                                [RefundConstants::REFUND_ID => $transactionCreateInput[RefundConstants::ID]]);
                         }
                     }
 
+                    return $results;
                 });
+
+                try {
+                    foreach ($results as $result)
+                    {
+                        $reversal = $result[0] ?? null;
+                        $refund = $result[1] ?? null;
+
+                        if (empty($refund) === false)
+                        {
+                            // attempt to populate the transaction ID in case of rearch refunds, to be used later in ledger push
+                            $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
+                            if (isset($txn) === true)
+                            {
+                                $refund->transaction()->associate($txn);
+                            }
+                        }
+
+                        (new ReversalCore())->createLedgerEntriesForRouteReversal($this->merchant, $reversal, $refund);
+                    }
+                } catch (\Throwable $e) {
+                    $this->trace->info(
+                        TraceCode::TRANSFER_REVERSAL_BULK_JOURNAL_WRITE_FAILED,
+                        [
+                            Payment\Refund\Entity::PAYMENT_ID                     => $payment->getId(),
+                            RefundConstants::INPUT                                => $input,
+                        ]);
+                }
             }
              catch (\Throwable $e) {
                     $response['success'] = false;
 
                     $response['error']['code']=$e->getCode();
                     $response['error']['message']=$e->getMessage();
-
             }
         });
     }
