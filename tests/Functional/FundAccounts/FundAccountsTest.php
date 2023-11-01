@@ -157,6 +157,8 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+
         $response = $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -192,6 +194,8 @@ class FundAccountsTest extends TestCase
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -245,6 +249,8 @@ class FundAccountsTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -411,6 +417,8 @@ class FundAccountsTest extends TestCase
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -685,6 +693,8 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+
         $response = $this->startTest();
 
         $vpa = $this->getLastEntity('vpa', true);
@@ -722,6 +732,8 @@ class FundAccountsTest extends TestCase
 
         $this->mockRazorxTreatment();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+
         $response = $this->startTest();
 
         $vpa = $this->getLastEntity('vpa', true);
@@ -756,6 +768,8 @@ class FundAccountsTest extends TestCase
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -831,6 +845,8 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+
         $this->startTest();
 
         $walletAccount = $this->getLastEntity('wallet_account', true);
@@ -856,6 +872,8 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+
         $this->startTest();
 
         $walletAccount = $this->getLastEntity('wallet_account', true);
@@ -880,6 +898,8 @@ class FundAccountsTest extends TestCase
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->startTest();
 
@@ -907,6 +927,8 @@ class FundAccountsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -1389,6 +1411,8 @@ class FundAccountsTest extends TestCase
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->startTest();
 
@@ -2387,7 +2411,7 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
-        $this->mockRazorxTreatment('payout_to_prepaid_cards');
+        $this->setMockRazorxTreatment(['payout_to_prepaid_cards' => 'on', RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->startTest();
 
@@ -2562,6 +2586,8 @@ class FundAccountsTest extends TestCase
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -3416,7 +3442,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3473,7 +3499,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3582,7 +3608,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3642,7 +3668,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3707,7 +3733,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3772,7 +3798,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3833,7 +3859,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3956,7 +3982,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4018,7 +4044,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4089,7 +4115,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on', RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 

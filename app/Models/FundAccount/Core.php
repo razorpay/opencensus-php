@@ -30,6 +30,7 @@ use RZP\Constants as RZPConstants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\FTS\CreateAccount;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -213,7 +214,16 @@ class Core extends Base\Core
 
         DetailsPropagator::dispatchToQueue($mode, $fundAccount->getPublicId());
 
-        $this->createFTSAccountForFundAccount($input, $fundAccount, $source);
+        $variant = $this->app->razorx->getTreatment(
+                'fts_account_create_decommission',
+                RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION,
+                $this->mode ?? Mode::LIVE
+            );
+
+        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $this->createFTSAccountForFundAccount($input, $fundAccount, $source);
+        }
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATED,
             [

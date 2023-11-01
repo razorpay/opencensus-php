@@ -4461,16 +4461,16 @@ class Core extends Base\Core
                 $pricingRuleId = $clonedPayout->getPricingRuleId();
 
                 $dummyFeesBreakup = (new Transaction\Processor\Payout($clonedPayout))->getFeeSplitForPayouts(
-                                                                                            $fees,
-                                                                                            $tax,
-                                                                                            $pricingRuleId);
+                                    $fees,
+                                    $tax,
+                                    $pricingRuleId);
 
                 $this->trace->info(
-                    TraceCode::DUMMY_TRANSACTION_FEES_BREAKUP_DETAILS,
-                    [
-                        'transaction_details'   => $dummyTransaction->toArrayPublic(),
-                        'fees_breakup_details'  => $dummyFeesBreakup->toArrayPublic(),
-                    ]);
+                        TraceCode::DUMMY_TRANSACTION_FEES_BREAKUP_DETAILS,
+                        [
+                            'transaction_details' => $dummyTransaction->toArrayPublic(),
+                            'fees_breakup_details' => $dummyFeesBreakup->toArrayPublic(),
+                        ]);
 
                 return [$dummyTransaction, $dummyFeesBreakup];
             });

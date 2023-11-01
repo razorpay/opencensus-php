@@ -215,6 +215,9 @@ final class RazorxTreatment
     // Experiment to skip payroll payouts in the payouts list/detail view
     const RX_UNDO_PAYOUTS_FEATURE = 'rx_undo_payout_feature';
 
+    //Experiment to decommission the fts fund account creation as part of fund account create call
+    const FTS_ACCOUNT_CREATE_DECOMMISSION = 'fts_account_create_decommission';
+
     // status reason map via PS
     const STATUS_REASON_MAP_VIA_PS = 'status_reason_map_via_ps';
 
