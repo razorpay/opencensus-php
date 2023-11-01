@@ -116,7 +116,9 @@ class PartnershipsService extends Base\Service
 
     const MAX_RETRY_COUNT = 2;
 
-
+    const PartnershipServicePathMap = array(
+        'commission_invoice_generate' => self::UPDATE_INVOICE_STATUS
+    );
 
     /**
      * @var string

@@ -1955,7 +1955,7 @@ class Core extends Base\Core
 
             $response = $this->app['splitzService']->evaluateRequest($properties);
 
-            return $response['response']['variant']['name'] ?? null;
+            return $response['response']['variant']['name'] ?? '';
         }
         catch (\Exception $e)
         {
@@ -1963,7 +1963,7 @@ class Core extends Base\Core
             $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
             $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
 
-            return null;
+            return '';
         }
     }
 

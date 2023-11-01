@@ -4200,6 +4200,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRTS_PARTNER_MIGRATION_REQUEST_ERROR                  = 'PRTS_PARTNER_MIGRATION_REQUEST_ERROR';
     const PRTS_PARTNER_MIGRATION_REQUEST_SUCCESS                = 'PRTS_PARTNER_MIGRATION_REQUEST_SUCCESS';
     const PRTS_MERCHANT_ENTITIES_FETCH                          = 'PRTS_MERCHANT_ENTITIES_FETCH';
+    const PRTS_API_PARITY_CHECK_FAILED                          = 'PRTS_API_PARITY_CHECK_FAILED';
+    const PRTS_READ_API_PROXY_REUEST                            = 'PRTS_READ_API_PROXY_REUEST';
 
 
     const SEGMENTATION_CONFIG                                   = 'SEGMENTATION_CONFIG';
