@@ -43,6 +43,11 @@ const Filters = ({ onSubmit }: FilterProps): JSX.Element => {
       </div>
 
       <div className="form-group list-filter-item">
+        <label>Email Id</label>
+        <Field name="email" component="input" class="form-control input-sm" data-testid="email" />
+      </div>
+
+      <div className="form-group list-filter-item">
         <label>Type</label>
         <Field name="type" component="select" class="form-control input-sm" data-testid="type">
           <option value="">All</option>

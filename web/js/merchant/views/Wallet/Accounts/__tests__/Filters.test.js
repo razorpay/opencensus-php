@@ -11,6 +11,7 @@ describe('Wallet > Accounts > Filters', () => {
       expect(screen.getByText('Account Id')).toBeInTheDocument();
       expect(screen.getByText('User Id')).toBeInTheDocument();
       expect(screen.getByText('Status')).toBeInTheDocument();
+      expect(screen.getByText('Email Id')).toBeInTheDocument();
 
       // Ensure all the search/clear buttons exist
       expect(screen.getByText('Search')).toBeInTheDocument();
@@ -64,5 +65,17 @@ describe('Wallet > Accounts > Filters', () => {
     await userEvent.click(screen.getByText('Search'));
 
     expect(mock.mock.calls[0][0]).toMatchObject({ user_id: input });
+  });
+
+  test('Should receive email in callback when input entered', async () => {
+    const input = 'johndoe@gmail.com';
+    const mock = jest.fn(() => {});
+
+    render(<Filters onSubmit={mock} />);
+
+    await userEvent.type(screen.getByTestId('email'), input);
+    await userEvent.click(screen.getByText('Search'));
+
+    expect(mock.mock.calls[0][0]).toMatchObject({ email: window.btoa(input) });
   });
 });
