@@ -6373,7 +6373,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PASSPORT_API_KEY_INVALID                              = 'PASSPORT_API_KEY_INVALID';
     const PASSPORT_API_KEY_EXPIRED                              = 'PASSPORT_API_KEY_EXPIRED';
     const PASSPORT_ACCOUNT_ID_INVALID                           = 'PASSPORT_ACCOUNT_ID_INVALID';
-    const PASSPORT_MODIFICATION_NOT_ALLOWED                     = 'PASSPORT_MODIFICATION_NOT_ALLOWED';
 
     const RATE_LIMITER_SERVICE_ERROR                            = 'RATE_LIMITER_SERVICE_ERROR';
     const RATE_LIMITER_SERVICE_REQUEST                          = 'RATE_LIMITER_SERVICE_REQUEST';

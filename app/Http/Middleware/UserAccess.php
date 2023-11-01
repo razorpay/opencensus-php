@@ -155,9 +155,6 @@ class UserAccess
             }
         }
 
-        //this is the last middleware where passport modification is done.
-        //we are not allowing modification of passport attribute further.
-        $this->ba->setPassportModificationNotAllowed();
         return $next($request);
     }
 
