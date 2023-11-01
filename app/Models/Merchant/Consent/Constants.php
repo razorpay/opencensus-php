@@ -99,6 +99,10 @@ class Constants
                                  'L2_privacy' . ',' .
                                  'L2_agreement' . ',' .
                                  'DIGILOCKER_TERMS_AND_CONDITIONS' . ',' .
+                                 'EasyKycSubMerchant_Terms of Service' . ',' .
+                                 'EasyKycSubMerchant' . '_' . MeConstants::TERMS . ',' .
+                                 'EasyKycSubMerchant_Service Agreement' . ',' .
+                                 'EasyKycSubMerchant_Privacy Policy' . ',' .
                                  'Partnership' . '_' . MeConstants::TERMS . ',' .
                                  'Partner_Type_Switch' . '_' . MeConstants::TERMS . ',' .
                                  'PartnerActivation' . '_' . MeConstants::TERMS . ',' .
@@ -203,6 +207,26 @@ class Constants
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
+        'EasyKycSubMerchant_Terms of Service'                      => [
+            self::DOC_NAME  => 'Terms of Service',
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'EasyKycSubMerchant' . '_' . MeConstants::TERMS                      => [
+            self::DOC_NAME  => 'Terms of Service',
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'EasyKycSubMerchant_Service Agreement'                         => [
+            self::DOC_NAME  => 'Service Agreement',
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'EasyKycSubMerchant_Privacy Policy'                            => [
+            self::DOC_NAME  => 'Privacy Policy',
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
     ];
 
     const TEMPLATE_ID_MAPPING = [
@@ -236,6 +260,7 @@ class Constants
     const PARTNER_TYPE_SWITCH = 'Partner_Type_Switch';
     const PARTNER_ACTIVATION  = 'PartnerActivation';
 
+    const EASY_KYC_ACCESS_SUBMERCHANT = 'EasyKycSubMerchant';
 
     const PARTNER_DOMAIN_CONSENT_DETAILS = [
         'email' => [

@@ -10,6 +10,7 @@ use DOMDocument;
 use RZP\Http\RequestHeader;
 use RZP\lib\TemplateEngine;
 use RZP\Constants\Environment;
+use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\VerificationDetail as MVD;
@@ -2085,6 +2086,18 @@ class Service extends Base\Service
         {
             $refCode = $input[Entity::REFERRAL_CODE];
         }
+
+        if ( empty($input[DEConstants::CONSENT]) === false)
+        {
+            $data = [
+                DEConstants::IP_ADDRESS            => $this->app['request']->ip(),
+                DEConstants::USER_ID               => $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID),
+                DEConstants::DOCUMENTS_DETAIL      => $input[DEConstants::CONSENT],
+            ];
+            CapturePartnershipConsents::dispatch($this->mode, $data, $this->merchant->getId(), ConsentConstant::EASY_KYC_ACCESS_SUBMERCHANT);
+        }
+
+        unset($input[DEConstants::CONSENT]);
 
         unset($input[Entity::REFERRAL_CODE]);
 

@@ -3998,6 +3998,33 @@ We look forward to transacting with you!
         $this->assertEquals(\RZP\Models\Merchant\Consent\Constants::INITIATED, $merchantConsents->getStatus());
     }
 
+    public function testEasyKycSubMerchantConsents()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [Entity::CONTACT_MOBILE => '1234567890', 'merchant_id' => self::DEFAULT_MERCHANT_ID]);
+
+        $this->mockBvsService();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['response']['content'][Entity::CONTACT_EMAIL] =  $merchantDetail[Entity::CONTACT_EMAIL];
+        $testData['response']['content'][Entity::CONTACT_MOBILE] =  $merchantDetail[Entity::CONTACT_MOBILE];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantConsents = (new MerchantConsentRepository())->getConsentDetailsForMerchantIdAndConsentFor($merchantDetail['merchant_id'], ['EasyKycSubMerchant_Terms & Conditions']);
+
+        $termsDetails = (new MerchantConsentDetailsRepo())->getById($merchantConsents->getDetailsId());
+
+        $expectedTerms = 'https://razorpay.com/terms/';
+
+        $this->assertEquals($expectedTerms, $termsDetails->getURL());
+
+        $this->assertEquals(\RZP\Models\Merchant\Consent\Constants::INITIATED, $merchantConsents->getStatus());
+    }
+
     public function testPutPreSignupDetailsWithUtmParams()
     {
         $dataToReplace = [

@@ -2802,6 +2802,33 @@ return [
         ],
     ],
 
+    'testEasyKycSubMerchantConsents' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'consent'      => [
+                    [
+                        'type' => 'Terms & Conditions',
+                        'url'  => 'https://razorpay.com/terms/',
+                    ]
+                ],
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '2',
+                'transaction_volume' => null,
+                'department'         => '7',
+                'contact_mobile'     => null,
+                'role'               => null,
+                'contact_email'     => null,
+            ],
+        ],
+    ],
+
     'testPutPreSignupDetailsForNeostone' => [
         'request' => [
             'content' => [

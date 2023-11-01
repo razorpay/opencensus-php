@@ -330,6 +330,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE                  => 'sometimes|max:15|contact_syntax',
 //        Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255|unique:merchant_details',
         Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|custom',
+        DetailConstants::CONSENT                => 'sometimes|filled|array',
     ];
 
     protected static $uploadDocumentRules = [
