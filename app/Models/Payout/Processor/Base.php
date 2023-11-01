@@ -372,6 +372,13 @@ class Base extends BaseCore
                 Metric::ACCOUNT_TYPE => $this->balance->getAccountType()
             ]);
 
+        if (($payoutEntityCreateAndProcessEndTime - $payoutEntityCreateAndProcessStartTime) > 500)
+        {
+            $this->trace->info(TraceCode::PAYOUT_ENTITY_CREATE_AND_PROCESS_DURATION, [
+                'time' => ($payoutEntityCreateAndProcessEndTime - $payoutEntityCreateAndProcessStartTime)
+            ]);
+        }
+
         if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
             ($payout->isStatusCreated() === true))
         {
@@ -416,6 +423,13 @@ class Base extends BaseCore
                     [
                         Metric::ACCOUNT_TYPE => $this->balance->getAccountType()
                     ]);
+
+                if (($ftsSyncCallEndTime - $ftsSyncCallStartTime) >= 300)
+                {
+                    $this->trace->info(TraceCode::PAYOUT_FTS_SYNC_CALL_DURATION, [
+                        'time' => ($ftsSyncCallEndTime - $ftsSyncCallStartTime)
+                    ]);
+                }
             }
         }
 

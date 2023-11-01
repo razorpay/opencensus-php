@@ -333,6 +333,13 @@ class FundAccountPayout extends Base
                 Metric::FREE_PAYOUT_CHECK_DURATION,
                 $freePayoutCheckEndTime - $freePayoutCheckStartTime);
 
+            if (($freePayoutCheckEndTime - $freePayoutCheckStartTime) >= 50)
+            {
+                $this->trace->info(TraceCode::FREE_PAYOUT_CHECK_DURATION, [
+                    'time' => ($freePayoutCheckEndTime - $freePayoutCheckStartTime)
+                ]);
+            }
+
             $input = array_merge($input, [Payout\Entity::FEE_TYPE => $feeType]);
         }
 

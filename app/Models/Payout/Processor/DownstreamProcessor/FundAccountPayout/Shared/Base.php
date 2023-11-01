@@ -219,6 +219,13 @@ class Base extends FundAccountPayout\Base
                 $ledgerEndTime - $ledgerStartTime
             );
 
+            if (($ledgerEndTime - $ledgerStartTime) >= 300)
+            {
+                $this->trace->info(TraceCode::PAYOUT_LEDGER_PROCESS_DURATION, [
+                    'time' => ($ledgerEndTime - $ledgerStartTime)
+                ]);
+            }
+
             if ($payout->getIsPayoutService() === false)
             {
                 $this->createFundTransferAttempt($payout, $ftaAccount);

@@ -628,6 +628,13 @@ class Service extends Base\Service
             $this->trace->histogram(
                 Metric::COMPOSITE_PAYOUT_CONTACT_FUND_ACCOUNT_CREATE_DURATION,
                 $compositePayoutInputCreateEndTime - $compositePayoutInputCreateStartTime);
+
+            if (($compositePayoutInputCreateEndTime - $compositePayoutInputCreateStartTime) >= 250)
+            {
+                $this->trace->info(TraceCode::COMPOSITE_PAYOUT_CONTACT_FUND_ACCOUNT_CREATE_DURATION, [
+                    'time' => ($compositePayoutInputCreateEndTime - $compositePayoutInputCreateStartTime)
+                ]);
+            }
         }
 
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal, $balance);
