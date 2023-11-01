@@ -242,7 +242,11 @@ abstract class BaseProxyController extends Controller
 
         $res = $this->sendRequestAndParseResponse($route, $request->method(), $path, $body, $headers);
 
-        $this->updateLastCronRunTimeIfApplicable($route, $cronStartTime);
+        if ((isset($res['downstream_status_code']) === true) and
+            ($res['downstream_status_code'] === 200))
+        {
+            $this->updateLastCronRunTimeIfApplicable($route, $cronStartTime);
+        }
 
         return $res;
     }
@@ -414,6 +418,11 @@ abstract class BaseProxyController extends Controller
     protected function parseResponse($code, $body)
     {
         $body = json_decode($body, true);
+
+        if (is_array($body) === true)
+        {
+            $body['downstream_status_code'] = $code;
+        }
 
         if ($this->maskErrors)
         {
