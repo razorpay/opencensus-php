@@ -108,7 +108,7 @@ class Core extends Base\Core
         $discount = 0;
 
         foreach ($promotions as  $coupon) {
-            if (isset($coupon[OrderOneCCFields::PROMOTIONS_TYPE]) === false ||  $coupon[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::TYPE_COD_FEE_COUPON) {
+            if (isset($coupon[OrderOneCCFields::PROMOTIONS_TYPE]) === true &&  $coupon[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::TYPE_COD_FEE_COUPON) {
                 $discount += $coupon[Order1cc\Fields::PROMOTIONS_VALUE];
             }
         }
