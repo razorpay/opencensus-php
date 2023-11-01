@@ -563,7 +563,7 @@
             <file>./tests/Functional/Merchant/InternationalEnablementTest.php</file>
             <file>./tests/Functional/Payment/NbPlusService/NbPlusPaymentServicePayPalTest.php</file>
             <file>./tests/Functional/Gateway/Reconciliation/NbplusAppMethodEmerchantpayReconciliationTest.php</file>
-<!--            <file>./tests/Functional/Merchant/MerchantDocumentFIRSTest.php</file>-->
+            <file>./tests/Functional/Merchant/MerchantDocumentFIRSTest.php</file>
             <file>./tests/Functional/Merchant/CheckoutInternationalPreferencesTest.php</file>
             <file>./tests/Functional/Payment/NbPlusService/NbplusPaymentServiceAppsTest.php</file>
             <file>./tests/Functional/Gateway/Reconciliation/ReconciliationFileTest.php</file>

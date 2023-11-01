@@ -531,17 +531,12 @@ class Service extends Base\Service
                 'merchantId' => $merchantId,
             ]);
         }
-        if($this->ShouldReturnNewDocumentFetchResponse()) {
-            $groupedData = $this->groupDocumentsByMonth($documentMetaData);
-            $documentsData = [
-            "year" => $input['year'],
-            "months" => $groupedData
-            ];
-        } else {
-            $documentsData = $documentMetaData;
-        }
 
-        return $documentsData;
+        $groupedData = $this->groupDocumentsByMonth($documentMetaData);
+        return [
+        "year" => $input['year'],
+        "months" => $groupedData
+        ];
     }
 
     //This function returns signed_url to download/view the FIRS documents in a particular month and year
@@ -852,35 +847,4 @@ class Service extends Base\Service
         }
         return $groupedData;
     }
-
-    protected function ShouldReturnNewDocumentFetchResponse(): bool
-    {
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.return_latest_document_fetch_response_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            if ($variant === 'variant_on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR
-            );
-        }
-
-        return false;
-    }
-
 }

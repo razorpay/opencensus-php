@@ -100,7 +100,6 @@ class MerchantDocumentFIRSTest Extends TestCase
 
     public function testFetchFIRSDocumentsAmex()
     {
-        $this->markTestSkipped("Intermittent failures on testFetchFIRSDocumentsAmex test case, so skipping the test case");
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
@@ -165,7 +164,6 @@ class MerchantDocumentFIRSTest Extends TestCase
 
     public function testFetchFIRSDocumentsUploadedOnFirstDayOfMonth()
     {
-        $this->markTestSkipped("Intermittent failures on testFetchFIRSDocumentsUploadedOnFirstDayOfMonth test case, so skipping the test case");
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
@@ -368,7 +366,6 @@ class MerchantDocumentFIRSTest Extends TestCase
 
     public function testFetchFIRSDocumentsWithICICIZippedDocument()
     {
-        $this->markTestSkipped("Intermittent failures on testFetchFIRSDocumentsWithICICIZippedDocument test case, so skipping the test case");
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
@@ -664,7 +661,6 @@ class MerchantDocumentFIRSTest Extends TestCase
 
     public function testFetchRBLAndFirstdataFIRSDocumentsWithSummaryFile()
     {
-        $this->markTestSkipped("Intermittent failures on testFetchRBLAndFirstdataFIRSDocumentsWithSummaryFile test case, so skipping the test case");
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
