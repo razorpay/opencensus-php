@@ -299,7 +299,7 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Generators --------------------------------------
 
-    public function generateBaseAmount($input)
+    public function generateBaseAmount($input, $isRefundedChargeback = false)
     {
         if (isset($input['gateway_amount']) === false)
         {
@@ -317,7 +317,8 @@ class Entity extends Base\PublicEntity
             $baseAmount = $baseAmount * (1.01);
         }
 
-        if (($this->payment->getCurrency() === Currency\Currency::INR) and
+        if (($isRefundedChargeback === false) and
+            ($this->payment->getCurrency() === Currency\Currency::INR) and
             ($baseAmount > $this->payment->getBaseAmountUnrefunded()))
         {
             $baseAmount = $this->payment->getBaseAmountUnrefunded();
@@ -327,7 +328,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BASE_CURRENCY, Currency\Currency::INR);
     }
 
-    public function generateAmount($input)
+    public function generateAmount($input, $isRefundedChargeback = false)
     {
         if (isset($input['gateway_amount']) === false)
         {
@@ -354,7 +355,8 @@ class Entity extends Base\PublicEntity
             $disputeAmount = $disputeAmount * (1.01);
         }
 
-        if ($disputeAmount > $this->payment->getAmountUnrefunded())
+        if (($isRefundedChargeback === false) and
+            ($disputeAmount > $this->payment->getAmountUnrefunded()))
         {
             $disputeAmount = $this->payment->getAmountUnrefunded();
         }

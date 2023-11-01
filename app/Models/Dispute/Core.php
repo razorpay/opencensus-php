@@ -178,12 +178,12 @@ class Core extends Base\Core
                     $payment->setDisputed(true);
                 }
 
-                $dispute = $this->repo->transaction(function() use ($dispute, $payment, $isShadowModeDualWrite, $reverseShadowResp)
+                $dispute = $this->repo->transaction(function() use ($dispute, $payment, $isShadowModeDualWrite, $reverseShadowResp, $input)
                 {
                     if (($payment->isRefunded() === true) and
                         ($payment->isFullyRefunded() === true))
                     {
-                        $this->updateDisputeEntityValuesForRefundedPayments($dispute, $payment);
+                        $this->updateDisputeEntityValuesForRefundedPayments($dispute, $payment, $input);
                     }
 
                     if ($dispute->getDeductAtOnset() === true && $reverseShadowResp === null)
@@ -255,11 +255,15 @@ class Core extends Base\Core
             });
     }
 
-    protected function updateDisputeEntityValuesForRefundedPayments(Entity $dispute, Payment\Entity $payment)
+    protected function updateDisputeEntityValuesForRefundedPayments(Entity $dispute, Payment\Entity $payment, array $input)
     {
         $dispute->setEmailNotificationStatus(EmailNotificationStatus::DISABLED);
 
         $dispute->setDeductAtOnset(false);
+
+        $dispute->generateBaseAmount($input, true);
+
+        $dispute->generateAmount($input, true);
 
         $refundIdsString = '';
 

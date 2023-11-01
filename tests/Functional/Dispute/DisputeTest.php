@@ -4135,9 +4135,13 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
 
         $payment = $this->fixtures->create('payment', [
-            'status'        => 'refunded',
-            'refund_status' => 'full',
-            'amount'        => 10000
+            'status'               => 'refunded',
+            'refund_status'        => 'full',
+            'amount'               => 10000,
+            'base_amount'          => 10000,
+            'amount_refunded'      => 10000,
+            'base_amount_refunded' => 10000,
+
         ]);
 
         $refund = $this->fixtures->create('refund', [
@@ -4175,9 +4179,13 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
 
         $payment = $this->fixtures->create('payment', [
-            'status'        => 'refunded',
-            'refund_status' => 'full',
-            'amount'        => 10000
+            'status'               => 'refunded',
+            'refund_status'        => 'full',
+            'amount'               => 10000,
+            'base_amount'          => 10000,
+            'amount_refunded'      => 10000,
+            'base_amount_refunded' => 10000,
+
         ]);
 
         $refund = $this->fixtures->create('refund', [
@@ -4217,9 +4225,12 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
 
         $payment = $this->fixtures->create('payment', [
-            'status'        => 'refunded',
-            'refund_status' => 'full',
-            'amount'        => 10000
+            'status'               => 'refunded',
+            'refund_status'        => 'full',
+            'amount'               => 10000,
+            'base_amount'          => 10000,
+            'amount_refunded'      => 10000,
+            'base_amount_refunded' => 10000,
         ]);
 
         $refund1 = $this->fixtures->create('refund', [
@@ -4272,9 +4283,12 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
 
         $payment = $this->fixtures->create('payment', [
-            'status'        => 'refunded',
-            'refund_status' => 'full',
-            'amount'        => 10000
+            'status'               => 'refunded',
+            'refund_status'        => 'full',
+            'amount'               => 10000,
+            'base_amount'          => 10000,
+            'amount_refunded'      => 10000,
+            'base_amount_refunded' => 10000,
         ]);
 
         $refund1 = $this->fixtures->create('refund', [
@@ -4329,9 +4343,12 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
 
         $payment = $this->fixtures->create('payment', [
-            'status'        => 'refunded',
-            'refund_status' => 'full',
-            'amount'        => 10000
+            'status'               => 'refunded',
+            'refund_status'        => 'full',
+            'amount'               => 10000,
+            'base_amount'          => 10000,
+            'amount_refunded'      => 10000,
+            'base_amount_refunded' => 10000,
         ]);
 
         $refund1 = $this->fixtures->create('refund', [
@@ -4386,9 +4403,12 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
 
         $payment = $this->fixtures->create('payment', [
-            'status'        => 'refunded',
-            'refund_status' => 'partial',
-            'amount'        => 10000
+            'status'               => 'refunded',
+            'refund_status'        => 'partial',
+            'amount'               => 10000,
+            'base_amount'          => 10000,
+            'amount_refunded'      => 5000,
+            'base_amount_refunded' => 5000,
         ]);
 
         $refund = $this->fixtures->create('refund', [
@@ -4422,9 +4442,12 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
 
         $payment = $this->fixtures->create('payment', [
-            'status'        => 'captured',
-            'refund_status' => 'full',
-            'amount'        => 10000
+            'status'               => 'captured',
+            'refund_status'        => 'full',
+            'amount'               => 10000,
+            'base_amount'          => 10000,
+            'amount_refunded'      => 5000,
+            'base_amount_refunded' => 5000,
         ]);
 
         $refund1 = $this->fixtures->create('refund', [
@@ -4467,9 +4490,12 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
 
         $payment = $this->fixtures->create('payment', [
-            'status'        => 'refunded',
-            'refund_status' => 'full',
-            'amount'        => 10000
+            'status'               => 'refunded',
+            'refund_status'        => 'full',
+            'amount'               => 10000,
+            'base_amount'          => 10000,
+            'amount_refunded'      => 10000,
+            'base_amount_refunded' => 10000,
         ]);
 
         $reason = $this->fixtures->create('dispute_reason');
@@ -6354,9 +6380,12 @@ class DisputeTest extends TestCase
         $this->ba->adminAuth();
 
         $payment = $this->fixtures->create('payment', [
-            'status'        => 'refunded',
-            'refund_status' => 'full',
-            'amount'        => 10000
+            'status'               => 'refunded',
+            'refund_status'        => 'full',
+            'amount'               => 10000,
+            'base_amount'          => 10000,
+            'amount_refunded'      => 10000,
+            'base_amount_refunded' => 10000,
         ]);
 
         $refund = $this->fixtures->create('refund', [
