@@ -13,6 +13,7 @@ import { Modules } from 'common/constant/enums';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { addEmail } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/services';
 import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const AccountDetailsUpdate = lazy(
   () =>
@@ -234,17 +235,29 @@ export const onEmailUpdate =
           });
           openModal({
             size: 'small',
-            component: <NewID newEmail={email} />,
+            component: (
+              <SuspenseWithLoader>
+                <NewID newEmail={email} />
+              </SuspenseWithLoader>
+            ),
           });
         } else if (res.data?.is_team_member) {
           openModal({
             size: 'small',
-            component: <SameTeam newEmail={email} />,
+            component: (
+              <SuspenseWithLoader>
+                <SameTeam newEmail={email} />
+              </SuspenseWithLoader>
+            ),
           });
         } else {
           openModal({
             size: 'small',
-            component: <DifferentTeam newEmail={email} setContactEmail={setContactEmail} />,
+            component: (
+              <SuspenseWithLoader>
+                <DifferentTeam newEmail={email} setContactEmail={setContactEmail} />
+              </SuspenseWithLoader>
+            ),
           });
         }
         onSuccessCallback?.();
