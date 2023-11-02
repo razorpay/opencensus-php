@@ -12962,6 +12962,18 @@ class Route
         ],
 
         'admin_dashboard' => [
+            '1cc_merchant_file_upload_audit_list',
+            '1cc_merchant_file_upload_audit_create',
+            '1cc_merchant_order_review_automation_rule_configs_upsert',
+            '1cc_merchant_order_review_automation_rule_configs_get',
+            '1cc_cod_order_review',
+            '1cc_cod_order_list',
+            '1cc_prepay_order_details',
+            '1cc_prepay_order_list',
+            '1cc_cod_eligibility_attribute_delete',
+            '1cc_cod_eligibility_attribute_upsert_batch',
+            '1cc_cod_eligibility_attribute_upsert_bulk',
+            '1cc_cod_eligibility_attribute_list',
             '1cc_rto_dashboard_list',
             'bulk_auto_create_iir',
             'toggle_dashboard_captcha',
