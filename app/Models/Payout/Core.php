@@ -6025,7 +6025,8 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED))
+        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) &&
+            ($balance->isAccountTypeShared() === true))
         {
             return $this->payoutGetApiServiceClient->getFreePayoutAttributesViaMicroservice($balanceId);
         }

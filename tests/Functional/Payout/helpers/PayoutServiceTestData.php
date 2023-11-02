@@ -2848,11 +2848,7 @@ return [
     'testAdminGetFreePayoutsCountFromPS' => [
         'request'  => [
             'url'     => '/admin/payouts/{id}/free_payout',
-            'method'  => 'GET',
-            'content' => [
-                'free_payouts_count'             => 12,
-                'free_payouts_supported_modes'   => ['IMPS']
-            ]
+            'method'  => 'GET'
         ],
         'response' => [
             'content' => [
@@ -2866,11 +2862,7 @@ return [
     'testXDashboardGetFreePayoutsCountFromPS' => [
         'request'  => [
             'url'     => '/admin/payouts/{id}/free_payout',
-            'method'  => 'GET',
-            'content' => [
-                'free_payouts_count'             => 12,
-                'free_payouts_supported_modes'   => ['IMPS']
-            ]
+            'method'  => 'GET'
         ],
         'response' => [
             'content' => [
