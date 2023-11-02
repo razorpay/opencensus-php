@@ -16856,6 +16856,7 @@ class Route
             '1cc_internal_otp_create',
             '1cc_internal_otp_verify',
             '1cc_internal_fetch_global_addresses',
+            'payment_fetch_by_id_internal',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',
