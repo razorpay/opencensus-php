@@ -340,7 +340,8 @@ export const REPAYMENT_PREFERENCES = {
   MANUAL_REPAYMENT: 'MANUAL_REPAYMENT',
 };
 
-export const TENURE_OPTIONS_90 = [15, 30, 60, 90];
+export const TENURE_OPTIONS_90 = [60, 90];
+// export const TENURE_OPTIONS_90 = [15, 30, 60, 90];
 export const TENURE_OPTIONS_30 = [8, 15, 21, 30];
 
 export const DEV_BASE_URL = 'https://api-web.dev.razorpay.in/v1';
