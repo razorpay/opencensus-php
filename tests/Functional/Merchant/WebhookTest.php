@@ -1767,6 +1767,29 @@ class WebhookTest extends TestCase
         });
     }
 
+    public function testPaymentCapturedWithSplitzErrorForTransactionIsolation()
+    {
+        $this->createPartnerAndSubmerchantMapping();
+
+        $this->mockSplitzBulkRequestFailure();
+
+        $payment = $this->defaultAuthPayment();
+
+        $expectedPaymentEvent = $this->testData['testRefundProcessedEventDataForMerchantsLinkedToPartner']['event'];
+
+        $this->expectWebhookEventWithContext(
+            'payment.captured',
+            [],
+            function (array $event) use ($expectedPaymentEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedPaymentEvent, $event);
+                $this->assertArrayNotHasKey('context', $event);
+            }
+        );
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+    }
+
     protected function mockSplitzTreatmentBulkRequest($output)
     {
         $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
@@ -1776,5 +1799,16 @@ class WebhookTest extends TestCase
         $this->splitzMock
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
+    }
+
+    protected function mockSplitzBulkRequestFailure()
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andThrow(new \Exception('Splitz error'));
     }
 }

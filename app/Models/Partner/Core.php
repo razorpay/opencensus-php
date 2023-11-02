@@ -1911,16 +1911,27 @@ class Core extends Detail\Core
             ];
         }
 
-        $responses = $this->app['splitzService']->bulkCallsToSplitz($properties);
-
-        foreach ($responses as $response)
+        try
         {
-            $variant = $response['variant']['name'] ?? null;
+            $responses = $this->app['splitzService']->bulkCallsToSplitz($properties);
 
-            if ($variant === 'enable')
+            foreach ($responses as $response)
             {
-                return true;
+                $variant = $response['variant']['name'] ?? null;
+
+                if ($variant === 'enable')
+                {
+                    return true;
+                }
             }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::TRANSACTION_ISOLATION_SPLITZ_ERROR, [
+                'message' => $e->getMessage(),
+            ]);
+
+            $this->trace->count(PartnerMetrics::TRANSACTION_ISOLATION_SPLITZ_FAILURE);
         }
 
         return false;

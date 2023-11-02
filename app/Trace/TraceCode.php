@@ -10647,6 +10647,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UNEXPECTED_ERROR_CODE_IN_ERROR_MAPPING_FILE            = 'UNEXPECTED_ERROR_CODE_IN_ERROR_MAPPING_FILE';
     const TURBO_ERROR_MAPPING_UPDATER_QUEUE_PUSH_SUCCESS         = 'TURBO_ERROR_MAPPING_UPDATER_QUEUE_PUSH_SUCCESS';
     const TURBO_ERROR_MAPPING_UPDATER_QUEUE_PUSH_FAILURE         = 'TURBO_ERROR_MAPPING_UPDATER_QUEUE_PUSH_FAILURE';
+    const TRANSACTION_ISOLATION_SPLITZ_ERROR                     = 'TRANSACTION_ISOLATION_SPLITZ_ERROR';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
