@@ -1604,6 +1604,11 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
+            if (($e instanceof Exception\EarlyWorkflowResponse) === true)
+            {
+                return $this->buildAckResponse(['processed' => true], null, $input[Entity::ID], $input[Constants::CREATED_AT]);
+            }
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
@@ -1613,6 +1618,7 @@ class Core extends Base\Core
                     'input' => $input,
                 ]
             );
+
             $error = $this->buildError($e->getCode(), $e->getMessage());
 
             return $this->buildAckResponse(null, $error, $input[Entity::ID], $input[Constants::CREATED_AT]);
@@ -1727,9 +1733,11 @@ class Core extends Base\Core
                             // save commission line items tax
                             foreach ($lineIt['Taxes'] as $lineItemTx)
                             {
+                                $lineItemTx[LineItemTax\Entity::TAX_AMOUNT] = $lineItemTx[LineItem\Entity::AMOUNT];
+
                                 $lineItemTax = new LineItemTax\Entity;
                                 $lineItemTax->fillSelectAttributes($lineItemTx, LineItemTax\Entity::$prtsFillable);
-                                $this->repo->saveOrFail($lineItem);
+                                $this->repo->saveOrFail($lineItemTax);
                             }
                         }
 
@@ -1798,6 +1806,8 @@ class Core extends Base\Core
                 'merchant_id' => $payload[Entity::MERCHANT_ID],
             ]);
 
+
+        $partner         = $this->repo->merchant->findOrFail($payload[Entity::MERCHANT_ID]);
         $totalCommission = $payload[Entity::GROSS_AMOUNT] - $payload[Entity::TAX_AMOUNT];
         $totalTax        = $payload[Entity::TAX_AMOUNT];
 
@@ -1810,8 +1820,6 @@ class Core extends Base\Core
         else
         {
             $core = new Commission\Core;
-
-            $partner = $this->repo->merchant->findOrFail($payload[Entity::MERCHANT_ID]);
 
             list($totalTds, $tdsPer) = $core->calculateTds($partner, $totalCommission);
         }
@@ -1835,10 +1843,15 @@ class Core extends Base\Core
         $this->app['workflow']
             ->setPermission($routePermission)
             ->setRouteName('commissions_invoice_status_change')
-            ->setRouteParams([$payload[Entity::ID]])
+            ->setRouteParams(['id' => $payload[Entity::ID]])
+            ->setWorkflowMaker($partner)
+            ->setWorkflowMakerType('merchant')
+            ->setMakerFromAuth(false)
+            ->setImitateProxyAuth(true)
             ->setController('RZP\Http\Controllers\CommissionInvoiceController@changeStatus')
             ->setMethod('PUT')
             ->setDirty($dirtyData)
+            ->setInput([Entity::ACTION => Status::APPROVED])
             ->setEntityAndId('commission_invoice', $payload[Entity::ID])
             ->handle();
     }

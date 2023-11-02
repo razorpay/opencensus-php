@@ -4190,6 +4190,8 @@ class CommissionCreateTest extends TestCase
     {
         $this->createPurePlatFormMerchantAndSubMerchant();
 
+        $this->createTaxes();
+
         $testData = $this->testData[__FUNCTION__];
 
         $this->ba->partnershipServiceAuth();
@@ -4202,6 +4204,8 @@ class CommissionCreateTest extends TestCase
     public function testCreateInvoiceAndFinanceWorkflowFromPRTS()
     {
         $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->createTaxes();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -4218,6 +4222,8 @@ class CommissionCreateTest extends TestCase
     public function testCreateInvoiceAndFinanceWorkflowFromPRTSAlreadyCreatedInvoice()
     {
         $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->createTaxes();
 
         $testData = $this->testData['testCreateInvoiceIssuedFromPRTS'];
 
@@ -4238,6 +4244,8 @@ class CommissionCreateTest extends TestCase
     public function testCreateInvoiceAndSettlementTDSFromPRTS()
     {
         $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->createTaxes();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -4283,6 +4291,8 @@ class CommissionCreateTest extends TestCase
     {
         // invoices created with issued status
         $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->createTaxes();
 
         $testData = $this->testData['testCreateInvoiceIssuedFromPRTS'];
 

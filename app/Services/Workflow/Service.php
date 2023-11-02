@@ -52,6 +52,8 @@ class Service
 
     protected $dirtyData;
 
+    protected $imitateProxyAuth = false;
+
     protected $tags = [];
 
     private $workflowMaker;
@@ -132,6 +134,18 @@ class Service
         $this->controller = $controller;
 
         return $this;
+    }
+
+    public function setImitateProxyAuth($imitateProxyAuth)
+    {
+        $this->imitateProxyAuth = $imitateProxyAuth;
+
+        return $this;
+    }
+
+    public function getImitateProxyAuth()
+    {
+        return $this->imitateProxyAuth;
     }
 
     public function setTags(array $tags)
@@ -283,6 +297,10 @@ class Service
         if ($this->ba->isProxyAuth() === true)
         {
             $authDetails['merchant_id'] = $this->ba->getMerchant()->getId();
+        }
+        else if ($this->getImitateProxyAuth() === true)
+        {
+            $authDetails['merchant_id'] = $maker->getId();
         }
 
         if (empty($authDetails) === false)
