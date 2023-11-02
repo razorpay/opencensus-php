@@ -43,11 +43,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID          => 'required|public_id',
         Entity::METHOD               => 'required|in:card',
         Entity::CARD                 => 'required|array',
-        Entity::ACCOUNT_IDS          => 'required|array|max:10',
-        Entity::CONSENT              => 'required|array',
-        Entity::CONSENT_IP           => 'required|ip',
-        Entity::CONSENT_URL          => 'required|url',
-        Entity::CONSENT_TIMESTAMP    => 'required|numeric'
+        Entity::ACCOUNT_IDS          => 'required|array|max:10'
     ];
 
     protected static $fetchParValueRules = [

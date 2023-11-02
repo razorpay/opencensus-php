@@ -121,13 +121,6 @@ class Entity extends Base\PublicEntity
     const RECURRING_STATUS_SHORT            = 'status';
     const RECURRING_FAILURE_REASON_SHORT    = 'failure_reason';
 
-    // These are used to persist the user consent
-
-    const CONSENT           = 'consent';
-    const CONSENT_IP        = 'consent.ip';
-    const CONSENT_URL       = 'consent.url';
-    const CONSENT_TIMESTAMP = 'consent.timestamp';
-
     /**
      * We use this to set the max amount of the token entity.
      * By default, we have chosen ₹ 1,00,000 for emandate with aadhaar authtype and
