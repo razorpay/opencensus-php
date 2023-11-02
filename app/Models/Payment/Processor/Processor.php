@@ -1381,21 +1381,6 @@ class Processor
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay'
         ];
 
-        // override empty cvv with dummy cvv for cvvless
-        if (Card\Network::getFullName(Network::VISA) === $card->getNetwork() &&
-            $input[Card\Entity::TOKENISED] === true &&
-            empty($input[Card\Entity::CVV]) === true) {
-
-            $input[Card\Entity::CVV ] = "123";
-
-            $this->trace->info(
-                TraceCode::CVV_OPTIONAL,
-                [
-                    'message'       => 'Setting cvv to dummy value',
-                ]
-            );
-        }
-
         if ( $card->getVault() === Card\Vault::HDFC)
         {
             $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
