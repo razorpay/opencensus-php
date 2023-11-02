@@ -39,7 +39,13 @@ export const handleDetailsClick = ({
   navigate(url, { state: { prevPath } });
 };
 
-const Details = ({ itemId, baseUrl, initiatePage, prevPath }: DetailsProps): JSX.Element => {
+const Details = ({
+  isDisabled,
+  itemId,
+  baseUrl,
+  initiatePage,
+  prevPath,
+}: DetailsProps): JSX.Element => {
   const navigate = useNavigate();
   const isMobile = useMobile([...mobileBreakoints, 'l']);
   const linkText = isMobile ? '' : 'Details';
@@ -59,9 +65,15 @@ const Details = ({ itemId, baseUrl, initiatePage, prevPath }: DetailsProps): JSX
   return (
     <Box display="flex" gap="spacing.4">
       <ShowWhen additionalCondition={(user) => !isMobile && user.isLRSEducationFlow}>
-        <PaymentDownloadSwiftCopy paymentId={itemId} asIcon />
+        <PaymentDownloadSwiftCopy isDisabled={isDisabled} paymentId={itemId} asIcon />
       </ShowWhen>
-      <Link variant="button" onClick={handleClick} icon={ChevronRightIcon} iconPosition="right">
+      <Link
+        isDisabled={isDisabled}
+        variant="button"
+        onClick={handleClick}
+        icon={ChevronRightIcon}
+        iconPosition="right"
+      >
         {linkText}
       </Link>
     </Box>

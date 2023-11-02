@@ -15,6 +15,7 @@ export default ({
   customMobileRow,
   onCellClick,
   onRowClick,
+  isDisabled,
 }) => {
   const rowItems = [];
   const cols = isMobileResolution && mobileColumns ? mobileColumns : columns;
@@ -50,9 +51,11 @@ export default ({
         ) : (
           <EntityItemRow
             onRowClick={onRowClick}
+            isDisabled={isDisabled}
             key={`${item.id}_${index}`}
             id={item.id}
             rowClasses={item.rowClass}
+            item={item}
           >
             {cols.map((column, index) => (
               <td class={column.columnClass ? column.columnClass : ''} key={index}>

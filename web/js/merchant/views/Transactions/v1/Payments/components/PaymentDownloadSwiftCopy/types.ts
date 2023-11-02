@@ -2,6 +2,7 @@ export type PaymentDownloadSwiftCopyProps = {
   paymentId: string;
   notify: (message: { type: string; message: string }) => void;
   asIcon: boolean;
+  isDisabled?: boolean;
 };
 
 export type DownloadSwiftCopy = {

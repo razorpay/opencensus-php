@@ -3,7 +3,7 @@ import PaymentsTable from 'merchant/views/Transactions/v2/Payments/components/Pa
 import * as useMobile from 'common/hooks/useMobile/useMobile';
 import 'jest-location-mock';
 
-const generatePayment = ({ method, cardType = 'debit' }) => {
+const generatePayment = ({ method, status = 'authorized', cardType = 'debit' }) => {
   const id = `payment_id_${Math.floor(Math.random() * 100)}`;
   const order_id = `order_id_${Math.floor(Math.random() * 100)}`;
 
@@ -19,7 +19,7 @@ const generatePayment = ({ method, cardType = 'debit' }) => {
   return {
     id,
     order_id,
-    status: 'authorized',
+    status,
     method,
     notes: {
       noteKey1: 'Payment note for key 1',
@@ -73,6 +73,7 @@ export const mockFetchPaymentItems = (n = 25) => {
     generatePayment({
       method: 'card',
       cardType: null,
+      status: 'unknown',
     }),
   ];
   for (let i = 0; i < n - 1; i++) {

@@ -118,7 +118,7 @@ module.exports = [
   {
     name: 'Payment Links',
     path: 'js/merchant/PaymentLinks.*.js',
-    limit: '18 KB',
+    limit: '20 KB',
     gzip: true,
   },
   {

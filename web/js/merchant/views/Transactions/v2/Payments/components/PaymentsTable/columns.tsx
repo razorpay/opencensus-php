@@ -98,6 +98,9 @@ export const mobileAmount = {
 export const status = {
   title: <Title>Status</Title>,
   value: ({ status }: Item): JSX.Element => {
+    if (!paymentStatusVariantMap[status]) {
+      return <Text>--</Text>;
+    }
     const { variant, content } = paymentStatusVariantMap[status];
     return <Status variant={variant} content={content} status={status} />;
   },
@@ -116,14 +119,15 @@ export const actions = {
       </VisuallyHidden>
     </Box>
   ),
-  value: (item: Item): JSX.Element => {
+  value: ({ id, status }: Item): JSX.Element => {
     const currentPath = window.location.pathname.includes(FAILED_PAYMENTS)
       ? FAILED_PAYMENTS
       : PAYMENTS;
     const initiatePage = TransactionsPagesMap[currentPath];
     return (
       <Details
-        itemId={item.id}
+        isDisabled={!paymentStatusVariantMap[status]}
+        itemId={id}
         baseUrl={PAYMENTS}
         prevPath={currentPath}
         initiatePage={initiatePage}

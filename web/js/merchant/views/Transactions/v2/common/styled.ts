@@ -86,7 +86,10 @@ export const StyledTable = styled.div(
         }
       }
     }
-    tbody > tr:hover {
+    tbody > tr.disabled {
+      pointer-events: none;
+    }
+    tbody > tr:not(.disabled):hover {
       cursor: pointer;
       .ClipboardCustom {
         opacity: 1;

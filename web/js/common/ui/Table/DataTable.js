@@ -35,6 +35,7 @@ export default function DataTable(props) {
     mobileColumns,
     onCellClick,
     onRowClick,
+    isDisabled,
     hasMoreData = true,
   } = props;
 
@@ -65,6 +66,7 @@ export default function DataTable(props) {
         isMobileResolution={isMobileResolution}
         onCellClick={onCellClick}
         onRowClick={onRowClick}
+        isDisabled={isDisabled}
       />
       {!progressLoader && loading && (
         <div style={{ padding: 77 }} class="text-center">

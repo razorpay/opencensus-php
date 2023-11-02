@@ -12,6 +12,7 @@ export interface HandleDetailsClickParams {
   initiatePage: string;
   prevPath: TransactionsEntityRoute;
   isButton?: boolean;
+  isDisabled?: boolean;
 }
 
 export type DetailsProps = HandleDetailsClickParams;

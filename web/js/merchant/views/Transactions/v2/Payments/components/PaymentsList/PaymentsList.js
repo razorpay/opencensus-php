@@ -12,6 +12,7 @@ import {
   TransactionsPagesMap,
 } from 'merchant/views/Transactions/v2/common/constants';
 import { onPaginate, onSearch } from 'merchant/views/Transactions/v2/common/utils';
+import { paymentStatusVariantMap } from 'merchant/views/Transactions/v2/Payments/components/PaymentsTable/constants';
 
 class PaymentsList extends ListContainer {
   render() {
@@ -29,6 +30,7 @@ class PaymentsList extends ListContainer {
           count={count}
           skip={skip}
           paginate={onPaginate(this.paginate)}
+          isDisabled={({ status }) => !paymentStatusVariantMap[status]}
           onRowClick={(id) =>
             handleDetailsClick({
               navigate,

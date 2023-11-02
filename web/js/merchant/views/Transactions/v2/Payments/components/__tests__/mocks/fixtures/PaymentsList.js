@@ -23,13 +23,16 @@ jest.mock(
 jest.mock(
   'merchant/views/Transactions/v2/Payments/components/PaymentsTable',
   () =>
-    ({ loading, onRowClick }) =>
+    ({ loading, onRowClick, isDisabled }) =>
       loading ? (
         <div>Loading...</div>
       ) : (
         <div>
           Payments Table
-          <button type="button" onClick={() => onRowClick('id_1234')}>
+          <button
+            type="button"
+            onClick={() => !isDisabled({ status: 'captured' }) && onRowClick('id_1234')}
+          >
             Table Row
           </button>
         </div>

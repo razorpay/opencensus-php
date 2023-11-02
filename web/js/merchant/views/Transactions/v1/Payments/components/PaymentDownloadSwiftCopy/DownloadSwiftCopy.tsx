@@ -15,6 +15,7 @@ const PaymentDownloadSwiftCopy = ({
   paymentId,
   notify,
   asIcon,
+  isDisabled: isDisabledProp,
 }: PaymentDownloadSwiftCopyProps): JSX.Element => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,7 +50,12 @@ const PaymentDownloadSwiftCopy = ({
 
   return (
     <Tooltip content="Download SWIFT Copy for Payment">
-      <Link variant="button" isDisabled={isLoading} icon={DownloadIcon} onClick={handleDownload}>
+      <Link
+        variant="button"
+        isDisabled={isLoading || isDisabledProp}
+        icon={DownloadIcon}
+        onClick={handleDownload}
+      >
         {asIcon ? '' : 'Download SWIFT Copy'}
       </Link>
     </Tooltip>
