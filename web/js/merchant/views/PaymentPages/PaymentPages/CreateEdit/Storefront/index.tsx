@@ -784,7 +784,7 @@ const StoreFront = ({
                   </DescriptionWrapper>
                   <Iframe
                     // src="http://localhost:8888/preview_store"
-                    src={`${window.PP_ECOMMERCE_URL}/preview_store`}
+                    src={`${window.PP_ECOMMERCE_URL}/stores/preview_store`}
                     width={storefront.isDesktopPreview ? '100%' : '400'}
                     className={`${storefront.isDesktopPreview ? '' : 'is-mobile'}`}
                     height={deviceHeight}

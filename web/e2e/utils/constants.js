@@ -38,6 +38,7 @@ const routes = {
   BATCH_REFUNDS: 'app/refunds/batchuploads',
   BATCH_REFUNDS_UPLOAD: 'app/refunds/batchupload',
   SUCCESS_RATE: 'app/success-rate',
+  PAYMENT_PAGES: 'app/paymentpages',
 };
 
 const EmailCredentials = [

@@ -86,6 +86,7 @@ const StorefrontPageTitle = ({ title, editStorefront, user }: IStorefrontPageTit
               variant="secondary"
               icon={CheckIcon}
               isDisabled={!isValid}
+              data-testID="page-title-save"
             />
             <BladeButton
               size="small"
@@ -93,6 +94,7 @@ const StorefrontPageTitle = ({ title, editStorefront, user }: IStorefrontPageTit
               onClick={handleCancel}
               variant="tertiary"
               icon={CloseIcon}
+              data-testID="page-title-cancel"
             />
           </EditButtonWrapper>
         </EditPageTitleWrapper>
