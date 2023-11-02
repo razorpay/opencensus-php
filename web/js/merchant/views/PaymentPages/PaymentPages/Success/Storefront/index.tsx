@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
 import Header from 'merchant/views/PaymentPages/PaymentPages/Success/Header';
 // eslint-disable-next-line
 import CustomClipboard from 'common/ui/Clipboard/Custom';
@@ -13,7 +12,6 @@ import Input from 'common/new-ui/Input';
 import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import Loader from 'common/ui/Loader';
 import PageSettings from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings/StorefrontSettings';
-
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
@@ -30,6 +28,8 @@ import {
   OpenModalType,
   ShowNotificationType,
 } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/types';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 interface IStorefrontSuccessProps extends RouteComponentProps {
   storefrontData: any; // TODO: to be fixed after merging everyone's code together
@@ -45,8 +45,8 @@ interface IStorefrontSuccessProps extends RouteComponentProps {
 const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement => {
   const { editStorefrontDeepMerge, storefrontData, showNotification } = props;
   const { isLoading, entity: storeData, error } = storefrontData;
-
   const [isPageSettingsOpen, setIsPageSettingsOpen] = useState<boolean>(false);
+  const location = useLocation();
 
   useEffect(() => {
     props.fetchStorefront(props.id);
@@ -58,6 +58,18 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
 
   const handlePageSettings = (val: boolean) => {
     setIsPageSettingsOpen(val);
+
+    const locationState = location.state;
+    analyticsTrack({
+      objectName: 'Page Settings',
+      actionName: 'clicked',
+      screen: 'Page Published',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        storefrontId: props.id,
+        isNewStorefront: Boolean(locationState?.isCreate),
+      },
+    });
   };
 
   const trackClickboardCopy = () => {

@@ -9,6 +9,7 @@ interface IDrawer {
   position?: 'left' | 'right';
   footerButtons?: React.ReactNode;
   hasTransparentBackground?: boolean;
+  top?: string;
 }
 
 const _Modal = ({ className = '', ...restProps }) => (
@@ -33,10 +34,11 @@ const StyledModalMask = styled(_ModalMask)(
 );
 
 const DrawerWrapper = styled(_Modal)(
-  ({ position }) => `
+  ({ position, top }) => `
   left: ${position === 'left' ? '0%' : 'unset'};
   right: ${position === 'right' ? '0%' : 'unset'};
-  top: 45px;
+  top: ${top};
+  position: fixed;
   max-width: 500px;
   width: 100%;
   transform: none;
@@ -80,6 +82,7 @@ const PaymentPagesDrawer = ({
   position = 'left',
   footerButtons,
   hasTransparentBackground = false,
+  top = '45px',
   ...restProps
 }: IDrawer): React.ReactElement => {
   return (
@@ -87,7 +90,7 @@ const PaymentPagesDrawer = ({
       maskClosable={maskClosable}
       hasTransparentBackground={hasTransparentBackground}
     >
-      <DrawerWrapper position={position} {...restProps}>
+      <DrawerWrapper position={position} top={top} {...restProps}>
         <ModalContent>{children}</ModalContent>
         {footerButtons && <ModalFooter>{footerButtons}</ModalFooter>}
       </DrawerWrapper>

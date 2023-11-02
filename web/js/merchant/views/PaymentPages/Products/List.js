@@ -4,6 +4,8 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'common/ui/Amount';
 import TableBody from 'common/ui/TableBody';
 import CatalogStatusLabel from 'merchant/views/PaymentPages/common/Products/CatalogStatusLabel';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const getQuantityInStock = ({ units, status }) => {
   if (status === 'unlimited') {
@@ -30,6 +32,20 @@ const StyledStatusLabel = styled(CatalogStatusLabel)`
 `;
 
 export default ({ products, loading, handleEditProduct }) => {
+  const onProductNameClick = (item) => {
+    handleEditProduct(item);
+
+    analyticsTrack({
+      objectName: 'specific product',
+      actionName: 'Clicked',
+      screen: 'Products Screen',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        productId: item.id,
+      },
+    });
+  };
+
   return (
     <StyledList class="table-responsive Table--PaymentpagesV3">
       <table class="table table-hover table-striped">
@@ -57,7 +73,7 @@ export default ({ products, loading, handleEditProduct }) => {
                 )}
               </td>
               <td>
-                <a onClick={() => handleEditProduct(item)}>{item.product_name}</a>
+                <a onClick={() => onProductNameClick(item)}>{item.product_name}</a>
               </td>
               <td>
                 {item.categories.map((category, index) => {

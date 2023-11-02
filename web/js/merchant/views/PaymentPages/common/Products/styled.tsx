@@ -1,5 +1,5 @@
 import React from 'react';
-import { Theme, Link, IconButton, PlusIcon } from '@razorpay/blade/components';
+import { Theme, Link, IconButton, PlusIcon, Text } from '@razorpay/blade/components';
 import styled from 'styled-components';
 import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
 import { formatTextAmountField } from './utils';
@@ -66,6 +66,7 @@ export const PriceWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
   display: flex;
   gap: ${theme.spacing[7]}px;
+  margin-bottom: 32px;
   position: relative;
   & div:first-child {
       input + div {
@@ -87,13 +88,14 @@ const PricePreviewWrapper = styled.p(
   font-size: ${theme.typography.fonts.size[75]}px;
   line-height: ${theme.typography.lineHeights[50]}px;
   position: absolute;
-  bottom: -16px;
+  bottom: -26px;
 `,
 );
 
 const PriceField = styled.span(
   ({ theme, strikethrough }: { theme: Theme; strikethrough?: boolean }) => `
   text-decoration: ${strikethrough ? 'line-through' : 'none'};
+  padding-right: 8px;
   color: ${
     strikethrough
       ? theme.colors.surface.text.muted.lowContrast
@@ -114,7 +116,9 @@ export const PricePreview = ({
       {discounted_amount ? (
         <>
           <PriceField strikethrough>{formatTextAmountField(amount)}</PriceField>
-          {formatTextAmountField(discounted_amount)}
+          <Text size="small" display="inline" color="surface.text.subtle.lowContrast">
+            {formatTextAmountField(discounted_amount)}
+          </Text>
         </>
       ) : (
         formatTextAmountField(amount)
@@ -156,14 +160,12 @@ export const RemoveDiscountButton = ({ ...props }) => {
 
 export const DiscountedPriceWrapper = styled.div`
   position: relative;
-  flex: 1;
-  max-width: 210px;
+  top: 4px;
 `;
 
 export const SellingPriceWrapper = styled.div`
   position: relative;
-  flex: 1;
-  max-width: 210px;
+  top: 0;
 `;
 
 export const ImageSelectorWrapper = styled.div(
@@ -207,7 +209,7 @@ export const ImagesContainer = styled.div(
 export const ImageButton = styled.div(
   ({ theme }) => `
   position: relative;
-  & > button { 
+  & > button {
     position: absolute;
     top: -8px;
     right: -8px;
@@ -256,6 +258,47 @@ export const ScrollableContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  height: calc(100vh - 45px - 120px - 75px); // taken from select all products drawer
+  height: calc(100vh - 45px - 120px - 75px);
   overflow: auto;
+`;
+
+export const PriceInputField = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 32px;
+
+  @media (max-width: 400px) {
+    flex-direction: column;
+  }
+`;
+
+export const TextInputContainer = styled.div`
+  flex: 0.5;
+  @media (max-width: 400px) {
+    flex: 1;
+    width: 100%;
+  }
+`;
+
+export const PriceInfo = styled.div`
+  position: absolute;
+  left: 0;
+  width: 100%;
+  @media (max-width: 400px) {
+    bottom: 0;
+  }
+
+  @media (max-width: 300px) {
+    bottom: -8px;
+  }
+`;
+
+export const StyledItalics = styled.i`
+  font-weight: 400;
+  font-size: '0.6875rem';
+  color: #a2aebe;
 `;

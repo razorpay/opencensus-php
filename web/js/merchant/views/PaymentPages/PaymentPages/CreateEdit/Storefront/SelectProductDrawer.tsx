@@ -14,6 +14,8 @@ import { AddFooterWrapper, SelectCheckboxContainer, SelectProductDrawerWrapper }
 import { ICheckbox, ISelectProductDrawer } from './types';
 import { generateCheckboxesFromAllProducts } from './utils';
 import CheckboxItem from './CheckboxItem';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const SelectProductDrawer = ({
   handleClose,
@@ -119,6 +121,19 @@ const SelectProductDrawer = ({
     );
   }
 
+  const onClickHandler = () => {
+    openAddModal();
+    analyticsTrack({
+      objectName: 'Add product',
+      actionName: 'Clicked',
+      screen: 'Products Screen',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        screen_source: 'store_view',
+      },
+    });
+  };
+
   return (
     <SelectProductDrawerWrapper
       maskClosable={false}
@@ -156,9 +171,7 @@ const SelectProductDrawer = ({
                       checked: item.disabled ? item.checked : false,
                     })),
                   );
-                  // setSelected([]);
                 }}
-                // validationState={isNoneSelected ? 'error' : 'none'}
                 isIndeterminate={newlySelectedCount !== 0 && isIndeterminate}
               >
                 Select all
@@ -172,7 +185,7 @@ const SelectProductDrawer = ({
           'Something went wrong. Try again later'
         )}
       </SelectCheckboxContainer>
-      {newlySelectedCount === 0 && <SelectProductDrawerAddProductFooter onClick={openAddModal} />}
+      {newlySelectedCount === 0 && <SelectProductDrawerAddProductFooter onClick={onClickHandler} />}
     </SelectProductDrawerWrapper>
   );
 };
@@ -182,12 +195,15 @@ const mapStateToProps = (state) => ({
   isMobile: state.app.isMobileResolution,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  fetchProducts: bindActionCreators(fetchProducts, dispatch),
-  addProducts: bindActionCreators(addProducts, dispatch),
-  showNotification: bindActionCreators(showNotification, dispatch),
-  // editProduct: bindActionCreators(editProduct, dispatch),
-});
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      fetchProducts,
+      addProducts,
+      showNotification,
+    },
+    dispatch,
+  );
 
 export default connect(mapStateToProps, mapDispatchToProps)(SelectProductDrawer);
 

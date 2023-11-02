@@ -11,14 +11,29 @@ import { getUnitsDescription } from 'merchant/views/PaymentPages/PaymentPages/ut
 import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Button from 'common/new-ui/Button';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { trackListActions } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import track from './track';
 
 export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }) => {
-  const trackCopyClick = () => {
-    trackListActions('Click Copy URL');
-    track.copyUrl();
+  const trackCopyClick = (item) => {
+    if (isStorefrontPage) {
+      // storefront events capture
+      analyticsTrack({
+        objectName: 'Storefront URL',
+        actionName: 'Copied',
+        screen: 'Payment Page List Item',
+        properties: {
+          storefrontId: item.id,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    } else {
+      trackListActions('Click Copy URL'); // sends to GA
+      track.copyUrl(); // sends to lumberjack && Segment
+    }
   };
 
   const trackTitleClick = () => {
@@ -190,7 +205,7 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
                   {item.short_url && (
                     <span class="CopyLink">
                       <span>{item.short_url}</span>
-                      <CustomClipboard value={item.short_url} onCopy={trackCopyClick}>
+                      <CustomClipboard value={item.short_url} onCopy={() => trackCopyClick(item)}>
                         <button class="btn btn-default btn-xs">copy</button>
                       </CustomClipboard>
                     </span>

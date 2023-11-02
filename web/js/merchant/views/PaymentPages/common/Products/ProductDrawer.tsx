@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import {
   Alert,
@@ -11,6 +12,8 @@ import {
   IconButton,
   CloseIcon,
   TrashIcon,
+  Text,
+  Box,
 } from '@razorpay/blade/components';
 import CatalogStatusLabel from 'merchant/views/PaymentPages/common/Products/CatalogStatusLabel';
 import ConfirmModal from 'merchant/views/PaymentPages/common/ConfirmModal';
@@ -29,20 +32,19 @@ import {
   validateProduct,
 } from './utils';
 import {
-  AddDiscountButton,
   AddImageButton,
-  DiscountedPriceWrapper,
   ImageButton,
   ImagesContainer,
   ImageSelector,
   PricePreview,
-  PriceWrapper,
   ProductDrawerWrapper,
-  RemoveDiscountButton,
-  SellingPriceWrapper,
   HeadingContainer,
   HeadingInfo,
   ScrollableContent,
+  PriceInputField,
+  TextInputContainer,
+  PriceInfo,
+  StyledItalics,
 } from './styled';
 import CategoryDropdown from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront/CategoryDropdown';
 import {
@@ -53,8 +55,13 @@ import {
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { PRODUCT_MESSAGES } from './constants';
 import { ICategories } from 'merchant/reducers/paymentPages/types';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 interface IProductDrawer {
+  storeFrontId: string | undefined;
+  isCreate: boolean;
+  screenSource: 'listing_view' | 'store_view';
   handleClose: () => void;
   productData: IPaymentPagesProduct | null;
   showNotification: (data: any) => void;
@@ -69,11 +76,15 @@ interface IProductDrawer {
   closeModal: () => void;
   onCategoryAddSuccess: (category) => void;
   categories: ICategories;
+  top?: string;
 }
 
 const FILE_SIZE_LIMIT = 2; // 2 MB
 
 const ProductDrawer = ({
+  isCreate,
+  storeFrontId,
+  screenSource,
   handleClose,
   productData,
   showNotification,
@@ -88,6 +99,7 @@ const ProductDrawer = ({
   closeModal,
   onCategoryAddSuccess,
   categories,
+  top,
 }: IProductDrawer): React.ReactElement => {
   const [product, setProduct] = useState<IPaymentPagesProduct>(
     productData ? productData : { ...emptyProduct, id: String(Date.now()) },
@@ -95,9 +107,9 @@ const ProductDrawer = ({
 
   const [errors, setErrors] = useState({ ...emptyProductErrors });
   const isEdit = !!productData;
-  const [isDiscountShown, setIsDiscountShown] = useState(!!product.discounted_amount);
   const [isLoading, setLoading] = useState(false);
   // const [progress, setProgress] = useState(0);
+  const navigate = useNavigate();
 
   const handleProductChange = (e) => {
     setProduct((prevState) => {
@@ -106,11 +118,12 @@ const ProductDrawer = ({
         if (!numberWith2Digits.test(e.value)) {
           return prevState;
         }
+        const priceNumber = e.value.split('.')[0];
+        if (priceNumber.length > 9) return prevState;
       }
       if (numericFields.indexOf(e.name) > -1) {
-        // TODO: Allow 1 decimal
-        // validate if text contains only numbers
-        if (!numericRegex.test(e.value)) {
+        // max char length for stock units is 10
+        if (!numericRegex.test(e.value) || e.value.length > 10) {
           return prevState;
         }
       }
@@ -130,10 +143,6 @@ const ProductDrawer = ({
       }
       return newErrors;
     });
-  };
-
-  const handleShowDiscount = (value: boolean) => {
-    setIsDiscountShown(value);
   };
 
   const onUploadProgress = () => {};
@@ -284,6 +293,18 @@ const ProductDrawer = ({
     // convert numeric fields to number before API call
     // call API & then update redux
     if (isEdit) {
+      analyticsTrack({
+        objectName: 'Save product details',
+        actionName: 'Clicked',
+        screen: 'Edit product',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          storeFrontId,
+          productId: productData?.id ?? undefined,
+          isNewStorefront: Boolean(isCreate),
+          screenSource,
+        },
+      });
       editProductCatalog(productData?.id, generateProductRequest(product))
         .then((res) => {
           if (res.success) {
@@ -304,6 +325,17 @@ const ProductDrawer = ({
         })
         .finally(() => setLoading(false));
     } else {
+      analyticsTrack({
+        objectName: 'Add product',
+        actionName: 'Clicked',
+        screen: 'Add New Product',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          storeFrontId,
+          isNewStorefront: Boolean(isCreate),
+          screenSource,
+        },
+      });
       createProductCatalog(generateProductRequest(product))
         .then((res) => {
           if (res.success) {
@@ -325,16 +357,9 @@ const ProductDrawer = ({
         .finally(() => setLoading(false));
     }
   };
-  const {
-    product_name,
-    amount,
-    discounted_amount,
-    units,
-    images,
-    category,
-    description,
-    status,
-  } = product;
+
+  const { product_name, amount, discounted_amount, units, images, category, description, status } =
+    product;
   const footerButtons = [
     <Button size="medium" type="button" variant="secondary" key="cancel" onClick={handleClose}>
       Cancel
@@ -346,10 +371,12 @@ const ProductDrawer = ({
       key="submit"
       onClick={onSubmit}
       isLoading={isLoading}
+      isDisabled={Boolean(!product_name || !amount)}
     >
       {isEdit ? 'Save product details' : 'Add product'}
     </Button>,
   ];
+
   return (
     <ProductDrawerWrapper
       maskClosable={false}
@@ -357,6 +384,7 @@ const ProductDrawer = ({
       footerButtons={footerButtons}
       position={drawerPosition}
       hasTransparentBackground={hasTransparentBackground}
+      top={top}
     >
       <HeadingContainer>
         <Heading size="large" contrast="low" variant="regular" weight="bold">
@@ -390,87 +418,107 @@ const ProductDrawer = ({
           validationState={errors.product_name ? 'error' : 'none'}
           errorText={errors.product_name}
         />
-        <PriceWrapper>
-          <SellingPriceWrapper>
+        <PriceInputField>
+          <TextInputContainer>
             <TextInput
               label="Price"
               type="number"
               labelPosition="top"
               name="amount"
               prefix="₹"
-              suffix={!isDiscountShown ? 'Add discount' : undefined}
               necessityIndicator="required"
               onChange={handleProductChange}
               value={amount}
               placeholder="0.00"
               showClearButton={false}
               validationState={errors.amount || errors.discounted_amount ? 'error' : 'none'}
-              errorText={errors.amount ? errors.amount : errors.discounted_amount}
             />
-            {!isDiscountShown && (
-              <AddDiscountButton onClick={handleShowDiscount.bind(null, true)} />
-            )}
-          </SellingPriceWrapper>
-          {isDiscountShown && (
-            <DiscountedPriceWrapper>
-              <TextInput
-                label="Discounted price"
-                type="number"
-                labelPosition="top"
-                name="discounted_amount"
-                prefix="₹"
-                necessityIndicator="optional"
-                onChange={handleProductChange}
-                value={discounted_amount}
-                placeholder="0.00"
-                showClearButton={false}
-                // helpText={'Remove'}
-                validationState={errors.discounted_amount ? 'error' : 'none'}
-                // errorText={errors.discounted_amount}
-              />
-              <RemoveDiscountButton
-                onClick={() => {
-                  handleShowDiscount(false);
-                  handleProductChange({
-                    name: 'discounted_amount',
-                    value: emptyProduct.discounted_amount,
-                  });
-                }}
-              />
-            </DiscountedPriceWrapper>
-          )}
+          </TextInputContainer>
+
+          <TextInputContainer>
+            <TextInput
+              label="Discounted price"
+              type="number"
+              labelPosition="top"
+              name="discounted_amount"
+              prefix="₹"
+              necessityIndicator="optional"
+              onChange={handleProductChange}
+              value={discounted_amount}
+              placeholder="0.00"
+              showClearButton={false}
+              validationState={errors.discounted_amount ? 'error' : 'none'}
+            />
+          </TextInputContainer>
+
           {!errors.amount && !errors.discounted_amount && (
-            <PricePreview amount={amount} discounted_amount={discounted_amount} />
+            <PriceInfo>
+              <PricePreview amount={amount} discounted_amount={discounted_amount} />
+            </PriceInfo>
           )}
-        </PriceWrapper>
-        <TextInput
-          label="Quantity in stock"
-          labelPosition="top"
-          name="units"
-          necessityIndicator="optional"
-          onChange={handleProductChange}
-          value={units}
-          placeholder="No. of pieces or units"
-          showClearButton={false}
-          validationState={errors.units ? 'error' : 'none'}
-          errorText={errors.units}
-        />
+          {errors.amount || errors.discounted_amount ? (
+            <PriceInfo>
+              <Text
+                position="absolute"
+                bottom="-24px"
+                color="feedback.negative.action.text.primary.active.lowContrast"
+                size="small"
+              >
+                {errors.discounted_amount ?? errors.amount}
+              </Text>
+            </PriceInfo>
+          ) : null}
+        </PriceInputField>
+        <Box marginTop={'spacing.5'}>
+          <TextInput
+            label="Quantity in stock"
+            labelPosition="top"
+            name="units"
+            necessityIndicator="optional"
+            onChange={handleProductChange}
+            value={units}
+            placeholder="No. of pieces or units"
+            showClearButton={false}
+            validationState={errors.units ? 'error' : 'none'}
+            errorText={errors.units}
+          />
+        </Box>
         {images.length === 0 ? (
-          <ImageSelector onClick={onImageUpload} />
+          <Box marginTop={'spacing.5'}>
+            <Text
+              weight="bold"
+              size="small"
+              color="surface.text.subdued.lowContrast"
+              marginBottom={'spacing.3'}
+            >
+              Upload images <StyledItalics style={{}}>(optional)</StyledItalics>
+            </Text>
+            <ImageSelector onClick={onImageUpload} />
+          </Box>
         ) : (
-          <ImagesContainer>
-            {images.map((item, i) => (
-              <ImageButton key={item.original}>
-                <img src={item.original} alt={`image-${i + 1}`} key={i} width={56} height={56} />
-                <IconButton
-                  icon={CloseIcon}
-                  accessibilityLabel="Close"
-                  onClick={() => handleImageRemove(i)}
-                />
-              </ImageButton>
-            ))}
-            {images.length < 5 && <AddImageButton onClick={onImageUpload} />}
-          </ImagesContainer>
+          <Box marginTop={'spacing.5'}>
+            <Text
+              weight="bold"
+              size="small"
+              color="surface.text.subdued.lowContrast"
+              marginBottom={'spacing.4'}
+            >
+              Uploaded images
+            </Text>
+            <ImagesContainer>
+              {images.map((item, i) => (
+                <ImageButton key={item.original}>
+                  <img src={item.original} alt={`image-${i + 1}`} key={i} width={56} height={56} />
+                  <IconButton
+                    icon={CloseIcon}
+                    accessibilityLabel="Close"
+                    onClick={() => handleImageRemove(i)}
+                  />
+                </ImageButton>
+              ))}
+              {images.length < 5 && <AddImageButton onClick={onImageUpload} />}
+            </ImagesContainer>
+          </Box>
         )}
         <CategoryDropdown
           categories={categories}
@@ -480,6 +528,9 @@ const ProductDrawer = ({
           hasTransparentBackground={hasTransparentBackground}
           drawerPosition={drawerPosition}
           onCategoryAddSuccess={onCategoryAddSuccess}
+          storeFrontId={storeFrontId}
+          isCreate={isCreate}
+          screenSource={screenSource}
         />
         <TextArea
           label="Description"
@@ -500,11 +551,10 @@ const ProductDrawer = ({
               <>
                 This product will be saved to the{' '}
                 <Link
-                  href="#"
-                  // onClick={function noRefCheck() {}}
-                  rel="noreferrer noopener"
-                  target="_blank"
-                  variant="anchor"
+                  onClick={() => {
+                    navigate(`/paymentpages/products`);
+                  }}
+                  variant="button"
                   icon={ArrowUpRightIcon}
                   iconPosition="right"
                   size="small"

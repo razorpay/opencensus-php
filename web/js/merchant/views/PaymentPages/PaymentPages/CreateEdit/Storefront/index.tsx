@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { connect } from 'react-redux';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { Link as ReactRouterLink } from 'react-router-dom';
+import { Link as ReactRouterLink, useNavigate } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 import {
   AddProductBox,
@@ -18,7 +18,8 @@ import {
   StickyFooter,
 } from './styled';
 import ProductDrawer from 'merchant/views/PaymentPages/common/Products/ProductDrawer';
-
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties, getURLQueryParams } from 'common/utils/rzp-utils';
 import {
   // PaymentPagesStorefrontType,
   // fetchPaymentPage,
@@ -38,7 +39,6 @@ import { fetchSupportDetail } from 'merchant/reducers/support_detail';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import debounce from 'common/utils/debounce';
-
 import { bindActionCreators } from 'redux';
 import SampleProducts from './SampleProducts';
 import ProductSection from './ProductSection';
@@ -80,7 +80,6 @@ import {
 import { ProductsSkeleton } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/styled';
 import SelectProductDrawer from './SelectProductDrawer';
 import MobileActionButtons from './MobileActionButtons';
-import { getURLQueryParams } from 'common/utils/rzp-utils';
 import { PRODUCT_MESSAGES } from 'merchant/views/PaymentPages/common/Products/constants';
 
 const allowedIframeDomain: string = getAllowedStorefrontDomain();
@@ -128,6 +127,7 @@ const StoreFront = ({
   const [isMobilePreview, setIsMobilePreview] = useState(false);
   const [isPageSettingsOpen, setIsPageSettingsOpen] = useState(false);
   const [isReceiptSettingsOpen, setIsReceiptSettingsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const setIsIframeLoadedRef = (data: boolean) => {
     isIframeLoadedRef.current = data;
@@ -359,6 +359,20 @@ const StoreFront = ({
   const onAddProductClick = () => {
     // if products exist in catalog, open select drawer, else open add product drawer
     setProductModal(isInitialLoaded === 1 ? 1 : 0);
+
+    // Tracking only when it's first product
+    if (isInitialLoaded === 0) {
+      analyticsTrack({
+        objectName: 'Add your first product',
+        actionName: 'Clicked',
+        screen: 'Create Storefront Page',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          storefrontId: id ?? undefined,
+          isNewStoreFront: Boolean(isCreate),
+        },
+      });
+    }
   };
 
   const openEditProductDrawer = (id: string) => {
@@ -471,9 +485,30 @@ const StoreFront = ({
 
   const handleCategoryAddSuccess = (category) => {
     addCategory(category);
+    analyticsTrack({
+      objectName: 'Add New Category',
+      actionName: 'Clicked on Add Category',
+      screen: 'Add New Product',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        screen_source: 'store_view',
+      },
+    });
   };
 
   const onSubmit = (): any => {
+    // adding before validity check, so as to create proper funnel for events
+    analyticsTrack({
+      objectName: 'Publish page',
+      actionName: 'Clicked',
+      screen: 'Create Storefront Page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        storefrontId: id ?? undefined,
+        isNewStorefront: Boolean(isCreate),
+      },
+    });
+
     // validate
     const { isValid, error } = validateStorefront(storefront);
 
@@ -484,6 +519,7 @@ const StoreFront = ({
       });
       return;
     }
+
     // generate request & fire api calls
     if (isCreate) {
       // eslint-disable-next-line consistent-return
@@ -495,7 +531,22 @@ const StoreFront = ({
               message: 'Storefront created successfully',
               closeTimeout: 2500,
             });
-            history.push(`/paymentpages/storefront/${res.data.id}/success`);
+            analyticsTrack({
+              objectName: 'Page successfully',
+              actionName: 'Published',
+              screen: 'Page publised',
+              properties: {
+                ...getCommonAnalyticsProperties(window.rzp_user),
+                storefrontId: res.data.id,
+                isNewStorefront: true,
+              },
+            });
+            // history.push(`/paymentpages/storefront/${res.data.id}/success`);
+            navigate(`/paymentpages/storefront/${res.data.id}/success`, {
+              state: {
+                isCreate,
+              },
+            });
           }
         })
         .catch((res) => {
@@ -514,7 +565,22 @@ const StoreFront = ({
             message: 'Storefront updated successfully',
             closeTimeout: 2500,
           });
-          history.push(`/paymentpages/storefront/${res.data.id}/success`);
+          analyticsTrack({
+            objectName: 'Page successfully',
+            actionName: 'Published',
+            screen: 'Page publised',
+            properties: {
+              ...getCommonAnalyticsProperties(window.rzp_user),
+              storefrontId: res.data.id,
+              isNewStorefront: false,
+            },
+          });
+          // history.push(`/paymentpages/storefront/${res.data.id}/success`);
+          navigate(`/paymentpages/storefront/${res.data.id}/success`, {
+            state: {
+              isCreate,
+            },
+          });
         }
       })
       .catch((res) => {
@@ -544,7 +610,7 @@ const StoreFront = ({
         // disabled={!isEntityLoaded}
       >
         <i className="i i-receipt" />
-        {!isMobile && <span>Payment Receipts</span>}
+        {!isMobile && <span style={{ marginBottom: '4px' }}>Payment Receipts</span>}
       </Button.Transparent>
 
       <Button.Transparent
@@ -555,7 +621,7 @@ const StoreFront = ({
         // disabled={!isEntityLoaded}
       >
         <i className="i i-settings-outline" />
-        {!isMobile && <span>Page Settings</span>}
+        {!isMobile && <span style={{ marginBottom: '4px' }}>Page Settings</span>}
       </Button.Transparent>
       {!isMobile ? (
         <AsyncBtn.Primary
@@ -572,6 +638,8 @@ const StoreFront = ({
           onPublish={onSubmit}
           isPreview={isMobilePreview}
           setPreview={setIsMobilePreview}
+          isCreate={isCreate}
+          storefrontId={id}
         />
       )}
     </React.Fragment>
@@ -585,6 +653,9 @@ const StoreFront = ({
           categories={storefront.allCategories.data}
           onCategoryAddSuccess={handleCategoryAddSuccess}
           onSuccess={onProductAddSuccess}
+          isCreate={isCreate}
+          storeFrontId={id}
+          screenSource="store_view"
         />
       ) : (
         isProductModal === 1 && (
@@ -742,20 +813,25 @@ const mapStateToProps = (state) => ({
   globalSupportDetails: state.supportdetails.merchantSupportDetail.data,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  editStorefront: bindActionCreators(editStorefront, dispatch),
-  editStorefrontDeepMerge: bindActionCreators(editStorefrontDeepMerge, dispatch),
-  fetchCategories: bindActionCreators(fetchCategories, dispatch),
-  fetchSupportDetail: bindActionCreators(fetchSupportDetail, dispatch),
-  openModal: bindActionCreators(openModal, dispatch),
-  closeModal: bindActionCreators(closeModal, dispatch),
-  showNotification: bindActionCreators(showNotification, dispatch),
-  removeProduct: bindActionCreators(removeProduct, dispatch),
-  previewDevice: bindActionCreators(previewDevice, dispatch),
-  resetStorefront: bindActionCreators(resetStorefront, dispatch),
-  fetchStorefront: bindActionCreators(fetchStorefront, dispatch),
-  addProduct: bindActionCreators(addProduct, dispatch),
-  editProduct: bindActionCreators(editProduct, dispatch),
-  addCategory: bindActionCreators(addCategory, dispatch),
-});
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      editStorefront,
+      editStorefrontDeepMerge,
+      fetchCategories,
+      fetchSupportDetail,
+      openModal,
+      closeModal,
+      showNotification,
+      removeProduct,
+      previewDevice,
+      resetStorefront,
+      fetchStorefront,
+      addProduct,
+      editProduct,
+      addCategory,
+    },
+    dispatch,
+  );
+
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(StoreFront));

@@ -9,7 +9,14 @@ const ProductWrapper = ({ children, extra, isMobile, tabsData }) => {
           {tabsData.map(
             (tab) =>
               !tab.hidden && (
-                <NavLink end to={tab.url} key={tab.title}>
+                <NavLink
+                  end
+                  to={tab.url}
+                  key={tab.title}
+                  onClick={() => {
+                    if (tab.onTabClick) tab.onTabClick();
+                  }}
+                >
                   {tab.title}
                 </NavLink>
               ),

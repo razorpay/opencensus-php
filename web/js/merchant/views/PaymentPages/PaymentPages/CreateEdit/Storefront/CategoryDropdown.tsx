@@ -17,8 +17,13 @@ import {
   CategoryItem,
   AddCategory,
 } from './styled';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 interface ICategoryDropdown {
+  storeFrontId: string | undefined;
+  isCreate: boolean;
+  screenSource: 'listing_view' | 'store_view';
   onChange: ({ name, value }) => void;
   categories: IPaymentPagesCategory[];
   value?: string;
@@ -40,6 +45,9 @@ const emptyCategory = {
 };
 
 const CategoryDropdown = ({
+  isCreate,
+  storeFrontId,
+  screenSource,
   onChange,
   categories,
   value,
@@ -62,6 +70,17 @@ const CategoryDropdown = ({
   }, [categories]);
 
   const openAddCategoryModal = () => {
+    analyticsTrack({
+      objectName: 'Add New Category',
+      actionName: 'Clicked',
+      screen: 'Add New Product',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        storefrontId: storeFrontId,
+        isNewStorefront: Boolean(isCreate),
+        screenSource,
+      },
+    });
     openModal({
       isNew: true,
       component: (
@@ -73,6 +92,10 @@ const CategoryDropdown = ({
           hasTransparentBackground={hasTransparentBackground}
           onSuccess={onCategoryAddSuccess}
           allCategories={categories}
+          top="55px"
+          isCreate={isCreate}
+          storeFrontId={storeFrontId}
+          screenSource={screenSource}
         />
       ),
     });

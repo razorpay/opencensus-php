@@ -29,7 +29,7 @@ import {
   fetchPaymentPagesList,
   fetchStorefrontList,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackListActions } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -41,6 +41,8 @@ import {
   CREATE_BATCH_PP_DOC_URL,
   BATCH_PAYMENT_PAGES_BASE_URL,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getPaymentPagesTabs } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 @connect(
   (state) => ({
@@ -61,30 +63,13 @@ import {
 class PaymentPagesContainer extends ListContainer {
   constructor(props) {
     super(props);
-    const { user } = props;
     this.state = {
       loading: false,
       isBatchPagesLoading: false,
       loadingAllList: true,
-      tabsData: [
-        {
-          title: 'Payment Pages',
-          url: '/paymentpages',
-        },
-        {
-          title: 'Products',
-          url: '/paymentpages/products',
-          // razorx doesn't change during the component lifecycle
-          hidden: !user.isPaymentPageStorefrontEnabled,
-        },
-        {
-          title: 'Batch Payment Pages',
-          url: BATCH_PAYMENT_PAGES_BASE_URL,
-          hidden: !user?.isPaymentPageFileUploadEnabled,
-        },
-      ],
     };
     this.cancelToken = createRef();
+    this.tabs = getPaymentPagesTabs(props.user);
   }
 
   componentDidMount() {
@@ -200,10 +185,26 @@ class PaymentPagesContainer extends ListContainer {
   onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
-      trackListActions('Search', label);
+      trackListActions('Search', label); // GA
     }
 
-    track.search(params);
+    const { title, count, status } = params;
+
+    if (this.props.isStorefrontPage) {
+      analyticsTrack({
+        objectName: 'Search',
+        actionName: 'Clicked',
+        screen: 'Payment Page List Item',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          title,
+          status,
+          count,
+        },
+      });
+    } else {
+      track.search(params); // sends to Lumberjack && Segment
+    }
   };
 
   onClearAnalytics = () => {
@@ -332,7 +333,7 @@ class PaymentPagesContainer extends ListContainer {
     const docLink = isBatchPaymentPages ? CREATE_BATCH_PP_DOC_URL : CREATE_PP_DOC_URL;
     return (
       <ProductWrapper
-        tabsData={this.state.tabsData}
+        tabsData={this.tabs}
         extra={
           <>
             <ShowWhen additionalCondition={() => !user.isOrgAxis}>

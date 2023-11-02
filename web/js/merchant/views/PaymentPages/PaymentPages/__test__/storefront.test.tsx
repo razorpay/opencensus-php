@@ -16,6 +16,7 @@ describe('Storefront -> Create', () => {
       server.use(paymentPagesErrorHandlers.storefrontAllCatalogEmpty());
       return render(<StoreFront />);
     };
+
     test('should render the blank state', async () => {
       renderApp();
       expect(screen.getByLabelText('Loading products')).toBeInTheDocument();
@@ -47,6 +48,7 @@ describe('Storefront -> Create', () => {
       // sample product is removed
       expect(screen.queryByText('Sample Product')).not.toBeInTheDocument();
     });
+
     describe('Create -> ProductDrawer', () => {
       // Reference: https://stackoverflow.com/a/55081916/6127580
       // increase timeout for this particular test, as its slow
@@ -70,7 +72,6 @@ describe('Storefront -> Create', () => {
         });
         const product_name = container.querySelector('input[name=product_name]') as Element;
         const amount = container.querySelector('input[name=amount]') as Element;
-        await userEvent.click(screen.getAllByText('Add discount')[1]);
 
         const discounted_amount = container.querySelector(
           'input[name=discounted_amount]',
@@ -101,5 +102,7 @@ describe('Storefront -> Create', () => {
       }, 15000);
     });
   });
+
+  //TODO: add tests later
   describe('products exist in central catalog', () => {});
 });

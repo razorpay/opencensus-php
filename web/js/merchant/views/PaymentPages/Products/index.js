@@ -17,7 +17,8 @@ import { Field } from 'redux-form';
 import List from 'merchant/views/PaymentPages/Products/List';
 import ProductDrawer from 'merchant/views/PaymentPages/common/Products/ProductDrawer';
 import ManageCategoriesDrawer from 'merchant/views/PaymentPages/Products/ManageCategoriesDrawer';
-
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { populateRPLReduxList } from 'merchant/reducers/invoices/list';
 // import track from 'merchant/views/PaymentPages/PaymentPages/List/track';
 import {
@@ -36,7 +37,7 @@ import {
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { transformCatalog } from 'merchant/reducers/paymentPages/transformer';
 import { RZPFeatures } from 'merchant/helpers/data';
-import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { getPaymentPagesTabs } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 import CategoryIcon from 'assets/payment_pages/categories.svg';
 
@@ -64,30 +65,25 @@ class Products extends ListContainer {
   constructor(props) {
     super(props);
     this.state = {
-      tabsData: [
-        { title: 'Payment Pages', url: '/paymentpages' },
-        {
-          title: 'Products',
-          url: '/paymentpages/products',
-          // razorx doesn't change during the component lifecycle
-          isVisible: props.user.isPaymentPageStorefrontEnabled,
-        },
-        {
-          title: 'Batch Payment Pages',
-          url: BATCH_PAYMENT_PAGES_BASE_URL,
-          isVisible: props.user.isPaymentPageFileUploadEnabled,
-        },
-      ],
       productDrawer: {
         isOpen: false,
         data: null,
       },
       isCategoriesDrawerOpen: false,
     };
+    this.tabs = getPaymentPagesTabs(props.user);
   }
 
   componentDidMount() {
     this.props.fetchCategories();
+    analyticsTrack({
+      objectName: 'Products page',
+      actionName: 'loaded',
+      screen: 'Products screen',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
   }
 
   // called from parent List container
@@ -106,6 +102,15 @@ class Products extends ListContainer {
 
   handleAddProduct = () => {
     this.setState({ productDrawer: { data: null, isOpen: true } });
+    analyticsTrack({
+      objectName: 'Adding a product',
+      actionName: 'Clicked',
+      screen: 'Products Screen',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        screen_source: 'listing_view',
+      },
+    });
   };
 
   handleEditProduct = (product) => {
@@ -117,8 +122,8 @@ class Products extends ListContainer {
     const isCreate = !this.state.productDrawer.data;
 
     if (isCreate) {
-      /* 
-        fetching the products list again with applied filters using parent class's lifecycle method 
+      /*
+        fetching the products list again with applied filters using parent class's lifecycle method
         ref: https://stackoverflow.com/questions/55051620/how-to-call-inherited-function-in-react-child-component/55052195#55052195
       */
       //eslint-disable-next-line
@@ -142,10 +147,28 @@ class Products extends ListContainer {
 
   handleCategoryAddSuccess = (category) => {
     this.props.addInCategoriesList(category);
+
+    analyticsTrack({
+      objectName: 'Add New Category',
+      actionName: 'Clicked on Add Category',
+      screen: 'Products Screen',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        screen_source: 'listing_view',
+      },
+    });
   };
 
   toggleManageCategories = (isCategoriesDrawerOpen) => {
     this.setState({ isCategoriesDrawerOpen });
+    analyticsTrack({
+      objectName: 'Manage categories',
+      actionName: 'Clicked',
+      screen: 'Products Screen',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
   };
 
   handleCategoryDeleteSuccess = (id) => {
@@ -164,11 +187,26 @@ class Products extends ListContainer {
     super.UNSAFE_componentWillMount();
   };
 
+  onSearchAnalytics = (params) => {
+    const { title, count, status } = params;
+
+    analyticsTrack({
+      objectName: 'Search',
+      actionName: 'Clicked',
+      screen: 'Products screen',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        title,
+        status,
+        count,
+      },
+    });
+  };
+
   render() {
     const { user, products, categories } = this.props;
 
     const isRoleAllowedEdit = user.isAllowedEdit('payment_pages');
-
     let content;
 
     if (products.loading) {
@@ -201,7 +239,7 @@ class Products extends ListContainer {
 
     return (
       <ProductWrapper
-        tabsData={this.state.tabsData}
+        tabsData={this.tabs}
         extra={
           <>
             <ShowWhen additionalCondition={() => !user.isOrgAxis}>
@@ -302,6 +340,8 @@ class Products extends ListContainer {
             showProductStatus={true}
             categories={categories?.items}
             onCategoryAddSuccess={this.handleCategoryAddSuccess}
+            top="55px"
+            screenSource="listing_view"
           />
         )}
         {this.state.isCategoriesDrawerOpen && (

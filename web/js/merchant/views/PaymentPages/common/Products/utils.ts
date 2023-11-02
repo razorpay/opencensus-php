@@ -223,7 +223,7 @@ export const validateCategory = (
     );
 
     if (isAlreadyPresent) {
-      error = 'Please enter new Category name';
+      error = 'This category already exists';
       isValid = false;
     }
   } else {

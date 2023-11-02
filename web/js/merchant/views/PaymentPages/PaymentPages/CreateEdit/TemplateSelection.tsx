@@ -30,6 +30,8 @@ import {
 import { withRouter } from 'common/deprecated/withRouter';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 // import 'react-responsive-carousel/lib/styles/carousel.min.css'; // requires a loader
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 interface IProps extends RouteComponentProps {
   handlePageType: (val: string) => void;
@@ -64,7 +66,35 @@ const TemplateSelection = ({ handlePageType, isMobile, history }: IProps): React
   const handleClose = () => {
     history.push('/paymentpages');
   };
+
   const buttonSize = isMobile ? 'medium' : 'large';
+
+  const onCreatePaymentPageClick = () => {
+    handlePageType(PAYMENT_PAGES_TYPES.payment_page);
+    analyticsTrack({
+      objectName: 'Payment page',
+      actionName: 'clicked',
+      screen: 'Select page of your choice',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        product_template: 'page',
+      },
+    });
+  };
+
+  const onCreateStorefrontPageClick = () => {
+    handlePageType(PAYMENT_PAGES_TYPES.storefront);
+    analyticsTrack({
+      objectName: 'Storefront page',
+      actionName: 'clicked',
+      screen: 'Select page of your choice',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        product_template: 'storefront',
+      },
+    });
+  };
+
   return (
     <TemplateSelectionModal showCloseBtn={false}>
       <TemplateSelectionModalContent>
@@ -132,7 +162,7 @@ const TemplateSelection = ({ handlePageType, isMobile, history }: IProps): React
             <Button
               variant="primary"
               size={buttonSize}
-              onClick={handlePageType.bind(null, PAYMENT_PAGES_TYPES.payment_page)}
+              onClick={onCreatePaymentPageClick}
               icon={ArrowRightIcon}
               iconPosition="right"
               isFullWidth={isMobile}
@@ -164,7 +194,7 @@ const TemplateSelection = ({ handlePageType, isMobile, history }: IProps): React
             <Button
               variant="primary"
               size={buttonSize}
-              onClick={handlePageType.bind(null, PAYMENT_PAGES_TYPES.storefront)}
+              onClick={onCreateStorefrontPageClick}
               icon={ArrowRightIcon}
               iconPosition="right"
               isFullWidth={isMobile}

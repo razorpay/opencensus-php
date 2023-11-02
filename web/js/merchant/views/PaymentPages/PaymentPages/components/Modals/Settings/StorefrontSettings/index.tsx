@@ -150,7 +150,7 @@ const StorefrontSettings = ({
               />
               {isTestMode && CUSTOM_URL_DISABLED_INFO}
             </CustomSlugSection>
-            <div className="form-body">
+            <div>
               <SettingsSection>
                 <input name="expire_by" value={expireBy || ''} readOnly hidden />
                 <Input.DateTime

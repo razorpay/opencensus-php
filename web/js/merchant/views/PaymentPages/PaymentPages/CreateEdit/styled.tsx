@@ -21,6 +21,20 @@ export const TemplateSelectionModal = styled(_Modal)`
 export const TemplateSelectionModalContent = styled(ModalContent)(
   ({ theme }: { theme: Theme }) => `
   .pp-template-section-carousel {
+    height: 350px;
+    box-shadow: 0px 9.45917px 17.0265px rgba(21, 45, 75, 0.1),
+      0px 0px 0.945917px rgba(21, 45, 75, 0.2);
+      border-radius:4px;
+
+    .carousel, .slider-wrapper{
+      height:100%;
+      border-radius:4px;
+    }
+
+    img{
+      height:100%;
+    }
+
     .control-dots {
       .dot {
         width: 64px !important;
@@ -94,6 +108,7 @@ export const TemplateSelectionWrapper = styled.div(
 
   .image-wrapper {
     position: relative;
+    height:350px;
   }
 
   .left-container,
@@ -117,6 +132,7 @@ export const TemplateSelectionWrapper = styled.div(
 
   .right-container img {
     width: 100%;
+    height:100%;
   }
 
   h4 {

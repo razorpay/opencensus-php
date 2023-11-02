@@ -179,7 +179,7 @@ export const ProductItemsWrapper = styled.ul`
   .product-item-left,
   .product-item-right {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     // spacing for all direct children
     & > * {
       margin-right: 8px;
@@ -265,14 +265,14 @@ export const EditPageTitleWrapper = styled.div(
 
 export const EditButtonWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
-  margin-top: ${theme.spacing[4]}px;
-  
+  margin-top: ${theme.spacing[2]}px;
+
   button {
     margin-left: ${theme.spacing[3]}px;
     width: ${theme.spacing[8]}px;
     height: ${theme.spacing[8]}px;
   }
-  
+
 `,
 );
 export const EditPageInputWrapper = styled.div`
@@ -287,7 +287,6 @@ export const EditPageInputWrapper = styled.div`
 export const ContactDetailsWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
   position: relative;
-  margin-top: ${theme.spacing[8]}px;
   margin-bottom: ${theme.spacing[3]}px;
   margin-left: ${theme.spacing[5]}px;
 `,
@@ -392,7 +391,7 @@ export const CategoryList = styled.div(
   right: 0;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
   border-radius: ${theme.border.radius.small}px;
-  
+
   z-index: 1;
 `,
 );

@@ -32,7 +32,6 @@ import {
   isPaymentMethodEnabled,
   isProfileViewAllowed,
   isConfigurationViewAllowed,
-  shouldShowFIRCSection,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { RouteGuard } from 'merchant/components/ShowWhen';
@@ -365,11 +364,11 @@ const BankAccountsAndSettlements = lazy(() =>
   ),
 );
 
-const InternationalSettings = lazy(() =>
-  import(
-    /* webpackChunkName: "InternationalSettings" */ 'merchant/views/AccountAndSettings/InternationalSettings'
-  ),
-);
+// const InternationalSettings = lazy(() =>
+//   import(
+//     /* webpackChunkName: "InternationalSettings" */ 'merchant/views/AccountAndSettings/InternationalSettings'
+//   ),
+// );
 
 const NotificationSettings = lazy(() =>
   import(
@@ -1928,6 +1927,7 @@ class Content extends Component {
             }
           />
 
+          {/*
           <Route
             path="international-settings/*"
             element={
@@ -1937,7 +1937,7 @@ class Content extends Component {
             }
           />
 
-          {/* 
+          {/*
           <Route
             path="/pos/:page?"
             element={
@@ -2053,7 +2053,7 @@ class Content extends Component {
       <main
         class={classList(
           !fullPageView && !isWebView && 'main-content',
-          isMobileSearchEnabled && 'search-header',
+          isMobileSearchEnabled && !fullPageView && 'search-header',
           mode === 'test' && isMobileDevice() ? 'test-mode' : '',
         )}
       >

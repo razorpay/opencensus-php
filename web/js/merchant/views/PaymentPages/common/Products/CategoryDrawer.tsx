@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
 import PaymentPagesDrawer from 'merchant/views/PaymentPages/common/Drawer';
 import { Button, TextInput, Alert } from '@razorpay/blade/components';
 import { Heading, SubHeading } from './styled';
-
 import { IPaymentPagesCategory } from 'merchant/reducers/paymentPages/storefront';
 import {
   addStorefrontCategory,
@@ -14,8 +12,9 @@ import {
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { validateCategory } from './utils';
 import { CATEGORY_MESSAGES } from './constants';
-
 import { ICategory } from 'merchant/reducers/paymentPages/types';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const ADD_DATA = {
   heading: 'Add new category',
@@ -31,6 +30,9 @@ const EDIT_DATA = {
   successMessage: CATEGORY_MESSAGES.UPDATE,
 };
 interface ICategoryDrawer {
+  storeFrontId: string | undefined;
+  isCreate: boolean;
+  screenSource: 'listing_view' | 'store_view';
   categoryData: ICategory;
   handleClose: () => void;
   allCategories: IPaymentPagesCategory[];
@@ -41,9 +43,13 @@ interface ICategoryDrawer {
   hasTransparentBackground: boolean;
   onSuccess: (data) => void;
   showSavedAcrossAlert?: boolean;
+  top: string;
 }
 
 const CategoryDrawer = ({
+  isCreate,
+  storeFrontId,
+  screenSource,
   categoryData,
   handleClose,
   allCategories,
@@ -54,6 +60,7 @@ const CategoryDrawer = ({
   hasTransparentBackground,
   onSuccess,
   showSavedAcrossAlert,
+  top,
 }: ICategoryDrawer): React.ReactElement => {
   const [value, setValue] = useState('');
   const [isAdding, setIsAdding] = useState(false);
@@ -89,6 +96,18 @@ const CategoryDrawer = ({
       if (isEdit) {
         response = await updateStorefrontCategory(categoryData.id, { name: value });
       } else {
+        // tracking only add category events
+        analyticsTrack({
+          objectName: 'Add category',
+          actionName: 'Clicked',
+          screen: 'Add New Category',
+          properties: {
+            ...getCommonAnalyticsProperties(window.rzp_user),
+            storeFrontId,
+            isNewStorefront: Boolean(isCreate),
+            screenSource,
+          },
+        });
         response = await addStorefrontCategory(value);
       }
 
@@ -138,6 +157,7 @@ const CategoryDrawer = ({
       footerButtons={footerButtons}
       position={drawerPosition}
       hasTransparentBackground={hasTransparentBackground}
+      top={top}
     >
       <Heading>{heading}</Heading>
       {subHeading && <SubHeading>{subHeading}</SubHeading>}

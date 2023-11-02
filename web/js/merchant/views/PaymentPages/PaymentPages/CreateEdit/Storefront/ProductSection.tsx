@@ -18,6 +18,8 @@ import { IProductItem, IProductItems, IProductSection, TDropdown } from './types
 import { formatTextAmountField } from 'merchant/views/PaymentPages/common/Products/utils';
 import { getPrimaryImage } from './utils';
 import BottomSheet from 'common/components/BottomSheet';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export const ProductItem = ({
   product,
@@ -59,6 +61,15 @@ export const ProductItem = ({
     if (editProduct) {
       editProduct(id);
       setTimeout(() => closeDropdown(), 500);
+      analyticsTrack({
+        objectName: 'Edit option for a product',
+        actionName: 'Clicked',
+        screen: 'Create storefront page',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          productId: id,
+        },
+      });
     }
   }
 
@@ -66,6 +77,15 @@ export const ProductItem = ({
     if (removeProduct) {
       removeProduct(id);
       setTimeout(() => closeDropdown(), 500);
+      analyticsTrack({
+        objectName: 'Remove option for a product',
+        actionName: 'Clicked',
+        screen: 'Create storefront page',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          productId: id,
+        },
+      });
     }
   }
 

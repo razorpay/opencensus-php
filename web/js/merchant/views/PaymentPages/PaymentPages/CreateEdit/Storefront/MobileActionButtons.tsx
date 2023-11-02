@@ -1,18 +1,52 @@
 import React from 'react';
 import { ArrowRightIcon, Button, CloseIcon, EyeIcon } from '@razorpay/blade/components';
 import { FooterWrapper } from './styled';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 interface IMobileActionButtons {
   onPublish: () => void;
   isPreview: boolean;
   setPreview: (val: boolean) => void;
+  isCreate: boolean | undefined;
+  storefrontId: string | undefined;
 }
 
-export default function MobileActionButtons({
+function MobileActionButtons({
+  isCreate,
+  storefrontId,
   onPublish,
   isPreview,
   setPreview,
 }: IMobileActionButtons): React.ReactElement {
+  const onPreviewStoreClick = () => {
+    setPreview(true);
+    analyticsTrack({
+      objectName: 'Preview store',
+      actionName: 'Clicked',
+      screen: 'Create storefront page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        storefrontId: storefrontId ?? undefined,
+        isNewStoreFront: Boolean(isCreate),
+      },
+    });
+  };
+
+  const onClosePreviewClick = () => {
+    setPreview(false);
+    analyticsTrack({
+      objectName: 'Close preview',
+      actionName: 'Clicked',
+      screen: 'Create storefront page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        storefrontId: storefrontId ?? undefined,
+        isNewStoreFront: Boolean(isCreate),
+      },
+    });
+  };
+
   return (
     <FooterWrapper>
       {!isPreview ? (
@@ -22,7 +56,7 @@ export default function MobileActionButtons({
             icon={EyeIcon}
             iconPosition="left"
             isFullWidth
-            onClick={setPreview.bind(null, true)}
+            onClick={onPreviewStoreClick}
           >
             Preview store
           </Button>
@@ -42,7 +76,7 @@ export default function MobileActionButtons({
           icon={CloseIcon}
           iconPosition="left"
           isFullWidth
-          onClick={setPreview.bind(null, false)}
+          onClick={onClosePreviewClick}
         >
           Close preview
         </Button>
@@ -50,3 +84,5 @@ export default function MobileActionButtons({
     </FooterWrapper>
   );
 }
+
+export default MobileActionButtons;
