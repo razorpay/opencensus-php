@@ -218,6 +218,7 @@ class Validator extends Base\Validator
         ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP   => 'filled|integer',
         ConfigKey::MERCHANT_NOTIFICATION_CONFIG_FETCH_LIMIT     => 'filled|array',
         ConfigKey::ENABLE_CRED_ELIGIBILITY_CALL                                        => 'filled|boolean',
+        ConfigKey::RX_PAYOUT_TEST_MERCHANTS_TO_EXCLUDE_FOR_METRICS                     => 'filled|array',
         ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS               => 'filled|array',
         ConfigKey::RX_WEBHOOK_URL_FOR_MFN                                              => 'filled|url',
         ConfigKey::RX_WEBHOOK_URL_FOR_MFN_TEST_MODE                                    => 'filled|url',

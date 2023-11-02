@@ -10,6 +10,8 @@ use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Constants\HyperTrace;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Merchant\Balance\Entity as Balance;
 
 final class Metric
@@ -136,7 +138,7 @@ final class Metric
     const WITHIN_SLA            = 'within_sla';
 
     // 3600 seconds
-    const PAYOUT_FAILURE_SLA = 3600;
+    const PAYOUT_FAILURE_SLA = 7200;
 
     public static function pushStatusChangeMetrics(Entity $payout, string $previousStatus = null)
     {
@@ -144,6 +146,11 @@ final class Metric
 
         try
         {
+            if (self::getIsTestPayout($payout) === true)
+            {
+                return;
+            }
+
             // adding this if clause for ledger based payouts
             // Whenever a payout is initiated thru the ledger microservice, the payout moves to the created state
             // before the balance checks. Thus, if this payout has to be queued for low balance, the payout moves
@@ -677,6 +684,21 @@ final class Metric
         }
 
         return true;
+    }
+
+    protected static function getIsTestPayout(Entity $payout)
+    {
+        $testMerchantIds = (new AdminService)->getConfigKey(
+            [
+                'key' => ConfigKey::RX_PAYOUT_TEST_MERCHANTS_TO_EXCLUDE_FOR_METRICS
+            ]);
+
+        if (in_array($payout->getMerchantId(), $testMerchantIds, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     // getIsFirstTerminal returns true only if the payout is marked as failed or processed or reversed for the first time

@@ -296,6 +296,8 @@ class ConfigKey
     // Acts as a kill switch for cred eligibility call from /preferences api
     const ENABLE_CRED_ELIGIBILITY_CALL = self::PREFIX . 'enable_cred_eligibility_call';
 
+    const RX_PAYOUT_TEST_MERCHANTS_TO_EXCLUDE_FOR_METRICS = self::PREFIX . 'rx_payout_test_merchants_to_exclude_for_metrics';
+
     const RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS = self::PREFIX . 'rx_va_to_va_payouts_whitelisted_destination_merchants';
 
     const UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS = self::PREFIX . 'updated_sms_templates_receiver_merchants';
@@ -548,6 +550,7 @@ class ConfigKey
         self::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE,
         self::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP,
         self::ENABLE_CRED_ELIGIBILITY_CALL,
+        self::RX_PAYOUT_TEST_MERCHANTS_TO_EXCLUDE_FOR_METRICS,
         self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS,
         self::RX_WEBHOOK_URL_FOR_MFN,
         self::RX_WEBHOOK_URL_FOR_MFN_TEST_MODE,
