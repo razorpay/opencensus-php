@@ -2980,8 +2980,6 @@ class Core extends Base\Core
 
         if ($iin !== null && $iin->isTokenisationBlacklisted() === true){
             $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                'blacklisted iin'   => $iin,
-                'token'             => $token
             ]);
 
             return false;
