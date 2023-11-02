@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         Constants::CLIENT_SECRET            => 'required|max:512',
         Constants::CLIENT_ID                => 'required|max:512',
         Constants::ADMIN_ACCESS_TOKEN       => 'required|max:512',
-        Constants::STOREFRONT_ACCESS_TOKEN  => 'required|max:512',
+        Constants::STOREFRONT_ACCESS_TOKEN  => 'sometimes|max:512',
         Constants::DELEGATE_ACCESS_TOKEN    => 'sometimes|max:512',
         Constants::APP_NAME                 => 'sometimes|max:512|in:sopc,rcod'
     ];

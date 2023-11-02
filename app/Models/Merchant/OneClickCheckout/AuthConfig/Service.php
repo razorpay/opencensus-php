@@ -103,9 +103,13 @@ class Service extends Base\Service
                 Constants::API_KEY                  => $input[Constants::CLIENT_ID],
                 Constants::API_SECRET               => $input[Constants::CLIENT_SECRET],
                 Constants::OAUTH_TOKEN              => $input[Constants::ADMIN_ACCESS_TOKEN],
-                Constants::STOREFRONT_ACCESS_TOKEN  => $input[Constants::STOREFRONT_ACCESS_TOKEN],
                 Constants::APP_NAME                 => $input[Constants::APP_NAME] ?? '',
             ];
+
+            if (empty($input[Constants::STOREFRONT_ACCESS_TOKEN]) === false)
+            {
+                $body[Constants::STOREFRONT_ACCESS_TOKEN] = $input[Constants::STOREFRONT_ACCESS_TOKEN];
+            }
 
             if (empty($input[Constants::DELEGATE_ACCESS_TOKEN]) === false)
             {
