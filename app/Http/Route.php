@@ -6285,7 +6285,6 @@ class Route
         'raw_address_create_bulk',
 
         'partner_config_fetch_guest',
-        'default_partner_config_fetch_guest',
         'terminal_toggle_internal',
         // Ledger Outbox
         'ledger_outbox_retry',
@@ -7355,6 +7354,7 @@ class Route
         'partner_activation_save',
 
         'partner_sales_poc',
+        'default_partner_config_fetch_guest',
         'partner_request_migration',
         // Partner KYC access routes
         'partner_kyc_access_request',
@@ -11682,6 +11682,7 @@ class Route
             'commissions_invoice_status_change',
             'partner_activation_details',
             'partner_sales_poc',
+            'default_partner_config_fetch_guest',
             'get_app_name_from_payment',
             'partner_request_migration',
             'partner_activation_save',
@@ -16263,7 +16264,6 @@ class Route
             'merchant_banking_accounts_webhook',
             'user_details_unified',
             'partner_config_fetch_guest',
-            'default_partner_config_fetch_guest',
         ],
 
         'reporting' => [

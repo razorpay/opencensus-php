@@ -1909,7 +1909,7 @@ class PartnerConfigTest extends OAuthTestCase
         ];
 
         $this->createConfigForPlatformPartner($partner->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData, Entity::DEFAULT_PLAN_ID => 'SubmerchantPln']);
-        $this->ba->authServiceAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $splitzOutput = [
             "response" => [
