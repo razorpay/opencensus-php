@@ -1490,6 +1490,15 @@ class UserController extends Controller
         return $result;
     }
 
+    public function getLoginMetadata()
+    {
+        $response = [];
+        //Returns oauth or password depending on the login type
+        $response['login_method'] = $this->getLoginMethodFromSession();
+
+        return AppResponse::jsonResponse([], $response);
+    }
+
     public function traceDuration($timeTaken, $traceCode){
 
         $user = Auth::user();

@@ -140,6 +140,7 @@ Route::group(['middleware' => ['web']], function () {
 
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2')->name('user_details'); //ePOS
+        Route::get('/get-login-metadata', 'UserController@getLoginMetadata')->name('get_login_metadata');
         Route::get('/mobile', 'UserController@getUserDetailsForMobile')->name('user_mobile_details');
         Route::get('/details', 'UserController@getUserDetailsV2')->name('get_user_details');
 
