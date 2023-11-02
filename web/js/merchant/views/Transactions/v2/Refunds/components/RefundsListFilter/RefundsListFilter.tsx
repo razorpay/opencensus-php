@@ -188,6 +188,7 @@ const RefundsListFilter = ({
             isDisabled={loading}
             isSelectInput
             bottomSheetTitle={searchBySectionName}
+            testID="search-by-dropdown"
           />
           <TextInput
             showClearButton

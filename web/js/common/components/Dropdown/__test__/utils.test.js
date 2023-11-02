@@ -1,9 +1,10 @@
-import { render, screen } from 'test-utils';
+import { render, screen, waitFor, userEvent } from 'test-utils';
 import {
   getAllOptions,
   getDropdownTarget,
   getDropdownContent,
 } from 'common/components/Dropdown/utils';
+import { Dropdown as BladeDropdown } from '@razorpay/blade/components';
 import { utils } from './mocks/fixtures';
 
 describe('Dropdown Utils', () => {
@@ -64,30 +65,41 @@ describe('Dropdown Utils', () => {
 
   describe('getDropdownContent', () => {
     const defaultProps = utils.getDropdownContent;
-    const renderApp = (props = {}) => {
+    const renderApp = async (props = {}) => {
+      const dropdownTargetDefaultProps = utils.getDropdownTarget.defaultProps;
       render(
-        getDropdownContent({
-          ...defaultProps,
-          ...props,
-        }),
+        <BladeDropdown>
+          {getDropdownTarget({
+            ...dropdownTargetDefaultProps,
+          })}
+          {getDropdownContent({
+            ...defaultProps,
+            ...props,
+          })}
+        </BladeDropdown>,
       );
+      const dropdownTrigger = screen.getByRole('button', { name: 'Dropdown Title' });
+      expect(dropdownTrigger).toBeInTheDocument();
+      await userEvent.click(dropdownTrigger);
     };
 
-    test('should render an selection menu when isWithBottomSheet is false', () => {
-      renderApp({
+    test('should render an selection menu when isWithBottomSheet is false', async () => {
+      await renderApp({
         isWithBottomSheet: false,
         isMultipleSelection: false,
       });
-      expect(screen.getByRole('menu')).toBeInTheDocument();
+      await waitFor(() => expect(screen.getByRole('menu')).toBeInTheDocument());
     });
 
-    test('should render a FooterActions when isMultipleSelection is true', () => {
-      renderApp({
+    test('should render a FooterActions when isMultipleSelection is true', async () => {
+      await renderApp({
         isWithBottomSheet: false,
         isMultipleSelection: true,
       });
-      expect(screen.getByText('Clear')).toBeInTheDocument();
-      expect(screen.getByText('Apply')).toBeInTheDocument();
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Clear' })).toBeInTheDocument(),
+      );
+      expect(screen.getByRole('button', { name: 'Apply' })).toBeInTheDocument();
     });
   });
 });

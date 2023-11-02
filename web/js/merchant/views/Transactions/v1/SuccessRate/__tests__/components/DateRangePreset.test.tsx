@@ -37,8 +37,7 @@ describe('<DateRangePreset/>', () => {
   test('should render date range presets on screen', async () => {
     renderApp();
     await userEvent.click(screen.getByRole('combobox') as HTMLElement);
-
-    expect(screen.getByText('Last 24 Hours')).toBeVisible();
+    await waitFor(() => expect(screen.getByText('Last 24 Hours')).toBeVisible());
     expect(screen.getByText('Last 7 Days')).toBeVisible();
     expect(screen.getByText('Last 14 Days')).toBeVisible();
     expect(screen.getByText('Last 30 Days')).toBeVisible();

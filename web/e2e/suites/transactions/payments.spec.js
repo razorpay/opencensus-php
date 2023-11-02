@@ -45,7 +45,7 @@ test.describe
       await expect(paymentsList.getByRole('button', { name: 'Last 7 days' })).toBeVisible();
       await expect(paymentsList.getByRole('button', { name: 'Status: All' })).toBeVisible();
       await expect(paymentsList.getByRole('button', { name: 'Payment method: All' })).toBeVisible();
-      await expect(paymentsList.getByRole('option', { name: 'Payment ID' })).toBeVisible();
+      await expect(paymentsList.getByTestId('search-by-dropdown')).toBeVisible();
       const id = payments.paymentId.authorized.netbanking;
       await searchTransactionById({ page: paymentsList, id });
       await expect(page.getByRole('cell', { name: new RegExp(id) })).toBeVisible();

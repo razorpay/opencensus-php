@@ -27,7 +27,7 @@ test.describe
         refundsList.getByRole('button', { name: 'Last 7 days', exact: true }),
       ).toBeVisible();
       await expect(refundsList.getByRole('button', { name: 'Status: All' })).toBeVisible();
-      await expect(refundsList.getByRole('option', { name: 'Refund ID' })).toBeVisible();
+      await expect(refundsList.getByTestId('search-by-dropdown')).toBeVisible();
       const id = refunds.refundId.fullRefund.processed;
       await searchTransactionById({ page: refundsList, id });
       await expect(refundsList.getByRole('cell', { name: `${id} Copied` })).toBeVisible();

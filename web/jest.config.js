@@ -1,5 +1,6 @@
 // For a detailed explanation regarding each configuration property, visit:
 // https://jestjs.io/docs/en/configuration.html
+const path = require('path');
 
 module.exports = {
   // Automatically clear mock calls and instances between every test
@@ -18,6 +19,18 @@ module.exports = {
   moduleNameMapper: {
     '\\.(css|less|styl)$': 'identity-obj-proxy',
     '^assets/(.*)': 'css/assets/$1',
+    '@razorpay/blade/components': path.resolve(
+      __dirname,
+      'node_modules/@razorpay/blade/build/components/index.development.web.js',
+    ),
+    '@razorpay/blade/utils': path.resolve(
+      __dirname,
+      'node_modules/@razorpay/blade/build/utils/index.development.web.js',
+    ),
+    '@razorpay/blade/tokens': path.resolve(
+      __dirname,
+      'node_modules/@razorpay/blade/build/tokens/index.development.web.js',
+    ),
   },
 
   // A map from regular expressions to paths to transformers

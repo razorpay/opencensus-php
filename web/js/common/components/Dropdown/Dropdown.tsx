@@ -21,6 +21,7 @@ const Dropdown = ({
   selectInputName = '',
   withBottomSheet,
   bottomSheetTitle = '',
+  testID,
 }: DropdownProps): JSX.Element => {
   const isMobile = useMobile();
   const isWithBottomSheet = withBottomSheet === undefined ? isMobile : withBottomSheet;
@@ -104,7 +105,7 @@ const Dropdown = ({
           <button ref={closeButtonRef}>Close</button>
         </VisuallyHidden>
       ) : null}
-      <BladeDropdown onDismiss={onDismiss} selectionType={selectionType}>
+      <BladeDropdown onDismiss={onDismiss} selectionType={selectionType} testID={testID}>
         {getDropdownTarget({
           isLink,
           isSelectInput,

@@ -233,6 +233,7 @@ const PaymentsListFilter = ({
             isDisabled={loading}
             isSelectInput
             bottomSheetTitle={searchBySectionName}
+            testID="search-by-dropdown"
           />
           {isContactSearch ? (
             <CountryCodeInput
