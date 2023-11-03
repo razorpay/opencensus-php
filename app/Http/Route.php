@@ -11387,6 +11387,7 @@ class Route
             'contact_list_internal',
             'contact_update_internal',
             'fund_account_get_internal',
+            'fund_account_create_internal',
         ],
 
         'metro' => [
