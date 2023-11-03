@@ -11,6 +11,7 @@ use phpseclib\Crypt\AES;
 use RZP\Encryption\AESEncryption;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\MerchantAsyncTokenisationJob;
+use RZP\Jobs\PushTokenConsentDataPersist;
 use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
@@ -529,6 +530,21 @@ class Service extends Base\Service
 
                     $token = (new Token\Core)->create($customer, $tokenCreateInput);
 
+                    // Token consent push
+                    if (empty($input['consent']) === false)
+                    {
+                        $consentInput = [
+                            'token_id' => $token['id'],
+                            'consent' => [
+                                'ip' => $input['consent']['ip'],
+                                'url' => $input['consent']['url'],
+                                'timestamp' => $input['consent']['timestamp']
+                            ]
+                        ];
+
+                        PushTokenConsentDataPersist::dispatch($consentInput, $mode);
+                    }
+
                     //Required to override incase of global/standard checkout cases merchant needs to be explicitly set to local merchant.
                     $token->merchant()->associate($this->merchant);
 
@@ -552,10 +568,12 @@ class Service extends Base\Service
 
                 }
 
+
                 (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::TOKEN_PUSH);
                 (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::SUCCESS, Token\Action::TOKEN_PUSH_SR);
 
             }
+
             $response['tokens'] = $tokensResponse;
         }
         catch (\Throwable $e)
