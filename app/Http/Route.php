@@ -1398,7 +1398,8 @@ class Route
         'onboarding_order_create'                  => ['post',     'pg/onboarding/payment_order_create',             'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_order_verify'                  => ['post',     'pg/onboarding/payment_order_verify',             'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_payment_webhook'               => ['post',     'pg/onboarding/payment_order_webhook',            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
-
+        'merchant_activation_business_categories_v3'       => ['get',      'pg/onboarding/fetch_merchant_categories',        'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_activation_business_categories_admin_v3' => ['get',      'pg/onboarding/fetch_merchant_categories_admin',  'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
 
         'merchant_get_l2_dynamic_configs'          => ['get',     'pg/onboarding/merchant_get_l2_dynamic_configs',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_policy_section_publish_v2'       => ['post',    'pg/onboarding/merchant_policy_section_publish_v2', 'MerchantOnboardingProxyController@handleDashboardProxyRequests'   ],
@@ -6455,6 +6456,7 @@ class Route
     //
 
     public static $proxy = [
+        'merchant_activation_business_categories_v3',
         'merchant_policy_section_publish_v2',
         'merchant_website_section_page_load_v2',
         'user_update_name',
@@ -7567,6 +7569,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_activation_business_categories_admin_v3',
         'toggle_dashboard_captcha',
         'merchant_fetch_rm_details',
         'merchant_put_rm_details',
@@ -8943,6 +8946,8 @@ class Route
         'merchant_activation_clarifications_save_admin' => Permission::EDIT_MERCHANT,
         'merchant_activation_clarifications_fetch_admin'=> Permission::VIEW_MERCHANT,
         'merchant_nc_revamp_eligibility_admin'          => Permission::VIEW_MERCHANT,
+        'merchant_activation_business_categories_v3'       => Permission::VIEW_MERCHANT,
+        'merchant_activation_business_categories_admin_v3' => Permission::VIEW_MERCHANT,
         'qa_roast_get_token'                            => Permission::VIEW_MERCHANT,
         'merchant_activation_clarifications_fetch'      => Permission::VIEW_MERCHANT,
         'merchant_activation_clarifications_save'       => Permission::EDIT_MERCHANT,
@@ -11437,10 +11442,10 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_activation_business_categories_v3',
             'merchant_policy_section_publish_v2',
             'merchant_get_l2_dynamic_configs',
             'merchant_website_section_page_load_v2',
-
             'merchant_bmc_response_fetch',
             'merchant_bmc_response_save',
             'onboarding_order_create',
@@ -12964,6 +12969,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_activation_business_categories_admin_v3',
             '1cc_merchant_file_upload_audit_list',
             '1cc_merchant_file_upload_audit_create',
             '1cc_merchant_order_review_automation_rule_configs_upsert',

@@ -252,12 +252,12 @@ class RouteTeamMap
         'merchant_workflow_clarification'          => [self::TEAM_PAYMENTS_DASHBOARD],
         'workflow_needs_merchant_clarification'    => [self::TEAM_PAYMENTS_DASHBOARD],
 
-        'merchant_activation_clarifications_save_admin'        => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_clarifications_save_admin'   => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_clarifications_fetch_admin'  => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_nc_revamp_eligibility'                  => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_clarifications_save'         => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_nc_revamp_eligibility_admin'            => [self::TEAM_PAYMENTS_GROWTH],
-        'merchant_activation_clarifications_fetch'              => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_clarifications_fetch'        => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_store_add'                              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_store_fetch'                            => [self::TEAM_PAYMENTS_GROWTH],
         'm2m_referral_link_get'                           => [self::TEAM_PAYMENTS_GROWTH],
@@ -385,9 +385,9 @@ class RouteTeamMap
         'onboarding_order_create'                         => [self::TEAM_PAYMENTS_GROWTH],
         'onboarding_order_verify'                         => [self::TEAM_PAYMENTS_GROWTH],
         'onboarding_payment_webhook'                      => [self::TEAM_PAYMENTS_GROWTH],
-
+        'merchant_activation_business_categories_v3'      => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_business_categories_admin_v3'=> [self::TEAM_PAYMENTS_GROWTH],
         'merchant_website_section_page_load_v2'           => [self::TEAM_PAYMENTS_GROWTH],
-
 
         // Risk team
         'shield_rules_get_multiple'                       => [self::TEAM_PAYMENTS_RISK],

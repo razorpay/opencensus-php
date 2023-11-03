@@ -38,6 +38,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_FETCH_GATING_LOGIC    = 'merchant_fetch_gating_logic';
     const MERCHANT_INVOICE_LOGIC_SAVE    = 'merchant_invoice_logic_save';
 
+    // Merchant Activation Business categories v3 mapping
+    const MERCHANT_CATEGORIES_V3         = 'fetch_merchant_categories';
+    const MERCHANT_CATEGORIES_ADMIN_V3   = 'fetch_merchant_categories_admin';
+
     const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
     const MERCHANT_DETAILS_PATCH         = 'merchant_details_patch';
     const MERCHANT_RM_FETCH              = 'merchant_rm_details_fetch';
@@ -45,24 +49,24 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_RM_UPDATE             = 'merchant_rm_details_update';
     const SEND_OTP                       = 'send_otp';
 
-    const MERCHANT_GET_L2_DYNAMIC_CONFIGS       = 'merchant_get_l2_dynamic_configs';
-    const MERCHANT_GET_POLICY_COMPLIANCE_DETAILS     = 'merchant_get_policy_compliance_details';
+    // Website Policy Wizard v2 Routes
+    const MERCHANT_GET_L2_DYNAMIC_CONFIGS                    = 'merchant_get_l2_dynamic_configs';
+    const MERCHANT_GET_POLICY_COMPLIANCE_DETAILS             = 'merchant_get_policy_compliance_details';
+    const MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS            = 'merchant_save_policy_compliance_details';
+    const MERCHANT_POLICY_SECTION_PUBLISH_V2                 = 'merchant_policy_section_publish_v2';
 
-    const MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS    = 'merchant_save_policy_compliance_details';
-
-    const MERCHANT_POLICY_SECTION_PUBLISH_V2       = 'merchant_policy_section_publish_v2';
-
-    const GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION  = 'get_merchant_onboarding_docs_verification';
+    const GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION          = 'get_merchant_onboarding_docs_verification';
     const GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION = 'get_merchant_eligibility_for_automation_activation';
-    const MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2      = 'merchant_policy_preview';
+    const MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2              = 'merchant_policy_preview';
 
-    const GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL   = 'generate_merchant_identity_verification_url';
-    const PROCESS_MERCHANT_IDENTITY_VERIFICATION        = 'process_merchant_identity_verification';
+    const GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL        = 'generate_merchant_identity_verification_url';
+    const PROCESS_MERCHANT_IDENTITY_VERIFICATION             = 'process_merchant_identity_verification';
 
     const PGOS_SHADOW_MODE_EXPERIMENT_ID = 'app.pgos_shadow_mode_experiment_id';
     const PGOS_LIVE_MODE_EXPERIMENT_ID   = 'app.pgos_live_mode_experiment_id';
     const ENABLE                         = 'enable';
     const LIVE                           = 'live';
+
     const PGOS_OWNED_FIELDS = [
         'activation_form_milestone',
         'contact_name',
@@ -124,12 +128,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_FETCH_GATING_LOGIC,
         self::PAYMENT_ORDER_WEBHOOK,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
-
+        self::MERCHANT_CATEGORIES_V3
     ];
 
     const ADMIN_ROUTES = [
         self::GET_MERCHANT_BMC_RESPONSE,
         self::MERCHANT_UPDATE_BY_ADMIN,
+        self::MERCHANT_CATEGORIES_ADMIN_V3
     ];
 
     const RESTRICTED_ACTIVATION_STATUSES_FOR_MERCHANT_UPDATES = [
@@ -159,27 +164,27 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SEND_OTP                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendOTP',
         self::MERCHANT_DETAILS_PATCH           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDetailsPatch',
 
-        self::MERCHANT_GET_L2_DYNAMIC_CONFIGS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
-        self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetPolicyComplianceDetails',
-        self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantSavePolicyComplianceDetails',
-        self::MERCHANT_POLICY_SECTION_PUBLISH_V2 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantPolicySectionPublish',
+        self::MERCHANT_GET_L2_DYNAMIC_CONFIGS           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
+        self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetPolicyComplianceDetails',
+        self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantSavePolicyComplianceDetails',
+        self::MERCHANT_POLICY_SECTION_PUBLISH_V2        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantPolicySectionPublish',
+        self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDocVerification',
 
         self::MERCHANT_GATING_LOGIC_SAVE       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantGatingLogic',
         self::PAYMENT_ORDER_CREATE             => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderCreate',
         self::PAYMENT_ORDER_VERIFY             => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderVerify',
-
-        self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDocVerification',
-
         self::MERCHANT_FETCH_GATING_LOGIC      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantGatingLogic',
         self::PAYMENT_ORDER_WEBHOOK            => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderWebhook',
 
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantEligibilityForAutomationActivation',
-        self::MERCHANT_INVOICE_LOGIC_SAVE      =>  '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantInvoiceLogic',
 
-        self::MERCHANT_CONSENTS_SAVE           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantConsentsSave',
-        self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GenerateMerchantIdentityVerificationUrl',
-        self::PROCESS_MERCHANT_IDENTITY_VERIFICATION                => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/ProcessMerchantIdentityVerification',
-        self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2     => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantWebsitePolicyPreview',
+        self::MERCHANT_INVOICE_LOGIC_SAVE                  =>  '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantInvoiceLogic',
+        self::MERCHANT_CONSENTS_SAVE                       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantConsentsSave',
+        self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GenerateMerchantIdentityVerificationUrl',
+        self::PROCESS_MERCHANT_IDENTITY_VERIFICATION       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/ProcessMerchantIdentityVerification',
+        self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantWebsitePolicyPreview',
+        self::MERCHANT_CATEGORIES_V3                       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesV3Map',
+        self::MERCHANT_CATEGORIES_ADMIN_V3                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesAdminV3Map',
     ];
 
     // timeout in seconds
@@ -187,30 +192,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_ACTIVATION_SAVE      => 15,
         self::MERCHANT_SIGN_UP              => 20,
         self::MERCHANT_DOCUMENT_UPLOAD      => 15,
-        self::MERCHANT_DOCUMENT_DELETE      => 10,
-        self::GET_MERCHANT_BMC_RESPONSE     => 10,
-        self::SAVE_MERCHANT_BMC_RESPONSE    => 10,
-        self::GET_CLEARBIT_DOMAIN_INFO      => 10,
-        self::MERCHANT_UPDATE_BY_ADMIN      => 10,
-        self::MERCHANT_DETAILS_PATCH        => 10,
-        self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => 10,
-
-        self::MERCHANT_POLICY_SECTION_PUBLISH_V2 => 10,
-        self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS => 10,
-        self::MERCHANT_GET_L2_DYNAMIC_CONFIGS => 10,
-        self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS => 10,
-
-        self::MERCHANT_GATING_LOGIC_SAVE   => 10,
-        self::PAYMENT_ORDER_CREATE         => 10,
-        self::PAYMENT_ORDER_VERIFY         => 10,
-        self::MERCHANT_FETCH_GATING_LOGIC  => 10,
-        self::PAYMENT_ORDER_WEBHOOK        => 10,
-        self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => 10,
-        self::MERCHANT_CONSENTS_SAVE        => 10,
-        self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL   => 10,
-        self::PROCESS_MERCHANT_IDENTITY_VERIFICATION        => 10,
-        self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2 => 10,
-
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
@@ -218,23 +199,22 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SAVE_MERCHANT_BMC_RESPONSE,
         self::MERCHANT_UPDATE_BY_ADMIN,
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION,
-
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS,
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS,
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS,
         self::MERCHANT_POLICY_SECTION_PUBLISH_V2,
-
         self::MERCHANT_GATING_LOGIC_SAVE,
         self::PAYMENT_ORDER_CREATE,
         self::PAYMENT_ORDER_VERIFY,
         self::MERCHANT_FETCH_GATING_LOGIC,
         self::PAYMENT_ORDER_WEBHOOK,
-
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION,
         self::MERCHANT_CONSENTS_SAVE,
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL,
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
+        self::MERCHANT_CATEGORIES_V3,
+        self::MERCHANT_CATEGORIES_ADMIN_V3
     ];
 
     public function __construct()
@@ -247,7 +227,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         $this->registerMerchantRoutes(self::MERCHANT_ROUTES);
 
-        $this->setDefaultTimeout(15);
+        $this->setDefaultTimeout(10);
 
         $this->registerAdminRoutes(self::ADMIN_ROUTES, self::ADMIN_ROUTES_VS_PERMISSION);
 
@@ -269,7 +249,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         $mock = $app['config']['pgos.proxy.request.mock'];
 
-        if($mock === true)
+        if ($mock === true)
         {
             return null;
         }
