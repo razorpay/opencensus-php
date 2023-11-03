@@ -33,29 +33,50 @@ class Processor extends Base\Processor
      */
     public function getPreferences(array $input): array
     {
-        $this->initialize(Action::GET_PREFERENCES, $input);
 
-        $preferencesResponse =  array_merge($this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
-
-        if(isset($input[Entity::CUSTOMER_ID]) === true)
+        try
         {
-            $preferencesResponse = array_merge($this->getCustomerData((new Device\Core)->getDeviceCustomer($input[Entity::CUSTOMER_ID])),
-                                   $this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
-        }
+            $this->initialize(Action::GET_PREFERENCES, $input);
 
-        $this->setMerchantInfoInResponse($preferencesResponse);
-        $this->setMerchantFeaturesInResponse($preferencesResponse);
-        $this->setExperimentsInResponse($preferencesResponse);
+            $preferencesResponse = array_merge($this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
 
-        // if order id and customer id are empty
-        if(isset($input[Entity::ORDER_ID]) === false and (isset($input[Entity::CUSTOMER_ID]) === false))
-        {
+            if (isset($input[Entity::CUSTOMER_ID]) === true)
+            {
+                $preferencesResponse = array_merge($this->getCustomerData((new Device\Core)->getDeviceCustomer($input[Entity::CUSTOMER_ID])),
+                                                   $this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
+            }
+
+            $this->setMerchantInfoInResponse($preferencesResponse);
+            $this->setMerchantFeaturesInResponse($preferencesResponse);
+            $this->setExperimentsInResponse($preferencesResponse);
+
+            // if order id and customer id are empty
+            if (isset($input[Entity::ORDER_ID]) === false and (isset($input[Entity::CUSTOMER_ID]) === false))
+            {
+                return $this->postProcess($preferencesResponse);
+            }
+
+            if (isset($input[Entity::CUSTOMER_ID]) === true)
+            {
+                CustomerEntity::verifyIdAndSilentlyStripSign($input[Entity::CUSTOMER_ID]);
+            }
+
+            // If TPV is enabled for the merchant
+            if ($this->context()->getMerchant()->isTPVRequired() === true)
+            {
+                // marking is tpv flag as true
+                $preferencesResponse[Entity::IS_TPV] = true;
+
+                $preferencesResponse[Entity::TPV] = $this->getTPVContents($input);
+            }
+
             return $this->postProcess($preferencesResponse);
         }
-
-        if(isset($input[Entity::CUSTOMER_ID]) === true)
+        catch (\Throwable $e)
         {
-            CustomerEntity::verifyIdAndSilentlyStripSign($input[Entity::CUSTOMER_ID]);
+            $this->pushGatewayActionMetric($this->context(), true);
+
+            throw $e;
         }
 
         // If TPV is enabled for the merchant
@@ -81,9 +102,19 @@ class Processor extends Base\Processor
      */
     public function getPreferencesSuccess(array $input): array
     {
-        $this->initialize(Action::GET_PREFERENCES_SUCCESS, $input);
+        try
+        {
+            $this->initialize(Action::GET_PREFERENCES_SUCCESS, $input);
 
-        return $input;
+            return $input;
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->pushGatewayActionMetric($this->context(), true);
+
+            throw $e;
+        }
     }
 
     private function getCustomerData(CustomerEntity $customer)
