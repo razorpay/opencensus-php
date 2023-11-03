@@ -5653,6 +5653,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPI_PAYMENT_INITIATE_FAILURE_LOG                      = 'UPI_PAYMENT_INITIATE_FAILURE_LOG';
     const UPI_PAYMENT_PG_LEDGER_RAZORX_VARIANT                  = 'UPI_PAYMENT_PG_LEDGER_RAZORX_VARIANT';
     const UPI_PAYMENT_OFFERS_RAZORX_VARIANT                     = 'UPI_PAYMENT_OFFERS_RAZORX_VARIANT';
+    const UPI_PAYMENT_SERVICE_CFB_RAZORX_VARIANT                = 'UPI_PAYMENT_SERVICE_CFB_RAZORX_VARIANT';
 
     // Batch Micro Service
     const VALIDATE_FILENAME_RESPONSE                            = 'VALIDATE_FILENAME_RESPONSE';

@@ -402,6 +402,11 @@ class Processor
     const ALLOW_MERCHANTS_ON_REARCH_UPS_V2 = 'allow_merchants_on_rearch_ups_v2';
 
     /**
+     * Razorx flag to allow CFB merchants on re-arch flow
+     */
+    const ALLOW_CFB_MERCHANTS_ON_REARCH_UPS = 'allow_cfb_merchants_on_rearch_ups';
+
+    /**
      * Razorx flag to allow route from ups re-arch flow
      */
     const ALLOW_ROUTE_ON_REARCH_UPS_V2 = 'allow_route_on_rearch_ups_v2';
@@ -1977,8 +1982,12 @@ class Processor
 
         if ($merchant->isFeeBearerPlatform() === false)
         {
-            $routeViaReArch = false;
-            $dimensions[12] = 1;
+            // if Dynamic Fee Bearer or Non-Whitelisted Customer Fee Bearer, Don't route through ReArch
+            if ($this->isUpsRearchCFBMerchant() === false)
+            {
+                $routeViaReArch = false;
+                $dimensions[12] = 1;
+            }
         }
 
         if ($merchant->isRazorpayOrgId() === false)
@@ -10521,6 +10530,9 @@ class Processor
             return false;
         }
 
+        // When offer is forced, we do not expect offer_id in the payment input.
+        // Instead we retrieve the offer to be applied (we can figure
+        // this out ourselves from the payment) and validate it.
         if ($order->isOfferForced() === true)
         {
             return false;
@@ -10534,6 +10546,30 @@ class Processor
             'order' => $order->getId(),
             'feature' => self::ALLOW_OFFERS_ON_REARCH_UPS,
             'variant' => $variant,
+        ]);
+
+        return $variant === 'on';
+    }
+
+    /**
+     * isUpsRearchCFBMerchant checks if CFB Merchant is whitelisted for Rearch flow
+     * @return bool
+     */
+    public function isUpsRearchCFBMerchant(): bool
+    {
+        if ($this->merchant->isFeeBearerCustomer() === false)
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),
+            self::ALLOW_CFB_MERCHANTS_ON_REARCH_UPS, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_CFB_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'variant' => $variant,
+            'mode'    => $this->mode,
+            'feature' => self::ALLOW_CFB_MERCHANTS_ON_REARCH_UPS,
         ]);
 
         return $variant === 'on';
