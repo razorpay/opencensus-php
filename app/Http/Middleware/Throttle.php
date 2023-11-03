@@ -131,7 +131,7 @@ final class Throttle
         $routeName = $request->route()->getName();
 
         //Skip the metric is the merchant id is not present or route is internal route
-        if(empty($merchantId) === true || in_array($routeName, Route::$internal) === false)
+        if(empty($merchantId) === true || in_array($routeName, Route::$internal) === true)
         {
             return;
         }
