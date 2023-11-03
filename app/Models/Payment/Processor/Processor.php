@@ -417,11 +417,6 @@ class Processor
     const ALLOW_PG_LEDGER_MERCHANTS_ON_REARCH_UPS = 'allow_pg_ledger_merchants_on_rearch_ups';
 
     /**
-     * Razorx flag to allow offers on ups rearch flow
-     */
-    const ALLOW_OFFERS_ON_REARCH_UPS = 'allow_offers_on_rearch_ups';
-
-    /**
      * Razorx flag to indicate which method and gateway are supported by barricade service
      */
     const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
@@ -10538,17 +10533,36 @@ class Processor
             return false;
         }
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(), self::ALLOW_OFFERS_ON_REARCH_UPS,
-            $this->mode);
+        try
+        {
+            $merchantID = $this->merchant->getMerchantId();
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get('app.allow_offers_on_rearch_ups_splitz_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
 
-        $this->trace->info(TraceCode::UPI_PAYMENT_OFFERS_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'order' => $order->getId(),
-            'feature' => self::ALLOW_OFFERS_ON_REARCH_UPS,
-            'variant' => $variant,
-        ]);
+            $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        return $variant === 'on';
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::UPI_PAYMENT_OFFERS_SPLITZ_VARIANT, [
+                'merchant_id' => $merchantID,
+                'order' => $order->getId(),
+                'variant' => $variant,
+            ]);
+
+            return $variant === 'enable_offers';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::OFFER_ON_UPS_REARCH_SPLITZ_ERROR);
+        }
+
+        return false;
     }
 
     /**
