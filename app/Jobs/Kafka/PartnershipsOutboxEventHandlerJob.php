@@ -40,11 +40,13 @@ class PartnershipsOutboxEventHandlerJob extends Job
         }
 
         $data   = $input['data'];
-        $action = optional($data['action']);
+        $action = $data['action'];
         $core   = new Commission\Core;
         $invoiceCore = new Invoice\Core;
 
         $response = null;
+
+        $this->trace->info(TraceCode::PRTS_EVENT_REQUEST, ['action'=> $action]);
 
         switch ($action)
         {
