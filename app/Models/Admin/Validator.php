@@ -278,6 +278,9 @@ class Validator extends Base\Validator
         ConfigKey::TURBO_SDK_ERROR_MAPPINGS                                            => 'filled|array',
         ConfigKey::METRIC_MERCHANTS_LIST                                               => 'filled|array',
         ConfigKey::UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME                                 => 'filled|integer',
+        ConfigKey::UPI_TURBO_PAYMENT_ID_BY_GATEWAY_TXN_TTL                             => 'filled|integer',
+        ConfigKey::UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE                          => 'filled|integer',
+
     ];
 
     protected static $setRedisKeysRules = [

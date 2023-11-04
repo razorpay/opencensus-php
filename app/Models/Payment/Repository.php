@@ -3943,20 +3943,20 @@ EOT;
                     ->get();
     }
 
-    public function determineLiveOrTestModeForEntityWithGateway($id, $gateway)
+    public function fetchPaymentLiveOrTestModeWithGateway($id, $gateway)
     {
         $obj = $this->connection(Mode::LIVE)->newQuery()->where(Entity::GATEWAY, $gateway)->find($id);
 
         if ($obj !== null)
         {
-            return Mode::LIVE;
+            return [$obj, Mode::LIVE];
         }
 
         $obj = $this->connection(Mode::TEST)->newQuery()->where(Entity::GATEWAY, $gateway)->find($id);
 
         if ($obj !== null)
         {
-            return Mode::TEST;
+            return [$obj, Mode::TEST];
         }
 
         // Check id in archived data replica as the entity might be archived
@@ -3964,14 +3964,14 @@ EOT;
 
         if ($obj !== null)
         {
-            return Mode::LIVE;
+            return [$obj, Mode::LIVE];
         }
 
         $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->where(Entity::GATEWAY, $gateway)->find($id);
 
         if ($obj !== null)
         {
-            return Mode::TEST;
+            return [$obj, Mode::TEST];
         }
 
         //
@@ -3984,7 +3984,7 @@ EOT;
         //
         $this->connection(null);
 
-        return null;
+        return [null, null];
     }
 
     public function determineLiveOrTestModeForEntityWithNotNullGateway($id, $gateway)
@@ -4795,10 +4795,12 @@ EOT;
             ->pluck(\RZP\Models\Payment\Entity::GATEWAY);
     }
 
-    public function fetchTurboUpiPaymentByReference1($reference1)
+    public function fetchTurboUpiPaymentByReference1($reference1, $start, $end)
     {
         $payment = $this->newQueryWithConnection(Connection::LIVE)
                         ->where(Payment\Entity::METHOD, '=', Payment\Method::UPI)
+                        ->where(Payment\Entity::CREATED_AT, '>', $start)
+                        ->where(Payment\Entity::CREATED_AT, '<', $end)
                         ->where(Payment\Entity::GATEWAY, '=', Gateway::UPI_AXISOLIVE)
                         ->where(Payment\Entity::REFERENCE1, '=', $reference1)
                         ->first();
@@ -4810,6 +4812,8 @@ EOT;
 
         $payment =  $this->newQueryWithConnection(Connection::TEST)
                          ->where(Payment\Entity::METHOD, '=',Payment\Method::UPI)
+                         ->where(Payment\Entity::CREATED_AT, '>', $start)
+                         ->where(Payment\Entity::CREATED_AT, '<', $end)
                          ->where(Payment\Entity::GATEWAY, '=', Gateway::UPI_AXISOLIVE)
                          ->where(Payment\Entity::REFERENCE1, '=', $reference1)
                          ->first();

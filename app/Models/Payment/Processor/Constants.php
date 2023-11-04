@@ -136,4 +136,6 @@ class Constants
 
     const OPTIMIZER_AUTO_DEBIT_WALLET = 'optimizer_auto_debit_wallet';
 
+    const TURBO_PAYMENT_ID_BY_GATEWAY_TXN_ID_PREFIX = 'turbo_txn_id_';
+
 }

@@ -138,7 +138,7 @@ class GatewayController extends Controller
         $paymentRepo = $this->app['repo']->payment;
 
         // This is hackish, we find mode based on searching in both DB's
-        $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
+        [$payment, $mode] = $paymentRepo->fetchPaymentLiveOrTestModeWithGateway($paymentId, $gatewayDriver);
 
         if ($mode === null)
         {
@@ -415,7 +415,7 @@ class GatewayController extends Controller
         }
         else
         {
-            $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
+            [$payment, $mode] = $paymentRepo->fetchPaymentLiveOrTestModeWithGateway($paymentId, $gatewayDriver);
         }
 
         $postInput = [

@@ -98,6 +98,7 @@ use RZP\Models\Ledger\CaptureJournalEvents;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Reward\Entity as RewardEntity;
+use RZP\Models\P2p\Preferences as P2pPreferences;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
@@ -846,6 +847,8 @@ trait Authorize
                     $payment->setReference1($request['data']['npci_txn_id']);
 
                     $this->repo->saveOrFail($payment);
+
+                    $this->saveTurboGatewayTXNIdWithPaymentIdInRedis($payment->getId(), $request['data']['npci_txn_id']);
                 }
 
                 if ((isset($request['status']) == true) and ($request['status'] == 'authenticated'))
@@ -13658,6 +13661,36 @@ trait Authorize
         catch (\Exception $e)
         {
             $this->trace->traceException($e);
+        }
+    }
+
+    protected function saveTurboGatewayTXNIdWithPaymentIdInRedis($paymentId, $gatewayTxnId): void
+    {
+        try
+        {
+            $keyPrefix = PaymentConstants::TURBO_PAYMENT_ID_BY_GATEWAY_TXN_ID_PREFIX;
+            $redisKey = $keyPrefix . $gatewayTxnId;
+
+            $ttl = Admin\ConfigKey::get(Admin\ConfigKey::UPI_TURBO_PAYMENT_ID_BY_GATEWAY_TXN_TTL, -1);
+
+            if($ttl === null || $ttl === -1) {
+                $this->trace->info(TraceCode::TURBO_GATEWAY_TXN_HOLD_TTL_NOT_FOUND_IN_CACHE, [
+                    'action' => 'Turbo gateway txn hold ttl value not found in cache'
+                ]);
+                $ttl = P2pPreferences\Constants::TURBO_GATEWAY_TXN_HOLD_TTL;
+            }
+
+            $ttl = (int)$ttl;
+
+            $this->app['cache']->set($redisKey, $paymentId, $ttl);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::TURBO_SET_GATEWAY_TXN_IN_REDIS_FAILED,
+                []);
         }
     }
 }

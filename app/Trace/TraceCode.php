@@ -5511,15 +5511,19 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DICL_TERMINAL_NOT_FOUND                               = 'DICL_TERMINAL_NOT_FOUND';
 
     // P2P Traces
-    const P2P_REQUEST                                           = 'P2P_REQUEST';
-    const P2P_RESPONSE                                          = 'P2P_RESPONSE';
-    const P2P_GATEWAY_REQUEST                                   = 'P2P_GATEWAY_REQUEST';
-    const P2P_GATEWAY_RESPONSE                                  = 'P2P_GATEWAY_RESPONSE';
-    const P2P_MANAGE_REQUEST                                    = 'P2P_MANAGE_REQUEST';
-    const P2P_MANAGE_RESPONSE                                   = 'P2P_MANAGE_RESPONSE';
-    const P2P_REMINDER_CALLBACK                                 = 'P2P_REMINDER_CALLBACK';
-    const TURBO_POPULAR_BANK_LIST_NOT_FOUND_IN_CACHE            = 'TURBO_POPULAR_BANK_LIST_NOT_FOUND_IN_CACHE';
-    const TURBO_PAYEE_EXECUTION_HOLD_TIME_NOT_FOUND_IN_CACHE    = 'TURBO_PAYEE_EXECUTION_HOLD_TIME_NOT_FOUND_IN_CACHE';
+    const P2P_REQUEST                                                   = 'P2P_REQUEST';
+    const P2P_RESPONSE                                                  = 'P2P_RESPONSE';
+    const P2P_GATEWAY_REQUEST                                           = 'P2P_GATEWAY_REQUEST';
+    const P2P_GATEWAY_RESPONSE                                          = 'P2P_GATEWAY_RESPONSE';
+    const P2P_MANAGE_REQUEST                                            = 'P2P_MANAGE_REQUEST';
+    const P2P_MANAGE_RESPONSE                                           = 'P2P_MANAGE_RESPONSE';
+    const P2P_REMINDER_CALLBACK                                         = 'P2P_REMINDER_CALLBACK';
+    const TURBO_POPULAR_BANK_LIST_NOT_FOUND_IN_CACHE                    = 'TURBO_POPULAR_BANK_LIST_NOT_FOUND_IN_CACHE';
+    const TURBO_PAYEE_EXECUTION_HOLD_TIME_NOT_FOUND_IN_CACHE            = 'TURBO_PAYEE_EXECUTION_HOLD_TIME_NOT_FOUND_IN_CACHE';
+    const TURBO_GATEWAY_TXN_HOLD_TTL_NOT_FOUND_IN_CACHE                 = 'TURBO_GATEWAY_TXN_HOLD_TTL_NOT_FOUND_IN_CACHE';
+    const TURBO_PAYMENT_ID_BY_GATEWAY_TXN_KEY_IS_NOT_EXIST_IN_REDIS     = 'TURBO_PAYMENT_ID_BY_GATEWAY_TXN_KEY_IS_NOT_EXIST_IN_REDIS';
+    const TURBO_PAYMENT_ID_BY_GATEWAY_TXN_KEY_EXIST_IN_REDIS            = 'TURBO_PAYMENT_ID_BY_GATEWAY_TXN_KEY_EXIST_IN_REDIS';
+    const TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE_NOT_FOUND_IN_CACHE     = 'TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE_NOT_FOUND_IN_CACHE';
 
     // Turbo Traces
     const TURBO_GATEWAY_REQUEST                                 = 'TURBO_GATEWAY_REQUEST';
@@ -10618,6 +10622,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TURBO_PAYMENT_FETCH_FAILED                             = 'TURBO_PAYMENT_FETCH_FAILED';
     const TURBO_PAYMENT_FETCH_SUCCESSFUL                         = 'TURBO_PAYMENT_FETCH_SUCCESSFUL';
     const TURBO_PAYMENT_REFERENCE17_UPDATE_SUCCESSFUL            = 'TURBO_PAYMENT_REFERENCE17_UPDATE_SUCCESSFUL';
+    const TURBO_SET_GATEWAY_TXN_IN_REDIS_FAILED                  = 'TURBO_SET_GATEWAY_TXN_IN_REDIS_FAILED';
 
     // Slack integration trace codes
     const SLACK_PUSH_MESSAGE_FAILURE                             = 'SLACK_PUSH_MESSAGE_FAILURE';

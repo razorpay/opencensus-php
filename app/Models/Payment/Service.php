@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Mail;
 use Crypt;
 use Config;
+use RZP\Models\Admin;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
@@ -69,6 +70,7 @@ use RZP\Models\Locale\Core as Locale;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Partner\Service as PartnerService;
+use RZP\Models\P2p\Preferences as P2pPreferences;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Partner\Validator as PartnerValidator;
@@ -7606,8 +7608,7 @@ class Service extends Base\Service
             return $successResponse;
         }
 
-        /** @var Payment\Entity $payment */
-        [$payment, $mode] = $this->repo->payment->fetchTurboUpiPaymentByReference1($axisTxnId);
+        [$payment, $mode] = $this->fetchPaymentByGatewayTransactionId(Gateway::UPI_AXISOLIVE, $axisTxnId);
 
         if ($payment === null)
         {
@@ -7648,5 +7649,50 @@ class Service extends Base\Service
         }
 
         return $failureResponse;
+    }
+
+    /**
+     * The fetchPaymentByGatewayTransactionId will fetch payment object by the gateway and gateway transaction id
+     * As there is no index on the gateway transaction id we will try to fetch the payment Id using gateway transaction id from the cache
+     * and if it is not available we will query db with limited range on created_at column.
+     *
+     * Note: Right now this is used for the UPI Turbo payments.
+     */
+    private function fetchPaymentByGatewayTransactionId($gateway, $txnId)
+    {
+        $keyPrefix = PaymentConstants::TURBO_PAYMENT_ID_BY_GATEWAY_TXN_ID_PREFIX;
+        $redisKey  = $keyPrefix . $txnId;
+
+        $paymentId = $this->app['cache']->get($redisKey);
+
+        if ($paymentId !== null || empty($paymentId) === false)
+        {
+            $this->trace->debug(TraceCode::TURBO_PAYMENT_ID_BY_GATEWAY_TXN_KEY_EXIST_IN_REDIS, [
+                'message' => 'Turbo payment id by gateway transaction key is exist in the redis'
+            ]);
+            return $this->repo->payment->fetchPaymentLiveOrTestModeWithGateway($paymentId, $gateway);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::TURBO_PAYMENT_ID_BY_GATEWAY_TXN_KEY_IS_NOT_EXIST_IN_REDIS, [
+                'action' => 'Analyse the time taken on payment create and payer callback receiving time'
+            ]);
+            $createdAtRange = Admin\ConfigKey::get(Admin\ConfigKey::UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE, -1);
+
+            if($createdAtRange === null || $createdAtRange === -1) {
+                $this->trace->info(TraceCode::TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE_NOT_FOUND_IN_CACHE, [
+                    'action' => 'Need to add the look up range key upi_turbo_payment_look_up_created_at_range in cache from admin dashboard'
+                ]);
+                $createdAtRange = P2pPreferences\Constants::TURBO_PAYMENT_LOOK_UP_BACK_SECONDS;
+            }
+
+            $createdAtRange = (int)$createdAtRange;
+
+            $currentTime = Carbon::now()->getTimestamp();
+            $startTime = $currentTime - $createdAtRange;
+
+            /** @var Payment\Entity $payment */
+            return $this->repo->payment->fetchTurboUpiPaymentByReference1($txnId, $startTime, $currentTime);
+        }
     }
 }

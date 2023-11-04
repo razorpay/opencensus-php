@@ -16,7 +16,10 @@ class Constants
     const OLIVE_SDK_TIMEOUT  = 'olive_sdk_timeout';
     const SUPPORTED_PAYER_ACCOUNT_TYPES = 'supported_payer_account_types';
 
-    const TURBO_PAYEE_EXECUTION_HOLD_TIME  = 2;
+    const TURBO_PAYEE_EXECUTION_HOLD_TIME               = 2;
+    const TURBO_GATEWAY_TXN_HOLD_TTL                    = 600;
+    const TURBO_PAYEE_PAYMENT_CREATED_AT_RANGE          = 2;
+    const TURBO_PAYMENT_LOOK_UP_BACK_SECONDS            = 20;
 
     private static array $defaultTimeouts = [
         self::OLIVE_SDK_TIMEOUT => 30

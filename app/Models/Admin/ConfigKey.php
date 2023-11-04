@@ -400,6 +400,10 @@ class ConfigKey
 
     const UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME   = self::PREFIX . 'upi_turbo_payee_execution_hold_time';
 
+    const UPI_TURBO_PAYMENT_ID_BY_GATEWAY_TXN_TTL = self::PREFIX . 'upi_turbo_txn_ttl';
+
+    const UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE    = self::PREFIX . 'upi_turbo_payment_look_up_created_at_range';
+
     const RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA = self::PREFIX . 'rx_block_non_2fa_non_baas_for_ca';
 
     // OD balance related keys for direct account
@@ -615,6 +619,8 @@ class ConfigKey
         self::UPI_TURBO_POPULAR_BANK_LIST,
         self::CURRENCY_METHOD_LEVEL_DCC_MARKUP,
         self::UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME,
+        self::UPI_TURBO_PAYMENT_ID_BY_GATEWAY_TXN_TTL,
+        self::UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE,
     ];
 
     const REDIS_CONFIG_MAP = [
