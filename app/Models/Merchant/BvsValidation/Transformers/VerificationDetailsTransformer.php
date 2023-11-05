@@ -70,9 +70,10 @@ class VerificationDetailsTransformer extends Base\Transformer
     ];
 
     public const VERIFICATION_UNIT_VALIDATION_UNIT_MAPPING = [
-        "auth" => "identifier",
-        "ocr"  => "proof",
-        "probe_provider"  => "identifier"
+        "auth"              => "identifier",
+        "website"           => "identifier",
+        "ocr"               => "proof",
+        "probe_provider"    => "identifier",
     ];
 
     public const ARTEFACT_TYPE_MAPPING = [
@@ -93,6 +94,9 @@ class VerificationDetailsTransformer extends Base\Transformer
         "certificate_of_incorporation"           => "certificate_of_incorporation",
         "trust_society_ngo_business_certificate" => "trust_society_ngo_business_certificate",
         "llp_deed"                               => "llp_deed",
+        "website_policy"                         => "website_policy",
+        "website_keywords"                       => "negative_keywords",
+        "website_mcc"                            => "mcc_categorisation_website",
     ];
 
     public const VERIFICATION_STATUS_MAPPING = [
@@ -100,7 +104,8 @@ class VerificationDetailsTransformer extends Base\Transformer
         "incorrect_details" => "failed",
         "not_matched"       => "failed",
         "failed"            => "failed",
-        "captured"          => "captured"
+        "captured"          => "captured",
+        "initiated"         => "captured",
     ];
 
     public function __construct()

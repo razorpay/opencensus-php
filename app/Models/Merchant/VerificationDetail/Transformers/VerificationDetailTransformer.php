@@ -43,6 +43,33 @@ class VerificationDetailTransformer extends Base\Transformer
                 "function" => 'mapVerificationStatus'
             ]
         ],
+        'metadata.website_policy_result' => [
+            [
+                "column"   => 'metadata',
+                "condition" => [
+                    'artefact_type' => 'website_policy',
+                    'verification_unit' => 'website'
+                ]
+            ]
+        ],
+        'metadata.website_keywords_result' => [
+            [
+                "column"   => 'metadata',
+                "condition" => [
+                    'artefact_type' => 'website_keywords',
+                    'verification_unit' => 'website'
+                ]
+            ]
+        ],
+        'metadata.website_mcc_result' => [
+            [
+                "column"   => 'metadata',
+                "condition" => [
+                    'artefact_type' => 'website_mcc',
+                    'verification_unit' => 'website'
+                ]
+            ]
+        ],
     ];
 
     public const ARTEFACT_TYPE_MAPPING = [
@@ -63,12 +90,16 @@ class VerificationDetailTransformer extends Base\Transformer
         "certificate_of_incorporation"           => "certificate_of_incorporation",
         "trust_society_ngo_business_certificate" => "trust_society_ngo_business_certificate",
         "llp_deed"                               => "llp_deed",
+        "website_policy"                         => "website_policy",
+        "website_keywords"                       => "negative_keywords",
+        "website_mcc"                            => "mcc_categorisation_website",
     ];
 
     public const VERIFICATION_UNIT_VALIDATION_UNIT_MAPPING = [
-        "auth" => "number",
-        "ocr"  => "doc",
-        "probe_provider"  => "probe_provider"
+        "auth"              => "number",
+        "ocr"               => "doc",
+        "probe_provider"    => "probe_provider",
+        "website"           => "number",
     ];
 
     public const VERIFICATION_STATUS_MAPPING = [
