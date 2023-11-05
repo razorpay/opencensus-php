@@ -937,7 +937,7 @@ class Core extends Base\Core
 
             $placeOrderStart = millitime();
 
-            if ($draftOrderFlowEnabled === true)
+            if ($draftOrderFlowEnabled === true || $this->isCouponEngineOrder($orderMeta))
             {
                 $this->trace->info(
                     TraceCode::SHOPIFY_RETRY_DRAFT_ORDER_FLOW_STARTED,
@@ -1073,7 +1073,7 @@ class Core extends Base\Core
 
             $draftOrderFlowEnabled = $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_DRAFT_ORDER);
 
-            if ($draftOrderFlowEnabled === true)
+            if ($draftOrderFlowEnabled === true || $this->isCouponEngineOrder($orderMeta))
             {
                 $this->trace->info(
                     TraceCode::SHOPIFY_DRAFT_ORDER_FLOW_STARTED,
@@ -2853,5 +2853,19 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    protected function isCouponEngineOrder(array $ometa): bool {
+        $couponEngineEnabled = $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_COUPON_ENGINE);
+        if ($couponEngineEnabled === false) {
+            return false;
+        }
+
+        foreach ($ometa["promotions"] ?? [] as $key => $promo) {
+            if (isset($promo["reference_id"]) && str_starts_with($promo["reference_id"], "offer_") != false) {
+                return true;
+            }
+        }
+        return false;
     }
 }
