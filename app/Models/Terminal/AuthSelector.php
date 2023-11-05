@@ -6,6 +6,7 @@ use App;
 use Cache;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants\Environment;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
@@ -207,7 +208,7 @@ class AuthSelector extends Base\Core
 
     private function sortThreeDSTwoTerminalIfApplicable(& $sortedTerminals)
     {
-        if (app()->isEnvironmentQA() === true &&  $this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_3DS2) === true){
+        if ((app()->isEnvironmentQA() === true || Environment::isEnvironmentBeta($this->app['env'])) &&  $this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_3DS2) === true){
             foreach($sortedTerminals as $sortedTerminal){
                 if(isset($sortedTerminal["gateway_auth_version"])){
                     $sortedTerminals = array($sortedTerminal);
