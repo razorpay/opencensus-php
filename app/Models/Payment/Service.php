@@ -1985,8 +1985,8 @@ class Service extends Base\Service
             $merchantId = $terminal->getMerchantId();
         }
 
-        if (empty($input['meta']['art_remarks']) === false and $input['meta']['art_remarks'] === "amount_mismatch"){
-            $merchantId = Merchant\Account::DEMO_PAGE_ACCOUNT;
+        if (empty($input['meta']['art_reason']) === false and $input['meta']['art_reason'] === "amount_mismatch"){
+            $merchantId = $isProduction ? Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
         }
 
         if ((empty($input['meta']['version']) === false) and
