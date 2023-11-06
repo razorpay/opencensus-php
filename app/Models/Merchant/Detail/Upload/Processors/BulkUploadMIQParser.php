@@ -196,6 +196,33 @@ class BulkUploadMIQParser
         ];
     }
 
+    public static function getMerchantWebsiteInput(array $input, string $website, string $mid, array $processedEntry): array
+    {
+       $response = [];
+
+       foreach ($input as $key=>$value)
+       {
+           if($key === BConstants::ABOUT or $key === BConstants::CONTACT)
+               $key = $key . '_us';
+
+           $response[$key]=[
+               "url" => $value
+           ];
+       }
+
+       $response['shipping'] = $processedEntry[Header::MIQ_WEBSITE_SHIPPING_DELIVERY] !==''
+           ? $processedEntry[Header::MIQ_WEBSITE_SHIPPING_DELIVERY] : null;
+
+        return [
+            "merchant_id" => $mid,
+            "admin_website_details" => [
+                "website" => [
+                    $website => $response
+                ]
+            ],
+        ];
+    }
+
     public function getMerchantFeeBearerType(array $entry): string
     {
         if (in_array(MFeeBearer::CUSTOMER, $entry, true) and in_array(MFeeBearer::PLATFORM, $entry, true))

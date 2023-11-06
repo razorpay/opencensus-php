@@ -21,6 +21,7 @@ use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Core as MDetailCore;
+use RZP\Models\Merchant\Website\Core as MWebsiteCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Upload\Processors\Factory;
 use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
@@ -43,6 +44,8 @@ class Core extends Base\Core
      */
     private $businessDetailService;
 
+    private $merchantWebsite;
+
     public function __construct()
     {
         parent::__construct();
@@ -56,6 +59,8 @@ class Core extends Base\Core
         $this->merchantDetailCore = new MDetailCore();
 
         $this->businessDetailService = new BusinessDetail\Service();
+
+        $this->merchantWebsite = new MWebsiteCore();
     }
 
     public function uploadMerchant(array $input)
@@ -164,6 +169,11 @@ class Core extends Base\Core
                 ];
 
                 $response = $this->merchantDetailCore->saveMerchantDetails($submitData, $merchant);
+
+                $merchantWebsite = $parser->getMerchantWebsiteInput($websiteDetails['website_details'],
+                    $processedEntry[Header::MIQ_WEBSITE],$merchant->getId(),$processedEntry);
+
+                $this->merchantWebsite->createOrEditWebsiteDetails($merchant->merchant_detail, $merchantWebsite);
 
                 if ($response[DetailEntity::SUBMITTED] === false)
                 {
