@@ -1042,7 +1042,8 @@ class Entity
         Entity::UPI_METADATA,
         Entity::BATCH_FUND_TRANSFER,
         self::CHECKOUT_ORDER,
-        Entity::TERMINAL
+        Entity::TERMINAL,
+        Entity::REFUND
     ];
 
     const ARCHIVED_ENTITIES = [
