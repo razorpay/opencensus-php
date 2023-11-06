@@ -10,8 +10,8 @@ use RZP\Models\Payout\Status;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Models\Settlement\SlackNotification;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Services\GenericAccountingIntegration\Service as AccountingService;
 
 
 /**
@@ -66,7 +66,7 @@ class Core
                 $pushStatusUpdate = true;
             }
             else if ((in_array($expectedCurrentStatus, [Status::PROCESSED, Status::REVERSED]) === true) and
-                     ($payout->merchant->isFeatureEnabled(Feature::GAI_PAYOUTS_SYNC) === true))
+                     (AccountingService::isSyncPayoutsEnabled($payout->getMerchantId()) === true))
             {
                 /*
                  * This is the case of Vanilla Payouts

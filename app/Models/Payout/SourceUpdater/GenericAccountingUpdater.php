@@ -2,19 +2,19 @@
 
 namespace RZP\Models\Payout\SourceUpdater;
 
-use App;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Status;
-use RZP\Constants\Environment;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Feature\Constants as Feature;
+use RZP\Services\GenericAccountingIntegration\Service as AccountingService;
 
 class GenericAccountingUpdater extends Base
 {
     public function update()
     {
-        if ($this->payout->merchant->isFeatureEnabled(Feature::GAI_PAYOUTS_SYNC) === false)
+        $merchantId = $this->payout->getMerchantId();
+
+        if(AccountingService::isSyncPayoutsEnabled($merchantId) === false)
         {
             return null;
         }
@@ -26,8 +26,6 @@ class GenericAccountingUpdater extends Base
         }
 
         $trace = $this->app['trace'];
-
-        $merchantId = $this->payout->getMerchantId();
 
         $trace->info(TraceCode::GENERIC_ACCOUNTING_PAYOUT_UPDATER_INFO, [
             "merchant_id" => $merchantId,

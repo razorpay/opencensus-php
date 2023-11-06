@@ -27,7 +27,9 @@ class Constants
     const CustomUDFFlagConfig = "CustomUDFFlagConfig";
 
     const UpiInAppDisplayControls = "upi_in_app_display_controls";
-    const NcOptOutConfiguration     = 'nc_opt_out_configuration';
+    const NcOptOutConfiguration   = 'nc_opt_out_configuration';
+
+    const AccountingIntegrationConfig = 'accounting_integration_config';
 
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
@@ -43,6 +45,7 @@ class Constants
         self::UpiInAppDisplayControls        => "rzp/pg/merchant/upi/in_app/DisplayControls",
         self::NcOptOutConfiguration          =>"rzp/platform/partner/optout/NeedsClarification",
         self::CountryDashboardConfigurations => "rzp/pg/country/dashboard/merchant/UIControls",
+        self::AccountingIntegrationConfig    => "rzp/x/merchant/accounting/IntegrationSettings",
     ];
 
 }

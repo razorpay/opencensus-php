@@ -1903,11 +1903,6 @@ class Constants
      */
     const DISABLE_OTP_AUTO_READ_AND_SUBMIT = 'dis_otp_auto_read_submit';
 
-    /**
-     * Feature flag used to enable syncing of payouts to accounting tool.
-     */
-    const GAI_PAYOUTS_SYNC = 'gai_payouts_sync';
-
     const PERSONALISATION_V3_DISABLED = 'p13n_v3_disabled';
 
     const SETTLEMENT_BY_CURRENCY = 'settlement_by_currency';
@@ -2670,7 +2665,6 @@ class Constants
         self::ENABLE_APPROVAL_VIA_OAUTH       => true,
         self::ENABLE_SMART_ROUTING            => true,
         self::SKIP_KYC_VERIFICATION           => true,
-        self::GAI_PAYOUTS_SYNC                => true,
         self::ORG_AUTOMATE_IIR                => true,
         self::DISABLE_AUTOMATE_IIR            => true,
         self::PERSONALISATION_V3_DISABLED     => true,
@@ -3721,11 +3715,6 @@ class Constants
             'feature'       => self::ENABLE_SMART_ROUTING,
             'display_name'  => 'Enable Multi Routing For RazorpayX Merchants',
             'documentation' => 'Feature to enable multi routing for razorpayx merchants'
-        ],
-        self::GAI_PAYOUTS_SYNC => [
-            'feature'       => self::GAI_PAYOUTS_SYNC,
-            'display_name'  => 'Enable Syncing of Payouts to Accounting Tool',
-            'documentation' => 'Feature flag used to enable syncing of payouts to accounting tool.'
         ],
         self::RAZORPAY_WALLET => [
             'feature'       => self::RAZORPAY_WALLET,

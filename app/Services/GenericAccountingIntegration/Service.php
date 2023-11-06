@@ -2,16 +2,20 @@
 
 namespace RZP\Services\GenericAccountingIntegration;
 
-use Illuminate\Http\Request;
-use Illuminate\Routing\Route as IlluminateRoute;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use Illuminate\Http\Request;
+use RZP\Http\Response\StatusCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
-use RZP\Http\Controllers\EdgeProxyController;
-use RZP\Http\Response\StatusCode;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Http\Controllers\EdgeProxyController;
+use Illuminate\Routing\Route as IlluminateRoute;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
-use RZP\Trace\TraceCode;
+use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 
 class Service {
     protected $app;
@@ -27,6 +31,44 @@ class Service {
         $this->app = $app;
 
         $this->trace = $app['trace'];
+    }
+
+    public static function fetchAccountingIntegrationsConfig($entityId): array
+    {
+        /**
+         * @var $trace Trace
+         */
+        $trace = app('trace');
+
+        /**
+         * @var $dcsConfigService DcsConfigService
+         */
+        $dcsConfigService = app('dcs_config_service');
+
+        $key = DcsConfigConst::AccountingIntegrationConfig;
+        $fields = Constants::ACCOUNTING_INTEGRATIONS_CONFIG_FIELDS;
+        try
+        {
+            $dcsResponse = $dcsConfigService->fetchConfiguration($key, $entityId, $fields, Mode::LIVE);
+        }
+        catch (\Throwable $ex)
+        {
+            $trace->traceException($ex, null, TraceCode::GAI_DCS_CONFIG_FETCH_ERROR, [
+                "merchant_id" => $entityId
+            ]);
+
+            return [];
+        }
+
+        return $dcsResponse;
+    }
+
+    public static function isSyncPayoutsEnabled($entityId): bool
+    {
+        $dcsResponse = self::fetchAccountingIntegrationsConfig($entityId);
+
+        return array_key_exists(Constants::SYNC_PAYOUTS, $dcsResponse) === true &&
+            $dcsResponse[Constants::SYNC_PAYOUTS] === true;
     }
 
     public function createOrUpdateInvitation(array $input)

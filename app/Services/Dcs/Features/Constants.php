@@ -193,7 +193,6 @@ class Constants
     const WalletAutoDebitEnabled = 'wallet_auto_debit_enabled';
     const EnableApprovalViaOAuth = 'enable_approval_via_oauth';
     const SkipKycVerification = 'skip_kyc_verification';
-    const GaiSyncPayouts = 'sync_payouts';
     const PersonalisationV3Disabled = 'personalisation_v3_disabled';
     const PassCustomUdfFss = 'pass_custom_udf_fss';
 
@@ -451,7 +450,6 @@ class Constants
         self::SettlementsServiceStopSMS => 'rzp/pg/merchant/settlements/Communication',
         self::SettlementReconReportWithNotes => 'rzp/platform/merchant/reporting/CustomReports',
         self::ConsolidatedTxnReportOfAllSubmerchants => 'rzp/platform/org/reporting/CustomReports',
-        self::GaiSyncPayouts => 'rzp/x/merchant/accounting/IntegrationSettings',
         self::CorporateBankingEnabled => 'rzp/pg/merchant/netbanking/Features',
         self::PersonalisationV3Disabled => 'rzp/pg/merchant/checkout/Personalisation',
         self::DirectDebitViaTokenBatch => 'rzp/pg/merchant/payments/banking_program/Cards',
@@ -673,7 +671,6 @@ class Constants
         APIFeaturesConstants::SETTLEMENTS_SMS_STOP                          => self::SettlementsServiceStopSMS,
         APIFeaturesConstants::REPORTING_GENRERIC_NOTES                      => self::SettlementReconReportWithNotes,
         APIFeaturesConstants::CONSOLIDATED_ORG_REPORTS                      => self::ConsolidatedTxnReportOfAllSubmerchants,
-        APIFeaturesConstants::GAI_PAYOUTS_SYNC                              => self::GaiSyncPayouts,
         APIFeaturesConstants::ONE_CLICK_CHECKOUT                            => self::OneCcEnabled,
         APIFeaturesConstants::ONE_CLICK_DUAL_CHECKOUT                       => self::OneCcDualCheckout,
         APIFeaturesConstants::ONE_CC_DISABLE_EMAIL_COOKIE                   => self::OneCcDisableEmailCookie,
@@ -741,7 +738,6 @@ class Constants
         self::SilentRefundLateAuthEnabled => 'direct',
         self::OtpAutoReadAndSubmitDisabled => 'direct',
         self::EnableApprovalViaOAuth => 'direct',
-        self::GaiSyncPayouts => 'direct',
         self::PersonalisationV3Disabled => 'direct',
         self::DirectDebitViaTokenBatch => 'direct',
         self::EnableSettlementByCurrency => 'direct',

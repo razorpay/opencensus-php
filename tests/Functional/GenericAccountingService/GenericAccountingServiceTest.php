@@ -10,6 +10,7 @@ use RZP\Jobs\PayoutSourceUpdaterJob;
 use Illuminate\Support\Facades\Queue;
 use RZP\Services\GenericAccountingIntegration\Service;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 
 class GenericAccountingServiceTest extends TestCase
 {
@@ -26,7 +27,7 @@ class GenericAccountingServiceTest extends TestCase
 
         $this->app->instance('accounting-integration-service', $gaiMock);
 
-        $this->fixtures->merchant->addFeatures(['gai_payouts_sync']);
+        $this->mockDcsFetchConfiguration(true);
 
         // For processed payout, both PL and GAI should be called
         $payout = $this->fixtures->create('payout', [
@@ -82,7 +83,7 @@ class GenericAccountingServiceTest extends TestCase
 
         SourceUpdater::update($payout3);
 
-        $this->fixtures->merchant->removeFeatures(['gai_payouts_sync']);
+        $this->mockDcsFetchConfiguration(false);
 
         $payout4 = $this->fixtures->create('payout', [
             'status' => 'processed'
@@ -108,7 +109,7 @@ class GenericAccountingServiceTest extends TestCase
 
         $this->app->instance('accounting-integration-service', $gaiMock);
 
-        $this->fixtures->merchant->addFeatures(['gai_payouts_sync']);
+        $this->mockDcsFetchConfiguration(true);
 
         $payout = $this->fixtures->create('payout', [
             'status' => 'processed'
@@ -135,7 +136,7 @@ class GenericAccountingServiceTest extends TestCase
 
         SourceUpdater::update($payout3);
 
-        $this->fixtures->merchant->removeFeatures(['gai_payouts_sync']);
+        $this->mockDcsFetchConfiguration(false);
 
         $payout4 = $this->fixtures->create('payout', [
             'status' => 'processed'
@@ -297,8 +298,8 @@ class GenericAccountingServiceTest extends TestCase
         // Job is pushed for vanilla payouts in created state
         Queue::assertPushed(PayoutSourceUpdaterJob::class, 1);
 
-        // Enabling experiment
-        $this->fixtures->merchant->addFeatures(['gai_payouts_sync']);
+        // Enabling Sync Payouts
+        $this->mockDcsFetchConfiguration(true);
 
         $payout = $this->fixtures->create('payout', [
             'status'          => 'created',
@@ -318,5 +319,19 @@ class GenericAccountingServiceTest extends TestCase
 
         // Job pushed for GenericAccountingIntegration
         Queue::assertPushed(PayoutSourceUpdaterJob::class, 1);
+    }
+
+    public function mockDcsFetchConfiguration($expectedSyncPayouts)
+    {
+
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+                                 ->setConstructorArgs([$this->app])
+                                 ->getMock();
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->app['dcs_config_service']
+            ->method('fetchConfiguration')
+            ->willReturn([ "sync_payouts" => $expectedSyncPayouts ]);
     }
 }

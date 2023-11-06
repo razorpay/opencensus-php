@@ -5007,6 +5007,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCOUNTING_PAYOUTS_REQUEST                            = 'ACCOUNTING_PAYOUTS_REQUEST';
     const ACCOUNTING_PAYOUTS_RESPONSE                           = 'ACCOUNTING_PAYOUTS_RESPONSE';
 
+    const GAI_DCS_CONFIG_FETCH_ERROR                            = 'GAI_DCS_CONFIG_FETCH_ERROR';
+
     const TAX_PAYMENT_REQUEST                                   = 'TAX_PAYMENT_REQUEST';
     const TAX_PAYMENT_RESPONSE                                  = 'TAX_PAYMENT_RESPONSE';
 
