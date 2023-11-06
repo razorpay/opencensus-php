@@ -14,7 +14,6 @@ export const StyledModalMask = styled(_ModalMask)`
     width: 400px;
     margin: 12px 0;
     overflow: visible;
-    height: 600px;
 
     @media (max-width: 767px) {
       width: 100%;

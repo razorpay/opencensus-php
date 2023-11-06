@@ -60,7 +60,7 @@ const CategoryDrawer = ({
   hasTransparentBackground,
   onSuccess,
   showSavedAcrossAlert,
-  top,
+  top = '45px',
 }: ICategoryDrawer): React.ReactElement => {
   const [value, setValue] = useState('');
   const [isAdding, setIsAdding] = useState(false);

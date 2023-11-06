@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
 import {
   Alert,
@@ -109,7 +108,6 @@ const ProductDrawer = ({
   const isEdit = !!productData;
   const [isLoading, setLoading] = useState(false);
   // const [progress, setProgress] = useState(0);
-  const navigate = useNavigate();
 
   const handleProductChange = (e) => {
     setProduct((prevState) => {
@@ -531,6 +529,7 @@ const ProductDrawer = ({
           storeFrontId={storeFrontId}
           isCreate={isCreate}
           screenSource={screenSource}
+          top={top}
         />
         <TextArea
           label="Description"
@@ -551,13 +550,13 @@ const ProductDrawer = ({
               <>
                 This product will be saved to the{' '}
                 <Link
-                  onClick={() => {
-                    navigate(`/paymentpages/products`);
-                  }}
-                  variant="button"
+                  href={`/app/paymentpages/products`}
+                  variant="anchor"
                   icon={ArrowUpRightIcon}
                   iconPosition="right"
                   size="small"
+                  rel="noreferrer noopener"
+                  target="_blank"
                 >
                   central catalog
                 </Link>

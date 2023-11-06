@@ -602,7 +602,7 @@ const StoreFront = ({
   }
   const actionBtns = (
     <React.Fragment>
-      <Button.Transparent
+      {/* <Button.Transparent
         type="button"
         style={{ color: '#fff' }}
         onClick={() => setIsReceiptSettingsOpen(true)}
@@ -611,7 +611,7 @@ const StoreFront = ({
       >
         <i className="i i-receipt" />
         {!isMobile && <span style={{ marginBottom: '4px' }}>Payment Receipts</span>}
-      </Button.Transparent>
+      </Button.Transparent> */}
 
       <Button.Transparent
         type="button"

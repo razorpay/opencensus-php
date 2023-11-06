@@ -180,6 +180,9 @@ export const generateStorefrontRequest = (
   const {
     entity: { title, products, contactEmail, contactPhone, expire_by, settings, slug },
   } = storefront;
+  //TODO: manual receipt is not enabled, hardcoding enbablement for now
+  settings.enable_receipt = '1';
+
   return {
     title,
     // title: 'Cherry',

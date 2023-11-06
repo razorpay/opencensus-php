@@ -31,7 +31,7 @@ export const TemplateSelectionModalContent = styled(ModalContent)(
       border-radius:4px;
     }
 
-    img{
+    img, .slider{
       height:100%;
     }
 

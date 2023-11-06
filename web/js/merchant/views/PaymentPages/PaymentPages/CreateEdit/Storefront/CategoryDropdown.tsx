@@ -34,6 +34,7 @@ interface ICategoryDropdown {
   drawerPosition?: 'left' | 'right';
   hasTransparentBackground?: boolean;
   onCategoryAddSuccess: (data) => void;
+  top: string;
 }
 
 const emptyCategoryName = 'Select Category';
@@ -58,6 +59,7 @@ const CategoryDropdown = ({
   drawerPosition,
   hasTransparentBackground,
   onCategoryAddSuccess,
+  top,
 }: ICategoryDropdown): React.ReactElement => {
   const [isOpen, setIsOpen] = useState(false);
   const [allCategoriesData, setAllCategoryData] = useState([emptyCategory, ...categories]);
@@ -92,7 +94,7 @@ const CategoryDropdown = ({
           hasTransparentBackground={hasTransparentBackground}
           onSuccess={onCategoryAddSuccess}
           allCategories={categories}
-          top="55px"
+          top={top}
           isCreate={isCreate}
           storeFrontId={storeFrontId}
           screenSource={screenSource}

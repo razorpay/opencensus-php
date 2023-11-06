@@ -39,20 +39,22 @@ const DropdownSettings = ({
         </DropdownTrigger>
         <DropdownContent>
           <ul class="dropdown-menu">
-            <li
-              type="button"
-              class="btn"
-              onClick={() => {
-                track.receiptSettings();
+            {!isStorefrontPage ? (
+              <li
+                type="button"
+                class="btn"
+                onClick={() => {
+                  track.receiptSettings();
 
-                history.push(`${productBaseUrl}/edit?modal=receipt`);
-              }}
-            >
-              <Button.Transparent className="button--highlight">
-                <i className="i i-receipt mr-10" />
-                Receipt Settings
-              </Button.Transparent>
-            </li>
+                  history.push(`${productBaseUrl}/edit?modal=receipt`);
+                }}
+              >
+                <Button.Transparent className="button--highlight">
+                  <i className="i i-receipt mr-10" />
+                  Receipt Settings
+                </Button.Transparent>
+              </li>
+            ) : null}
             <li
               type="button"
               class="btn"

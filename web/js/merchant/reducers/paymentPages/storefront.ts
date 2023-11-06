@@ -67,6 +67,7 @@ export interface PaymentPagesStorefrontType {
       pp_fb_pixel_tracking_id?: string;
       pp_ga_pixel_tracking_id?: string;
       enable_custom_serial_number?: string;
+      enable_receipt?: string;
     };
   };
   allCategories: {
@@ -207,7 +208,7 @@ export default (state = initialState, action) => {
         entity: {
           ...initialState.entity,
         },
-        /* 
+        /*
           we are preserving the following fields between multiple storefront creation, as this is common data
           for now its not being used, but ideally we want to avoid hitting allProducts API multiple times, as its a large API call
           Ideally all add/edit product changes should update the allProducts array in redux.
