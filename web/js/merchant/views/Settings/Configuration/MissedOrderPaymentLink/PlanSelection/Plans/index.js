@@ -1,7 +1,6 @@
 import { connect } from 'react-redux';
 
 import Image from 'common/ui/Image';
-import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import {
   openModal as openModalFn,
@@ -55,39 +54,37 @@ const Plan = ({ plan, viewAllFeaturesCb, selectPlanCb }) => {
       <div className="plan-info">
         <div id="missed-order-plan-title">{titleCase(plan.name)}</div>
         <div className="amount-wrapper">
-          <Amount
-            hidePaisa
-            currency="INR"
-            value={plan.price}
-            parentQuerySelector=".plan-selection-container"
-          />
-          <span id="missed-order-amount-information">&nbsp; per retarget</span>
+          <span id="missed-order-amount-information">{plan.price_placeholder} per month</span>
           <div id="info-outline-icon-wrapper" onMouseEnter={trackInfo}>
             <i className="i i-help-outline" />
             <Popover align="bottom" theme="dark" parentQuerySelector=".plan-selection-container">
               {' '}
               <PopoverBody>
-                <Amount currency="INR" value={plan.price} hidePaisa /> will be charged to send
-                retargeting message across SMS and Email{' '}
+                you will be charged to send retargeting message across SMS and Email{' '}
                 {plan.name.toLowerCase() === 'pro' ? 'and WhatsApp' : ''}
               </PopoverBody>
             </Popover>
           </div>
         </div>
-        {isProPlan && (
+        {isProPlan ? (
           <div className="img-wrapper">
             <span className="img-frame">
               <Image src={WhatsAppImage} />
             </span>
             WhatsApp & Conversion insights
           </div>
+        ) : (
+          <div className="info-text pointer" onClick={() => viewAllFeaturesCb(plan)}>
+            view all features <i className="i i-external-link" />
+          </div>
         )}
-        <div className="info-text pointer" onClick={() => viewAllFeaturesCb(plan)}>
-          view all features <i className="i i-external-link" />
-        </div>
       </div>
       <div className="select-plan-btn">
-        <Button buttonText="Select Plan" onClick={() => selectPlanCb(plan)} />
+        <Button
+          buttonText={plan.disabled ? 'Coming soon' : 'Select Plan'}
+          disabled={plan.disabled}
+          onClick={() => selectPlanCb(plan)}
+        />
       </div>
     </div>
   );

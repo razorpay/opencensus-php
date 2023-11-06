@@ -1,9 +1,10 @@
 import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
 import Plans from 'merchant/views/Settings/Configuration/MissedOrderPaymentLink/PlanSelection/Plans';
+import { MOPL_PLANS } from './Constants/plans';
 
-const PlanSelection = ({ closeModal, missed_order_payment_link }) => {
-  const plans = missed_order_payment_link?.plans?.data?.plans;
+const PlanSelection = ({ closeModal, missed_order_payment_link, isPlanNew = true }) => {
+  const plans = isPlanNew ? MOPL_PLANS : missed_order_payment_link?.plans?.data?.plans;
   const subscription = missed_order_payment_link.subscription?.data;
   return (
     <div className="plan-selection-container">
@@ -27,8 +28,7 @@ const PlanSelection = ({ closeModal, missed_order_payment_link }) => {
               <i class="i i-info-outline" />
             </div>
             <div>
-              <b>Try 30 days for free.</b> After this, charges will be deducted from your settlement
-              balance, every month
+              <b>Try 30 days for free.</b> After this, charges will be deducted every month
             </div>
           </div>
         )}

@@ -5,11 +5,11 @@ import {
 } from 'merchant_common/reducers/modals';
 import lazy from 'merchant/routes/LazyLoader';
 
-import Amount from 'common/ui/Amount';
+// import Amount from 'common/ui/Amount';
 import ModalHeader from 'common/ui/ModalHeader';
 import { titleCase, humanize } from 'common/utils/rzp-utils';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
+import { MOPL_PLANS } from 'merchant/views/Settings/Configuration/MissedOrderPaymentLink/PlanSelection/Constants/plans';
 import Button from 'merchant/views/Settings/Configuration/MissedOrderPaymentLink/components/Button';
 
 const PlanConfirmation = lazy(() =>
@@ -55,15 +55,7 @@ const PlanContent = ({ plan, openModal, closeModal, selectPlanCb }) => {
     <div className="plan-container">
       <div id="missed-order-plan-title">{titleCase(plan.name)}</div>
       <div className="amount-wrapper">
-        <div className="amount-value">
-          <Amount
-            hidePaisa
-            currency="INR"
-            value={plan.price}
-            parentQuerySelector=".missedorder-features-container"
-          />
-        </div>
-        <span id="missed-order-amount-information">&nbsp; per retarget</span>
+        <span id="missed-order-amount-information">{plan.price_placeholder} per month</span>
         <div id="info-outline-icon-wrapper">
           <i className="i i-help-outline" />
         </div>
@@ -91,8 +83,9 @@ const PlanContent = ({ plan, openModal, closeModal, selectPlanCb }) => {
   );
 };
 
-const FeaturesModal = ({ missed_order_payment_link, openModal, closeModal }) => {
-  const plans = missed_order_payment_link?.plans?.data?.plans;
+const FeaturesModal = ({ missed_order_payment_link, openModal, closeModal, isPlanNew = true }) => {
+  const plans = isPlanNew ? MOPL_PLANS : missed_order_payment_link?.plans?.data?.plans;
+
   return (
     <div className="missedorder-features-container">
       <ModalHeader title="Failed Payments Recovery" onCloseClick={closeModal} />

@@ -89,7 +89,7 @@ const Footer = ({
           {freeTrialActive && (
             <div className="alert-info-wrapper">
               <b>Enjoy your trial for the next 30 days.</b> <br />
-              After this, charges will be deducted from your settlement balance, every month
+              After this, charges will be deducted every month
             </div>
           )}
           <div className="btn-wrapper">

@@ -1,5 +1,5 @@
 import Time from 'common/ui/Time';
-import Amount from 'common/ui/Amount';
+// import Amount from 'common/ui/Amount';
 import { titleCase } from 'common/utils/rzp-utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
@@ -16,10 +16,6 @@ const Info = ({
     <div className="info-wrapper-mopl">
       <div className="flex-space-between">
         <div id="missed-order-plan-title">{titleCase(plan?.name)}</div>
-        <div>
-          <Amount currency="INR" value={plan?.price} hidePaisa />{' '}
-          <span id="missed-order-amount-information">&nbsp; per retarget</span>
-        </div>
       </div>
       {isTrialVisible && (
         <div className="flex-space-between">
