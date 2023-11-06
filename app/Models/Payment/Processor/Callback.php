@@ -895,18 +895,21 @@ trait Callback
             $input['gateway'] = $this->submitHeadlessOtp($payment, $input['gateway']);
         }
 
-        if(($payment->isMethod(Payment\Method::EMI) === true) and
-            (in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true))
+        if($payment->isMethod(Payment\Method::EMI) === true)
         {
             $input['emi'] = $this->repo->emi_plan->handleFindOrFail($payment->getEmiPlanId());
 
             $input['payment_analytics'] = $this->repo->payment_analytics->findForPayment($payment->getId())[0];
 
-            $card = $this->repo->card->findOrFail($payment->getCardId());
+            if(in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true)
+            {
+                $card = $this->repo->card->findOrFail($payment->getCardId());
 
-            $input['card'] = array();
+                $input['card'] = array();
 
-            $input['card']['number'] = $this->getCardNumber($card, $payment->getGateway());
+                $input['card']['number'] = $this->getCardNumber($card, $payment->getGateway());
+            }
+
             $input['emi_plan'] = $payment->emi;
         }
 
