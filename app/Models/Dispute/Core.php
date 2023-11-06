@@ -1165,26 +1165,13 @@ class Core extends Base\Core
                 if (($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK and isset($bulkMailData['isFraud']) === true)
                     or $bulkMailData[Entity::PHASE] !== Phase::CHARGEBACK)
                 {
-                    $experimentEnabled = $this->isSplitzExperimentEnable(
-                        $merchantId,
-                        DisputeConstants::DISPUTE_MERCHANT_EMAILS_INITIATE_ID_KEY,
-                        DisputeConstants::VARIANT_ENABLE
-                    );
+                    $fdOutboundEmailRequest = $this->getFdRequestPayload($merchantId, $merchant, $bulkMailData);
 
-                    if ($experimentEnabled === true)
+                    if (empty($fdOutboundEmailRequest) === false)
                     {
-                        $fdOutboundEmailRequest = $this->getFdRequestPayload($merchantId, $merchant, $bulkMailData);
+                        $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
 
-                        if (empty($fdOutboundEmailRequest) === false)
-                        {
-                            $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
-
-                            (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
-                        }
-                    }
-                    else
-                    {
-                        Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
+                        (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
                     }
 
                     $this->traceAndPushMetricsForDisputeFdMailSuccess($merchantId, $disputeIds, $disputePhase);
@@ -1258,16 +1245,7 @@ class Core extends Base\Core
                 (isset($bulkMailData['isFraud']) === true)) or
             ($bulkMailData[Entity::PHASE] !== Phase::CHARGEBACK))
         {
-            $experimentEnabled = $this->isSplitzExperimentEnable(
-                $merchantId,
-                DisputeConstants::DISPUTE_MERCHANT_EMAILS_INITIATE_ID_KEY,
-                DisputeConstants::VARIANT_ENABLE
-            );
-
-            if ($experimentEnabled === true)
-            {
-                $this->traceAndPushMetricsForDisputeFdMailFailure($merchantId, $disputeIds, $disputePhase, $e);
-            }
+            $this->traceAndPushMetricsForDisputeFdMailFailure($merchantId, $disputeIds, $disputePhase, $e);
         }
     }
 

@@ -2242,16 +2242,6 @@ class DisputeTest extends TestCase
     {
         Mail::fake();
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'off',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->ba->cronAuth();
 
         $reason = $this->fixtures->create('dispute_reason', [
@@ -2366,16 +2356,6 @@ class DisputeTest extends TestCase
     {
         Mail::fake();
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->mockFreshdesk(1);
 
         $this->ba->cronAuth();
@@ -2469,16 +2449,6 @@ class DisputeTest extends TestCase
     {
         Mail::fake();
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->mockFreshdesk(2);
 
         $this->ba->cronAuth();
@@ -2571,16 +2541,6 @@ class DisputeTest extends TestCase
     public function testBulkDisputeCreateMailAttachment()
     {
         Mail::fake();
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'off',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
 
         $this->ba->cronAuth();
 
@@ -3379,16 +3339,6 @@ class DisputeTest extends TestCase
     public function testBulkDisputeCreateMail($features, $disputeCreateInput, $expectedMailView, $expectedMailViewData = [], $mobileSignupTest)
     {
         $this->fixtures->merchant->addFeatures($features);
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'off',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
 
         $this->runTestBulkDisputeCreateMailSubject($disputeCreateInput, $expectedMailView, $expectedMailViewData, $mobileSignupTest);
 
@@ -6052,16 +6002,6 @@ class DisputeTest extends TestCase
     {
         Mail::fake();
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->mockFreshdesk(1);
 
         $this->ba->cronAuth();
@@ -6182,16 +6122,6 @@ class DisputeTest extends TestCase
     public function testPhaseBasedBulkCreateMailsViaFdExcludingRefundedChargebackDifferentPhaseTickets()
     {
         Mail::fake();
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
 
         $this->mockFreshdesk(2);
 
