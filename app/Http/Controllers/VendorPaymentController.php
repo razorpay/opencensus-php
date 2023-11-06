@@ -558,4 +558,28 @@ class VendorPaymentController extends Controller
     {
         return $this->service->createDraft($this->ba->getMerchant(), $this->ba->getUser(), $this->input);
     }
+
+    public function approveEntity(string $entityType, string $entityID)
+    {
+        return $this->service->approveEntity(
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole(),
+            $entityType,
+            $entityID,
+            $this->input
+        );
+    }
+
+    public function rejectEntity(string $entityType, string $entityID)
+    {
+        return $this->service->rejectEntity(
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole(),
+            $entityType,
+            $entityID,
+            $this->input
+        );
+    }
 }

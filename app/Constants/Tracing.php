@@ -167,6 +167,8 @@ class Tracing
             'vendor_payment_list_purchase_order',
             'vendor_payment_edit_purchase_order',
             'vendor_payment_unlink_purchase_order_from_invoice',
+            'vendor_payment_approve_entity',
+            'vendor_payment_reject_entity',
             'vendor_payment_create_address',
             'vendor_payment_edit_address',
             'vendor_payment_list_address',

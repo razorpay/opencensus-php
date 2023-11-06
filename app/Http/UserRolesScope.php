@@ -1200,6 +1200,8 @@ class UserRolesScope
             'vendor_payment_list_purchase_order'                   => [Role::OWNER, Role::ADMIN],
             'vendor_payment_edit_purchase_order'                   => [Role::OWNER, Role::ADMIN],
             'vendor_payment_unlink_purchase_order_from_invoice'    => [Role::OWNER, Role::ADMIN],
+            'vendor_payment_approve_entity'                        => [Role::OWNER, Role::ADMIN],
+            'vendor_payment_reject_entity'                         => [Role::OWNER, Role::ADMIN],
             'vendor_payment_gst_input_credit_generate_otp'         => [Role::OWNER, Role::ADMIN],
             'vendor_payment_gst_input_credit_verify_otp'           => [Role::OWNER, Role::ADMIN],
             'vendor_payment_gst_input_credit_integration_summary'  => [Role::OWNER, Role::ADMIN],

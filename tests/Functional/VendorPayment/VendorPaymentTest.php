@@ -1382,4 +1382,38 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('createDraft');
     }
+
+    public function testApprovePurchaseOrder()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('approveEntity')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('approveEntity');
+    }
+
+    public function testRejectPurchaseOrder()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('rejectEntity')->andReturn([
+            'success' => true
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('rejectEntity');
+    }
 }

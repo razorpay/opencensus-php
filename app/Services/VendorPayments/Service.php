@@ -106,6 +106,8 @@ class Service
     const CLOSE_PURCHASE_ORDER   = 'ClosePurchaseOrder';
     const SUGGEST_NEXT_PURCHASE_ORDER_NUMBER = 'SuggestNextPurchaseOrderNumber';
     const UNLINK_PURCHASE_ORDER_FROM_INVOICE  = 'UnlinkPurchaseOrderFromInvoice';
+    const APPROVE_WORKFLOW  = 'ApproveWorkflow';
+    const REJECT_WORKFLOW   = 'RejectWorkflow';
 
     const SEARCH_ITEMS = "SearchItems";
     const CREATE_ITEM = "CreateItem";
@@ -155,6 +157,18 @@ class Service
     const FILE_SIZE   = 'size';
     const ATTACHMENTS = 'attachments';
     const VENDOR_ID   = 'vendor_id';
+
+    const USER_DETAILS  = 'user_details';
+    const USER          = 'user';
+    const ROLE          = 'role';
+    const EMAIL         = 'email';
+    const TYPE          = 'type';
+    const CONTACT       = 'contact';
+
+    const ENTITY_ID     = 'entity_id';
+    const ENTITY_TYPE   = 'entity_type';
+
+    //entities
 
     protected $app;
 
@@ -1301,5 +1315,62 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_DRAFT_VENDOR_PAYMENT);
 
         return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function approveEntity(MerchantEntity $merchant, Entity $user, string $userRole, string $entityType, string $entityID, array $input)
+    {
+        $input[self::ENTITY_TYPE] = $entityType;
+
+        $input[self::ENTITY_ID] = $entityID;
+
+        $input[self::USER_DETAILS] = $this->getUserDetails($user, $userRole);
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::APPROVE_WORKFLOW);
+
+        $this->trace->info(TraceCode::VENDOR_PAYMENT_REQUEST,
+            [
+                'url' => $url,
+                'route' => 'approve-entity',
+                'input' => $input
+            ]);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function rejectEntity(MerchantEntity $merchant, Entity $user, string $userRole, string $entityType, string $entityID, array $input)
+    {
+        $input[self::ENTITY_TYPE] = $entityType;
+
+        $input[self::ENTITY_ID] = $entityID;
+
+        $input[self::USER_DETAILS] = $this->getUserDetails($user, $userRole);
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::REJECT_WORKFLOW);
+
+        $this->trace->info(TraceCode::VENDOR_PAYMENT_REQUEST,
+            [
+                'url' => $url,
+                'route' => 'reject-entity',
+                'input' => $input
+            ]);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    protected function getUserDetails(Entity $user, string $userRole): array
+    {
+        return [
+            self::ID => $user->getId(),
+
+            self::ROLE => $userRole,
+
+            self::TYPE => self::USER,
+
+            self::EMAIL => $user->getEmail(),
+
+            self::NAME => $user->getName(),
+
+            self::CONTACT => $user->getContactMobile(),
+        ];
     }
 }
