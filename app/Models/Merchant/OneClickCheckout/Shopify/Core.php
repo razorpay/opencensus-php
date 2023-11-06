@@ -26,6 +26,7 @@ use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Models\Order\OrderMeta\Type as OrderMetaType;
 use RZP\Models\Merchant\Metric;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 
 class Core extends Base\Core
 {
@@ -140,24 +141,32 @@ class Core extends Base\Core
     public function getAvailableShippingRates($checkoutId)
     {
         $client = $this->getShopifyClientByMerchant();
-
         $mutation = (new Mutations)->getPollForShippingRatesMutation();
-
         $graphqlQuery = [
             'query' => $mutation,
             'variables' => [
                 'id'=> $checkoutId
             ]
         ];
-        $this->monitoring->addTraceCount(Metric::GET_AVAILABLE_SHIPPING_RATES_REQUEST_COUNT, []);
 
+        $useMCS = (new SplitzExperimentEvaluator())->useMCSToPollForShippingRates();
+        $dimensions = [ 'service' => $useMCS ? 'mcs' : 'api' ];
+
+        $this->monitoring->addTraceCount(Metric::GET_AVAILABLE_SHIPPING_RATES_REQUEST_COUNT, $dimensions);
         $start = millitime();
+        if ($useMCS)
+        {
+            $payload = ['checkout_id' => $checkoutId];
+            $response = (new MagicCheckoutService\Service())->pollForShippingRates($payload);
+        }
+        else
+        {
+            $resp = $client->sendStorefrontRequest(json_encode($graphqlQuery));
+            $response = json_decode($resp, true);
+        }
 
-        $res = $client->sendStorefrontRequest(json_encode($graphqlQuery));
-
-        $this->monitoring->traceResponseTime(Metric::GET_AVAILABLE_SHIPPING_RATES_CALL_TIME, $start, []);
-
-        return $res;
+        $this->monitoring->traceResponseTime(Metric::GET_AVAILABLE_SHIPPING_RATES_CALL_TIME, $start, $dimensions);
+        return $response;
     }
 
     public function applyCoupon($input, $checkoutId)
@@ -295,24 +304,37 @@ class Core extends Base\Core
             ],
         ];
 
+        $useMCS = (new SplitzExperimentEvaluator())->useMCSToUpdateShippingAddress();
+        $service = $useMCS ? 'mcs' : 'api';
+        $dimensions = ['service' => $service];
+
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_UPDATE_SHIPPING_BODY,
             [
                 'type' => 'update_shipping_address',
                 'checkout_id' => $checkoutId,
-                'shipping_address' => $shippingAddress
+                'shipping_address' => $shippingAddress,
+                'service' => $service,
             ]
         );
 
-        $this->monitoring->addTraceCount(Metric::UPDATE_SHIPPING_ADDRESS_REQUEST_COUNT, []);
-
+        $this->monitoring->addTraceCount(Metric::UPDATE_SHIPPING_ADDRESS_REQUEST_COUNT, $dimensions);
         $start = millitime();
-
-        $res = $client->sendStorefrontRequest(json_encode($graphqlQuery));
-
-        $this->monitoring->traceResponseTime(Metric::UPDATE_SHIPPING_ADDRESS_CALL_TIME, $start, []);
-
-        return $res;
+        if ($useMCS)
+        {
+            $addr = $shippingAddress;
+            $addr['first_name'] = $shippingAddress['firstName'];
+            $addr['last_name'] = $shippingAddress['lastName'];
+            $payload = ['checkout_id' => $checkoutId, 'address' => $addr];
+            $response = (new MagicCheckoutService\Service())->updateShippingAddress($payload);
+        }
+        else
+        {
+            $response = $client->sendStorefrontRequest(json_encode($graphqlQuery));
+            $response = json_decode($response, true);
+        }
+        $this->monitoring->traceResponseTime(Metric::UPDATE_SHIPPING_ADDRESS_CALL_TIME, $start, $dimensions);
+        return $response;
     }
 
     // processing is async so we need to sleep and poll
@@ -329,9 +351,7 @@ class Core extends Base\Core
 
             $currentTries++;
 
-            $response = $this->getAvailableShippingRates($checkoutId);
-
-            $body = json_decode($response, true);
+            $body = $this->getAvailableShippingRates($checkoutId);
 
             if (
               empty($body['errors']) === false

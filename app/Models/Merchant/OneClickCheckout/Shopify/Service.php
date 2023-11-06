@@ -1157,8 +1157,6 @@ class Service extends Base\Service
     {
         $response = (new Core)->updateShippingAddress($checkoutId, $address);
 
-        $response = json_decode($response, true);
-
         $digitalProductConfig = (new Merchant1ccConfig\Repository())->
         findByMerchantAndConfigType($this->merchant->getId(), Type::ONE_CC_HANDLE_DIGITAL_PRODUCT);
 
@@ -1282,7 +1280,6 @@ class Service extends Base\Service
     public function getTaxDetailsAndIfProductIsDigital(string $checkoutId, array $address): array
     {
         $response = (new Core)->updateShippingAddress($checkoutId, $address);
-        $response = json_decode($response, true);
         // Based on logs the checkout response is still available if `errors` or `checkoutUserErrors` exists
         // for this mutation.
         $checkout = $response['data']['checkoutShippingAddressUpdateV2']['checkout'];

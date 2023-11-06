@@ -768,4 +768,8 @@ return array(
     'restrict_pii_data_access_experiment_id' => env('RESTRICT_PII_DATA_ACCESS_EXP_ID'),
 
     'merchant_policies_subdomain' =>  env('MERCHANT_POLICIES_SUBDOMAIN'),
+
+    'magic_poll_shipping_rates_experiment_id' => env('MAGIC_POLL_SHIPPING_RATES_EXP_ID'),
+
+    'magic_update_shipping_address_experiment_id' => env('MAGIC_UPDATE_SHIPPING_ADDRESS_EXP_ID'),
 );

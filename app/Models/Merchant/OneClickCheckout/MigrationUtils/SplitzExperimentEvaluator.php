@@ -5,16 +5,16 @@ namespace RZP\Models\Merchant\OneClickCheckout\MigrationUtils;
 use App;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\UniqueIdEntity;
 
 class SplitzExperimentEvaluator extends Base\Core
 {
-    protected $app;
     protected $trace;
     protected $splitzService;
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
+        parent::__construct();
         $this->trace = $this->app['trace'];
         $this->splitzService = $this->app['splitzService'];
     }
@@ -94,5 +94,29 @@ class SplitzExperimentEvaluator extends Base\Core
                 $tracePayload
             )
         );
+    }
+
+    public function useMCSToPollForShippingRates(): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.magic_poll_shipping_rates_experiment_id');
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
+    public function useMCSToUpdateShippingAddress(): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.magic_update_shipping_address_experiment_id');
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
+    // To be used when merchant_id is the only param required for evaluating the experiment.
+    protected function merchantIdBasedPayload(string $experimentPath): array
+    {
+        return [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $this->app['config']->get($experimentPath),
+            'request_data'  => json_encode(['merchant_id' => $this->merchant->getId()]),
+        ];
     }
 }

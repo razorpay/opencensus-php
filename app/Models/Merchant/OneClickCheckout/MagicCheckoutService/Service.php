@@ -17,6 +17,8 @@ class Service extends Base\Service
 {
 
   const SHIPPING_OPTIONS_PATH = 'v1/shipping/options';
+  const POLL_FOR_SHIPPING_RATES_PATH = 'v1/checkouts/shipping/poll';
+  const UPDATE_SHIPPING_ADDRESS_PATH = 'v1/checkouts/address';
 
   protected $app;
 
@@ -101,5 +103,15 @@ class Service extends Base\Service
   public function getShippingOptions(array $input): array
   {
       return $this->app['magic_checkout_service_client']->sendRequest(self::SHIPPING_OPTIONS_PATH, $input, Requests::POST);
+  }
+
+  public function pollForShippingRates(array $input): array
+  {
+      return $this->app['magic_checkout_service_client']->sendRequest(self::POLL_FOR_SHIPPING_RATES_PATH, $input, Requests::POST);
+  }
+
+  public function updateShippingAddress(array $input): array
+  {
+      return $this->app['magic_checkout_service_client']->sendRequest(self::UPDATE_SHIPPING_ADDRESS_PATH, $input, Requests::POST);
   }
 }
