@@ -1,11 +1,11 @@
 import React from 'react';
+import qs from 'query-string';
 import { connect } from 'react-redux';
 import { Link, Navigate } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
-import qs from 'query-string';
 import { CSSTransition } from 'react-transition-group';
 import { compose, bindActionCreators } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import Spinner from 'common/ui/Spinner';
 import { deepClone } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -22,6 +22,7 @@ import {
   PROVIDER_KEYS,
   INSTANT_PROVIDER_UNSUPPORTED_METHODS,
   SEAMLESS_PROVIDERS,
+  METHODS,
 } from 'merchant/views/Navigator/constants';
 import { addProvider, editProvider } from 'merchant/views/Navigator/service';
 import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
@@ -388,11 +389,14 @@ class AddProvider extends React.Component {
   };
 
   changeGatewayDetails = (event, item) => {
-    const { type, checked, value, id } = event.target;
+    const { type, checked, value, id, name } = event.target;
 
     this.setState(
       (prevState) => {
         const { provider, providers, selectedProvider } = prevState;
+        const providerItem = providers?.[selectedProvider];
+        const isRecurringEnabled = providerItem?.hasOwnProperty(PROVIDER_KEYS.RECURRING);
+
         if (type === 'checkbox') {
           if (checked) {
             provider.Gateway_details['Payment Methods'] = [
@@ -411,7 +415,8 @@ class AddProvider extends React.Component {
           } else if (provider?.Gateway_details?.['Payment Methods']) {
             const isSodexoEnabled =
               selectedProvider === 'payu' &&
-              providers?.[selectedProvider]?.hasOwnProperty(PROVIDER_KEYS.SODEXO);
+              providerItem?.hasOwnProperty(PROVIDER_KEYS.SODEXO) &&
+              !provider.Gateway_details.optimizer_seamless_disabled;
             const index = provider.Gateway_details['Payment Methods'].indexOf(item);
             provider.Gateway_details['Payment Methods'] = [
               ...provider.Gateway_details['Payment Methods'].slice(0, index),
@@ -423,7 +428,15 @@ class AddProvider extends React.Component {
             if (item === 'card' && isSodexoEnabled) {
               provider.Gateway_details[PROVIDER_KEYS.SODEXO] = false;
             }
+            const noCardOrUPI = provider.Gateway_details['Payment Methods'].every(
+              (method) => method !== METHODS.CARD && method !== METHODS.UPI,
+            );
+            if (noCardOrUPI && isRecurringEnabled) {
+              delete provider.Gateway_details[PROVIDER_KEYS.RECURRING];
+            }
           }
+        } else if (type === 'bool') {
+          provider.Gateway_details[name] = checked;
         } else {
           provider.Gateway_details[id] = value;
         }

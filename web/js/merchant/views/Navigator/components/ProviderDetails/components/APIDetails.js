@@ -2,28 +2,23 @@ import React, { Fragment } from 'react';
 
 import { titleCase } from 'common/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import { WALLET_AUTO_DEBIT_KEY } from 'merchant/views/Navigator/constants';
+import { WALLET_AUTO_DEBIT_KEY, PROVIDER_KEYS } from 'merchant/views/Navigator/constants';
 
 const IGNORE_FIELDS = [
   'Payment Methods',
   'UPI Features',
   'Netbanking Features',
   'optimizer_seamless_disabled',
+  PROVIDER_KEYS.SODEXO,
   WALLET_AUTO_DEBIT_KEY,
+  PROVIDER_KEYS.RECURRING,
 ];
 
-function APIDetails({
-  providerDetails,
-  isPaytmAutoDebitEnabled,
-  walletAutoDebit,
-  optimizerSeamlessDisabled,
-}) {
-  let ignoreFields =
+function APIDetails({ providerDetails, isPaytmAutoDebitEnabled, walletAutoDebit }) {
+  const ignoreFields =
     !isPaytmAutoDebitEnabled || !walletAutoDebit
       ? IGNORE_FIELDS.concat('CLIENT_KEY', 'CLIENT_SECRET')
       : IGNORE_FIELDS;
-
-  ignoreFields = optimizerSeamlessDisabled ? ignoreFields.concat('Sodexo') : ignoreFields;
 
   return (
     <div className="list-group details-row-container">

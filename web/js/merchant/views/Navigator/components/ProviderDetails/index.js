@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
-import PropTypes from 'prop-types';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import Spinner from 'common/ui/Spinner';
 import { titleCase, isBlank } from 'common/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { gatewayLogos, WalletLabels } from 'merchant/views/Navigator/components/util';
 import {
+  METHODS_MAP,
   TPV_OPTIONS,
   SEAMLESS_PROVIDERS,
   PROVIDER_KEYS,
@@ -68,24 +69,28 @@ class ProviderDetails extends Component {
       const seamlessOptionExist =
         SEAMLESS_PROVIDERS?.includes(provider?.Gateway) &&
         provider?.Gateway_details?.hasOwnProperty('optimizer_seamless_disabled');
+      const isRecurringEnabled = provider?.Gateway_details?.hasOwnProperty('Recurring');
       const {
         'UPI Features': upiFeatures,
         'Netbanking Features': netbankingFeatures,
         'Payment Methods': paymentMethods,
         optimizer_seamless_disabled,
         [WALLET_AUTO_DEBIT_KEY]: walletAutoDebit,
+        Recurring,
       } = provider?.Gateway_details || {};
 
-      let strPaymentMethods = paymentMethods?.join(', ') ?? '';
+      let strPaymentMethods =
+        paymentMethods?.map((method) => METHODS_MAP[method])?.join(', ') ?? '';
       const isSodexoEnabled =
         provider?.Gateway_details?.hasOwnProperty(PROVIDER_KEYS.SODEXO) &&
         provider?.Gateway_details?.Sodexo;
 
       if (isSodexoEnabled) {
-        strPaymentMethods += ', sodexo';
+        strPaymentMethods += ', Sodexo';
       }
 
-      const isPaytmAutoDebitEnabled = !!user?.isPaytmAutoDebitEnabled;
+      const isPaytmAutoDebitEnabled =
+        provider?.Gateway === 'paytm' && !!user?.isPaytmAutoDebitEnabled;
 
       return (
         <div className="content-wrapper content-sm txn-details optimizer-provider-detail">
@@ -146,14 +151,14 @@ class ProviderDetails extends Component {
                     </div>
                   )}
 
-                  {provider?.Gateway === 'paytm' && isPaytmAutoDebitEnabled ? (
+                  {isPaytmAutoDebitEnabled && (
                     <div className="list-group details-row-container">
                       <EntityDetailRow
                         label="Wallet auto-debit Enabled"
                         value={walletAutoDebit ? 'Yes' : 'No'}
                       />
                     </div>
-                  ) : null}
+                  )}
 
                   {upiFeatures?.tpv ? (
                     <TPVDetails tpv={upiFeatures?.tpv} />
@@ -170,11 +175,19 @@ class ProviderDetails extends Component {
                     </div>
                   )}
 
+                  {isRecurringEnabled && (
+                    <div className="list-group details-row-container">
+                      <EntityDetailRow
+                        label="Recurring"
+                        value={Recurring ? 'Enabled' : 'Disabled'}
+                      />
+                    </div>
+                  )}
+
                   <APIDetails
                     providerDetails={providerDetails}
                     isPaytmAutoDebitEnabled={isPaytmAutoDebitEnabled}
                     walletAutoDebit={walletAutoDebit}
-                    optimizerSeamlessDisabled={optimizer_seamless_disabled}
                   />
                 </div>
               </div>

@@ -34,26 +34,39 @@ export const INIT_FORM_STATE = {
   },
 };
 
+export const METHODS = {
+  CARD: 'card',
+  UPI: 'upi',
+  SODEXO: 'sodexo',
+};
+
+export const METHODS_MAP = {
+  card: 'Card',
+  emandate: 'E-Mandate',
+  emi: 'EMI',
+  netbanking: 'Netbanking',
+  upi: 'UPI',
+  wallet: 'Wallet',
+  sodexo: 'Sodexo',
+};
+
+export const PROVIDER_KEYS = {
+  SODEXO: 'Sodexo',
+  RECURRING: 'Recurring',
+};
+
 export const WALLET_AUTO_DEBIT_KEY = 'ENABLE_AUTO_DEBIT';
 
 export const SKIP_VALIDATION_KEYS = [
   'Gateway Name',
   'TPV',
   'optimizer_seamless_disabled',
-  'Sodexo',
+  PROVIDER_KEYS.SODEXO,
   WALLET_AUTO_DEBIT_KEY,
+  PROVIDER_KEYS.RECURRING,
 ];
 
 export const SKIP_PAYTM_AUTO_DEBIT_VALIDATION_KEYS = ['CLIENT_KEY', 'CLIENT_SECRET']; // These fields are only required if the wallet auto debit is enabled on paytm
-
-export const PROVIDER_KEYS = {
-  SODEXO: 'Sodexo',
-};
-
-export const METHODS = {
-  CARD: 'card',
-  SODEXO: 'sodexo',
-};
 
 export const TPV_OPTIONS = {
   0: 'Non TPV',

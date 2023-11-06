@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 
 import Input from 'common/new-ui/Input';
+import SwitchField from 'common/ui/Forms/SwitchField';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Tooltip from 'common/ui/Tooltip';
 import { titleCase } from 'common/utils/rzp-utils';
@@ -71,10 +72,32 @@ export function Step3({
     return false;
   }
 
+  const isS2SEnabled = !Gateway_details?.optimizer_seamless_disabled;
   const isSodexoCheckboxDisabled = isMethodCheckboxDisabled(METHODS.SODEXO);
   const isSodexoEnabled =
-    selectedProvider === 'payu' &&
-    providers?.[selectedProvider]?.hasOwnProperty(PROVIDER_KEYS.SODEXO);
+    isS2SEnabled && selectedProviderDetails?.hasOwnProperty(PROVIDER_KEYS.SODEXO);
+
+  const handleSwitch = (isChecked, label) => {
+    const event = {
+      target: {
+        type: 'bool',
+        checked: isChecked,
+        name: label,
+      },
+    };
+    changeGatewayDetails(event);
+  };
+
+  const shouldShowField = (fieldLabel) => {
+    if (fieldLabel === 'Recurring') {
+      // to enable 'Recurring' either 'card' or 'upi' method should be enabled
+      return Gateway_details?.['Payment Methods']?.some(
+        (method) => method === METHODS.CARD || method === METHODS.UPI,
+      );
+    }
+
+    return false;
+  };
 
   return (
     <div className="row">
@@ -119,7 +142,7 @@ export function Step3({
                               />
                             </span>
                           ))}
-                        {isSodexoEnabled && !Gateway_details?.optimizer_seamless_disabled ? (
+                        {isSodexoEnabled ? (
                           <span className="payment-method-checkbox-span">
                             <Input.Check
                               id={PROVIDER_KEYS.SODEXO}
@@ -195,42 +218,65 @@ export function Step3({
               </div>
             );
           }
-        }
-
-        return (
-          <div className="col-xs-12" key={label}>
-            <div className="row">
-              <div className="col-xs-3">
-                <label for="name" className="gateway-detail-title">
-                  {label}
-                </label>
-              </div>
-              <div className="col-xs-6">
-                {!isEdit ? (
-                  <label className="provider-details-read-only">
-                    {provider?.Gateway_details?.[label] || ''}
+        } else if (data_type === 'bool' && shouldShowField(label)) {
+          return (
+            <div className="col-xs-12" key={label}>
+              <div className="row">
+                <div className="col-xs-3">
+                  <label for="name" className="gateway-detail-title">
+                    <span>{titleCase(label)}</span>
                   </label>
-                ) : (
-                  <>
-                    <Input
-                      id={label}
-                      name={label?.toLowerCase()}
-                      type={data_type === 'string' ? 'text' : 'number'}
-                      value={provider?.Gateway_details?.[label] || ''}
-                      placeholder={data_value}
-                      onChange={changeGatewayDetails}
+                </div>
+                <div className="col-xs-9">
+                  <div className="auto-debit-switch-wrapper">
+                    <SwitchField
+                      type="prime round"
+                      defaultChecked={provider?.Gateway_details?.[label] ?? false}
+                      onChange={(isChecked) => handleSwitch(isChecked, label)}
                     />
-                    {validationErrors?.[label] && (
-                      <div className="provider-details-validation-error">
-                        {validationErrors[label]}
-                      </div>
-                    )}
-                  </>
-                )}
+                    <span>{provider?.Gateway_details?.[label] ? 'Enabled' : 'Disabled'}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        );
+          );
+        } else if (data_type === 'string') {
+          return (
+            <div className="col-xs-12" key={label}>
+              <div className="row">
+                <div className="col-xs-3">
+                  <label for="name" className="gateway-detail-title">
+                    {label}
+                  </label>
+                </div>
+                <div className="col-xs-6">
+                  {!isEdit ? (
+                    <label className="provider-details-read-only">
+                      {provider?.Gateway_details?.[label] || ''}
+                    </label>
+                  ) : (
+                    <>
+                      <Input
+                        id={label}
+                        name={label?.toLowerCase()}
+                        type={data_type === 'string' ? 'text' : 'number'}
+                        value={provider?.Gateway_details?.[label] || ''}
+                        placeholder={data_value}
+                        onChange={changeGatewayDetails}
+                      />
+                      {validationErrors?.[label] && (
+                        <div className="provider-details-validation-error">
+                          {validationErrors[label]}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+        return null;
       })}
       {selectedProvider === 'paytm' &&
         user.isPaytmAutoDebitEnabled &&

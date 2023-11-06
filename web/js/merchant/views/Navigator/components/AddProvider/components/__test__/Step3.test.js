@@ -1,6 +1,9 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
+import { deepClone } from 'common/utils/rzp-utils';
 import { render, screen } from 'test-utils';
+
 import {
   App,
   PAYU_PROVIDER,
@@ -8,7 +11,6 @@ import {
   NETBANKING_AXIS_PROVIDER,
   CKO_PROVIDER,
 } from './mocks/Step3';
-import { deepClone } from 'common/utils/rzp-utils';
 import { TPV_OPTIONS } from './mocks/constants';
 
 describe('Add Provider Step 3 Screen', () => {
@@ -26,6 +28,13 @@ describe('Add Provider Step 3 Screen', () => {
     test.each(FIELDS)('should rendered the requried fields: %s', (field) => {
       renderApp(PAYU_PROVIDER);
       expect(screen.getByText(field)).toBeInTheDocument();
+    });
+
+    test('should render Recurring field', () => {
+      // Recurring field will be visible only if card or upi method is enabled
+      PAYU_PROVIDER.provider.Gateway_details['Payment Methods'] = ['card'];
+      renderApp(PAYU_PROVIDER);
+      expect(screen.getByText('Recurring')).toBeInTheDocument();
     });
   });
 

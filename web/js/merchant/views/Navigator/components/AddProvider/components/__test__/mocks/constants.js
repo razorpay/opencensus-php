@@ -100,6 +100,11 @@ export const SUPPORTED_GATEWAYS = {
       min_length: 8,
       terminals_key: '',
     },
+    Recurring: {
+      data_type: 'bool',
+      data_value: 'recurring',
+      terminals_key: '',
+    },
   },
   netbanking_axis: {
     'Gateway Name': {
