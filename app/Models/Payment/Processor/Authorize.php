@@ -994,13 +994,27 @@ trait Authorize
 
     public function isAltIdExperimentEnabled($payment): bool
     {
-       try {
-
-
-       // no need to fetch alt id for auto  recurring
+       try
+       {
+            // no need to fetch alt id for auto  recurring
            if ( $payment->getRecurringType() === RecurringType::AUTO)
            {
                 return false;
+           }
+
+           if ($payment->isRecurring() === true)
+           {
+               $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_RECURRING_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
+
+               $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
+
+               $this->trace->info(TraceCode::RECURRING_ALT_ID_RAZORX_RESULT, [
+                   'payment_id' => $payment->getId(),
+                   'feature'    => $razorxFeature,
+                   'variant'    => $variant
+               ]);
+
+               return (strtolower($variant) === "on");
            }
 
            $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
@@ -1008,48 +1022,22 @@ trait Authorize
            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
 
            $this->trace->info(TraceCode::ALT_ID_RAZORX_RESULT, [
-            'payment_id'  => $payment->getId(),
-            'feature'  => $razorxFeature,
-            'variant'  => $variant
-        ]);
-
-          if (strtolower($variant) !== "on")
-          {
-                return false;
-          }
-
-          if (strtolower($variant) === "on" && $payment->isRecurring() === false)
-            {
-                return true;
-            }
-
-
-           $razorxFeature = Merchant\RazorxTreatment::NON_REARCH_RECURRING_ALT_ID ."_". $payment->card->getNetworkCode()."_". $payment->getGateway().'_'. $payment->terminal->getGatewayAcquirer();
-
-           $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),$razorxFeature, $this->mode);
-
-           $this->trace->info(TraceCode::RECURRING_ALT_ID_RAZORX_RESULT, [
-            'payment_id'  => $payment->getId(),
-            'feature'     => $razorxFeature,
-             'variant'  => $variant
+                'payment_id' => $payment->getId(),
+                'feature'    => $razorxFeature,
+                'variant'    => $variant
            ]);
 
-             if (strtolower($variant) === "on")
-              {
-                    return true;
-              }
-
-              return false;
-
-            }  catch (\Exception $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        null,
-                        TraceCode::ALT_ID_FETCH_RAZORX_ERROR
-                    );
-                    return false;
-                }
+           return (strtolower($variant) === "on");
+       }
+       catch (\Exception $e)
+       {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::ALT_ID_FETCH_RAZORX_ERROR
+            );
+            return false;
+       }
     }
 
     protected function fetchAltIdData(array $input, array & $gatewayInput, Payment\Entity $payment, array & $terminalGatewayInput, $currentTerminal = null)
