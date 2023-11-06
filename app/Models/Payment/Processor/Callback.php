@@ -59,7 +59,10 @@ trait Callback
     private function coreCallback($id, $hash, array $gatewayInput)
     {
 
-       $startTime = microtime(true);
+       try
+       {
+
+        $startTime = microtime(true);
         // Axis migs started sending us card number in callback. This is a quickfix to
         // ignore the card number right before the callback is processed.
 
@@ -110,6 +113,14 @@ trait Callback
          $this->logCallbackRequestTime($payment,$startTime);
 
         return $response;
+       }
+       catch(\Throwable $ex)
+       {
+           if ($payment instanceof Payment\Entity === true) {
+               (new Payment\Metric)->pushCallbackExceptionMetrics($payment, $ex);
+           }
+           throw $ex;
+       }
     }
 
     /**
@@ -134,6 +145,9 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
+        try
+        {
+
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_S2S_CALLBACK_INITIATED, $payment);
 
         // Return if payment is auto captured
@@ -251,6 +265,15 @@ trait Callback
             2000);
 
         return ['success' => true];
+
+        }
+        catch(\Throwable $ex)
+        {
+            if ($payment instanceof Payment\Entity === true) {
+                (new Payment\Metric)->pushCallbackExceptionMetrics($payment, $ex);
+            }
+            throw $ex;
+        }
     }
 
     protected function shouldProcessSecondS2sCallback($payment)

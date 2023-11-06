@@ -2269,7 +2269,9 @@ class Processor
             (new EntityOrigin\Core)->createEntityOrigin($payment);
         }
 
-        $this->logPGRouterRequestTime($input, $startTime);
+        $payment = $payment ?? null;
+
+        $this->logPGRouterRequestTime($input, $startTime, $payment);
 
         $paymentData['processed_via_pg_router'] = true;
 
@@ -2583,11 +2585,23 @@ class Processor
 
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
 
+            $dimensions[Metric::LABEL_IS_REARCH] = $isReArchPayment;
+
+            if (isset($this->merchant) && $this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::RAAS))
+            {
+                $dimensions[Metric::LABEL_OPTIMIZER] = true;
+            }
+
             $this->addUpiDimensions($dimensions, $input, $payment, $isReArchPayment);
 
             if ($payment instanceof Payment\Entity === true)
             {
                 $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
+            }
+
+            if (empty($payment) === true && isset($input['method']) === true)
+            {
+                $dimensions[Metric::LABEL_PAYMENT_METHOD] = $input['method'];
             }
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions, $payment);
@@ -9648,13 +9662,13 @@ class Processor
         }
     }
 
-    protected function logPGRouterRequestTime($payment, $startTime)
+    protected function logPGRouterRequestTime($input, $startTime, ?Payment\Entity $payment)
     {
         try
         {
             $requestTime = get_diff_in_millisecond($startTime);
 
-            (new Payment\Metric)->pushRequestTimeMetricsViaPGRouter($payment, $requestTime);
+            (new Payment\Metric)->pushRequestTimeMetricsViaPGRouter($input, $requestTime, $payment);
         }
         catch (\Throwable $e)
         {

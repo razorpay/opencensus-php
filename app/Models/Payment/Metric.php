@@ -51,6 +51,8 @@ class Metric extends Base\Core
 
     const IS_VERIFY_NEW_FLOW                    = 'is_verify_new_flow';
     const IS_TIMEOUT_NEW_FLOW                   = 'is_timeout_new_flow';
+    const LABEL_OPTIMIZER                       = 'optimizer';
+    const LABEL_IS_REARCH                       = 'is_rearch';
 
 
     // Metric Names
@@ -68,6 +70,7 @@ class Metric extends Base\Core
     const PAYMENT_FAILED                        = 'payment_failed';
     const PAYMENT_FAILED_PG_ROUTER              = 'payment_failed_pg_router';
     const PAYMENT_PROCESS_FAILED                = 'payment_process_failed';
+    const PAYMENT_CALLBACK_PROCESS_FAILED       = 'payment_callback_process_failed';
     const PAYMENT_CAPTURE_FAILED                = 'payment_capture_failed';
     const PAYMENT_REQUEST_ROUTE                 = 'payment_request_route';
     const PAYMENT_CALLBACK_ROUTE                = 'payment_callback_route';
@@ -201,6 +204,22 @@ class Metric extends Base\Core
 
         $this->trace->histogram(self::PAYMENT_CALLBACK_REQUEST_TIME, $requestTime, $dimensions);
     }
+
+    // This metric is added by Optimizer team for instrumenting exceptions in payment callbacks.
+    // If needed for other payments, the check can be removed and the optimizer dimension needs to be updated
+    public function pushCallbackExceptionMetrics(Entity $payment, \Throwable $ex)
+    {
+        if (empty($payment) === false && isset($payment->terminal) && $payment->terminal->isOptimizer()) {
+
+            $dimensions[Metric::PAYMENT_CALLBACK_ROUTE] = $this->app['api.route']->getCurrentRouteName();
+            $dimensions[Metric::LABEL_PAYMENT_GATEWAY] = $payment->getGateway();
+            $dimensions[Metric::LABEL_PAYMENT_METHOD] = $payment->getMethod();
+            $dimensions[Metric::LABEL_OPTIMIZER] = true;
+
+            $this->pushExceptionMetrics($ex, Metric::PAYMENT_CALLBACK_PROCESS_FAILED, $dimensions, $payment);
+        }
+    }
+
     public function pushCapturedMetrics(Entity $payment)
     {
         $dimensions = $this->getDefaultDimentions($payment);
@@ -400,6 +419,10 @@ class Metric extends Base\Core
                         'message'  => 'Error in fetching Token details',
                     ]);
             }
+        }
+
+        if (!empty($payment) && isset($payment->terminal) && $payment->terminal->isOptimizer()) {
+            $dimensions[self::LABEL_OPTIMIZER] = true;
         }
 
         $dimensions += [
@@ -644,14 +667,25 @@ class Metric extends Base\Core
         $this->trace->count(self::PAYMENT_FAILED_PG_ROUTER, $dimensions);
     }
 
-    public function pushRequestTimeMetricsViaPGRouter(array $payment, int $requestTime)
+    public function pushRequestTimeMetricsViaPGRouter(array $input, int $requestTime, ?Entity $payment)
     {
         $route  = $this->app['api.route']->getCurrentRouteName();
 
         $dimensions = [
-            self::LABEL_PAYMENT_METHOD  => $payment['method'],
+            self::LABEL_PAYMENT_METHOD  => $input['method'],
             self::PAYMENT_REQUEST_ROUTE => $route,
         ];
+
+        if (empty($payment) === false)
+        {
+            $dimensions[self::LABEL_PAYMENT_GATEWAY] = $payment->getGateway();
+            $dimensions[self::LABEL_PAYMENT_METHOD]  = $payment->getMethod();
+
+            if (isset($payment->terminal) && $payment->terminal->isOptimizer())
+            {
+                $dimensions[self::LABEL_OPTIMIZER] = true;
+            }
+        }
 
         $this->trace->histogram(self::PAYMENT_CREATE_REQUEST_TIME_PG_ROUTER, $requestTime, $dimensions);
     }
