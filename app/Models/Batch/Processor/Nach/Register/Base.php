@@ -68,11 +68,9 @@ abstract class Base extends BaseProcessor
 
             $this->paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
 
-            $this->repo->transaction(function () use ($payment, $token, $parsedData) {
-                $this->updateTokenEntity($token, $parsedData);
+            $this->updateTokenEntity($token, $parsedData);
 
-                $this->updateTokenRegistrationAndUpdatePayment($payment, $parsedData);
-            });
+            $this->updateTokenRegistrationAndUpdatePayment($payment, $parsedData);
 
             $this->paymentProcessor->eventTokenStatus($token, $oldRecurringStatus);
 
