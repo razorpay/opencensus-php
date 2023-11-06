@@ -141,12 +141,18 @@ class Constants
 
     const WEBSITE_POLICY_QUESTION_MAPPING = [
         self::SHIPPING_PERIOD => [
-            self::QUESTION_ID           => 'question_2',
-            '0-2 days'                  => 'option_2_1',
-            '3-5 days'                  => 'option_2_2',
-            '6-8 days'                  => 'option_2_3',
-            '8+ days'                   => 'option_2_4',
-            'Not applicable'            => 'option_2_5',
+            self::QUESTION_ID => 'question_2',
+            '0-2 days'          => 'option_2_1',
+            '3-5 days'          => 'option_2_2',
+            '6-8 days'          => 'option_2_3',
+            '8+ days'           => 'option_2_4',
+            'Not applicable'    => 'option_2_5',
+
+            '0-7 days'          => 'option_2_11',
+            '8-14 days'         => 'option_2_12',
+            '15-21 days'        => 'option_2_13',
+            '22-35 days'        => 'option_2_14',
+            '35+ days'          => 'option_2_15',
         ],
     ];
 
