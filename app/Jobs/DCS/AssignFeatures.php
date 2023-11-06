@@ -84,8 +84,8 @@ class AssignFeatures extends Job
                     'limit' => self::LIMIT
                 ]);
 
-                // Split $entityIds into chunks of 500
-                $entityIdChunks = array_chunk($entityIds, 500);
+                // Split $entityIds into chunks of 1000
+                $entityIdChunks = array_chunk($entityIds, 1000);
 
                 foreach ($entityIdChunks as $chunk) {
                     AssignMerchantFeatures::dispatch($this->mode, $variant, $this->input['name'], $this->input['entity_type'], $chunk);

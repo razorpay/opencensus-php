@@ -17,7 +17,7 @@ class ValidateFeaturesAPIAndDCS extends Job
 {
     protected $mode;
 
-    public $timeout = 12000;
+    public $timeout = 20000;
 
     const LIMIT = 500;
     protected $input;
@@ -32,7 +32,7 @@ class ValidateFeaturesAPIAndDCS extends Job
     public function handle(): void
     {
         parent::handle();
-        RuntimeManager::setMemoryLimit('2048M');
+        RuntimeManager::setMemoryLimit('4096M');
 
         RuntimeManager::setTimeLimit($this->timeout);
 
@@ -145,8 +145,6 @@ class ValidateFeaturesAPIAndDCS extends Job
             $this->trace->info(TraceCode::DCS_VALIDATE_FEATURES_API_AND_DCS_JOB_RESULT, [
                 'api_diff_size' => sizeof($apiDiff),
                 'dcs_diff_size' => sizeof($dcsDiff),
-                'api_diff' => $apiDiff,
-                'dcs_diff' => $dcsDiff
             ]);
 
             if ($assignApiDiffToDcs === true)
@@ -157,8 +155,8 @@ class ValidateFeaturesAPIAndDCS extends Job
                 // if complete diff $apiDiff will be as ["id1", "id2"]
                 // if partial diff then $apiDiff will be as ["1" => "id1", "2" => "id2" ]
 
-                // Divide $apiDiff into batches of 500
-                $apiDiffChunks = array_chunk($apiDiff, 500);
+                // Divide $apiDiff into batches of 1000
+                $apiDiffChunks = array_chunk($apiDiff, 1000);
 
                 foreach ($apiDiffChunks as $chunk) {
                     // Call assign dcs api for each entity in the current chunk
