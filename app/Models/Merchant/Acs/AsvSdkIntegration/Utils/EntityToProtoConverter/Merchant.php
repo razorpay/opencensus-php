@@ -85,7 +85,7 @@ class Merchant implements EntityToProtoConvertorInterface
         $merchant->setBrandColor(Helper::converToStringValue($rawAttributes, MerchantEntity::BRAND_COLOR));
         $merchant->setHandle(Helper::converToStringValue($rawAttributes, MerchantEntity::HANDLE));
         $merchant->setActivationSource(Helper::converToStringValue($rawAttributes, MerchantEntity::ACTIVATION_SOURCE));
-        $merchant->setBusinessBanking(Helper::convertToInt32ValueOrDefault($rawAttributes, MerchantEntity::BUSINESS_BANKING));
+        $merchant->setBusinessBanking(Helper::convertToInt32ValueFromBoolOrDefault($rawAttributes, MerchantEntity::BUSINESS_BANKING));
         $merchant->setAutoCaptureLateAuth(Helper::convertBoolToNotNullableInt($rawAttributes, MerchantEntity::AUTO_CAPTURE_LATE_AUTH, 0));
         // @todo check what does get stored here, should check what gets stored via api and asv
         $merchant->setLogoUrl(Helper::converToStringValue($rawAttributes, MerchantEntity::LOGO_URL));

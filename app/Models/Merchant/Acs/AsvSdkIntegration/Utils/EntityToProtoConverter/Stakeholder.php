@@ -38,8 +38,8 @@ class Stakeholder implements EntityToProtoConvertorInterface
         $stakeholder->setName(Helper::converToStringValue($rawAttributes, StakeholderEntity::NAME));
         $stakeholder->setPhonePrimary(Helper::converToStringValue($rawAttributes, StakeholderEntity::PHONE_PRIMARY));
         $stakeholder->setPhoneSecondary(Helper::converToStringValue($rawAttributes, StakeholderEntity::PHONE_SECONDARY));
-        $stakeholder->setDirector(Helper::convertToInt32Value($rawAttributes, StakeholderEntity::DIRECTOR));
-        $stakeholder->setExecutive(Helper::convertToInt32Value($rawAttributes, StakeholderEntity::EXECUTIVE));
+        $stakeholder->setDirector(Helper::convertToInt32ValueFromBool($rawAttributes, StakeholderEntity::DIRECTOR));
+        $stakeholder->setExecutive(Helper::convertToInt32ValueFromBool($rawAttributes, StakeholderEntity::EXECUTIVE));
         $stakeholder->setPercentageOwnership(Helper::convertToUInt32Value($rawAttributes, StakeholderEntity::PERCENTAGE_OWNERSHIP));
         $stakeholder->setPoiIdentificationNumber(Helper::converToStringValue($rawAttributes, StakeholderEntity::POI_IDENTIFICATION_NUMBER));
         $stakeholder->setPoiStatus(Helper::converToStringValue($rawAttributes, StakeholderEntity::POI_STATUS));
