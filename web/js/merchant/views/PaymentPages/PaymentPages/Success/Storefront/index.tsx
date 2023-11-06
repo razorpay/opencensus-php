@@ -17,6 +17,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   fetchStorefront,
   editStorefrontDeepMerge,
+  resetStorefront,
 } from 'merchant/reducers/paymentPages/storefront';
 
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
@@ -40,16 +41,21 @@ interface IStorefrontSuccessProps extends RouteComponentProps {
   openModal: OpenModalType;
   closeModal: () => void;
   showNotification: ShowNotificationType;
+  resetStorefront: () => void;
 }
 
 const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement => {
-  const { editStorefrontDeepMerge, storefrontData, showNotification } = props;
+  const { editStorefrontDeepMerge, storefrontData, showNotification, resetStorefront } = props;
   const { isLoading, entity: storeData, error } = storefrontData;
   const [isPageSettingsOpen, setIsPageSettingsOpen] = useState<boolean>(false);
   const location = useLocation();
 
   useEffect(() => {
     props.fetchStorefront(props.id);
+
+    return () => {
+      resetStorefront();
+    };
   }, [props.id]);
 
   const handleGoToPage = (): void => {
@@ -315,7 +321,14 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
-    { closeModal, openModal, showNotification, fetchStorefront, editStorefrontDeepMerge },
+    {
+      closeModal,
+      openModal,
+      showNotification,
+      fetchStorefront,
+      editStorefrontDeepMerge,
+      resetStorefront,
+    },
     dispatch,
   );
 

@@ -206,7 +206,12 @@ export const generateStorefrontRequest = (
     })),
     expire_by,
     slug,
-    settings: Object.keys(settings).length ? settings : undefined,
+    // if settings is empty, send any valid key with empty string value, as this key cannot be sent as undefined
+    settings: Object.keys(settings).length
+      ? settings
+      : {
+          payment_success_message: '',
+        },
   };
 };
 

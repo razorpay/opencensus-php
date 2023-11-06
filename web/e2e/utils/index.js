@@ -87,12 +87,12 @@ export const switchToTestMode = async ({ page }) => {
   await page.goto(routes.DASHBOARD);
   let modeSwitchToggle;
   // if current mode is already test mode, then no nothing. Else switch to test mode
-  try {
-    await page.waitForSelector('a.switch-modes-toggle >> text=Test Mode');
-    return;
-  } catch (err) {
-    // continue if error was encountered
-  }
+  // try {
+  //   await page.waitForSelector('a.switch-modes-toggle >> text=Test Mode', { timeout: 1000 });
+  //   return;
+  // } catch (err) {
+  //   // continue if error was encountered
+  // }
   try {
     modeSwitchToggle = await page.waitForSelector('a.switch-modes-toggle', {
       timeout: 5000,
