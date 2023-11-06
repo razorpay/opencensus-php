@@ -786,6 +786,23 @@ return [
         ],
     ],
 
+    'testWarningOnPassportGenerationAfterModification' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments',
+            'content' => [
+                'count' => 1
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'items' => [
+                ],
+            ]
+        ],
+    ],
+
     'testPrivateAuthKeyExpired' => [
         'request' => [
             'method' => 'GET',

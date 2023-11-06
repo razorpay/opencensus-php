@@ -476,6 +476,26 @@ class BasicAuth
      */
     protected $accountIdFromBody = null;
 
+    /**
+     * Used to identify if passport attribute modification is allowed or not using public methods
+     * @var string
+     */
+    private $passportModificationAllowed = true;
+
+    /**
+     * used maintain list of methods from which passport was altered once marked passportModificationAllowed=false
+     * @var array
+     */
+    private $passportAlterationPath = [];
+
+    /**
+     * maximum number of method names allows in passportAlterationPath.
+     * there are total of 9 public methods allowing passport alternation directly at max so keeping the limit same.
+     * 
+     * @var integer
+     */
+    private static $passportAlterationPathLimit = 9;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -501,6 +521,7 @@ class BasicAuth
         $this->proxy                       = false;
         $this->passport                    = [];
         $this->passportFromJob             = "";
+        $this->passportModificationAllowed = true;
     }
 
     public function setCredentials(string $key = null, string $secret = null, string $accountId = null)
@@ -3337,6 +3358,7 @@ class BasicAuth
      */
     public function setPassport(Passport $passport): void
     {
+        $this->passportModified('setPassport');
         // convert edge passport object to associative array since ba passport is an array
         // json_decode and json_encode will convert the object to associative array in full depth recursively
         // there will not be any error since we verified passport is valid already
@@ -3376,6 +3398,7 @@ class BasicAuth
      */
     public function setPassportMode(string $mode)
     {
+        $this->passportModified('setPassportMode');
         $this->passport['mode'] = $mode;
     }
 
@@ -3386,6 +3409,7 @@ class BasicAuth
      */
     public function setPassportCredentialClaims(string $username, string $publicKey = null)
     {
+        $this->passportModified('setPassportCredentialClaims');
         // - credential.username is username from http basic auth.
         // - credential.public_key is for constructing callback urls, and as signer sdk argument. It is same as username for private auth.
         $this->passport['credential'] = ['username' => $username, 'public_key' => $publicKey];
@@ -3400,6 +3424,7 @@ class BasicAuth
      */
     public function setPassportConsumerClaims(string $type, string $id, bool $authenticated = false, array $meta = [])
     {
+        $this->passportModified('setPassportConsumerClaims');
         $this->passport['identified']    = true;
         $this->passport['authenticated'] = $authenticated;
         $this->passport['consumer']      = ['type' => $type, 'id' => $id];
@@ -3420,6 +3445,7 @@ class BasicAuth
      */
     public function setPassportOAuthClaims(string $ownerType, string $ownerId, string $clientId, string $appId, string $env)
     {
+        $this->passportModified('setPassportOAuthClaims');
         $this->passport['identified'] = true;
 
         $this->passport['oauth'] = [
@@ -3438,6 +3464,7 @@ class BasicAuth
      */
     public function setPassportImpersonationClaims(string $type, string $consumerId, string $consumerType = self::PASSPORT_CONSUMER_TYPE_MERCHANT)
     {
+        $this->passportModified('setPassportImpersonationClaims');
         $this->passport['impersonation'] = ['type' => $type, 'consumer' => ['id' => $consumerId, 'type' => $consumerType]];
     }
 
@@ -3486,6 +3513,7 @@ class BasicAuth
      */
     public function setPassportRoles(array $roles)
     {
+        $this->passportModified('setPassportRoles');
         $this->passport['roles'] = $roles;
     }
 
@@ -3495,6 +3523,7 @@ class BasicAuth
      */
     public function setPassportAuthenticated(bool $authenticated)
     {
+        $this->passportModified('setPassportAuthenticated');
         $this->passport['authenticated'] = $authenticated;
     }
 
@@ -3504,6 +3533,7 @@ class BasicAuth
      */
     public function setPassportDomain(string $domain)
     {
+        $this->passportModified('setPassportDomain');
         $this->passport['domain'] = $domain;
     }
 
@@ -3544,6 +3574,12 @@ class BasicAuth
             ->canOnlyBeUsedAfter($sysClock->now())
             ->expiresAt($sysClock->now()->add(new \DateInterval($interval)))
             ->withHeader('kid', $privateKeyId);
+
+        if ( sizeof($this->passportAlterationPath) > 0 )
+        {
+            //this mean that passport set in context was altered outside of middleware layer and now service is trying to generate new passport
+            $this->trace->warning(TraceCode::PASSPORT_GENERATION_NOT_ALLOWED,['passportAlterationPath'=>$this->passportAlterationPath]);
+        }
 
         // Appends custom claims.
         foreach ($this->getPassport() as $key => $value)
@@ -3621,6 +3657,26 @@ class BasicAuth
 
             return '';
         }
+    }
+
+    public function setPassportModificationNotAllowed()
+    {
+        $this->passportModificationAllowed = false;
+    }
+
+    /**
+     *  if passport context modification is not allowed appends the caller name to passportAlterationPath
+     */
+    private function passportModified(string $methodName): void
+    {
+        if ( !$this->passportModificationAllowed && sizeof($this->passportAlterationPath) < self::$passportAlterationPathLimit ) {
+           $this->passportAlterationPath[] = $methodName;
+        }
+    }
+
+    public function getPassportAlterationPath(): array
+    {
+       return  $this->passportAlterationPath;
     }
 
 }

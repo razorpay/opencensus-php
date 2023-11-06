@@ -294,6 +294,23 @@ class BasicAuthTest extends TestCase
         $this->assertSame('merchant', $passport->consumer->type);
     }
 
+    //testWarningOnPassportGenerationAfterModification
+    // log warning if passport alteration is done outside of auth scope or after middleware execution.
+    public function testWarningOnPassportGenerationAfterModification()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        // Modify the passport attribute outside of middleware context
+        $this->app['basicauth']->setPassportConsumerClaims('merchant','10000000000000',true);
+        $this->app['basicauth']->setPassportMode('test');
+        $this->app['basicauth']->setPassportCredentialClaims('10000000000000','rzp_test_TheTestAuthKey');
+        $this->app['basicauth']->getPassportJwt('subscriptions.razorpay.com');
+        $passportAlterationPath=$this->app['basicauth']->getPassportAlterationPath();
+        self::assertEquals(3,sizeof($passportAlterationPath));
+    }
+
     public function testPrivateAuthKeyExpired()
     {
         $this->ba->privateAuth();
