@@ -1223,9 +1223,7 @@ class Processor
 
             if ($merchant->isFeatureEnabled('openwallet') === true)
             {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::OPEN_WALLET_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
+                return true;
             }
 
             if (empty($order) === false and $order->getProductType() === ProductType::PAYMENT_LINK_V2)
@@ -1306,6 +1304,11 @@ class Processor
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
             }
+
+            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                'reason' => "not_engaged_in_any_function",
+                'merchant_id' => $merchant->getId(),
+            ]);
 
             return ($result === 'on');
 
