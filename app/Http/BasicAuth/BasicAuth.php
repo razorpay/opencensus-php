@@ -3171,28 +3171,33 @@ class BasicAuth
 
         if (empty($userId) === false)
         {
-            $user = $this->repo->user->findOrFailPublic($userId);
-
-            $this->setUser($user);
-
-            $this->setUserRole($userId);
-
-            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_USER, $userId, true);
-
-            $userRoles = [];
-
-            // $this->userRole can be string|null
-            if (empty($this->userRole) === false)
-            {
-                $userRoles = [$this->userRole];
-
-                $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($this->userRole);
-
-                $userRoles = array_merge($userRoles, $authzRoles);
-            }
-
-            $this->setPassportRoles($userRoles);
+           $this->setUserAndRoles($userId);
         }
+    }
+
+    public function setUserAndRoles(string $userId)
+    {
+        $user = $this->repo->user->findOrFailPublic($userId);
+
+        $this->setUser($user);
+
+        $this->setUserRole($userId);
+
+        $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_USER, $userId, true);
+
+        $userRoles = [];
+
+        // $this->userRole can be string|null
+        if (empty($this->userRole) === false)
+        {
+            $userRoles = [$this->userRole];
+
+            $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($this->userRole);
+
+            $userRoles = array_merge($userRoles, $authzRoles);
+        }
+
+        $this->setPassportRoles($userRoles);
     }
 
     public function setUserRole(string $userId)

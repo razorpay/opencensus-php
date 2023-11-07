@@ -17,7 +17,7 @@ class EdgeAuthenticateTest extends TestCase
     const TEST_MERCHANT_ID = '10000000000000';
     const TEST_UNMAPPED_MERCHANT_ID = '10000000000011';
     const TEST_INVALID_MERCHANT_ID = '20000000000011';
-    const TEST_INVALID_SIGNED_ORG_ID = 'org_100001razorpay';
+    const TEST_INVALID_ORG_ID = '100001razorpay';
     const TEST_ORG_HOSTNAME = 'dashboard.razorpay.in';
 
     protected function setUp(): void
@@ -93,7 +93,7 @@ class EdgeAuthenticateTest extends TestCase
     public function testInternalAuthWithoutAdminToken()
     {
         $data = array_merge($this->testData['baseRequest'], $this->testData[__FUNCTION__]);
-        unset($data['request']['content']['headers'][RequestHeader::X_ADMIN_TOKEN]);
+        unset($data['request']['content']['dashboard']['headers'][RequestHeader::X_ADMIN_TOKEN]);
         $this->runRequestResponseFlow($data);
     }
 

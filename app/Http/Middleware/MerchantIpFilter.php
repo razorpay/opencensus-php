@@ -51,7 +51,8 @@ class MerchantIpFilter
         }
         else if ($this->ba->isProxyAuth() === true)
         {
-            $ret = $this->authenticateIpForProxyAuth($request);
+            $clientRequestIp = $this->fetchClientIpForDashboardRequest($request);
+            $ret = $this->authenticateIpForProxyAuth($clientRequestIp);
         }
 
         if ($ret !== null)
@@ -106,11 +107,10 @@ class MerchantIpFilter
     }
 
     /**
-     * @param HttpRequest $request
-     *
-     * @return |null
+     * @param $clientRequestIp
+     * @return null
      */
-    protected function authenticateIpForProxyAuth(HttpRequest $request)
+    public function authenticateIpForProxyAuth($clientRequestIp)
     {
         $merchant = $this->ba->getMerchant();
 
@@ -130,10 +130,8 @@ class MerchantIpFilter
             return null;
         }
 
-        $requestIp = $this->fetchClientIpForDashboardRequest($request);
-
-        if(($requestIp === null) or
-           (in_array($requestIp, $whitelistedIps,true)))
+        if(($clientRequestIp === null) or
+           (in_array($clientRequestIp, $whitelistedIps,true)))
         {
             return null;
         }

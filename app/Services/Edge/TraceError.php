@@ -43,7 +43,7 @@ trait TraceError
     private function failedUnreachable($res = null)
     {
         $res = $res ?? ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
-        $this->trace->error(TraceCode::EDGE_THIRD_PARTY_VERIFY_APP_FAILED);
+        $this->trace->error(TraceCode::EDGE_THIRD_PARTY_UNREACHABLE);
         return $res;
     }
 

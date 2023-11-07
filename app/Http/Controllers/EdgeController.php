@@ -18,7 +18,7 @@ class EdgeController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->service = new Service();
+        $this->service = new Service($this->input['dashboard']['headers']);
     }
 
     /**
@@ -44,7 +44,8 @@ class EdgeController extends Controller
             return $this->failedInternalAuthNotSupported();
 
         // Check if admin token is provided if it is set as required
-        $hasAdminToken = isset($this->input['headers'][RequestHeader::X_ADMIN_TOKEN]);
+        $dashboardRequestInfo = $this->input['dashboard'];
+        $hasAdminToken = isset($dashboardRequestInfo['headers'][RequestHeader::X_ADMIN_TOKEN]);
         if (empty($this->input['admin_token_required']) === false and !$hasAdminToken)
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_TOKEN_NOT_FOUND);
 
@@ -56,9 +57,9 @@ class EdgeController extends Controller
         $this->trace->info(TraceCode::EDGE_THIRD_PARTY_AUTHENTICATE_REQUEST, [
             'auth' => $this->input['auth'],
             'apps' => $this->input['apps'],
-            'key' => $this->input['key'],
-            'account_id' => $this->input['account_id'] ?? null,
-            'org_id' => $this->input['org_id'] ?? null,
+            'key' => $dashboardRequestInfo['key'],
+            'account_id' => $dashboardRequestInfo['account_id'] ?? null,
+            'org_id' => $dashboardRequestInfo['org_id'] ?? null,
             'has_admin_token' => $hasAdminToken
         ]);
 
@@ -102,7 +103,12 @@ class EdgeController extends Controller
         }
         else if ($this->ba->isProxyAuth())
         {
-            return [];
+            return [
+                'user_id' => $this->ba->getUser()->getId(),
+                'product' => $this->ba->isBankLms() ? 'lms' : $this->ba->getRequestOriginProduct(),
+                'roles' => $this->service->getUserRoles(),
+                'enforcement_roles' => $this->service->getUserEnforcementRoles()
+            ];
         }
 
         // Should not reach here

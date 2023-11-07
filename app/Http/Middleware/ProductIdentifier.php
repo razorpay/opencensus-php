@@ -102,7 +102,11 @@ class ProductIdentifier
     public function setIfBankLmsRequest(Request $request): void
     {
         $originDomain = $request->headers->get(RequestHeader::X_REQUEST_ORIGIN);
+        $this->setIfBankLmsRequestFromOrigin($originDomain);
+    }
 
+    public function setIfBankLmsRequestFromOrigin($originDomain): void
+    {
         $bankLmsBankingOriginHost = parse_url(config('applications.bank_lms_banking_service_url'), PHP_URL_HOST);
 
         $requestOriginHost = parse_url($originDomain, PHP_URL_HOST);
@@ -117,10 +121,14 @@ class ProductIdentifier
         $this->ba->setBankLms(false);
     }
 
-    public function getRequestOriginProductFromRequest(Request $request)
+    public function getRequestOriginProductFromRequest(Request $request): string
     {
         $originDomain = $request->headers->get(RequestHeader::X_REQUEST_ORIGIN);
+        return $this->getRequestOriginProductFromOrigin($originDomain);
+    }
 
+    public function getRequestOriginProductFromOrigin($originDomain): string
+    {
         $bankingOriginHost = parse_url(config('applications.banking_service_url'), PHP_URL_HOST);
 
         $bankLmsBankingOriginHost = parse_url(config('applications.bank_lms_banking_service_url'), PHP_URL_HOST);

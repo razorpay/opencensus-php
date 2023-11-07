@@ -19,15 +19,17 @@ return [
                 'PHP_AUTH_PW'   => env('APP_EDGE_SECRET')
             ],
             'content' => [
-                'key' => 'rzp_test',
-                'secret' => env('APP_DASHBOARD_SECRET'),
+                'dashboard' => [
+                    'key' => 'rzp_test',
+                    'secret' => env('APP_DASHBOARD_SECRET'),
+                    'org_id' => Org::RZP_ORG,
+                    'headers' => [
+                        RequestHeader::X_ADMIN_TOKEN => Org::DEFAULT_ADMIN_TOKEN
+                    ]
+                ],
                 'auth' => 'internal',
                 'admin_token_required' => true,
                 'apps' => ['dashboard', 'admin_dashboard'],
-                'org_id' => Org::RZP_ORG_SIGNED,
-                'headers' => [
-                    RequestHeader::X_ADMIN_TOKEN => Org::DEFAULT_ADMIN_TOKEN
-                ]
             ]
         ]
     ],
@@ -44,7 +46,7 @@ return [
     ],
 
     'testInternalAuthWithInvalidAdminToken' => [
-        'request' => ['content' => ['headers' => [RequestHeader::X_ADMIN_TOKEN => Org::DEFAULT_TOKEN . Org::MAKER_TOKEN_PRINCIPAL]]],
+        'request' => ['content' => ['dashboard' => ['headers' => [RequestHeader::X_ADMIN_TOKEN => Org::DEFAULT_TOKEN . Org::MAKER_TOKEN_PRINCIPAL]]]],
         'response'  => [
             'content'     => [
                 'error' => [
@@ -61,15 +63,15 @@ return [
     ],
 
     'testInternalAuthWithAdminTokenAndAccountId' => [
-        'request' => ['content' => ['account_id' => EdgeAuthenticateTest::TEST_MERCHANT_ID]]
+        'request' => ['content' => ['dashboard' => ['account_id' => EdgeAuthenticateTest::TEST_MERCHANT_ID]]]
     ],
 
     'testInternalAuthWithAdminTokenAndSignedAccountId' => [
-    'request' => ['content' => ['account_id' => 'acc_' . EdgeAuthenticateTest::TEST_MERCHANT_ID]]
+    'request' => ['content' => ['dashboard' => ['account_id' => 'acc_' . EdgeAuthenticateTest::TEST_MERCHANT_ID]]]
     ],
 
     'testInternalAuthWithAdminTokenAndInvalidAccountId' => [
-        'request' => ['content' => ['account_id' => EdgeAuthenticateTest::TEST_INVALID_MERCHANT_ID]],
+        'request' => ['content' => ['dashboard' => ['account_id' => EdgeAuthenticateTest::TEST_INVALID_MERCHANT_ID]]],
         'response'  => [
             'content'     => [
                 'error' => [
@@ -81,7 +83,7 @@ return [
         ]
     ],
     'testInternalAuthWithAdminTokenAndUnmappedAccountId' => [
-        'request' => ['content' => ['account_id' => EdgeAuthenticateTest::TEST_UNMAPPED_MERCHANT_ID]],
+        'request' => ['content' => ['dashboard' => ['account_id' => EdgeAuthenticateTest::TEST_UNMAPPED_MERCHANT_ID]]],
         'response'  => [
             'content'     => [
                 'error' => [
@@ -104,7 +106,7 @@ return [
         ]
     ],
     'testInternalAuthWithProxyAuthKey' => [
-        'request' => ['content' => ['key' => 'rzp_test_' . EdgeAuthenticateTest::TEST_MERCHANT_ID]],
+        'request' => ['content' => ['dashboard' => ['key' => 'rzp_test_' . EdgeAuthenticateTest::TEST_MERCHANT_ID]]],
         'response'  => [
             'content'     => [
                 'error' => [
@@ -116,7 +118,7 @@ return [
         ]
     ],
     'testInternalAuthWithInvalidOrg' => [
-        'request' => ['content' => ['org_id' => EdgeAuthenticateTest::TEST_INVALID_SIGNED_ORG_ID]],
+        'request' => ['content' => ['dashboard' => ['org_id' => EdgeAuthenticateTest::TEST_INVALID_ORG_ID]]],
         'response'  => [
             'content'     => [
                 'error' => [
@@ -132,15 +134,15 @@ return [
         ],
     ],
     'testInternalAuthWithValidOrgHostname' => [
-        'request' => ['content' => ['headers' => [AdminAccess::ORG_HOSTNAME_HEADER_KEY => EdgeAuthenticateTest::TEST_ORG_HOSTNAME]]],
+        'request' => ['content' => ['dashboard' => ['headers' => [AdminAccess::ORG_HOSTNAME_HEADER_KEY => EdgeAuthenticateTest::TEST_ORG_HOSTNAME]]]],
     ],
 
     'testInternalAuthWithMIDInRouteParams' => [
-        'request' => ['content' => ['route_params' => ['merchant_id' => EdgeAuthenticateTest::TEST_MERCHANT_ID]]],
+        'request' => ['content' => ['dashboard' => ['route_params' => ['merchant_id' => EdgeAuthenticateTest::TEST_MERCHANT_ID]]]],
     ],
 
     'testInternalAuthWithUnmappedMIDInRouteParams' => [
-        'request' => ['content' => ['route_params' => ['merchant_id' => EdgeAuthenticateTest::TEST_UNMAPPED_MERCHANT_ID]]],
+        'request' => ['content' => ['dashboard' => ['route_params' => ['merchant_id' => EdgeAuthenticateTest::TEST_UNMAPPED_MERCHANT_ID]]]],
         'response'  => [
             'content'     => [
                 'error' => [
@@ -152,14 +154,15 @@ return [
         ]
     ],
     'testProxyAuthWithAdminToken' => [
-        'request' => ['content' => [
-            'key' => 'rzp_test_' . EdgeAuthenticateTest::TEST_MERCHANT_ID,
-            'auth' => 'proxy'
-        ]]
+        'request' => ['content' =>
+            [
+                'dashboard' => ['key' => 'rzp_test_' . EdgeAuthenticateTest::TEST_MERCHANT_ID],
+                'auth' => 'proxy'
+            ]]
     ],
     'testInvalidProxyAuthWithAdminToken' => [
         'request' => ['content' => [
-            'key' => 'rzp_test_' . EdgeAuthenticateTest::TEST_INVALID_MERCHANT_ID,
+            'dashboard' => ['key' => 'rzp_test_' . EdgeAuthenticateTest::TEST_INVALID_MERCHANT_ID],
             'auth' => 'proxy'
         ]],
         'response'  => [
@@ -187,7 +190,7 @@ return [
         ]
     ],
     'testProxyAuthWithValidOrgHostname' => [
-        'request' => ['content' => ['headers' => [AdminAccess::ORG_HOSTNAME_HEADER_KEY => EdgeAuthenticateTest::TEST_ORG_HOSTNAME]]],
+        'request' => ['content' => ['dashboard' => ['headers' => [AdminAccess::ORG_HOSTNAME_HEADER_KEY => EdgeAuthenticateTest::TEST_ORG_HOSTNAME]]]],
     ],
     'testInvalidAuth' => [
         'request' => ['content' => ['auth' => 'invalid_auth']],
@@ -202,7 +205,7 @@ return [
         ]
     ],
     'testNonDashboardApp' =>  [
-        'request' => ['content' => ['apps' => ['dashboard', 'mailgun'], 'secret' => env('APP_MAILGUN_SECRET')]],
+        'request' => ['content' => ['apps' => ['dashboard', 'mailgun'], 'dashboard' => ['secret' => env('APP_MAILGUN_SECRET')]]],
         'response'  => [
             'content'     => [
                 'error' => [
@@ -214,7 +217,7 @@ return [
         ]
     ],
     'testValidAppButDifferentSecret' => [
-        'request' => ['content' => ['secret' => env('APP_FRONTEND_GRAPHQL_SECRET')]],
+        'request' => ['content' => ['dashboard' => ['secret' => env('APP_FRONTEND_GRAPHQL_SECRET')]]],
         'response'  => [
             'content'     => [
                 'error' => [
