@@ -1,6 +1,6 @@
 import lazy from 'merchant/routes/LazyLoader';
 import WoocCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/woocommerce/CouponGCSetting';
-import WoocShippingTab from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingSettingsWrapper';
+import WoocShippingTab from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingWrapper';
 
 import MagicIntelligenceTab from 'merchant/views/MagicCheckout/Settings/containers/MagicIntelligenceTab';
 import CODSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/CODSettingsTab';
