@@ -428,4 +428,71 @@ class UpiKotakQRCodeTest extends TestCase
         // We return success as true in this case
         $this->assertTrue($response['success']);
     }
+
+    public function testProcessKotakQrReconInternalWithoutPayment(): void
+    {
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $request = $this->testData['testProcessKotakQrPaymentInternal'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['npci_reference_id'] = (string) random_int(100000000000, 999999999999);
+
+        $response = $this->makeUpiPaymentInternal($request);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals('upi_kotak', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+    }
+
+    public function testProcessKotakQrReconInternalWithExistingPayment(): void
+    {
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $this->makeUpiKotakPayment($qrCodeEntity);
+        $existingPayment = $this->getDbLastEntity('payment', 'live');
+
+        $request = $this->testData['testProcessKotakQrPaymentInternal'];
+        $request['content']['data']['upi']['merchant_reference'] = $qrCodeEntity['reference'] . 'qrv2';
+        $request['content']['data']['upi']['npci_reference_id'] = $existingPayment['reference16'];
+
+        $response = $this->makeUpiPaymentInternal($request);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals('upi_kotak', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+        $this->assertEquals($existingPayment['id'], $payment['id']);
+    }
 }

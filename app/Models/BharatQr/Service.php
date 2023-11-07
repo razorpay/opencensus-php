@@ -23,6 +23,7 @@ use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Mpan\Entity as MpanEntity;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Gateway\Mozart\Gateway as MozartGateway;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use \RZP\Gateway\Upi\Yesbank\Fields as YesBankFields;
 
@@ -199,7 +200,14 @@ class Service extends Base\Service
             $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
         }
 
-        $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
+        if (in_array($gateway, MozartGateway::$qrCodePaymentGateways, true) === false)
+        {
+            $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
+        }
+        else
+        {
+            $gatewayResponse = $gatewayClass->getQrData(json_decode($input, true), $gateway);
+        }
 
         $qrData = $gatewayResponse['qr_data'];
 

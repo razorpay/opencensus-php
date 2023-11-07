@@ -860,6 +860,35 @@ return [
         ],
     ],
 
+    'testProcessKotakQrPaymentInternal' => [
+        'url'     => '/payment/callback/bharatqr/upi_kotak/internal',
+        'method'  => 'post',
+        'content' => [
+            'data'    =>
+                [
+                    'payment'           =>
+                        [
+                            'amount_authorized' => 300,
+                            'currency'          => 'INR',
+                        ],
+                    'terminal'          =>
+                        [
+                            'gateway'             => 'upi_kotak',
+                            'vpa'                 => 'testvpa@kotak',
+                            'gateway_merchant_id' => 'razorpayupi',
+                        ],
+                    'upi'               =>
+                        [
+                            'merchant_reference' => 'LnYZWjQcVbWZ4aqrv2',
+                            'npci_reference_id'  => '306133002290',
+                            'vpa'                => 'pullak10@oksbi',
+                        ],
+                    'gateway_timestamp' => '2023-11-06',
+                ],
+            'success' => true,
+        ],
+    ],
+
     'testProcessIciciQrPaymentOnSharedTerminalForSingleUseQrViaVPACallbackRoute' => [
         'url'     => '/test/upi/callback/icici/upi_icici',
         'method'  => 'post',

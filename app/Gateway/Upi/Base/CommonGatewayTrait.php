@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Upi\Base;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
+use Carbon\Exceptions\InvalidFormatException;
 
 use RZP\Exception;
 use RZP\Gateway\Upi;
@@ -34,6 +36,10 @@ trait CommonGatewayTrait
 {
     protected $qrPaymentMerchantRefSuffix = QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
 
+    /**
+     * This static array maintains a list of all gateways migrated to the common QR payments flow.
+     * @var array A list of supported gateway on common QR payments flow.
+     */
     public static $qrCodePaymentGateways = [
         Payment\Gateway::UPI_KOTAK,
     ];
@@ -958,7 +964,7 @@ trait CommonGatewayTrait
 
             // Check if the payment was successful or not
             // Make sure that Mozart is returning success as true in the response to make this work
-            if ($input[Payment\Gateway::SUCCESS] !== true)
+            if (boolval($input[Payment\Gateway::SUCCESS]) !== true)
             {
                 $this->trace->error(
                     TraceCode::QR_PAYMENT_FAILED_TRANSACTION_CALLBACK,
@@ -999,16 +1005,35 @@ trait CommonGatewayTrait
             }
             */
 
+            $transactionTime = null;
+
             if (empty($inputFields['gateway_timestamp'] === false))
             {
                 // Bad assumption for transaction time format
                 // Making it work for Kotak for now
                 // We will have to figure this out correctly once other gateways start using this.
                 // TODO: Ideally, this conversion should happen on Mozart.
-                $transactionTime = Carbon::createFromFormat('Y-m-d H:i:s.v', $inputFields['gateway_timestamp'],
-                                                            Timezone::IST);
+                try
+                {
+                    $transactionTime = Carbon::createFromFormat('Y-m-d H:i:s.v', $inputFields['gateway_timestamp'],
+                                                                Timezone::IST);
+                }
+                catch (InvalidFormatException $e)
+                {
+                    // We are only catching this exception and tracing it for now
+                    // We know that recon can only send timestamp in Y-m-d format
+                    // Thus missing H:i:s.v data can cause this exception
+                    $this->trace->traceException(
+                        $e,
+                        Logger::WARNING,
+                        TraceCode::QR_DATA_TIMESTAMP_DATA_MISSING,
+                        [
+                            'input_timestamp' => $inputFields['gateway_timestamp'],
+                        ]
+                    );
+                }
 
-                if ($transactionTime !== false)
+                if (empty($transactionTime) !== true)
                 {
                     $qrData[QrGatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
                 }

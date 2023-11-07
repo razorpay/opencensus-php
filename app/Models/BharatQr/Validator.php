@@ -4,6 +4,7 @@ namespace RZP\Models\BharatQr;
 
 use RZP\Base;
 use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Mozart\Gateway as MozartGateway;
 
 class Validator extends Base\Validator
 {
@@ -44,11 +45,34 @@ class Validator extends Base\Validator
         GatewayResponseParams::PAYER_ACCOUNT_TYPE    => 'sometimes|string',
     ];
 
+    /**
+     * This static array contains the list of validation rules to be used for validation data received from
+     * gateways migrated to common QR payments flow
+     *
+     * @var string[] List of validation rules
+     */
+    protected static $qrPaymentGatewayResponseRules = [
+        GatewayResponseParams::MERCHANT_REFERENCE    => 'required|string',
+        GatewayResponseParams::METHOD                => 'required|in:upi',
+        GatewayResponseParams::VPA                   => 'required_if:method,upi',
+        GatewayResponseParams::PROVIDER_REFERENCE_ID => 'required|string',
+        GatewayResponseParams::AMOUNT                => 'required|integer|min:0',
+        GatewayResponseParams::NOTES                 => 'sometimes|string',
+        GatewayResponseParams::TRANSACTION_TIME      => 'sometimes|epoch',
+        GatewayResponseParams::PAYEE_VPA             => 'sometimes|string',
+        GatewayResponseParams::PAYER_ACCOUNT_TYPE    => 'sometimes|string',
+        GatewayResponseParams::GATEWAY_MERCHANT_ID   => 'sometimes|string',
+    ];
+
     public function validateGatewayResponseData($input, $gateway)
     {
         if ($gateway === Gateway::UPI_YESBANK)
         {
             $this->validateInput('upi_yesbank_gateway_response', $input);
+        }
+        else if (in_array($gateway, MozartGateway::$qrCodePaymentGateways, true) === true)
+        {
+            $this->validateInput('qr_payment_gateway_response', $input);
         }
         else
         {
