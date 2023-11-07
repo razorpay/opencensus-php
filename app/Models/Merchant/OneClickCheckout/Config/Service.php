@@ -322,10 +322,23 @@ class Service extends Base\Service
                 {
                     if (isset($input[Constants::DASHBOARD_VIEW]))
                     {
+                        // Need to refactor once sopc merchant dashboard changes are live
+                        // -- actual code start --
+//                        (new Core)->upsertMerchant1ccConfig(
+//                            Constants::DASHBOARD_VIEW,
+//                            $input[Constants::DASHBOARD_VIEW]
+//                        );
+                        // -- actual code end --
+                        // -- code start --
+                        $dashboardViewValue = $input[Constants::DASHBOARD_VIEW];
+                        if ($dashboardViewValue === 'rcod') {
+                            $dashboardViewValue = 'sopc';
+                        }
                         (new Core)->upsertMerchant1ccConfig(
                             Constants::DASHBOARD_VIEW,
-                            $input[Constants::DASHBOARD_VIEW]
+                            $dashboardViewValue
                         );
+                        // -- code end --
                     }
 
                     if (isset($input[Constants::APPS_INSTALLED]))
@@ -379,28 +392,67 @@ class Service extends Base\Service
                     ]);
             }
         }
-
         $this->updateRazorpayCodConfigsIfApplicable($input);
     }
 
     protected function updateRazorpayCodConfigsIfApplicable($input)
     {
+        // Need to refactor once sopc merchant dashboard changes are live
+        // -- actual code start --
+//        if( $input[Constants::PLATFORM] === Constants::SHOPIFY && isset($input[Constants::SOPC_APP]) === true)
+//        {
+//            $sopcConfig = $input[Constants::SOPC_APP];
+//
+//            (new Validator())->validateInput('sopc', $sopcConfig);
+//
+//            $config = $this->merchant->get1ccConfig(Constants::SOPC_APP);
+//
+//            if ($config === null)
+//            {
+//                $input = [
+//                    'config'     => Constants::SOPC_APP,
+//                    'value'      => '1',
+//                    'value_json' => $sopcConfig,
+//                ];
+//
+//                return  (new Merchant\Merchant1ccConfig\Core())->createAndSaveConfig($this->merchant, $input);
+//            }
+//
+//            $shouldUpdate = false;
+//
+//            // update value_json
+//            if(sizeof(array_merge(array_diff($config['value_json'],$sopcConfig), array_diff($sopcConfig, $config['value_json'])))>0)
+//            {
+//                $config['value_json'] = array_merge($config['value_json'], $sopcConfig);
+//                $shouldUpdate = true;
+//            }
+//
+//            if ($shouldUpdate)
+//            {
+//                $config->update();
+//            }
+//            return $config;
+//        }
+        // -- actual code end --
+
+        // -- code start --
         if( $input[Constants::PLATFORM] === Constants::SHOPIFY && isset($input[Constants::RAZORPAY_COD]) === true)
         {
             $razorpayCOD = $input[Constants::RAZORPAY_COD];
 
             (new Validator())->validateInput('razorpayCOD', $razorpayCOD);
 
-            $value = $razorpayCOD[Constants::ENABLED] ? '1' : '0';
+            $codEngine = (bool)$razorpayCOD[Constants::ENABLED];
             $valueJSON = $razorpayCOD[Constants::CONFIGS] ?? [];
+            $valueJSON = array_merge($valueJSON, [Constants::COD_ENGINE => $codEngine]);
 
-            $config = $this->merchant->get1ccConfig(Constants::RAZORPAY_COD);
+            $config = $this->merchant->get1ccConfig(Constants::SOPC_APP);
 
             if ($config === null)
             {
                 $input = [
-                    'config'     => Constants::RAZORPAY_COD,
-                    'value'      => $value,
+                    'config'     => Constants::SOPC_APP,
+                    'value'      => '1',
                     'value_json' => $valueJSON,
                 ];
 
@@ -408,17 +460,9 @@ class Service extends Base\Service
             }
 
             $shouldUpdate = false;
-            if($config->getValue() !== $value)
-            {
-                $config->setValue($value);
-                $shouldUpdate = true;
-            }
 
-            // update value_json only if value is true since value json will be coming as
-            // empty when value is false, this is handled in this way to preserve the
-            // configs of the merchants, so next time when they enable it we can show
-            // previous configs.
-            if($value === '1' && sizeof(array_diff($valueJSON, $config['value_json']))>0)
+            // update value_json
+            if(sizeof(array_merge(array_diff($config['value_json'],$valueJSON), array_diff($valueJSON, $config['value_json'])))>0)
             {
                 $config['value_json'] = array_merge($config['value_json'], $valueJSON);
                 $shouldUpdate = true;
@@ -430,6 +474,7 @@ class Service extends Base\Service
             }
             return $config;
         }
+        // -- code end --
     }
 
     protected function updatePrepayCodConfigs($input)
@@ -563,16 +608,24 @@ class Service extends Base\Service
         ];
     }
 
-    protected function construct1ccRazorpayCODConfig($razorpayCODConfigs): array
+    protected function construct1ccSOPCConfig($sopcConfigs): array
     {
-        if ($razorpayCODConfigs != null && $razorpayCODConfigs->getValueJson() != null)
+        if ($sopcConfigs != null && $sopcConfigs->getValueJson() != null)
         {
-            $razorpayCODValueJSON = $razorpayCODConfigs->getValueJson();
-            $razorpayCODConfigsFlag = $razorpayCODConfigs->getValue() == '1';
+            // Need to refactor once sopc merchant dashboard changes are live
+            // -- actual code start --
+//            return $sopcConfigs->getValueJson();
+            // -- actual code end --
+
+            // -- start --
+            $sopcValueJSON = $sopcConfigs->getValueJson();
             return [
-                Constants::ENABLED => $razorpayCODConfigsFlag,
-                Constants::CONFIGS => $razorpayCODValueJSON,
+                Constants::ENABLED => $sopcValueJSON[Constants::COD_ENGINE] ?? false,
+                Constants::CONFIGS => [
+                    Constants::COD_ENGINE_TYPE => $sopcValueJSON[Constants::COD_ENGINE_TYPE] ?? '',
+                ]
             ];
+            // -- end --
         }
 
         return [
@@ -601,12 +654,37 @@ class Service extends Base\Service
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::SHOPIFY)
         {
             $shopifyAppsInstalledConfig = $this->merchant->get1ccConfig(Constants::APPS_INSTALLED);
-            $shopifyAppsInstalled = $shopifyAppsInstalledConfig !== null ? $shopifyAppsInstalledConfig['value_json'] : [];
+
+            // Need to refactor once sopc merchant dashboard changes are live
+            // --- actual code start ---
+//            $shopifyAppsInstalled = $shopifyAppsInstalledConfig !== null ? $shopifyAppsInstalledConfig['value_json'] : [];
+            // --- actual code end ---
+
+            // -- start --
+            $shopifyAppsInstalledOriginal = $shopifyAppsInstalledConfig !== null ? $shopifyAppsInstalledConfig['value_json'] : [];
+            $shopifyAppsInstalled = array_map(function ($value) {
+                return $value === "sopc" ? "rcod" : $value;
+            }, $shopifyAppsInstalledOriginal);
+            // -- end
 
             $dashboardViewConfig = $this->merchant->get1ccConfig(Constants::DASHBOARD_VIEW);
-            $dashboardView = $dashboardViewConfig !== null ? $dashboardViewConfig->getValue() : "";
 
-            $razorpayCODConfig = $this->merchant->get1ccConfig(Constants::RAZORPAY_COD);
+            // Need to refactor once sopc merchant dashboard changes are live
+            // -- start --
+            $dashboardView = "";
+            if ($dashboardViewConfig !== null)
+            {
+                $dashboardView = $dashboardViewConfig->getValue();
+                if ($dashboardView === "sopc")
+                {
+                    $dashboardView = "rcod";
+                }
+            }
+            // -- end ---
+            // -- actual code start --
+//            $dashboardView = $dashboardViewConfig !== null ? $dashboardViewConfig->getValue() : "";
+            // -- actual code end --
+            $sopcConfig = $this->merchant->get1ccConfig(Constants::SOPC_APP);
 
             $config = $this->repo->merchant_1cc_auth_configs->findByConfig(
                 $this->merchant->getId(),
@@ -635,10 +713,16 @@ class Service extends Base\Service
                 ]);
             }
 
-            if ($razorpayCODConfig !== null)
+            if ($sopcConfig !== null)
             {
                 $response = array_merge($response, [
-                    Constants::RAZORPAY_COD => $this->construct1ccRazorpayCODConfig($razorpayCODConfig)
+                    // Need to refactor once sopc merchant dashboard changes are live
+                    // -- actual code start --
+//                    Constants::SOPC_APP => $this->construct1ccSOPCConfig($sopcConfig)
+                // -- actual code end --
+                    // -- start --
+                    Constants::RAZORPAY_COD => $this->construct1ccSOPCConfig($sopcConfig),
+                    // -- end --
                 ]);
             }
 

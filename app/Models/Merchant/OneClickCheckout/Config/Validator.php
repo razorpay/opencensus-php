@@ -64,10 +64,16 @@ class Validator extends Base\Validator
         "cod_engine_type"                => 'sometimes|string|in:slab_eligibility,slab_charges,location,product',
         'one_cc_prepay_cod_conversion'   => 'sometimes|array',
         "shipping_engine"                => 'sometimes|boolean',
-        "rcod"                           => 'sometimes|array',
+        "sopc"                           => 'sometimes|array|custom:sopc_configs',
+        // Need to refactor once sopc merchant dashboard changes are live
+        // -- actual code start --
+//        "dashboard_view"                 => 'sometimes|string|in:magic_checkout,sopc',
+    // -- actual code end --
+        // -- code start --
         "dashboard_view"                 => 'sometimes|string|in:magic_checkout,rcod',
+        // -- code end
         "apps_installed"                 => 'sometimes|array|min:1|max:2',
-        "apps_installed.*"               => 'string|distinct:ignore_case|in:magic_checkout,rcod'
+        "apps_installed.*"               => 'string|distinct:ignore_case|in:magic_checkout,sopc'
     ];
 
     protected static $shippingProviderRules = [
@@ -83,21 +89,21 @@ class Validator extends Base\Validator
     protected static $gettingShopifyConfigByKeyIdRules = [
         'key_id' => 'required|string',
         'keys'   => 'sometimes|string|custom:keys',
-        'app_name' => 'sometimes|string|in:sopc,rcod'
+        'app_name' => 'sometimes|string|in:sopc'
     ];
 
     protected static $gettingShopifyConfigByShopIdRules = [
         'shop_id' => 'required|string',
         'mode'    => 'sometimes|string|in:live,test',
         'keys'    => 'sometimes|string|custom:keys',
-        'app_name' => 'sometimes|string|in:sopc,rcod'
+        'app_name' => 'sometimes|string|in:sopc'
     ];
 
     protected static $gettingShopifyConfigByMerchantIdRules = [
         'merchant_id' => 'required|string|size:14',
         'mode'        => 'sometimes|string|in:live,test',
         'keys'        => 'sometimes|string|custom:keys',
-        'app_name' => 'sometimes|string|in:sopc,rcod'
+        'app_name' => 'sometimes|string|in:sopc'
     ];
 
     protected static $gettingWoocommerceConfigRules = [
@@ -157,7 +163,14 @@ class Validator extends Base\Validator
         Constants::CONFIGS.'.'.Constants::COMMUNICATION.'.'.Constants::METHODS          => 'required_with:configs.communication|array|in:whatsapp,checkout'
     ];
 
-    // validator rules for Razorpay COD shopify APP config
+    // validator rules for SOPC shopify APP config
+    protected static $sopcRules = [
+        Constants::COD_ENGINE_TYPE => 'required_if:cod_engine,true|string|in:slab_eligibility,slab_charges',
+        Constants::COD_INTELLIGENCE => 'sometimes|boolean',
+        Constants::COD_ENGINE => 'required|boolean',
+    ];
+
+    // Need to remove once sopc merchant dashboard changes are live
     protected static $razorpayCODRules = [
         Constants::ENABLED       => 'required|boolean',
         Constants::CONFIGS       => 'required_if:enabled,true|array|custom:rcod_configs',
@@ -271,6 +284,22 @@ class Validator extends Base\Validator
     /**
      * @throws ExtraFieldsException
      */
+    public function validateSOPCConfigs($attribute ,array $input)
+    {
+        $invalidKeys = array_keys(array_diff_key($input, [
+                Constants::COD_INTELLIGENCE      => '',
+                Constants::COD_ENGINE => '',
+                Constants::COD_ENGINE_TYPE => '',
+            ]
+        ));
+
+        if (count($invalidKeys) > 0)
+        {
+            $this->throwExtraFieldsException($invalidKeys);
+        }
+    }
+
+    // Need to remove once sopc merchant dashboard changes are live
     public function validateRCodConfigs($attribute ,array $input)
     {
         $invalidKeys = array_keys(array_diff_key($input, [

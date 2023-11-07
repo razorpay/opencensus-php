@@ -44,14 +44,14 @@ class Constants
     const ONE_CC_COUPON_ENGINE              = 'one_cc_coupon_engine';
 
     // Shipping, serviceability and cod engine settings in MCS.
- 
+
     const SHIPPING_ENGINE  = 'shipping_engine';
 
     // Settings and workflows defined for retargeting engine.
     const RETARGETING_SETTINGS             = "retargeting_settings";
 
-    // Shopify Razorpay COD App configs
-    const RAZORPAY_COD = 'rcod';
+    // Need to remove once sopc merchant dashboard changes are live
+    const RAZORPAY_COD = "rcod";
 
     // A config to maintain what are the apps installed by merchant
     // Currently this will be only applicable to shopify and
