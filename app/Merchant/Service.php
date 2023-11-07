@@ -163,8 +163,11 @@ class Service extends Base\Service
             return [$error, null];
         }
 
+        $currentTimeStamp = Carbon::now()->unix();
+
         $payload = [
-            'iat' => Carbon::now()->unix(),
+            'iat' => $currentTimeStamp,
+            'exp' => $currentTimeStamp + 60*60, // 60 minutes
             'reference_id' => $currentMerchant->id,
             'freshchat_uuid' => Uuid::generate(),
             'email' => $currentUser->email,
