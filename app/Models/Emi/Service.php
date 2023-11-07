@@ -33,7 +33,7 @@ class Service extends Base\Service
         return $plans;
     }
 
-    public function getEmiPlansAndOptions($offers = null, $order = null)
+    public function getEmiPlansAndOptions($offers = null, $order = null, $amount = 0)
     {
         $emiPlans = $this->fetchEmiPlans();
 
@@ -143,7 +143,7 @@ class Service extends Base\Service
 
             if ($emiOptionPresent)
             {
-                $processingFeePlan = (new ProcessingFeePlan())->getProcessingFeePlan($plan->getIssuer(), $plan->getType(), $duration);
+                $processingFeePlan = (new ProcessingFeePlan())->getProcessingFeePlan($plan->getIssuer(), $plan->getType(), $duration, $amount);
 
                 if ($processingFeePlan !== [])
                 {

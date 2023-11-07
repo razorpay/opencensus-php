@@ -291,7 +291,9 @@ class Checkout
 
         $data['methods'] = $this->getMerchantPaymentMethodsForCheckout($input, $merchant, $order);
 
-        $this->addOfferDetailsAndUpdateMethodsForCheckout($merchant, $order, $data);
+        $amount = $this->getAmount($input, $order);
+
+        $this->addOfferDetailsAndUpdateMethodsForCheckout($merchant, $order, $data, $amount);
 
         $expectedAsDictionaries = [
             'app',
@@ -385,7 +387,9 @@ class Checkout
 
         $offers = $this->getValidOffersForCheckout($merchant, $order);
 
-        $emiData = $this->getEmiDataForCheckout($order, $offers);
+        $amount = $this->getAmount($input,$order);
+
+        $emiData = $this->getEmiDataForCheckout($order, $offers, $amount);
 
         $offersData = [];
         foreach ($offers as $offer)
@@ -435,16 +439,16 @@ class Checkout
         return (new Offer\Core())->fetchSharedAccOffersForCheckout($merchant);
     }
 
-    protected function getEmiDataForCheckout($order, Base\PublicCollection $offers): array
+    protected function getEmiDataForCheckout($order, Base\PublicCollection $offers, $amount): array
     {
-        $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions();
+        $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions(null, null, $amount);
         $data['emi_plans'] = $emiPlansAndOptions['plans'];
         $data['emi_options'] = $emiPlansAndOptions['options'];
 
         if (($order !== null) &&
             (count($offers) > 0))
         {
-            $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions($offers, $order);
+            $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions($offers, $order, $amount);
             $data['emi_options'] = $emiPlansAndOptions['options'];
 
             if ((count($offers) === 1) &&
@@ -567,6 +571,17 @@ class Checkout
 
         $data[Entity::METHODS] = $methodsCore->getFormattedMethods($merchant);
 
+        if($data[Entity::METHODS][Payment\Method::EMI] === true)
+        {
+            $amount = $this->getAmount($input,$order);
+
+            $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions(null, null, $amount);
+
+            $data[Entity::METHODS]['emi_plans'] = $emiPlansAndOptions['plans'];
+
+            $data[Entity::METHODS]['emi_options'] = $emiPlansAndOptions['options'];
+        }
+
         $data[Entity::METHODS] = $methodsCore->addUpiType($merchant, $data[Entity::METHODS]);
 
         //changes based on order entity
@@ -629,12 +644,12 @@ class Checkout
      * 2. Adds data['force_offer'] if it is a forced offer
      * 3. Updates data['methods'] according to the available offers
      */
-    protected function addOfferDetailsAndUpdateMethodsForCheckout(Entity $merchant, ?Order\Entity $order, array &$data): array
+    protected function addOfferDetailsAndUpdateMethodsForCheckout(Entity $merchant, ?Order\Entity $order, array &$data, int $amount = null): array
     {
         if (($order !== null) and
             ($order->hasOffers() === true))
         {
-            $this->checkAndFillOrderOffers($order, $data);
+            $this->checkAndFillOrderOffers($order, $data, $amount);
         }
         else
         {
@@ -1731,7 +1746,9 @@ class Checkout
         if (($order !== null) and
             ($order->hasOffers() === true))
         {
-            $this->checkAndFillOrderOffers($order, $data);
+            $amount = $this->getAmount($input,$order);
+
+            $this->checkAndFillOrderOffers($order, $data, $amount);
         }
         else
         {
@@ -1739,7 +1756,7 @@ class Checkout
         }
     }
 
-    protected function checkAndFillOrderOffers(Order\Entity $order, array & $data)
+    protected function checkAndFillOrderOffers(Order\Entity $order, array & $data, int $amount = null)
     {
         $offers = $order->offers;
 
@@ -1774,7 +1791,7 @@ class Checkout
             $data['force_offer'] = true;
         }
 
-        $this->updateEmiOptionsUsingOffers($offers, $data, $order);
+        $this->updateEmiOptionsUsingOffers($offers, $data, $order, $amount);
 
         //
         // For multiple offers, we show all methods,
@@ -1801,9 +1818,9 @@ class Checkout
         }
     }
 
-    protected function updateEmiOptionsUsingOffers($offers, array & $data, Order\Entity $order = null)
+    protected function updateEmiOptionsUsingOffers($offers, array & $data, Order\Entity $order = null, int $amount = null)
     {
-        $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions($offers, $order);
+        $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions($offers, $order, $amount);
 
         $data['methods']['emi_options'] = $emiPlansAndOptions['options'];
     }
@@ -2635,5 +2652,20 @@ class Checkout
 
     public function getCountryCodesForAlternatePaymentMethods(string $paymentInstrument) {
         return $this->alternatePaymentInstrumentCountryMapping[$paymentInstrument];
+    }
+
+    private function getAmount( $input,  $order)
+    {
+        if(isset($order))
+        {
+            return $order->getAmount();
+        }
+
+        if(isset($input) and isset($input['amount']))
+        {
+            return $input['amount'];
+        }
+
+        return 0;
     }
 }

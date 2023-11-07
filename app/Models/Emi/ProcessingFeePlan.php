@@ -18,6 +18,8 @@ class ProcessingFeePlan
 
     const AMOUNT = 'amount';
 
+    const MIN_AMOUNT = 'min_amount';
+
     protected static $plan = [
         CreditEmiProvider::UTIB => [
             Type::CREDIT => [
@@ -92,23 +94,29 @@ class ProcessingFeePlan
             Type::CREDIT => [
                 '6' => [
                     self::TYPE => self::FIXED,
-                    self::AMOUNT => 9900
+                    self::AMOUNT => 9900,
+                    self::MIN_AMOUNT => 1250000
                 ],
                 '9' => [
                     self::TYPE => self::FIXED,
-                    self::AMOUNT => 9900
+                    self::AMOUNT => 9900,
+                    self::MIN_AMOUNT => 900000
                 ],
                 '12' => [
                     self::TYPE => self::FIXED,
-                    self::AMOUNT => 9900
+                    self::AMOUNT => 9900,
+                    self::MIN_AMOUNT => 700000
                 ],
                 '18' => [
                     self::TYPE => self::FIXED,
-                    self::AMOUNT => 19900
+                    self::AMOUNT => 19900,
+                    self::MIN_AMOUNT => 1000000
                 ],
                 '24' => [
                     self::TYPE => self::FIXED,
-                    self::AMOUNT => 19900
+                    self::AMOUNT => 19900,
+                    self::MIN_AMOUNT => 1000000
+
                 ],
                 self:: DEFAULT => []
             ]
@@ -139,7 +147,7 @@ class ProcessingFeePlan
     ];
 
 
-    public function getProcessingFeePlan(string $issuer, string $cardType, string $duration): array
+    public function getProcessingFeePlan(string $issuer, string $cardType, string $duration, int $amount): array
     {
         if ((!isset(self:: $plan[$issuer])) || (!isset(self:: $plan[$issuer][$cardType])))
         {
@@ -149,6 +157,12 @@ class ProcessingFeePlan
         if (!isset(self:: $plan[$issuer][$cardType][$duration]))
         {
             $duration = self::DEFAULT;
+        }
+
+        if (isset(self:: $plan[$issuer][$cardType][$duration]['min_amount'])
+            and ($amount < self:: $plan[$issuer][$cardType][$duration]['min_amount']))
+        {
+            return [];
         }
 
         return self:: $plan[$issuer][$cardType][$duration];

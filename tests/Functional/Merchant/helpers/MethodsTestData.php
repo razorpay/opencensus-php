@@ -1796,4 +1796,185 @@ return [
             ],
         ],
     ],
+    'testGetPaymentMethodsAndOffersForCheckoutWithOrderProcessingFee' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'amount'        => 1000000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card' => true,
+                    'debit_card' => true,
+                    'credit_card' => true,
+                    'prepaid_card' => true,
+                    'card_networks' => [
+                        'AMEX' => 0,
+                        'MC' => 1,
+                        'VISA' => 1,
+                    ],
+                    'card_subtype' => [
+                        'consumer' => 1,
+                        'business' => 0,
+                        'premium' => 0
+                    ],
+                    'amex' => false,
+                    'netbanking' => [
+                        'AUBL' => 'AU Small Finance Bank',
+                        'UTIB' => 'Axis Bank',
+                    ],
+                    'wallet' => [
+                        'paytm'    => true,
+                        'grabpay'  => true,
+                        'touchngo' => true,
+                        'boost'    => true,
+                        'mcash'    => true
+                    ],
+                    'emi' => true,
+                    'upi' => false,
+                    'cardless_emi' => [],
+                    'paylater' => [],
+                    'google_pay_cards' => false,
+                    'app' => [
+                        'cred' => 0,
+                        'twid' => 0,
+                        'trustly' => 0,
+                        'poli' => 0,
+                        'sofort' => 0,
+                        'giropay' => 0
+                    ],
+                    'gpay' => false,
+                    'emi_types' => [
+                        'credit' => true,
+                        'debit' => true
+                    ],
+                    'debit_emi_providers' => [
+                        'HDFC' => 0,
+                        'KKBK' => 0,
+                        'INDB' => 0
+                    ],
+                    'emi_plans' => [
+                        'CITI' => [
+                            'min_amount' =>300000,
+                            'plans' => [
+                                '3' => 12,
+                            ],
+                        ],
+                        'SBIN' => [
+                            'min_amount' =>100000,
+                            'plans' => [
+                                '3' => 16.5,
+                                '6' => 15,
+                                '9' => 15,
+                                '12' => 15,
+                            ],
+                        ],
+                    ],
+                    'emi_options' => [
+                        'CITI' => [
+                            [
+                                'duration'   => 3,
+                                'interest'   => 12,
+                                'min_amount' => 300000,
+                                'processing_fee_plan' => [
+                                    'type' => 'combination',
+                                    'percentage' => 1,
+                                    'amount' => 10000,
+                                ]
+                            ]
+                        ],
+                        'SBIN' => [
+                            [
+                                'duration'   => 3,
+                                'interest'   => 16.5,
+                                'min_amount' => 100000,
+                            ],
+                            [
+                                'duration'   => 6,
+                                'interest'   => 15,
+                                'min_amount' => 100000,
+                            ],
+                            [
+                                'duration'   => 9,
+                                'interest'   => 15,
+                                'min_amount' => 100000,
+                                'processing_fee_plan' => [
+                                    'type' => 'fixed',
+                                    'amount' => 9900,
+                                    'min_amount' => 900000
+                                ]
+                            ],
+                            [
+                                'duration'   => 12,
+                                'interest'   => 15,
+                                'min_amount' => 100000,
+                                'processing_fee_plan' => [
+                                    'type' => 'fixed',
+                                    'amount' => 9900,
+                                    'min_amount' => 700000
+                                ]
+                            ]
+                        ]
+                    ],
+                    'intl_bank_transfer' => [],
+                    'fpx' => [],
+                    'nach' => false,
+                    'cod' => false,
+                    'offline' => false,
+                    'upi_intent' => true,
+                    'upi_type' => [
+                        'collect' => 0,
+                        'intent' => 0,
+                    ],
+                    'app_meta' => []
+                ],
+            ],
+        ],
+    ],
+    'testGetEmiDataForCheckoutWithEmiSubventionOfferWithMerchantSpecificEmiProcessingFee' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'request_type'  => 1,
+                'amount'        => 1000000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' =>  [
+                    [
+                        'name' =>  "Test Offer",
+                        'payment_method' =>  "emi",
+                        'payment_method_type' =>  "credit",
+                        'issuer' =>  "SBIN",
+                        'emi_subvention' => true,
+                        'type' =>  "instant",
+                        'terms' =>  "Terms and Condition",
+                    ]
+                ],
+                'emi_plans' => [
+                    'SBIN' => [
+                        'min_amount' => 100000,
+                        'plans' => [
+                            6 => 15,
+                        ],
+                    ],
+                ],
+                'emi_options' => [
+                    'SBIN' =>  [
+                        [
+                            'duration' =>  6,
+                            'interest' => 15,
+                            'min_amount' =>  100000,
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

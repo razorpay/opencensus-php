@@ -2486,4 +2486,155 @@ class MethodsTest extends TestCase
         $this->assertTrue($merchantMethods->isSodexoEnabled());
 
     }
+
+    public function testGetPaymentMethodsAndOffersForCheckoutWithOrderProcessingFee(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['SBIN' => 1, 'CITI' => 1]);
+
+        $this->fixtures->terminal->create([
+            'merchant_id' => '10000000000000',
+            'gateway'     => 'emi_sbi',
+        ]);
+
+
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101810',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'CITI',
+                'type'        => 'credit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101910',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'SBIN',
+                'type'        => 'credit',
+                'rate'        => 1650,
+                'min_amount'  => 100000,
+                'duration'    => 3,
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101912',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'SBIN',
+                'type'        => 'credit',
+                'rate'        => 1500,
+                'min_amount'  => 100000,
+                'duration'    => 6,
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101913',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'SBIN',
+                'type'        => 'credit',
+                'rate'        => 1500,
+                'min_amount'  => 100000,
+                'duration'    => 9,
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101914',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'SBIN',
+                'type'        => 'credit',
+                'rate'        => 1500,
+                'min_amount'  => 100000,
+                'duration'    => 12,
+            ]);
+
+        $this->fixtures->merchant->enableAdditionalWallets([Wallet::MCASH, Wallet::GRABPAY, Wallet::TOUCHNGO, Wallet::BOOST]);
+
+        $this->fixtures->merchant->enablePaytm();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $content = $this->startTest($testData);
+
+        $this->assertArrayNotHasKey('processing_fee_plan', $content['emi_options']['SBIN'][1]);
+
+    }
+
+    public function
+    testGetEmiDataForCheckoutWithEmiSubventionOfferWithMerchantSpecificEmiProcessingFee(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['SBIN' => 1]);
+
+        $this->fixtures->terminal->create([
+            'merchant_id' => '10000000000000',
+            'gateway'     => 'emi_sbi',
+        ]);
+
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101912',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'SBIN',
+                'type'        => 'credit',
+                'rate'        => 1500,
+                'min_amount'  => 100000,
+                'duration'    => 6,
+            ]);
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention',
+            [
+                'issuer'          => 'SBIN',
+                'emi_durations'   => [6],
+                'payment_network' => null,
+                'payment_method_type' => 'credit',
+                'min_amount' => 100000
+            ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            'request_type' => 1,
+            'order' => $order->toArray(),
+            'order_id' => $order->getPublicId(),
+            'amount'        => 1000000,
+        ];
+        $content = $this->startTest($testData);
+
+        $this->assertArrayNotHasKey('processing_fee_plan', $content['emi_options']['SBIN'][0]);
+    }
 }

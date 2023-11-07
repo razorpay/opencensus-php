@@ -171,7 +171,7 @@ class AffordabilityTest extends TestCase
                         'subvention' => "customer",
                         'min_amount' => 300000,
                         'merchant_payback' => "5.18",
-                        'processing_fee_plan' => (new ProcessingFeePlan())->getProcessingFeePlan('HDFC','credit' , '3')
+                        'processing_fee_plan' => (new ProcessingFeePlan())->getProcessingFeePlan('HDFC','credit' , '3', 0)
                     ],
                 ],
             ],
@@ -220,7 +220,7 @@ class AffordabilityTest extends TestCase
                         'subvention' => "customer",
                         'min_amount' => 300000,
                         'merchant_payback' => "5.18",
-                        'processing_fee_plan' => (new ProcessingFeePlan())->getProcessingFeePlan('HDFC','credit' , '3')
+                        'processing_fee_plan' => (new ProcessingFeePlan())->getProcessingFeePlan('HDFC','credit' , '3', 0)
         ],
                 ],
             ],
