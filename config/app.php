@@ -599,6 +599,8 @@ return array(
 
     'allow_offers_on_rearch_ups_splitz_experiment_id' => env('ALLOW_OFFERS_ON_REARCH_UPS_SPLITZ_EXPERIMENT_ID'),
 
+    'validate_vpa_splitz_experiment_id' => env('VALIDATE_VPA_SPLITZ_EXPERIMENT_ID'),
+
     'pricing_fallback_standard_plan_experiment_id' => env('PRICING_FALLBACK_STANDARD_PLAN_EXPERIMENT_ID'),
 
     'ppi_wallet_on_upi_pricing_splitz_experiment_id' => env('PPI_WALLET_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),

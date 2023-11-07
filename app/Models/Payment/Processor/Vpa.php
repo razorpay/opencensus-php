@@ -280,9 +280,7 @@ trait Vpa
         // Get terminals stored in env
         $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
 
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            'validate_vpa_routing_v2',
-            Mode::LIVE);
+        $variant = $this->getSplitzVariant();
 
         $traceable = [
             'code'          => TraceCode::VALIDATE_VPA_REQUEST,
@@ -293,17 +291,62 @@ trait Vpa
 
         if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_SBI))
         {
-            $terminalIds = ['AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', '6KTOhwf4XBOMns'];
+            $terminalIds = ['AK6NMmzbL6FPe4', '6KTOhwf4XBOMns', 'K0Hqvray6HQhfA', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8'];
         }
-
-        if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_ICICI))
+        else if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_ICICI))
         {
-            $terminalIds = ['6KTOhwf4XBOMns', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', 'AK6NMmzbL6FPe4'];
+            $terminalIds = ['6KTOhwf4XBOMns', 'K0Hqvray6HQhfA', 'AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8'];
+        }
+        else if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_AIRTEL))
+        {
+            $terminalIds = ['K0Hqvray6HQhfA', '6KTOhwf4XBOMns', 'AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8'];
         }
 
         $terminals = $this->filterTerminalsForValidateVpa($terminalIds);
 
         return $terminals;
+    }
+
+    /**
+     * getSplitzVariant returns variant for validate vpa
+     *
+     * @return string
+     */
+    protected function getSplitzVariant(): string
+    {
+        try
+        {
+            $taskId = $this->app['request']->getTaskId();
+
+            $properties = [
+                'id'            => $taskId,
+                'experiment_id' => $this->app['config']->get('app.validate_vpa_splitz_experiment_id'),
+                'request_data'  => json_encode(['task_id' => $taskId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties'    => $properties,
+                'task_id'       => $taskId,
+                'response'      => $response
+            ]);
+
+            if ((isset($response['response']['variant']['name']) === true) && (str_starts_with($response['response']['variant']['name'], 'upi_') === true))
+            {
+                return $response['response']['variant']['name'];
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::VALIDATE_VPA_ROUTING_SPLITZ_ERROR);
+        }
+
+        // return default
+        return Payment\Gateway::UPI_MINDGATE;
     }
 
     /**
