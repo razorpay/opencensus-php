@@ -4401,6 +4401,11 @@ trait Refund
                 $queryParams[RefundConstants::TOKENIZED] = $cardEntity[RefundConstants::TOKENIZED];
             }
 
+            if (isset($cardEntity[RefundConstants::ALT_ID]) === true && $cardEntity[RefundConstants::ALT_ID] === 1)
+            {
+                $queryParams[RefundConstants::ALT_ID] = true;
+            }
+
             $tokenEntity = $payment->getGlobalOrLocalTokenEntity();
 
             if (empty($tokenEntity) === false)

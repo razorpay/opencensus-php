@@ -105,6 +105,7 @@ class Constants
 
     const TOKEN_STATUS              = 'token_status';
     const TOKENIZED                 = 'tokenized';
+    const ALT_ID                    = 'alt_id';
     const TOKEN_EXPIRED_AT          = 'token_expired_at';
     const IIN                       = 'iin';
     const INTERNATIONAL             = 'international';
