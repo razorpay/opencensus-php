@@ -10356,7 +10356,8 @@ class Core extends Base\Core
                 $merchantInfo['merchant_business_detail']['website_details'] = count(optional($merchant->merchantBusinessDetail)->getWebsiteDetails() ?? []) > 0 ?
                     optional($merchant->merchantBusinessDetail)->getWebsiteDetails() : (new \stdClass());
 
-                $merchantInfo['merchant_business_detail']['app_urls'] = optional($merchant->merchantBusinessDetail)->getAppUrls() ?? (new \stdClass());
+                $merchantInfo['merchant_business_detail']['app_urls'] = count(optional($merchant->merchantBusinessDetail)->getAppUrls() ?? []) > 0 ?
+                    optional($merchant->merchantBusinessDetail)->getAppUrls() : (new \stdClass());
 
                 $count += 1;
 
