@@ -104,32 +104,13 @@ class SubmitFormLayer extends React.Component {
                   onClick={() => trackers && trackers.trackLinkClick('Terms of use')}
                   rel="noreferrer noopener"
                 >
-                  Terms & Conditions
+                  Terms of Service
                 </a>
               </ShowWhen>
               <ShowWhen
                 additionalCondition={(user) => !user.isOrgAllowedFunctionality('external_links')}
               >
-                <span className="highlight">Terms & Conditions</span>
-              </ShowWhen>
-              ,{' '}
-              <ShowWhen
-                additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
-              >
-                <a
-                  href="https://razorpay.com/agreement/"
-                  target="_blank"
-                  className="highlight"
-                  onClick={() => trackers && trackers.trackLinkClick('Merchant Agreement')}
-                  rel="noreferrer noopener"
-                >
-                  Merchant Agreement
-                </a>
-              </ShowWhen>
-              <ShowWhen
-                additionalCondition={(user) => !user.isOrgAllowedFunctionality('external_links')}
-              >
-                <span className="highlight">Merchant Agreement</span>
+                <span className="highlight">Terms of Service</span>
               </ShowWhen>{' '}
               and the{' '}
               <ShowWhen

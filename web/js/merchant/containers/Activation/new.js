@@ -296,10 +296,6 @@ class ActivationContainer extends React.Component {
               url: 'https://razorpay.com/privacy/',
             },
             {
-              type: 'Service Agreement',
-              url: 'https://razorpay.com/agreement/',
-            },
-            {
               type: 'Terms & Conditions',
               url: 'https://razorpay.com/terms/',
             },

@@ -7,10 +7,6 @@ import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 import { POLICY_LINKS } from 'merchant/constants/urls';
 export const FOOTER_LINKS = [
   {
-    label: 'Merchant Agreement',
-    link: POLICY_LINKS.MERCHANT_AGGREMENT,
-  },
-  {
     label: 'Terms of Use',
     link: POLICY_LINKS.TERMS_OF_USE,
   },
