@@ -190,7 +190,12 @@ class Core extends Base\Core
 
         $defaultOptions = (array) DefaultOptionFactory::find($namespace)->get();
 
-        $merchantOptions =  (array) $this->findOptionsForMerchant($namespace, $merchantId);
+        $merchantOptions = [];
+
+        if($referenceId === null)
+        {
+            $merchantOptions =  (array) $this->findOptionsForMerchant($namespace, $merchantId);
+        }
 
         $serviceOptions = (array) $this->findOptionsForService($serviceName, $referenceId, $merchantId);
 
