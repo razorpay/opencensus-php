@@ -70,6 +70,7 @@ export function createBuyXGetYPayload({
               minTypeKey === 'total_count'
                 ? Number(productsPurchased.minimumValue)
                 : Number(productsPurchased.minimumValue) * 100,
+            op: 'gte',
           },
         },
       ],
@@ -231,7 +232,7 @@ export function createBuyXGetYPayload({
     auto_apply: couponDetails.autoapply,
     currency: 'INR',
     active: activeDate,
-    expiry: expiryDate,
+    expiry: couponValidity.isLimitedUseage ? expiryDate : null,
     budget: Number(couponValidity.maxBudget) * 100,
     status,
     id,

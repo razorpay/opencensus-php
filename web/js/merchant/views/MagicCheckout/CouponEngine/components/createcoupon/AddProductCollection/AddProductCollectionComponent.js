@@ -124,7 +124,9 @@ const AddCollectionProductComponent = ({ openModal, stateObject = 'discountDetai
           />
         </div>
         <DottedButtonWrapper>
-          {widgetsData[stateObject].discountedItemsDisplayList.length > 0 ? (
+          {/** Intentioally added this check because of the data coming in case of shopify from synced coupons */}
+          {widgetsData[stateObject].discountedItemsDisplayList.length > 0 &&
+          widgetsData[stateObject].discountedItemsDisplayList[0] !== '' ? (
             <div>
               {widgetsData[stateObject].discountApplicableTo === 'products' ? (
                 <div>

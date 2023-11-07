@@ -28,21 +28,8 @@ interface AccordionBodyProps {
 
 const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
   const { widgetsData, setWidgetsData, errorStates, setErrorStates } = useContext(ModalContext);
-  const [addTimeConstraint, setAddTimeConstraint] = useState({});
-  const [id, setId] = useState('');
-
-  const handleTimeConstraint = () => {
-    const timeConstraint = { hours: { min: 0, max: 23 } };
-
-    if (widgetsData.couponValidity.startDate === moment().format('YYYY-MM-DD')) {
-      timeConstraint.hours.min = moment().hours();
-      setAddTimeConstraint(timeConstraint);
-      setId(Math.random().toString());
-    } else {
-      setAddTimeConstraint(timeConstraint);
-      setId(Math.random().toString());
-    }
-  };
+  const [startTimeId, setStartTimeId] = useState(0);
+  const [endTimeId, setEndTimeId] = useState(0);
 
   const handleFormValidations = ({ startDate, startTime, endDate, endTime }) => {
     validateCouponDateTime({
@@ -53,6 +40,17 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
       flowName: flow,
     });
   };
+
+  // this is done consiously, even if the props are changing the component was re-rendering but the timer options was not getting updated in case of Input.TimePicker, so was forced to do this.
+  useEffect(() => {
+    if (startTimeId === 2) return;
+    setStartTimeId((prev) => prev + 1);
+  }, [widgetsData.couponValidity.startDate]);
+
+  useEffect(() => {
+    if (endTimeId === 2) return;
+    setEndTimeId((prev) => prev + 1);
+  }, [widgetsData.couponValidity.endDate]);
 
   return (
     <div>
@@ -69,7 +67,6 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
                   placeholder="DD/MM/YYYY"
                   readOnly={true}
                   onChange={(date) => {
-                    handleTimeConstraint();
                     setWidgetsData(() => ({
                       ...widgetsData,
                       couponValidity: {
@@ -96,7 +93,7 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
               <div className="time">
                 <Label>Start time</Label>
                 <Input.TimePicker
-                  key={id}
+                  key={startTimeId}
                   placeholder="11:59PM"
                   readOnly={true}
                   onChange={(time) => {
@@ -118,8 +115,7 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
                   addonAfter={<i className="i i-time" />}
                   required
                   value={widgetsData.couponValidity.startTime}
-                  timeConstraints={addTimeConstraint}
-                  defaultValue={moment().format('h:mm a')}
+                  defaultValue={widgetsData.couponValidity.startTime}
                   disabled={flow === 'edit' && widgetsData.status !== 'created'}
                 />
               </div>
@@ -187,6 +183,7 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
                 <div className="time">
                   <Label>End time</Label>
                   <Input.TimePicker
+                    key={endTimeId}
                     placeholder="11:59PM"
                     readOnly={true}
                     onChange={(time) => {
@@ -206,6 +203,7 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
                     size="half_small"
                     addonAfter={<i className="i i-time" />}
                     value={widgetsData.couponValidity?.endTime || ''}
+                    defaultValue={widgetsData.couponValidity?.endTime}
                   />
                 </div>
               </DateTimeContainer>

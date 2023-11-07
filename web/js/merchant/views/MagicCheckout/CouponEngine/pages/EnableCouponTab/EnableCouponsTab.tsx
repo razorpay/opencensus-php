@@ -58,13 +58,17 @@ const EnableCouponsTab: React.FC<EnableCouponsTabProps> = ({ openModal }) => {
     fetchShopifySyncStatus();
   }, []);
 
+  const updateSyncStatus = (status: string) => {
+    setSyncStatus(status);
+  };
+
   const openShopifySyncModal = () => {
     openModal({
       size: 'small',
       className: 'order-editing-modal',
       component: (
         <SuspenseWithLoader type="center">
-          <ShopifySyncModal />
+          <ShopifySyncModal updateSyncStatus={updateSyncStatus} />
         </SuspenseWithLoader>
       ),
     });
@@ -111,15 +115,11 @@ const EnableCouponsTab: React.FC<EnableCouponsTabProps> = ({ openModal }) => {
                     ))}
                 </CardTitle>
               </CardHeaderWrapper>
-              <CreateCouponLink onClick={openShopifySyncModal} data-testid="sync-to-shopify-cta">
-                Sync now
-              </CreateCouponLink>
-              {/* Temporary comment for anurag's testing*/}
-              {/* {syncStatus === 'not-started' && (
+              {syncStatus === 'not-started' && (
                 <CreateCouponLink onClick={openShopifySyncModal} data-testid="sync-to-shopify-cta">
                   Sync now
                 </CreateCouponLink>
-              )} */}
+              )}
             </CardHeader>
             <CardContent className="display-flex settings-card-widget-content">
               <div>

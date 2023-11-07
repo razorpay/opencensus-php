@@ -15,7 +15,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 // api imports
 import { syncShopifyCoupons } from 'merchant/views/MagicCheckout/CouponEngine/api';
 
-const ShopifySyncModal = ({ closeModal, merchantId, showNotification }) => {
+const ShopifySyncModal = ({ closeModal, merchantId, showNotification, updateSyncStatus }) => {
   const [apiPayload, setApiPayload] = useState({
     merchant_id: merchantId,
     start_date: '',
@@ -32,6 +32,8 @@ const ShopifySyncModal = ({ closeModal, merchantId, showNotification }) => {
         type: 'success',
         message: 'Coupons synced successfully',
       });
+      updateSyncStatus('completed');
+      closeModal();
     } catch (error: any) {
       showNotification({
         type: 'error',

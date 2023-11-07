@@ -38,6 +38,7 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ couponName }) => {
                 productsPurchased: {
                   ...widgetsData.productsPurchased,
                   minimumValue: e.target.value,
+                  minimumType: 'min_qty',
                 },
               });
             }}

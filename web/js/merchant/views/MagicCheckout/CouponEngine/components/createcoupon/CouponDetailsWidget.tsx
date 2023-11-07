@@ -113,26 +113,6 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'creat
               />
               <span>Automatically apply this coupon for eligible users</span>
             </CheckboxGroup> */}
-
-            {flow !== 'edit' && (
-              <CheckboxGroup>
-                <Input.Check
-                  defaultValue={widgetsData.status === 'published'}
-                  type="checkbox"
-                  name="autopublish"
-                  onChange={(e) => {
-                    setWidgetsData((prev) => {
-                      return {
-                        ...prev,
-                        status: e.target.checked ? 'published' : 'created',
-                      };
-                    });
-                  }}
-                  autoRender
-                />
-                <span>Automatically publish this coupon</span>
-              </CheckboxGroup>
-            )}
           </div>
         </FormGroup>
       </Card>

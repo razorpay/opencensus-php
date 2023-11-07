@@ -29,7 +29,7 @@ const CreateCouponModal = ({ closeModal }) => {
 
   return (
     <Fragment>
-      <ModalHeader title="Coupon type" extraClass="no-padding" onCloseClick={closeModal} />
+      <ModalHeader title="Select a Coupon Type" extraClass="no-padding" onCloseClick={closeModal} />
       <div className="modal-body">
         {AVAILABLE_COUPON_TYPES.map(({ id, couponName, couponDesc, type }) => (
           <CategoryContainer

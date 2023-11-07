@@ -173,9 +173,10 @@ export const CtaContainer = styled.div`
     cursor: pointer;
     border: none;
     width: 160px;
+    margin-right: 0;
   }
 
-  // reason fro adding this was, I am using Async Button for making my primary cta, but on hover its background color is changing to white, so I am overriding it here
+  // reason for adding this was, I am using Async Button for making my primary cta and secondary cta, but on hover its background color is changing to white, so I am overriding it here
   .primary-cta,
   .primary-cta:hover {
     background: #2a86f3;
@@ -183,14 +184,29 @@ export const CtaContainer = styled.div`
     border-radius: 2px;
   }
 
-  .secondary-cta {
+  .secondary-cta,
+  .secondary-cta:hover {
     color: #162f56;
+    background: #ffffff;
+  }
+
+  .secondary-cta:disabled {
     background: #ffffff;
   }
 
   button:disabled {
     background: #d9d9d9;
     color: rgba(65, 68, 73, 0.8);
+  }
+
+  .cancel-cta {
+    color: #d13821;
+    width: fit-content;
+    background: #ffffff;
+  }
+
+  .cancel-cta:disabled {
+    background: #ffffff;
   }
 `;
 

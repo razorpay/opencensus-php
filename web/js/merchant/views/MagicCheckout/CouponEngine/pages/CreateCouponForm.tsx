@@ -50,6 +50,7 @@ const CreateCouponForm: React.FC<{
   } = useContext(ModalContext);
   const [isFormValid, setIsFormValid] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [couponStatus, setCouponStatus] = useState(widgetsData.status);
 
   useEffect(() => {
     if (code) {
@@ -123,8 +124,12 @@ const CreateCouponForm: React.FC<{
     resetWidgetsData();
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (updatedCouponStatus?: string) => {
     setIsLoading(true);
+
+    if (updatedCouponStatus) {
+      setCouponStatus(updatedCouponStatus);
+    }
 
     // validate form fields
     const isFormFieldsValid = await globalValidator({
@@ -151,7 +156,7 @@ const CreateCouponForm: React.FC<{
       productsPurchased: widgetsData.productsPurchased,
       discountOffered:
         couponName === 'bulk_order' ? widgetsData.bulkDiscountDetails : widgetsData.discountOffered,
-      status: widgetsData.status,
+      status: updatedCouponStatus || widgetsData.status,
       id: widgetsData.id,
     });
 
@@ -194,17 +199,27 @@ const CreateCouponForm: React.FC<{
         </CreateCouponFormWrapper>
         <CtaContainer>
           <Link to="/magic/coupons">
-            <button className="secondary-cta" onClick={handleReset}>
+            <button className="cancel-cta" onClick={handleReset} disabled={isLoading}>
               Cancel
             </button>
           </Link>
+          {flow !== 'edit' && (
+            <AsyncBtn
+              className="secondary-cta"
+              onClick={() => handleSubmit('created')}
+              disabled={!isFormValid || isLoading}
+              isPending={isLoading && couponStatus === 'created'}
+            >
+              Save Coupon
+            </AsyncBtn>
+          )}
           <AsyncBtn
             className="primary-cta"
-            onClick={handleSubmit}
-            disabled={!isFormValid}
-            isPending={isLoading}
+            onClick={() => handleSubmit()}
+            disabled={!isFormValid || isLoading}
+            isPending={isLoading && couponStatus === widgetsData.status}
           >
-            {flow === 'edit' ? 'Update' : 'Create'} Coupon
+            {flow === 'edit' ? 'Update Coupon' : 'Create and Publish'}
           </AsyncBtn>
         </CtaContainer>
       </div>

@@ -46,7 +46,7 @@ const AccordionBody: React.FC = () => {
   return (
     <div>
       <FormGroup>
-        <div className="form-label">Products Offered</div>
+        <div className="form-label">Additional Products Offered</div>
         <div className="form-input">
           <Input
             name="productsOfferedQty"

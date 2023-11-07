@@ -37,7 +37,7 @@ const initialWidgetsData: ModalContextValue['widgetsData'] = {
     limitBy: 'phone',
   },
   productsPurchased: {
-    minimumType: 'no_min_qty',
+    minimumType: 'min_qty',
     minimumValue: 1,
     discountApplicableTo: 'products',
     discountedItemsList: [],
@@ -65,7 +65,7 @@ const initialWidgetsData: ModalContextValue['widgetsData'] = {
     discountValue: 0,
     discountType: 'discountOnAll',
   },
-  status: 'created',
+  status: 'published',
 };
 
 const initialErrorStates: ErrorStates = {

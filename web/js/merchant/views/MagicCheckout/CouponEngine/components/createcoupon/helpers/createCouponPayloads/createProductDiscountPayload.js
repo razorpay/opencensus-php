@@ -129,7 +129,7 @@ export function createProductDiscountPayload({
     auto_apply: couponDetails.autoapply,
     currency: 'INR',
     active: activeDate,
-    expiry: expiryDate,
+    expiry: couponValidity.isLimitedUseage ? expiryDate : null,
     budget: Number(couponValidity.maxBudget) * 100,
     status,
     id,

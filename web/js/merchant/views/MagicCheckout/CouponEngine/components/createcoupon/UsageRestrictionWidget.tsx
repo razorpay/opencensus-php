@@ -43,6 +43,26 @@ const AccordionBody: React.FC = () => {
           </div>
           {widgetsData.usageRestriction.isLimitedUsage ? (
             <div>
+              <MoreDetailsContainer>
+                <Input
+                  name="maxUsage"
+                  type="number"
+                  required
+                  value={widgetsData.usageRestriction.maxUsage}
+                  className="w-350"
+                  onChange={(e) => {
+                    setWidgetsData((prev) => ({
+                      ...prev,
+                      usageRestriction: {
+                        ...prev.usageRestriction,
+                        maxUsage: e.target.value,
+                      },
+                    }));
+                  }}
+                  onWheel={onWheelPreventChange}
+                />
+              </MoreDetailsContainer>
+
               <div className="mt-16 display-flex">
                 <Input.Radio
                   key={widgetsData.usageRestriction.limitBy}
@@ -70,26 +90,6 @@ const AccordionBody: React.FC = () => {
                   ]}
                 />{' '}
               </div>
-
-              <MoreDetailsContainer>
-                <Input
-                  name="maxUsage"
-                  type="number"
-                  required
-                  value={widgetsData.usageRestriction.maxUsage}
-                  className="w-350"
-                  onChange={(e) => {
-                    setWidgetsData((prev) => ({
-                      ...prev,
-                      usageRestriction: {
-                        ...prev.usageRestriction,
-                        maxUsage: e.target.value,
-                      },
-                    }));
-                  }}
-                  onWheel={onWheelPreventChange}
-                />
-              </MoreDetailsContainer>
             </div>
           ) : null}
         </div>

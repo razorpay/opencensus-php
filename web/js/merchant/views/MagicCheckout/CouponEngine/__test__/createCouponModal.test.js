@@ -12,7 +12,7 @@ describe('coupon Modal', () => {
   test('should render create coupon modal', () => {
     render(<CreateCouponModal />);
 
-    expect(screen.getByText('Coupon type')).toBeInTheDocument();
+    expect(screen.getByText('Select a Coupon Type')).toBeInTheDocument();
   });
 
   test.each(couponVariantsSupported)(

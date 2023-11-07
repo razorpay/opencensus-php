@@ -109,14 +109,17 @@ export function validateCouponDateTime({
   endDateTime,
   setErrorStates,
   flowName,
+  couponStatus,
 }) {
   let errorMessage = null;
   if (startDateTime < new Date().toISOString() && ['created', 'duplicate'].includes(flowName)) {
     errorMessage = 'Start date and time should be greater than the current date and time.';
   } else if (isEndDateRequired && !endDateTime) {
     errorMessage = 'End date and time is required.';
-  } else if (startDateTime && endDateTime && startDateTime > endDateTime) {
+  } else if (startDateTime && isEndDateRequired && startDateTime > endDateTime) {
     errorMessage = 'End date and time should be greater than the start date and time.';
+  } else if (couponStatus === 'created' && startDateTime < new Date().toISOString()) {
+    errorMessage = 'Start date and time should be greater than the current date and time.';
   }
 
   setErrorStates((prevState) =>
@@ -310,6 +313,7 @@ export const globalValidator = async ({
           ).toISOString(),
           setErrorStates,
           flowName,
+          couponStatus: widgetsData.status,
         }),
       );
     }
