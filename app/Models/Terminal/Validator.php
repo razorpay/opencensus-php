@@ -343,6 +343,8 @@ class Validator extends Base\Validator
         Entity::EMANDATE                                => 'sometimes|boolean|in:0,1',
         Entity::TYPE . 'recurring_3ds'                  => 'sometimes_if:emandate,1|in:1',
         Entity::TYPE . 'recurring_non_3ds'              => 'sometimes_if:emandate,1|in:1',
+        Entity::TYPE . 'pay'                            => 'sometimes_if:upi,1|in:1',
+        Entity::TYPE . 'collect'                        => 'sometimes_if:upi,1|in:1',
     ];
 
     protected static $cashfreeTerminalRules = [
