@@ -1280,9 +1280,7 @@ class Processor
 
             if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === true)
             {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::MARKETPLACE_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
+                return true;
             }
 
 
