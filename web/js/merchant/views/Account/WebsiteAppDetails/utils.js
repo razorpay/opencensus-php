@@ -161,29 +161,12 @@ export function isUrlFieldEmpty(activationData) {
 export const isPolicyWizardV2Enabled = ({ splitz, activationData, user }) => {
   const { abExperiments: { noCodePolicyWizard, policyWizardV2 } = {} } = splitz;
 
-  const isNoCodePolicyWizardEnabled = isExperimentEnabled(noCodePolicyWizard) && user.isOrgRZP;
-  const isPolicyExp = isExperimentEnabled(policyWizardV2) && user.isOrgRZP;
+  const isNoCodePolicyExpEnabled = isExperimentEnabled(noCodePolicyWizard) && user.isOrgRZP;
+  const isWebsitePolicyExpEnabled = isExperimentEnabled(policyWizardV2) && user.isOrgRZP;
 
   const isWebsiteMerchant = !isUrlFieldEmpty(activationData);
 
-  // const isNoCodeMerchantNotEnabled = !isWebsiteMerchant && !isNoCodePolicyWizardEnabled;
-  const isWebsiteMerchantNotEnabled = isWebsiteMerchant && !isPolicyExp;
+  const isFeExpEnable = isWebsiteMerchant ? isWebsitePolicyExpEnabled : isNoCodePolicyExpEnabled;
 
-  // let isEnablePolicyWizardV2 = isPolicyExp;
-  let isEnablePolicyWizardV2 = isNoCodePolicyWizardEnabled;
-
-  // if no-code merhcant experiment is not enabled
-  // and merchant is no-code merchant then it should return `false`
-  // commented till BE is done for website policy
-  // if (isNoCodeMerchantNotEnabled) {
-  //   isEnablePolicyWizardV2 = false;
-  // }
-
-  // if website merhcant experiment is not enabled
-  // and merchant is website merchant then it should return `false`
-  if (isWebsiteMerchantNotEnabled) {
-    isEnablePolicyWizardV2 = false;
-  }
-
-  return isEnablePolicyWizardV2;
+  return isFeExpEnable;
 };

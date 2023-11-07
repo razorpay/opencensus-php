@@ -233,7 +233,7 @@ export const Sections: SectionCardInterface[] = [
     subSections: [
       {
         id: WebsiteAppSettingsFields.WEBSITE_APP_DETAIL,
-        title: WebsiteAppSettingsTitles[WebsiteAppSettingsFields.WEBSITE_APP_DETAIL],
+        title: WebsiteAppSettingsTitles[WebsiteAppSettingsFields.BUSINESS_POLICY_DETAILS],
         href: ROUTES_INFO.WEBSITE_APP_SETTINGS,
         additionalCondition:
           ({ websiteSectionDetailsData, extraConfig }: AdditionalContextInterface) =>
