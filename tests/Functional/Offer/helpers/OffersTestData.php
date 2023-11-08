@@ -409,6 +409,35 @@ return [
             ]
         ]
     ],
+    'testCreateHDFCDebitCardNoCostEMIOfferWithoutDuration' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer Without duration',
+                'payment_method'      => 'emi',
+                'issuer'              => 'HDFC_DC',
+                'min_amount'          => 500000,
+                'emi_subvention'      => true,
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
+                'display_text'        => 'HDFC Debit Card Emi Subvention offers',
+                'terms'               => 'Some more details',
+                'block'               =>  1,
+                'type'                => 'instant'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [[
+                'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                'description' => 'The emi durations field is required.',
+            ]
+            ],
+            'status_code' => 200
+        ],
+    ],
     'testCreateHDFCDebitCardNoCostEMIOffer' => [
         'request' => [
             'content' => [
@@ -914,6 +943,7 @@ return [
                 'payment_method'      => 'emi',
                 'issuer'              => 'HDFC',
                 'emi_subvention'      => true,
+                'emi_durations'       => [6],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'starts_at'           => 1514764800,
@@ -933,6 +963,7 @@ return [
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
                 'issuer'              => 'HDFC',
+                'emi_durations'       => [6],
                 'max_payment_count'   => 2,
                 'min_amount'          => 316389,
                 'starts_at'           => 1514764800,
@@ -951,6 +982,7 @@ return [
                 'payment_method'      => 'emi',
                 'issuer'              => 'HDFC',
                 'emi_subvention'      => true,
+                'emi_durations'       => [6],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
@@ -968,6 +1000,7 @@ return [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
+                'emi_durations'       => [6],
                 'issuer'              => 'HDFC',
                 'payment_method_type' => 'credit',
                 'max_payment_count'   => 2,
@@ -985,6 +1018,7 @@ return [
                 'payment_method'      => 'emi',
                 'payment_network'     => 'AMEX',
                 'emi_subvention'      => true,
+                'emi_durations'       => [6],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'starts_at'           => 1519457060,
@@ -1015,6 +1049,7 @@ return [
                 'payment_method'      => 'emi',
                 'payment_network'     => 'AMEX',
                 'emi_subvention'      => true,
+                'emi_durations'       => [6],
                 'min_amount'          => 200000,
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',

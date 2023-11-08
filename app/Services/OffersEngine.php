@@ -32,6 +32,8 @@ class OffersEngine
 
     protected $auth;
 
+    protected $merchantId;
+
     // Headers
     const ACCEPT            = 'Accept';
     const CONTENT_TYPE      = 'Content-Type';
@@ -43,7 +45,11 @@ class OffersEngine
     // Offers Engine APIs
     const OffersEngineCreateOffer = 'v1/offers';
 
+    const OffersEngineAdminCreateOffer = 'v1/admin/offers';
+
     const OffersEngineUpdateOffer = 'v1/offers/%s';
+
+    const OffersEngineAdminUpdateOffer = 'v1/admin/offers/%s';
 
     // Requests/responses will be logged by default or if value for path mentioned here is true.
     const REQUEST_LOGGER_MAP = [];
@@ -120,7 +126,11 @@ class OffersEngine
         $headers[self::ACCEPT]        = 'application/json';
         $headers[self::CONTENT_TYPE]  = 'application/json';
         $headers[self::X_TASK_ID]     = $this->app['request']->getTaskId();
-        $headers[self::X_PASSPORT_JWT_V1] = $this->auth->getPassportJwt($this->baseUrl);
+        if ($this->auth->isAdminAuth() === false)
+        {
+            $headers[self::X_PASSPORT_JWT_V1] = $this->auth->getPassportJwt($this->baseUrl);
+        }
+        $headers['X-User-Id'] = $this->merchantId;
         $headers['X-User-Type'] = 'advertiser';
         $headers['X-Api-Decomp'] = 'shadow';
 
@@ -279,7 +289,14 @@ class OffersEngine
      */
     public function createOffer(array $input)
     {
+        $this->merchantId = $input['offer']['metadata']['advertiser_id'];
         return $this->sendRequest(self::OffersEngineCreateOffer, Requests::POST, $input);
+    }
+
+    public function adminCreateOffer(array $input)
+    {
+        $this->merchantId = $input['offer']['metadata']['advertiser_id'];
+        return $this->sendRequest(self::OffersEngineAdminCreateOffer, Requests::POST, $input);
     }
 
     /**
@@ -288,7 +305,16 @@ class OffersEngine
      */
     public function updateOffer($id, array $input)
     {
+        $this->merchantId = $input['offer']['metadata']['advertiser_id'];
         $endpoint = sprintf(self::OffersEngineUpdateOffer, $id);
+
+        return $this->sendRequest($endpoint, Requests::PATCH, $input);
+    }
+
+    public function adminUpdateOffer($id, array $input)
+    {
+        $this->merchantId = $input['offer']['metadata']['advertiser_id'];
+        $endpoint = sprintf(self::OffersEngineAdminUpdateOffer, $id);
 
         return $this->sendRequest($endpoint, Requests::PATCH, $input);
     }

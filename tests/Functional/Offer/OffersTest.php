@@ -529,6 +529,17 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateHDFCDebitCardNoCostEMIOfferWithoutDuration(): void
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $this->startTest();
+    }
+
     public function testCreateHDFCDebitCardEMIOffer(): void
     {
         $this->fixtures->merchant->enableEmi();
@@ -865,7 +876,8 @@ class OffersTest extends TestCase
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->fixtures->create('offer:emi_subvention', [
-            'payment_method_type'=>'credit'
+            'payment_method_type'=>'credit',
+            'emi_durations' => [6]
         ]);
 
         $this->startTest();

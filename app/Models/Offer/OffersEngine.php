@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Offer;
 
+use App;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Emi;
@@ -14,10 +15,13 @@ use RZP\Models\Payment;
 
 class OffersEngine extends Base\Core
 {
+    private $auth;
 
     public function __construct()
     {
         parent::__construct();
+
+        $this->auth = App::getFacadeRoot()['basicauth'];
     }
 
     /**
@@ -31,7 +35,13 @@ class OffersEngine extends Base\Core
 
             $oeRequest = $this->buildRequestForOffersEngine($offer, $subscriptionInput, $tenureDiscountMap);
 
-            $oeResponse = $this->app['offers_engine']->createOffer($oeRequest);
+            if ($this->auth->isAdminAuth() === false)
+            {
+                $oeResponse = $this->app['offers_engine']->createOffer($oeRequest);
+            }
+            else {
+                $oeResponse = $this->app['offers_engine']->adminCreateOffer($oeRequest);
+            }
 
             if (empty($oeResponse))
             {
@@ -102,12 +112,12 @@ class OffersEngine extends Base\Core
             $subscriptionInputOE = $convertedOeResponse[Constants::SUBSCRIPTION_FIELDS];
             ksort($subscriptionInputOE);
 
-            if (!empty($subscriptionInputAPI !== $subscriptionInputOE))
+            if ($subscriptionInputAPI !== $subscriptionInputOE)
             {
                 $mismatchPresent = true;
                 $this->trace->info(TraceCode::CREATE_OFFER_RESPONSE_MISMATCH, [
                     'subscriptionInputAPI' => $subscriptionInputAPI,
-                    'subscriptionInputOE' => $convertedOeResponse[Constants::SUBSCRIPTION_FIELDS],
+                    'subscriptionInputOE' => $subscriptionInputOE,
                 ]);
             }
         }
@@ -154,11 +164,18 @@ class OffersEngine extends Base\Core
             ];
 
             // try to update offer in OE
-            $offersEngineResponse = $this->app['offers_engine']->updateOffer($offer->getPublicId(), $offersEngineInput);
+            if ($this->auth->isAdminAuth() === false)
+            {
+                $offersEngineResponse = $this->app['offers_engine']->updateOffer($offer->getPublicId(), $offersEngineInput);
+            }
+            else
+            {
+                $offersEngineResponse = $this->app['offers_engine']->adminUpdateOffer($offer->getPublicId(), $offersEngineInput);
+            }
 
             if (empty($offersEngineResponse))
             {
-                $this->trace->count(Metric::OFFERS_ENGINE_CREATE_OFFER_FAIL);
+                $this->trace->count(Metric::OFFERS_ENGINE_UPDATE_OFFER_RESPONSE_NIL);
                 // raise slack alert
                 $this->trace->debug(TraceCode::OFFERS_ENGINE_UPDATE_OFFER_RESPONSE_NIL, [
                     'api_response' => $offer,
@@ -209,6 +226,8 @@ class OffersEngine extends Base\Core
 
         // **offer_id**
         $metadata[Constants::OFFER_ID] = $offer->getId();
+
+        $metadata[Constants::ADVERTISER_ID] = 'rzp.merchant.' . $offer->getMerchantId();
 
         // getUser for merchant dashboard and getAdmin for admin dashboard
         if ($this->app['basicauth']->getUser() !== null)
@@ -273,7 +292,7 @@ class OffersEngine extends Base\Core
 
     private function getTenureDiscountMapForEMI(Entity $offer)
     {
-        // get merchant_paybacks if emi_subvention offer
+        // get merchant_paybacks if offer is emi_subvention
         if ($offer->isNoCostEmi())
         {
             // fetch payback map for only no cost emi
