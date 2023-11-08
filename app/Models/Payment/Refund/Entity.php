@@ -1022,6 +1022,11 @@ class Entity extends Base\PublicEntity
             }
         }
 
+        if($this->merchant->isLRSFlowEnabled() === true)
+        {
+            $gatewayAmount = $this->payment->getGatewayAmount();
+        }
+
         $this->setAttribute(self::GATEWAY_AMOUNT, $gatewayAmount);
     }
 
@@ -1089,6 +1094,11 @@ class Entity extends Base\PublicEntity
         if($this->payment->isHdfcVasDSCustomerFeeBearerSurcharge())
         {
             $gatewayCurrency = Currency\Currency::INR;
+        }
+
+        if($this->merchant->isLRSFlowEnabled() === true)
+        {
+            $gatewayCurrency = $this->payment->paymentMeta->getGatewayCurrency();
         }
 
         $this->setAttribute(self::GATEWAY_CURRENCY, $gatewayCurrency);
@@ -1385,12 +1395,6 @@ class Entity extends Base\PublicEntity
             $data[self::CURRENCY] = $this->getGatewayCurrency();
         }
 
-        if ($this->merchant->isLRSFlowEnabled())
-        {
-            $data[self::AMOUNT] = $this->getGatewayAmount();
-            $data[self::CURRENCY] = $this->getGatewayCurrency();
-        }
-
         if ($this->payment->getGateway() === Payment\Gateway::WALLET_PAYPAL)
         {
             $data[self::AMOUNT]   = $this->getGatewayAmount();
@@ -1403,8 +1407,9 @@ class Entity extends Base\PublicEntity
             $data[self::CURRENCY] = $this->getGatewayCurrency();
         }
 
-        if (($this->payment->isCard() === true) and
-            ($this->payment->getConvertCurrency() === true))
+        if ((($this->payment->isCard() === true) and
+            ($this->payment->getConvertCurrency() === true)) or
+            ($this->merchant->isLRSFlowEnabled() === true))
         {
             $data[self::AMOUNT]   = $this->getBaseAmount();
             $data[self::CURRENCY] = Currency\Currency::INR;
