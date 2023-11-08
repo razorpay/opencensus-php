@@ -2011,6 +2011,9 @@ class Service extends Base\Service
             'language_code' => $languageCode,
             'org_checkout_logo_url' => optional($org)->getCheckoutLogo() ?? '',
             'category_name' => $merchant->getCategory2(),
+            'activated_at' => $merchant->getActivatedAt(),
+            'website' => $merchant->getWebsite(),
+            'whitelisted_domains' => $merchant->getWhitelistedDomains(),
         ];
 
         $optionalInputConfig = $merchant->getOptionalInputConfig();

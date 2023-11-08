@@ -45,7 +45,11 @@ class Service extends Base\Service
 
         if ($trustedBadge !== null)
         {
+            $oldestEligibleTrustedBadgeHistory = $this->repo->trusted_badge_history->fetchOldestEligible($merchantId);
             $data['is_live'] = $trustedBadge->isLive();
+            $data['first_activated_at'] = $oldestEligibleTrustedBadgeHistory != null ?
+                $oldestEligibleTrustedBadgeHistory->getCreatedAt() :
+                null;
             $data = array_merge($data, $trustedBadge->toArrayPublic());
         }
 

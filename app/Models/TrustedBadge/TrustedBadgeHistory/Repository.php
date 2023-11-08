@@ -30,6 +30,18 @@ class Repository extends Base\Repository
     }
 
     /**
+     * First record when the merchant was RTB eligible for the first time.
+     */
+    public function fetchOldestEligible(string $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->merchantId($merchantId)
+            ->where(Entity::STATUS, Entity::ELIGIBLE)
+            ->oldest()
+            ->first();
+    }
+
+    /**
      * @param string $merchantId
      * @param string $status
      * @param string $merchantStatus

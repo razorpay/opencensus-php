@@ -473,6 +473,9 @@ class Entity extends Base\PublicEntity
         self::ORG_ID,
         self::PARTNERSHIP_URL,
         self::CATEGORY2,
+        self::ACTIVATED_AT,
+        self::WEBSITE,
+        self::WHITELISTED_DOMAINS,
     ];
 
     protected $public = [
