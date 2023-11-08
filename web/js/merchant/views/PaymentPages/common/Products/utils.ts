@@ -208,7 +208,7 @@ export const generateStorefrontRequest = (
       mandatory: true,
     })),
     expire_by,
-    slug,
+    slug: slug || undefined,
     // if settings is empty, send any valid key with empty string value, as this key cannot be sent as undefined
     settings: Object.keys(settings).length
       ? settings
