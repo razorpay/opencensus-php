@@ -1,5 +1,12 @@
 import React from 'react';
-import { render, screen, server, userEvent, waitFor } from 'common/services/test/test-utils';
+import {
+  render,
+  screen,
+  server,
+  userEvent,
+  waitFor,
+  fireEvent,
+} from 'common/services/test/test-utils';
 import { rest } from 'msw';
 import {
   CapitalSubMerchantList,
@@ -293,5 +300,30 @@ describe('AccountsList', () => {
     await waitFor(() => {
       expect(screen.getByText('There was an error while fetching Status')).toBeInTheDocument();
     });
+  });
+
+  test(`should render successfully open and render Add Merchant modal without breaking`, async () => {
+    server.use(
+      rest.get('*/merchant/api/test/submerchants', (req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            status_code: 200,
+            success: true,
+            data: emptyAccountsListResponse,
+          }),
+          ctx.delay(50),
+        );
+      }),
+    );
+    renderApp(PRODUCT_TYPE.PG, '');
+
+    await waitFor(() => {
+      expect(screen.getByText('Welcome to Partner Dashboard')).toBeInTheDocument();
+      expect(screen.getByText('Get started by adding merchants to Razorpay')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Add New Merchant'));
+    });
+
+    expect(screen.queryByText('Add New Merchants')).toBeInTheDocument();
   });
 });

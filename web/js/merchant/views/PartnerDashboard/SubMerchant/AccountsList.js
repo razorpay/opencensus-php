@@ -466,7 +466,12 @@ class ProductSubMerchantsList extends ListContainer {
       },
       toCleverTap: true,
     });
-    const { openModal, experiments, product } = this.props;
+    const {
+      openModal,
+      experiments,
+      product,
+      i18: { isConfigTagEnabled },
+    } = this.props;
     const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
       experiments;
     const isPlatformPartnerWithPGInviteFlow =
@@ -476,7 +481,13 @@ class ProductSubMerchantsList extends ListContainer {
     } else {
       openModal({
         size: 'med-large',
-        component: <AddMerchant closeModal={this.props.closeModal} org={this.props?.org} />,
+        component: (
+          <AddMerchant
+            closeModal={this.props.closeModal}
+            org={this.props?.org}
+            isConfigTagEnabled={isConfigTagEnabled}
+          />
+        ),
       });
     }
   };
