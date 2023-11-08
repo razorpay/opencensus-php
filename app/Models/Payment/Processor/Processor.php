@@ -2255,6 +2255,11 @@ class Processor
             }
         }
 
+        //Add raw request coming from Edge to API for parity
+        $rawBodyInput['body_string'] = Request::getContent();
+        $rawBodyInput['content_header'] = Request::header('Content-Type');
+        $input['raw_request'] = $rawBodyInput;
+
         $paymentData = $this->callPGRouterPaymentCreateBasedOnRoute($input);
 
         $paymentId = $this->getPaymentIdFromRearchResponse($paymentData);
