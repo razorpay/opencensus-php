@@ -4927,12 +4927,26 @@ class Service extends Base\Service
         }
         else if ($eventType === "mail")
         {
-            if($payment->isFpx() && $payment->isFailed() && $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION){
-                $this->trace->info(TraceCode::FPX_B2B_EMAIL_SUPPRESS, [
+            if($payment->isFpx() && $payment->isFailed() &&
+                ($payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION ||
+                    $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
+                    $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
+                $this->trace->info(TraceCode::FPX_EMAIL_SUPPRESS, [
                     'payment_id' => $payment['id'],
                 ]);
                 return;
             }
+
+            if($payment->isWallet() && $payment->isFailed() &&
+                $payment->isGateway(Payment\Gateway::EGHL) === true &&
+                ($payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
+                    $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
+                $this->trace->info(TraceCode::WALLET_EMAIL_SUPPRESS, [
+                    'payment_id' => $payment['id'],
+                ]);
+                return;
+            }
+
             (new Notify($payment))->trigger($event);
         }
     }
@@ -5007,12 +5021,26 @@ class Service extends Base\Service
             }
             else if ($eventType === "mail")
             {
-                if($payment->isFpx() && $payment->isFailed() && $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION){
-                    $this->trace->info(TraceCode::FPX_B2B_EMAIL_SUPPRESS, [
+                if($payment->isFpx() && $payment->isFailed() &&
+                    ($payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION ||
+                        $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
+                        $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
+                    $this->trace->info(TraceCode::FPX_EMAIL_SUPPRESS, [
                         'payment_id' => $payment['id'],
                     ]);
                     return;
                 }
+
+                if($payment->isWallet() && $payment->isFailed() &&
+                    $payment->isGateway(Payment\Gateway::EGHL) === true &&
+                    ($payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING ||
+                        $payment->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT)){
+                    $this->trace->info(TraceCode::WALLET_EMAIL_SUPPRESS, [
+                        'payment_id' => $payment['id'],
+                    ]);
+                    return;
+                }
+
                 (new Notify($payment))->trigger($event);
             }
         }
