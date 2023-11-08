@@ -40,6 +40,10 @@ class Service extends Base\Service
     protected $cache;
 
     const PG_ROUTER_TRANSACTION_FAILURE = 'pg_router_transaction_failure';
+    const INTERNAL_TRANSACTION_CREATE_MUTEX_TTL = 60;
+    const INTERNAL_TRANSACTION_CREATE_MUTEX_RETRIES = 20;
+    const INTERNAL_TRANSACTION_CREATE_MUTEX_MIN_RETRY_DELAY = 1000;
+    const INTERNAL_TRANSACTION_CREATE_MUTEX_MAX_RETRY_DELAY = 2000;
 
     public function __construct()
     {
@@ -483,7 +487,13 @@ class Service extends Base\Service
                 }
 
                 return $txn->toArrayPublic();
-            });
+            },
+            self::INTERNAL_TRANSACTION_CREATE_MUTEX_TTL,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            self::INTERNAL_TRANSACTION_CREATE_MUTEX_RETRIES,
+            self::INTERNAL_TRANSACTION_CREATE_MUTEX_MIN_RETRY_DELAY,
+            self::INTERNAL_TRANSACTION_CREATE_MUTEX_MAX_RETRY_DELAY
+        );
     }
 
     public function postInternalTransactionCron(array $input)
