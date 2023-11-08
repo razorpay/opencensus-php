@@ -291,7 +291,7 @@ class Core extends Base\Core
 
         $activationStatus = $data['activation_status'];
 
-        if ((in_array($activationStatus, DeStatus::PAYMENTS_ENABLED_STATUSES) === false) and ($merchant->isFundsOnHold() === false))
+        if((in_array($activationStatus, DeStatus::PAYMENTS_ENABLED_STATUSES) === false) || ($merchant->isFundsOnHold() === true))
         {
             return;
         }
@@ -357,7 +357,7 @@ class Core extends Base\Core
 
         $data = $this->getTemplateData($invoice, $pdfPath);
 
-        if ((in_array($data['activation_status'], DeStatus::PAYMENTS_ENABLED_STATUSES) === false) and ($merchant->isFundsOnHold() === false))
+        if((in_array($data['activation_status'], DeStatus::PAYMENTS_ENABLED_STATUSES) === false) || ($merchant->isFundsOnHold() === true))
         {
             return;
         }
