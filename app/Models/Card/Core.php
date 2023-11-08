@@ -743,6 +743,7 @@ class Core extends Base\Core
             $terminalGatewayInput['card'][Card\Entity::ALT_ID] = 1;
             $terminalGatewayInput['card'][Card\Entity::TOKEN_REFERENCE_NUMBER] = $response['alt_id']['token_reference_number'];
             $terminalGatewayInput['card'][Card\Entity::TOKEN_REFERENCE_ID] = $response['alt_id']['token_reference_id'];
+            $terminalGatewayInput['card'][Card\Entity::TOKENISED] = null;
             $response['alt_id']['card_vault_token'] = $payment->card->getVaultToken();
 
             $terminalGatewayInput['alt_id_data'] = $response;
@@ -753,6 +754,7 @@ class Core extends Base\Core
             $gatewayInput['card'][Card\Entity::CRYPTOGRAM_VALUE] = $response['alt_id']['cryptogram_value'];
             $gatewayInput['card'][Card\Entity::TRIVIA] = '2';
             $gatewayInput['card'][Card\Entity::ALT_ID] = 1;
+            $gatewayInput['card'][Card\Entity::TOKENISED] = null;
             $gatewayInput['alt_id_data'] = $response;
         }
         return $response;
