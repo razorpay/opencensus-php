@@ -25,6 +25,14 @@ class VerificationDetailTransformer extends Base\Transformer
                 "column" => 'merchant_id'
             ]
         ],
+        'verification_id'         => [
+            [
+                "column" => 'verification_id',
+                "condition" => [
+                    'verification_unit' => 'website'
+                ]
+            ]
+        ],
         'artefact_type'       => [
             [
                 "column"   => 'artefact_type',
@@ -70,6 +78,16 @@ class VerificationDetailTransformer extends Base\Transformer
                 ]
             ]
         ],
+        'metadata.signatory_validation_status' => [
+            [
+                "column"   => 'metadata.signatory_validation_status'
+            ]
+        ],
+        'metadata.signatory_validation_id' => [
+            [
+                "column"   => 'metadata.bvs_validation_id'
+            ]
+        ]
     ];
 
     public const ARTEFACT_TYPE_MAPPING = [

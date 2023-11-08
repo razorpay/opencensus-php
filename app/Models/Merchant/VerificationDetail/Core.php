@@ -7,8 +7,10 @@ use Mail;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Constants as MerchantConstants;
-use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater\DefaultStatusUpdater;
 
 class Core extends Base\Core
 {
@@ -110,6 +112,12 @@ class Core extends Base\Core
                                                                                    $data[Entity::ARTEFACT_IDENTIFIER]
                 );
 
+                // extract verificationId if present and unset
+                $verificationId = $data['verification_id'];
+                if(empty($verificationId) === false){
+                    unset($data['verification_id']);
+                }
+
                 if (empty($verification) === false)
                 {
                     $verification->edit($data);
@@ -126,6 +134,23 @@ class Core extends Base\Core
 
                     $this->repo->merchant_verification_detail->saveOrFail($verification);
 
+                }
+
+                if (in_array($data[Entity::ARTEFACT_TYPE],[Constant::NEGATIVE_KEYWORDS,Constant::WEBSITE_POLICY,Constant::MCC_CATEGORISATION_WEBSITE]) === true
+                    and in_array($data[Entity::STATUS],[BvsValidationConstants::VERIFIED,BvsValidationConstants::FAILED]) === true and empty($verificationId) === false
+                )
+                {
+
+                    $this->trace->info(TraceCode::UPDATE_MERCHANT_CONTEXT_REQUEST, [
+                        '$verificationId'     => $verificationId,
+                        'data'                  => $data
+                    ]);
+
+                    $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data[Entity::MERCHANT_ID]);
+                    $validation = $this->repo->bvs_validation->findOrFail($verificationId);
+
+                    $statusUpdater = new DefaultStatusUpdater($merchant, $merchantDetails, "", $validation);
+                    $statusUpdater->updateMerchantContext();
                 }
             }
         }
