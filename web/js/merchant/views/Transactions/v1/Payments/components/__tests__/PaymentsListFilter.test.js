@@ -22,6 +22,9 @@ describe('PaymentsListFilter', () => {
       isSingleReconEnabled: true,
       isOptimizerEnabled: true,
       isOmniChannelMerchant: true,
+      merchant: {
+        country_code: 'IN',
+      },
     },
   };
 
@@ -167,5 +170,22 @@ describe('PaymentsListFilter', () => {
       }),
       expect.any(String),
     );
+  });
+
+  test('should have dial-code +60 for MY merchants', () => {
+    const props = {
+      user: {
+        merchant: {
+          country_code: 'MY',
+        },
+      },
+    };
+    render(<App {...props} />);
+    expect(screen.getByTestId('dialCodeValue')).toHaveTextContent('+60');
+  });
+
+  test('should have dial-code +91 for IN merchants', () => {
+    render(<App />);
+    expect(screen.getByTestId('dialCodeValue')).toHaveTextContent('+91');
   });
 });

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   render,
   screen,
@@ -7,11 +8,12 @@ import {
   userEvent,
   waitForLoadingToFinish,
 } from 'common/services/test/test-utils';
+import * as analytics from 'common/utils/analytics';
 import PlatformFee from 'merchant/views/Marketplace/PlatformFee/List';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
 import { platformFeeData, platformFeeDataEmpty } from './mocks/fixtures';
 import { platformFeeListSuccess, platformFeeListError } from './mocks/handlers';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import * as analytics from 'common/utils/analytics';
 
 jest.mock('common/ui/HeaderAction', () => ({
   __esModule: true,
@@ -33,6 +35,9 @@ export const state = {
       isOrgAllowedFunctionality: () => true,
       findTag: () => true,
       isAllowedEdit: () => true,
+      merchant: {
+        country_code: 'IN',
+      },
     },
   },
 };

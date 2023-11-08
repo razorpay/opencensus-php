@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Field } from 'redux-form';
 
 import { CountryCodeInput } from 'common/components/CountryCodeInput';
+import { COUNTRY_CODES } from 'common/components/CountryCodeInput/constant';
 import { useI18Service } from 'common/i18';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import ListFilter from 'merchant/components/ListFilter';
@@ -28,10 +29,16 @@ export default ({ showBatchIdFilter, ...props }) => {
   };
   const [provider, setProvider] = useState({ name: 'All', value: '', gateway: '' });
   const [changeFormValue, setChangeFunction] = useState(() => {});
+  const {
+    user: { merchant },
+  } = props;
 
   const resetNotesFieldValue = () => {
     changeFormValue('notes', '');
   };
+
+  const merchantCountry = COUNTRY_CODES.find((country) => country.code === merchant.country_code);
+  const dialCodeCountry = merchantCountry.dial_code;
 
   const resetReceiverTypeValue = () => {
     changeFormValue('txn_receiver_type', '');
@@ -102,7 +109,11 @@ export default ({ showBatchIdFilter, ...props }) => {
                 changeFormValue('country_code', dialCode);
                 changeFormValue('contact', value);
               }}
-              dialCode={initalFormData.country_code || '+91'}
+              /**
+               * Setting default value based on merchant dial_code,
+               * as initially, country_code is set to null
+               */
+              dialCode={initalFormData.country_code || dialCodeCountry}
               value={props.input.value}
             />
           )}
