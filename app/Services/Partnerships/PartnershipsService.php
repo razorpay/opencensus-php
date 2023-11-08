@@ -114,6 +114,8 @@ class PartnershipsService extends Base\Service
     const ADMIN_EMAIL_PARAM_NAME = 'admin_email';
     const ADMIN_EMAIL_PARAM_HEADER = 'X-Admin-Email';
 
+    const ADD_BASIC_AUTH_CREDS = 'add_basic_auth_creds';
+
     const MAX_RETRY_COUNT = 2;
 
     const PartnershipServicePathMap = array(
@@ -621,6 +623,7 @@ class PartnershipsService extends Base\Service
             'partner_id'     => $partnerId,
             'event_name'     => $eventName,
             'data'           => $payload,
+            self::ADD_BASIC_AUTH_CREDS => true,
         ];
         return $this->sendRequestWithRetry($input, self::GET_MASKED_DATA, Requests::POST);
     }
@@ -800,6 +803,12 @@ class PartnershipsService extends Base\Service
 
         $headers = [];
 
+        $addBasicAuthCreds = $parameters[self::ADD_BASIC_AUTH_CREDS] ?? false;
+        if (isset($parameters[self::ADD_BASIC_AUTH_CREDS]))
+        {
+            unset($parameters[self::ADD_BASIC_AUTH_CREDS]);
+        }
+
         $parameters = json_encode($parameters);
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
@@ -811,7 +820,7 @@ class PartnershipsService extends Base\Service
         ];
 
         $jwt = null;
-        if ($this->skipPassport === false) {
+        if ($this->skipPassport === false && !$addBasicAuthCreds) {
             $jwt = $this->auth->getPassportJwt($this->getBaseUrl($this->mode));
         }
         if ($jwt == null) {
