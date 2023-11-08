@@ -17,9 +17,10 @@ class Client
     const WFS_CONFIG_CREATE_ROUTE               = "twirp/rzp.workflows.config.v1.ConfigAPI/Create";
     const WFS_CONFIG_UPDATE_ROUTE               = "twirp/rzp.workflows.config.v1.ConfigAPI/Update";
     const WFS_CONFIG_GET_ROUTE                  = "twirp/rzp.workflows.config.v1.ConfigAPI/Get";
+    const WFS_CONFIG_LIST_ROUTE                 = "twirp/rzp.workflows.config.v1.ConfigAPI/List";
     const WFS_WORKFLOW_GET_ROUTE                = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Get";
     const WFS_WORKFLOW_LIST_BY_IDS_ROUTE        = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/ListByIds";
-    const WFS_WORKFLOW_LIST_ROUTE              = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/List";
+    const WFS_WORKFLOW_LIST_ROUTE               = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/List";
     const WFS_ACTION_CREATE_ON_ENTITY_ROUTE     = "twirp/rzp.workflows.action.v1.ActionAPI/CreateWithEntityId";
     const WFS_DIRECT_ACTION_CREATE_ROUTE        = "twirp/rzp.workflows.action.v1.ActionAPI/CreateDirectOnWorkflow";
     const WFS_WORKFLOW_CREATE_ROUTE             = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Create";
@@ -240,6 +241,21 @@ class Client
                 null,
                 ErrorCode::SERVER_ERROR_WORKFLOW_CONFIG_GET_FAILED,
                 ['id' => $id]);
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    public function listWorkflowConfig(array $input)
+    {
+        $res = $this->workflowServiceClient->request(self::WFS_CONFIG_LIST_ROUTE, $input);
+
+        if ($res->status_code !== 200)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_CONFIG_LIST_FAILED,
+                $input);
         }
 
         return json_decode($res->body, true);

@@ -121,15 +121,38 @@ class Service extends Base\Service
                 $this->app['basicauth']->getMode() === Constants\Mode::TEST);
         }
 
-        $this->validatePendingPayoutsAndPayoutLinks($input);
+        $configType = array_pull($input, WorkflowConstants::CONFIG_TYPE, WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE);
 
         $workflowInput = $this->generateWorkflowInput($input);
 
-        $workflowResponse = $this->core->createWorkflowConfig($workflowInput);
+        if ($configType === WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE)
+        {
+            $this->validatePendingPayoutsAndPayoutLinks($input);
 
-        $this->enablePayoutWorkflowFeatureIfNotEnabled();
+            $workflowResponse = $this->core->createWorkflowConfig($workflowInput);
 
-        return $workflowResponse;
+            $this->enablePayoutWorkflowFeatureIfNotEnabled();
+
+            return $workflowResponse;
+        }
+
+        // For other workflow config types, we don't need to validate pending items in API monolith
+
+        return $this->core->createWorkflowConfig($workflowInput);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     *
+     * listWorkflowConfig proxies the request to workflow service
+     * workflow service fetches the configs based on the filterParams and queryParams passed returns the response
+     */
+    public function listWorkflowConfig(array $input): array
+    {
+        $this->trace->info(TraceCode::SELF_SERVE_WORKFLOW_LIST_CONFIG_REQUEST);
+
+        return $this->core->listWorkflowConfig($input);
     }
 
     /**
@@ -155,15 +178,22 @@ class Service extends Base\Service
 
         }
 
-        $this->validatePendingPayoutsAndPayoutLinks($input);
+        $configType = array_pull($input, WorkflowConstants::CONFIG_TYPE, WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE);
 
         $workflowInput = $this->generateWorkflowInput($input);
 
-        $workflowResponse = $this->core->updateWorkflowConfig($workflowInput);
+        if ($configType === WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE)
+        {
+            $this->validatePendingPayoutsAndPayoutLinks($input);
 
-        $this->enablePayoutWorkflowFeatureIfNotEnabled();
+            $workflowResponse = $this->core->updateWorkflowConfig($workflowInput);
 
-        return $workflowResponse;
+            $this->enablePayoutWorkflowFeatureIfNotEnabled();
+
+            return $workflowResponse;
+        }
+
+        return $this->core->updateWorkflowConfig($workflowInput);
     }
 
     /**
@@ -191,17 +221,24 @@ class Service extends Base\Service
 
         }
 
-        $this->validatePendingPayoutsAndPayoutLinks($input);
+        $configType = array_pull($input, WorkflowConstants::CONFIG_TYPE, WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE);
 
         $workflowInput = $this->generateWorkflowInput($input);
 
-        $merchant = $this->app['basicauth']->getMerchant();
-
-        $merchantId = $this->app['basicauth']->getMerchantId();
-
-        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_WORKFLOWS) === true)
+        if ($configType === WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE)
         {
-            (new Feature\Service)->deleteEntityFeature(Feature\Type::ACCOUNTS, $merchantId, Feature\Constants::PAYOUT_WORKFLOWS, [Feature\Entity::SHOULD_SYNC => true]);
+            $this->validatePendingPayoutsAndPayoutLinks($input);
+
+            $workflowInput = $this->generateWorkflowInput($input);
+
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $merchantId = $this->app['basicauth']->getMerchantId();
+
+            if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_WORKFLOWS) === true)
+            {
+                (new Feature\Service)->deleteEntityFeature(Feature\Type::ACCOUNTS, $merchantId, Feature\Constants::PAYOUT_WORKFLOWS, [Feature\Entity::SHOULD_SYNC => true]);
+            }
         }
 
         return $this->core->deleteWorkflowConfig($workflowInput);

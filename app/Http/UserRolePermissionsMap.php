@@ -14,6 +14,8 @@ class UserRolePermissionsMap
     {
          $rolePermissions = [
              BankingRole::OWNER => [
+                 Permission::CREATE_COST_CENTER,
+                 Permission::VIEW_COST_CENTER,
                  Permission::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_FINANCEX_REPORT,
@@ -210,6 +212,8 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::ADMIN => [
+                 Permission::CREATE_COST_CENTER,
+                 Permission::VIEW_COST_CENTER,
                  Permission::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_FINANCEX_REPORT,
@@ -369,6 +373,7 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::FINANCE_L1 => [
+                 Permission::VIEW_COST_CENTER,
                  Permission::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_PAYOUT,
@@ -503,6 +508,7 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::OPERATIONS => [
+                 Permission::VIEW_COST_CENTER,
                  Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_USER_OTP,
                  Permission::UPDATE_USER_PROFILE,
@@ -588,6 +594,7 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::CHARTERED_ACCOUNTANT => [
+                 Permission::VIEW_COST_CENTER,
                  Permission::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
 
@@ -642,6 +649,7 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::VIEW_ONLY => [
+                 Permission::VIEW_COST_CENTER,
                  Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_PAYOUT,
                  Permission::VIEW_PAYOUT_PURPOSE,

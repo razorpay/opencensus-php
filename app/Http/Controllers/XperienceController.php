@@ -128,4 +128,22 @@ class XperienceController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createCostCenters()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->createCostCenters($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getCostCenters()
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->getCostCenters($input);
+
+        return ApiResponse::json($response);
+    }
 }

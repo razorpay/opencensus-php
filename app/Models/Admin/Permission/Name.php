@@ -1171,6 +1171,9 @@ class Name
     const DISPUTES_DCS_CONFIG_GET         = 'disputes_dcs_config_get';
     const DISPUTES_DCS_CONFIG_UPDATE      = 'disputes_dcs_config_update';
 
+    const CREATE_COST_CENTER = 'create_cost_center';
+    const VIEW_COST_CENTER   = 'view_cost_center';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

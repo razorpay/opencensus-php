@@ -2343,6 +2343,17 @@ return [
             ],
         ],
 
+        PermissionCategory::COST_CENTER => [
+            Permission::CREATE_COST_CENTER => [
+                'description' => 'Create cost center',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_COST_CENTER => [
+                'description' => 'View cost center',
+                'assignable'  => true,
+            ],
+        ],
+
         PermissionCategory::X_DASHBOARD_FE => [
             Permission::UPDATE_USER_ROLE => [
                 'assignable'    => true,

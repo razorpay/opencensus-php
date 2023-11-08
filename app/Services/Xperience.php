@@ -43,6 +43,8 @@ class Xperience
     const GET_BULK_PAYOUT_ROWS_PATH          = 'v1/bulk-payouts/%s/rows';
     const PROCESS_BULK_PAYOUT_PATH           = 'v1/bulk-payouts/%s/process';
     const MIGRATE                            = 'v1/bulk-payouts/migrate';
+    const CREATE_COST_CENTER_PATH            = 'v1/cost-centers';
+    const GET_COST_CENTERS_PATH              = 'v1/cost-centers';
 
 
     // header constants
@@ -422,6 +424,24 @@ class Xperience
         $url = $this->getConstructedUrl(self::MIGRATE);
 
         $response = $this->makeRequest($url, $input);
+
+        return $response;
+    }
+
+    public function createCostCenters(array $input)
+    {
+        $url = $this->getConstructedUrl(self::CREATE_COST_CENTER_PATH);
+
+        $response = $this->makeRequest($url, $input);
+
+        return $response;
+    }
+
+    public function getCostCenters(array $queryParams)
+    {
+        $url = $this->getConstructedUrl(self::GET_COST_CENTERS_PATH);
+
+        $response = $this->makeRequest($url, $queryParams, [], self::GET);
 
         return $response;
     }

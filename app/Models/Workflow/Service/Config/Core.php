@@ -143,4 +143,9 @@ class Core extends Base\Core
     {
         return $this->workflowServiceClient->getConfigById($id);
     }
+
+    public function listWorkflowConfig(array $input): array
+    {
+        return $this->workflowServiceClient->listWorkflowConfig($input);
+    }
 }

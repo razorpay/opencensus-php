@@ -81,5 +81,6 @@ class Category
     const EMANDATE_CONFIG             = 'emandate_config';
     const MAGIC_OPS_CONFIG             = 'magic_ops_config';
     const MERCHANT_FUND_MANAGEMENT     = 'merchant_fund_management';
+    const COST_CENTER                  = 'cost_center';
     const RZP_KMS                       = 'rzp_kms';
 }
