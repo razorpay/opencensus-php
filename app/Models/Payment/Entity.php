@@ -62,6 +62,7 @@ use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Fpx;
+use RZP\Gateway\Base\Gateway as GatewayBase;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\CardMandate\CardMandateNotification;
@@ -858,6 +859,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected $ignoredRelations = [
         self::ORDER
+    ];
+
+    protected array $sensitiveFields = [
+        self::INTERNATIONAL,
+        self::VPA,
+        self::EMAIL,
+        self::CONTACT,
+        self::FEE,
+        self::TAX,
+        GatewayBase::AUTH_CODE
     ];
 
     // --------------------- Modifiers ---------------------------------------------
@@ -6120,6 +6131,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::FEE] = $this->transaction->getFee();
         }
 
+        $this->maskSensitiveFieldsIfApplicable($data);
+
         return $data;
     }
 
@@ -7112,4 +7125,23 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    protected function maskField($key, $value)
+    {
+        // mask only username for VPA, the PSP will remain intact
+        if ($key === self::VPA)
+        {
+            $exploded = explode('@', $value);
+
+            if (empty($exploded[0]) || empty($exploded[1])) // to handle incorrect VPA format value
+            {
+                return str_repeat('x', strlen($value));
+            }
+            else
+            {
+                return str_repeat('x', strlen($exploded[0])) . '@' . $exploded[1];
+            }
+        }
+
+        return parent::maskField($key, $value);
+    }
 }

@@ -299,6 +299,15 @@ class Entity extends Base\PublicEntity
         self::NAME,
     ];
 
+    protected array $sensitiveFields = [
+        self::NAME,
+        self::LAST4,
+        self::INTERNATIONAL,
+        self::EMI,
+        self::SUBTYPE,
+        self::TOKEN_IIN
+    ];
+
     public function buildCard(array $input = [], string $operation = 'create')
     {
         $this->input = $input;
@@ -1572,6 +1581,8 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setDummyCardData($data);
+
+        $this->maskSensitiveFieldsIfApplicable($data);
 
         return $data;
     }

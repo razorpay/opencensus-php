@@ -85,6 +85,7 @@ class Constants
     const MerchantActivationByPartnerEnabled = 'merchant_activation_by_partner_enabled';
     const OverridingSubmerchantConfigEnabled = 'overriding_submerchant_config_enabled';
     const CobrandedOnboardingEnabled = 'cobranded_onboarding_enabled';
+    const RestrictPiiDataEnabled = 'restrict_pii_data_enabled';
     const AdditionalFieldsHdfcOnboarding = 'additional_fields_hdfc_onboarding';
     const HideInstrumentRequest = 'hide_instrument_request';
     const CustomReportExtensions = 'custom_report_extensions';
@@ -339,6 +340,7 @@ class Constants
         self::MerchantActivationByPartnerEnabled => "rzp/platform/partner/onboarding/Features",
         self::OverridingSubmerchantConfigEnabled => "rzp/platform/partner/configuration/Features",
         self::CobrandedOnboardingEnabled => "rzp/platform/partner/configuration/Features",
+        self::RestrictPiiDataEnabled => "rzp/platform/partner/configuration/Features",
         self::AdditionalFieldsHdfcOnboarding => "rzp/pg/org/dashboard/admin/Features",
         self::HideInstrumentRequest => "rzp/pg/org/dashboard/banking_program/UIControls",
         self::CustomReportExtensions => "rzp/pg/org/dashboard/banking_program/Reporting",
@@ -562,6 +564,7 @@ class Constants
         APIFeaturesConstants::PARTNER_ACTIVATE_MERCHANT                     => self::MerchantActivationByPartnerEnabled,
         APIFeaturesConstants::OVERRIDE_SUB_CONFIG                           => self::OverridingSubmerchantConfigEnabled,
         APIFeaturesConstants::COBRANDED_ONBOARDING                          => self::CobrandedOnboardingEnabled,
+        APIFeaturesConstants::RESTRICT_PII_DATA                             => self::RestrictPiiDataEnabled,
         APIFeaturesConstants::RAZORPAY_SECURE_MERCHANT                      => self::ShopifyPaymentsReport,
         APIFeaturesConstants::NO_DOC_ONBOARDING                             => self::NoDocOnboardingEnabled,
         APIFeaturesConstants::CREATE_SOURCE_V2                              => self::OnboardedViaV2ApiEnabled,

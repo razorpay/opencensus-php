@@ -3,6 +3,7 @@
 namespace RZP\Models\Base;
 
 use App;
+use Razorpay\Trace\Logger;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -166,6 +167,13 @@ class PublicEntity extends UniqueIdEntity
     protected $bankBranchManager = [];
 
     protected $reconAppInternal  = [];
+
+    /**
+     * Fields that need to be masked in toArrayPublic() function.
+     *
+     * @var array
+     */
+    protected array $sensitiveFields = [];
 
     public function toArrayPublic()
     {
@@ -1064,6 +1072,105 @@ class PublicEntity extends UniqueIdEntity
             {
                 $this->setAttribute($key, $value);
             }
+        }
+    }
+
+    protected function maskSensitiveFieldsIfApplicable(& $fields)
+    {
+        if (empty($fields) === true or empty($this->sensitiveFields) === true)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        try
+        {
+            // mask the PII data only if OAuth (by platform partner) is used and
+            // partner has 'restrict_pii_data' feature enabled
+            if ($app['basicauth']->isOAuth())
+            {
+                $partner = $app['basicauth']->getPartnerMerchant();
+
+                if (empty($partner) === true)
+                {
+                    return;
+                }
+                else if ($partner->isRestrictPIIDataEnabled())
+                {
+                    $app['trace']->info(
+                        TraceCode::MASK_PII_FIELDS,
+                        [
+                            'partner_id'        => $partner->getId(),
+                            'application_id'    => $app['basicauth']->getOAuthApplicationId() ?? null,
+                            'merchant_id'       => $app['basicauth']->getMerchantId() ?? null
+                        ]
+                    );
+
+                    $allFields = $fields;
+
+                    $fields = $this->maskSensitiveFields($allFields, $this->sensitiveFields);
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::MASK_PII_FIELDS_FAILED,
+                [
+                    'partner_id'        => $app['basicauth']->getPartnerMerchantId() ?? null,
+                    'application_id'    => $app['basicauth']->getOAuthApplicationId() ?? null,
+                    'merchant_id'       => $app['basicauth']->getMerchantId() ?? null
+                ]
+            );
+
+            // if the masking fails, API should fail too as we can't reveal PII data to partners
+            throw $e;
+        }
+    }
+
+    protected function maskSensitiveFields($data, array $sensitiveFields)
+    {
+        if (!is_array($data))
+        {
+            return $data;
+        }
+
+        foreach ($data as $key => $value)
+        {
+            // if the field is an array, recursively call the function to mask its elements
+            if (is_array($value))
+            {
+                $data[$key] = $this->maskSensitiveFields($value, $sensitiveFields);
+            }
+            else if (in_array($key, $sensitiveFields) and $value !== null) // mask only sensitive fields with non-null value
+            {
+                $data[$key] = $this->maskField($key, $value);
+            }
+        }
+
+        return $data;
+    }
+
+    protected function maskField($key, $value)
+    {
+        if (is_int($value)) // replace with 0 for integer
+        {
+            return 0;
+        }
+        else if (is_bool($value)) // replace with false for boolean
+        {
+            return false;
+        }
+        else if (is_string($value)) // replace with 'x' for string
+        {
+            return str_repeat('x', strlen($value));
+        }
+        else
+        {
+            return $value;
         }
     }
 }

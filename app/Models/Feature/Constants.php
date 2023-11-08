@@ -159,6 +159,7 @@ class Constants
     const REFUND_PENDING_STATUS           = 'refund_pending_status';
     const OVERRIDE_SUB_CONFIG             = 'override_sub_config';
     const COBRANDED_ONBOARDING            = 'cobranded_onboarding';
+    const RESTRICT_PII_DATA               = 'restrict_pii_data';
     const DOWNTIME_ROUTING                = 'downtime_routing';
     const PAYOUT_TO_CARDS                 = 'payout_to_cards';
     const PAYMENT_ONHOLD                  = 'payment_onhold';
@@ -2195,6 +2196,7 @@ class Constants
         self::REFUND_PENDING_STATUS           => true,
         self::OVERRIDE_SUB_CONFIG             => true,
         self::COBRANDED_ONBOARDING            => true,
+        self::RESTRICT_PII_DATA               => true,
         self::DOWNTIME_ROUTING                => true,
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,

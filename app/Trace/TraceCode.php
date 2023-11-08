@@ -806,8 +806,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECON_ALERT_FAILED                                = 'FTA_RECON_ALERT_FAILED';
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
     const INVALID_EMAIL_CANNOT_MASK                             = 'INVALID_EMAIL_CANNOT_MASK';
-
     const INVALID_FIELD_FOR_MASKING                             = 'INVALID_FIELD_FOR_MASKING';
+    const MASK_PII_FIELDS                                       = 'MASK_PII_FIELDS';
+    const MASK_PII_FIELDS_FAILED                                = 'MASK_PII_FIELDS_FAILED';
 
 
     const ORG_LEVEL_FEATURE_ACCESS_VALIDATION_FAILURE           = 'ORG_LEVEL_FEATURE_ACCESS_VALIDATION_FAILURE';

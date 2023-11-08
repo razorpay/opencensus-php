@@ -1552,6 +1552,26 @@ return [
         ]
     ],
 
+    'testGetOrderPaymentsWithMaskingEnabled' => [
+        'request' => [
+            'url' => '/orders/:id/payments',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testGetOrderPaymentsWithMaskingNotEnabled' => [
+        'request' => [
+            'url' => '/orders/:id/payments',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testFetchOrder' => [
         'request' => [
             'method'  => 'GET',

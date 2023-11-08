@@ -336,7 +336,7 @@ final class RequestContext
         return ($this->auth === Type::DIRECT_AUTH);
     }
 
-    public function getAuthFlowType(): string
+    public function getAuthFlowType()
     {
         return $this->authFlowType;
     }

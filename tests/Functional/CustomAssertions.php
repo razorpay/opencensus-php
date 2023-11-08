@@ -133,6 +133,30 @@ trait CustomAssertions
         }
     }
 
+    public function assertFullyMasked($value): void
+    {
+        if (empty($value) === true or is_string($value) === false)
+        {
+            return;
+        }
+
+        $maskedValue = str_repeat('x', strlen($value));
+
+        $this->assertEquals($maskedValue, $value);
+    }
+
+    public function assertNotFullyMasked($value): void
+    {
+        if (empty($value) === true or is_string($value) === false)
+        {
+            return;
+        }
+
+        $maskedValue = str_repeat('x', strlen($value));
+
+        $this->assertNotEquals($maskedValue, $value);
+    }
+
     protected function getGatewayErrorDescription(array $actual)
     {
         $code = [

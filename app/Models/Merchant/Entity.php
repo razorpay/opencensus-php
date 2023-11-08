@@ -4041,6 +4041,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::COBRANDED_ONBOARDING);
     }
 
+    public function isRestrictPIIDataEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::RESTRICT_PII_DATA);
+    }
+
     public function isFieldHasValue($field): bool
     {
         if (!empty($field))

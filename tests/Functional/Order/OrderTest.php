@@ -2,32 +2,41 @@
 
 namespace RZP\Tests\Functional\Order;
 
+use App;
 use Mockery;
 use Carbon\Carbon;
+
 use RZP\Exception;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Order;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Account;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\MocksRazorx;
+use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
-use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Traits\TestsWebhookEvents;
 
 class OrderTest extends TestCase
 {
+    use MocksSplitz;
     use RazorxTrait;
     use MocksRazorx;
     use PaymentTrait;
+    use PartnerTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
 
@@ -203,9 +212,7 @@ class OrderTest extends TestCase
 
     public function testCreateOrder()
     {
-        $order = $this->startTest();
-
-        return $order;
+        return $this->startTest();
     }
 
     public function testCreateOrderMYRMerchantMY()
@@ -868,7 +875,339 @@ class OrderTest extends TestCase
 
         $payments = $this->startTest();
 
-        $this-> assertEquals(1, $payments['count']);
+        $this->assertEquals(1, $payments['count']);
+    }
+
+    public function testMaskSensitiveFieldsIfApplicableWithEmptyFieldsAndPiiFields()
+    {
+        $fields = [];
+
+        $publicEntity = new PublicEntity();
+
+        $reflection = new \ReflectionClass($publicEntity);
+        $method = $reflection->getMethod('maskSensitiveFieldsIfApplicable');
+        $method->setAccessible(true);
+
+        $method->invoke($publicEntity, $fields);
+
+        $this->assertEquals([], $fields);
+    }
+
+    public function testMaskSensitiveFieldsIfApplicableWithEmptyPiiFields()
+    {
+        $fields = ['name' => 'John', 'email' => 'john@example.com'];
+
+        $publicEntity = new PublicEntity();
+
+        $reflection = new \ReflectionClass($publicEntity);
+        $method = $reflection->getMethod('maskSensitiveFieldsIfApplicable');
+        $method->setAccessible(true);
+
+        $method->invoke($publicEntity, $fields);
+
+        $this->assertEquals(['name' => 'John', 'email' => 'john@example.com'], $fields);
+    }
+
+    public function testMaskSensitiveFieldsIfApplicableWithNoOAuth()
+    {
+        $fields = ['name' => 'John', 'email' => 'john@example.com'];
+        $piiFields = ['email'];
+
+        $publicEntity = new PublicEntity();
+
+        $reflectionClass = new \ReflectionClass($publicEntity);
+        $sensitiveFieldsProperty = $reflectionClass->getProperty('sensitiveFields');
+        $sensitiveFieldsProperty->setValue($publicEntity, $piiFields);
+
+        $method = $reflectionClass->getMethod('maskSensitiveFieldsIfApplicable');
+        $method->setAccessible(true);
+
+        $method->invoke($publicEntity, $fields);
+
+        $this->assertEquals(['name' => 'John', 'email' => 'john@example.com'], $fields);
+    }
+
+    public function testMaskSensitiveFieldsIfApplicableWithOAuthButNoPartner()
+    {
+        $fields = ['name' => 'John', 'email' => 'john@example.com'];
+        $piiFields = ['email'];
+
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $publicEntity = new PublicEntity();
+
+        $reflectionClass = new \ReflectionClass($publicEntity);
+        $sensitiveFieldsProperty = $reflectionClass->getProperty('sensitiveFields');
+        $sensitiveFieldsProperty->setValue($publicEntity, $piiFields);
+
+        $method = $reflectionClass->getMethod('maskSensitiveFieldsIfApplicable');
+        $method->setAccessible(true);
+
+        $app = App::getfacadeRoot();
+
+        // Simulate OAuth by setting auth flow type to oauth
+        $app['request.ctx']->setAuthFlowType('oauth');
+
+        $method->invoke($publicEntity, $fields);
+
+        $this->assertEquals(['name' => 'John', 'email' => 'john@example.com'], $fields);
+    }
+
+    public function testGetOrderPaymentsWithMaskingEnabled()
+    {
+        // setup OAuth for platform partner
+        $token = $this->setPurePlatformContext(Mode::TEST);
+
+        // assign feature flag to the partner necessary for masking sub-merchant PII data
+        $this->fixtures->merchant->addFeatures(['restrict_pii_data'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->mockAllSplitzTreatment();
+
+        $testData =  $this->testData['testCreateOrder'];
+
+        $response = $this->startTest($testData);
+
+        $orderId = $response['id'];
+
+        $this->enablePgRouterConfig();
+
+        $pgService = Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('fetchOrderPayments')
+            ->with(Mockery::type('string'), Mockery::type('string'))
+            ->andReturnUsing(function (string $order_id, string $merchantId)
+            {
+                return [];
+            });
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $orderId;
+
+        $this->mockCardVaultWithCryptogram();
+
+        $rzpPayment = $this->doAuthPaymentOAuth($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals($orderId, $rzpPayment['razorpay_order_id']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/orders/'. $orderId . '/payments';
+
+        $this->ba->oauthBearerAuth($token);
+
+        $payments = $this->startTest($testData);
+
+        // check if the PII data is getting masked properly
+        $this->assertEquals(1, $payments['count']);
+        $this->assertFullyMasked($payments['items'][0]['email']);
+        $this->assertFullyMasked($payments['items'][0]['contact']);
+        $this->assertFullyMasked($payments['items'][0]['card']['name']);
+        $this->assertFullyMasked($payments['items'][0]['card']['last4']);
+        $this->assertFullyMasked($payments['items'][0]['card']['sub_type']);
+    }
+
+    public function testGetOrderPaymentsWithMaskingNotEnabled()
+    {
+        // setup OAuth for platform partner
+        $token = $this->setPurePlatformContext(Mode::TEST);
+
+        $this->mockAllSplitzTreatment();
+
+        $testData =  $this->testData['testCreateOrder'];
+
+        $response = $this->startTest($testData);
+
+        $orderId = $response['id'];
+
+        $this->enablePgRouterConfig();
+
+        $pgService = Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('fetchOrderPayments')
+            ->with(Mockery::type('string'), Mockery::type('string'))
+            ->andReturnUsing(function (string $order_id, string $merchantId)
+            {
+                return [];
+            });
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $orderId;
+
+        $this->mockCardVaultWithCryptogram();
+
+        $rzpPayment = $this->doAuthPaymentOAuth($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals($orderId, $rzpPayment['razorpay_order_id']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/orders/'. $orderId . '/payments';
+
+        $this->ba->oauthBearerAuth($token);
+
+        $payments = $this->startTest($testData);
+
+        // PII data shouldn't be masked if 'restrict_pii_data' feature is not enabled
+        $this->assertEquals(1, $payments['count']);
+        $this->assertNotFullyMasked($payments['items'][0]['email']);
+        $this->assertNotFullyMasked($payments['items'][0]['contact']);
+        $this->assertNotFullyMasked($payments['items'][0]['card']['name']);
+        $this->assertNotFullyMasked($payments['items'][0]['card']['last4']);
+        $this->assertNotFullyMasked($payments['items'][0]['card']['sub_type']);
+    }
+
+    public function testMaskSensitiveFieldsWithEmptyData()
+    {
+        $data = [];
+        $sensitiveFields = ['username'];
+
+        $publicEntity = new PublicEntity();
+
+        $reflection = new \ReflectionClass($publicEntity);
+        $method = $reflection->getMethod('maskSensitiveFields');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($publicEntity, $data, $sensitiveFields);
+
+        $this->assertEquals([], $result);
+    }
+
+    public function testMaskSensitiveFieldsWithNoSensitiveFields()
+    {
+        $data = [['username' => 'john.doe', 'password' => 'password123']];
+        $sensitiveFields = [];
+
+        $publicEntity = new PublicEntity();
+
+        $reflection = new \ReflectionClass($publicEntity);
+        $method = $reflection->getMethod('maskSensitiveFields');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($publicEntity, $data, $sensitiveFields);
+
+        $this->assertEquals($data, $result);
+    }
+
+    public function testMaskSensitiveFieldsWithSensitiveData()
+    {
+        $data = ['username' => 'john.doe', 'password' => 'password123'];
+        $sensitiveFields = ['username', 'password'];
+
+        $publicEntity = new PublicEntity();
+
+        $reflection = new \ReflectionClass($publicEntity);
+        $method = $reflection->getMethod('maskSensitiveFields');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($publicEntity, $data, $sensitiveFields);
+
+        $this->assertEquals(['username' => 'xxxxxxxx', 'password' => 'xxxxxxxxxxx'], $result);
+    }
+
+    public function testMaskSensitiveFieldsWithNullSensitiveData()
+    {
+        $data = ['username' => null, 'password' => 'password123'];
+        $sensitiveFields = ['username', 'password'];
+
+        $publicEntity = new PublicEntity();
+
+        $reflection = new \ReflectionClass($publicEntity);
+        $method = $reflection->getMethod('maskSensitiveFields');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($publicEntity, $data, $sensitiveFields);
+
+        $this->assertEquals(['username' => null, 'password' => 'xxxxxxxxxxx'], $result);
+    }
+
+    public function testMaskSensitiveFieldsWithVPAAndAuthCode()
+    {
+        $data = ['vpa' => 'john.doe@ybl', ['acquirer_data' => ['auth_code' => '341181']]];
+        $sensitiveFields = ['vpa', 'auth_code'];
+
+        $paymentEntity = new PaymentEntity();
+
+        $reflection = new \ReflectionClass($paymentEntity);
+        $method = $reflection->getMethod('maskSensitiveFields');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($paymentEntity, $data, $sensitiveFields);
+
+        $this->assertEquals(['vpa' => 'xxxxxxxx@ybl', ['acquirer_data' => ['auth_code' => 'xxxxxx']]], $result);
+    }
+
+    public function testMaskSensitiveFieldsWithIncorrectVPAFormat()
+    {
+        $data = ['vpa' => 'john.doe', 'bank' => 'sbi'];
+        $sensitiveFields = ['vpa'];
+
+        $paymentEntity = new PaymentEntity();
+
+        $reflection = new \ReflectionClass($paymentEntity);
+        $method = $reflection->getMethod('maskSensitiveFields');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($paymentEntity, $data, $sensitiveFields);
+
+        $this->assertEquals(['vpa' => 'xxxxxxxx', 'bank' => 'sbi'], $result);
+    }
+
+    public function testMaskSensitiveFieldsWithIntegerValue()
+    {
+        $data = ['age' => 30, 'fee' => 5, 'tax' => 2];
+        $sensitiveFields = ['fee', 'tax'];
+
+        $publicEntity = new PublicEntity();
+
+        $reflection = new \ReflectionClass($publicEntity);
+        $method = $reflection->getMethod('maskSensitiveFields');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($publicEntity, $data, $sensitiveFields);
+
+        $this->assertEquals(['age' => 30, 'fee' => 0, 'tax' => 0], $result);
+    }
+
+    public function testMaskSensitiveFieldsWithBooleanValue()
+    {
+        $data = ['is_admin' => true, 'emi' => true];
+        $sensitiveFields = ['emi'];
+
+        $publicEntity = new PublicEntity();
+
+        $reflection = new \ReflectionClass($publicEntity);
+        $method = $reflection->getMethod('maskSensitiveFields');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($publicEntity, $data, $sensitiveFields);
+
+        $this->assertEquals(['is_admin' => true, 'emi' => false], $result);
+    }
+
+    public function testMaskSensitiveFieldsWithNestedArrays()
+    {
+        $data = ['user' => ['upi_details' => ['vpa' => 'john.doe@ybl']]];
+        $sensitiveFields = ['vpa'];
+
+        $paymentEntity = new PaymentEntity();
+
+        $reflection = new \ReflectionClass($paymentEntity);
+        $method = $reflection->getMethod('maskSensitiveFields');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($paymentEntity, $data, $sensitiveFields);
+
+        $this->assertEquals(['user' => ['upi_details' => ['vpa' => 'xxxxxxxx@ybl']]], $result);
     }
 
     public function testFetchOrder()
@@ -3318,7 +3657,7 @@ class OrderTest extends TestCase
         $orderMeta = $this->getDbLastEntity('order_meta');
         $this->assertNotNull($orderMeta);
     }
-    
+
     // Support product type for Magic Checkout orders created internally.
     public function testCreateOrderFor1CCWithProductType()
     {
