@@ -113,6 +113,10 @@ class Service extends Base\Service
      */
     public function postCyberCrimeWorflowCreateAction($inputs)
     {
+        $this->trace->info(TraceCode::CREATE_CYBER_CRIME_WORFLOW_CREATE_ACTION, [
+            'input' => $inputs,
+        ]);
+
         (new Validator)->validateInput('cyber_crime_helpdesk_workflow_action_create', $inputs);
 
         $freshdeskTicketId = $inputs[Constants::TICKET_DATA][Constants::FD_TICKET_ID];
