@@ -995,6 +995,25 @@ class CommissionCreateTest extends TestCase
 
         $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
 
+        $input = [
+            "experiment_id" => "L08J6QilO9olL5",
+            "id"            => $partner->getId(),
+            "request_data"  => json_encode([
+                                               "invoice_year" => strval($now->year),
+                                               "mid"         => $partner->getId(),
+                                           ]),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => "disable",
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
         $this->runRequestResponseFlow($testData);
 
         $invoice = $this->getDbLastEntity('commission_invoice');
@@ -1003,7 +1022,7 @@ class CommissionCreateTest extends TestCase
         $testData['request']['content']['invoice_ids'] = [$invoice->getId()];
         $this->runRequestResponseFlow($testData);
 
-        // check that invoice status isn't updated
+        // check tha invoice status isn't updated in the flow
         $invoice = $this->getDbLastEntity('commission_invoice');
         $this->assertEquals('issued', $invoice->getStatus());
 
@@ -1015,12 +1034,13 @@ class CommissionCreateTest extends TestCase
         $output = [
             "response" => [
                 "variant" => [
-                    "name" => 'enable',
+                    "name" => "enable",
                 ]
             ]
         ];
 
         $this->mockSplitzTreatment($input, $output);
+
 
         (new Invoice\Service)->sendInvoiceReminders();
 

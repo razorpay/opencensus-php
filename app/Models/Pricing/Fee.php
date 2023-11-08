@@ -264,7 +264,7 @@ class Fee extends Base\Core
                 return $feeDetails;
             }
 
-            list($partnerFees, $partnerTax, $feeSplit) = $calculator->getExplicitCommissionFeeSplit();
+            list($partnerFees, $partnerTax, $feeSplit, $isValid) = $calculator->getExplicitCommissionFeeSplit();
 
             $this->trace->info(
                 TraceCode::COMMISSION_EXPLICIT_FEE_BREAKUP_LOGGED,

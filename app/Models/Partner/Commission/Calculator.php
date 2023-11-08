@@ -778,37 +778,42 @@ class Calculator extends Base\Core
         $commissionFee = $feeDetails['total_fee'];
         $commissionTax = $feeDetails['total_tax'];
         $feeSplit      = $feeDetails['fee_split'];
+        $isValid       = $feeDetails['is_valid'];
 
-        if ($commissionTax === 0)
+        if($isValid === true)
         {
-            list($commissionFee, $commissionTax) = $this->addTaxToCommissionIfApplicable(
-                $commissionFee,
-                $commissionTax);
+            if ($commissionTax === 0)
+            {
+                list($commissionFee, $commissionTax) = $this->addTaxToCommissionIfApplicable(
+                    $commissionFee,
+                    $commissionTax);
 
+            }
+
+            list($commissionFee, $commissionTax) = $this->getCommissionFeeTax($commissionFee, $commissionTax);
+
+            // update tax fee split to new commission tax as this will be stored as fee breakup
+            $taxFeeSplit = $feeSplit->filter(function ($split)
+            {
+                return ($split->getName() === FeeBreakupName::TAX);
+            })->first();
+
+            if (empty($taxFeeSplit) === true)
+            {
+                throw new LogicException('Tax component could not be found while calculating partner fees');
+            }
+
+            $taxFeeSplit->setAmount($commissionTax);
+
+            $feeSplit = $feeSplit->map(function ($split) {
+                $split->setName(Constants::COMMISSION_BREAK_UP_PREFIX . $split->getName());
+
+                return $split;
+            });
         }
 
-        list($commissionFee, $commissionTax) = $this->getCommissionFeeTax($commissionFee, $commissionTax);
 
-        // update tax fee split to new commission tax as this will be stored as fee breakup
-        $taxFeeSplit = $feeSplit->filter(function ($split)
-        {
-            return ($split->getName() === FeeBreakupName::TAX);
-        })->first();
-
-        if (empty($taxFeeSplit) === true)
-        {
-            throw new LogicException('Tax component could not be found while calculating partner fees');
-        }
-
-        $taxFeeSplit->setAmount($commissionTax);
-
-        $feeSplit = $feeSplit->map(function ($split) {
-            $split->setName(Constants::COMMISSION_BREAK_UP_PREFIX . $split->getName());
-
-            return $split;
-        });
-
-        return [$commissionFee, $commissionTax, $feeSplit];
+        return [$commissionFee, $commissionTax, $feeSplit, $isValid];
     }
 
     /**
@@ -823,7 +828,14 @@ class Calculator extends Base\Core
             return;
         }
 
-        list($commissionFee, $commissionTax, $commissionSplit) = $this->getExplicitCommissionFeeSplit();
+        list($commissionFee, $commissionTax, $commissionSplit, $isValid) = $this->getExplicitCommissionFeeSplit();
+
+        if($isValid === false)
+        {
+            $this->traceContext(TraceCode::COMMISSION_IMPLICIT_VARIABLE_INVALID);
+
+            return;
+        }
 
         $commissionComponent = (new Component\Core)->getCommissionComponent(
             $commissionSplit,
@@ -877,6 +889,14 @@ class Calculator extends Base\Core
         $commissionFee = $feeDetails['total_fee'];
         $commissionTax = $feeDetails['total_tax'];
         $commissionSplit = $feeDetails['fee_split'];
+        $isValid = $feeDetails['is_valid'];
+
+        if ($isValid === false)
+        {
+            $this->traceContext(TraceCode::COMMISSION_IMPLICIT_FIXED_INVALID);
+
+            return;
+        }
 
         $commissionComponent = (new Component\Core)->getCommissionComponent($commissionSplit, $this->merchantPricingComponents, '', $this->getSource()->getEntity());
 
@@ -910,7 +930,7 @@ class Calculator extends Base\Core
         // if not valid because of missing pricing rule, don't create commission
         if ($isValid === false)
         {
-            $this->traceContext(TraceCode::COMMISSION_IMPLICIT_INVALID);
+            $this->traceContext(TraceCode::COMMISSION_IMPLICIT_VARIABLE_INVALID);
 
             return;
         }
