@@ -5,6 +5,7 @@ import {
   productResponse,
   bulkResponse,
   submerchantWithKYCAccess,
+  createBureauLinkResponse,
 } from './fixtures';
 
 export const subMerchantListHandlers = [
@@ -54,3 +55,29 @@ export const subMerchantListHandlers = [
     );
   }),
 ];
+
+export const createBureauLinkSuccess = (response = createBureauLinkResponse) => {
+  return rest.post(
+    '*/partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/GenerateBureauLink',
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(response), ctx.delay(50));
+    },
+  );
+};
+
+export const createBureauLinkError = () => {
+  return rest.post(
+    '*/partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/GenerateBureauLink',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 400,
+          success: false,
+          errors: ['There was an error', 'Status Code: 400'],
+        }),
+        ctx.delay(50),
+      );
+    },
+  );
+};

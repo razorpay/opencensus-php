@@ -470,6 +470,33 @@ export const bulkResponse = {
       partner_applications: [
         {
           id: 'LAHqI2Ptmu3Xv8',
+          stage: 'Income Proof Submission',
+          state: 'STATE_CREATED',
+          business_name: 'test',
+          account_name: 'testing',
+          contact_mobile: '',
+          email: 'kartik.sayani@razorpay.com',
+          annual_turnover_min: '0',
+          annual_turnover_max: '120000000',
+          company_address_line_1: '',
+          company_address_line_2: '',
+          company_address_city: 'Akola',
+          company_address_state: 'MH',
+          company_address_line_country: 'India',
+          company_address_pincode: '444002',
+          business_type: 'PROPRIETORSHIP',
+          business_vintage: 'GREATER_THAN_12MONTHS',
+          gstin: '',
+          promoter_pan: 'FVLPS0700N',
+          created_at: '2023-01-30T06:17:36Z',
+          updated_at: '2023-01-30T06:17:36Z',
+        },
+      ],
+    },
+    L5FCZU6RIM9O76f: {
+      partner_applications: [
+        {
+          id: 'LAHqI2Ptmu3Xv9',
           stage: '',
           state: 'STATE_CREATED',
           business_name: '',
@@ -505,4 +532,13 @@ export const orgDetails = {
   custom_code: 'rzp',
   from_email: 'support@razorpay.com',
   hostname: 'dashboard.razorpay.com',
+};
+
+export const createBureauLinkResponse = {
+  status_code: 200,
+  success: true,
+  data: {
+    bureau_link: 'sample link',
+    sms_count: 0,
+  },
 };

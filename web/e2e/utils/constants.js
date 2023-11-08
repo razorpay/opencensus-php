@@ -9,6 +9,7 @@ const StorageStatePath = {
   MOBILE_TEST_LOGIN_STATE: `${BASE_PATH}/mobile-test-mode-login.json`,
   MOBILE_LIVE_LOGIN_STATE: `${BASE_PATH}/mobile-live-mode-login.json`,
   ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
+  RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
 };
 
 const routes = {
@@ -39,6 +40,9 @@ const routes = {
   BATCH_REFUNDS_UPLOAD: 'app/refunds/batchupload',
   SUCCESS_RATE: 'app/success-rate',
   PAYMENT_PAGES: 'app/paymentpages',
+  PARTNER_DASHBOARD: '/app/partners',
+  AFFILIATE_ACCOUNTS: '/app/partners/submerchants',
+  AFFILIATE_ACCOUNTS_CAPITAL: '/app/partners/submerchants/capital',
 };
 
 const EmailCredentials = [
@@ -65,6 +69,12 @@ const EmailCredentials = [
     username: ENV.EMAIL_SETTLEMENT_USERNAME,
     password: ENV.EMAIL_SETTLEMENT_PASSWORD,
     storagePath: StorageStatePath.SETTLEMENTS_LOGIN_STATE,
+  },
+  {
+    type: 'reseller-partner-desktop-test-mode-login.json',
+    username: process.env.RESELLER_PARTNER_TEST_MODE_USERNAME,
+    password: process.env.RESELLER_PARTNER_TEST_MODE_PASSWORD,
+    storagePath: StorageStatePath.RESELLER_PARTNER_TEST_LOGIN_STATE,
   },
 ];
 

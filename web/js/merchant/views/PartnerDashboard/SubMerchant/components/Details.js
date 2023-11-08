@@ -2,12 +2,14 @@ import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
+import { Box, Button, Divider, ClockIcon, Text } from '@razorpay/blade/components';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
 import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import AsyncButton from 'react-async-button';
+import { useQuery } from 'react-query';
 
 import {
   ActivationStatusLabel,
@@ -16,7 +18,11 @@ import {
   XSubmerchantCAStatusLabel,
   CapitalSubMerchantStatusLabel,
 } from 'merchant/components/StatusLabel';
-import { PRODUCT_TYPE, NOT_AVAILABLE } from 'merchant/views/PartnerDashboard/constants';
+import {
+  PRODUCT_TYPE,
+  NOT_AVAILABLE,
+  CAPITAL_STATUS,
+} from 'merchant/views/PartnerDashboard/constants';
 import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
 
 import SubMerchantKycStatusLabel from './SubMerchantKycStatusLabel';
@@ -28,6 +34,12 @@ import {
   filterApplications,
 } from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { CreateBureauLink } from './CreateBureauLink';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { useCountDownTimer } from './useCountDownTimer';
+import { fetchBureauLink } from 'merchant/views/PartnerDashboard/SubMerchant/api';
+import { setItem, removeItem } from 'common/utils/localStorage';
+import { UploadBankStatement } from './UploadBankStatement';
 
 const Details = (props) => {
   const {
@@ -44,6 +56,9 @@ const Details = (props) => {
     capitalProducts,
     showNotification,
     experiments,
+    openModal,
+    closeModal,
+    user,
   } = props;
 
   const isPGProduct = product === PRODUCT_TYPE.PG;
@@ -72,6 +87,80 @@ const Details = (props) => {
     capitalDetails?.company_address_line_2 ||
     capitalDetails?.company_address_city ||
     capitalDetails?.company_address_state;
+
+  const isPartnershipCapitalBureauLinkEnabled = experiments.isPartnershipCapitalBureauLinkEnabled;
+
+  const [isUploadBankStatementButtonDisabled, setIsUploadBankStatementButtonDisabled] =
+    useState(false);
+  // CountDownTimer
+  const [showCountDownTimer, setShowCountDownTimer] = useState(false);
+  const onTimeOut = () => {
+    setShowCountDownTimer(false);
+  };
+  const { remainingSeconds, startTimer } = useCountDownTimer(30, onTimeOut);
+  const handleBladeModalClose = () => {
+    removeItem('isCapitalBladeModalOpened');
+    closeModal();
+  };
+  const handleBladeModalOpen = () => {
+    setItem('isCapitalBladeModalOpened', true);
+  };
+  const { isLoading: isBureauLinkLoading, refetch: fetchCreateBureauLink } = useQuery(
+    ['create-bureau-link'],
+    () => fetchBureauLink(user.id, submerchant.id.replace('acc_', '')),
+    {
+      refetchOnWindowFocus: false,
+      enabled: false,
+      onSuccess: (response) => {
+        const { data } = response;
+        const bureauLinkData = {
+          bureauLink: data?.bureau_link || '',
+          partnerId: user.id,
+          merchantId: submerchant.id.replace('acc_', ''),
+          smsCount: data.sms_count || 0,
+        };
+        setShowCountDownTimer(true);
+        startTimer();
+        handleBladeModalOpen();
+        openModal({
+          size: 'med-large',
+          component: (
+            <CreateBureauLink
+              closeModal={handleBladeModalClose}
+              bureauLinkData={bureauLinkData}
+              showNotification={showNotification}
+            />
+          ),
+        });
+      },
+      onError: (_err) => {
+        showNotification?.({
+          type: 'error',
+          message: _err.errors,
+        });
+      },
+    },
+  );
+
+  const handleOpenBankStatementUploadModal = () => {
+    handleBladeModalOpen();
+    const requiredData = {
+      partnerId: user.id,
+      merchantId: submerchant.id.replace('acc_', ''),
+      appId: capitalDetails.id,
+    };
+    openModal({
+      size: 'large',
+      component: (
+        <UploadBankStatement
+          closeModal={handleBladeModalClose}
+          uploadData={requiredData}
+          showNotification={showNotification}
+          isUploadSuccess={() => setIsUploadBankStatementButtonDisabled(true)}
+        />
+      ),
+    });
+  };
 
   const getCapitalData = useCallback(
     (id) => {
@@ -128,6 +217,10 @@ const Details = (props) => {
       return NOT_AVAILABLE;
     }
     return value;
+  };
+
+  const handleOpenCreateBureauLinkModal = () => {
+    fetchCreateBureauLink();
   };
   return (
     <div class={`content-wrapper txn-details ${isShowLargeWrapper ? 'content-lg' : 'content-sm'}`}>
@@ -350,6 +443,62 @@ const Details = (props) => {
                       {showMoreDetails ? 'show less details' : 'show more details'}
                     </button>
                   ) : null}
+                  {isPartnershipCapitalBureauLinkEnabled ? (
+                    <Box marginTop="spacing.6">
+                      <Divider />
+                      <Box marginTop="spacing.7" display="flex">
+                        <Button
+                          marginRight="spacing.5"
+                          onClick={() => {
+                            handleOpenCreateBureauLinkModal();
+                          }}
+                          isDisabled={
+                            showCountDownTimer ||
+                            capitalDetails?.stage?.toLowerCase() !==
+                              CAPITAL_STATUS.bureau_submission
+                          }
+                          isLoading={isBureauLinkLoading}
+                          testID="create-bureau-link-btn"
+                        >
+                          Create Bureau Link
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          onClick={() => {
+                            handleOpenBankStatementUploadModal();
+                          }}
+                          isDisabled={
+                            isUploadBankStatementButtonDisabled ||
+                            capitalDetails?.stage?.toLowerCase() !==
+                              CAPITAL_STATUS.income_proof_submission
+                          }
+                        >
+                          Upload bank a/c document
+                        </Button>
+                      </Box>
+                      {showCountDownTimer ? (
+                        <Box paddingTop="spacing.2">
+                          <Box display="flex" marginTop="spacing.2" alignItems="center">
+                            <Box marginRight="spacing.2" display="flex">
+                              <ClockIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                            </Box>
+                            <Box display="flex">
+                              <Text color="surface.text.subdued.lowContrast" textAlign="center">
+                                Create link again in
+                              </Text>
+                              <Text
+                                color="feedback.text.notice.lowContrast"
+                                textAlign="center"
+                                marginLeft="spacing.2"
+                              >
+                                {remainingSeconds}
+                              </Text>
+                            </Box>
+                          </Box>
+                        </Box>
+                      ) : null}
+                    </Box>
+                  ) : null}
                 </ShowWhen>
               </div>
             </div>
@@ -362,5 +511,10 @@ const Details = (props) => {
 
 export default compose(
   withPartnerDashboardExperiments,
-  connect(null, { showNotification }),
+  connect(
+    (state) => ({
+      user: state.session.user,
+    }),
+    { showNotification, openModal, closeModal },
+  ),
 )(Details);

@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Badge, Box } from '@razorpay/blade/components';
+import { Badge, Box, Button } from '@razorpay/blade/components';
 import QueryString from 'query-string';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -42,7 +42,11 @@ import {
   getActivationStatusBulk,
   getFormattedCapitalResponse,
 } from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import {
+  PRODUCT_TYPE,
+  CAPITAL_STATUS,
+  CREATE_BUREAU_COUNTDOWN_TIME,
+} from 'merchant/views/PartnerDashboard/constants';
 import {
   trackSearchAnalytics,
   trackClearAnalytics,
@@ -64,6 +68,8 @@ import PGInvitesNavLinks from './components/PGInviteNavLinks';
 import SubMerchantKycStatusLabel from './components/SubMerchantKycStatusLabel';
 import { mediaWindowUrl } from './components/utils/social-share';
 import { isInviteRecentlyAccepted } from './utils';
+import { CreateBureauLink } from './components/CreateBureauLink';
+import { fetchBureauLink } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 
 const email = {
   title: 'Registered Email',
@@ -239,6 +245,7 @@ class ProductSubMerchantsList extends ListContainer {
     isPGInvitesEmpty: true,
     isPGInvitesEmptyCheckLoading: true,
     isInviteMerchantModalOpen: false,
+    isCreateBureauButtonDisabled: false,
   };
 
   constructor(props) {
@@ -658,11 +665,68 @@ class ProductSubMerchantsList extends ListContainer {
     },
   });
 
+  handleCreateBureauLinkClick = (item) => {
+    fetchBureauLink(this.props.user.id, item.id.replace('acc_', ''))
+      .then((response) => {
+        const { data } = response;
+        const bureauLinkData = {
+          bureauLink: data?.bureau_link || '',
+          partnerId: this.props?.user?.id || '',
+          merchantId: item?.id?.replace('acc_', '') || '',
+          smsCount: data.sms_count || 0,
+        };
+        // Todo use blade modal without props.openModal
+        this.props.openModal({
+          size: 'med-large',
+          component: (
+            <CreateBureauLink
+              closeModal={this.props.closeModal}
+              bureauLinkData={bureauLinkData}
+              showNotification={this.props.showNotification}
+            />
+          ),
+        });
+        this.setState({ [`isCreateBureauButtonDisabled-${item.id}`]: true });
+        setTimeout(() => {
+          this.setState({ [`isCreateBureauButtonDisabled-${item.id}`]: false });
+        }, CREATE_BUREAU_COUNTDOWN_TIME);
+      })
+      .catch((_err) => {
+        this.props.showNotification?.({
+          type: 'error',
+          message: _err.errors,
+        });
+      });
+  };
+  createBureauLinkBtn = (handleCreateBureauLinkClick) => ({
+    title: 'Actions',
+    value: (item) => {
+      return (
+        <Button
+          variant="secondary"
+          onClick={() => {
+            handleCreateBureauLinkClick(item);
+          }}
+          size="small"
+          isDisabled={
+            this.state[`isCreateBureauButtonDisabled-${item.id}`] ||
+            item?.capitalActivationStatus?.toLowerCase() !== CAPITAL_STATUS.bureau_submission
+          }
+        >
+          Create Bureau Link
+        </Button>
+      );
+    },
+  });
+
   render() {
     // prettier-ignore
     const { user, experiments, product, referralData, location, org } = this.props;
-    const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
-      experiments;
+    const {
+      isEasierAccessToSubmerchantKycEnabled,
+      isPlatformPartnerInviteFlowEnabled,
+      isPartnershipCapitalBureauLinkEnabled,
+    } = experiments;
     const { capitalLoading, capitalItems, isPGInvitesEmpty, isPGInvitesEmptyCheckLoading } =
       this.state;
 
@@ -786,6 +850,10 @@ class ProductSubMerchantsList extends ListContainer {
 
     const currentProduct = product === PRODUCT_TYPE.PG ? 'page-pg' : 'page-x';
 
+    const capitalColumns = [this.capitalName(), id, email, addedOn, capitalStatus];
+    if (isPartnershipCapitalBureauLinkEnabled) {
+      capitalColumns.push(this.createBureauLinkBtn(this.handleCreateBureauLinkClick));
+    }
     return (
       <tabbed-container class="sub-merchants-tab">
         <div className={`sub-merchants-list ${currentProduct}`}>
@@ -901,7 +969,7 @@ class ProductSubMerchantsList extends ListContainer {
                 count={this.state.count}
                 skip={this.state.skip}
                 paginate={(params) => this.handleCapitalPaginate(params)}
-                columns={[this.capitalName(), id, email, addedOn, capitalStatus]}
+                columns={capitalColumns}
                 items={capitalItems}
               />
             ) : null}

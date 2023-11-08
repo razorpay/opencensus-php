@@ -19,7 +19,7 @@ class ModalSlider extends Component {
   //  2. When clicking on the document except on the Slider view & on any links
   handleDocumentClick = (event) => {
     const target = event.target;
-
+    const isCapitalBladeModalOpened = getItem('isCapitalBladeModalOpened');
     const powerselectMenu = document.querySelector('body > .tether-element > .PowerSelect__Menu');
     const notification = document.querySelector('body .layout > .Notifications');
 
@@ -33,7 +33,8 @@ class ModalSlider extends Component {
       (notification && notification.contains(target)) ||
       (calendarPicker && calendarPicker.contains(target)) ||
       (whatsNewTooltip && whatsNewTooltip.contains(target)) ||
-      this.props.checkIfOutsideClickDisabled?.()
+      this.props.checkIfOutsideClickDisabled?.() ||
+      isCapitalBladeModalOpened
     ) {
       return;
     }

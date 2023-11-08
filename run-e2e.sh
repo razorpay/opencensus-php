@@ -1,3 +1,4 @@
 #!/bin/sh
 
-INCLUDE_GROUPS=@project=payments yarn test:e2e 
+export INCLUDE_GROUPS='@project=payments|@project=partner-dashboard'
+yarn test:e2e 

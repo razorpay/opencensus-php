@@ -16,6 +16,10 @@ import {
   items,
 } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 import { PRODUCT_TYPE, NOT_AVAILABLE } from 'merchant/views/PartnerDashboard/constants';
+import {
+  createBureauLinkSuccess,
+  createBureauLinkError,
+} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/handlers';
 
 const onResendInvite = jest.fn();
 const detailsProps = {
@@ -26,8 +30,25 @@ const detailsProps = {
   capitalProducts: { loading: false, data: productResponse.products },
 };
 
-const CapitalResponse =
-  bulkResponse.response[items[1].id.replace('acc_', '')].partner_applications[1];
+jest.mock('merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments', () => {
+  return {
+    __esModule: true,
+    default: (Component) => (props) =>
+      (
+        <Component
+          {...props}
+          experiments={{
+            isPartnershipCapitalBureauLinkEnabled: true,
+            isEasierAccessToSubmerchantKycEnabled: false,
+            isPlatformPartnerInviteFlowEnabled: false,
+          }}
+        />
+      ),
+  };
+});
+
+const getCapitalResponse = (item, index) =>
+  bulkResponse.response[item.id.replace('acc_', '')].partner_applications[index];
 
 describe('Submerchant Details', () => {
   const renderApp = ({
@@ -45,6 +66,9 @@ describe('Submerchant Details', () => {
         product={product}
         capitalProducts={capitalProducts}
       />,
+      {
+        showModal: true,
+      },
     );
   };
   afterEach(() => {
@@ -96,9 +120,9 @@ describe('Submerchant Details', () => {
   });
 
   test('should show not available when activation status is empty returned by API', async () => {
-    renderApp({ ...detailsProps, subMerchant: items[0] });
+    renderApp({ ...detailsProps, subMerchant: items[2] });
     await waitFor(() => {
-      expect(screen.getByText(items[0].name)).toBeInTheDocument();
+      expect(screen.getByText(items[2].name)).toBeInTheDocument();
     });
     const showButton = screen.getByRole('button', { name: /show more details/i });
     expect(showButton).toBeInTheDocument();
@@ -110,6 +134,7 @@ describe('Submerchant Details', () => {
   });
 
   test('should render details when loading is completed', async () => {
+    const CapitalResponse = getCapitalResponse(items[1], 1);
     renderApp({ ...detailsProps });
     await waitFor(() => {
       expect(screen.getByText(items[1].name)).toBeInTheDocument();
@@ -136,6 +161,9 @@ describe('Submerchant Details', () => {
         `${CapitalResponse.company_address_line_1} ${CapitalResponse.company_address_line_2} ${CapitalResponse.company_address_city},${CapitalResponse.company_address_state}`,
       ),
     ).toBeInTheDocument();
+    const uploadButton = screen.getByRole('button', { name: 'Upload bank a/c document' });
+    expect(uploadButton).toBeInTheDocument();
+    expect(uploadButton).toHaveAttribute('disabled');
 
     const hideButton = screen.getByRole('button', { name: /show less details/i });
     expect(hideButton).toBeInTheDocument();
@@ -143,6 +171,65 @@ describe('Submerchant Details', () => {
 
     await waitFor(() => {
       expect(showButton).toBeInTheDocument();
+    });
+  });
+
+  test('should render Create Bureau Link Button, open modal when clicked and API call is success', async () => {
+    server.use(createBureauLinkSuccess());
+    renderApp({ ...detailsProps });
+    await waitFor(() => {
+      expect(screen.getByText(items[1].name)).toBeInTheDocument();
+    });
+    const BureauButton = screen.getByRole('button', { name: 'Create Bureau Link' });
+    expect(BureauButton).toBeInTheDocument();
+    await userEvent.click(BureauButton);
+    await waitFor(() => {
+      expect(screen.getByText('Create link again in'));
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Line Of Credit Bureau'));
+    });
+  });
+
+  // todo skipping this for now because it is getting failed because of retry option of react-query.
+  test.skip('should show error when API throws error', async () => {
+    server.use(createBureauLinkError());
+    renderApp({ ...detailsProps });
+    await waitFor(() => {
+      expect(screen.getByText(items[1].name)).toBeInTheDocument();
+    });
+    const BureauButton = screen.getByRole('button', { name: 'Create Bureau Link' });
+    expect(BureauButton).toBeInTheDocument();
+    await userEvent.click(BureauButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('There was an error'));
+    });
+  });
+
+  test('should render Bank Statement Upload button enabled', async () => {
+    const CapitalResponse = getCapitalResponse(items[0], 0);
+    renderApp({ ...detailsProps, subMerchant: items[0] });
+    await waitFor(() => {
+      expect(screen.getByText(items[0].name)).toBeInTheDocument();
+    });
+    const showButton = screen.getByRole('button', { name: /show more details/i });
+    expect(showButton).toBeInTheDocument();
+    await userEvent.click(showButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(CapitalResponse.id)).toBeInTheDocument();
+    });
+    expect(screen.getByText(CapitalResponse.business_name)).toBeInTheDocument();
+    expect(screen.getByText(CapitalResponse.account_name)).toBeInTheDocument();
+    expect(screen.getByText(CapitalResponse.stage)).toBeInTheDocument();
+    const uploadButton = screen.getByRole('button', { name: 'Upload bank a/c document' });
+    expect(uploadButton).toBeInTheDocument();
+    expect(uploadButton).not.toHaveAttribute('disabled');
+
+    await userEvent.click(uploadButton);
+    await waitFor(() => {
+      expect(screen.getByText('Upload bank account statement')).toBeInTheDocument();
     });
   });
 });

@@ -206,6 +206,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'partnership_capital_bureau_link',
+          experimentId: {
+            beta: 'MsjzRLsAMWNIEa',
+            production: 'MskGdpIq4sehth',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

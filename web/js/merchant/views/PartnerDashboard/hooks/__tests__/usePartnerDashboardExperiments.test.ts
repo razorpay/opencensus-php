@@ -55,4 +55,18 @@ describe('usePartnerDashboardExperiments', () => {
     experiments = usePartnerDashboardExperiments();
     expect(experiments.isPlatformPartnerInviteFlowEnabled).toBe(false);
   });
+
+  test('should return correct output for isPartnershipCapitalBureauLinkEnabled', () => {
+    mockAbExperiments = {
+      partnership_capital_bureau_link: variantOn,
+    };
+    let experiments = usePartnerDashboardExperiments();
+    expect(experiments.isPartnershipCapitalBureauLinkEnabled).toBe(true);
+
+    mockAbExperiments = {
+      partnership_capital_bureau_link: variantOff,
+    };
+    experiments = usePartnerDashboardExperiments();
+    expect(experiments.isPartnershipCapitalBureauLinkEnabled).toBe(false);
+  });
 });

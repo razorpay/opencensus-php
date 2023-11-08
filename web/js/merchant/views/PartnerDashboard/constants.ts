@@ -75,3 +75,7 @@ export const COMMISSION_TYPE = {
 export const PARTNERSHIPS_WEBSITE_LINKS = {
   PLATFORM_OAUTH_INTEGRATION: 'https://razorpay.com/docs/partners/platform/oauth/',
 };
+
+export const CREATE_BUREAU_COUNTDOWN_TIME = 30000;
+
+export const SMS_COUNT_MAX_LIMIT = 10;

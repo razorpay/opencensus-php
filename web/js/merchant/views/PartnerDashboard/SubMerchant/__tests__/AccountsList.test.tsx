@@ -28,6 +28,10 @@ import {
   allInvitesData,
   allInvitesDataEmpty,
 } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/fixtures';
+import {
+  createBureauLinkSuccess,
+  createBureauLinkError,
+} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/handlers';
 // TODO : covered only Capital use case, have to cover others later
 
 const ComponentsProductMapping = {
@@ -56,6 +60,24 @@ jest.mock(
         </div>
       ),
 );
+
+jest.mock('merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments', () => {
+  return {
+    __esModule: true,
+    default: (Component) => (props) =>
+      (
+        <Component
+          {...props}
+          experiments={{
+            isPartnershipCapitalBureauLinkEnabled: true,
+            isEasierAccessToSubmerchantKycEnabled: false,
+            isPlatformPartnerInviteFlowEnabled: false,
+          }}
+        />
+      ),
+  };
+});
+
 const isPartner = jest.fn();
 const isPartnerIntent = jest.fn();
 const isFeatureEnabled = jest.fn();
@@ -79,6 +101,7 @@ const renderApp = (
       isPartnerIntent,
       isFeatureEnabled,
       isPartnershipForCapitalEnabled: true,
+      isPartnershipCapitalBureauLinkEnabled: true,
       isPartnershipFUX: true,
       instantActivation,
       ...userExtra,
@@ -259,7 +282,10 @@ describe('AccountsList', () => {
 
       if (product === PRODUCT_TYPE.CAPITAL) {
         expect(screen.getByText('Bureau Submission')).toBeInTheDocument();
-        expect(screen.getAllByText('Not Available')).toHaveLength(2);
+        expect(screen.getByText('Income Proof Submission')).toBeInTheDocument();
+        expect(screen.getByText('Not Available')).toBeInTheDocument();
+        expect(screen.getByText('Actions')).toBeInTheDocument();
+        expect(screen.getAllByRole('button', { name: 'Create Bureau Link' })).toHaveLength(3);
       }
 
       const downloadButton = screen.getByText('Export All (CSV)');
@@ -299,6 +325,43 @@ describe('AccountsList', () => {
 
     await waitFor(() => {
       expect(screen.getByText('There was an error while fetching Status')).toBeInTheDocument();
+    });
+  });
+
+  test('should open modal if Create Bureau button is clicked and API call is success', async () => {
+    server.use(createBureauLinkSuccess());
+    renderApp(PRODUCT_TYPE.CAPITAL, 'capital');
+    expect(screen.queryByText('Welcome to Partner Dashboard')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Actions')).toBeInTheDocument();
+    });
+    const BureauButtons = screen.getAllByRole('button', { name: 'Create Bureau Link' });
+    expect(BureauButtons).toHaveLength(3);
+    const enabledButton = BureauButtons[1]; // Button will be enabled only if the activation status is bureau submission
+    const disabledButton = BureauButtons[0]; // activation status is not available
+    expect(enabledButton).not.toHaveAttribute('disabled');
+    expect(disabledButton).toHaveAttribute('disabled');
+    await userEvent.click(enabledButton);
+    await waitFor(() => {
+      expect(screen.getByText('Line Of Credit Bureau'));
+    });
+    expect(enabledButton).toHaveAttribute('disabled');
+  });
+
+  test('should show error if create bureau button is clicked and API throws error', async () => {
+    server.use(createBureauLinkError());
+    renderApp(PRODUCT_TYPE.CAPITAL, 'capital');
+    expect(screen.queryByText('Welcome to Partner Dashboard')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Actions')).toBeInTheDocument();
+    });
+    const BureauButtons = screen.getAllByRole('button', { name: 'Create Bureau Link' });
+    expect(BureauButtons).toHaveLength(3);
+    const enabledButton = BureauButtons[1];
+    expect(enabledButton).not.toHaveAttribute('disabled');
+    await userEvent.click(enabledButton);
+    await waitFor(() => {
+      expect(screen.getByText('There was an error')).toBeInTheDocument();
     });
   });
 
