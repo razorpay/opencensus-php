@@ -704,6 +704,13 @@ class Validator extends Base\Validator
         'shipping_fee'                 => 'sometimes|integer|nullable',
     ];
 
+    protected static $shippingInfoFetchCartResponseRules = [
+        'cart'                         => 'required|array',
+        'cart.items'                   => 'required|array',
+        'cart.token'                   => 'required|string',
+        'cart.total_price'             => 'required|integer',
+    ];
+
     protected static $serviceabilityUrlUpdateRequestRules = [
         'url'                          => 'required|url'
     ];

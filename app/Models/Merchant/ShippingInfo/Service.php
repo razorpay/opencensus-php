@@ -184,6 +184,14 @@ class Service extends Base\Service
 
             $address = $this->getCountryAndStateBasedOnZipcode($address);
 
+            $platformConfig = $this->merchant->getMerchantPlatformConfig();
+            $platform = 'unknown';
+            if ($platformConfig !== null)
+            {
+                $platform = $platformConfig->getValue();
+                $dimensions = array_merge($dimensions, ['platform' => $platform]);
+            }
+
             $cachedResponse = $this->getShippingInfoFromCache($orderId, $address, $order->getAmount());
 
             $isDigitalProduct = false;
@@ -212,6 +220,18 @@ class Service extends Base\Service
                     self::TAX_DETAILS             => $cacheTaxDetails,
                 ];
             }
+
+            // checking for cached response for shopify checkout id as cache key
+            if ($platform === Merchant1ccConfig\Type::SHOPIFY) {
+                $checkoutId = $order->toArrayPublic()['notes']['storefront_id'];
+                $cachedShippingResponseWithCheckoutId = (new ShopifyShippingProvider())->getCachedShippingInfo($checkoutId, $address, $order->getAmount());
+               
+                if ($cachedShippingResponseWithCheckoutId !== null)
+                {
+                    return $cachedShippingResponseWithCheckoutId;
+                }
+            }
+
             // Temporary fix for PP Shipping Fee(Once Shipping Provider is built for PP this can be removed)
             if ($productType != null && $productType === ProductType::PAYMENT_PAGE)
             {
@@ -228,13 +248,7 @@ class Service extends Base\Service
             else
             {
             // Use Magic Checkout providers based on merchant configurations and cart items.
-            $platformConfig = $this->merchant->getMerchantPlatformConfig();
-            $platform = 'unknown';
-            if ($platformConfig !== null)
-            {
-                $platform = $platformConfig->getValue();
-                $dimensions = array_merge($dimensions, ['platform' => $platform]);
-            }
+
             $shippingMethodProviderConfig = $this->merchant->getShippingMethodProvider();
             $shopifyShippingOverride = (new Merchant1ccConfig\Core())->isShopifyShippingOverrideSet($this->merchant->getId());
 

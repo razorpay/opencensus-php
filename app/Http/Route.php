@@ -11321,7 +11321,8 @@ class Route
         'global_customer_find_or_create_for_checkout',
         'merchant_methods_offers_checkout_internal',
         'offers_fetch_for_order',
-        'order_update_customer_details_1cc'
+        'order_update_customer_details_1cc',
+        'shipping_info',
     ];
 
     /**
