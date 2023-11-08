@@ -38,6 +38,7 @@ describe('test suite for transactional details', () => {
     render(<App {...props} />);
 
     expect(screen.getByText(/Earnings from Razorpay/i)).toBeInTheDocument();
+    expect(screen.queryByTestId('tooltip-interactive-wrapper')).not.toBeInTheDocument();
 
     expect(screen.getByText('Base + GST')).toBeInTheDocument();
   });
@@ -48,6 +49,11 @@ describe('test suite for transactional details', () => {
 
     // checking here to see if minus sign exists
     expect(screen.getByText(/-/i)).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        'These earnings are reversed because of a full or partial refund of the payment from your affiliate account.',
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Earnings reversal due to refund from Razorpay/i)).toBeInTheDocument();
   });
 });

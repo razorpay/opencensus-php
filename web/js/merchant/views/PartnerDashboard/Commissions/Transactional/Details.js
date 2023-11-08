@@ -192,15 +192,17 @@ export function CommissionEarningBreakUp(props) {
       <Box display="flex" gap="spacing.3" alignItems="center">
         <Text weight="bold">{earningsTitle}</Text>
         <Box display="flex" marginTop="spacing.3">
-          <Tooltip
-            content="These earnings are reversed because of a full or partial refund of the payment from your affiliate account."
-            onOpenChange={function noRefCheck() {}}
-            placement="bottom"
-          >
-            <TooltipInteractiveWrapper>
-              <InfoIcon size="medium" color="feedback.icon.neutral.lowContrast" />
-            </TooltipInteractiveWrapper>
-          </Tooltip>
+          {props.sourceType === COMMISSION_TYPE.REFUND ? (
+            <Tooltip
+              content="These earnings are reversed because of a full or partial refund of the payment from your affiliate account."
+              onOpenChange={function noRefCheck() {}}
+              placement="bottom"
+            >
+              <TooltipInteractiveWrapper>
+                <InfoIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+              </TooltipInteractiveWrapper>
+            </Tooltip>
+          ) : null}
         </Box>
       </Box>
       <div style={{ borderLeft: `4px solid ${borderColor}` }}>
