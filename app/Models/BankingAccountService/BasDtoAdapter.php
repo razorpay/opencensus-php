@@ -236,11 +236,6 @@ class BasDtoAdapter
         'activation_detail.additional_details.dwt_scheduled_timestamp'
     ];
 
-    const INT_FIELD_TO_TRANSFORM_INTO_STRING_FOR_API = [
-        'banking_account_activation_details.additional_details.dwt_completed_timestamp',
-        'banking_account_activation_details.additional_details.dwt_scheduled_timestamp'
-    ];
-
     /**
      * apiInputPreprocessors holds the handler for preprocessing API input before transforming into BAS input
      *
@@ -472,6 +467,10 @@ class BasDtoAdapter
                 // convert to uppercase
                 return empty($value) == false ? strtoupper($value) : $value;
             },
+
+            'activation_detail.rbl_activation_details.aof_shared_discrepancy' => function($value, $flattenedInput) {
+                return is_bool($value) ? $value : null;
+            }
         ];
 
         $this->basResponsePreprocessors = [
@@ -760,11 +759,6 @@ class BasDtoAdapter
                 if (in_array($basPath, self::DATE_FIELDS_TO_TRANSFORM_INTO_SECONDS))
                 {
                     $value = $this->convertEpochMillisToSeconds($value);
-                }
-
-                if (in_array($apiPath, self::INT_FIELD_TO_TRANSFORM_INTO_STRING_FOR_API))
-                {
-                    $value = $this->convertToInteger($value);
                 }
 
                 assign_array_by_flattened_path($apiResponseDto, $apiPath, $value);

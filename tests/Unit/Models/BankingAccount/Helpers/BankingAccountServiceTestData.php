@@ -77,8 +77,8 @@ return [
 
                     'calendly_slot_booking_completed' => 1,
                     'booking_id' => '12341',
-                    'dwt_completed_timestamp' => 1678873350,
-                    'dwt_scheduled_timestamp' => 1678873350,
+                    'dwt_completed_timestamp' => '1678873350',
+                    'dwt_scheduled_timestamp' => '1678873350',
                     'skip_mid_office_call' => true,
                     'appointment_source' => 'sales',
                     'sent_docket_automatically' => false,
@@ -419,7 +419,7 @@ return [
                     'ca_beyond_tat' => false,
                     'ca_beyond_tat_dependency' => '',
                     'lead_referred_by_rbl_staff' => false,
-                    'aof_shared_discrepancy' => '',
+                    'aof_shared_discrepancy' => null,
                     'ca_service_first_query' => '1.on rrt high risk rating by compliance is not mentioned. APPLICANT FOUND IN NEGATIVE LIST ODG452595087230310202422178-ADIL'
                 ],
             ]
@@ -857,7 +857,7 @@ return [
                     'lead_referred_by_rbl_staff' => true,
                     'aof_shared_with_mo' => false,
                     'aof_not_shared_reason' => 'Already Login',
-                    'aof_shared_discrepancy' => '',
+                    'aof_shared_discrepancy' => false,
                     'wa_message_sent_date' => 1678352209,
                     'wa_message_response_date' => 1678352209,
                     'first_calling_time' => '5 to 6',
@@ -1060,8 +1060,8 @@ return [
                         'document_for_poa_available' => 'COI',
                         'proof_of_address_available' => 1
                     ],
-                    'dwt_completed_timestamp' => 1678873350,
-                    'dwt_scheduled_timestamp' => 1678873350,
+                    'dwt_completed_timestamp' => '1678873350',
+                    'dwt_scheduled_timestamp' => '1678873350',
                     'docket_requested_date' => '',
                     'courier_service_name' => '',
                     'courier_tracking_id' => '',
@@ -1089,7 +1089,7 @@ return [
                     'upi_credential_not_done_remarks' => 'Something',
                     'aof_shared_with_mo' => false,
                     'aof_not_shared_reason' => 'Already Login',
-                    'aof_shared_discrepancy' => '',
+                    'aof_shared_discrepancy' => false,
                     'wa_message_sent_date' => 1678352209,
                     'wa_message_response_date' => 1678352209,
                     'first_calling_time' => '5 to 6',

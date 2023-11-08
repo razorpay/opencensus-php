@@ -5381,8 +5381,8 @@ return [
 
                     'calendly_slot_booking_completed' => 1,
                     'booking_id' => '12341',
-                    'dwt_completed_timestamp' => 1678873350,
-                    'dwt_scheduled_timestamp' => 1678873350,
+                    'dwt_completed_timestamp' => '1678873350',
+                    'dwt_scheduled_timestamp' => '1678873350',
                     'skip_mid_office_call' => true,
                     'appointment_source' => 'sales',
                     'sent_docket_automatically' => false,
@@ -5744,7 +5744,7 @@ return [
                     'ca_beyond_tat' => false,
                     'ca_beyond_tat_dependency' => '',
                     'lead_referred_by_rbl_staff' => false,
-                    'aof_shared_discrepancy' => '',
+                    'aof_shared_discrepancy' => null,
                     'ca_service_first_query' => '1.on rrt high risk rating by compliance is not mentioned. APPLICANT FOUND IN NEGATIVE LIST ODG452595087230310202422178-ADIL'
                 ],
             ]
@@ -5982,9 +5982,9 @@ return [
             'method' => 'POST',
             'content' => [
                 'RZPAlertNotiReq' => [
-                    'Header' => [ 
-                        'TranID' => '220128134659', 
-                        'Corp_ID' => 'RZPAY' 
+                    'Header' => [
+                        'TranID' => '220128134659',
+                        'Corp_ID' => 'RZPAY'
                     ],
                     'Body' => [
                         'Account No.' => '4099834512998',

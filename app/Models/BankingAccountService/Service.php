@@ -1911,7 +1911,15 @@ class Service extends Base\Service
             try
             {
                 // 1. fetch necessary items from DB and prepare base $basInput
+                /** @var \RZP\Models\BankingAccount\Entity $bankingAccount */
                 $bankingAccount = $this->repo->banking_account->find($bankingAccountId);
+
+                if ($bankingAccount->getStatus() === \RZP\Models\BankingAccount\Status::MIGRATED)
+                {
+                    $result[$bankingAccountId] = 'skipped';
+
+                    continue;
+                }
 
                 $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
 
