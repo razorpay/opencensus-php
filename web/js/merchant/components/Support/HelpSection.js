@@ -9,6 +9,7 @@ import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { fireCustomEvent } from './utils';
 import { TicketSystemEmitter } from 'merchant/care/init';
 import { Modal, ModalBody } from 'common/components/Modal';
+import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
 
 const Support = lazy(() =>
   import(/* webpackChunkName: 'frontend-care' */ '@razorpay/frontend-care'),
@@ -158,6 +159,7 @@ const HelpSection = ({ user, history, org, fetchTicketsRaisedByAgents: _fetchTic
           splitzHost={splitzHost}
           isDev={isDev}
           isPartnerDashboard={isPartnerDashboard}
+          hideTicketCreationCTA={checkEligibilityForFeeBasedGating(user)}
         />
       </Suspense>
     </ErrorBoundary>
