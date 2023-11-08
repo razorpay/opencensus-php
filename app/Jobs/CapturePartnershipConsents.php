@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use View;
 use Carbon\Carbon;
 use RZP\Constants\Product;
 use RZP\Error\ErrorCode;
@@ -13,6 +14,7 @@ use RZP\Models\Merchant\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Consent as Consent;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\Partner\Config\Service as ConfigService;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
@@ -131,11 +133,29 @@ class CapturePartnershipConsents extends Job
 
             $detailService->storeConsents($merchantId, $input, $input[DEConstants::USER_ID]);
 
-            $isExpEnabled = $consentCore->isPartnerConsentV2ExperimentEnabled($merchant->getId(), $milestone, $merchant->getOrgId());
+            $defaultPricingPlan = null;
+
+            if($milestone === Constants::OAUTH)
+            {
+                $defaultPricingPlan =  $this->fetchDefaultPlanDetailsFromPartnerConfig($input[ConsentConstant::PARTNER_ID]);
+            }
+
+            $isDefaultPricingExists = (empty($defaultPricingPlan) === false);
+
+            $isExpEnabled = $consentCore->isPartnerConsentV2ExperimentEnabled($merchant->getId(), $milestone, $merchant->getOrgId(), $isDefaultPricingExists);
 
             $legalDocumentsInput = [];
 
             $data = $detailService->getDocumentsDetails($input, $merchant, $isExpEnabled);
+
+            if($isDefaultPricingExists)
+            {
+                $htmlContent = View::make('merchant.commission_invoice.pp_partner_oauth_terms')->with('data', $defaultPricingPlan)->toHtml();
+
+                $data[0]['content_type'] = 'html';
+                $data[0]['content']      =  $htmlContent;
+            }
+
             if ($isExpEnabled)
             {
                 //Fetch the notification details from merchant domain
@@ -227,6 +247,13 @@ class CapturePartnershipConsents extends Job
         }
 
         return $detailService->checkIfConsentsPresent($merchantId, $validDocTypes);
+    }
+
+    protected function fetchDefaultPlanDetailsFromPartnerConfig(string $merchantId)
+    {
+        $defaultPartnerConfig = (new ConfigService())->fetchDefaultPartnerConfig(['partner_id'=> $merchantId, 'expand'=> 'default_plan_id']);
+
+        return (empty($defaultPartnerConfig) === false ? $defaultPartnerConfig['default_plan_id_details'] : null);
     }
 
 

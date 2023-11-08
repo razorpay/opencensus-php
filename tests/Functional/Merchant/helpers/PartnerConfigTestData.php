@@ -1617,12 +1617,7 @@ return [
                     'name'   => 'standard_plan',
                     'entity' => 'pricing',
                     'org_id' => 'org_100000razorpay',
-                    'rules'  => [
-                        'payment_method' => 'card',
-                        'percent_rate'   => 200,
-                        'fixed_rate'     => 0,
-                    ]
-
+                    'count'  => 1
                 ]
             ],
         ],

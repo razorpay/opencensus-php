@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Models\Merchant;
 use RZP\Models\Feature as Feature;
 use RZP\Models\Partner\Config\Entity;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -1909,7 +1910,7 @@ class PartnerConfigTest extends OAuthTestCase
         ];
 
         $this->createConfigForPlatformPartner($partner->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData, Entity::DEFAULT_PLAN_ID => 'SubmerchantPln']);
-        $this->ba->dashboardGuestAppAuth();
+        $this->ba->proxyAuth('rzp_test'.User::MERCHANT_USER_ID);
 
         $splitzOutput = [
             "response" => [

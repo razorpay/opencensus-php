@@ -15,6 +15,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\Consent\Processor\Factory;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Consent\Processor\Factory as ProcessorFactory;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\FetchLegalDocumentBaseResponse;
@@ -409,8 +410,13 @@ class Core extends Base\Core
         ];
     }
 
-    public function isPartnerConsentV2ExperimentEnabled($partnerId, $mileStone, $orgId): bool
+    public function isPartnerConsentV2ExperimentEnabled($partnerId, $mileStone, $orgId, $isDefaultPlan = false): bool
     {
+        if($mileStone === MerchantConstants::OAUTH and $isDefaultPlan === true)
+        {
+            return false;
+        }
+
         $properties = [
             'id'            => $partnerId,
             'experiment_id' => $this->app['config']->get('app.partnership_consent_v2_experiment'),

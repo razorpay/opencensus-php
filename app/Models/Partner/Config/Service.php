@@ -242,7 +242,7 @@ class Service extends Base\Service
             $configData = $this->expandPartnerConfigDetails($configData, $columnsToExpand);
         }
 
-        return $configData;
+        return $configData ?? [];
     }
 
 
@@ -605,16 +605,19 @@ class Service extends Base\Service
         $pricingService = (new Pricing\Service());
         foreach ($columnsToExpand as $column)
         {
-            $detailKey        = $column . "_details";
-            $planDetails      = $pricingService->getPlanById($configData[$column]);
-            $rules            = $planDetails['rules'];
-            $limitedRulesData = [];
-            foreach ($rules as $rule)
+            $detailKey = $column . "_details";
+            $configData[$detailKey] = [];
+            if(isset($configData[$column]) === true)
             {
-                $limitedRulesData = array_merge($limitedRulesData, array_only($rule, PartnerConfigConstants::PRICING_PLAN_DETAIL_COLUMNS));
+                $planDetails = $pricingService->getPlanById($configData[$column]);
+                $rules = $planDetails['rules'];
+                $limitedRulesData = [];
+                foreach ($rules as $rule) {
+                    $limitedRulesData[] = array_only($rule, PartnerConfigConstants::PRICING_PLAN_DETAIL_COLUMNS);
+                }
+                $planDetails['rules'] = $limitedRulesData;
+                $configData[$detailKey] = $planDetails;
             }
-            $planDetails['rules']   = $limitedRulesData;
-            $configData[$detailKey] = $planDetails;
         }
 
         return $configData;
