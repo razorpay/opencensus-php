@@ -2361,6 +2361,40 @@ class Processor
         }
     }
 
+    protected function validatePaymentForThreeDecimalCurrencies($input){
+
+        $isThreeDecimalCurrency = in_array($input['currency'], Currency\Currency::THREE_DECIMAL_CURRENCIES, true);
+
+        if ($isThreeDecimalCurrency === false)
+        {
+            return;
+        }
+
+        $isPluginFlowPayment = isset($input['_']) === true &&
+            isset($input['_']['integration']) === true
+            && Payment\Analytics\Metadata::isValidIntegration($input['_']['integration']);
+
+        $isInvoicePayment = isset($this->order) === true && $this->order->getProductType() === ProductType::INVOICE;
+
+        if ($isPluginFlowPayment === false && $isInvoicePayment === false)
+        {
+            return;
+        }
+
+        $variantFlag = $this->app['razorx']->getTreatment($this->merchant->getId(),
+            RazorxTreatment::THREE_DECIMAL_CURRENCY_VALIDATION,
+            $this->app['rzp.mode']);
+
+        if ($variantFlag === "on"  ||
+            ($variantFlag === "invoice_on" && $isInvoicePayment === true) ||
+            ($variantFlag === "plugin_on" && $isPluginFlowPayment === true)
+        )
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+        }
+    }
+
     protected function validateCardRecurringAutoPayment($input)
     {
         if ((isset($input[Payment\Entity::METHOD])) and
@@ -2496,6 +2530,8 @@ class Processor
             $this->appendMetadataForPayment($input);
 
             $this->fetchAndSetOrdertoCurrentContext($input);
+
+            $this->validatePaymentForThreeDecimalCurrencies($input);
 
             $this->preProcessForUpiIfApplicable($input);
 
