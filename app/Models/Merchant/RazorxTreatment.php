@@ -801,6 +801,9 @@ final class RazorxTreatment
     // Experiment to enable async bulk approval or not
     const PAYOUT_BULK_APPROVE_ASYNC = 'payout_bulk_approve_async';
 
+    //Experiment to remove bank fetch call if balance is stale while creating CA payout and mark the payout to queued.
+    const CA_PAYOUT_SKIP_BALANCE_FETCH = 'ca_payout_skip_balance_fetch';
+
     //Experiment to create dedicated UPI terminal
     const UPI_DEDICATED_TERMINAL = 'upi_dedicated_terminal';
 

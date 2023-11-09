@@ -8,7 +8,6 @@ use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
-use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
@@ -16,6 +15,9 @@ use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
+use RZP\Constants\Mode as ConstantMode;
+use RZP\Constants\Entity as ConstantEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 class Base extends FundAccountPayout\Base
@@ -79,15 +81,26 @@ class Base extends FundAccountPayout\Base
 
         $payoutAmount = $payout->getAmount();
 
-        $merchantBalance = $this->getMerchantBalanceToCheckForQueued($payout);
+        $balanceResponse = $this->getMerchantBalanceToCheckForQueued($payout);
 
-        $hasBalance = ($merchantBalance >= $payoutAmount);
+        $merchantBalance = $balanceResponse[ConstantEntity::BALANCE];
+
+        $isStale = $balanceResponse['isStaleAndDispatched'];
+
+        $hasBalance = (($isStale === false) and ($merchantBalance >= $payoutAmount));
 
         if ($hasBalance === false)
         {
             $payout->setStatus(Status::QUEUED);
 
-            $payout->setQueuedReason(Payout\QueuedReasons::LOW_BALANCE);
+            if ($isStale === true)
+            {
+                $payout->setQueuedReason(Payout\QueuedReasons::SYNCING_BALANCE);
+            }
+            else
+            {
+                $payout->setQueuedReason(Payout\QueuedReasons::LOW_BALANCE);
+            }
 
             $this->trace->info(
                 TraceCode::PAYOUT_QUEUED,
@@ -107,9 +120,20 @@ class Base extends FundAccountPayout\Base
 
     protected function getMerchantBalanceToCheckForQueued(Entity $payout)
     {
-        $merchantBalance = (new Payout\Core)->getLatestBalanceForDirectAccount($payout->balance);
+        $variant = $this->app->razorx->getTreatment(
+            $payout->getMerchantId(),
+            RazorxTreatment::CA_PAYOUT_SKIP_BALANCE_FETCH,
+            $this->mode ?? ConstantMode::LIVE
+        );
 
-        return $merchantBalance;
+        $isPayoutCreateFlow = false;
+
+        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $isPayoutCreateFlow = true;
+        }
+
+        return (new Payout\Core)->getLatestBalanceForDirectAccount($payout->balance, $isPayoutCreateFlow);
     }
 
     /**

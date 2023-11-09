@@ -2454,7 +2454,7 @@ class Core extends Base\Core
         return $limit;
     }
 
-    protected function dispatchGatewayBalanceUpdateJob(string $channel, $merchantId, string $rule = 'default')
+    public function dispatchGatewayBalanceUpdateJob(string $channel, $merchantId, string $rule = 'default')
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_REQUEST,

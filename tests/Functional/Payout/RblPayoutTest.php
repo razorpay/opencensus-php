@@ -337,6 +337,75 @@ class RblPayoutTest extends TestCase
         $this->assertEquals(0, $updatedSummary['bacc_xba00000000000'][Payout\Status::QUEUED]['total_amount']);
     }
 
+
+
+    public function testQueuedPayoutWithSyncingBalanceReason()
+    {
+        $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
+
+        $this->fixtures->edit('banking_account', 'xba00000000000', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ]);
+
+        sleep(1);
+
+        $this->setMockRazorxTreatment(['ca_payout_skip_balance_fetch' => 'on']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->fixtures->edit('banking_account', 'xba00000000000', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ]);
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ]);
+
+        $summary = $this->makePayoutSummaryRequest();
+
+        // Assert that there is a payout in queued state with amount 2000000.
+        $this->assertEquals(1, $summary['bacc_xba00000000000'][Payout\Status::QUEUED]['syncing_balance']['count']);
+        $this->assertEquals(2000000, $summary['bacc_xba00000000000'][Payout\Status::QUEUED]['syncing_balance']['total_amount']);
+
+        // Add enough balance to allow the payout to get processed
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(50000);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $balanceId);
+
+        $updatedSummary = $this->makePayoutSummaryRequest();
+
+        // Assert that there are no payouts in queued state.
+        $this->assertEquals(0, $updatedSummary['bacc_xba00000000000'][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(0, $updatedSummary['bacc_xba00000000000'][Payout\Status::QUEUED]['total_amount']);
+    }
+
+
     protected function createPendingPayoutAndApprovePayoutUptoSecondLevel(int $gatewayBalance, $queueFlag = 1)
     {
         $this->liveSetUp();

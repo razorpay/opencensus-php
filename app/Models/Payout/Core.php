@@ -1370,14 +1370,8 @@ class Core extends Base\Core
         }
     }
 
-    public function fetchAndUpdateGatewayBalanceIfStale(Merchant\Balance\Entity $balanceEntity)
+    public function fetchAndUpdateGatewayBalanceIfStale(Merchant\Balance\Entity $balanceEntity, bool $isPayoutCreateFlow = false)
     {
-        $input = [
-            Merchant\Balance\Entity::CHANNEL        => $balanceEntity->getChannel(),
-            Merchant\Balance\Entity::MERCHANT_ID    => $balanceEntity->getMerchantId(),
-            Merchant\Balance\Entity::ACCOUNT_NUMBER => $balanceEntity->getAccountNumber()
-        ];
-
         /** @var BankingAccountStatement\Details\Entity $basDetail */
         $basDetails = $balanceEntity->bankingAccountStatementDetails;
 
@@ -1397,10 +1391,24 @@ class Core extends Base\Core
 
         if ($diffTime > $lastFetchedAtRateLimit)
         {
+            if ($isPayoutCreateFlow === true)
+            {
+                //since balance is stale for payout create we are dispatching the balance fetch to queue and going forward.
+                (new BankingAccount\Core)->dispatchGatewayBalanceUpdateJob($basDetails->getChannel(), $basDetails->getMerchantId());
+
+                return [$basDetails, true];
+            }
+
+            $input = [
+                Merchant\Balance\Entity::CHANNEL        => $balanceEntity->getChannel(),
+                Merchant\Balance\Entity::MERCHANT_ID    => $balanceEntity->getMerchantId(),
+                Merchant\Balance\Entity::ACCOUNT_NUMBER => $balanceEntity->getAccountNumber()
+            ];
+
             $basDetails = (new BankingAccount\Core)->fetchAndUpdateGatewayBalanceWrapper($input);
         }
 
-        return $basDetails;
+        return [$basDetails, false];
     }
 
     /**
@@ -1436,7 +1444,9 @@ class Core extends Base\Core
 
             if ($balanceEntity->isAccountTypeDirect() === true)
             {
-                $balanceAmount = $this->getLatestBalanceForDirectAccount($balanceEntity);
+                $balanceResponse = $this->getLatestBalanceForDirectAccount($balanceEntity);
+
+                $balanceAmount = $balanceResponse[Constants\Entity::BALANCE];
             }
 
             $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts, $balanceEntity);
@@ -1458,16 +1468,19 @@ class Core extends Base\Core
         return $traceData;
     }
 
-    public function getLatestBalanceForDirectAccount(Merchant\Balance\Entity $balanceEntity)
+    public function getLatestBalanceForDirectAccount(Merchant\Balance\Entity $balanceEntity, bool $isPayoutCreateFlow = false)
     {
         /** @var BankingAccountStatement\Details\Entity $basDetailsUpdated */
-        $basDetailsUpdated = $this->fetchAndUpdateGatewayBalanceIfStale($balanceEntity);
+        list($basDetailsUpdated, $isStaleAndDispatched) = $this->fetchAndUpdateGatewayBalanceIfStale($balanceEntity, $isPayoutCreateFlow);
 
         $balanceAmount = $basDetailsUpdated->getGatewayBalance() ?? 0;
 
         $balanceAmount = $this->negateODIfApplicable($balanceEntity->merchant, $balanceAmount);
 
-        return $balanceAmount;
+        return [
+            Constants\Entity::BALANCE  => $balanceAmount,
+            'isStaleAndDispatched'     => $isStaleAndDispatched
+        ];
     }
 
     public function getLatestDirectAccountBalanceForFundManagementPayout($fundManagementPayouts, $basDetails)
@@ -1510,7 +1523,9 @@ class Core extends Base\Core
         }
         else
         {
-            return $this->getLatestBalanceForDirectAccount($basDetails->balance);
+            $balanceResponse = $this->getLatestBalanceForDirectAccount($basDetails->balance);
+
+            return $balanceResponse[Constants\Entity::BALANCE];
         }
     }
 
@@ -1551,7 +1566,9 @@ class Core extends Base\Core
 
                 if ($balanceEntity->isAccountTypeDirect() === true)
                 {
-                    $balanceAmount = $this->getLatestBalanceForDirectAccount($balanceEntity);
+                    $balanceResponse = $this->getLatestBalanceForDirectAccount($balanceEntity);
+
+                    $balanceAmount = $balanceResponse[Constants\Entity::BALANCE];
                 }
 
                 $totalQueuedPayouts = $this->repo->payout->fetchCountOfQueuedPayoutsForBalance($balanceId);
@@ -2903,7 +2920,7 @@ class Core extends Base\Core
 
                 $totalBalance -= $totalPayoutAmount;
 
-                $this->dispatchQueuedPayout($payout, 0, $totalBalance);
+                $this->dispatchQueuedPayout($payout, $totalBalance);
 
                 $dispatchedCount += 1;
 
@@ -2929,16 +2946,16 @@ class Core extends Base\Core
         {
             $payoutAmount = $payout->getAmount();
 
-            // We have to explicitly calculate fees here since if it's queued, transaction wouldn't
-            // have been created and hence the fees also wouldn't have been calculated.
-            list($payoutFees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
-
             if ($payout->balance->isAccountTypeDirect() === true)
             {
                 $totalPayoutAmount = $payoutAmount;
             }
             else
             {
+                // We have to explicitly calculate fees here since if it's queued, transaction wouldn't
+                // have been created and hence the fees also wouldn't have been calculated.
+                list($payoutFees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+
                 $freePayoutsAllowed = (new Balance\FreePayout)->getFreePayoutsCount($balance);
 
                 if ($freePayoutsConsumed < $freePayoutsAllowed)
@@ -2959,12 +2976,18 @@ class Core extends Base\Core
 
             if ($totalBalance < $totalPayoutAmount)
             {
+                if ($payout->getQueuedReason() === QueuedReasons::SYNCING_BALANCE)
+                {
+                    $payout->setQueuedReason(QueuedReasons::LOW_BALANCE);
+
+                    $this->repo->payout->saveOrFail($payout);
+                }
                 continue;
             }
 
             $totalBalance -= $totalPayoutAmount;
 
-            $this->dispatchQueuedPayout($payout, $payoutFees, $totalBalance);
+            $this->dispatchQueuedPayout($payout, $totalBalance);
 
             $dispatchedCount += 1;
         }
@@ -3072,14 +3095,13 @@ class Core extends Base\Core
         }
     }
 
-    protected function dispatchQueuedPayout(Entity $payout, int $fees, int $currentBalance)
+    protected function dispatchQueuedPayout(Entity $payout, int $currentBalance)
     {
         $payoutId = $payout->getId();
 
         $traceInfo = [
             'payout_id'         => $payoutId,
             'amount'            => $payout->getAmount(),
-            'fees'              => $fees,
             'current_balance'   => $currentBalance,
         ];
 

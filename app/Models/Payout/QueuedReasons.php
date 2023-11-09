@@ -13,6 +13,7 @@ class QueuedReasons
     const BENE_BANK_DOWN       = 'beneficiary_bank_down';
     const LOW_BALANCE          = 'low_balance';
     const GATEWAY_DEGRADED     = 'gateway_degraded';
+    const SYNCING_BALANCE      =  'syncing_balance';
     //Commenting the remaining constants since those are not used and in summary api we have to loop on the queued reasons
     //which can increase the latency further. We can uncomment it once we start using these queued reasons
    // const NPCI_DOWN            = 'npci_system_down';
@@ -23,6 +24,8 @@ class QueuedReasons
         self::BENE_BANK_DOWN,
         self::LOW_BALANCE,
         self::GATEWAY_DEGRADED,
+        self::SYNCING_BALANCE
+
        // self::NPCI_DOWN,
        // self::NEFT_LIMIT_EXHAUSTED,
        // self::NEFT_WINDOW_CLOSED,
@@ -31,7 +34,9 @@ class QueuedReasons
     const QUEUED_REASONS_WITH_DESCRIPTION = [
         self::BENE_BANK_DOWN       => 'Beneficiary bank\'s systems are not working. Payout will be processed after the system starts working else it will be failed after the pre-defined time limit.',
         self::LOW_BALANCE          => 'Payout is queued as there is insufficient balance in your account to process the payout.',
-        self::GATEWAY_DEGRADED    => 'Payout is queued as Partner bank systems are down'
+        self::GATEWAY_DEGRADED     => 'Payout is queued as Partner bank systems are down',
+        self::SYNCING_BALANCE      => 'Payout is queued as your balance is being synced with the bank. Please check the status after some time.'
+
       //  self::NPCI_DOWN             => 'Payout is queued as NPCI system is down',
       //  self::NEFT_LIMIT_EXHAUSTED  => 'NEFT limit exhausted for the day',
       //  self::NEFT_WINDOW_CLOSED    => 'NEFT window is closed',
