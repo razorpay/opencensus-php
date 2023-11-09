@@ -1315,6 +1315,18 @@ return [
                 'secret' => env('SMART_ROUTING_PASSWORD')
             ],
         ],
+        'workflows' => [
+            'live'=>[
+                'url'           => env('WORKFLOWS_URL'),
+                'username'      => env('WORKFLOWS_USERNAME'),
+                'password'      => env('WORKFLOWS_PASSWORD'),
+            ],
+            'test'=>[
+                'url'           => env('WORKFLOWS_URL'),
+                'username'      => env('WORKFLOWS_USERNAME'),
+                'password'      => env('WORKFLOWS_PASSWORD'),
+            ],
+        ],
     ],
 
     'automation' => [

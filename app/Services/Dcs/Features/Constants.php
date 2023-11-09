@@ -248,6 +248,8 @@ class Constants
 
     const ShowSingleDCCCurrency = 'show_single_dcc_currency';
 
+    const SkipApprovalForCreator = 'skip_approval_if_creator_is_checker';
+
     public static $validDcsKeys = [];
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -471,7 +473,8 @@ class Constants
         self::RemoveRazorpayBranding => 'rzp/pg/merchant/upi/in_app/DisplayControls',
         self::BulkPayoutWorkflow => 'rzp/x/merchant/dashboard_experience/bulk_payouts/Workflows',
         self::RtbWidgetEnabled => 'rzp/pg/merchant/checkout/Rtb',
-        self::ShowSingleDCCCurrency => 'rzp/pg/merchant/payments/in_international/DCCFeatures'
+        self::ShowSingleDCCCurrency => 'rzp/pg/merchant/payments/in_international/DCCFeatures',
+        self::SkipApprovalForCreator => 'rzp/x/merchant/workflows/Workflows'
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -708,6 +711,7 @@ class Constants
         APIFeaturesConstants::REMOVE_RAZORPAY_BRANDING                      => self::RemoveRazorpayBranding,
         APIFeaturesConstants::BULK_PAYOUT_WORKFLOW                          => self::BulkPayoutWorkflow,
         self::ShowSingleDCCCurrency                                         => self::ShowSingleDCCCurrency,
+        APIFeaturesConstants::SKIP_APPROVAL_FOR_CREATOR                     => self::SkipApprovalForCreator
     ];
 
     /**
@@ -749,6 +753,7 @@ class Constants
         self::RemoveRazorpayBranding => 'direct',
         self::RtbWidgetEnabled => 'direct',
         self::ShowSingleDCCCurrency => 'direct',
+        self::SkipApprovalForCreator => 'client',
     ];
 
     /**
@@ -795,6 +800,7 @@ class Constants
             "silent_refund_late_auth_enabled" => "direct",
             "stop_settlement_sms" => "direct",
             "settlement_service_onboarded" => "direct",
+            "skip_approval_if_creator_is_checker" => "client",
         ],
         "org" => [
             "disable_free_credit_unreg"=> "client",

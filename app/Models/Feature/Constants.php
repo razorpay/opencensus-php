@@ -1928,6 +1928,8 @@ class Constants
     /* Merchant feature flag to show custom convenience fee message on checkout*/
     const CustomMessageForCFB = 'custom_message_for_cfb';
 
+    const SKIP_APPROVAL_FOR_CREATOR = 'skip_approval_for_creator';
+
     /**
      * Feature flag to enable merchants for LRS travel transactions
      */
@@ -2683,6 +2685,7 @@ class Constants
         self::BULK_PAYOUT_WORKFLOW            => true,
         DcsConstants::ShowSingleDCCCurrency   => true,
         self::CustomMessageForCFB             => true,
+        self::SKIP_APPROVAL_FOR_CREATOR       => true,
     ];
 
     // Entity type constants
@@ -3758,6 +3761,11 @@ class Constants
             'display_name'  => 'Loc Emi',
             'documentation' => '',
         ],
+        self::SKIP_APPROVAL_FOR_CREATOR => [
+            'feature'       => self::SKIP_APPROVAL_FOR_CREATOR,
+            'display_name'  => 'Skip approval for creator',
+            'documentation' => 'Feature to skip approvals of the creator in payout workflow',
+        ],
     ];
 
     /**
@@ -3811,6 +3819,7 @@ class Constants
         DcsConstants::AffordabilityWidgetSet,
         self::BULK_PAYOUT_WORKFLOW,
         self::ENABLE_SMART_ROUTING,
+        self::SKIP_APPROVAL_FOR_CREATOR,
     ];
 
     /*
