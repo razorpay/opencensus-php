@@ -178,7 +178,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantEligibilityForAutomationActivation',
 
-        self::MERCHANT_INVOICE_LOGIC_SAVE                  =>  '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantInvoiceLogic',
+        self::MERCHANT_INVOICE_LOGIC_SAVE                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantInvoiceLogic',
         self::MERCHANT_CONSENTS_SAVE                       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantConsentsSave',
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GenerateMerchantIdentityVerificationUrl',
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/ProcessMerchantIdentityVerification',
@@ -189,9 +189,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     // timeout in seconds
     const PATH_TIMEOUT_MAP = [
-        self::MERCHANT_ACTIVATION_SAVE      => 15,
-        self::MERCHANT_SIGN_UP              => 20,
-        self::MERCHANT_DOCUMENT_UPLOAD      => 15,
+        self::MERCHANT_ACTIVATION_SAVE                  => 15,
+        self::MERCHANT_SIGN_UP                          => 20,
+        self::MERCHANT_DOCUMENT_UPLOAD                  => 15,
+        self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => 15,
+        self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => 15,
+        self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2     => 15,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [

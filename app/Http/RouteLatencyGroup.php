@@ -35,17 +35,20 @@ class RouteLatencyGroup
     */
 
     protected static $latencyGroupMap = [
-        'merchant_activation_company_search' => self::LATENCY_GROUP_MEDIUM,
-        'merchant_activation_save'           => self::LATENCY_GROUP_MEDIUM,
-        'fd_consume_webhook'                 => self::LATENCY_GROUP_MEDIUM,
-        'merchant_document_upload'           => self::LATENCY_GROUP_MEDIUM,
-        'user_fetch_admin'                   => self::LATENCY_GROUP_MEDIUM,
-        'user_otp_create'                    => self::LATENCY_GROUP_MEDIUM,
-        'merchant_fetch_users'               => self::LATENCY_GROUP_HIGH,
-        'merchant_analytics'                 => self::LATENCY_GROUP_HIGH,
-        'pricing_get_merchant_plans'         => self::LATENCY_GROUP_HIGH,
-        'bvs_service_dashboard'              => self::LATENCY_GROUP_HIGH,
-        'admin_fetch_entity_multiple'        => self::LATENCY_GROUP_HIGH,
-        'merchant_audit_info'                => self::LATENCY_GROUP_HIGH,
+        'merchant_activation_company_search'        => self::LATENCY_GROUP_MEDIUM,
+        'merchant_activation_save'                  => self::LATENCY_GROUP_MEDIUM,
+        'fd_consume_webhook'                        => self::LATENCY_GROUP_MEDIUM,
+        'merchant_document_upload'                  => self::LATENCY_GROUP_MEDIUM,
+        'user_fetch_admin'                          => self::LATENCY_GROUP_MEDIUM,
+        'user_otp_create'                           => self::LATENCY_GROUP_MEDIUM,
+        'merchant_website_section_fetch'            => self::LATENCY_GROUP_MEDIUM,
+        'merchant_website_section_save'             => self::LATENCY_GROUP_MEDIUM,
+        'merchant_website_section_page_load_v2 =>'  => self::LATENCY_GROUP_MEDIUM,
+        'merchant_fetch_users'                      => self::LATENCY_GROUP_HIGH,
+        'merchant_analytics'                        => self::LATENCY_GROUP_HIGH,
+        'pricing_get_merchant_plans'                => self::LATENCY_GROUP_HIGH,
+        'bvs_service_dashboard'                     => self::LATENCY_GROUP_HIGH,
+        'admin_fetch_entity_multiple'               => self::LATENCY_GROUP_HIGH,
+        'merchant_audit_info'                       => self::LATENCY_GROUP_HIGH,
     ];
 }
