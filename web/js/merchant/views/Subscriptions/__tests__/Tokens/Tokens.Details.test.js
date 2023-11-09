@@ -243,3 +243,20 @@ describe('Test Token Details - Only Nach', () => {
     });
   });
 });
+
+describe('test suite for i18n', () => {
+  test('Should Contain RM as currency symbol', async () => {
+    server.use(fetchTokenDetails(true));
+    render(<App loading={false} />, {
+      initialState: {
+        session: { user: { merchant: { currency: 'MYR' } } },
+      },
+      showModal: true,
+    });
+    await waitForLoadingToFinish();
+    const chargeTokenLink = screen.getByRole('button', {
+      name: /charge now/i,
+    });
+    expect(chargeTokenLink).toHaveTextContent('RM');
+  });
+});

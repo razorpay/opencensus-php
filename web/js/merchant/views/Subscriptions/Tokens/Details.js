@@ -12,7 +12,7 @@ import Time from 'common/ui/Time';
 import Definition from 'common/ui/Definition';
 import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { getFormattedAmount, rupeesToPaise } from 'common/utils/rzp-utils';
+import { rupeesToPaise, getFormattedAmountNew, currencySymbols } from 'common/utils/rzp-utils';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NACHDetails from 'merchant/views/Subscriptions/components/UploadNACHForm/Details';
@@ -39,14 +39,20 @@ import {
   trackClickViewNACHForm,
 } from './ga';
 
-@connect((state) => ({ ...state.token, user: state.session.user }), {
-  fetchToken,
-  openModal,
-  closeModal,
-  cancelToken,
-  deleteToken,
-  showNotification,
-})
+@connect(
+  (state) => ({
+    ...state.token,
+    user: state.session.user,
+  }),
+  {
+    fetchToken,
+    openModal,
+    closeModal,
+    cancelToken,
+    deleteToken,
+    showNotification,
+  },
+)
 @RTracking(() => window.rzpQ.component('TokenDetailsContainer'))
 class TokenDetailsContainer extends Component {
   static contextTypes = {
@@ -207,7 +213,8 @@ class TokenDetailsContainer extends Component {
     const { loading: isLoading, entity = {}, error, user } = this.props;
 
     const isCancelled = !isLoading && getTokenStatus(entity) === 'cancelled';
-
+    const merchantCurrency = user.merchant.currency;
+    const currencySym = currencySymbols[merchantCurrency];
     const showChangeBtn =
       !isCancelled &&
       ['rejected', 'initiated'].indexOf((entity.recurring_details || {}).status) === -1;
@@ -245,7 +252,9 @@ class TokenDetailsContainer extends Component {
                       <MandateCustomerDetails customer={entity.customer} />
 
                       {showChangeBtn && (
-                        <Button.Primary onClick={this.handleChargeNow}>₹ Charge Now</Button.Primary>
+                        <Button.Primary onClick={this.handleChargeNow}>
+                          {currencySym} Charge Now
+                        </Button.Primary>
                       )}
                     </div>
 
@@ -293,17 +302,21 @@ class TokenDetailsContainer extends Component {
                     </EntityDetailRow>
                     {this.isCardMethod && maxAmount && isDomesticCard && (
                       <EntityDetailRow label="Max Auto-debit Amount">
-                        <Amount value={maxAmount} currency="INR" />{' '}
+                        <Amount value={maxAmount} currency={merchantCurrency} />{' '}
                         <span>
                           <i class="i i-info-circle" />
                           <Popover theme="dark">
                             <PopoverBody>
                               {`You can automatically charge the customer upto
-                                ₹${getFormattedAmount(
+                                ${getFormattedAmountNew(
                                   maxAmount,
+                                  true,
+                                  merchantCurrency,
                                 )} for each recurring payment. Payments above
-                                ₹${getFormattedAmount(
+                                ${getFormattedAmountNew(
                                   defaultAFAMaxAmount,
+                                  true,
+                                  merchantCurrency,
                                 )} will ask for OTP verification from customer.`}
                             </PopoverBody>
                           </Popover>

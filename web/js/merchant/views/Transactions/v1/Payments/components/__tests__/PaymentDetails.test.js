@@ -9,6 +9,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { useQuery } from 'react-query';
 import User from 'merchant/models/User';
 import store from 'merchant/store';
+import { isPlatformTransaction } from 'merchant/views/Transactions/v1/Payments/Utils/platformUtils';
 
 jest.mock('react-query', () => ({
   useQuery: jest.fn().mockReturnValue({
@@ -17,6 +18,10 @@ jest.mock('react-query', () => ({
     isLoading: false,
     error: {},
   }),
+}));
+
+jest.mock('merchant/views/Transactions/v1/Payments/Utils/platformUtils', () => ({
+  isPlatformTransaction: jest.fn(),
 }));
 
 describe('PaymentDetails', () => {
@@ -299,8 +304,8 @@ describe('PaymentDetails', () => {
     });
   });
 
-  describe('hide specific component for i18n orgs', () => {
-    const payment = { ...defaultProps.payment, method: 'upi_transfer' };
+  describe('test suite for i18n orgs', () => {
+    const payment = { ...defaultProps.payment, method: 'upi_transfer', currency: 'MYR' };
     const bankTransfer = { loading: true, details: { virtual_account: { status: 'closed' } } };
     const stateSpy = jest.spyOn(store, 'getState');
 
@@ -328,6 +333,13 @@ describe('PaymentDetails', () => {
       updateUseI18ServiceSpy('payment_transfer.transfers');
       render(<App payment={payment} bankTransfer={bankTransfer} />);
       expect(screen.queryByText('PaymentTransfers')).not.toBeInTheDocument();
+    });
+
+    test('hide PaymentTransfers component if payment_transfer.transfers tags are enabled', () => {
+      isPlatformTransaction.mockImplementation(() => false);
+      const { container } = render(<App payment={payment} bankTransfer={bankTransfer} />);
+      const currencySymbol = container.querySelector('.rzp-currency');
+      expect(currencySymbol).toHaveTextContent('RM');
     });
   });
 });
