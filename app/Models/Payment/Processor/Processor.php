@@ -460,6 +460,11 @@ class Processor
     const ROUTE_OFFER_PAYMENTS_TO_REARCH_CPS = 'route_offer_payments_to_rearch_cps_v2';
 
     /**
+     * Razorx flag to indicate if a ajax payment should go via PG Router and CPS or just via API service for payments with order transfer
+     */
+    const ROUTE_ORDER_TRANSFERS_PAYMENTS_TO_REARCH_CPS = 'route_order_transfers_payments_to_rearch_cps';
+
+    /**
      * Razorx flag to block merchant on re-arch flow for payments card
      */
     const BLOCK_MERCHANTS_ON_REARCH_CPS = 'block_merchant_on_rearch_cps';
@@ -939,12 +944,19 @@ class Processor
                 if ((empty($orderTransfers) === false) and
                     (count($orderTransfers) > 0))
                 {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    $orderTransfersExpResult = $this->app->razorx->getTreatment($merchant->getId(), self::ROUTE_ORDER_TRANSFERS_PAYMENTS_TO_REARCH_CPS, $this->mode);
+                    if ($orderTransfersExpResult != 'on') {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "order_transfers",
+                            'merchant_id' => $merchant->getId(),
+                        ]);
+                        return false;
+                    }
+
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_SUCCESS_REASON, [
                         'reason' => "order_transfers",
                         'merchant_id' => $merchant->getId(),
                     ]);
-
-                    return false;
                 }
             }
 
