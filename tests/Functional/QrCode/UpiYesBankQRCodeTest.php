@@ -134,6 +134,45 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->runQrPaymentEntityAssertions();
     }
 
+    public function testQrPaymentOnIntentSubType() :void
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::MAKE_QR_PAYMENT_OF_TYPE_INTENT => RazorxTreatment::RAZORX_VARIANT_ON]);
+
+        $this->createQrCode(
+            [
+                'usage' => 'single_use',
+                'type'  => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $this->makeUpiYesBankPayment($qrCodeEntity);
+
+        $upi_metadata     = $this->getLastEntity('upi_metadata', true);
+        $this->assertEquals('intent', $upi_metadata['flow']);
+        $qrPayment        = $this->getLastEntity('qr_payment', true);
+        $payment          = $this->getLastEntity('payment', true);
+        $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true);
+        $qrCodeEntity     = $this->getLastEntity('qr_code', true);
+        $upi              = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals('107611570997', $payment['reference16']);
+
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeEntity['reference'], $qrPayment['qr_code_id']);
+        $this->assertEquals($qrCodeEntity['reference'], $qrPayment['merchant_reference']);
+        $this->assertEquals('107611570997', $upi['npci_reference_id']);
+        $this->assertEquals(null, $qrPaymentRequest['failure_reason']);
+        $this->assertEquals(true, $qrPaymentRequest['expected']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(true, $qrPayment['expected']);
+    }
+
     public function testPaymentForClosedQrCode(): void
     {
         $this->createQrCode(
@@ -409,7 +448,7 @@ class UpiYesBankQRCodeTest extends TestCase
         $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true);
         $qrCodeEntity     = $this->getLastEntity('qr_code', true);
         $upi              = $this->getLastEntity('upi', true);
-        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $intentParam      = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
 
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals(300, $payment['amount']);

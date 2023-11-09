@@ -241,7 +241,7 @@ class UpiKotakQRCodeTest extends TestCase
         $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true, $mode);
         $qrCodeEntity     = $this->getLastEntity('qr_code', true, $mode);
         $upi              = $this->getLastEntity('upi', true, $mode);
-        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $intentParam      = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
 
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals(300, $payment['amount']);
@@ -318,6 +318,32 @@ class UpiKotakQRCodeTest extends TestCase
 
         $this->runQrPaymentEntityAssertions(mode: 'live');
 
+        $this->assertTrue($response['success']);
+    }
+
+    public function testQrPaymentOnIntentSubType()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::MAKE_QR_PAYMENT_OF_TYPE_INTENT => RazorxTreatment::RAZORX_VARIANT_ON]);
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $response = $this->makeUpiKotakPayment($qrCodeEntity);
+
+        $this->runQrPaymentEntityAssertions(mode: 'live');
+        $upi_metadata     = $this->getLastEntity('upi_metadata', true, 'live');
+
+        $this->assertEquals('intent', $upi_metadata['flow']);
         $this->assertTrue($response['success']);
     }
 

@@ -948,6 +948,11 @@ final class RazorxTreatment
      * Razorx flag to enable/disable validation on payee_account length during bank_transfer Callback
      */
     const PAYEE_ACCOUNT_LENGTH_VALIDATION = 'payee_account_length_validation';
+
+    /**
+     * Razorx flag to ramp up experiment to make qr payments of subtype intent
+     */
+    const MAKE_QR_PAYMENT_OF_TYPE_INTENT = 'make_qr_payment_of_type_intent';
     /*
      * Razorx flag to enable/disable three decimal currency check for invoice and plugins flow
      */
