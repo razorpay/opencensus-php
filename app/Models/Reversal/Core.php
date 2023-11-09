@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Reversal;
 
-use Razorpay\Trace\Logger;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Error\Error;
@@ -40,11 +39,13 @@ use RZP\Models\Ledger\RouteReversalJournalEvents;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Transaction\Core as TransactionCore;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Payment\Processor\Refund as RefundTrait;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutLedger;
 use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation as FavLedger;
 use RZP\Models\Ledger\ReverseShadow\Reversals\Core as ReverseShadowReversalsCore;
+use RZP\Models\Ledger\ReverseShadow\Transfers\Reversal\Core as ReverseShadowTransferReversalCore;
 
 class Core extends Base\Core
 {
@@ -57,6 +58,8 @@ class Core extends Base\Core
     const REVERSAL_CREATION_PAYOUT_SERVICE = 'reversal_creation_payout_service_';
 
     const IS_DUPLICATE = "is_duplicate";
+
+    use RefundTrait;
 
     public function __construct()
     {
@@ -105,13 +108,17 @@ class Core extends Base\Core
 
         $reversal->initiator()->associate($initiator);
 
-        $txnCore = (new Transaction\Core);
+        // Skipping transaction creation for reversal , it will be created in CLS as atomic journal
+        if ($reversal->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            $txnCore = (new Transaction\Core);
 
-        $txn = $txnCore->createFromTransferReversal($reversal);
+            $txn = $txnCore->createFromTransferReversal($reversal);
 
-        $this->repo->saveOrFail($txn);
+            $this->repo->saveOrFail($txn);
 
-        $reversal->transaction()->associate($txn);
+            $reversal->transaction()->associate($txn);
+        }
 
         $this->repo->saveOrFail($reversal);
 
@@ -197,13 +204,15 @@ class Core extends Base\Core
 
                 $paymentProcessor = new Payment\Processor\Processor($merchant);
 
-                $result = $this->repo->transaction(function () use ($paymentProcessor, $transfer, $input, $merchant, $initiator)
+                [$result,$customerRefund] = $this->repo->transaction(function () use ($paymentProcessor, $transfer, $input, $merchant, $initiator)
                 {
                     // in existing non-rearch flow, keeping order of refunds as before
                     $result = $paymentProcessor->refundPaymentAndReverseTransfer($transfer, $input, $initiator, false);
 
                     // result has reversal and refund entity in indexes 0 and 1 respectively
                     $reversal = $result[0] ?? null;
+
+                    $refund = $result[1] ?? null;
 
                     $this->traceSuccess(TraceCode::DISPUTE_TRANSFER_SUCCESS, $reversal);
 
@@ -231,6 +240,43 @@ class Core extends Base\Core
                         $this->repo->saveOrFail($sourcePayment);
                     }
 
+                    $isCustomerRefundApplicable = (bool) ($input[Entity::REFUND_TO_CUSTOMER] ?? false);
+
+                    $reversalAndRefundJournalIds = $this->createReverseShadowLedgerEntriesForTransferReversalInSync($reversal,$refund,$customerRefund, $sourcePayment, $isCustomerRefundApplicable, false);
+
+                    if($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true)
+                    {
+                        // set transfer refund's transactionid as  journal id in reverse shadow
+                        if ($refund !== null)
+                        {
+                            $reversals = $reversalAndRefundJournalIds['reversals'];
+
+                            $refundJournalId = null;
+
+                            foreach ($reversals as $reversalAndTransferRefundJournalId)
+                            {
+                                if ($refund->getId() === $reversalAndTransferRefundJournalId["refund_id"])
+                                {
+                                    $refundJournalId = $reversalAndTransferRefundJournalId["refund_journal_id"];
+                                }
+                            }
+
+                            $refund->setAttribute(Refund\Entity::TRANSACTION_ID, $refundJournalId);
+
+                            $result[1] = $refund;
+                        }
+
+                        // updating source payment as refunded after CLS journal creation which was skipped earlier.
+                        if ($isCustomerRefundApplicable === true)
+                        {
+                            $customerRefund->setAttribute(Refund\Entity::TRANSACTION_ID, $reversalAndRefundJournalIds['customer_refund_journal_id']);
+
+                            $sourcePayment->refundAmount($customerRefund->getAmount(), $customerRefund->getBaseAmount());
+
+                            $this->repo->payment->saveOrFail($sourcePayment);
+                        }
+                    }
+
                     (new Transfer\Metric)->pushReversalSuccessMetrics();
 
                     // save the customer_refund_id in reversal if customer refund exists
@@ -241,16 +287,35 @@ class Core extends Base\Core
                         $this->repo->saveOrFail($reversal);
                     }
 
-                    return $result;
+                    return [$result, $customerRefund];
                 });
 
                 $reversal = $result[0] ?? null;
                 $refund = $result[1] ?? null;
 
+                $isCustomerRefundApplicable = (bool) ($input[Entity::REFUND_TO_CUSTOMER] ?? false);
+
                 // Dispatch refunds to scrooge
                 try
                 {
                     $paymentProcessor->callRefundFunctionOnScrooge($refund);
+
+                    // Calling Scrooge for refund processing for customer refund after CLS journal successful
+                    if (($isCustomerRefundApplicable === true) and
+                        ($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true))
+                    {
+                        $data = $paymentProcessor->getGatewayDataForRefund($customerRefund, $transfer->source);
+
+                        // Load necessary info from input to data
+                        $paymentProcessor->getAdditionalDataFromInput($data, $input);
+
+                        $paymentProcessor->callRefundFunctionOnScrooge($customerRefund, $data);
+
+                        $paymentProcessor->sendRefundNotification($transfer->source);
+
+                        $paymentProcessor->eventRefundProcessed($customerRefund);
+                    }
+
                 }
                 catch (\Throwable $e)
                 {
@@ -294,13 +359,16 @@ class Core extends Base\Core
 
                 (new Validator)->validateReversalAmount($transfer, $input);
 
-                $result = $this->repo->transaction(function () use ($transfer, $input, $merchant, $initiator)
-                {
-                    $paymentProcessor = new Payment\Processor\Processor($merchant);
+                $paymentProcessor = new Payment\Processor\Processor($merchant);
 
+                $result = $this->repo->transaction(function () use ($transfer, $input, $merchant, $initiator, $paymentProcessor)
+                {
                     // in rearch flow, customer refund would be created first, and later rolled back/reversed on Scrooge if needed
                     // this is done because presently there is no way to roll back transfer reversals
+                    // If Ledger Reverse Shadow is enabled, Scrooge will only create refund entity and return.
                     $customerRefund  = $this->customerRefundIfApplicable($transfer, $input, true);
+
+                    $refund = null;
 
                     try
                     {
@@ -309,19 +377,78 @@ class Core extends Base\Core
                         // result has reversal and refund entity in indexes 0 and 1 respectively
                         $reversal = $result[0] ?? null;
 
+                        $refund = $result[1] ?? null;
+
                         $this->traceSuccess(TraceCode::DISPUTE_TRANSFER_SUCCESS, $reversal);
+
+                        $sourcePayment = null;
+
+                        if ($transfer->getSourceType() === E::PAYMENT)
+                        {
+                            $sourcePayment = $transfer->source;
+                        }
+                        else if ($transfer->getSourceType() === E::ORDER)
+                        {
+                            $sourceOrderId = $transfer->getSourceId();
+
+                            $sourcePayment = $this->repo->payment->getCapturedPaymentForOrder($sourceOrderId);
+
+                            // Doing findOrFail explicitly to identify archived payment case and handle save accordingly
+                            // Else save would not happen if entity is fetched from TiDB
+                            $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
+                        }
+
+                        if ($reversal !== null && $sourcePayment !== null && $sourcePayment->isExternal())
+                        {
+                            $this->repo->saveOrFail($sourcePayment);
+                        }
+
+                        $isCustomerRefundApplicable = (bool) ($input[Entity::REFUND_TO_CUSTOMER] ?? false);
+
+                        //Update source payment with refunded amount. Transfer payment updated earlier.
+                        if (($isCustomerRefundApplicable === true) && ($sourcePayment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+                        {
+                            // Creates Payment Processor to update refunded amount in sourcePayment
+                            $processor = new Payment\Processor\Processor($sourcePayment->merchant);
+
+                            $processor->payment = $sourcePayment;
+
+                            $processor->handlePaymentUpdate($sourcePayment, $customerRefund['id'], $customerRefund['amount'], $customerRefund['base_amount'], false);
+                        }
+
+                        $this->createReverseShadowLedgerEntriesForTransferReversalInSync($reversal,$refund,$customerRefund, $sourcePayment, $isCustomerRefundApplicable, true);
+
                     }
                     catch (\Throwable $e)
                     {
+                        $failedEventName = "failed_event";
+
+                        // Move the refunds to creation failed state instaed of failed state in reverse shadow.
+                        // Moving to failed state would create refund reversals which is not required in reverse shadow as no transaction/journal is created
+                        if ($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                        {
+                            $failedEventName = "creation_failed_event";
+                        }
+
+                        $refundFailedEventInput = [];
+                        // compensatory action in case of customer refund failure
+                        if (empty($customerRefund->getId()) === false)
+                        {
+                            $refundFailedEventInput[] = ['refund_id'=>$customerRefund->getId(), 'event'=>$failedEventName];
+                        }
+
+                        // compensatory action in case of dummy payment refund failure
+                        if ($refund !== null)
+                        {
+                            $refundFailedEventInput[] = ['refund_id'=>$refund->getId(), 'event'=>$failedEventName];
+                        }
+
                         try
                         {
-                            // compensatory action in case of failure
-                            if (empty($customerRefund->getId()) === false)
-                            {
-                                $refundStatusUpdateInput = ['refunds'=>[['refund_id'=>$customerRefund->getId(), 'event'=>'failed_event']]];
+                            $refundStatusUpdateInput = ['refunds'=>$refundFailedEventInput];
 
-                                $this->app['scrooge']->bulkUpdateRefundStatus($refundStatusUpdateInput);
-                            }
+                            // compensatory action in case of failure
+                            $this->app['scrooge']->bulkUpdateRefundStatus($refundStatusUpdateInput);
                         }
                         catch (\Throwable $ex)
                         {
@@ -337,53 +464,41 @@ class Core extends Base\Core
                         throw $e;
                     }
 
-                    $sourcePayment = null;
-
-                    if ($transfer->getSourceType() === E::PAYMENT)
-                    {
-                        $sourcePayment = $transfer->source;
-                    }
-                    else if ($transfer->getSourceType() === E::ORDER)
-                    {
-                        $sourceOrderId = $transfer->getSourceId();
-
-                        $sourcePayment = $this->repo->payment->getCapturedPaymentForOrder($sourceOrderId);
-
-                        // Doing findOrFail explicitly to identify archived payment case and handle save accordingly
-                        // Else save would not happen if entity is fetched from TiDB
-                        $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
-                    }
-
-                    if ($reversal !== null && $sourcePayment !== null && $sourcePayment->isExternal())
-                    {
-                        $this->repo->saveOrFail($sourcePayment);
-                    }
 
                     (new Transfer\Metric)->pushReversalSuccessMetrics();
 
-                    // initiate refund processing now that transfer reversal and refund are successful
+                    $refundInitEventInput = [];
+                    // initiate dummy refund processing now that transfer reversal ledger entries in CLS are successful
+                    if ($refund !== null)
+                    {
+                        $refundInitEventInput[] = ['refund_id'=>$refund->getId(), 'event'=>'init_event'];
+                    }
+
+                    // initiate refund processing now that transfer reversal and refund and ledger entries in CLS are successful
                     if (empty($customerRefund->getId()) === false)
                     {
                         $reversal->setCustomerRefundId($customerRefund->getId());
 
                         $this->repo->saveOrFail($reversal);
 
-                        try
-                        {
-                            $refundStatusUpdateInput = ['refunds'=>[['refund_id'=>$customerRefund->getId(), 'event'=>'init_event']]];
+                        $refundInitEventInput[] = ['refund_id'=>$customerRefund->getId(), 'event'=>'init_event'];
+                    }
 
-                            $this->app['scrooge']->bulkUpdateRefundStatus($refundStatusUpdateInput);
-                        }
-                        catch (\Throwable $ex)
-                        {
-                            // Logging exception silently to prevent flow breakage.
-                            $this->trace->traceException(
-                                $ex,
-                                Trace::ERROR,
-                                TraceCode::REFUND_SCROOGE_STATUS_UPDATE_FAILED,
-                                ['request_body' => $refundStatusUpdateInput]
-                            );
-                        }
+                    try
+                    {
+                        $refundStatusUpdateInput = ['refunds'=>$refundInitEventInput];
+
+                        $this->app['scrooge']->bulkUpdateRefundStatus($refundStatusUpdateInput);
+                    }
+                    catch (\Throwable $ex)
+                    {
+                        // Logging exception silently to prevent flow breakage.
+                        $this->trace->traceException(
+                            $ex,
+                            Trace::ERROR,
+                            TraceCode::REFUND_SCROOGE_STATUS_UPDATE_FAILED,
+                            ['request_body' => $refundStatusUpdateInput]
+                        );
                     }
 
                     return $result;
@@ -391,6 +506,8 @@ class Core extends Base\Core
 
                 $reversal = $result[0] ?? null;
                 $refund = $result[1] ?? null;
+
+                // Not Dispatching dummy refunds to scrooge after CLS creation as refund in created in scrooge only
 
                 if ((empty($refund) === false) and (empty($refund->getTransactionId()) === true))
                 {
@@ -409,6 +526,33 @@ class Core extends Base\Core
                 // Return reversal entity
                 return $reversal;
             });
+    }
+
+    private function createReverseShadowLedgerEntriesForTransferReversalInSync($reversal, $refund, $customerRefund, $sourcePayment, $isCustomerRefundApplicable, $isRearchRefund = false)
+    {
+        if (isset($refund) === false)
+        {
+            return;
+        }
+
+        $reversalMerchant = $reversal->merchant;
+
+        $refundMerchant = $refund->merchant;
+
+        if (($reversalMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            or ($refundMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
+        {
+            return;
+        }
+
+        $reversalAndRefundJournalIds = (new ReverseShadowTransferReversalCore())->createBulkTransactionMessageForTransferReversal($reversal,$refund,$customerRefund, $sourcePayment, $isCustomerRefundApplicable, $isRearchRefund);
+
+        $this->trace->info(TraceCode::TRANSFER_REVERSAL_LEDGER_ENTRIES_SUCCESS, [
+            LedgerConstants::REVERSAL_ID => $reversal->getId(),
+            LedgerConstants::DUMMY_REFUND_ID => $refund->getId(),
+        ]);
+
+        return $reversalAndRefundJournalIds;
     }
 
     /**
@@ -571,7 +715,7 @@ class Core extends Base\Core
                     // create an entry in ledger asynchronously/manually later.
                     $this->trace->traceException(
                         $e,
-                        Logger::ERROR,
+                        Trace::ERROR,
                         TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
                         [
                             'fav_id' => $fav->getId(),
@@ -616,7 +760,7 @@ class Core extends Base\Core
                 // create an entry in ledger asynchronously/manually later.
                 $this->trace->traceException(
                     $e,
-                    Logger::ERROR,
+                    Trace::ERROR,
                     TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
                     [
                         'fav_id' => $fav->getId(),
@@ -1186,6 +1330,9 @@ class Core extends Base\Core
         $merchant = $payment->merchant;
 
         $paymentProcessor = new Payment\Processor\Processor($merchant);
+
+        // Setting this attribute to identify customer transfer refund to skip transaction creation in API
+        $paymentProcessor->isCustomerTransferRefund = true;
 
         if ($rearchRefund === true)
         {
@@ -1884,14 +2031,16 @@ class Core extends Base\Core
             return;
         }
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false ||
+            $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
             return;
         }
 
         $refundMerchant = $refund->merchant;
 
-        if ($refundMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        if ($refundMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false ||
+            $refundMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
             return;
         }
@@ -1919,7 +2068,7 @@ class Core extends Base\Core
         {
             $this->trace->traceException(
                 $e,
-                Logger::ERROR,
+                Trace::ERROR,
                 TraceCode::PG_LEDGER_ROUTE_ENTRY_FAILED,
                 [
                     'transfer_id'           => $reversal->getTransferIdAttribute(),

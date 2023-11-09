@@ -293,7 +293,8 @@ trait ReverseShadowTrait
         ];
     }
 
-    private function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false) : array
+
+    private function createJournalInLedger(array $journalPayload, bool $isBulkJournalRequest = false, bool $isMultipleJournalRequest = false) : array
     {
         $app = App::getFacadeRoot();
 
@@ -314,17 +315,23 @@ trait ReverseShadowTrait
         {
             try
             {
-                if ($isBulkJournalRequest === false)
-                {
-                    $response = $ledgerService->createJournal($journalPayload, $requestHeaders, true);
-
-                    $responseBody = $response[LedgerService::RESPONSE_BODY];
-                }
-                else
+                if ($isBulkJournalRequest === true)
                 {
                     $response = $ledgerService->createBulkJournal($journalPayload, $requestHeaders, true);
 
                     $responseBody = $response[LedgerService::RESPONSE_BODY]['journals'];
+                }
+                else if ($isMultipleJournalRequest === true)
+                {
+                    $response = $ledgerService->createMultipleJournal($journalPayload, $requestHeaders, true);
+
+                    $responseBody = $response[LedgerService::RESPONSE_BODY]['journals'];
+                }
+                else
+                {
+                    $response = $ledgerService->createJournal($journalPayload, $requestHeaders, true);
+
+                    $responseBody = $response[LedgerService::RESPONSE_BODY];
                 }
 
                 $trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE, $responseBody);

@@ -1798,11 +1798,6 @@ class Service extends Base\Service
                     throw new \Exception(Constants::MERCHANT_FEATURE_ENABLED . ": " . Constants::ES_ON_DEMAND );
                 }
 
-                if($merchant->isFeatureEnabled(Constants::MARKETPLACE))
-                {
-                    throw new \Exception(Constants::MERCHANT_FEATURE_ENABLED . ": " . Constants::MARKETPLACE);
-                }
-
                 $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
                     EntityConstants::MERCHANT,
                     $merchant->getId(),

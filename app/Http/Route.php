@@ -4332,6 +4332,7 @@ class Route
         'ledger_outbox_retry'                           => ['post',      'ledger_outbox/retry',                     'LedgerOutboxController@postRetryFailedReverseShadowTransactions'],
         'ledger_outbox_partition_cron'                  => ['post',      'ledger/outbox/partition',                 'LedgerOutboxController@createLedgerOutboxPartition'              ],
         'expire_amount_credits'                         => ['post',      'amount_credits/expire',         'MerchantController@expireAmountCreditsInPgLedger'],
+        'transfer_reversal_transactions_create'         => ['post', 'transfer_reversal/transactions/create', 'TransferController@createTransferReversalTransactions'],
 
         // Recon service proxy route
         'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
@@ -5333,6 +5334,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'transfer_reversal_transactions_create',
         'irctc_settlement_batch_service',
         'internal_org_get',
         'banking_org_merchant_onboarding_escalations',
@@ -16590,6 +16592,7 @@ class Route
             'internal_token_create',
             'order_transfer_process_rearch',
             'customer_fetch_by_id_internal',
+            'transfer_reversal_transactions_create',
         ],
 
         'freshdesk_webhook' => [

@@ -15,6 +15,7 @@ use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Ledger\RefundJournalEvents;
 use RZP\Models\Ledger\ReverseShadow\Refunds\Core as ReverseShadowRefundsCore;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Models\Ledger\ReverseShadow\Transfers\Reversal\Core as ReverseShadowTransferReversalCore;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
@@ -85,7 +86,7 @@ trait Refund
 
     use ReverseShadowTrait;
 
-    public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null, $batchId = null, $unDisputedPayment = false)
+    public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null, $batchId = null, $unDisputedPayment = false, $processReversals = false)
     {
         if ($this->isInvalidInstantRefundsRequest($payment, $input) === true)
         {
@@ -156,7 +157,7 @@ trait Refund
 
         try
         {
-            $this->processRefund($input, $isRefundForAuthorizedPayment);
+            $this->processRefund($input, $isRefundForAuthorizedPayment, $processReversals);
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTO_REFUND_SUCCESS, $payment);
         }
@@ -171,9 +172,12 @@ trait Refund
 
         $this->eventRefundCreated($this->refund);
 
-        if ($this->isRefundStatusProcessedForMerchant() === true)
+        if (($this->isRefundStatusProcessedForMerchant() === true))
         {
-            $this->eventRefundProcessed($this->refund);
+            if (($this->isCustomerTransferRefund === false) or ($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false))
+            {
+                $this->eventRefundProcessed($this->refund);
+            }
         }
 
         return $refund;
@@ -827,6 +831,8 @@ trait Refund
         $refundInput[RefundEntity::NOTES]           = $input[RefundEntity::NOTES] ?? null;
         $refundInput[RefundConstants::CREATED_AT]   = $input[RefundConstants::CREATED_AT] ?? null;
         $refundInput[RefundEntity::TRANSACTION_ID]  = $input[RefundEntity::TRANSACTION_ID] ?? null;
+        $refundInput[RefundEntity::BASE_AMOUNT]     = $input[RefundEntity::BASE_AMOUNT] ?? null;
+        $refundInput[RefundEntity::SPEED_DECISIONED]= $input[RefundEntity::SPEED_DECISIONED] ?? null;
 
         // set isScrooge
         $refundInput[RefundEntity::IS_SCROOGE]      = true;
@@ -992,7 +998,7 @@ trait Refund
      *
      * @throws \Exception
      */
-    public function processRefundWithTransfers(array $input, bool $rearchRefund = false)
+    public function processRefundWithTransfers(array $input, Payment\Entity $payment, bool $rearchRefund = false)
     {
         if (isset($input['reversals']) === false)
         {
@@ -1005,27 +1011,31 @@ trait Refund
 
         try
         {
-            $results = $this->repo->transaction(function() use ($input, $rearchRefund)
+            list($results, $atomicJournalPayload) = $this->repo->transaction(function() use ($input, $rearchRefund)
             {
-                $results = $this->processReversals($input['reversals'], $rearchRefund);
+                list($results, $atomicJournalPayload) = $this->processReversals($input['reversals'], $rearchRefund);
 
                 unset($input['reversals']);
 
-                return $results;
+                return [$results, $atomicJournalPayload];
             });
 
-            if ($rearchRefund !== true)
+            if($payment->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false)
             {
-                foreach ($results as $result)
+                if ($rearchRefund !== true)
                 {
-                    $reversal = $result[0] ?? null;
-                    $refund = $result[1] ?? null;
+                    foreach ($results as $result)
+                    {
+                        $reversal = $result[0] ?? null;
+                        $refund = $result[1] ?? null;
 
-                    (new ReversalCore())->createLedgerEntriesForRouteReversal($this->merchant, $reversal, $refund);
+                        (new ReversalCore())->createLedgerEntriesForRouteReversal($this->merchant, $reversal, $refund);
+                    }
                 }
             }
 
             (new TransferMetric)->pushReversalSuccessMetrics();
+
         }
         catch (\Exception $e)
         {
@@ -1038,29 +1048,10 @@ trait Refund
         // So skipping the Scrooge dispatch
         if ($rearchRefund === true)
         {
-            return $results;
+            return [$results, $atomicJournalPayload];
         }
 
-        try
-        {
-            // Dispatch refunds to scrooge
-            foreach ($results as $result)
-            {
-                $refund = $result[1] ?? null;
-
-                $this->callRefundFunctionOnScrooge($refund);
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH_FAILED
-            );
-        }
-
-        return $results;
+        return [$results, $atomicJournalPayload];
     }
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, array $input, Batch\Entity $batch = null, $batchId = null)
@@ -1158,6 +1149,7 @@ trait Refund
             // this is just a double check
         {
             $journalResponse = (new ReverseShadowRefundsCore())->createLedgerEntriesForRefundReverseShadow($refund, $payment);
+
             if (isset($journalResponse['id']) === true)
             {
                 $txnId = $journalResponse['id'];
@@ -1201,6 +1193,7 @@ trait Refund
         {
             $txnId = null;
         }
+
         list($txn, $feesSplit) = $txnCore->createFromRefund($refund, $txnId);
 
         $this->repo->saveOrFail($txn);
@@ -1903,7 +1896,7 @@ trait Refund
         $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount, $isRefundForAuthorizedPayment, $scroogeAmountRefunded, $scroogeBaseAmountRefunded);
     }
 
-    protected function handlePaymentUpdate($payment, string $refundId, int $refundAmount, int $refundBaseAmount, $isRefundForAuthorizedPayment = false, $scroogeAmountRefunded = null, $scroogeBaseAmountRefunded = null)
+    public function handlePaymentUpdate($payment, string $refundId, int $refundAmount, int $refundBaseAmount, $isRefundForAuthorizedPayment = false, $scroogeAmountRefunded = null, $scroogeBaseAmountRefunded = null)
     {
         // setting strict attribute to true on mutex acquire so that updates dont happen on redis exceptions
         $this->mutex->acquireAndRelease(
@@ -2318,7 +2311,7 @@ trait Refund
         return $data;
     }
 
-    protected function processRefund($input = [], $isRefundForAuthorizedPayment = false)
+    protected function processRefund($input = [], $isRefundForAuthorizedPayment = false, $processReversals = false)
     {
         $payment = $this->refund->payment;
 
@@ -2332,7 +2325,7 @@ trait Refund
         // in cases if any alter query or any other operation is running on refunds table and
         // refund save takes lot more time that expected. For such cases, keeping mutex lock to 10 minutes.
         //
-        $this->mutex->acquireAndRelease($payment->getId(), function() use ($isRefundForAuthorizedPayment, $data, $payment)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($isRefundForAuthorizedPayment, $data, $payment, $input, $processReversals)
         {
             if ($payment->isExternal() == false)
             {
@@ -2354,26 +2347,43 @@ trait Refund
                     ErrorCode::BAD_REQUEST_TOTAL_REFUND_AMOUNT_IS_GREATER_THAN_THE_PAYMENT_AMOUNT);
             }
 
-            $this->repo->transaction(function() use ($isRefundForAuthorizedPayment) {
-                $this->recordTransactionForRefund();
+            // If this is customer transfer refund or transfer refund or refund with reversals,
+            // we will skip journal and transaction creation here
+            if (($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true)
+                and (($this->isCustomerTransferRefund === true) or ($processReversals === true)))
+            {
+                // saving transfer refund entity for association with other entities later on.
+                $this->repo->saveOrFail($this->refund);
+            }
+            else
+            {
+                $this->repo->transaction(function() use ($isRefundForAuthorizedPayment)
+                {
+                    $this->recordTransactionForRefund();
 
-                // update the payment entity for refund
-                $this->updatePaymentRefunded($isRefundForAuthorizedPayment);
-            });
+                    $this->updatePaymentRefunded($isRefundForAuthorizedPayment);
+                });
 
-            $this->callRefundFunctionOnScrooge($this->refund, $data);
 
-            // send notification to merchant/customer, this is outside transaction
-            // as we don't want to reverse the actions if mail sending fails
-            $this->sendRefundNotification($payment);
+                $this->callRefundFunctionOnScrooge($this->refund, $data);
+
+                // send notification to merchant/customer, this is outside transaction
+                // as we don't want to reverse the actions if mail sending fails
+                $this->sendRefundNotification($payment);
+            }
+
         }, 600);
 
-        $this->trace->info(
-            TraceCode::REFUND_PROCESSED,
-            [
-                'payment_id'    => $payment->getId(),
-                'refund'        => $this->refund->toArray(),
-            ]);
+        if (!(($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true)
+            and (($this->isCustomerTransferRefund === true) or ($processReversals === true))))
+        {
+            $this->trace->info(
+                TraceCode::REFUND_PROCESSED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'refund'        => $this->refund->toArray(),
+                ]);
+        }
 
         return $this->refund;
     }
@@ -2650,7 +2660,7 @@ trait Refund
         $this->repo->saveOrFail($refund);
     }
 
-    protected function getAdditionalDataFromInput(&$data, $input)
+    public function getAdditionalDataFromInput(&$data, $input)
     {
         // Setting flag for scrooge meta data. When refund is being created but gateway refund is not supported
         $data[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND] = $input[RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND] ?? null;
@@ -2676,7 +2686,7 @@ trait Refund
         return Payment\Gateway::supportsReverse($gateway, $gatewayAcquirer);
     }
 
-    protected function updatePaymentRefunded($isRefundForAuthorizedPayment = false)
+    public function updatePaymentRefunded($isRefundForAuthorizedPayment = false)
     {
         //
         // Indicates inverse of buggy case where refund entity is already present
@@ -2692,7 +2702,8 @@ trait Refund
             $this->payment->refundAmount($amount, $baseAmount);
         }
 
-        $this->repo->transaction(function() use ($isRefundForAuthorizedPayment) {
+        $this->repo->transaction(function() use ($isRefundForAuthorizedPayment)
+        {
             if ($this->payment->isExternal() === true)
             {
                 $this->payment->setAttribute(RefundConstants::REFUND_AUTHORIZED_PAYMENT, $isRefundForAuthorizedPayment);
@@ -2777,7 +2788,7 @@ trait Refund
         }
     }
 
-    protected function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
+    public function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
     {
         $data = [
             'payment'   => $payment->toArrayGateway(),
@@ -3131,18 +3142,85 @@ trait Refund
             $unDisputedPayment = false;
         }
 
-        $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
+        return $this->repo->transaction(function () use ($payment, $input, $batch, $batchID, $unDisputedPayment)
         {
-            // Determine if transfer reversals should be processed along with the refund
-            $processReversals = $this->shouldProcessReversals($payment, $input);
-
-            if ($processReversals === true)
+            list($results, $atomicJournalPayload, $processReversals) = $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
             {
-                $this->processRefundWithTransfers($input);
+                // ToDO: check with Safwan
+                // Determine if transfer reversals should be processed along with the refund
+                $processReversals = $this->shouldProcessReversals($payment, $input);
+
+                if ($processReversals === true)
+                {
+                    list($results, $atomicJournalPayload) = $this->processRefundWithTransfers($input, $payment);
+
+                    return  [$results, $atomicJournalPayload, true];
+                }
+
+                return [[],[], false];
+            });
+
+            $customerRefund = $this->refund($payment, $input, $batch, $batchID, $unDisputedPayment, $processReversals);
+
+            $reversalAndRefundJournalIds = [];
+
+            if(($customerRefund->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true) and ($this->isCustomerTransferRefund === false) and ($processReversals === true))
+            {
+                $reversalAndRefundJournalIds = (new ReverseShadowTransferReversalCore())->createReverseShadowLedgerEntriesForTransferReversalBulk($atomicJournalPayload, $customerRefund, $results, false);
+
+                $customerRefund->setAttribute(RefundEntity::TRANSACTION_ID, $reversalAndRefundJournalIds['customer_refund_journal_id']);
+                // for non rearch customer refund , following steps were skipped during processing of refund
+                $this->refund = $customerRefund;
+
+                $this->updatePaymentRefunded();
+
+                $data = $this->getGatewayDataForRefund($this->refund, $payment);
+
+                $this->callRefundFunctionOnScrooge($this->refund, $data);
+
+    //            // send notification to merchant/customer, this is outside transaction
+    //            // as we don't want to reverse the actions if mail sending fails
+                $this->sendRefundNotification($payment);
             }
+
+            try
+            {
+                $refundJournalIds = array();
+
+                $reversals = $reversalAndRefundJournalIds['reversals'];
+
+                foreach ($reversals as $reversalAndTransferRefundJournalId)
+                {
+                    $refundJournalIds[$reversalAndTransferRefundJournalId["refund_id"]] = $reversalAndTransferRefundJournalId["refund_journal_id"];
+                }
+
+                // Dispatch refunds to scrooge
+                foreach ($results as $result)
+                {
+                    $refund = $result[1] ?? null;
+
+                    if ($refund !== null){
+                        $refundId = $refund["id"];
+
+                        $refundJournalId = $refundJournalIds[$refundId];
+
+                        $refund->setAttribute(RefundEntity::TRANSACTION_ID, $refundJournalId);
+                    }
+
+                    $this->callRefundFunctionOnScrooge($refund);
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH_FAILED
+                );
+            }
+            return $customerRefund;
         });
 
-        return $this->refund($payment, $input, $batch, $batchID, $unDisputedPayment);
     }
 
     protected function checkForDuplicateReceipt(Payment\Entity $payment, array $input = [])
@@ -3252,7 +3330,7 @@ trait Refund
      *
      * @param  Payment\Entity $payment Payment Entity
      */
-    protected function sendRefundNotification(Payment\Entity $payment)
+    public function sendRefundNotification(Payment\Entity $payment)
     {
         //
         // Analytics is on dashboard side for now
@@ -4636,43 +4714,109 @@ trait Refund
                 ]);
 
             try {
-                $results = $this->repo->transaction(function () use ($input, $processReversals, &$response) {
+                $results = $this->repo->transaction(function () use ($input, $processReversals, &$response, $payment)
+                {
                     $results = [];
 
                     if ($processReversals === true)
                     {
-                        $results = $this->processRefundWithTransfers($input, true);
-                    }
+                        list($results, $atomicJournalPayload) = $this->processRefundWithTransfers($input, $payment, true);
 
-                    if (isset($input['transaction_create_input']) === true)
-                    {
-                        $transactionCreateInput = $input['transaction_create_input'];
+                        $customerRefundInput = $input['transaction_create_input'];
 
-                        $transactionCreateResponse = (new Payment\Refund\Service())->scroogeRefundsTransactionCreate($transactionCreateInput);
+                        // creates virtual customer refund entity from input
+                        $customerRefund = $this->createVirtualRefundEntity($payment, $customerRefundInput);
 
-                        if ($transactionCreateResponse['data']['compensate_payment'] === true)
+                        if($payment->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true)
                         {
-                            $payment = $this->repo->payment->findOrFailPublic($transactionCreateInput[RefundConstants::PAYMENT_ID]);
-
-                            // non rearch payment do not need compensate from Scrooge, as this txn block will be terminated
-                            if ($payment->isExternal() !== true)
+                            $compenstatePayment = false;
+                            try
                             {
-                                $transactionCreateResponse['data']['compensate_payment'] = false;
+                                $this->setPayment($payment);
+
+                                //handle payment update for source payment
+                                $this->handlePaymentUpdate($payment, $customerRefund->getId(), $customerRefund->getAmount(), $customerRefund->getBaseAmount(), false);
+
+                                try
+                                {
+                                    $reversalAndRefundJournalIds = (new ReverseShadowTransferReversalCore())->createReverseShadowLedgerEntriesForTransferReversalBulk($atomicJournalPayload, $customerRefund, $results, true);
+                                }
+                                catch(\Throwable $e)
+                                {
+                                    if ($payment->isExternal() === true)
+                                    {
+                                        $compenstatePayment = true;
+                                    }
+                                    throw $e;
+                                }
+
+                                $transactionCreateResponse = RefundHelpers::getScroogeRefundTransactionCreateResponse(null, false, $reversalAndRefundJournalIds['customer_refund_journal_id']);
+
+                                $transactionCreateResponse['reversal_and_refund_journal_ids'] = $reversalAndRefundJournalIds['reversals'];
+
+                                $response['transaction_create_response'] = $transactionCreateResponse;
+
+                            }
+                            catch(\Exception $e)
+                            {
+                                $transactionCreateResponse = RefundHelpers::getScroogeRefundTransactionCreateResponse($e, $compenstatePayment, null);
+
+                                $response['transaction_create_response'] = $transactionCreateResponse;
+
+                                throw $e;
                             }
                         }
 
-                        $response['transaction_create_response'] = $transactionCreateResponse;
-
-                        if (empty($transactionCreateResponse['error']) === false)
+                        try
                         {
-                            $response['success'] = false;
+                            // Dispatch refunds to scrooge
+                            foreach ($results as $result)
+                            {
+                                $refund = $result[1] ?? null;
 
-                            $response['error'] = $transactionCreateResponse['error'];
+                                $this->callRefundFunctionOnScrooge($refund);
+                            }
+                        }
+                        catch (\Throwable $e)
+                        {
+                            $this->trace->traceException(
+                                $e,
+                                Trace::ERROR,
+                                TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH_FAILED
+                            );
+                        }
+                    }
 
-                            throw new Exception\LogicException(
-                                $transactionCreateResponse['error']['message'],
-                                $transactionCreateResponse['error']['code'],
-                                [RefundConstants::REFUND_ID => $transactionCreateInput[RefundConstants::ID]]);
+                    if($payment->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false)
+                    {
+
+                        if (isset($input['transaction_create_input']) === true)
+                        {
+                            $transactionCreateInput = $input['transaction_create_input'];
+
+                            $transactionCreateResponse = (new Payment\Refund\Service())->scroogeRefundsTransactionCreate($transactionCreateInput);
+
+                            if ($transactionCreateResponse['data']['compensate_payment'] === true) {
+                                $payment = $this->repo->payment->findOrFailPublic($transactionCreateInput[RefundConstants::PAYMENT_ID]);
+
+                                // non rearch payment do not need compensate from Scrooge, as this txn block will be terminated
+                                if ($payment->isExternal() !== true) {
+                                    $transactionCreateResponse['data']['compensate_payment'] = false;
+                                }
+                            }
+
+                            $response['transaction_create_response'] = $transactionCreateResponse;
+
+                            if (empty($transactionCreateResponse['error']) === false) {
+                                $response['success'] = false;
+
+                                $response['error'] = $transactionCreateResponse['error'];
+
+                                throw new Exception\LogicException(
+                                    $transactionCreateResponse['error']['message'],
+                                    $transactionCreateResponse['error']['code'],
+                                    [RefundConstants::REFUND_ID => $transactionCreateInput[RefundConstants::ID]]);
+                            }
                         }
                     }
 
@@ -4680,22 +4824,22 @@ trait Refund
                 });
 
                 try {
-                    foreach ($results as $result)
+                    if($payment->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false)
                     {
-                        $reversal = $result[0] ?? null;
-                        $refund = $result[1] ?? null;
+                        foreach ($results as $result) {
+                            $reversal = $result[0] ?? null;
+                            $refund = $result[1] ?? null;
 
-                        if (empty($refund) === false)
-                        {
-                            // attempt to populate the transaction ID in case of rearch refunds, to be used later in ledger push
-                            $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
-                            if (isset($txn) === true)
-                            {
-                                $refund->transaction()->associate($txn);
+                            if (empty($refund) === false) {
+                                // attempt to populate the transaction ID in case of rearch refunds, to be used later in ledger push
+                                $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refund->getId());
+                                if (isset($txn) === true) {
+                                    $refund->transaction()->associate($txn);
+                                }
                             }
-                        }
 
-                        (new ReversalCore())->createLedgerEntriesForRouteReversal($this->merchant, $reversal, $refund);
+                            (new ReversalCore())->createLedgerEntriesForRouteReversal($this->merchant, $reversal, $refund);
+                        }
                     }
                 } catch (\Throwable $e) {
                     $this->trace->info(
@@ -4706,7 +4850,9 @@ trait Refund
                         ]);
                 }
             }
-             catch (\Throwable $e) {
+            catch (\Throwable $e) {
+                    $this->trace->traceException($e);
+
                     $response['success'] = false;
 
                     $response['error']['code']=$e->getCode();

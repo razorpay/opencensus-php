@@ -89,7 +89,15 @@ class Core extends Base\Core
         // To check whether we need to reverse the amount to refund credits, we need to figure out whether the corresponding refund for the reversal
         // was triggered using refund credits or balance. To do this, we fetch the journal which has ledger_entry arr.
         // Each ledger entry has a fund account type based on which we identify if refund creds was used.
-        $journal = $this->getJournalByTransactorInfo($refund->getPublicId(), Constants::REFUND_PROCESSED, $ledgerService);
+
+        $transactorEvent = Constants::REFUND_PROCESSED;
+
+        if($refund->getMethod() === Payment\Method::TRANSFER)
+        {
+            $transactorEvent = Constants::TRANSFER_REVERSAL_PROCESSED;
+        }
+
+        $journal = $this->getJournalByTransactorInfo($refund->getPublicId(), $transactorEvent, $ledgerService);
 
         if ($journal ===  null)
         {

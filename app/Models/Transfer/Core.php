@@ -18,6 +18,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
+use RZP\Models\Reversal as Reversal;
+use RZP\Models\Payment\Refund as Refund;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\EntityOrigin;
@@ -36,9 +38,11 @@ use RZP\Models\Ledger\RouteJournalEvents;
 use RZP\Models\Partner\Service as PartnerService;
 use RZP\Exception\SettlementStatusUpdateException;
 use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Merchant\MerchantApplications as MerchantApp;
 use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
+use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
 use RZP\Models\Ledger\ReverseShadow\Transfers\Core as ReverseShadowTransfersCore;
 
 use Throwable;
@@ -1879,6 +1883,204 @@ class Core extends Base\Core
         $this->createTransferTransactionsInReverseShadow(null, $input);
 
         return true;
+    }
+
+    public function createTransferReversalTransactions(array $input)
+    {
+        $isRearchRefund = $input["is_rearch_refund"];
+
+        $reversals = $input["reversals"];
+
+        $customerRefundId =  $input["customer_refund_id"] ?? "";
+
+        $customerRefund = null;
+
+        $customerRefundJournalId = "";
+
+        if($customerRefundId !== "")
+        {
+            if($isRearchRefund)
+            {
+                $customerRefund = (new Refund\Repository())->fetchExternalRefundById($customerRefundId, '', [], true);
+            }
+            else
+            {
+                $customerRefund = $this->repo->refund->findOrFail($customerRefundId);
+            }
+
+            $customerRefundJournalId = $input["customer_refund_journal_id"];
+        }
+
+        $this->trace->info(
+            TraceCode::TRANSFER_REVERSAL_TRANSACTION_CREATE_REQUEST,
+            [
+                'input'          => $input,
+                'customerRefund' => $customerRefund,
+            ]
+        );
+
+        try
+        {
+            $response = $this->createTransferReversalTransactionsInReverseShadow($reversals, $customerRefundJournalId, $customerRefund, $isRearchRefund);
+
+            $this->trace->info(TraceCode::PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
+                [
+                    LedgerConstants::RESPONSE => $response,
+                    LedgerConstants::TRANSACTOR_EVENT => LedgerConstants::TRANSFER_REVERSAL_PROCESSED,
+                    LedgerOutboxConstants::SOURCE     => LedgerOutboxConstants::SYNC
+                ]
+            );
+
+            $this->trace->count(Metrics::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
+                LedgerConstants::TRANSACTOR_EVENT => LedgerConstants::TRANSFER_REVERSAL_PROCESSED,
+                LedgerOutboxConstants::SOURCE     => LedgerOutboxConstants::SYNC
+            ]);
+
+            return $response;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->count(Metrics::PG_LEDGER_CREATE_TRANSACTION_FAILURE, [
+                [
+                    LedgerConstants::TRANSACTOR_EVENT   =>  LedgerConstants::TRANSFER_REVERSAL_PROCESSED,
+                    LedgerOutboxConstants::SOURCE       => LedgerOutboxConstants::SYNC
+                ]
+            ]);
+
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::TRANSFER_REVERSAL_TRANSACTION_CREATE_FAILURE,
+                ['input'         => $input]
+            );
+
+            throw $ex;
+        }
+
+    }
+
+    private function createTransferReversalTransactionsInReverseShadow(array $reversals, $customerRefundJournalId, RefundEntity $customerRefund = null, $isRearchRefund = false)
+    {
+
+        return $this->repo->transaction(function() use ($reversals, $customerRefund, $customerRefundJournalId, $isRearchRefund)
+        {
+            $txnCore = (new Transaction\Core);
+
+            $reversalTransactionsList = [];
+
+            foreach ($reversals as $item) {
+
+                $reversalId             = $item["transfer_reversal_id"];
+                $reversalJournalId      = $item["transfer_reversal_journal_id"];
+                $refundId               = $item["refund_id"];
+                $dummyRefundJournalId   = $item["refund_journal_id"];
+
+                $reversal = $this->repo->reversal->findOrFail($reversalId);
+
+                // avoid duplicate txn creation
+                $reversalTxn = $this->repo->transaction->findByEntityId($reversal->getId(), $reversal->merchant);
+
+                if (isset($reversalTxn) === false) {
+                    // Create the transaction for reversal
+                    $reversalTxn = $txnCore->createFromTransferReversal($reversal, $reversalJournalId);
+
+                    $this->repo->saveOrFail($reversalTxn);
+
+                    $reversal->transaction()->associate($reversalTxn);
+
+                    $this->repo->saveOrFail($reversal);
+                }
+
+                if($isRearchRefund)
+                {
+                    $refund = (new Refund\Repository())->fetchExternalRefundById($refundId, '', [], true);
+                }
+                else
+                {
+                    $refund = $this->repo->refund->findOrFail($refundId);
+                }
+
+                $transferPayment = $this->repo->payment->findOrFail($refund->getPaymentId());
+
+                $refund->payment()->associate($transferPayment);
+
+                // Create the transaction for dummy refund
+                $dummyRefundInput = [
+                    Refund\Constants::JOURNAL_ID            => $dummyRefundJournalId,
+                    Refund\Constants::ID                    => $refund->getId(),
+                    Refund\Constants::PAYMENT_ID            => $refund->payment->getId(),
+                    Refund\Constants::AMOUNT                => $refund->getAmount(),
+                    Refund\Constants::SCROOGE_BASE_AMOUNT   => $refund->getBaseAmount(),
+                    Refund\Constants::SPEED_DECISIONED      => $refund->getSpeedDecisioned(),
+                    Refund\Constants::SCROOGE_GATEWAY       => $refund->getGateway(),
+                    Refund\Constants::MODE                  => $this->mode,
+                    Refund\Constants::FEE                   => $refund->getFee(),
+                    Refund\Constants::TAX                   => $refund->getTax(),
+                ];
+
+                $paymentProcessor = new Payment\Processor\Processor($refund->merchant);
+
+                $dummyRefundTxnResponse = $paymentProcessor->scroogeRefundTransactionCreate($refund->payment, $dummyRefundInput);
+
+                $reversalTransactionsList[] = [
+                    "reversal_txn_id"     => $reversalTxn->getId(),
+                    "refund_txn_id"       => $dummyRefundTxnResponse['data'][Refund\Constants::TRANSACTION_ID],
+                ];
+
+                // associate refund with txn
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($refundId);
+
+                if ((isset($txn) === true) and ($isRearchRefund === false)) {
+                    $refund->transaction()->associate($txn);
+                    $this->repo->saveOrFail($refund);
+                }
+
+            }
+
+            // Create the transaction for customer refund if applicable
+            $customerRefundTxnResponse = [];
+
+            $customerRefundTxnId = "";
+
+            if($customerRefund !== null)
+            {
+                $customerRefundInput = [
+                    Refund\Constants::JOURNAL_ID            => $customerRefundJournalId,
+                    Refund\Constants::ID                    => $customerRefund->getId(),
+                    Refund\Constants::PAYMENT_ID            => $customerRefund->payment->getId(),
+                    Refund\Constants::AMOUNT                => $customerRefund->getAmount(),
+                    Refund\Constants::SCROOGE_BASE_AMOUNT   => $customerRefund->getBaseAmount(),
+                    Refund\Constants::SPEED_DECISIONED      => $customerRefund->getSpeedDecisioned(),
+                    Refund\Constants::SCROOGE_GATEWAY       => $customerRefund->getGateway(),
+                    Refund\Constants::MODE                  => $this->mode,
+                    Refund\Constants::FEE                   => $customerRefund->getFee(),
+                    Refund\Constants::TAX                   => $customerRefund->getTax(),
+                ];
+
+                $sourcePayment = $customerRefund->payment;
+
+                $paymentProcessor = new Payment\Processor\Processor($customerRefund->merchant);
+
+                $customerRefundTxnResponse = $paymentProcessor->scroogeRefundTransactionCreate($sourcePayment, $customerRefundInput);
+
+                $customerRefundTxnId = $customerRefundTxnResponse['data'][Refund\Constants::TRANSACTION_ID];
+
+                // associate customer refund with txn
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchant($customerRefund->getId());
+
+                if ((isset($txn) === true) and ($isRearchRefund === false)) {
+                    $customerRefund->transaction()->associate($txn);
+                    $this->repo->saveOrFail($customerRefund);
+                }
+            }
+
+            return [
+                "reversal_and_refund_txn_ids" => $reversalTransactionsList,
+                "customer_refund_txn_id"      => $customerRefundTxnId,
+            ];
+
+        });
+
     }
 
     private function createLedgerEntriesForTransferReverseShadowInSync(Entity $transfer, Payment\Entity $transferPayment)

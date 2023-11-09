@@ -5,7 +5,9 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Ledger\ReverseShadow\Transfers\Reversal\Core as ReverseShadowTransferReversalCore;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -130,6 +132,17 @@ trait Reversal
             $this->repo->saveOrFail($refund);
         }
 
+        // update payment if its a rearch payment and reverse shadow enabled for merchant
+        if (($refund !== null) &&  ($transferPayment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) && ($rearchRefund === true))
+        {
+            // Creates Payment Processor to update refunded amount in transferPayment
+            $processor = new Payment\Processor\Processor($transferPayment->merchant);
+
+            $processor->payment = $transferPayment;
+
+            $processor->handlePaymentUpdate($transferPayment, $refund['id'], $refund['amount'], $refund['base_amount'], false);
+        }
+
         return array($reversal, $refund);
     }
 
@@ -183,13 +196,17 @@ trait Reversal
 
         $refund->setGatewayAmountCurrency();
 
-        $refund->balance()->associate($refund->merchant->primaryBalance);
+        // Skipping transaction creation for transfer refund, it will be created later in atomic journal in CLS
+        if ($refund->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            $refund->balance()->associate($refund->merchant->primaryBalance);
 
-        $this->validateMerchantBalance($refund, 'reversal');
+            $this->validateMerchantBalance($refund, 'reversal');
 
-        list($txn, $feesSplit) = (new Transaction\Core)->createFromRefund($refund);
+            list($txn, $feesSplit) = (new Transaction\Core)->createFromRefund($refund);
 
-        $this->repo->saveOrFail($txn);
+            $this->repo->saveOrFail($txn);
+        }
 
         $amount = $refund->getAmount();
 
@@ -220,6 +237,8 @@ trait Reversal
     {
         $results = [];
 
+        $atomicJournalPayload = [];
+
         foreach ($reversals as $reversal)
         {
             if ($reversal['transfer'] instanceof Transfer\Entity)
@@ -240,7 +259,7 @@ trait Reversal
 
             unset($reversal['transfer']);
 
-            $result = $this->mutex->acquireAndRelease(
+            list($result, $journalPayloads) = $this->mutex->acquireAndRelease(
                 $transfer->getId(),
                 function() use ($transfer, $reversal, $rearchRefund)
                 {
@@ -261,14 +280,26 @@ trait Reversal
 
                     $result = $this->refundPaymentAndReverseTransfer($transfer, $reversal, null, $rearchRefund);
 
-                    return $result;
+                    $reversalEntity = $result[0];
+                    $refundEntity = $result[1];
+
+                    $journalPayloads = [];
+                    // If reverse shadow is enabled for the merchant, we will create a bulk transaction message and append it to atomic journals array
+                    // Once all the reversals have been added to the payload, we create journals atomically along with source refund (if applicable).
+                    if($reversalEntity->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                    {
+                        $journalPayloads = (new ReverseShadowTransferReversalCore())->createBulkTransactionMessageForReversalAndRefundEntity($reversalEntity, $refundEntity);
+                    }
+
+                    return [$result, $journalPayloads];
                 });
 
             array_push($results, $result);
+            $atomicJournalPayload = array_merge($atomicJournalPayload, $journalPayloads);
 
         }
 
-        return $results;
+        return [$results, $atomicJournalPayload];
     }
 
     /**

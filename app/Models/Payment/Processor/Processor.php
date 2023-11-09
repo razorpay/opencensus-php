@@ -490,7 +490,7 @@ class Processor
     /**
      * @var Payment\Entity
      */
-    protected $payment;
+    public $payment;
 
     /**
      * @var Terminal\Entity
@@ -560,6 +560,8 @@ class Processor
     protected $secureCacheDriver;
 
     protected $sendDopplerFeedback = true;
+
+    public $isCustomerTransferRefund = false;
 
     /** @var RequestContextV2 */
     protected $requestContext;

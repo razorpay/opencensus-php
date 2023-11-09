@@ -256,6 +256,9 @@ class Constants
     const PG_LEDGER_REVERSE_SHADOW                  = 'pg_ledger_reverse_shadow';
     const JOURNAL_ID                                = 'journal_id';
     const FEE_ONLY_REVERSAL                         = 'fee_only_reversal';
+    const SPEED_DECISIONED                          = "speed_decisioned";
+    const FEE                                       = "fee";
+    const TAX                                       = "tax";
 
     // Upi Airtel Refund File
     const ORG_RRN                 = 'Org_RRN';

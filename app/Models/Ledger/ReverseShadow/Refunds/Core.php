@@ -47,38 +47,7 @@ class Core extends Base\Core
             RefundConstants::REFUND_ID  => $refund->getId(),
         ]);
 
-        $commission = $refund->getFee() - $refund->getTax();
-        $tax = $refund->getTax();
-
-        $merchant = $payment->merchant;
-
-        $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
-        $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
-
-        $discount = $this->getDiscountIfApplicable($payment, $refund->getAmount());
-
-        // Generate payload
-        if (($refund->isDirectSettlementWithoutRefund() === true) or
-            ($refund->isDirectSettlementRefund() === true))
-        {
-            $journalPayload = $this->createTransactionMessageForDSRefund($refund, $commission, $tax, $negativeLimit);
-        }
-        else if ($refund->payment->hasBeenCaptured() === false)
-        {
-            $journalPayload = $this->createTransactionMessageForAuthorizedRefund($refund, $discount);
-        }
-        else
-        {
-            $journalPayload = $this->createTransactionMessageForCapturedRefund($refund, $commission, $tax, $negativeLimit, $discount);
-        }
-
-        if ($journalPayload === null)
-        {
-            $this->trace->debug(TraceCode::NULL_JOURNAL_PAYLOAD_CREATED, [
-                "refund"    => $refund
-            ]);
-            return null;
-        }
+        $journalPayload = $this->createRefundJournalPayload($refund, $payment);
 
         try
         {
@@ -120,6 +89,47 @@ class Core extends Base\Core
         return $journalResponse;
     }
 
+    public function createRefundJournalPayload(RefundEntity $refund, PaymentEntity $payment)
+    {
+        $commission = $refund->getFee() - $refund->getTax();
+
+        $tax = $refund->getTax();
+
+        $merchant = $payment->merchant;
+
+        $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
+
+        $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
+
+        $discount = $this->getDiscountIfApplicable($payment, $refund->getBaseAmount());
+
+        // Generate payload
+        if (($refund->isDirectSettlementWithoutRefund() === true) or
+            ($refund->isDirectSettlementRefund() === true))
+        {
+            $journalPayload = $this->createTransactionMessageForDSRefund($refund, $commission, $tax, $negativeLimit);
+        }
+        else if ($refund->payment->hasBeenCaptured() === false)
+        {
+            $journalPayload = $this->createTransactionMessageForAuthorizedRefund($refund, $discount);
+        }
+        else
+        {
+            $journalPayload = $this->createTransactionMessageForCapturedRefund($refund, $commission, $tax, $negativeLimit, $discount);
+        }
+
+        if ($journalPayload === null)
+        {
+            $this->trace->debug(TraceCode::NULL_JOURNAL_PAYLOAD_CREATED, [
+                "refund"    => $refund
+            ]);
+
+            return null;
+        }
+
+        return $journalPayload;
+    }
+
     private function createTransactionMessageForDSRefund(RefundEntity $refund, $fee, $tax, $negativeLimit)
     {
         list($rule, $moneyParams) = $this->fetchMoneyParamsAndLedgerRulesForRefundsDirectSettlement($refund, $fee, $tax);
@@ -159,7 +169,7 @@ class Core extends Base\Core
 
     private function createTransactionMessageForAuthorizedRefund(RefundEntity $refund, $discount)
     {
-        $amount = abs($refund->getAmount() - $discount);
+        $amount = abs($refund->getBaseAmount() - $discount);
         $moneyParams = [
             Constants::AMOUNT       => strval($amount),
             Constants::BASE_AMOUNT  => strval($amount)
@@ -179,7 +189,7 @@ class Core extends Base\Core
         $rule = null;
         $moneyParams = [];
 
-        $amount = abs($refund->getAmount() - $discount);
+        $amount = abs($refund->getBaseAmount() - $discount);
 
         $moneyParams[Constants::BASE_AMOUNT]    = strval($amount);
         $moneyParams[Constants::MERCHANT_BALANCE_LIMIT] = strval($negativeLimit);
@@ -337,7 +347,7 @@ class Core extends Base\Core
 
     private function fetchDSWithRefundTerminalInstantSpeedRefundCredits(RefundEntity $refund, $fee, $tax)
     {
-        $amount = abs($refund->getAmount());
+        $amount = abs($refund->getBaseAmount());
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_INSTANT_REFUND_CREDITS;
         $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITH_REFUND;
@@ -354,7 +364,7 @@ class Core extends Base\Core
 
     private function fetchDSWithRefundTerminalInstantSpeedMerchantBalance(RefundEntity $refund, $fee, $tax)
     {
-        $amount = abs($refund->getAmount());
+        $amount = abs($refund->getBaseAmount());
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_INSTANT_REFUND;
         $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITH_REFUND;
@@ -370,7 +380,7 @@ class Core extends Base\Core
     }
     private function fetchDSWithoutRefundTerminalInstantSpeedRefundCredits(RefundEntity $refund, $fee, $tax)
     {
-        $amount = abs($refund->getAmount());
+        $amount = abs($refund->getBaseAmount());
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_INSTANT_REFUND_CREDITS;
         $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
@@ -386,7 +396,7 @@ class Core extends Base\Core
 
     private function fetchDSWithoutRefundTerminalInstantSpeedMerchantBalance(RefundEntity $refund, $fee, $tax)
     {
-        $amount = abs($refund->getAmount());
+        $amount = abs($refund->getBaseAmount());
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_INSTANT_REFUND;
         $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
@@ -402,7 +412,7 @@ class Core extends Base\Core
     }
     private function fetchDSWithoutRefundTerminalNormalSpeedRefundCredits (RefundEntity $refund)
     {
-        $amount = abs($refund->getAmount());
+        $amount = abs($refund->getBaseAmount());
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_NORMAL_REFUND_CREDITS;
         $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
@@ -415,7 +425,7 @@ class Core extends Base\Core
     }
     private function fetchDSWithoutRefundTerminalNormalSpeedMerchantBalance(RefundEntity $refund)
     {
-        $amount = abs($refund->getAmount());
+        $amount = abs($refund->getBaseAmount());
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_NORMAL_REFUND;
         $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
 
@@ -429,7 +439,7 @@ class Core extends Base\Core
 
     private function fetchAutoDSWithoutRefundTerminalNormalSpeedRefundCredits(RefundEntity $refund)
     {
-        $amount = abs($refund->getAmount());
+        $amount = abs($refund->getBaseAmount());
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::AUTO_REFUND_DIRECT_SETTLEMENT_CREDITS_NORMAL;
         $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
@@ -443,7 +453,7 @@ class Core extends Base\Core
     }
     public  function fetchAutoDSWithoutRefundTerminalNormalSpeedMerchantBalance(RefundEntity $refund)
     {
-        $amount = abs($refund->getAmount());
+        $amount = abs($refund->getBaseAmount());
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::AUTO_REFUND_DIRECT_SETTLEMENT_NORMAL;
         $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;

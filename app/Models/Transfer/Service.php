@@ -578,7 +578,7 @@ class Service extends Base\Service
         );
 
         foreach ($orderIds as $orderId)
-        {        
+        {
             $order = $this->repo->order->findOrFail($orderId);
 
             if (empty($order) === false)
@@ -1608,5 +1608,10 @@ class Service extends Base\Service
     public function createTransactionForTransfer(array $input)
     {
         return $this->core->createInternalTransactionForTransfer($input);
+    }
+
+    public function createTransferReversalTransactions(array $input)
+    {
+        return $this->core->createTransferReversalTransactions($input);
     }
 }

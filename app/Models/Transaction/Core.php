@@ -1038,7 +1038,7 @@ class Core extends Base\Core
      * @param  Reversal\Entity   $reversal
      * @return Entity
      */
-    public function createFromTransferReversal(Reversal\Entity $reversal)
+    public function createFromTransferReversal(Reversal\Entity $reversal, $txnId = null)
     {
         $txn = new Transaction\Entity;
 
@@ -1064,7 +1064,15 @@ class Core extends Base\Core
             Transaction\Entity::CHANNEL         => $reversal->merchant->getChannel(),
         ];
 
-        $txn->fillAndGenerateId($data);
+        if($txnId !==  null)
+        {
+            $txn->fill($data);
+            $txn->setId($txnId);
+        }
+        else
+        {
+            $txn->fillAndGenerateId($data);
+        }
 
         $txn->merchant()->associate($reversal->merchant);
 

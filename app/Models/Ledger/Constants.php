@@ -182,6 +182,7 @@ class Constants
     const CREATE_REFUND_TXN_API                    = 'create-payment-transaction-event';
     const CREATE_TRANSACTION_FOR_ADJUSTMENT        = 'create_transaction_for_adjustment';
     const CREATE_TRANSACTION_FOR_DIRECT_TRANSFER   = 'create_transaction_for_direct_transfer';
+    const CREATE_TRANSACTION_FOR_TRANSFER_REVERSAL = 'create_transaction_for_transfer_reversal';
 
     const PRODUCER_KEY  = 'producer_key';
     const TOPIC         = 'topic';
@@ -205,6 +206,10 @@ class Constants
     const DEBIT_TRANSACTION_ID  = 'debit_transaction_id';
     const CREDIT_TRANSACTION_ID = 'credit_transaction_id';
 
+    const REVERSAL_ID           = 'reversal_id';
+    const DUMMY_REFUND_ID       = 'refund_id';
+    const CUSTOMER_REFUND_ID    = 'customer_refund_id';
+
 
     const CREDITS_PREFIX    = "credits_";
     const DATA              = "data";
@@ -214,4 +219,6 @@ class Constants
     const ENTITY_ID         = "entity_id";
 
     const AMOUNT_CREDITS_EXPIRY_EVENT   = "amount_credits_expiry";
+
+    const RESPONSE   = "response";
 }

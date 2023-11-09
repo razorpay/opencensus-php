@@ -83,6 +83,15 @@ class TransferController extends Controller
         return ApiResponse::json($reversal);
     }
 
+    public function createTransferReversalTransactions()
+    {
+        $input = Request::all();
+
+        $reversalTransactions = $this->service()->createTransferReversalTransactions($input);
+
+        return ApiResponse::json($reversalTransactions);
+    }
+
     public function postLinkedAccountTransferReversal(string $id)
     {
         $input = Request::all();
