@@ -2629,7 +2629,7 @@ class Processor
 
             $dimensions[Metric::LABEL_IS_REARCH] = $isReArchPayment;
 
-            if (isset($this->merchant) && $this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::RAAS))
+            if (empty($payment) === true && isset($this->merchant) && $this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::RAAS))
             {
                 $dimensions[Metric::LABEL_OPTIMIZER] = true;
             }
