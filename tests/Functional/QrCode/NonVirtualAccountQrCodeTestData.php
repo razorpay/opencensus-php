@@ -551,6 +551,21 @@ return [
         ],
     ],
 
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquired' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testQrStatusCheckDispatchViaFetchPaymentsApiWithQrPayments' => [
         'request' => [
             'method'  => 'GET',

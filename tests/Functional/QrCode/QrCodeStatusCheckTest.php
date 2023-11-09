@@ -1368,4 +1368,67 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::assertPushed(QrStatusCheck::class, 0);
     }
+
+    public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquired()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_icici_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@icici',
+                'gateway_merchant_id'  => '403343',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $currentTime = Carbon::now();
+
+        Carbon::setTestNow($currentTime);
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
+            = str_after($qrCode['id'], 'qr_');
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
+
+        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+
+        Carbon::setTestNow($currentTime->addSeconds(190));
+
+        $this->startTest();
+        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
+        Carbon::setTestNow($currentTime->addSeconds(30));
+        $this->startTest();
+
+        // Assert that only one job was pushed.
+        Queue::assertPushed(QrStatusCheck::class, 1);
+    }
 }

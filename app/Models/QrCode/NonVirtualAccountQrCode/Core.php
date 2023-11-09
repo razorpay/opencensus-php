@@ -27,6 +27,8 @@ use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 
 class Core extends QrCode\Core
 {
+    const QR_STATUS_CHECK_MUTEX_TIMEOUT  = 60; // 1 min timeout
+
     public function __construct()
     {
         parent::__construct();
@@ -264,19 +266,34 @@ class Core extends QrCode\Core
 
         try
         {
-            // We are only dispatching in live mode on prod.
-            if ((($this->isEnvironmentProduction() === true) and ($this->isLiveMode() === true)) or
-                ($this->isEnvironmentProduction() === false))
-            {
-                QrStatusCheck::dispatch($this->mode, $id);
+            $mutex         = $this->app['api.mutex'];
+            $mutexAcquired = $mutex->acquire("qr_status_check_" . $id,
+                                             self::QR_STATUS_CHECK_MUTEX_TIMEOUT, strict: true);
 
-                $this->trace->info(
-                    TraceCode::QR_STATUS_CHECK_MESSAGE_DISPATCHED,
-                    [
-                        'id'  => $id,
-                        'env' => $this->env,
-                    ]
+            if ($mutexAcquired === false)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                    null,
+                    ['qr_code' => $id]
                 );
+            }
+            else
+            {
+                // We are only dispatching in live mode on prod.
+                if ((($this->isEnvironmentProduction() === true) and ($this->isLiveMode() === true)) or
+                    ($this->isEnvironmentProduction() === false))
+                {
+                    QrStatusCheck::dispatch($this->mode, $id);
+
+                    $this->trace->info(
+                        TraceCode::QR_STATUS_CHECK_MESSAGE_DISPATCHED,
+                        [
+                            'id'  => $id,
+                            'env' => $this->env,
+                        ]
+                    );
+                }
             }
         }
         catch (\Throwable $e)
