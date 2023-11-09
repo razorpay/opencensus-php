@@ -43,4 +43,15 @@ describe('BalanceCard', () => {
     const amountDiv = screen.getByLabelText('amount');
     expect(amountDiv).toHaveClass('amount-current-balance negative-balance');
   });
+
+  test('should render Malaysian Currency', () => {
+    const current_balance = {
+      data: {
+        balance: 10099,
+      },
+    };
+    render(<App current_balance={current_balance} user={user} balanceCurrency={'MYR'} />);
+    const currencySymbol = screen.getByText('RM');
+    expect(currencySymbol).toHaveTextContent('RM');
+  });
 });

@@ -48,4 +48,26 @@ describe('BreakupModal.js', () => {
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     });
   });
+
+  test('should render RM as currency symbol when currency passed is MYR', async () => {
+    server.use(handlers.breakupModalSuccessHandler());
+
+    render(<BreakupModal {...props} />, {
+      initialState: {
+        ...initialState,
+        home: {
+          settlement_amount: {
+            data: {
+              settlement_currency: 'MYR',
+            },
+          },
+        },
+      },
+    });
+    await waitFor(() => {
+      const currencySymbols = screen.getAllByText('RM');
+      const currencySymbol = currencySymbols[1];
+      expect(currencySymbol).toHaveTextContent('RM');
+    });
+  });
 });

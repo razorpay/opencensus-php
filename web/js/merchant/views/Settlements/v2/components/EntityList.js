@@ -78,7 +78,7 @@ const sortKeys = (item, user) => {
   return KEYS;
 };
 
-const ListItem = ({ item, source, user, terminalProviders }) => {
+const ListItem = ({ item, source, user, terminalProviders, currency }) => {
   const { selfServeActionName, page, INIT_POINT, INIT_PAGE } =
     getSelfServeDetailForSettlementDetails(source);
 
@@ -164,7 +164,6 @@ const ListItem = ({ item, source, user, terminalProviders }) => {
   } = item;
 
   const KEYS = sortKeys(item, user);
-  const currency = user.merchant.currency;
 
   return (
     <EntityItemRow id={id}>
@@ -304,6 +303,7 @@ const EntityList = (props) => {
     activeTab,
     user,
     terminalProviders,
+    currency
   } = props;
 
   // prettier-ignore
@@ -476,6 +476,7 @@ const EntityList = (props) => {
                     source={activeTab.trim()}
                     user={user}
                     terminalProviders={terminalProviders}
+                    currency={currency}
                   />
                 ))}
               </TableBody>

@@ -235,6 +235,68 @@ const scheduledPricing = {
   fee_bearer: 'customer',
 };
 
+const settlementMockRes = {
+  status_code: 200,
+  success: true,
+  data: {
+    entity: 'collection',
+    count: 5,
+    has_more: true,
+    items: [
+      {
+        id: 'setl_MpTrOLuUiK55Ce',
+        entity: 'settlement',
+        amount: 194,
+        status: 'processed',
+        fees: 0,
+        tax: 0,
+        utr: null,
+        created_at: 1697590809,
+      },
+      {
+        id: 'setl_Mp8w6M7e4lX6rL',
+        entity: 'settlement',
+        amount: 0,
+        status: 'processed',
+        fees: 0,
+        tax: 0,
+        utr: null,
+        created_at: 1697517122,
+      },
+      {
+        id: 'setl_MomvZtw5mEl5yx',
+        entity: 'settlement',
+        amount: 178,
+        status: 'processed',
+        fees: 0,
+        tax: 0,
+        utr: null,
+        created_at: 1697439617,
+      },
+      {
+        id: 'setl_MnAGDHdVNnkU49',
+        entity: 'settlement',
+        amount: 100,
+        status: 'processed',
+        fees: 0,
+        tax: 0,
+        utr: null,
+        created_at: 1697085106,
+      },
+      {
+        id: 'setl_Mn6eblRIEnEYXI',
+        entity: 'settlement',
+        amount: 114,
+        status: 'processed',
+        fees: 0,
+        tax: 0,
+        utr: null,
+        created_at: 1697072405,
+      },
+    ],
+  },
+};
+
 export {
   settlementsInfo,
   settleBreakupDetails,
@@ -245,4 +307,5 @@ export {
   scheduledPricing,
   schedule,
   settleBreakupDetailsWithNewBreakup,
+  settlementMockRes,
 };

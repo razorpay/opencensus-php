@@ -129,4 +129,14 @@ describe('SettlementInfo', () => {
     expect(screen.getByText('Bank Settlement Status')).toBeInTheDocument();
     expect(screen.getByTestId('status-label')).toBeEmptyDOMElement();
   });
+
+  test('should render MYR currency for Curlec orgs', async () => {
+    renderApp({ props: { currency: 'MYR' } });
+    await waitForLoadingToFinish();
+    const settlementAmount = screen.getAllByTestId('settlement-amount');
+
+    settlementAmount.forEach((element) => {
+      expect(element).toHaveTextContent('MYR');
+    });
+  });
 });

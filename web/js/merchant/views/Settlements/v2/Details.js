@@ -19,7 +19,7 @@ const SettlementDetails = (props) => {
   const [detailsCollapse, setdetailsCollapse] = useState(true);
   const [checkAmounts, setCheckAmounts] = useState({});
   const { match } = props; // better start destructuring props here
-  const currency = props.user.merchant.currency;
+  const currency = props.settlementCurrency;
 
   useEffect(() => {
     const { user, fetchProviders, match } = props;
@@ -135,10 +135,10 @@ const SettlementDetails = (props) => {
           </div>
           <div class="panel-body">
             <div class="entity-details">
-              <SettlementInfo settlementId={settlementId} />
+              <SettlementInfo settlementId={settlementId} currency={currency} />
             </div>
             <div class="item-details">
-              <SettlementBreakup settlementId={settlementId} />
+              <SettlementBreakup settlementId={settlementId} currency={currency} />
             </div>
           </div>
         </div>
@@ -163,7 +163,7 @@ const SettlementDetails = (props) => {
       <div />
 
       <div class="content-sm txn-details settlements-v2 entity-list-table">
-        <SettlementEntities settlementId={settlementId} />
+        <SettlementEntities settlementId={settlementId} currency={currency} />
       </div>
     </React.Fragment>
   );
@@ -207,6 +207,7 @@ const mapStateToProps = (state) => {
     settlement: settlement.settlement,
     mode: session.mode,
     user: session.user,
+    settlementCurrency: state?.home?.settlement_amount.data?.settlement_currency,
   };
 };
 

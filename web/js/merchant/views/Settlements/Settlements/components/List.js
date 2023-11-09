@@ -16,6 +16,7 @@ const SettlementsListItem = ({
   user,
   terminalProviders,
   initiatePage,
+  currency,
 }) => {
   const screen = initiatePage?.split('.')[0] || 'Settlements';
   const page = initiatePage?.split('.')[1];
@@ -28,8 +29,6 @@ const SettlementsListItem = ({
   if (screen) selfServeInitiateData.screen = screen;
   if (page) selfServeInitiateData.page = page;
   if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
-
-  const currency = user.merchant.currency;
 
   const handleTracking = () => {
     analyticsTrack({
@@ -65,7 +64,7 @@ const SettlementsListItem = ({
           />
         </td>
       )}
-      <td className="text-right">
+      <td className="text-right" data-testid="settlement-amount">
         <Amount value={settlement.amount} currency={currency} />
       </td>
       <td className="text-right">
@@ -97,6 +96,7 @@ export default (props) => {
     user,
     terminalProviders,
     selfServeActionsPage = 'Settlements.Settlements',
+    settlementCurrency,
   } = props;
 
   return (
@@ -147,6 +147,7 @@ export default (props) => {
               user={user}
               terminalProviders={terminalProviders}
               initiatePage={selfServeActionsPage}
+              currency={settlementCurrency}
             />
           ))}
         </TableBody>

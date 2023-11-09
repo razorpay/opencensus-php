@@ -13,7 +13,12 @@ jest.mock('common/ui/Time', () => ({
 
 jest.mock('common/ui/Amount', () => ({
   __esModule: true,
-  default: ({ value }) => <div data-testid="settlement-amount">{value}</div>,
+  default: ({ value, currency }) => (
+    <div data-testid="settlement-amount">
+      {currency}
+      {value}
+    </div>
+  ),
 }));
 
 jest.mock('merchant/views/Settlements/v2/util', () => ({
@@ -34,8 +39,8 @@ const enableCustomSettlementsState = {
   session: { user: { enableCustomSettlements: true, merchant: { currency: 'INR' } } },
 };
 
-const renderApp = ({ initialState = {} } = {}) => {
-  return render(<SettlementInfo settlementId="test-settlement-id" />, {
+const renderApp = ({ initialState = {}, props = { currency: 'INR' } } = {}) => {
+  return render(<SettlementInfo settlementId="test-settlement-id" {...props} />, {
     initialState: { ...defaultState, ...initialState },
   });
 };

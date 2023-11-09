@@ -473,8 +473,7 @@ class AnalyticsDesktop extends Component {
       showInstantActivation && config.config && !config.config.hasPersonalised;
 
     const nextSettlement = !settlement_amount.data.next_settlement_time;
-    const { no_settlement } = settlement_amount.data;
-
+    const { no_settlement, settlement_currency: settlementCurrency } = settlement_amount.data;
     const attemptsLeft = ondemand_restrictions && ondemand_restrictions.data.attempts_left;
     const isOndemandRestrictionsLoading = ondemand_restrictions && ondemand_restrictions.loading;
     const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
@@ -1043,6 +1042,7 @@ class AnalyticsDesktop extends Component {
                       user={this.props.user}
                       currentBalance={current_balance}
                       onSelect={this.showOndemandSettlementForm}
+                      settlementCurrency={settlementCurrency}
                     />
                     {/* </LazyLoad> */}
                   </div>

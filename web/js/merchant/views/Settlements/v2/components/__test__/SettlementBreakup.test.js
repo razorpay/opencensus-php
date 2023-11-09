@@ -12,8 +12,8 @@ import {
 import { getFormattedAmount } from 'common/utils/rzp-utils';
 
 describe('SettlementBreakup', () => {
-  const renderApp = () => {
-    return render(<SettlementBreakup settlementId="test-settlement-id" />, {
+  const renderApp = (props = {}) => {
+    return render(<SettlementBreakup settlementId="test-settlement-id" {...props} />, {
       initialState: {
         settlement: {
           breakupDetails: { loading: true, items: [], error: null, isBreakupNew: null },
@@ -70,5 +70,13 @@ describe('SettlementBreakup', () => {
     expect(screen.getByText(/Something went wrong/i)).toBeInTheDocument();
     expect(screen.queryByText(/Total credit amount/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Total debit amount/i)).not.toBeInTheDocument();
+  });
+
+  test('should show RM when currency passed is MYR', async () => {
+    renderApp({ currency: 'MYR' });
+    await waitForLoadingToFinish();
+    const currencySymbols = screen.getAllByText('RM');
+    const currencySymbol = currencySymbols[1];
+    expect(currencySymbol).toHaveTextContent('RM');
   });
 });

@@ -10,10 +10,8 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 const SettlementBreakup = (props) => {
   const {
     breakupDetails: { items, isBreakupNew, loading, error },
-    user,
+    currency,
   } = props;
-  const currency = user.merchant.currency;
-
   useEffect(() => {
     props.fetchBreakupDetails({
       id: props.settlementId,

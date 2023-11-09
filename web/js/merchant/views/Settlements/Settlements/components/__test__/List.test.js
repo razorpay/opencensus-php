@@ -6,7 +6,8 @@ import { props } from 'merchant/views/Settlements/Settlements/components/__test_
 import { fireEvent } from '@testing-library/react';
 
 describe('List.js', () => {
-  const renderApp = () => render(<SettlementsList {...props} />, { showModal: true });
+  const renderApp = (newProps = {}) =>
+    render(<SettlementsList {...props} {...newProps} />, { showModal: true });
 
   test('should render table columns', () => {
     renderApp();
@@ -32,5 +33,12 @@ describe('List.js', () => {
     renderApp();
     const stlId = screen.getByText('setl_K1QFNZ3mxXK0A2');
     expect(stlId).toBeInTheDocument();
+  });
+
+  test('should render RM as currency symbol for malaysia', () => {
+    const props = { settlementCurrency: 'MYR' };
+    renderApp(props);
+    const amountCurrency = screen.getByTestId('settlement-amount').querySelector('.rzp-currency');
+    expect(amountCurrency).toHaveTextContent('RM');
   });
 });

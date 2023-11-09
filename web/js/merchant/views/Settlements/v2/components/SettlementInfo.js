@@ -36,6 +36,7 @@ const SettlementInfo = (props) => {
     showNotification,
     fetchIsAdminAsMerchant,
     org,
+    currency,
   } = props;
   const splitz = useSplitzService();
   const [state, setState] = useState({
@@ -44,7 +45,6 @@ const SettlementInfo = (props) => {
     bankSettleStatus: '',
     showCustomSettlDetails: false,
   });
-  const currency = user.merchant.currency;
   const orgCode = org?.custom_code || 'rzp';
 
   const getCustomSettleDetails = () => {

@@ -74,13 +74,15 @@ const SettlementsHeaderV2 = ({
   const [timeDiff, setTimeDiff] = useState(0);
 
   const isNodalAccountBalanceLowBlocked = settleNowDisabled?.data?.blocked;
-
-  const no_settlement = settlement_amount?.data?.no_settlement;
+  const {
+    settlement_currency: settlementCurrency,
+    balance_currency: balanceCurrency,
+    no_settlement,
+  } = settlement_amount?.data;
 
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
   const isOnHold = no_settlement?.on_hold;
   const isSettlementOnHold = isOnTemporaryHold || isOnHold;
-  const currency = user.merchant.currency;
   const docHref = useMemo(() => getCustomURL('http://razorpay.com/settlement'), []);
   const { isConfigTagEnabled } = useI18Service();
 
@@ -240,22 +242,23 @@ const SettlementsHeaderV2 = ({
             esOndemandSettlementEnabled={esOndemandSettlementEnabled}
             checkIfFirstEverSettlement={checkIfFirstEverSettlement}
             isNodalAccountLowBalanceBlocked={isNodalAccountBalanceLowBlocked}
+            balanceCurrency={balanceCurrency}
           />
           <SettlementDueTodayCard
             settlementsList={previousSettlementsList}
             settlementConfig={settlementConfig}
-            currency={currency}
+            currency={settlementCurrency}
           />
           <PreviousSettlementCard
             settlementsList={previousSettlementsList}
             settlementConfig={settlementConfig}
-            currency={currency}
+            currency={settlementCurrency}
           />
           <UpcomingSettlementCard
             current_balance={current_balance}
             next_settlement={settlement_amount?.data}
             settlementConfig={settlementConfig}
-            currency={currency}
+            currency={settlementCurrency}
           />
         </SettlementSummary>
       </div>

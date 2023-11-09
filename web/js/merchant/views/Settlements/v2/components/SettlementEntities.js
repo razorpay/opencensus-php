@@ -49,6 +49,7 @@ const SettlementEntities = (props) => {
           breakupDetails={props.breakupDetails}
           activeTab={activeTab}
           settlementId={props.settlementId}
+          currency={props.currency}
         />
       ) : (
         <div class="div--loading">

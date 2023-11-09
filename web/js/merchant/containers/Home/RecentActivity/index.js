@@ -28,7 +28,7 @@ const shouldDisplayCompact = (windowWidth) => {
 
 const DEFAULT_PARAMS = { count: 5 };
 
-const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact, merchantCurrency }) => {
+const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact, settlementCurrency }) => {
   const tabMeta = tabsMeta[tabName];
 
   return (
@@ -40,14 +40,9 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact, merchant
 
         let value = record[columnMeta.recordKey];
 
-        /** At the moment settlement comes from API ledger where
-         *  there is no currency stored against settlements reports,
-         *  that is why merchant currency is being used, incase BE
-         *  doesn't provide currency details
-         */
         value =
           typeof columnMeta.transfomer === 'function'
-            ? columnMeta.transfomer(value, record, tabName, displayCompact, merchantCurrency)
+            ? columnMeta.transfomer(value, record, tabName, displayCompact, settlementCurrency)
             : value;
 
         if (columnMeta.recordKey === 'id') {
@@ -221,7 +216,7 @@ class RecentActivity extends Component {
     const numColumns = tabsMeta[selectedTab].columns.length;
     const selectedTabTitle = titleCase(selectedTab);
     let body = null;
-    const merchantCurrency = this.props.user.merchant.currency;
+    const settlementCurrency = this.props.settlementCurrency;
 
     if (selectedTabData.loading || selectedTabData.items.length === 0) {
       let noRecordsFound = `No ${selectedTab} found.`;
@@ -246,7 +241,7 @@ class RecentActivity extends Component {
             tabTitle={selectedTabTitle}
             sectionTitle={this.props.sectionTitle}
             displayCompact={displayCompact}
-            merchantCurrency={merchantCurrency}
+            settlementCurrency={settlementCurrency}
           />
         );
       });

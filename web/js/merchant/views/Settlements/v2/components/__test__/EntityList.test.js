@@ -337,5 +337,18 @@ describe('EntityList', () => {
       const entityRow = getEntityRows()[0];
       expect(entityRow.children).toHaveLength(columnsLengthWithoutSettledByHeader);
     });
+
+    test('should render RM as symbol for MYR currency', async () => {
+      server.use(transactionDetailsSuccessHandler([settledByItem]));
+      renderApp({
+        props: {
+          currency: 'MYR',
+        },
+      });
+      await waitForLoadingToFinish();
+      const currencySymbols = screen.getAllByText('RM');
+      const currencySymbol = currencySymbols[1];
+      expect(currencySymbol).toHaveTextContent('RM');
+    });
   });
 });

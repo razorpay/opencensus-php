@@ -405,7 +405,9 @@ class SettlementsListContainer extends ListContainer {
       terminalProviders,
       selfServeActionsPage,
       location,
+      settlement_amount,
     } = this.props;
+    const settlementCurrency = settlement_amount?.data?.settlement_currency;
 
     let balance = current_balance.data.balance || 0;
 
@@ -469,6 +471,7 @@ class SettlementsListContainer extends ListContainer {
                 user={user}
                 terminalProviders={terminalProviders}
                 selfServeActionsPage={selfServeActionsPage}
+                settlementCurrency={settlementCurrency}
               />
 
               <Pager
