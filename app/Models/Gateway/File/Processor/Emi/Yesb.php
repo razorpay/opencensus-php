@@ -51,6 +51,11 @@ class Yesb extends Base
 
         foreach ($input['items'] as $emiPayment)
         {
+            if ($emiPayment->terminal->isOptimizer())
+            {
+                continue;
+            }
+            
             $emiPlan = $emiPayment->emiPlan;
 
             $emiTenure = $emiPlan['duration'];
