@@ -6,6 +6,7 @@ use App;
 
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Constants\Environment;
 
 class Config
@@ -91,12 +92,19 @@ class Config
         // test - if the mode is test, to enable proxysql service or sidecar.
         $proxySqlEnable = env(self::PROXY_SQL_ENABLE, self::DISABLE);
 
+        $mode = (empty($this->app['request.ctx']) === true) ? Mode::LIVE : $this->app['request.ctx']->getMode();
+
+        $this->app['trace']->count(Metric::PROXYSQL_OR_DB_CONNECTION, [
+            "proxysql_enable" => $proxySqlEnable,
+            "mode" => $mode,
+            "job_name" => app('worker.ctx')->getJobName(),
+            "host" => implode("-", array_slice(explode("-", env("HOSTNAME")), 0, -2)),
+        ]);
+
         if($proxySqlEnable === self::DISABLE)
         {
             return;
         }
-
-        $mode = (empty($this->app['request.ctx']) === true) ? Mode::LIVE : $this->app['request.ctx']->getMode();
 
         $this->isProxySqlServiceActive = $this->canUseProxySqlService($proxySqlEnable, $mode);
 

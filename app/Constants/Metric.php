@@ -186,4 +186,6 @@ class Metric
     const PG_LEDGER_ACK_WORKER_FAILURE                          = 'pg_ledger_ack_worker_failure';
     const DB_TRANSACTION                                        = 'db_transaction';
 
+    const PROXYSQL_OR_DB_CONNECTION                             = 'proxysql_or_db_connection';
+
 }
