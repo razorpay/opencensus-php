@@ -92,7 +92,7 @@ const CreateCouponForm: React.FC<{
               endTime: moment().add(1, 'days').endOf('day').format('h:mm a'),
               isLimitedUseage: false,
             },
-            status: 'created',
+            status: 'published',
           }));
         }
       };

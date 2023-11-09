@@ -67,10 +67,9 @@ export const listCoupons = (payload: any = {}): any => {
     desc_order: sort_by === 'date-desc',
     count,
     skip,
-    coupon_display: true,
+    coupon_display: display === 'all' ? '' : display === 'yes' ? 'true' : 'false',
     status: status === 'all' ? '' : status,
     type: type === 'all' ? '' : type,
-    display: display === 'all' ? '' : display,
     code,
   };
   return merchantFetch({
