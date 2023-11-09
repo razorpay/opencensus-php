@@ -306,6 +306,21 @@ jobs:
           API_HEADER: "Accept: application/vnd.github.v3+json"
         run: |
           cat build_image_workflow_log.txt
+      # Extract the list of changed files
+      - name: Extract files changed in the PR
+        id: pr_files
+        run: |
+          PR_URL="${{ github.event.pull_request.url }}"
+          echo "Extracting files changed in PR $PR_URL"
+          FILES_CHANGED=$(curl -s -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github.v3.raw" "$PR_URL/files" | jq -r '[.[] | .filename]')
+          echo "$FILES_CHANGED"
+          FILES_CHANGED_JSON=$(echo $FILES_CHANGED | jq -c .)
+          echo "$FILES_CHANGED_JSON"
+          # Convert the array to a JSON string
+           echo "::set-output name=files_changed_json::$FILES_CHANGED_JSON"
+        shell: bash
+      - name: Print Files Changed
+        run: echo ${{ steps.pr_files.outputs.files_changed_json }}
       - name: Run BVT Suite on Devstack with Successful Build Image Workflow
         if: env.WORKFLOW_STATUS == 'success'
         env:
@@ -316,6 +331,7 @@ jobs:
           GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           COMMIT_ID: ${{ steps.pr_info.outputs.latest_commit }}
           SKIP_DEVSTACK: false
+          FILES_CHANGED: ${{ steps.pr_files.outputs.files_changed_json }}
         run: |
           sh ./.github/actions/triggerDevstack.sh
       - name: Run ITF E2E Tests on Devstack with Successful Build Image Workflow
