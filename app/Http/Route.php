@@ -4525,6 +4525,7 @@ class Route
         '1cc_shopify_update_liquid_files'           => ['put',        '1cc/admin/merchants/{id}/shopify/theme/liquid_files',                  'OneClickCheckoutController@handleAdminDashboardThemeAutomationReq'                ],
         '1cc_save_analytics_integration_event_configs'          => ['post',       '1cc/analytics_integration/event_configs',                                   'OneClickCheckoutController@handleMerchantDashboardReq'           ],
         '1cc_save_analytics_integration_accounts'               => ['post',       '1cc/analytics_integration/accounts',                                        'OneClickCheckoutController@handleMerchantDashboardReq'           ],
+        '1cc_analytics_generate_report'                         => ['post',       '1cc/magic/merchant/analytics/ingest/{provider}',                            'OneClickCheckoutController@handleMerchantDashboardReq'           ],
         '1cc_fetch_analytics_integration_configs'               => ['get',        '1cc/analytics_integration/configs',                                         'OneClickCheckoutController@handleMerchantDashboardReq'           ],
         '1cc_delete_analytics_integration_accounts'             => ['delete',     '1cc/analytics_integration/accounts/{id}',                                   'OneClickCheckoutController@handleMerchantDashboardReq'           ],
         '1cc_analytics_integration_get_oauth_redirect_url'      => ['post',       '1cc/analytics_integration/oauth/redirect_url',                              'OneClickCheckoutController@handleMerchantDashboardReq'           ],
@@ -8934,6 +8935,8 @@ class Route
          '1cc_shopify_fetch_liquid_files',
          '1cc_shopify_update_liquid_files',
 
+         '1cc_analytics_generate_report',
+
          //i18n Dashboard UI Configs based on Country
         'edit_country_dashboard_config',
         'get_country_dashboard_config',
@@ -10494,6 +10497,7 @@ class Route
         'admin_1cc_whitelist_coupons'              => Permission::MAGIC_OPS,
         '1cc_shopify_fetch_liquid_files'           => Permission::MAGIC_OPS,
         '1cc_shopify_update_liquid_files'          => Permission::MAGIC_OPS,
+        '1cc_analytics_generate_report'            => Permission::MAGIC_OPS,
 
         'get_all_country_dashboard_config'             => Permission::VIEW_COUNTRY_DASHBOARD_CONFIGS,
         'get_country_dashboard_config'                 => Permission::VIEW_COUNTRY_DASHBOARD_CONFIGS,
@@ -15461,6 +15465,7 @@ class Route
 
             '1cc_save_analytics_integration_event_configs',
             '1cc_save_analytics_integration_accounts',
+            '1cc_analytics_generate_report',
             '1cc_fetch_analytics_integration_configs',
             '1cc_delete_analytics_integration_accounts',
             '1cc_analytics_integration_get_oauth_redirect_url',
