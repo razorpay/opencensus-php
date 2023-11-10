@@ -60,6 +60,11 @@ class Application extends \Illuminate\Foundation\Application
         return Environment::isEnvironmentQA($this->env);
     }
 
+    public function isEnvironmentBeta(): bool
+    {
+        return Environment::isEnvironmentBeta($this->env);
+    }
+
     public function isEnvironmentProduction(): bool
     {
         return ($this->env === Environment::PRODUCTION);

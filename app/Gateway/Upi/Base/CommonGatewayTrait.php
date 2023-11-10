@@ -905,7 +905,7 @@ trait CommonGatewayTrait
             return false;
         }
 
-        return ((app()->isEnvironmentQA() === true) and (str_ends_with($rzpTestCaseID,'_rearchUPS') === true));
+        return (((app()->isEnvironmentQA() === true) or (app()->isEnvironmentBeta() === true)) and (str_ends_with($rzpTestCaseID,'_rearchUPS') === true));
     }
 
     /**

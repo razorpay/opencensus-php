@@ -5047,7 +5047,7 @@ class Processor
             return false;
         }
 
-        return ((app()->isEnvironmentQA() === true) &&
+        return (((app()->isEnvironmentQA() === true) or (app()->isEnvironmentBeta() === true)) &&
                 (str_ends_with($rzpTestCaseID,'_rearchUPSPayments')) === true);
     }
 
