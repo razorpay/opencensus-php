@@ -785,6 +785,7 @@ class Entity extends Base\PublicEntity
         {
             $balance = optional($this->balance);
 
+            // Todo:: RX Wallet Payout Use Case: Add check for RX wallet Account type too
             if (($balance->isAccountTypeDirect() === true) and
                 ($balance->isTypeBanking() === true) and
                 ($balance->getChannel() === Channel::RBL) and

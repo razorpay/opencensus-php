@@ -763,6 +763,8 @@ class Service extends Base\Service
                     break;
                 }
             }
+
+            // Todo:: RX Wallet Payout Use Case: Get Balance and balance_last_fetched_at from PS for banking account
         }
 
         $shouldFetchCardDetails = ((is_array($input[Entity::ACCOUNT_TYPE]) === true) and

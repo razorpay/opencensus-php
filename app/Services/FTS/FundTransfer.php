@@ -465,6 +465,23 @@ class FundTransfer extends Base
                 $this->addRequestMetaToTransferBlock($request, $source);
             }
 
+            // Todo:: RX Wallet Payout Use Case: Send Purpose Type of Payout to FTS
+            if ($sourceBalanceAccountType === Balance\AccountType::RX_WALLET)
+            {
+                $requestMeta = [
+                    Constants::RX_WALLET_PURPOSE => $this->fta->getPurpose(),
+                ];
+
+                if (isset($request[Constants::TRANSFER][Constants::REQUEST_META]) === true)
+                {
+                    $request[Constants::TRANSFER][Constants::REQUEST_META] += $requestMeta;
+                }
+                else
+                {
+                    $request[Constants::TRANSFER][Constants::REQUEST_META] = $requestMeta;
+                }
+            }
+
             if (($source->getMode() === Mode::CARD) and
                 (optional($this->fta->card)->getNetworkCode() === Card\Network::MC))
             {
@@ -1851,6 +1868,8 @@ class FundTransfer extends Base
         {
             return [true, false];
         }
+
+        // Todo:: RX Wallet Payout Use Case: for rx_wallet we need to fetch fts_fund_account_id
 
         if (($balanceAccountType === Balance\AccountType::SHARED) and
             (($payout->merchant->isSubMerchantOnDirectMasterMerchant() === true) or

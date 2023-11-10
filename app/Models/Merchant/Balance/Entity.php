@@ -174,6 +174,8 @@ class Entity extends Base\PublicEntity
             $attributes[self::BALANCE] = $this->bankingAccountStatementDetails->getGatewayBalance() ?? 0;
         }
 
+        // Todo:: RX Wallet Payout Use Case: Fetch BASD from PS and get balance. Don't fetch if already fetched.
+
         if ($accountType === AccountType::SHARED)
         {
             if($this->merchant->isFeatureEnabled(Feature\Constants::MERCHANT_ROUTE_WA_INFRA))

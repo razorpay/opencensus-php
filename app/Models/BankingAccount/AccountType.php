@@ -10,6 +10,8 @@ class AccountType
     const DIRECT    = 'direct';
     const CORP_CARD = "corp_card";
 
+    // Todo:: RX Wallet Payout Use Case: Add rx_wallet account type for banking account
+
     public static function isValid(string $type): bool
     {
         $key = __CLASS__ . '::' . strtoupper($type);

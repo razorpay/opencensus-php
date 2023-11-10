@@ -71,6 +71,16 @@ trait HasBalance
         return ($this->getBalanceAccountType() === Balance\AccountType::DIRECT);
     }
 
+    public function isBalanceAccountTypeRxWallet(): bool
+    {
+        if ($this->isBalanceTypeBanking() === false)
+        {
+            return false;
+        }
+
+        return ($this->getBalanceAccountType() === Balance\AccountType::RX_WALLET);
+    }
+
     public function isBalanceAccountTypeShared(): bool
     {
         if ($this->isBalanceTypeBanking() === false)

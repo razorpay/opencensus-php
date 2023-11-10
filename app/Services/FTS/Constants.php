@@ -248,6 +248,8 @@ final class Constants
 
     const SELECTED_MODE                  = "selected_mode";
 
+    const RX_WALLET_PURPOSE              = "rx_wallet_purpose";
+
     public static function getProducts(): array
     {
         return [

@@ -25,6 +25,10 @@ class Channel
         self::YESBANK,
     ];
 
+    public static $rxWalletTypeChannels = [
+        self::YESBANK,
+    ];
+
     protected static $channels = [
         self::YESBANK,
         self::RBL,
@@ -64,6 +68,12 @@ class Channel
         return (in_array($channel, self::$corpCardChannels, true) === true);
     }
 
+    public static function isValidRxWalletChannel(string $channel = null): bool
+    {
+        self::validateChannel($channel);
+
+        return (in_array($channel, self::$rxWalletTypeChannels, true) === true);
+    }
 
     public static function validateChannel(string $channel = null)
     {
@@ -112,5 +122,10 @@ class Channel
     public static function getAllowedCorpCardChannels(): array
     {
         return self::$corpCardChannels;
+    }
+
+    public static function getAllowedRxWalletChannels(): array
+    {
+        return self::$rxWalletTypeChannels;
     }
 }

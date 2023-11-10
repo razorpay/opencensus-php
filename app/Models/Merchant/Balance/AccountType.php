@@ -28,6 +28,11 @@ class AccountType
      */
     const CORP_CARD = 'corp_card';
 
+    /**
+     * POBO / RazorpayX wallet accounts
+     */
+    const RX_WALLET = 'rx_wallet';
+
     public static function exists(string $accType): bool
     {
         $key = __CLASS__ . '::' . strtoupper($accType);

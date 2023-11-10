@@ -16,11 +16,17 @@ class AccountType
      */
     const SHARED = 'shared';
 
+    /**
+     * Rx wallet accounts
+     */
+    const RX_WALLET = 'rx_wallet';
+
     public static function getAccountTypes()
     {
         return [
             self::DIRECT,
             self::SHARED,
+            self::RX_WALLET
         ];
     }
 

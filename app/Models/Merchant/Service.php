@@ -2318,6 +2318,8 @@ class Service extends Base\Service
 
                 }
             }
+
+            // Todo:: RX Wallet Payout Use Case: Refresh Balance within 5 mins use case
         }
 
         $shouldFetchCardDetails = ((isset($input[Balance\Entity::ACCOUNT_TYPE]) === true) and
