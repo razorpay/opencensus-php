@@ -121,7 +121,7 @@ class DEventsKafkaConsumer extends Command
             }
             catch (Exception $e)
             {
-                $this->error('failed to consume topics from kafka');
+                $this->error('failed to consume topics from kafka '. $e->getMessage());
             }
         }
     }

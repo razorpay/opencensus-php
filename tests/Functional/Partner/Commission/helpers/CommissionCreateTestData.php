@@ -279,6 +279,43 @@ return [
 
     ],
 
+    'testImplicitVariableCommissionCalculateAPIForMY' => [
+        'request'  => [
+            'url'     => '/internal/calculate_commission',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'data'    => [
+                    [
+                        'partner_id'           => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                        'source_type'          => 'payment',
+                        'type'                 => 'implicit',
+                        'currency'             => 'MYR',
+                        'debit'                => 0,
+                        'credit'               => 944   ,
+                        'tax'                  => 144,
+                        'fee'                  => 944,
+                        'notes'                => [],
+                        'commission_component' => [
+                            'pricing_type'    => 'variable',
+                            'pricing_feature' => 'payment',
+                            'merchant_pricing_plan_rule_id' => '1ABp2Xd3t5aRPX',
+                            'merchant_pricing_percentage' => 200,
+                            'merchant_pricing_fixed' => 0,
+                            'merchant_pricing_amount' =>  8000,
+                            'commission_pricing_plan_rule_id' => '1ABp2Xd3t5aRQX',
+                            'commission_pricing_percentage' => 180,
+                            'commission_pricing_fixed' =>  0,
+                            'commission_pricing_amount' =>  7200,
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
 
     'testImplicitVariableCommissionCalculateAPI' => [
         'request'  => [
@@ -361,19 +398,6 @@ return [
 
 
     'testImplicitVariableOnNONINRPaymentCapture' => [
-        'request' => [
-            'method' => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'captured',
-                'entity' => 'payment',
-            ],
-        ],
-    ],
-
-    'testCommissionTransactionChannelOnPaymentCaptureForMalaysainMerchants' => [
         'request' => [
             'method' => 'POST',
             'content' => [],
@@ -604,6 +628,19 @@ return [
     ],
 
     'testImplicitFixedOnPaymentCapture' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testImplicitVariableOnPaymentCaptureForMY' => [
         'request' => [
             'method' => 'POST',
             'content' => [],

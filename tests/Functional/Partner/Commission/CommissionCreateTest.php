@@ -776,30 +776,19 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getMerchantPricingAmount() - $commissionComponent->getCommissionPricingAmount());
     }
 
-    public function testCommissionTransactionChannelOnPaymentCaptureForMalaysainMerchants()
+    public function testImplicitVariableCommissionCalculateAPIForMY()
     {
-        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
-        $testData = $this->setupCommissionCreateForMalaysianMerchant();
+        list($payment, $commission, $commissionComponent) = $this->testImplicitVariableOnPaymentCaptureForMY();
+        $this->ba->partnershipServiceAuth();
 
-        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $testData = $this->testData['testImplicitVariableCommissionCalculateAPIForMY'];
+        $testData['request']['content'] = $this->getPayloadForCommissionCalculatorAPI(
+            $payment['id'],
+            Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            Constants::DEFAULT_CURLEC_IMPLICIT_PRICING_PLAN,
+        );
 
-        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
-        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
-
-        $this->createConfigForPartnerApp(
-            Constants::DEFAULT_PLATFORM_APP_ID,
-            null,
-            [
-                'implicit_plan_id'    => Constants::DEFAULT_CURLEC_IMPLICIT_PRICING_PLAN,
-            ]);
-
-        $this->startTest($testData);
-
-        $pricing = (new PricingRepo)->getPlanByIdOrFailPublic(Constants::DEFAULT_CURLEC_IMPLICIT_PRICING_PLAN, 'org_' . Org::CURLEC_ORG);
-
-        $this->assertEquals(Constants::DEFAULT_CURLEC_IMPLICIT_PRICING_PLAN, $pricing->getId());
-
-        $this->assertCommisionAndTransactionData(CommissionType::IMPLICIT);
+        $this->runRequestResponseFlow($testData);
     }
 
     //Test invoice generation should be skipped for non-partner merchants
@@ -2434,6 +2423,39 @@ class CommissionCreateTest extends TestCase
         return [$payment, $commission, $commissionComponent];
     }
 
+    public function testImplicitVariableOnPaymentCaptureForMY()
+    {
+        $this->shadowCommissionCreate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $testData = $this->setupCommissionCreateForMalaysianMerchant();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_CURLEC_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT, 1,CHANNEL::RHB);
+
+        $commissionComponent = $this->getDbEntity('commission_component');
+
+        $this->assertEquals($commission[Commission\Entity::ID], $commissionComponent->getCommissionId());
+
+        $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getMerchantPricingAmount() - $commissionComponent->getCommissionPricingAmount());
+
+        $pricing = (new PricingRepo)->getPlanByIdOrFailPublic(Constants::DEFAULT_CURLEC_IMPLICIT_PRICING_PLAN, 'org_' . Org::CURLEC_ORG);
+
+        $this->assertEquals(Constants::DEFAULT_CURLEC_IMPLICIT_PRICING_PLAN, $pricing->getId());
+
+        return [$payment, $commission, $commissionComponent];
+    }
 
     /***
      * This function validates the following
@@ -3334,7 +3356,7 @@ class CommissionCreateTest extends TestCase
         return $testData;
     }
 
-    protected function assertAndGetCommissionByType(string $type, int $totalCount = 1)
+    protected function assertAndGetCommissionByType(string $type, int $totalCount = 1, string $channel=CHANNEL::YESBANK)
     {
         $payment = $this->getLastEntity('payment', true);
 
@@ -3357,7 +3379,7 @@ class CommissionCreateTest extends TestCase
 
         $this->assertNotEmpty($commissionByType);
 
-        $this->assertTransactionData($commissionByType);
+        $this->assertTransactionData($commissionByType, $channel);
 
         if ($type === CommissionType::IMPLICIT)
         {
@@ -3385,35 +3407,7 @@ class CommissionCreateTest extends TestCase
         return $payment;
     }
 
-    protected function assertCommisionAndTransactionData(string $type, int $totalCount = 1)
-    {
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals(true, $payment['gateway_captured']);
-
-        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
-
-        $this->assertCount($totalCount, $commissions);
-
-        $commissionByType = null;
-
-        foreach ($commissions as $commission)
-        {
-            if ($commission['type'] === $type)
-            {
-                $commissionByType = $commission;
-                break;
-            }
-        }
-
-        $this->assertNotEmpty($commissionByType);
-
-        $transaction = $this->getDbEntityById('transaction', $commissionByType['transaction_id']);
-
-        $this->assertEquals(Channel::RHB, $transaction->getChannel());
-    }
-
-    protected function assertTransactionData(array $commission)
+    protected function assertTransactionData(array $commission, string $channel=Channel::YESBANK)
     {
         if (($commission['record_only'] === true) or ($commission['model'] === Config\CommissionModel::SUBVENTION))
         {
@@ -3430,7 +3424,7 @@ class CommissionCreateTest extends TestCase
         $this->assertTrue($transaction->isOnHold());
 
         // channel should always be yes_bank for commission settlement
-        $this->assertEquals(Channel::YESBANK, $transaction->getChannel());
+        $this->assertEquals($channel, $transaction->getChannel());
     }
 
     protected function assertExplicitCommissionFeeBreakUp($payment, $commission)

@@ -81,12 +81,12 @@ class CalculatorV2 extends Calculator
         if (empty($implicitPricingPlanId) == false)
         {
             $this->partnerConfig->setImplicitPlanIdAttribute($implicitPricingPlanId);
-            $this->implicitPricingPlan = $this->repo->pricing->getPlan($implicitPricingPlanId);
+            $this->implicitPricingPlan = $this->repo->pricing->getPlan($implicitPricingPlanId, skipOrgCheck: true);
         }
         if (empty($explicitPricingPlanId) == false)
         {
             $this->partnerConfig->setExplicitPlanIdAttribute($explicitPricingPlanId);
-            $this->explicitPricingPlan = $this->repo->pricing->getPlan($explicitPricingPlanId);
+            $this->explicitPricingPlan = $this->repo->pricing->getPlan($explicitPricingPlanId, skipOrgCheck: true);
         }
 
         $this->partnerConfig->setCommissionModel($partnerConfig['commission_model']);
