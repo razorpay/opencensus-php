@@ -69,6 +69,8 @@ class ReconServiceController extends Controller
             '^art_summary$',
             '^transactional_workflows$',
             '^transactional_workflow_actions$',
+            '^workflow_file_detail$',
+            '^workflow_file_detail\/[[:alnum:]]{14}$'
         ],
         self::POST => [
             '^output_email$',
@@ -98,6 +100,7 @@ class ReconServiceController extends Controller
             '^event_log\/[[:alnum:]]{14}$',
             '^transactional_workflows$',
             '^job_context$',
+            '^workflow_file_detail$',
         ],
         self::PATCH => [
             '^file_types\/[[:alnum:]]{14}$',
@@ -116,6 +119,7 @@ class ReconServiceController extends Controller
             '^webhook_action$',
             '^webhook_action\/[[:alnum:]]{14}$',
             'job_context\/[[:alnum:]]{14}$',
+            '^workflow_file_detail\/[[:alnum:]]{14}$'
         ],
         self::DELETE => [
             '^file_types\/[[:alnum:]]{14}$',
@@ -136,6 +140,7 @@ class ReconServiceController extends Controller
             '^event_log$',
             '^event_log\/[[:alnum:]]{14}$',
             '^job_dependency_lock\/delete_key$',
+            '^workflow_file_detail\/[[:alnum:]]{14}$'
         ]
     ];
 
