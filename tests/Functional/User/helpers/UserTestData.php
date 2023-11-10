@@ -4870,6 +4870,29 @@ return [
         ],
     ],
 
+    'testVerifyEmailWithEasyOnboardingMerchant' => [
+        'request'  => [
+            'url'     => '/users/verify_email',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'BUIj3m2Nx2VvVj',
+                'email'          => 'abc@rzp.com',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user' => [
+                    'id'        => 'MerchantUser01',
+                    'email'     => 'abc@rzp.com'
+                ]
+            ],
+        ],
+    ],
+
     'testVerifyEmailWithInvalidOtp' => [
         'request'   => [
             'url'     => '/users/verify_email',

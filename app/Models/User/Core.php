@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use Lib\PhoneBook;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Services\Raven;
@@ -58,6 +59,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Escalations as MerchantEscalation;
@@ -4795,6 +4797,41 @@ class Core extends Base\Core
     public function verifyEmailWithOtp(array $input, Merchant\Entity $merchant, Entity $user, string $action = 'verify_email')
     {
         $this->verifyOtp($input + ['action' => $action], $merchant, $user);
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
+        $signupCampaign = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
+
+        $isExpEnabledForUnverifiedEmailCheck = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.enable_unverified_email_check_for_easy_onboarding'),
+            ],
+            'variables'
+        );
+
+
+        if($isExpEnabledForUnverifiedEmailCheck === true and $signupCampaign === DDConstants::EASY_ONBOARDING)
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($user, $input) {
+                $user->setEmail($input[Merchant\Entity::EMAIL]);
+                $this->repo->saveOrFail($user);
+            });
+
+            $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input) {
+                $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+                $this->repo->saveOrFail($merchant);
+            });
+
+            $merchantDetails = $this->merchant->merchantDetail;
+
+            $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
+                $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
+                $this->repo->saveOrFail($merchantDetails);
+            });
+
+            $user = $this->repo->user->findByEmail($input['email']);
+        }
+
 
         $this->trace->info(
             TraceCode::USER_EMAIL_VERIFY_WITH_OTP,

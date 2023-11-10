@@ -42,7 +42,7 @@ class Otp extends Mailable
 
     protected function addRecipients()
     {
-        $this->to($this->user['email'], $this->user['name']);
+        $this->to($this->user['email'] ?? $this->input['email'], $this->user['name']);
 
         return $this;
     }

@@ -1648,7 +1648,7 @@ class Service extends Base\Service
         // Merchant to array public
         $data = $merchant->toArrayPublic();
 
-        //merchant signup_campain form user device details
+        //merchant signup_campain from user device details
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         $data['signup_campaign'] = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
 

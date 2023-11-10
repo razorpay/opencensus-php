@@ -55,6 +55,7 @@ use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 use \RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
 use RZP\Models\Workflow\Observer\Constants as ObserverConstants;
@@ -5359,6 +5360,69 @@ class ActivationTest extends OAuthTestCase
         $response = $this->startTest();
         $this->assertNotEmpty($response['token']);
 
+    }
+
+
+    public function testMerchantActivationOtpSendForEasyOnboardingMerchant()
+    {
+        $smsPayload = [
+            'success'    => true,
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => '10000000000000:10000000000000:verify_email:MOCK_TOKEN1234',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')->with([
+                                                             'receiver'   => 'hello123@c.com',
+                                                             'context'    => '10000000000000:10000000000000:verify_email:MOCK_TOKEN1234',
+                                                             'source'     => 'api',
+                                                             'expires_at' => 20
+                                                         ])->willReturn($smsPayload);
+        $input = [
+            "experiment_id" => "MyenLcfNh1lKpZ",
+            "id"            => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+            'id'             => '10000000000000',
+            'email'          => null,
+        ]);
+
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id'       => '10000000000000',
+                                    'activation_status' => 'activated'
+                                ]);
+
+        $this->fixtures->edit('merchant',
+                              '10000000000000',
+                              ['activated' => true, 'business_banking' => false, 'email' => null, 'signup_source' => 'primary']);
+
+        $this->fixtures->create('user_device_detail', ["user_id" => UserFixture::MERCHANT_USER_ID, 'merchant_id' => '10000000000000', "signup_campaign" => 'easy_onboarding']);
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000', $user['id']);
+        $response = $this->startTest();
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+        $this->assertNull($user->getEmail());
+        $this->assertNotEmpty($response['token']);
     }
 
     protected function getExpectedArraysForWorkflowObserverTestCases($arrayType) : array

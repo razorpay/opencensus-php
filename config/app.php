@@ -683,6 +683,8 @@ return array(
 
     'enable_kyc_qualified_unactivated' => env('ENABLE_KYC_QUALIFIED_UNACTIVATED_EXP_ID'),
 
+    'enable_unverified_email_check_for_easy_onboarding' => env('ENABLE_UNVERIFIED_EMAIL_CHECK_FOR_EASY_ONBOARDING_EXP_ID'),
+
     '1cc_branded_btn_splitz_exp_id' => env('MAGIC_CHECKOUT_BRANDED_BUTTON_EXP_ID'),
 
     'magic_shopify_taxes_admin_checkout_experiment_id'  => env('MAGIC_SHOPIFY_TAXES_ADMIN_CHECKOUT_EXP_ID'),

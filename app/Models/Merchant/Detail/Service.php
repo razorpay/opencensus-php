@@ -143,6 +143,7 @@ class Service extends Base\Service
 
     protected $config;
 
+
     public function __construct(Core $core = null, Validator  $validator = null, Account\Core $accountCore = null)
     {
         parent::__construct();
@@ -466,7 +467,24 @@ class Service extends Base\Service
 
         }
 
-        if(empty($emailUser) === true)
+        $isExpEnabledForUnverifiedEmailCheck = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.enable_unverified_email_check_for_easy_onboarding'),
+            ],
+            'variables'
+        );
+
+        $skipStoringUnverifiedEmail = false;
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
+        $signupCampaign   = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
+
+        if($isExpEnabledForUnverifiedEmailCheck === true and DDConstants::EASY_ONBOARDING === $signupCampaign){
+            $skipStoringUnverifiedEmail = true;
+        }
+
+        if (empty($emailUser) === true and $skipStoringUnverifiedEmail === false)
         {
             $this->repo->transactionOnLiveAndTest(function() use ($user, $input) {
                 $user->setEmail($input[Merchant\Entity::EMAIL]);

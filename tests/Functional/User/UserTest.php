@@ -8002,6 +8002,44 @@ class UserTest extends TestCase
         $this->assertTrue($user->getConfirmedAttribute()===false);
     }
 
+    public function testVerifyEmailWithEasyOnboardingMerchant()
+    {
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+                                      [UserEntity::CONFIRM_TOKEN => 'testing123456789']);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => '10000000000000',
+            'contact_name'  => 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $input = [
+            "experiment_id" => "MyenLcfNh1lKpZ",
+            "id"            => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->fixtures->create('user_device_detail', ["user_id" => UserFixture::MERCHANT_USER_ID, 'merchant_id' => '10000000000000', "signup_campaign" => 'easy_onboarding']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+        $this->assertTrue($user->getConfirmedAttribute());
+        $this->assertTrue($user->confirmed);
+        $this->assertEquals($user->getEmail(), 'abc@rzp.com');
+    }
+
     public function testVerifyEmailWithOtpAlreadyVerified()
     {
         $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
