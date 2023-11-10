@@ -35,7 +35,7 @@ jobs:
     runs-on: [self-hosted]
     steps:
       - name: Fetch data of comment's associated PR
-        uses: xt0rted/pull-request-comment-branch@v1
+        uses: xt0rted/pull-request-comment-branch@v2
         id: comment-branch
         if: ${{ github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')}}
         with:
@@ -46,7 +46,7 @@ jobs:
         run: |
           echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
         env:
-          COMMIT_ID: ${{ steps.comment-branch.outputs.sha }}
+          COMMIT_ID: ${{ steps.comment-branch.outputs.head_sha }}
 
       - name: Set Commit ID if its on master
         if: ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }}
@@ -62,12 +62,17 @@ jobs:
         env:
           COMMIT_ID: ${{ github.event.pull_request.head.sha }}
 
-      - name: Echo COMMIT_ID
+      - name: Echo COMMIT_ID for changes
         run: |
           echo "COMMIT_ID: ${{ env.COMMIT_ID }}"
 
       - name: Checkout Codebase
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.COMMIT_ID }}
+
+      - name: Echo file content
+        run: cat web/e2e/suites/sample.txt
 
       - name: Use Node v18.12.1
         uses: actions/setup-node@v1
