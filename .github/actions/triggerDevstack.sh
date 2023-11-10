@@ -7,7 +7,6 @@ run_devstack() {
   roastPRCommit=${ROAST_PR_COMMIT}
   WEBHOOK_TRIGGER=${WEBHOOK_TRIGGER}
   PIPELINE_ID="51ab409e-1ce1-4c59-ae13-f702c02a9c4a"
-  filesChanged=$(echo "$FILES_CHANGED" | jq -r '.[]')
 
   statusCode=$(curl -c /tmp/cookies -o -s -w "%{http_code}" --location --request GET 'https://deploy-api.razorpay.com/login' \
     --header "Authorization: Bearer ${GIT_TOKEN}")
@@ -57,15 +56,11 @@ run_devstack() {
   fi
   echo "Triggering webhook for BVT testing execution for :" + "$commitId"
   echo "Triggering webhook for BVT testing execution for Roast PR :" + "$roastPRCommit"
-  echo "files = " + $filesChanged
-  for file in $filesChanged; do
-      echo "result: $file"
-  done
   curl -X POST \
     -u github-actions:"$SPINNAKER_PASSWORD" \
     https://deploy-github-actions.razorpay.com/webhooks/webhook/"$WEBHOOK_TRIGGER" \
     -H "content-type: application/json" \
-    -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipDevstack\", \"roast_commit_id\":\"$roastPRCommit\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"},\"files\":\"$filesChanged\"}"
+    -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipDevstack\", \"roast_commit_id\":\"$roastPRCommit\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"}}"
 }
 
 run_devstack
