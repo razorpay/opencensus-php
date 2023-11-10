@@ -1235,6 +1235,14 @@ class Service extends Base\Service
         $address[self::COD] = false;
         $address[Fields::COD_FEE] = 0;
 
+        $dimensions = [
+            'mode'              => $this->mode,
+            'shipping_provider' => 'platform',
+            'platform'          => $order->product_type
+        ];
+
+        $this->recordShippingInfoResp($address, $dimensions);
+
         return [self::SHIPPING_INFO_ADDRESSES => [$address]];
     }
 
