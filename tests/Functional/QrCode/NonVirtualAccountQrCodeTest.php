@@ -2212,4 +2212,41 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($rrn, $payment['reference16']);
     }
 
+    //This is to test a case where amount while converting to rupees gets rounded off,
+    // which will result in payment refund due to amount mismatch
+    public function testProcessQrPaymentWithPaiseInAmount()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::QR_AMOUNT_MISMATCH_FIX => RazorxTreatment::RAZORX_VARIANT_ON]);
+
+        $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr', 'payment_amount'=>27071, 'fixed_amount'=> true], 'live', 'LiveAccountMer');
+
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = '270.71';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
+        $payment   = $this->getLastEntity('payment', true, 'live');
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+        $this->assertEquals('closed', $qrCode['status']);
+        $this->assertEquals('paid', $qrCode['close_reason']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(27071, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+
+        $this->assertStringContainsString('am=270.71', $qrCode['qr_string']);
+    }
+
 }

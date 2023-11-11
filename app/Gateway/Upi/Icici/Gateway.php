@@ -37,6 +37,7 @@ use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Generator;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrEntity;
 
 class Gateway extends Base\Gateway
@@ -835,13 +836,29 @@ class Gateway extends Base\Gateway
         $qrCode = $input['qr_code'];
 
         $input = [
-            Fields::AMOUNT => $this->formatAmount($input['qr_code']['amount']),
+            Fields::AMOUNT      => $this->formatAmount($input['qr_code']['amount']),
             Fields::MERCHANT_ID => $this->getMerchantId(),
             Fields::TERMINAL_ID => $this->getTerminalId($this->input),
             Fields::BILL_NUMBER => '1234',
             Fields::MERCHANT_TRAN_ID => $qrCode['id'] . QrCode\Constants::QR_CODE_V2_TR_SUFFIX,
             Fields::UPDATE => self::QR_NOT_UPDATE,
         ];
+
+        if ((new Generator())->checkIfExperimentEnabledforAmountMismatchFix($this->input['merchant']->getId()) === true)
+        {
+            $amount = $input[Fields::AMOUNT];
+
+            $input[Fields::AMOUNT] = (new Generator())->formatAmountToRupees($this->input['qr_code']['amount']);
+
+            if ($input[Fields::AMOUNT] !== $amount)
+            {
+                $this->trace->info(TraceCode::QR_INTENT_LINK_AMOUNT_MISMATCH, [
+                    'id'               => $qrCode->getId(),
+                    'incorrect_amount' => $amount,
+                    'correct_amount'   => $input[Fields::AMOUNT],
+                ]);
+            }
+        }
 
         if (isset($qrCode[QrEntity::CLOSE_BY]) === true)
         {

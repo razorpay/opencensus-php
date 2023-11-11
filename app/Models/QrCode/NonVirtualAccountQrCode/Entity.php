@@ -289,6 +289,7 @@ class Entity extends QrCode\Entity
         return $this->getRequestSource() === RequestSource::EZETAP;
     }
 
+    //todo: this function should also check if qr is a single_use QR
     public function hasFixedAmount()
     {
         return $this->getAttribute(self::FIXED_AMOUNT);

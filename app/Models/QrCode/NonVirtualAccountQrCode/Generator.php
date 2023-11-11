@@ -319,7 +319,25 @@ class Generator extends QrCode\Generator
 
         if ($qrCode->hasFixedAmount())
         {
-            $content[Base\IntentParams::TXN_AMOUNT] = $qrCode->getAmount() / 100;
+            $amount = $qrCode->getAmount() / 100;
+
+            if ($this->checkIfExperimentEnabledforAmountMismatchFix($qrCode->getMerchantId()) === true)
+            {
+                $content[Base\IntentParams::TXN_AMOUNT] = $this->formatAmountToRupees($qrCode->getAmount());
+
+                if ($content[Base\IntentParams::TXN_AMOUNT] !== (string) $amount)
+                {
+                    $this->trace->info(TraceCode::QR_INTENT_LINK_AMOUNT_MISMATCH, [
+                        'id'               => $qrCode->getId(),
+                        'incorrect_amount' => $amount,
+                        'correct_amount'   => $content[Base\IntentParams::TXN_AMOUNT],
+                    ]);
+                }
+            }
+            else
+            {
+                $content[Base\IntentParams::TXN_AMOUNT] = $amount;
+            }
         }
 
         if((str_contains($vpa, '@kotak') === true) and ($qrCode->getUsageType() === UsageType::SINGLE_USE))
@@ -330,6 +348,20 @@ class Generator extends QrCode\Generator
         $content = array_merge($content, InvoiceDetails::getTaxDetails($qrCode));
 
         return 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));
+    }
+
+    public function checkIfExperimentEnabledforAmountMismatchFix($merchantId)
+    {
+        $variant = $this->app['razorx']->getTreatment($merchantId,
+                                                      RazorxTreatment::QR_AMOUNT_MISMATCH_FIX,
+                                                      $this->mode);
+
+        if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function fetchDedicatedTerminalFromQrString($qrCode)
@@ -788,5 +820,16 @@ class Generator extends QrCode\Generator
         }
 
         return $dedicatedTerminals;
+    }
+
+    /**
+     * Function formatAmount() is giving incorrect result for amount=27071 (270.7)
+     * Formats amount to 2 decimal places
+     * @param  int $amount amount in paise (27071)
+     * @return string amount formatted to 2 decimal places in INR (270.71)
+     */
+    public function formatAmountToRupees(int $amount): string
+    {
+        return substr_replace((string) $amount, '.', -2, 0);
     }
 }

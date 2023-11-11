@@ -950,6 +950,10 @@ final class RazorxTreatment
     const PAYEE_ACCOUNT_LENGTH_VALIDATION = 'payee_account_length_validation';
 
     /**
+     * Razorx flag to ramp up experiment to fix the bug of converting amount to rupee from paise
+     */
+    const QR_AMOUNT_MISMATCH_FIX = 'qr_amount_mismatch_fix';
+    /**
      * Razorx flag to ramp up experiment to make qr payments of subtype intent
      */
     const MAKE_QR_PAYMENT_OF_TYPE_INTENT = 'make_qr_payment_of_type_intent';
