@@ -2016,11 +2016,16 @@ EOT;
                     ->get();
     }
 
-    public function fetchPaymentsForOrderId($orderId)
+    public function fetchPaymentsForOrderId($orderId, $merchantId = '')
     {
-        $payments = $this->newQuery()
-                         ->where(Payment\Entity::ORDER_ID, '=', $orderId)
-                         ->get();
+        $paymentOrderQuery = $this->newQuery()->where(Payment\Entity::ORDER_ID, '=', $orderId);
+
+        if (empty($merchantId) === false)
+        {
+            $paymentOrderQuery = $paymentOrderQuery->where(Payment\Entity::MERCHANT_ID, '=', $merchantId);
+        }
+
+        $payments = $paymentOrderQuery->get();
 
         if (strlen($orderId) === UniqueIdEntity::ID_LENGTH)
         {
@@ -2036,11 +2041,17 @@ EOT;
             }
         }
 
-        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+        $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
-        $warmPayments = $this->newQueryWithConnection($connectionType)
-                             ->where(Payment\Entity::ORDER_ID, '=', $orderId)
-                             ->get();
+        $warmPaymentQuery = $this->newQueryWithConnection($connectionType)
+            ->where(Payment\Entity::ORDER_ID, '=', $orderId);
+
+        if (empty($merchantId) === false)
+        {
+            $warmPaymentQuery = $warmPaymentQuery->where(Payment\Entity::MERCHANT_ID, '=', $merchantId);
+        }
+
+        $warmPayments = $warmPaymentQuery->get();
 
         $allPayments = $this->mergeCollectionsBasedOnKey($payments, $warmPayments, Entity::ID);
 

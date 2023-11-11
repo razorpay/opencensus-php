@@ -713,7 +713,7 @@ class Service extends Base\Service
         {
             $orderId = Entity::verifyIdAndSilentlyStripSign($id);
 
-            $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($orderId);
+            $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($orderId, $this->merchant->getId());
 
             $rearchPayments = $this->app['pg_router']->fetchOrderPayments($orderId, $this->merchant->getId());
 

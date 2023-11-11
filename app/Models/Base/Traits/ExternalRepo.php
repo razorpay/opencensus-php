@@ -289,7 +289,7 @@ trait ExternalRepo
             }
             else if (in_array("payments", $expands['expand']) === true)
             {
-                $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($id);
+                $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($id, $merchantId);
 
                 $rearchPayments = $class->fetchOrderPayments($id, $merchantId);
 
