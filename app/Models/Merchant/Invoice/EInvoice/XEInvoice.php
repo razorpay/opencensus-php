@@ -170,7 +170,12 @@ class XEInvoice extends Core
 
         $invoiceEntity = $this->repo->merchant_e_invoice->fetchByInvoiceNumberAndDocumentType(
             $merchantId, $invoiceNumber, DocumentTypes::INV);
-        
+
+        if (empty($invoiceEntity))
+        {
+            return $eInvoiceData;
+        }
+
         $invoiceIssueTime = Carbon::createFromTimestamp($invoiceEntity->getCreatedAt(), Timezone::IST)
             ->format('d/m/Y');
 
