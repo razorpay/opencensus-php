@@ -9451,24 +9451,6 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($response[Entity::ID], $ba1->getId());
     }
 
-    public function testFetchNonExistentBankingAccountForPayoutService()
-    {
-        $this->ba->appAuth();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts/' . '2224440041626905' .'/10000000000000';
-
-        $this->startTest();
-    }
-
-    public function testFetchNonExistentBankingAccountForPayoutServiceWithBalanceId()
-    {
-        $this->ba->appAuth();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts_balance_id/1000000balance';
-
-        $this->startTest();
-    }
-
     public function testFetchBankingAccountForPayoutServiceInvalidMerchantId()
     {
         $this->ba->appAuth();

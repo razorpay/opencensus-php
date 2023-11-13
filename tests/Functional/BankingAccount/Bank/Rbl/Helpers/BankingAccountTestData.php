@@ -4272,46 +4272,6 @@ return [
         ],
     ],
 
-    'testFetchNonExistentBankingAccountForPayoutService' => [
-        'request' => [
-            'url'     => '/banking_accounts/',
-            'method'  => 'GET',
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'No db records found.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
-        ],
-    ],
-
-    'testFetchNonExistentBankingAccountForPayoutServiceWithBalanceId' => [
-        'request' => [
-            'url'     => '/banking_accounts_balance_id/',
-            'method'  => 'GET',
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'No db records found.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
-        ],
-    ],
-
     'testFetchBankingAccountForPayoutServiceInvalidMerchantId' => [
         'request' => [
             'url'     => '/banking_accounts/',

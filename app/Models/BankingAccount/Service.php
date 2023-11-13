@@ -1679,57 +1679,69 @@ class Service extends Base\Service
      */
     public function fetchBankingAccountForAccountNumber(string $accountNumber, string $merchantId)
     {
-        $this->trace->info(
-            TraceCode::FETCH_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE,
-            [
-                Entity::MERCHANT_ID => $merchantId,
-            ]);
-
-        (new Validator)->setStrictFalse()->validateInput(Validator::FETCH_BANKING_ACCOUNT_PAYOUT_SERVICE,
-            [
-                Entity::ACCOUNT_NUMBER => $accountNumber,
-                Entity::MERCHANT_ID    => $merchantId
-            ]);
-
         try
         {
-            $bankingAccount = $this->repo->banking_account->getBankingAccountWithBalanceViaAccountNumberAndMerchantId($accountNumber, $merchantId);
-        }
-        catch (\Exception $ex)
-        {
-            // check for migrated RBL CAs in BAS
-            $bankingAccount = $this->fetchAccountByMerchantIdAccountNumberChannel($merchantId, $accountNumber, Channel::RBL);
+            $this->trace->info(
+                TraceCode::FETCH_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE,
+                [
+                    Entity::MERCHANT_ID => $merchantId,
+                ]);
 
-            if (empty($bankingAccount))
+            (new Validator)->setStrictFalse()->validateInput(Validator::FETCH_BANKING_ACCOUNT_PAYOUT_SERVICE,
+                                                             [
+                                                                 Entity::ACCOUNT_NUMBER => $accountNumber,
+                                                                 Entity::MERCHANT_ID    => $merchantId
+                                                             ]);
+
+            try
             {
-                if ($ex instanceof DbQueryException)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, null, 'No db records found.');
-                }
-
-                throw $ex;
+                $bankingAccount = $this->repo->banking_account->getBankingAccountWithBalanceViaAccountNumberAndMerchantId($accountNumber, $merchantId);
             }
+            catch (\Exception $ex)
+            {
+                $balance = $this->repo->balance->getBalanceByAccountNumberAndMerchantIDOrFail($accountNumber, $merchantId);
+
+                // check for banking accounts in BAS
+                $bankingAccount = $this->fetchAccountByBalance($balance);
+
+                if (empty($bankingAccount))
+                {
+                    throw $ex;
+                }
+            }
+
+            $response = [
+                Entity::ID                   => $bankingAccount->getId(),
+                Entity::STATUS               => $bankingAccount->getStatus(),
+                Entity::CHANNEL              => $bankingAccount->getChannel(),
+                Entity::BALANCE_ID           => $bankingAccount->getBalanceId(),
+                Entity::MERCHANT_ID          => $bankingAccount->getMerchantId(),
+                Entity::ACCOUNT_NUMBER       => $bankingAccount->getAccountNumber(),
+                Entity::ACCOUNT_TYPE         => $bankingAccount->balance->getAccountType(),
+                Entity::BALANCE_TYPE         => $bankingAccount->balance->getType(),
+                Entity::FTS_FUND_ACCOUNT_ID  => $bankingAccount->getFtsFundAccountId()
+            ];
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FETCH_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE_FAILED,
+                [
+                    Entity::MERCHANT_ID        => $merchantId,
+                ]
+            );
+
+            throw $exception;
         }
 
-        $this->trace->info(
-            TraceCode::FETCHED_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE,
-            [
-                Entity::MERCHANT_ID        => $merchantId,
-                Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId()
-            ]);
+        $this->trace->info(TraceCode::FETCHED_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE, [
+            Entity::MERCHANT_ID        => $merchantId,
+            'response'                 => $response,
+        ]);
 
-        return [
-            Entity::ID                   => $bankingAccount->getId(),
-            Entity::STATUS               => $bankingAccount->getStatus(),
-            Entity::CHANNEL              => $bankingAccount->getChannel(),
-            Entity::BALANCE_ID           => $bankingAccount->getBalanceId(),
-            Entity::MERCHANT_ID          => $bankingAccount->getMerchantId(),
-            Entity::ACCOUNT_NUMBER       => $bankingAccount->getAccountNumber(),
-            Entity::ACCOUNT_TYPE         => $bankingAccount->balance->getAccountType(),
-            Entity::BALANCE_TYPE         => $bankingAccount->balance->getType(),
-            Entity::FTS_FUND_ACCOUNT_ID  => $bankingAccount->getFtsFundAccountId()
-        ];
+        return $response;
     }
 
     /**
@@ -1760,15 +1772,10 @@ class Service extends Base\Service
             }
             catch (\Exception $ex)
             {
-                $balance = $this->repo->balance->find($balanceId);
+                $balance = $this->repo->balance->findOrFail($balanceId);
 
-                if (empty($balance))
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, null, 'No db records found.');
-                }
-
-                $bankingAccount = $this->fetchAccountByMerchantIdAccountNumberChannel($balance->getMerchantId(), $balance->getAccountNumber(), Channel::RBL);
+                // check for banking accounts in BAS
+                $bankingAccount = $this->fetchAccountByBalance($balance);
 
                 // throw error only $bankingAccount still cannot be resolved
                 if (empty($bankingAccount))
@@ -1789,7 +1796,7 @@ class Service extends Base\Service
                 Entity::FTS_FUND_ACCOUNT_ID => $bankingAccount->getFtsFundAccountId()
             ];
         }
-        catch (\Exception $exception)
+        catch (\Throwable $exception)
         {
             $this->trace->traceException(
                 $exception,
@@ -2387,6 +2394,17 @@ class Service extends Base\Service
     public function fetchAccountByMerchantIdAccountNumberChannel(string $merchantId, string $accountNumber, string $channel) : Entity|null
     {
         return $this->bankingAccountService->fetchAccountByMerchantIdAccountNumberChannel($merchantId, $accountNumber, $channel);
+    }
+
+    /**
+     * Fetches CAs by balance entity
+     *
+     * @return Entity|null
+     *
+     */
+    public function fetchAccountByBalance($balance) : Entity|null
+    {
+        return $this->bankingAccountService->fetchAccountByBalance($balance);
     }
 
     /**

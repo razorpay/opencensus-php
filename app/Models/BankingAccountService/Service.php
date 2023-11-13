@@ -1757,6 +1757,16 @@ class Service extends Base\Service
             return null;
         }
 
+        return $this->fetchAccountByBalance($balance);
+    }
+
+    public function fetchAccountByBalance($balance) : \RZP\Models\BankingAccount\Entity|null
+    {
+        if (empty($balance) === true)
+        {
+            return null;
+        }
+
         // This will be empty only for bankingAccounts stored on BAS
         if (empty($balance->bankingAccount) &&
             in_array($balance->getChannel(), Channel::getDirectTypeChannels()) &&
@@ -1769,7 +1779,7 @@ class Service extends Base\Service
                 return null;
             }
 
-            return $this->core()->generateInMemoryBankingAccount($merchantId, $basBankingAccount);
+            return $this->core()->generateInMemoryBankingAccount($balance->getMerchantId(), $basBankingAccount);
         }
 
         return $balance->bankingAccount;
