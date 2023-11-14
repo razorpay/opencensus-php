@@ -8204,13 +8204,17 @@ trait Authorize
                         '$input.card.cardVaultToken'     =>  $input['card']['card_vault_token']
                     ]);
                 } else  {
-                    $token->card->setVaultToken($input['card']['card_vault_token']);
-                    $token->card->generateID();
-                    $token->card()->associate($token->card);
-                    $this->repo->saveOrFail($token->card);
+                    $tokenCard = $token->card->replicate();
+                    $tokenCard->generateID();
+                    $tokenCard->setVaultToken($input['card']['card_vault_token']);
+                    $tokenCard->setTrivia(null);
+                    $token->card()->associate($tokenCard);
+                    $this->repo->saveOrFail($tokenCard);
                     $this->repo->saveOrFail($token);
+                    $paymentsCard = $this->repo->card->getCardById($payment->card->getId());
                     $this->trace->info(TraceCode::ALT_ID_TOKEN_MIGRATION_CARD_VAULT_TOKEN_SET, [
-                        '$input.card.cardVaultToken'     =>  $input['card']['card_vault_token']
+                        '$input.card.cardVaultToken'     =>  $input['card']['card_vault_token'],
+                        'isset($paymentsCard)' => isset($paymentsCard)
                     ]);
                 }
             }
