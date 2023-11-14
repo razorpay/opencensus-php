@@ -21,7 +21,9 @@ use RZP\Exception\ServerErrorException;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Store\Core as StoreCore;
+use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\Document\Entity as DocEntity;
 use RZP\Models\Merchant\Document\Constants as DocConstant;
 use RZP\Models\Merchant\Detail\Entity as DEntity;
@@ -955,7 +957,6 @@ class Service extends Base\Service
     {
         try
         {
-
             $this->validateMerchantCategorySubCategoryForActivation($merchantDetails);
             // Merchants who provide website can later on opt for KLA - and hence their url will be present and
             // has key access will be false , but on admin dashboard the Keyless Auth - will be green tick i.e true
@@ -1039,6 +1040,28 @@ class Service extends Base\Service
                     }
                 }
             }
+
+            //update grace period to 1 when merchant has all required policies along with hosted policies
+            $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+                $merchantDetails->getMerchantId(),
+                Constant::WEBSITE_POLICY,
+                MVD\Constants::NUMBER
+            );
+
+            $gracePeriodValue = null;
+
+            if((new DetailCore)->isGracePeriodApplicableForMerchantRequiredPolicies($merchantDetails, $websitePolicy) ===true )
+            {
+                $gracePeriodValue = 1;
+            }
+            else if(optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED){
+                $gracePeriodValue = 0;
+            }
+            if ($gracePeriodValue !== null)
+            {
+                $websiteDetail = $this->core->createOrEditWebsiteDetails($merchantDetails, [Entity::GRACE_PERIOD =>$gracePeriodValue ]);
+            }
+
             if ($gracePeriodCheck === true)
             {
                 $gracePeriod = $websiteDetail->getGracePeriodStatus();

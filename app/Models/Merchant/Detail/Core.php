@@ -5812,7 +5812,8 @@ class Core extends Base\Core
         {
             $eligibleForAMP = (
                 $eligibleForAMP and
-                optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED and
+                (optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED or
+                 $this->isGracePeriodApplicableForMerchantRequiredPolicies($merchantDetails, $websitePolicy) === true ) and
                 optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED
             );
         }
@@ -5955,8 +5956,9 @@ class Core extends Base\Core
                 }
 
                 if (optional($mccCategorisation)->getStatus() === BvsValidation\Constants::VERIFIED and
-                    optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED and
                     optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED and
+                    (optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED or
+                     $this->isGracePeriodApplicableForMerchantRequiredPolicies($merchantDetails, $websitePolicy) === true) and
                     optional($signatory)->getStatus() === BvsValidationConstants::VERIFIED)
                 {
                     return Status::ACTIVATED;
@@ -5984,6 +5986,107 @@ class Core extends Base\Core
 
             return Status::ACTIVATED_MCC_PENDING;
         }
+    }
+
+    public function isGracePeriodApplicableForMerchantRequiredPolicies(Entity $merchantDetails, MVD\Entity $websitePolicy = null) : bool
+    {
+        $subCategory = $merchantDetails->getBusinessSubcategory();
+
+        $category = $merchantDetails->getBusinessCategory();
+
+        if ($merchantDetails->getActivationFormMilestone() !== Detail\Constants::L2_SUBMISSION)
+        {
+            return false;
+        }
+
+        if (empty($websitePolicy) === true)
+        {
+            return false;
+        }
+
+        $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($category, $subCategory);
+
+        $requiredPolicies = $subcategoryMetaData[SubcategoryV2::REQUIRED_WEBSITE_POLICIES];
+        /* example of $requiredPolicies
+             [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ]
+         */
+
+
+        $requiredPolicyArray = [];
+        foreach ($requiredPolicies as $policyName => $required)
+        {
+            if ($required === true)
+            {
+                $requiredPolicyArray[] = $policyName;
+            }
+        }
+
+        $websitePolicyMetadata = optional($websitePolicy)->getMetadata() ?? [];
+
+        // Initialize an empty map for policies and validation results
+        $policyMap = [];
+        /* example of $policyMap
+            [
+               self::TERMS_AND_CONDITIONS  => true,
+               self::CONTACT_US            => true,
+               self::SHIPPING              => false,
+           ]
+        */
+        foreach ($websitePolicyMetadata as $policyName => $policyData)
+        {
+            // Check if analysis_result exists and is not null
+            if (in_array($policyName, $requiredPolicyArray) === true and
+                isset($policyData["analysis_result"]) === true and
+                $policyData["analysis_result"] !== null)
+            {
+                // Check if the validation_result exists within analysis_result
+                if (isset($policyData["analysis_result"]["validation_result"]) === true and $policyData["analysis_result"]["validation_result"] === true)
+                {
+                    $policyMap[$policyName] = true;
+                }
+            }
+        }
+
+        $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetails->getMerchantId());
+        $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
+        /* example of policiesData
+        [
+            "terms" => [
+                "section_status" => 3,
+                "status"         => "submitted",
+                "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms" ]
+        ]
+        */
+
+        foreach ($policiesData as $policyName => $policyData)
+        {
+            if (in_array($policyName, $requiredPolicyArray) === true and isset($policyMap[$policyName]) === false)
+            {
+                if (isset($policyData["published_url"]) === true and
+                    empty($policyData["published_url"]) === false and
+                    $policyData["section_status"] === 3)
+                {
+                    $policyMap[$policyName] = true;
+                }
+            }
+        }
+
+        foreach ($requiredPolicyArray as $policyName)
+        {
+            $policyResult = $policyMap[$policyName] ?? null;
+
+            if ($policyResult !== true)
+            {
+                return false;
+            }
+        }
+
+        return true;
+
     }
 
     public function hasAppUrls(Entity $merchantDetails): bool

@@ -294,6 +294,8 @@ class UpdateMerchantContext extends Job
                         ]
                     ]),
                 ];
+
+
                 (new Website\Core)->createOrEditWebsiteDetails($merchantDetail, $input);
 
                 // save category & subcategory
