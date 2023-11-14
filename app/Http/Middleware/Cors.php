@@ -131,6 +131,7 @@ class Cors
                 'x-razorpay-account',
                 // Adding this to pass application id during phantom signup
                 'x-partner-application-id',
+                'x-partner-oauth-referral',
                 'request-start-time',
                 'sentry-trace',
                 'Authorization',
