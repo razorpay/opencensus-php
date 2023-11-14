@@ -626,6 +626,11 @@ class Validator extends Base\Validator
         'language_code' => 'sometimes|string|size:2',
     ];
 
+    protected static $enterpriseDashboardLoginOtpEmailRules = [
+        'email' => 'required|email',
+        'otp'   => 'required|string|between:4,6'
+    ];
+
     protected static $applyCouponRequestRules = [
         'order_id'                      => 'required|string',
         'contact'                       => 'sometimes|string',

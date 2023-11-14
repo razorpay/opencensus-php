@@ -387,6 +387,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function sendLoginOtpEmailForEnterpriseDashboard()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendLoginOtpEmailForEnterpriseDashboard($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getKeySecret($keyId)
     {
         $data = (new Key\Core)->getKeySecret($keyId);

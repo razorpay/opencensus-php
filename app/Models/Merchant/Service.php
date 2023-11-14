@@ -107,6 +107,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Services\CapitalCardsClient;
 use RZP\Jobs\CallBackFillReferredApp;
 use Razorpay\OAuth\Token as OAuthToken;
+use RZP\Mail\Merchant as MerchantMail;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Partner\RateLimitBatch;
@@ -1839,6 +1840,22 @@ class Service extends Base\Service
         $this->repo->saveOrFail($this->merchant);
 
         return $this->merchant->toArrayConfig();
+    }
+
+    public function sendLoginOtpEmailForEnterpriseDashboard($input)
+    {
+        (new Validator())->validateInput('enterprise_dashboard_login_otp_email', $input);
+
+        $email = $input['email'];
+
+        $otp = $input['otp'];
+
+        $loginOtpMail = new MerchantMail\EnterpriseDashboardLoginOtp($email, $otp);
+
+        Mail::queue($loginOtpMail);
+
+        return ['success' => true];
+
     }
 
     protected function uploadLogoIfFound(&$input)

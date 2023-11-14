@@ -4197,6 +4197,8 @@ class Route
         'care_service_chat_proxy'                 => ['post',    'care_service/chat/{path?}',                               'CareProxyController@postChatProxyRequest',                   ],
         'care_service_dark_proxy'                 => ['post',    'care_service/dark/admin',                                 'CareProxyController@postDarkProxyRequest',                   ],
 
+        'internal_enterprise_dashboard_login_otp_email'  => ['post',    'enterprise/login/otp_email',                       'MerchantController@sendLoginOtpEmailForEnterpriseDashboard'],
+
         'internal_merchant_partnership'           => ['get',    'internal/merchant/{merchantId}/partnership',               'MerchantController@isPartnershipMerchant',                   ],
         'cmma_service_admin_proxy'                => ['post',    'cmma_service/admin/{path?}',                              'CmmaProxyController@handleAdminProxyRequests',               ],
         'cmma_service_cron_proxy'                 => ['post',    'cmma_service/cron/{path?}',                               'CmmaProxyController@handleCronProxyRequests'                     ],
@@ -5344,6 +5346,7 @@ class Route
         'payments_api_backfill',
         'refunds_reversal_create',
         'adj_transaction_create',
+        'internal_enterprise_dashboard_login_otp_email',
         'transfer_transaction_create',
         'merchant_entities_info',
         'merchant_submit_internal',
@@ -16674,6 +16677,7 @@ class Route
             'merchant_document_upload_internal',
             'payment_fetch_by_id_internal',
             'website_section_fetch_internal',
+            'internal_enterprise_dashboard_login_otp_email',
         ],
 
         'cmma' => [
