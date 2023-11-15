@@ -71,7 +71,7 @@ class GifuFile extends Base\BaseGifuFile
             foreach ($settlementIds as $settlementId)
             {
                 $transactions = $this->repo->transaction
-                    ->getBySettlementIdAndTypes($settlementId, [Type::PAYMENT, Type::REFUND], $this->connectionType);
+                    ->getBySettlementIdAndTypes($settlementId, [Type::PAYMENT, Type::REFUND, Type::REVERSAL], $this->connectionType);
                 $adjustments = $this->repo->transaction
                     ->getDisputesBySettlementId($settlementId, $this->connectionType);
                 if($adjustments !== null)
@@ -104,6 +104,7 @@ class GifuFile extends Base\BaseGifuFile
                         switch ($transaction->getType())
                         {
                             case Type::PAYMENT:
+                            case Type::REVERSAL:
                                 $netAmountValue = $this->getAmountInRupee($transaction->getCredit());
                                 $creditTypeValue = 1;
                                 break;
