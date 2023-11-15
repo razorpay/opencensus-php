@@ -312,6 +312,7 @@ describe('PaymentDetails', () => {
     stateSpy.mockReturnValue({
       session: {
         user: new User({
+          merchant: { currency: 'MYR' },
           features: ['Marketplace'],
         }),
       },

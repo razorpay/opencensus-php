@@ -89,7 +89,7 @@ function PaymentDetails(props) {
   const scroller = useRef();
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
   const [isUPIVisible, setUPIVisible] = useState(false);
-  const currency = payment.currency;
+  const currency = user.merchant.currency;
   const isRZPOrg = user.isOrgRZP;
   const { isConfigTagEnabled } = useI18Service();
 
