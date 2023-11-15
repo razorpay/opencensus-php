@@ -2044,6 +2044,21 @@ class Service extends Base\Service
         return ($expEnable === true) && (isset($input[Entity::NOTES]) === true);
     }
 
+    public function fetchMultipleInternal(array $input): array
+    {
+        $this->trace->info(TraceCode::PAYMENTS_BULK_FETCH, [
+            'filters'     => $input,
+        ]);
+
+        $this->modifyInputForVATransaction($input);
+
+        $payments = $this->repo
+            ->payment
+            ->fetchPaymentWithForceIndex($input);
+
+        return $payments->toArrayAdmin();
+    }
+
     public function fetchMultiple(array $input)
     {
         $merchantId = $this->merchant->getId();
@@ -2316,6 +2331,7 @@ class Service extends Base\Service
         $entity = array_merge($entity,[
             Entity::AUTHORIZED_AT => $payment->getAuthorizeTimestamp(),
             Entity::CAPTURED_AT => $payment->getCapturedAt(),
+            Entity::MERCHANT_ID => $paymentMerchantId,
         ]);
 
         if ($entity['order_id'] != null)

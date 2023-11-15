@@ -104,6 +104,14 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
+    public function getPaymentsInternal() {
+        $input = Request::all();
+
+        $payments = $this->service()->fetchMultipleInternal($input);
+
+        return ApiResponse::json($payments);
+    }
+
     /**
      * Retrieves payment details
      */

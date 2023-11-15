@@ -146,6 +146,8 @@ class CareProxyController extends Controller
 
     const SAV_FETCH_FD_KB_ARTICLE = 'twirp/rzp.care.sav.v1.SavService/FetchFdKbArticle';
 
+    const SAV_UNIVERSAL_SEARCH = 'twirp/rzp.care.sav.v1.SavService/UniversalSearch';
+
     const SAV_CREATE_ALERT = 'twirp/rzp.care.sav.v1.AlertManagementService/CreateAlert';
 
     const SAV_UPDATE_ALERT = 'twirp/rzp.care.sav.v1.AlertManagementService/UpdateAlert';
@@ -210,6 +212,7 @@ class CareProxyController extends Controller
         self::SAV_LIST_ALERTS                         => Name::VIEW_SAV_ALERT,
         self::SAV_FETCH_ALERT                         => Name::VIEW_SAV_ALERT,
         self::SAV_FETCH_AGENT_ALERTS                  => Name::VIEW_SAV_AGENT_ALERT,
+        self::SAV_UNIVERSAL_SEARCH                    => Name::VIEW_ALL_ENTITY
     ];
 
     /**
@@ -318,6 +321,7 @@ class CareProxyController extends Controller
         self::SAV_LIST_ALERTS,
         self::SAV_FETCH_ALERT,
         self::SAV_FETCH_AGENT_ALERTS,
+        self::SAV_UNIVERSAL_SEARCH,
     ];
 
     const CHAT_ROUTES = [
