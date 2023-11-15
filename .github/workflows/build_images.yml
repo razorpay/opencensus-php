@@ -304,68 +304,69 @@ jobs:
           tags: c.rzp.io/razorpay/api:e2e_${{ github.sha }}
 
   # Triggers end-to-end test execution with argo workflow as executor
-  e2e-test-webhook:
-    name: E2E test webhook
-    runs-on:
-      - self-hosted
-      - api
-      - X64
-    needs: [ build-e2e ]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Find current pr
-        # Find the PR associated with this push, if there is one.
-        uses: jwalton/gh-find-current-pr@v1.3.0
-        id: findPr
-        with:
-          # Can be "open", "closed", or "all".  Defaults to "open".
-          state: open
-      - name: Triggers argo workflows webhook to execute e2e tests
-        if: ${{ steps.findPr.outputs.pr != '' }}
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: 'https://argo.dev.razorpay.in/api/v1/events/argo-workflows/api'
-          method: 'POST'
-          bearerToken: ${{ secrets.ARGO_TOKEN }}
-          data: >
-            {
-               "kube_manifests_ref": "master",
-               "self": {
-                   "name": "api",
-                   "commit_id": "${{ github.sha }}",
-                   "chart_values": {
-                      "replicas": 2,
-                      "web_requests_cpu": "150m",
-                      "web_requests_memory": "200Mi"
-                   }
-               },
-               "dependencies": [
-                      {
-                          "name": "pg-router",
-                          "commit_id": "",
-                          "chart_values": {
-                              "ephemeral_db": false,
-                              "replicas": 1
-                          }
-                      },
-                      {
-                          "name": "terminals",
-                          "commit_id": "",
-                          "chart_values": {
-                              "ephemeral_db": false,
-                              "replicas": 1
-                          }
-                      },
-                      {
-                          "name": "payment-links",
-                          "commit_id": "",
-                          "chart_values": {
-                              "ephemeral_db": false,
-                              "replicas": 1
-                          }
-                      }
-                  ]
-            }
+  #disabling this the E2E tests are migrated to orchestrator 
+  # e2e-test-webhook:
+  #   name: E2E test webhook
+  #   runs-on:
+  #     - self-hosted
+  #     - api
+  #     - X64
+  #   needs: [ build-e2e ]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Find current pr
+  #       # Find the PR associated with this push, if there is one.
+  #       uses: jwalton/gh-find-current-pr@v1.3.0
+  #       id: findPr
+  #       with:
+  #         # Can be "open", "closed", or "all".  Defaults to "open".
+  #         state: open
+  #     - name: Triggers argo workflows webhook to execute e2e tests
+  #       if: ${{ steps.findPr.outputs.pr != '' }}
+  #       uses: fjogeleit/http-request-action@master
+  #       with:
+  #         url: 'https://argo.dev.razorpay.in/api/v1/events/argo-workflows/api'
+  #         method: 'POST'
+  #         bearerToken: ${{ secrets.ARGO_TOKEN }}
+  #         data: >
+  #           {
+  #              "kube_manifests_ref": "master",
+  #              "self": {
+  #                  "name": "api",
+  #                  "commit_id": "${{ github.sha }}",
+  #                  "chart_values": {
+  #                     "replicas": 2,
+  #                     "web_requests_cpu": "150m",
+  #                     "web_requests_memory": "200Mi"
+  #                  }
+  #              },
+  #              "dependencies": [
+  #                     {
+  #                         "name": "pg-router",
+  #                         "commit_id": "",
+  #                         "chart_values": {
+  #                             "ephemeral_db": false,
+  #                             "replicas": 1
+  #                         }
+  #                     },
+  #                     {
+  #                         "name": "terminals",
+  #                         "commit_id": "",
+  #                         "chart_values": {
+  #                             "ephemeral_db": false,
+  #                             "replicas": 1
+  #                         }
+  #                     },
+  #                     {
+  #                         "name": "payment-links",
+  #                         "commit_id": "",
+  #                         "chart_values": {
+  #                             "ephemeral_db": false,
+  #                             "replicas": 1
+  #                         }
+  #                     }
+  #                 ]
+  #           }
 
   build-slit:
     name: SLIT test build
