@@ -2420,7 +2420,6 @@ class Core extends Base\Core
 
     public function fetchCardMerchantListByFingerprint($fingerprint, $account_ids)
     {
-        $default_limit = 1000;
 
         $this->trace->info(
             TraceCode::FETCH_MERCHANT_WITH_TOKEN_LIST
@@ -2431,7 +2430,7 @@ class Core extends Base\Core
             $merchant_ids = Merchant\Account\Entity::verifyIdAndStripSignMultiple($account_ids);
 
             // find card entities by fingerprint
-            $cardMerchantIdsWithTokenPresent = $this->repo->card->findCardMerchantIdsByFingerprint($fingerprint, $merchant_ids, $default_limit);
+            $cardMerchantIdsWithTokenPresent = $this->repo->card->findCardMerchantIdsByFingerprint($fingerprint, $merchant_ids);
 
             return array_map(
                 function ($ele){
