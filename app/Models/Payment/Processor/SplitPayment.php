@@ -204,6 +204,7 @@ trait SplitPayment
         $walletPaymentInput[Payment\Entity::SPLIT_AMOUNT] = $input[Payment\Entity::AMOUNT];
         $walletPaymentInput[Payment\Entity::AMOUNT] = $input[Payment\Entity::WALLET_AMOUNT];
         $walletPaymentInput[Payment\Entity::WALLET_USER_ID] = $input[Payment\Entity::WALLET_USER_ID];
+        $walletPaymentInput[Payment\Entity::NOTES] = $input[Payment\Entity::NOTES];
 
         return $walletPaymentInput;
     }
