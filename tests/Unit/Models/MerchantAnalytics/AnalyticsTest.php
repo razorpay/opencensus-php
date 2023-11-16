@@ -97,23 +97,15 @@ class AnalyticsTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    public function testMerchantAnalyticsSrQuery()
+    public function testMerchantAnalyticsOverallCrQuery()
     {
-        $response = $this->dataProcessor->processMerchantAnalyticsResponse($this->testData['sr_pinot_response']);
+        $response = $this->dataProcessor->processMerchantAnalyticsResponse($this->testData['overall_cr_pinot_response']);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertEquals($expectedResponse, $response);
     }
 
-    public function testMerchantAnalyticsCrQuery()
-    {
-        $response = $this->dataProcessor->processMerchantAnalyticsResponse($this->testData['cr_pinot_response']);
-
-        $expectedResponse = $this->testData[__FUNCTION__];
-
-        $this->assertEquals($expectedResponse, $response);
-    }
     public function testMerchantAnalyticsErrorMetricsMethodLevelQuery()
     {
         $response = $this->dataProcessor->processMerchantAnalyticsResponse($this->testData['error_metrics_pinot_response']);

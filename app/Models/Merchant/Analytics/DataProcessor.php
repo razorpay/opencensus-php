@@ -18,14 +18,9 @@ final class DataProcessor
     {
         foreach ($response as $aggregationName => &$aggregation)
         {
-            if (in_array($aggregationName, Constants::CR_RELATED_AGGREGATION_NAMES))
+            if (in_array($aggregationName, Constants::OVERALL_CR_RELATED_AGGREGATION_NAMES))
             {
-                $this->calculateCRAndModifyResult($aggregation);
-            }
-
-            if (in_array($aggregationName, Constants::SR_RELATED_AGGREGATION_NAMES))
-            {
-                $this->calculateSRAndModifyResult($aggregation);
+                $this->calculateOverallCRAndModifyResult($aggregation);
             }
 
             if (in_array($aggregationName, Constants::ERROR_METRICS_RELATED_AGGREGATION_NAMES))
@@ -37,45 +32,7 @@ final class DataProcessor
         return $response;
     }
 
-    private function calculateCRAndModifyResult(array &$aggregation): void
-    {
-        /**
-         * $groupedCounts is associate array, which is used to group the data
-         * acc. to group key and holds the counts of each group.
-         * Key of associate array => Group key.
-         * Value of associate array => Counts of each group.
-         * For more details Refer => Readme file of DataProcessor
-         */
-        $groupedCounts = [];
-        /**
-         * $otherFields is associate array, which is used to group the data
-         * acc. to group key and holds other fields apart from grouping fields for each group.
-         * Key of associate array => Group key.
-         * Value of associate array => Other fields apart from grouping fields for each group.
-         * For more details Refer => Readme file of DataProcessor
-         */
-        $otherFields = [];
-        $data = $aggregation[Constants::RESULT];
-        $groupingFields = Constants::GROUP_BY_FIELDS_FOR_CR;
-
-        foreach ($data as $result)
-        {
-            $groupKey = $this->extractGroupKey($result, $groupingFields);
-            $this->updateGroupedCounts($groupedCounts, $groupKey, $result);
-            $this->updateOtherFields($otherFields, $groupKey, $result, $groupingFields);
-        }
-
-        $groupedCounts = $this->calculatePercentage(
-            $groupedCounts,
-            Constants::TOTAL_NUMBER_OF_SUBMIT_EVENTS,
-            Constants::TOTAL_NUMBER_OF_OPEN_EVENTS,
-        );
-
-        $aggregation[Constants::RESULT] = $this->formatResult($otherFields, $groupedCounts);
-        $aggregation[Constants::TOTAL] = count($aggregation[Constants::RESULT]);
-    }
-
-    private function calculateSRAndModifyResult(array &$aggregation): void
+    private function calculateOverallCRAndModifyResult(array &$aggregation): void
     {
         /**
          * $groupedCounts is associate array, which is used to group the data
@@ -94,20 +51,20 @@ final class DataProcessor
          */
         $otherFields = [];
         $data = $aggregation[Constants::RESULT];
-        $groupingFields = Constants::GROUP_BY_FIELDS_FOR_SR;
+        $groupingFields = Constants::GROUP_BY_FIELDS_FOR_OVERALL_CR;
 
         foreach ($data as $result)
         {
             $groupKey = $this->extractGroupKey($result, $groupingFields);
             $this->updateSuccessfulPaymentsCounts($groupedCounts, $groupKey, $result);
-            $this->updateTotalPaymentsCounts($groupedCounts, $groupKey, $result);
+            $this->updateTotalCheckoutRendersCount($groupedCounts, $groupKey, $result);
             $this->updateOtherFields($otherFields, $groupKey, $result, $groupingFields);
         }
 
         $groupedCounts = $this->calculatePercentage(
             $groupedCounts,
             Constants::NUMBER_OF_SUCCESSFUL_PAYMENTS,
-            Constants::NUMBER_OF_TOTAL_PAYMENTS
+            Constants::TOTAL_CHECKOUT_RENDERS
         );
 
         $aggregation[Constants::RESULT] = $this->formatResult($otherFields, $groupedCounts);
@@ -210,27 +167,6 @@ final class DataProcessor
         return implode('-', $groupKey);
     }
 
-    private function updateGroupedCounts(&$groupedCounts, $groupKey, $result): void
-    {
-        if (isset($groupedCounts[$groupKey]) === false)
-        {
-            $groupedCounts[$groupKey] = [
-                Constants::TOTAL_NUMBER_OF_SUBMIT_EVENTS => 0,
-                Constants::TOTAL_NUMBER_OF_OPEN_EVENTS   => 0,
-            ];
-        }
-
-        if ($result[Constants::SUBMIT_EVENT])
-        {
-            $groupedCounts[$groupKey][Constants::TOTAL_NUMBER_OF_SUBMIT_EVENTS] += $result[Constants::VALUE];
-        }
-
-        if ($result[Constants::OPEN_EVENT])
-        {
-            $groupedCounts[$groupKey][Constants::TOTAL_NUMBER_OF_OPEN_EVENTS] += $result[Constants::VALUE];
-        }
-    }
-
     private function updateGroupedCountsForErrorMetrics(&$groupedCounts, $groupKey, $result): void
     {
         if (isset($groupedCounts[$groupKey][$result[Constants::ERROR_DESCRIPTION]]) === false)
@@ -246,7 +182,7 @@ final class DataProcessor
         if (isset($groupedCounts[$groupKey]) === false)
         {
             $groupedCounts[$groupKey] = [];
-            $groupedCounts[$groupKey][Constants::NUMBER_OF_TOTAL_PAYMENTS] = 0;
+            $groupedCounts[$groupKey][Constants::TOTAL_CHECKOUT_RENDERS] = 0;
             $groupedCounts[$groupKey][Constants::NUMBER_OF_SUCCESSFUL_PAYMENTS] = 0;
         }
 
@@ -265,16 +201,16 @@ final class DataProcessor
         ]);
     }
 
-    private function updateTotalPaymentsCounts(&$groupedCounts, $groupKey, $result): void
+    private function updateTotalCheckoutRendersCount(&$groupedCounts, $groupKey, $result): void
     {
         if (isset($groupedCounts[$groupKey]) === false)
         {
             $groupedCounts[$groupKey] = [];
-            $groupedCounts[$groupKey][Constants::NUMBER_OF_TOTAL_PAYMENTS] = 0;
+            $groupedCounts[$groupKey][Constants::TOTAL_CHECKOUT_RENDERS] = 0;
             $groupedCounts[$groupKey][Constants::NUMBER_OF_SUCCESSFUL_PAYMENTS] = 0;
         }
 
-        $groupedCounts[$groupKey][Constants::NUMBER_OF_TOTAL_PAYMENTS] += $result[Constants::VALUE];
+        $groupedCounts[$groupKey][Constants::TOTAL_CHECKOUT_RENDERS] += $result[Constants::VALUE];
     }
 
     private function updateOtherFields(&$otherFields, $groupKey, $result, $groupingFields): void

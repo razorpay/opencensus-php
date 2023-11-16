@@ -56,7 +56,7 @@ class MerchantAnalyticsTest extends TestCase
         return $testData;
     }
 
-    public function testMerchantAnalyticsSrQuery()
+    public function testMerchantAnalyticsOverallCrQuery()
     {
         $this->ba->proxyAuth();
 
@@ -69,25 +69,7 @@ class MerchantAnalyticsTest extends TestCase
         $this->app->instance('eventManager', $pinotService);
 
         $pinotService->method('query')
-            ->willReturn($this->testData['sr_pinot_response']);
-
-        $this->startTest($testData);
-    }
-
-    public function testMerchantAnalyticsCrQuery()
-    {
-        $this->ba->proxyAuth();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $pinotService = $this->getMockBuilder(HarvesterClient::class)
-            ->setConstructorArgs([$this->app])
-            ->getMock();
-
-        $this->app->instance('eventManager', $pinotService);
-
-        $pinotService->method('query')
-            ->willReturn($this->testData['cr_pinot_response']);
+            ->willReturn($this->testData['overall_cr_pinot_response']);
 
         $this->startTest($testData);
     }
@@ -110,18 +92,7 @@ class MerchantAnalyticsTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testMerchantAnalyticsSrQueryWhenRequiredFieldIsNotPassedExpectsBadRequestException()
-    {
-        $this->expectException(BadRequestValidationFailureException::class);
-
-        $this->ba->proxyAuth();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->startTest($testData);
-    }
-
-    public function testMerchantAnalyticsCrQueryWhenRequiredFieldIsNotPassedExpectsBadRequestException()
+    public function testMerchantAnalyticsOverallCrQueryWhenRequiredFieldIsNotPassedExpectsBadRequestException()
     {
         $this->expectException(BadRequestValidationFailureException::class);
 

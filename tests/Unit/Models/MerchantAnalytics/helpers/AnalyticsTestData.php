@@ -223,16 +223,15 @@ return [
     ],
     'testAnalyticsIndustryLevelQueryInputWhenInvalidAggregationIsPassed' => [
         'aggregations' => [
-            'checkout_industry_level_cr' => [
-                'filter_key' => 'checkout_industry_level_cr',
+            'checkout_industry_level_overall_cr' => [
+                'filter_key' => 'checkout_industry_level_overall_cr',
                 'agg_type'   => 'count',
                 'details'    => [
                     'index'    => '123',
                     'mode'     => 'test',
                     'group_by' => [
                         'histogram_hourly',
-                        'behav_submit_event',
-                        'render_checkout_open_event',
+                        'status',
                     ],
                 ],
             ],
@@ -246,7 +245,7 @@ return [
                     ],
                 ],
             ],
-            'checkout_industry_level_cr' => [
+            'checkout_industry_level_overall_cr' => [
                 [
                     'created_at'        => [
                         'gte' => 1684956600,
@@ -258,8 +257,8 @@ return [
             ],
         ],
     ],
-    'testMerchantAnalyticsSrQuery' => [
-        'checkout_overall_sr' => [
+    'testMerchantAnalyticsOverallCrQuery' => [
+        'checkout_overall_cr' => [
             'total'           => 3,
             'last_updated_at' => 1652959842,
             'result'          => [
@@ -283,16 +282,15 @@ return [
     ],
     'testAnalyticsIndustryLevelQueryInputWhenInvalidFilterIsPassed' => [
         'aggregations' => [
-            'checkout_industry_level_cr' => [
-                'filter_key' => 'checkout_industry_level_cr',
+            'checkout_industry_level_overall_cr' => [
+                'filter_key' => 'checkout_industry_level_overall_cr',
                 'agg_type'   => 'count',
                 'details'    => [
                     'index'    => 'cx_high_level_funnel',
                     'mode'     => 'test',
                     'group_by' => [
                         'histogram_hourly',
-                        'behav_submit_event',
-                        'render_checkout_open_event',
+                        'status',
                     ],
                 ],
             ],
@@ -306,7 +304,7 @@ return [
                     ],
                 ],
             ],
-            'checkout_industry_level_cr' => [
+            'checkout_industry_level_overall_cr' => [
                 [
                     'created_at'       => [
                         'gte' => 1684956600,
@@ -317,41 +315,17 @@ return [
             ],
         ],
     ],
-    'testMerchantAnalyticsCrQuery' => [
-        'checkout_overall_cr' => [
-            'total'           => 3,
-            'last_updated_at' => 1652959842,
-            'result'          => [
-                [
-                    'timestamp'            => 1684956600,
-                    'last_selected_method' => 'card',
-                    'value'                => 33.333333333333336,
-                ],
-                [
-                    'timestamp'            => 1684960200,
-                    'last_selected_method' => 'wallet',
-                    'value'                => 0,
-                ],
-                [
-                    'timestamp'            => 1684967400,
-                    'last_selected_method' => 'wallet',
-                    'value'                => 100,
-                ],
-            ],
-        ],
-    ],
     'testAnalyticsQueryInputWhenInvalidFilterKeyIsPassed' => [
         'aggregations' => [
             'num_transactions' => [
-                'filter_key' => 'checkout_industry_level_cr',
+                'filter_key' => 'checkout_industry_level_overall_cr',
                 'agg_type'   => 'count',
                 'details'    => [
                     'index'    => '123',
                     'mode'     => 'test',
                     'group_by' => [
                         'histogram_hourly',
-                        'behav_submit_event',
-                        'render_checkout_open_event',
+                        'status',
                     ],
                 ],
             ],
@@ -365,7 +339,7 @@ return [
                     ],
                 ],
             ],
-            'checkout_industry_level_cr' => [
+            'checkout_industry_level_overall_cr' => [
                 [
                     'created_at'       => [
                         'gte' => 1684956600,
@@ -391,16 +365,15 @@ return [
                         ],
                     ],
                 ],
-                'checkout_industry_level_cr' => [
-                    'filter_key' => 'checkout_industry_level_cr',
+                'checkout_industry_level_overall_cr' => [
+                    'filter_key' => 'checkout_industry_level_overall_cr',
                     'agg_type'   => 'count',
                     'details'    => [
                         'index'    => 'cx_high_level_funnel',
                         'mode'     => 'test',
                         'group_by' => [
                             'histogram_hourly',
-                            'behav_submit_event',
-                            'render_checkout_open_event',
+                            'status',
                         ],
                     ],
                 ],
@@ -414,7 +387,7 @@ return [
                         ],
                     ],
                 ],
-                'checkout_industry_level_cr' => [
+                'checkout_industry_level_overall_cr' => [
                     [
                         'created_at'        => [
                             'gte' => 1684956600,
@@ -422,6 +395,7 @@ return [
                         ],
                         'checkout_library'  => ['checkoutjs'],
                         'merchant_category' => 'shopping',
+                        'render_checkout_open_event' => 'true',
                     ],
                 ],
                 'agg1'              => [
@@ -449,16 +423,15 @@ return [
                         ],
                     ],
                 ],
-                'checkout_industry_level_cr' => [
-                    'filter_key' => 'checkout_industry_level_cr',
+                'checkout_industry_level_overall_cr' => [
+                    'filter_key' => 'checkout_industry_level_overall_cr',
                     'agg_type'   => 'count',
                     'details'    => [
                         'index'    => 'cx_high_level_funnel',
                         'mode'     => 'test',
                         'group_by' => [
                             'histogram_hourly',
-                            'behav_submit_event',
-                            'render_checkout_open_event',
+                            'status',
                         ],
                     ],
                 ],
@@ -473,7 +446,7 @@ return [
                         'merchant_id'        => '10000000000000',
                     ],
                 ],
-                'checkout_industry_level_cr' => [
+                'checkout_industry_level_overall_cr' => [
                     [
                         'created_at'        => [
                             'gte' => 1684956600,
@@ -483,6 +456,7 @@ return [
                             'checkoutjs',
                         ],
                         'merchant_category' => 'shopping',
+                        'render_checkout_open_event' => 'true',
                     ],
                 ],
                 'agg1'              => [
@@ -515,16 +489,15 @@ return [
                         ],
                     ],
                 ],
-                'checkout_industry_method_level_cr' => [
-                    'filter_key' => 'checkout_industry_method_level_cr',
+                'checkout_industry_method_level_overall_cr' => [
+                    'filter_key' => 'checkout_industry_method_level_overall_cr',
                     'agg_type'   => 'count',
                     'details'    => [
                         'index'    => 'cx_high_level_funnel',
                         'mode'     => 'test',
                         'group_by' => [
                             'histogram_hourly',
-                            'behav_submit_event',
-                            'render_checkout_open_event',
+                            'status',
                             'last_selected_method',
                         ],
                     ],
@@ -539,7 +512,7 @@ return [
                         ],
                     ],
                 ],
-                'checkout_industry_method_level_cr' => [
+                'checkout_industry_method_level_overall_cr' => [
                     [
                         'created_at'        => [
                             'gte' => 1684956600,
@@ -547,6 +520,7 @@ return [
                         ],
                         'checkout_library'  => ['checkoutjs'],
                         'merchant_category' => 'shopping',
+                        'render_checkout_open_event' => 'true',
                     ],
                 ],
                 'agg1'              => [
@@ -574,16 +548,15 @@ return [
                         ],
                     ],
                 ],
-                'checkout_industry_method_level_cr' => [
-                    'filter_key' => 'checkout_industry_method_level_cr',
+                'checkout_industry_method_level_overall_cr' => [
+                    'filter_key' => 'checkout_industry_method_level_overall_cr',
                     'agg_type'   => 'count',
                     'details'    => [
                         'index'    => 'cx_high_level_funnel',
                         'mode'     => 'test',
                         'group_by' => [
                             'histogram_hourly',
-                            'behav_submit_event',
-                            'render_checkout_open_event',
+                            'status',
                             'last_selected_method',
                         ],
                     ],
@@ -599,7 +572,7 @@ return [
                         'merchant_id'        => '10000000000000',
                     ],
                 ],
-                'checkout_industry_method_level_cr' => [
+                'checkout_industry_method_level_overall_cr' => [
                     [
                         'created_at'        => [
                             'gte' => 1684956600,
@@ -609,6 +582,7 @@ return [
                             'checkoutjs',
                         ],
                         'merchant_category' => 'shopping',
+                        'render_checkout_open_event' => 'true',
                     ],
                 ],
                 'agg1'              => [
@@ -711,8 +685,8 @@ return [
             ],
         ],
     ],
-    'sr_pinot_response' => [
-        'checkout_overall_sr' => [
+    'overall_cr_pinot_response' => [
+        'checkout_overall_cr' => [
             'total'           => 8,
             'last_updated_at' => 1652959842,
             'result'          => [
@@ -745,42 +719,6 @@ return [
                     'last_selected_method' => 'wallet',
                     'status'               => 'pending',
                     'value'                => 18,
-                ],
-            ],
-        ],
-    ],
-    'cr_pinot_response' => [
-        'checkout_overall_cr' => [
-            'total'           => 8,
-            'last_updated_at' => 1652959842,
-            'result'          => [
-                [
-                    'timestamp'                  => 1684956600,
-                    'last_selected_method'       => 'card',
-                    'behav_submit_event'         => 1,
-                    'render_checkout_open_event' => 1,
-                    'value'                      => 5,
-                ],
-                [
-                    'timestamp'                  => 1684956600,
-                    'last_selected_method'       => 'card',
-                    'behav_submit_event'         => 0,
-                    'render_checkout_open_event' => 1,
-                    'value'                      => 10,
-                ],
-                [
-                    'timestamp'                  => 1684960200,
-                    'last_selected_method'       => 'wallet',
-                    'behav_submit_event'         => 0,
-                    'render_checkout_open_event' => 1,
-                    'value'                      => 18,
-                ],
-                [
-                    'timestamp'                  => 1684967400,
-                    'last_selected_method'       => 'wallet',
-                    'behav_submit_event'         => 1,
-                    'render_checkout_open_event' => 1,
-                    'value'                      => 18,
                 ],
             ],
         ],

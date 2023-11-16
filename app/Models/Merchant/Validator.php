@@ -3553,15 +3553,13 @@ class Validator extends Base\Validator
         'details.index'            => 'required|string|in:cx_high_level_funnel',
         'details.group_by'         => 'required|array',
         'details.group_by.*'       => 'required|string|in:' .
-            'behav_submit_event,render_checkout_open_event' .
-            ',status,last_selected_method' .
+            'status,last_selected_method' .
             ',histogram_daily,histogram_hourly,histogram_weekly,histogram_monthly',
         'details.histogram_column' => 'created_at',
         'details.mode'             => 'required|string|in:test,live',
         'agg_type'                 => 'required|string|in:count',
         'filter_key'               => 'required|string|in:' .
-            'checkout_industry_level_sr,checkout_industry_level_cr' .
-            ',checkout_industry_method_level_sr,checkout_industry_method_level_cr',
+            'checkout_industry_level_overall_cr,checkout_industry_method_level_overall_cr',
     ];
 
     protected static $industryLevelQueryFilterRules = [
@@ -3570,6 +3568,7 @@ class Validator extends Base\Validator
         'filters.*.checkout_library'   => 'required|array',
         'filters.*.checkout_library.*' => 'string',
         'filters.*.merchant_category'  => 'required|string',
+        'filters.*.render_checkout_open_event'  => 'required|string|in:true',
     ];
 
     public function validateIndustryLevelQuery(array $filters, array $aggregations): void
@@ -3590,14 +3589,9 @@ class Validator extends Base\Validator
             $filterKey = $aggregation[AnalyticsConstants::FILTER_KEY] ?? '';
             $groupBy = $aggregation[AnalyticsConstants::DETAILS][AnalyticsConstants::GROUP_BY] ?? [];
 
-            if (in_array($aggregationName, AnalyticsConstants::CR_RELATED_AGGREGATION_NAMES))
+            if (in_array($aggregationName, AnalyticsConstants::OVERALL_CR_RELATED_AGGREGATION_NAMES))
             {
-                $this->validateGroupByForCrQuery($groupBy);
-            }
-
-            if (in_array($aggregationName, AnalyticsConstants::SR_RELATED_AGGREGATION_NAMES))
-            {
-                $this->validateGroupByForSrQuery($groupBy);
+                $this->validateGroupByForOverallCrQuery($groupBy);
             }
 
             if (in_array($aggregationName, AnalyticsConstants::ERROR_METRICS_RELATED_AGGREGATION_NAMES))
@@ -3626,29 +3620,14 @@ class Validator extends Base\Validator
     /**
      * @throws Exception\BadRequestValidationFailureException
      */
-    private function validateGroupByForCrQuery(array $groupByFields): void
+    private function validateGroupByForOverallCrQuery(array $groupByFields): void
     {
-        $missingStrings = array_diff(AnalyticsConstants::GROUP_BY_FIELDS_FOR_CR, $groupByFields);
+        $missingStrings = array_diff(AnalyticsConstants::GROUP_BY_FIELDS_FOR_OVERALL_CR, $groupByFields);
 
         if (empty($missingStrings) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Group By field is invalid for CR query. Missing required fields: ' . implode(', ', $missingStrings)
-            );
-        }
-    }
-
-    /**
-     * @throws Exception\BadRequestValidationFailureException
-     */
-    private function validateGroupByForSrQuery(array $groupByFields): void
-    {
-        $missingStrings = array_diff(AnalyticsConstants::GROUP_BY_FIELDS_FOR_SR, $groupByFields);
-
-        if (empty($missingStrings) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Group By field is invalid for SR query. Missing required fields: ' . implode(', ', $missingStrings)
+                'Group By field is invalid for Overall CR query. Missing required fields: ' . implode(', ', $missingStrings)
             );
         }
     }

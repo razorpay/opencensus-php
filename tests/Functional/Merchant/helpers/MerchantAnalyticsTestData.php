@@ -112,13 +112,13 @@ return [
             'content'       => [],
         ],
     ],
-    'testMerchantAnalyticsSrQuery' => [
+    'testMerchantAnalyticsOverallCrQuery' => [
         'request' => [
             'url'     => '/merchant/analytics',
             'method'  => 'post',
             'content' => [
                 'aggregations' => [
-                    'checkout_method_level_sr' => [
+                    'checkout_method_level_overall_cr' => [
                         'agg_type' => 'count',
                         'details'  => [
                             'index'            => 'cx_high_level_funnel',
@@ -147,7 +147,7 @@ return [
             'status_code' => 200,
             'success'     => true,
             'content'     => [
-                'checkout_overall_sr' => [
+                'checkout_overall_cr' => [
                     'total'           => 3,
                     'last_updated_at' => 1652959842,
                     'result'          => [
@@ -171,13 +171,13 @@ return [
             ],
         ],
     ],
-    'testMerchantAnalyticsSrQueryWhenRequiredFieldIsNotPassedExpectsBadRequestException' => [
+    'testMerchantAnalyticsOverallCrQueryWhenRequiredFieldIsNotPassedExpectsBadRequestException' => [
         'request' => [
             'url'     => '/merchant/analytics',
             'method'  => 'post',
             'content' => [
                 'aggregations' => [
-                    'checkout_method_level_sr' => [
+                    'checkout_method_level_overall_cr' => [
                         'agg_type' => 'count',
                         'details'  => [
                             'index'            => 'cx_high_level_funnel',
@@ -196,96 +196,6 @@ return [
                         'producer_timestamp' => [
                             'gte' => 1684956600,
                             'lte' => 1684974800,
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ],
-    'testMerchantAnalyticsCrQuery' => [
-        'request' => [
-            'url'     => '/merchant/analytics',
-            'method'  => 'post',
-            'content' => [
-                'aggregations' => [
-                    'checkout_method_level_cr' => [
-                        'agg_type' => 'count',
-                        'details'  => [
-                            'index'            => 'cx_high_level_funnel',
-                            'histogram_column' => 'created_at',
-                            'group_by'         => [
-                                'behav_submit_event',
-                                'render_checkout_open_event',
-                                'histogram_hourly',
-                                'last_selected_method',
-                            ],
-                        ],
-                    ],
-                ],
-                'filters'      => [
-                    'default' => [
-                        [
-                            'producer_timestamp' => [
-                                'gte' => 1684956600,
-                                'lte' => 1684974800,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'checkout_overall_cr' => [
-                    'total'           => 3,
-                    'last_updated_at' => 1652959842,
-                    'result'          => [
-                        [
-                            'timestamp'            => 1684956600,
-                            'last_selected_method' => 'card',
-                            'value'                => 33.333333333333336,
-                        ],
-                        [
-                            'timestamp'            => 1684960200,
-                            'last_selected_method' => 'wallet',
-                            'value'                => 0,
-                        ],
-                        [
-                            'timestamp'            => 1684967400,
-                            'last_selected_method' => 'wallet',
-                            'value'                => 100,
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ],
-    'testMerchantAnalyticsCrQueryWhenRequiredFieldIsNotPassedExpectsBadRequestException' => [
-        'request' => [
-            'url'     => '/merchant/analytics',
-            'method'  => 'post',
-            'content' => [
-                'aggregations' => [
-                    'checkout_method_level_sr' => [
-                        'agg_type' => 'count',
-                        'details'  => [
-                            'index'            => 'cx_high_level_funnel',
-                            'histogram_column' => 'created_at',
-                            'group_by'         => [
-                                'behav_submit_event',
-                                'histogram_hourly',
-                                'last_selected_method',
-                            ],
-                        ],
-                    ],
-                ],
-                'filters'      => [
-                    'default' => [
-                        [
-                            'producer_timestamp' => [
-                                'gte' => 1684956600,
-                                'lte' => 1684974800,
-                            ],
                         ],
                     ],
                 ],
@@ -399,8 +309,8 @@ return [
             ],
         ],
     ],
-    'sr_pinot_response' => [
-        'checkout_overall_sr' => [
+    'overall_cr_pinot_response' => [
+        'checkout_overall_cr' => [
             'total'           => 8,
             'last_updated_at' => 1652959842,
             'result'          => [
@@ -433,42 +343,6 @@ return [
                     'last_selected_method' => 'wallet',
                     'status'               => 'pending',
                     'value'                => 18,
-                ],
-            ],
-        ],
-    ],
-    'cr_pinot_response' => [
-        'checkout_overall_cr' => [
-            'total'           => 8,
-            'last_updated_at' => 1652959842,
-            'result'          => [
-                [
-                    'timestamp'                  => 1684956600,
-                    'last_selected_method'       => 'card',
-                    'behav_submit_event'         => 1,
-                    'render_checkout_open_event' => 1,
-                    'value'                      => 5,
-                ],
-                [
-                    'timestamp'                  => 1684956600,
-                    'last_selected_method'       => 'card',
-                    'behav_submit_event'         => 0,
-                    'render_checkout_open_event' => 1,
-                    'value'                      => 10,
-                ],
-                [
-                    'timestamp'                  => 1684960200,
-                    'last_selected_method'       => 'wallet',
-                    'behav_submit_event'         => 0,
-                    'render_checkout_open_event' => 1,
-                    'value'                      => 18,
-                ],
-                [
-                    'timestamp'                  => 1684967400,
-                    'last_selected_method'       => 'wallet',
-                    'behav_submit_event'         => 1,
-                    'render_checkout_open_event' => 1,
-                    'value'                      => 18,
                 ],
             ],
         ],

@@ -15,41 +15,27 @@ class Constants
     public const FILTER_KEY = 'filter_key';
     public const AGGREGATIONS = 'aggregations';
 
-    public const SUBMIT_EVENT = 'behav_submit_event';
-    public const OPEN_EVENT = 'render_checkout_open_event';
-
-    public const GROUP_BY_FIELDS_FOR_CR = [self::SUBMIT_EVENT, self::OPEN_EVENT];
-    public const GROUP_BY_FIELDS_FOR_SR = [Payment\Entity::STATUS];
+    public const GROUP_BY_FIELDS_FOR_OVERALL_CR = [Payment\Entity::STATUS];
     public const GROUP_BY_FIELDS_FOR_ERROR_METRICS = ['error_description', 'value'];
 
-    public const TOTAL_NUMBER_OF_SUBMIT_EVENTS = 'total_number_of_submit_events';
-    public const TOTAL_NUMBER_OF_OPEN_EVENTS = 'total_number_of_open_events';
 
     public const NUMBER_OF_SUCCESSFUL_PAYMENTS = 'number_of_successful_payments';
-    public const NUMBER_OF_TOTAL_PAYMENTS = 'number_of_total_payments';
+    public const TOTAL_CHECKOUT_RENDERS = 'total_checkout_renders';
 
     public const CHECKOUT_METHOD_LEVEL_TOP_ERROR_REASONS = 'checkout_method_level_top_error_reasons';
 
-    public const SR_RELATED_AGGREGATION_NAMES = [
-        'checkout_overall_sr',
-        'checkout_method_level_sr',
-        'checkout_instrument_level_sr',
-        'checkout_industry_level_sr',
-        'checkout_industry_method_level_sr',
-    ];
-    public const CR_RELATED_AGGREGATION_NAMES = [
+    // Overall CR = CR * SR
+    public const OVERALL_CR_RELATED_AGGREGATION_NAMES = [
         'checkout_overall_cr',
-        'checkout_method_level_cr',
-        'checkout_instrument_level_cr',
-        'checkout_industry_level_cr',
-        'checkout_industry_method_level_cr',
+        'checkout_method_level_overall_cr',
+        'checkout_instrument_level_overall_cr',
+        'checkout_industry_level_overall_cr',
+        'checkout_industry_method_level_overall_cr',
     ];
 
     public const INDUSTRY_LEVEL_QUERIES = [
-        'checkout_industry_level_sr',
-        'checkout_industry_level_cr',
-        'checkout_industry_method_level_sr',
-        'checkout_industry_method_level_cr',
+        'checkout_industry_level_overall_cr',
+        'checkout_industry_method_level_overall_cr',
     ];
 
     public const ERROR_METRICS_RELATED_AGGREGATION_NAMES = [
