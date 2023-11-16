@@ -100,6 +100,21 @@ class Repository extends Base\Repository
                 ->orderBy(Common::CREATED_AT,'asc')
                 ->get();
         }
+        else if($method == 'debit_emi')
+        {
+            $emiColumn = $this->dbColumn('emi');
+            $emi = 2;
+            return $this->newQuery()
+                ->take($count)
+                ->where(function ($query) use ($emiColumn,$emi)
+                {
+                    $query->where($emiColumn, '=', $emi)
+                        ->orWhere($emiColumn, '=', $emi+1);
+                })
+                ->where(Common::CREATED_AT, '>', $from)
+                ->orderBy(Common::CREATED_AT,'asc')
+                ->get();
+        }
         else if($method == 'paylater' or $method == 'cardless_emi')
         {
             return $this->newQuery()

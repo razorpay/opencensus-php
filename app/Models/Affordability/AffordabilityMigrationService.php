@@ -320,11 +320,11 @@ class AffordabilityMigrationService extends Base\Service
         return $updatedInstruments;
     }
 
-    public function getRequestBodyToUpdateSpecificInstrument($gateway,$instrument)
+    public function getRequestBodyToUpdateSpecificInstrument($method, $instrument)
     {
         $updatedInstruments = [];
 
-        if ($gateway == 'paylater')
+        if ($method == 'paylater')
         {
             $updatedInstruments  = [
                 'paylater_providers' => [
@@ -334,7 +334,7 @@ class AffordabilityMigrationService extends Base\Service
 
         }
 
-        else if($gateway == 'cardless_emi')
+        else if($method == 'cardless_emi')
         {
             $updatedInstruments  = [
                 'cardless_emi_providers' => [
@@ -343,10 +343,20 @@ class AffordabilityMigrationService extends Base\Service
             ];
         }
 
-        else if($gateway == 'credit_emi')
+        else if($method == 'credit_emi')
         {
             $updatedInstruments  = [
                 'credit_emi_providers' => [
+                    $instrument => '1'
+                ]
+            ];
+
+        }
+
+        else if($method == 'debit_emi')
+        {
+            $updatedInstruments  = [
+                'debit_emi_providers' => [
                     $instrument => '1'
                 ]
             ];
