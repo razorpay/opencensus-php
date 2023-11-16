@@ -127,6 +127,7 @@ class Gateway
     const UPI_YESBANK            = 'upi_yesbank';
     const UPI_KOTAK              = 'upi_kotak';
     const UPI_RZPRBL             = 'upi_rzprbl';
+    const UPI_RZPAPB             = 'upi_rzpapb';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
@@ -1939,6 +1940,7 @@ class Gateway
         self::UPI_JUSPAY,
         self::UPI_KOTAK,
         self::UPI_RZPRBL,
+        self::UPI_RZPAPB,
         self::WALLET_PHONEPE,
         self::CRED,
         self::CASHFREE,
@@ -3098,6 +3100,7 @@ class Gateway
         Gateway::UPI_JUSPAY,
         Gateway::UPI_KOTAK,
         Gateway::UPI_RZPRBL,
+        Gateway::UPI_RZPAPB,
         Gateway::PAYU,
         Gateway::PAYTM,
         // Cybersource does not make s2s callback, Google Pay makes s2s callback for payments
@@ -3629,6 +3632,7 @@ class Gateway
         Gateway::UPI_AXISOLIVE,
         Gateway::UPI_KOTAK,
         Gateway::UPI_RZPRBL,
+        Gateway::UPI_RZPAPB,
         Gateway::CASHFREE,
         Gateway::PAYTM,
         Gateway::PAYU,
@@ -4990,6 +4994,7 @@ class Gateway
             self::UPI_KOTAK,
             self::UPI_AXISOLIVE,
             self::UPI_RZPRBL,
+            self::UPI_RZPAPB,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -5003,6 +5008,7 @@ class Gateway
             self::UPI_KOTAK,
             self::UPI_AXISOLIVE,
             self::UPI_RZPRBL,
+            self::UPI_RZPAPB,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -5014,6 +5020,7 @@ class Gateway
             self::UPI_KOTAK,
             self::UPI_AXISOLIVE,
             self::UPI_RZPRBL,
+            self::UPI_RZPAPB,
             self::UPI_YESBANK,
             self::UPI_ICICI,
             self::UPI_AXIS,
@@ -5027,6 +5034,7 @@ class Gateway
         $gateways = [
             self::UPI_KOTAK,
             self::UPI_RZPRBL,
+            self::UPI_RZPAPB,
         ];
 
         return (in_array($gateway, $gateways, true));

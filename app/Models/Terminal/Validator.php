@@ -149,6 +149,7 @@ class Validator extends Base\Validator
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::UPI_KOTAK,
         Payment\Gateway::UPI_RZPRBL,
+        Payment\Gateway::UPI_RZPAPB,
         Payment\Gateway::ISG,
         Payment\Gateway::PAYLATER,
         Payment\Gateway::CARDLESS_EMI,
@@ -276,6 +277,16 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
+
+    protected static $upiRzpapbTerminalRules = [
+            Entity::GATEWAY                    => 'required|in:upi_rzpapb',
+            Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+            Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+            Entity::VPA                        => 'required|string',
+            Entity::UPI                        => 'required|boolean|in:1',
+            Entity::TYPE                       => 'sometimes|array',
+            Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        ];
 
     protected static $upiCitiTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_citi',
@@ -1219,6 +1230,17 @@ class Validator extends Base\Validator
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
+
+    protected static $upiRzpapbEditTerminalRules = [
+            Entity::GATEWAY                    => 'sometimes|in:upi_rzpapb',
+            Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+            Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+            Entity::VPA                        => 'sometimes|string',
+            Entity::UPI                        => 'sometimes|boolean|in:1',
+            Entity::TYPE                       => 'sometimes|array',
+            Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+            Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        ];
 
     protected static $upiCitiEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',

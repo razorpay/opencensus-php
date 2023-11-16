@@ -4396,6 +4396,32 @@ return [
             ]
         ]
     ],
+
+    'testCreateUpiRzpapbTerminal' => [
+            'request'   => [
+                'content'   => [
+                    'gateway'                       => 'upi_rzpapb',
+                    'gateway_acquirer'              => 'rbl',
+                    'category'                      => '1234',
+                    'gateway_merchant_id'           => 'VtaMPNpoFglc',
+                    'gateway_merchant_id2'          => 'KwwvvxPNpoTeli',
+                    'upi'                           => 1,
+                    'vpa'                           => 'kk@rzp',
+                    'type'                          => [
+                        'non_recurring'             => '1',
+                        'pay'                       => '1'
+                    ],
+                ]
+            ],
+            'response'  => [
+                'content'  => [
+                    'gateway_merchant_id'       => 'VtaMPNpoFglc',
+                    'gateway_acquirer'          => 'airtel',
+                    'enabled'                   => true,
+                ]
+            ]
+      ],
+
     'testCreateCybersourceYesBTerminal'      => [
         'request'   => [
             'content'   => [

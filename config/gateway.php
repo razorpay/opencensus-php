@@ -154,6 +154,7 @@ return [
         'icici',
         'upi_kotak',
         "upi_rzprbl",
+        "upi_rzpapb",
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -279,6 +280,7 @@ return [
     'mock_rupay_sihub'            => env('RUPAY_SIHUB_MOCK'),
     'mock_upi_kotak'              => env('UPI_KOTAK_MOCK'),
     'mock_upi_rzprbl'             => env('UPI_RZPRBL_MOCK'),
+    'mock_upi_rzpapb'             => env('UPI_RZPAPB_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 

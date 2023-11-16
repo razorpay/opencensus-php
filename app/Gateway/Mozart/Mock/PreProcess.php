@@ -499,6 +499,11 @@ class PreProcess extends Base\Mock\Server
         return $this->upi($entities);
     }
 
+    public function upi_rzpapb(array $entities): array
+        {
+            return $this->upi($entities);
+        }
+
     protected function upi(array $entities): array
     {
         assertTrue($entities['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE);

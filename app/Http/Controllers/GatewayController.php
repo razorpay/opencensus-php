@@ -781,6 +781,11 @@ class GatewayController extends Controller
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;
 
+            case Gateway::UPI_RZPAPB:
+                            $input = Request::getContent();
+                            $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
+                            break;
+
             case Gateway::UPI_ICICI:
                 $input = Request::getContent();
 

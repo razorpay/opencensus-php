@@ -427,6 +427,7 @@ class Entity
     const CURRENCY_CLOUD         = 'currency_cloud';
     const UPI_KOTAK              = 'upi_kotak';
     const UPI_RZPRBL             = 'upi_rzprbl';
+    const UPI_RZPAPB             = 'upi_rzpapb';
 
     // P2P Service Entities
     const P2P_VPA                = 'p2p_vpa';
@@ -1333,6 +1334,7 @@ class Entity
         self::EMERCHANTPAY           => \RZP\Gateway\Mozart::class,
         self::BT_RBL                 => \RZP\Gateway\Mozart::class,
         self::CURRENCY_CLOUD         => \RZP\Gateway\Mozart::class,
+        self::UPI_RZPAPB             => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,
@@ -1565,6 +1567,7 @@ class Entity
         self::PAYTM                  => \RZP\Gateway\Upi\Base::class,
         self::UPI_KOTAK              => \RZP\Gateway\Upi\Base::class,
         self::UPI_RZPRBL             => \RZP\Gateway\Upi\Base::class,
+        self::UPI_RZPAPB             => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
 
