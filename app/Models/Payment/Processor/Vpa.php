@@ -291,11 +291,11 @@ trait Vpa
 
         if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_SBI))
         {
-            $terminalIds = ['AK6NMmzbL6FPe4', '6KTOhwf4XBOMns', 'K0Hqvray6HQhfA', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8'];
+            $terminalIds = ['AK6NMmzbL6FPe4', '6KTOhwf4XBOMns', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8'];
         }
         else if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_ICICI))
         {
-            $terminalIds = ['6KTOhwf4XBOMns', 'K0Hqvray6HQhfA', 'AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8'];
+            $terminalIds = ['6KTOhwf4XBOMns', 'AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8'];
         }
         else if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_AIRTEL))
         {
