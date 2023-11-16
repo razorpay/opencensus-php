@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const TYPE                = 'type';
     const BLOCK               = 'block';
     const IS_LOW_COST_OFFER   = 'is_low_cost_offer';
+    const HAS_IINS            = 'has_iins';
     /**
      * Flag to denote if offer needs to be displayed on checkout always or
      * conditionally when associated with order
@@ -721,6 +722,11 @@ class Entity extends Base\PublicEntity
             $is_low_cost_offer = true;
         }
 
+        $hasIins = false;
+        if (!empty($this->getIins())) {
+            $hasIins = true;
+        }
+
         $data = [
             self::ID              => $this->getPublicId(),
             self::NAME            => $this->getAttribute(self::NAME),
@@ -732,6 +738,8 @@ class Entity extends Base\PublicEntity
             self::EMI_SUBVENTION  => $this->getAttribute(self::EMI_SUBVENTION),
             self::TYPE            => $this->getAttribute(self::TYPE),
             self::TERMS           => $this->getTerms(),
+            self::MAX_CASHBACK    => $this->getMaxCashback(),
+            self::HAS_IINS        => $hasIins,
             self::IS_LOW_COST_OFFER => $is_low_cost_offer,
         ];
 

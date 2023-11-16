@@ -1056,6 +1056,7 @@ return [
                         'original_amount' => 100000,
                         'amount' => 90000,
                         'terms' => "Terms and Condition",
+                        'has_iins' => true,
                     ],
                     [
                         'name' => "Test Offer",
@@ -1065,8 +1066,10 @@ return [
                         'issuer' => "HDFC",
                         'type' => "instant",
                         'original_amount' => 100000,
-                        'amount' => 90000,
+                        'amount' => 99900,
                         'terms' => "Terms and Condition",
+                        'has_iins' => true,
+                        'max_cashback' => 100,
                     ],
                     [
                     'name' => "Test Offer",
@@ -1075,11 +1078,22 @@ return [
                     'payment_network' => "VISA",
                     'issuer' => "HDFC",
                     'type' => "deferred",
-                    'original_amount' => 100000,
-                    'amount' => 100000,
                     'terms' => "Terms and Condition",
                     'cashback_amount' => 10000,
-                ]
+                    'has_iins' => true,
+                    ],
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_method_type' => "credit",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "instant",
+                        'original_amount' => 100000,
+                        'amount' => 99900,
+                        'terms' => "Terms and Condition",
+                        'max_cashback' => 100,
+                    ]
                 ]
             ],
         ],
@@ -1109,6 +1123,7 @@ return [
                         'original_amount' => 100000,
                         'amount' => 90000,
                         'terms' => "Terms and Condition",
+                        'has_iins' => true,
                     ],
                     [
                         'name' => "Test Offer",

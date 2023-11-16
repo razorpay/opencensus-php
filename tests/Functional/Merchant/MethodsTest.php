@@ -1684,13 +1684,15 @@ class MethodsTest extends TestCase
         $this->fixtures->merchant->enablePaytm();
 
         $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
-        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'], 'max_cashback' => 100]);
         $offer3 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'], 'type' => 'deferred']);
+        $offer4 = $this->fixtures->create('offer:live_card', ['iins' => [], 'max_cashback' => 100]);
 
         $order = $this->fixtures->order->createWithOffers([
                                                               $offer1,
                                                               $offer2,
                                                               $offer3,
+                                                              $offer4,
                                                           ]);
 
         $testData = $this->testData[__FUNCTION__];
@@ -1702,6 +1704,8 @@ class MethodsTest extends TestCase
         $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
         $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
         $this->assertEquals($offer3->getPublicId(), $response['offers'][2]['id']);
+        $this->assertEquals($offer4->getPublicId(), $response['offers'][3]['id']);
+        $this->assertNotContains('has_iins', array_keys($response['offers'][3]));
     }
 
     public function testGetPaymentMethodsAndOffersForCheckoutForB2BExportForPaymentLinkWithOrder(): void
