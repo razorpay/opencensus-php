@@ -50,18 +50,8 @@ class Repository extends Base\Repository
 
         $dcs = $this->app['dcs'];
         $dcsResponse = $dcs->getDcsEnabledFeatures($entityType, $entityId, $mode);
-        return $this->mergeUniqueArrays($apiResponse, $dcsResponse);
-    }
 
-    private function mergeUniqueArrays($arr1, $arr2){
-        foreach ($arr2 as $element)
-        {
-            if (!in_array($element, $arr1))
-            {
-                $arr1[] = $element;
-            }
-        }
-        return $arr1;
+        return $apiResponse->concat($dcsResponse)->unique(Entity::NAME);
     }
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
