@@ -1336,6 +1336,18 @@ class PayoutServiceTest extends TestCase
         return $payoutServiceGetMock;
     }
 
+    public function mockPayoutServiceUpdateFreePayoutShouldNotBeInvoked()
+    {
+        $updateFreePayoutMock = Mockery::mock('RZP\Services\PayoutService\FreePayout',
+            [$this->app])->makePartial();
+
+        $updateFreePayoutMock->shouldNotReceive('updateFreePayoutAttributesViaMicroservice');
+
+        $this->app->instance(PayoutServiceFreePayout::PAYOUT_SERVICE_FREE_PAYOUT, $updateFreePayoutMock);
+
+        return $updateFreePayoutMock;
+    }
+
     public function mockPayoutServiceGetFreePayout($fail = false, $request = [])
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
@@ -6538,6 +6550,28 @@ class PayoutServiceTest extends TestCase
             'live')->pluck('name')->toArray();
 
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
+    }
+
+    public function testUpdateFreePayoutsCountAndMode_DirectAccount()
+    {
+        $this->mockPayoutServiceUpdateFreePayoutShouldNotBeInvoked();
+
+        $balance = $this->fixtures->create('balance',
+            [
+                Balance::ACCOUNT_TYPE => AccountType::DIRECT,
+                Balance::TYPE         => Type::BANKING,
+            ]);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateFreePayoutsCountAndMode'];
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->testData[__FUNCTION__]['response']['content']['free_payouts_count'] = '12';
+
+        $this->startTest();
     }
 
     public function testUpdateFreePayoutsCountAndMode()

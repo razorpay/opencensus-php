@@ -149,7 +149,8 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if ($merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED))
+        if ($merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) &&
+            ($balance->isAccountTypeShared() === true))
         {
             return $this->payoutServiceFreePayoutClient->updateFreePayoutAttributesViaMicroservice($balanceId, $input);
         }
