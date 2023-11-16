@@ -581,6 +581,9 @@ final class RazorxTreatment
     // Experiment to control Emandate Nach payments processing for async balance merchants through worker queues
     const EMANDATE_ASYNC_PAYMENT_WITH_ASYNC_BAL_ENABLED = 'emandate_async_payment_with_async_balance';
 
+    // Experiment to send emandate esign payment's on signdesk gateway's new service
+    const ESIGN_REQUEST_ON_NEW_SERVICE_ENABLED = 'esign_request_on_new_service_enabled';
+
     // Experiment to cache terminals for bank Transfer
     const SMART_COLLECT_TERMINAL_CACHING = 'smart_collect_terminal_caching';
 

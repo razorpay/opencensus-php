@@ -15,6 +15,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Settlement\Holidays;
 use RZP\Gateway\Enach\Base\CategoryCode;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Gateway extends Base\Gateway
 {
@@ -31,7 +32,20 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $request = $this->getMandateCreationRequestArray($input);
+        $routeToNewService = $this->routeToNewEsignService($input['merchant']['id'], $this->mode);
+
+        $request = $this->getMandateCreationRequestArray($input, $routeToNewService);
+
+        if ($routeToNewService === true)
+        {
+            $request['url'] = Url::LIVE_DOMAIN_V2 . Url::CREATE;
+            $this->trace->info(
+                TraceCode::EMANDATE_ROUTE_TO_NEW_SIGNDESK_SERVICE,
+                [
+                    'url'    => $request['url']
+                ]
+            );
+        }
 
         $traceContent = $request;
 
@@ -175,6 +189,19 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content, 'POST', 'fetch', true);
 
+        $routeToNewService = $this->routeToNewEsignService($input['merchant']['id'], $this->mode);
+
+        if ($routeToNewService === true)
+        {
+            $request['url'] = Url::LIVE_DOMAIN_V2 . Url::FETCH;
+            $this->trace->info(
+                TraceCode::EMANDATE_ROUTE_TO_NEW_SIGNDESK_SERVICE,
+                [
+                    'url'    => $request['url']
+                ]
+            );
+        }
+
         $traceContent = $request;
 
         unset($traceContent['headers']);
@@ -283,7 +310,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getMandateCreationRequestArray(array $input)
+    protected function getMandateCreationRequestArray(array $input, bool $newService = false)
     {
         $nextWorkingDt = $this->getNextWorkingDate($input)->format('Y-m-d');
 
@@ -329,6 +356,13 @@ class Gateway extends Base\Gateway
         if ($input['payment']['auth_type'] === Payment\AuthType::AADHAAR_FP)
         {
             $content[RequestFields::ESIGN_TYPE] = Constants::ESIGN_TYPE_BIOMETRIC;
+        }
+
+        if ($newService === true)
+        {
+            unset($content[RequestFields::PHONE_NUMBER]);
+            $content[RequestFields::MOBILE_NUMBER] = $input['payment']['contact'];
+            $content[RequestFields::MANDATE_TYPE_CATEGORY_CODE] = CategoryCode::getCategoryCodeFromMcc($mcc);
         }
 
         return $this->getStandardRequestArray($content, 'POST', 'create');
@@ -438,5 +472,25 @@ class Gateway extends Base\Gateway
         $gateway = 'enach';
 
         return $this->app['repo']->$gateway;
+    }
+
+    private function routeToNewEsignService($merchantId, $mode): bool
+    {
+        try
+        {
+            $status = $this->app['razorx']->getTreatment($merchantId,
+                RazorxTreatment::ESIGN_REQUEST_ON_NEW_SERVICE_ENABLED, $mode);
+
+            return (strtolower($status) === 'on');
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::EMANDATE_SIGNDESK_NEW_SERVICE_RZRX_FAILURE
+            );
+        }
+        return false;
     }
 }
