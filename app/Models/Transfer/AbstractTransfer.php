@@ -276,14 +276,14 @@ abstract class AbstractTransfer
                 $processViaReverseShadow = false;
 
                 if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
-                    ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true ))
+                    ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
                 {
                     $processViaReverseShadow = true;
                 }
 
-                if ($processViaReverseShadow === false )
+                if ($processViaReverseShadow === false)
                 {
-                    $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function() use ($oldTransfer, $core)
+                    $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function () use ($oldTransfer, $core)
                     {
                         return $core->createTransactionForTransfer($oldTransfer);
                     });
@@ -317,7 +317,7 @@ abstract class AbstractTransfer
 
                     $totalTds = $core->calculateTds($transferPayment, $transfer, $payment);
 
-                    if($totalTds > 0)
+                    if ($totalTds > 0)
                     {
                         $core->createPaymentTransferTds($transferPayment, $totalTds);
                     }
@@ -327,20 +327,10 @@ abstract class AbstractTransfer
                     $transfer->incrementAttempts();
                 }
 
-
                 $this->repo->saveOrFail($transfer);
 
                 return $transfer;
             }, $deadlockRetryAttempts);
-
-            if ($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false )
-            {
-                (new Metric())->pushTransferProcessSuccessMetrics();
-
-                $this->pushTransferTxnForAsyncBalanceUpdateIfApplicable($transfer);
-
-                $this->fireTransferProcessedWebhookIfApplicable($transfer);
-            }
         }
         catch (\Exception $ex)
         {
@@ -367,6 +357,49 @@ abstract class AbstractTransfer
             }
 
             throw  $ex;
+        }
+
+        if ($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false )
+        {
+            $metric = new Metric();
+
+            $metric->pushTransferProcessSuccessMetrics();
+
+            try
+            {
+                $this->pushTransferTxnForAsyncBalanceUpdateIfApplicable($transfer);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::ASYNC_BALANCE_UPDATE_TXN_DISPATCH_FAILED,
+                    [
+                        'payment_id'  => $payment->getPublicId(),
+                        'transfer_id' => $transfer->getPublicId(),
+                    ]
+                );
+            }
+
+            try
+            {
+                $this->fireTransferProcessedWebhookIfApplicable($transfer);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::TRANSFER_WEBHOOK_DISPATCH_FAILED,
+                    [
+                        'payment_id'  => $payment->getPublicId(),
+                        'transfer_id' => $transfer->getPublicId(),
+                    ]
+                );
+
+                $metric->pushWebhookDispatchFailureMetrics();
+            }
         }
     }
 
