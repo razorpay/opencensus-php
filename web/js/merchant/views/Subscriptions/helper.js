@@ -1,0 +1,168 @@
+import { Amount } from '@razorpay/blade/components';
+
+import {
+  FREQUENCY,
+  CARD_AFA_MAX_AMOUNT,
+  CARD_MAX_AMOUNT_ALLOWED,
+  BILLING_FREQUENCY,
+  CARD_FREQUENCY,
+  PAYMENT_METHODS,
+  MAX_TOKEN_AMOUNT,
+  MAX_TOKEN_AMOUNT_NACH,
+  CARD_TOKEN_MAX_AMOUNT,
+  CARD_PAYMENT_LABEL,
+  UPI_ERROR_DESCRIPTION,
+} from './constants';
+import {
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+  getFormattedAmount,
+} from 'common/utils/rzp-utils';
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
+import { checkIfAmount } from './RegistrationLinks/components/RegistrationLinksForm/PaymentDetails/utils';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+
+export const getCardLabelAndLimits = (countryCode) => {
+  const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[countryCode];
+  const cardTokenMaxAmount = CARD_MAX_AMOUNT_ALLOWED[countryCode];
+  return { cardAfaMaxLimit, cardTokenMaxAmount };
+};
+
+export const getCardLabelText = (customCode) => {
+  return CARD_PAYMENT_LABEL[customCode] || CARD_PAYMENT_LABEL[ORG_CUSTOM_CODE_MAP.RAZORPAY];
+};
+
+export const shouldHideDebitPattern = (frequency) => {
+  return ![FREQUENCY.AS_PRESENTED, FREQUENCY.DAILY].includes(frequency);
+};
+
+const getCardErrorDescription = (maxAmount, currency) => (
+  <>
+    You can <strong>automatically</strong> charge the customer upto{' '}
+    <Amount size="body-small" value={Number(maxAmount)} currency={currency} />
+    for each recurring payment. Payments above{' '}
+    <Amount size="body-small" value={Number(maxAmount)} currency={currency} />
+    will ask for OTP verification from the customer.
+  </>
+);
+
+export const maxAmountValidator = (amount, maxAllowedLimit, currency) => (value) => {
+  const isAmountCheckFiled = checkIfAmount(value);
+
+  if (isAmountCheckFiled) {
+    return isAmountCheckFiled;
+  }
+
+  const maxBillingAmount = i18CurrencyConversionFromCommonUnitToMinorUnit(Number(value), currency);
+
+  if (maxBillingAmount > maxAllowedLimit) {
+    return (
+      <>
+        Max amount should not be greater than
+        <Amount
+          value={Number(i18CurrencyConversionFromMinorUnitToCommonUnit(maxAllowedLimit, currency))}
+          intent="negative"
+          size="body-small"
+        />
+      </>
+    );
+  } else if (
+    maxBillingAmount < i18CurrencyConversionFromCommonUnitToMinorUnit(Number(amount), currency)
+  ) {
+    return (
+      <>
+        The maximum amount should be equal to or greater than
+        <Amount value={Number(amount)} intent="negative" size="body-small" />, which is the minimum
+        for this payment method.
+      </>
+    );
+  }
+  return null;
+};
+
+export const cardMaxAmountValidator = (maxAllowedAmount, currency) => (value) => {
+  if (value > maxAllowedAmount) {
+    return (
+      <>
+        Please enter an amount below
+        <Amount
+          testID={`${currency}${maxAllowedAmount}`}
+          size="body-small"
+          intent="negative"
+          value={Number(maxAllowedAmount)}
+          currency={currency}
+        />
+      </>
+    );
+  }
+  return null;
+};
+
+export const getMaxAmountProps = (method, amount, user, mandateMaxAmount = 0) => {
+  const { isCardMultipleFrequencyEnabled, merchant = {} } = user;
+  const { country_code: countryCode } = merchant;
+  const {
+    merchant: { currency },
+  } = user;
+
+  const maxAmountProps = {
+    validator: maxAmountValidator(amount, MAX_TOKEN_AMOUNT, currency),
+    description: (
+      <>
+        Max Amount for Mandate (Up to{' '}
+        <Amount
+          value={i18CurrencyConversionFromMinorUnitToCommonUnit(MAX_TOKEN_AMOUNT, currency)}
+          size="body-small"
+        />
+        )
+      </>
+    ),
+  };
+
+  switch (method) {
+    case PAYMENT_METHODS.CARD: {
+      const { cardAfaMaxLimit, cardTokenMaxAmount } = getCardLabelAndLimits(countryCode);
+      maxAmountProps.validator = cardMaxAmountValidator(cardTokenMaxAmount, currency);
+      let maxAmount = cardAfaMaxLimit;
+      if (isCardMultipleFrequencyEnabled) {
+        maxAmountProps.required = true;
+      }
+      if (mandateMaxAmount && mandateMaxAmount <= cardAfaMaxLimit) {
+        maxAmount = mandateMaxAmount;
+      }
+
+      if (user.isOrgCurlec) {
+        maxAmountProps.description = () => '';
+      } else {
+        maxAmountProps.placeholder = `Max ${CARD_TOKEN_MAX_AMOUNT}`;
+        maxAmountProps.description = getCardErrorDescription(maxAmount, currency);
+      }
+      return maxAmountProps;
+    }
+    case PAYMENT_METHODS.UPI:
+      maxAmountProps.validator = maxAmountValidator(amount, UPI_AVL_LIMIT, currency);
+      maxAmountProps.placeholder = `Max ${getFormattedAmount(UPI_AVL_LIMIT)}`;
+      maxAmountProps.description = UPI_ERROR_DESCRIPTION;
+      if (user?.isDebitPatternEnabled) {
+        maxAmountProps.required = true;
+      }
+      return maxAmountProps;
+    case PAYMENT_METHODS.NACH:
+      maxAmountProps.validator = maxAmountValidator(amount, MAX_TOKEN_AMOUNT_NACH, currency);
+      maxAmountProps.description = (
+        <>
+          Max Amount for Nach (Up to <Amount value={MAX_TOKEN_AMOUNT_NACH} size="body-small" />)
+        </>
+      );
+      return maxAmountProps;
+    default:
+      return maxAmountProps;
+  }
+};
+
+export const getBillingFrequencies = (method) => {
+  if (method === PAYMENT_METHODS.CARD) {
+    return BILLING_FREQUENCY.filter(({ name }) => CARD_FREQUENCY.includes(name));
+  }
+  return BILLING_FREQUENCY;
+};

@@ -6,7 +6,6 @@ import Input from 'common/new-ui/Input';
 export default function CustomerDetailsForm(props) {
   const {
     expireAt,
-    isCustomerNameRequired,
     hasNoExpiry,
     handleDateChange,
     description,
@@ -32,7 +31,6 @@ export default function CustomerDetailsForm(props) {
       />
 
       <Input
-        required={isCustomerNameRequired}
         name="customerName"
         label="Customer Name"
         data-name="customer_name"

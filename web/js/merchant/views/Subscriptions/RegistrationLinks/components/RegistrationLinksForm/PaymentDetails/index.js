@@ -1,5 +1,7 @@
 /* eslint-disable react/jsx-pascal-case */
 import { PowerSelect } from 'react-power-select';
+import { Amount } from '@razorpay/blade/components';
+
 import { useI18Service } from 'common/i18';
 import Input from 'common/new-ui/Input';
 
@@ -11,6 +13,7 @@ import Emandate from './Emandate';
 import UPI from './UPI';
 import { checkIfAmount, getPaymentMethodOptions, DOCUMENTATION_LINKS } from './utils';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { DEFAULT_UPI_LIMIT } from 'merchant/views/Subscriptions/constants';
 
 export default function PaymentDetailsForm(props) {
   const {
@@ -224,8 +227,13 @@ function amountValidator(value) {
     return validation;
   }
 
-  if (value > 200000) {
-    return 'Amount should not be greater than 200000';
+  if (value > DEFAULT_UPI_LIMIT) {
+    return (
+      <>
+        Amount should not be greater than{' '}
+        <Amount size="body-small" intent="negative" value={DEFAULT_UPI_LIMIT} />
+      </>
+    );
   }
   return null;
 }

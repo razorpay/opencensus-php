@@ -5,7 +5,7 @@ export const PAPER_NACH_CARD_BANNER_URL =
 export const UPDATE_PAYMENT_METHOD_URL =
   'https://razorpay.com/docs/subscriptions/payment-retries/#update-the-payment-method-via-our-hosted-page';
 export const topEmandateBankCodes = ['SBIN', 'HDFC', 'ICIC', 'UTIB', 'KKBK'];
-
+export const CAW_TABS = ['Customer Details', 'Payment Details', 'Token Details'];
 export const CARD_AFA_MAX_LIMIT = 15000; // Rs
 export const CARD_TOKEN_MAX_AMOUNT = 1000000; // Rs
 export const MY_CARD_MAX_AMOUNT = 30000; // RM
@@ -95,3 +95,23 @@ export const RECURRING_TYPE = [
   { name: DEBIT_TYPES.AFTER, label: 'After' },
   { name: DEBIT_TYPES.On, label: 'On' },
 ];
+
+export const CARD_PAYMENT_LABEL = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: (
+    <>
+      Maximum Auto-debit Amount
+      <div className="Input-desc sub-text">(For domestic cards only)</div>
+    </>
+  ),
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: <>Maximum Auto-debit Amount</>,
+};
+
+export const PAYMENT_METHODS = {
+  NACH: 'nach',
+  EMANDATE: 'emandate',
+  CARD: 'card',
+  UPI: 'upi',
+};
+
+export const UPI_ERROR_DESCRIPTION =
+  'This is the maximum you can charge the customer per billing cycle';

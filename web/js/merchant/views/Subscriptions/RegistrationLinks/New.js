@@ -47,6 +47,8 @@ import {
   DEFAULT_NACH_LIMIT,
   DEFAULT_UPI_LIMIT,
   DEFAULT_EMANDATE_LIMIT,
+  PAYMENT_METHODS,
+  CAW_TABS,
 } from 'merchant/views/Subscriptions/constants';
 
 const CustomerDetailsMandatoryFields = [
@@ -80,12 +82,6 @@ const NACHMandatoryFields = [
   },
   'bankAccountNumber',
 ];
-
-const PAYMENT_METHODS = {
-  NACH: 'nach',
-  EMANDATE: 'emandate',
-  CARD: 'card',
-};
 
 let DEFAULT_MAX_AMOUNT = DEFAULT_EMANDATE_LIMIT;
 const DEFAULT_FIRST_CHARGE = 0; // in Paisa
@@ -228,10 +224,17 @@ class NewRegistrationLink extends React.Component {
     return isNACH;
   }
 
-  get Tabs() {
-    return getTabs(
-      this.isEmandatePayment || this.isNACHPayment || this.isUPIPayment || this.isCardPayment,
-    );
+  get getPaymentMethod() {
+    if (this.isCardPayment) {
+      return PAYMENT_METHODS.CARD;
+    } else if (this.isUPIPayment) {
+      return PAYMENT_METHODS.UPI;
+    } else if (this.isEmandatePayment) {
+      return PAYMENT_METHODS.EMANDATE;
+    } else if (this.isNACHPayment) {
+      return PAYMENT_METHODS.NACH;
+    }
+    return PAYMENT_METHODS.CARD;
   }
 
   UNSAFE_componentWillMount() {
@@ -422,7 +425,7 @@ class NewRegistrationLink extends React.Component {
   allMandatoryFieldsPresent = () => {
     let isAllFieldsPresent = true;
 
-    this.Tabs.forEach((tab, idx) => {
+    CAW_TABS.forEach((tab, idx) => {
       if (!this.isFormValid(idx)) {
         isAllFieldsPresent = false;
       }
@@ -747,6 +750,17 @@ class NewRegistrationLink extends React.Component {
 
   renderForm() {
     const { formFields } = this.state;
+    const {
+      amount,
+      frequency,
+      mandateExpireAt,
+      tokenHasNoExpiry,
+      mandateMaxAmount,
+      recurringValue,
+      recurringType,
+      isValidRecurringValue,
+      firstPaymentAmount,
+    } = formFields;
     const { user, org } = this.props;
     const currency = user.merchant.currency;
 
@@ -754,7 +768,6 @@ class NewRegistrationLink extends React.Component {
       case 0: {
         return (
           <CustomerDetailsForm
-            isCustomerNameRequired={this.isNACHPayment}
             disabled={this.state.disabled}
             validateForm={this.validateForm}
             receipt={formFields.receipt}
@@ -811,27 +824,24 @@ class NewRegistrationLink extends React.Component {
       case 2: {
         return (
           <TokenDetailsForm
-            isNACHPayment={this.isNACHPayment}
-            isUPIPayment={this.isUPIPayment}
-            isCardPayment={this.isCardPayment}
-            isEmandatePayment={this.isEmandatePayment}
+            org={org}
+            user={user}
+            amount={amount}
+            frequency={frequency}
+            recurringType={recurringType}
+            recurringValue={recurringValue}
+            mandateExpireAt={mandateExpireAt}
+            tokenHasNoExpiry={tokenHasNoExpiry}
+            mandateMaxAmount={mandateMaxAmount}
+            firstPaymentAmount={firstPaymentAmount}
+            isValidRecurringValue={isValidRecurringValue}
+            method={this.getPaymentMethod}
             isFirstAmountHidden={this.props.user.isFirstAmountHidden}
-            amount={formFields.amount}
-            frequency={formFields.frequency}
-            mandateExpireAt={formFields.mandateExpireAt}
-            tokenHasNoExpiry={formFields.tokenHasNoExpiry}
-            mandateMaxAmount={formFields.mandateMaxAmount}
-            recurringValue={formFields.recurringValue}
-            recurringType={formFields.recurringType}
             handleRecurringValueChange={this.handleRecurringValueChange}
-            isValidRecurringValue={formFields.isValidRecurringValue}
             defaultMandateMaxAmount={DEFAULT_MAX_AMOUNT}
             defaultFirstChargeAmount={DEFAULT_FIRST_CHARGE}
-            firstPaymentAmount={formFields.firstPaymentAmount}
             handleDateChange={this.handleDateChange}
             onBlurElement={this.onBlurElement}
-            user={user}
-            org={org}
           />
         );
       }
@@ -843,14 +853,13 @@ class NewRegistrationLink extends React.Component {
 
   renderWizard = (isStandAlone = false) => {
     const { currentTab, validTabs, loading } = this.state;
-    const tabs = this.Tabs;
-    const isLastTab = currentTab === tabs.length - 1;
+    const isLastTab = currentTab === CAW_TABS.length - 1;
 
     return (
       <div class="Links--Create RegistrationLinks--New Wizard">
         <ModalAsideNav
           title="Create Registration Links"
-          tabs={tabs}
+          tabs={CAW_TABS}
           activeTab={currentTab}
           tabsValidity={validTabs}
           tabClickHandler={this.handleTabChange}
@@ -928,7 +937,7 @@ class NewRegistrationLink extends React.Component {
     if (isModalView) {
       return (
         <Modal class="NewRegistrationLink animate-down" onClose={this.onClose} fullWidth>
-          <ModalContent header={this.isMobileDevice ? this.Tabs[this.state.currentTab] : null}>
+          <ModalContent header={this.isMobileDevice ? CAW_TABS[this.state.currentTab] : null}>
             {this.renderWizard(false)}
           </ModalContent>
         </Modal>
@@ -937,16 +946,6 @@ class NewRegistrationLink extends React.Component {
 
     return <div class="StandAloneContainer">{this.renderWizard(true)}</div>;
   }
-}
-
-function getTabs(showTokenDetails) {
-  const tabs = ['Customer Details', 'Payment Details'];
-
-  if (showTokenDetails) {
-    tabs.push('Token Details');
-  }
-
-  return tabs;
 }
 
 export default withRouter(NewRegistrationLink);

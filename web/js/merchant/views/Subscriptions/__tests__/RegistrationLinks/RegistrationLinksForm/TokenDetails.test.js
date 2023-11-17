@@ -1,7 +1,13 @@
 import React from 'react';
+
 import { screen, render } from 'test-utils';
 import App from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/TokenDetails';
-import { CARD_TOKEN_MAX_AMOUNT, MY_CARD_MAX_AMOUNT } from 'merchant/views/Subscriptions/constants';
+import {
+  CARD_TOKEN_MAX_AMOUNT,
+  MY_CARD_MAX_AMOUNT,
+  BILLING_FREQUENCY,
+  PAYMENT_METHODS,
+} from 'merchant/views/Subscriptions/constants';
 
 describe('RL - Token Details Form', () => {
   const onBlurElement = jest.fn();
@@ -11,8 +17,7 @@ describe('RL - Token Details Form', () => {
 
   test('Should render all the card token fields', () => {
     renderApp({
-      isCardPayment: true,
-      mandateMethod: 'card',
+      method: PAYMENT_METHODS.CARD,
       amount: 20,
       user: { merchant: { currency: 'INR', country_code: 'IN' } },
       org: { custom_code: 'rzp' },
@@ -22,25 +27,23 @@ describe('RL - Token Details Form', () => {
     ).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/expiry \(dd-mm-yyyy\)/i)).toBeInTheDocument();
 
-    [
-      'expiry of token',
-      'maximum auto-debit amount',
-      '(for domestic cards only)',
-      'you can charge the customer upto ₹15000 for each recurring payment. payments above ₹15000 will ask for otp verification from the customer.',
-    ].forEach((fieldLabel) => {
-      expect(screen.getByText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
-    });
+    ['expiry of token', 'maximum auto-debit amount', '(for domestic cards only)'].forEach(
+      (fieldLabel) => {
+        expect(screen.getByText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
+      },
+    );
 
     ['max 1000000'].forEach((fieldLabel) => {
       expect(screen.getByPlaceholderText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
     });
+    expect(screen.getByTestId('billing_frequency')).toHaveLength(4);
   });
 
   test('Should render all the upi token fields', () => {
     renderApp({
-      isUPIPayment: true,
-      mandateMethod: 'upi',
-      amount: 20,
+      method: PAYMENT_METHODS.UPI,
+      amount: 200,
+      mandateMaxAmount: 10001,
       user: { merchant: { currency: 'INR', country_code: 'IN' } },
       org: { custom_code: 'rzp' },
     });
@@ -64,12 +67,16 @@ describe('RL - Token Details Form', () => {
     ['max 2,00,000.00'].forEach((fieldLabel) => {
       expect(screen.getByPlaceholderText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
     });
+    expect(screen.getByTestId('billing_frequency')).toHaveLength(9);
+
+    BILLING_FREQUENCY.forEach((frequency) => {
+      expect(screen.getByText(frequency.label)).toBeInTheDOM();
+    });
   });
 
   test('Should render all the Emandate token fields', () => {
     renderApp({
-      isEmandatePayment: true,
-      mandateMethod: 'emandate',
+      method: PAYMENT_METHODS.EMANDATE,
       defaultMandateMaxAmount: 99999,
       defaultFirstChargeAmount: 0,
       amount: 20,
@@ -96,8 +103,7 @@ describe('RL - Token Details Form', () => {
 
   test('Should render all the nach token fields', () => {
     renderApp({
-      isNACHPayment: true,
-      mandateMethod: 'nach',
+      method: PAYMENT_METHODS.NACH,
       defaultMandateMaxAmount: 99999,
       defaultFirstChargeAmount: 0,
       amount: 20,
@@ -123,38 +129,33 @@ describe('RL - Token Details Form', () => {
 
   test('Should render card amount lesser than max allowed amount', () => {
     renderApp({
-      isCardPayment: true,
-      mandateMethod: 'card',
+      method: PAYMENT_METHODS.CARD,
       amount: 201,
       mandateMaxAmount: 1000001,
       user: { merchant: { currency: 'INR', country_code: 'IN' } },
       org: { custom_code: 'rzp' },
     });
-    expect(
-      screen.getByText(`Please enter an amount below ₹${CARD_TOKEN_MAX_AMOUNT}`),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Please enter an amount below')).toBeInTheDOM();
+    expect(screen.getByTestId(`INR${CARD_TOKEN_MAX_AMOUNT}`)).toBeInTheDOM();
   });
 
   test('Should render card amount lesser than max allowed amount for Malaysia', () => {
     renderApp({
-      isCardPayment: true,
-      mandateMethod: 'card',
+      method: PAYMENT_METHODS.CARD,
       amount: 201,
       mandateMaxAmount: 30001,
       user: { merchant: { currency: 'MYR', country_code: 'MY' } },
       org: { custom_code: 'curlec' },
     });
-    expect(
-      screen.getByText(`Please enter an amount below RM${MY_CARD_MAX_AMOUNT}`),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Please enter an amount below')).toBeInTheDOM();
+    expect(screen.getByTestId(`MYR${MY_CARD_MAX_AMOUNT}`)).toBeInTheDOM();
   });
 
   test('Should render frequency options for debit pattern enabled merchants', () => {
     renderApp({
-      isUPIPayment: true,
-      mandateMethod: 'upi',
-      amount: 201,
-      mandateMaxAmount: 10001,
+      method: PAYMENT_METHODS.UPI,
+      amount: 20,
+      mandateMaxAmount: 200,
       user: { merchant: { currency: 'INR', country_code: 'IN' }, isDebitPatternEnabled: true },
       org: { custom_code: 'rzp' },
     });
@@ -172,8 +173,7 @@ describe('RL - Token Details Form', () => {
 
   test('Should render frequency options for debit pattern disabled merchants', () => {
     renderApp({
-      isUPIPayment: true,
-      mandateMethod: 'upi',
+      method: PAYMENT_METHODS.UPI,
       amount: 201,
       mandateMaxAmount: 10001,
       user: { merchant: { currency: 'INR', country_code: 'IN' }, isDebitPatternEnabled: false },
