@@ -180,7 +180,7 @@ function WebsiteAppDetails({
     } else {
       window.open(
         isExpEnabled
-          ? `${window.EASY_ONBOARDING_URL}/onboarding/policy`
+          ? `${window.EASY_ONBOARDING_URL}/onboarding/policy?source=dashboard`
           : `${window.EASY_ONBOARDING_URL}/website-compliance`,
         '_self',
       );
