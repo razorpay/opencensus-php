@@ -1925,6 +1925,11 @@ class Constants
      */
     const DEBIT_CARD_VALIDATION = 'debit_card_validation';
 
+
+    // Cross border Import flow related feature flag.
+    // Feature flag to enable merchants on JPMC settlement flow.
+    const ENABLE_JPMC_IMPORT_FLOW = 'enable_jpmc_import_flow';
+
     /* Merchant feature flag to show custom convenience fee message on checkout*/
     const CustomMessageForCFB = 'custom_message_for_cfb';
 
@@ -2684,6 +2689,7 @@ class Constants
         self::REMOVE_RAZORPAY_BRANDING         => true,
         self::BULK_PAYOUT_WORKFLOW            => true,
         DcsConstants::ShowSingleDCCCurrency   => true,
+        self::ENABLE_JPMC_IMPORT_FLOW         => true,
         self::CustomMessageForCFB             => true,
         self::SKIP_APPROVAL_FOR_CREATOR       => true,
     ];

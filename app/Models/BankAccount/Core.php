@@ -86,7 +86,8 @@ class Core extends Base\Core
             ($input[Entity::TYPE] === Type::ORG_SETTLEMENT) and
             (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false) and
                 $merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false) and
-                $merchant->isLRSFlowEnabled() === false)
+                $merchant->isLRSFlowEnabled() === false and
+                ($merchant->isJpmcImportFlowEnabled() === false))
         {
           throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
         }
@@ -653,7 +654,8 @@ class Core extends Base\Core
         $bankValidator = 'addBankAccount';
 
         if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true or
-            $merchant->isLRSFlowEnabled() === true)
+            $merchant->isLRSFlowEnabled() === true or
+            ($merchant->isJpmcImportFlowEnabled() === true))
         {
             $bankValidator = 'addInternationalBankAccount';
             $notes = [];
@@ -678,7 +680,9 @@ class Core extends Base\Core
             $ba = $ba->build($input,$bankValidator);
 
         if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false and
-            $merchant->isLRSFlowEnabled() === false and ($authType !== 'migrated'))
+            $merchant->isLRSFlowEnabled() === false and 
+            ($merchant->isJpmcImportFlowEnabled() === false) and 
+            ($authType !== 'migrated'))
         {
             $ba->getValidator()->validateIfscCode($input, $mode);
         }
@@ -985,7 +989,8 @@ class Core extends Base\Core
         }
 
         if (($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true) or (
-                $merchant->isLRSFlowEnabled() === true))
+                $merchant->isLRSFlowEnabled() === true) or
+            ($merchant->isJpmcImportFlowEnabled() === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
         }

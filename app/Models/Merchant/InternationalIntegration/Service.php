@@ -24,6 +24,7 @@ use RZP\Services\TerminalsService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\HsCode\HsCodeList;
 use RZP\Models\Merchant\InternationalIntegration\Emerchantpay\EmerchantpayApmRequestFile;
 
 class Service extends Base\Service
@@ -618,6 +619,7 @@ class Service extends Base\Service
             $mid = $this->merchant->getId();
         }else{
             $mid = $input[Entity::MERCHANT_ID];
+            $this->merchant = $this->repo->merchant->fetchMerchantFromId($mid);
         }
 
         $acquired = $this->app['api.mutex']->acquire(self::HS_CODE_MUTEX . $mid);
@@ -630,7 +632,9 @@ class Service extends Base\Service
         $mii_notes[Constant::HS_CODE] = $input['hs_code'];
 
         $mii = $this->repo->merchant_international_integrations
-            ->getByMerchantIdAndIntegrationEntity($mid, Constant::INTEGRATION_ENTITY_OPGSP_IMPORT);
+            ->getByMerchantIdAndIntegrationEntity($mid, $this->getIntegrationEntityFromFeatureFlag());
+
+        $this->validateForJpmcImportFlow($input);
 
         if(isset($mii))
         {
@@ -640,8 +644,8 @@ class Service extends Base\Service
         {
             $mii_input = [];
             $mii_input[Entity::MERCHANT_ID] = $mid;
-            $mii_input[Entity::INTEGRATION_ENTITY] = Constant::INTEGRATION_ENTITY_OPGSP_IMPORT;
-            $mii_input[Entity::INTEGRATION_KEY] = Constant::INTEGRATION_ENTITY_OPGSP_IMPORT;
+            $mii_input[Entity::INTEGRATION_ENTITY] = $this->getIntegrationEntityFromFeatureFlag();
+            $mii_input[Entity::INTEGRATION_KEY] = $this->getIntegrationEntityFromFeatureFlag();
             $mii_input[Entity::NOTES] = $mii_notes;
 
             $mii = new Entity;
@@ -669,12 +673,13 @@ class Service extends Base\Service
             $mid = $this->merchant->getId();
         }else{
             $mid = $merchantId;
+            $this->merchant = $this->repo->merchant->fetchMerchantFromId($mid);
         }
 
         $mii_notes = [];
 
         $mii = $this->repo->merchant_international_integrations
-            ->getByMerchantIdAndIntegrationEntity($mid, Constant::INTEGRATION_ENTITY_OPGSP_IMPORT);
+            ->getByMerchantIdAndIntegrationEntity($mid, $this->getIntegrationEntityFromFeatureFlag());
 
         if(isset($mii))
         {
@@ -743,5 +748,94 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    protected function validateForJpmcImportFlow($input)
+    {
+        // merchant flow
+        if (($this->app['basicauth']->isAdminAuth() === false) and
+            (isset($input[Constant::HS_CODE]) === true) and
+            ($this->merchant->isJpmcImportFlowEnabled() === true))
+        {
+            $currentHSCode = $this->getMerchantHsCode($this->merchant->getId());
+
+            // if hsCode already set, then disallow updates
+            if ((empty($currentHSCode) === false) and
+                (isset($currentHSCode[Constant::HS_CODE]) === true) and
+                (empty($currentHSCode[Constant::HS_CODE]) === false))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                    null,
+                    null,
+                    "HSCode cannot be updated for JPMC settlement flow.");
+            }
+
+            // if mii previously not set and
+            // if hsCode previously not set but new hscode is blacklisted, then disallow updates
+            if ((empty($currentHSCode) === true) and
+                (HsCodeList::isBlacklistedHSCodeForJPMCImportFlow($input[Constant::HS_CODE]) === true))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                    null,
+                    null,
+                    "Blacklisted HSCode cannot be updated for JPMC settlement flow.");
+            }
+
+            // if mii previously set and
+            // if hsCode previously not set but new hscode is blacklisted, then disallow updates
+            if ((empty($currentHSCode) === false) and 
+                (isset($currentHSCode[Constant::HS_CODE]) === true) and
+                (empty($currentHSCode[Constant::HS_CODE]) === true) and
+                (HsCodeList::isBlacklistedHSCodeForJPMCImportFlow($input[Constant::HS_CODE]) === true))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                    null,
+                    null,
+                    "Blacklisted HSCode cannot be updated for JPMC settlement flow.");
+            }
+        }
+
+        // admin flow
+        if (($this->app['basicauth']->isAdminAuth() === true) and
+            (isset($input[Constant::HS_CODE]) === true))
+        {
+            $mid = $input[Entity::MERCHANT_ID];
+            $merchant = $this->repo->merchant->fetchMerchantFromId($mid);
+
+            if ($merchant->isJpmcImportFlowEnabled() === false)
+            {
+                return;
+            }
+
+            // if new hscode is blacklisted, then disallow updates
+            if (HsCodeList::isBlacklistedHSCodeForJPMCImportFlow($input[Constant::HS_CODE]) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                    null,
+                    null,
+                    "Blacklisted HSCode cannot be updated for JPMC settlement flow.");
+            }
+        }
+    }
+
+    protected function getIntegrationEntityFromFeatureFlag()
+    {
+        // default
+        $integrationEntity = Constant::INTEGRATION_ENTITY_OPGSP_IMPORT;
+
+        if ($this->merchant->isJpmcImportFlowEnabled())
+        {
+            $integrationEntity = Constant::INTEGRATION_ENTITY_JPMC_IMPORT_FLOW;
+        }
+        elseif ($this->merchant->isOpgspImportEnabled())
+        {
+            $integrationEntity = Constant::INTEGRATION_ENTITY_OPGSP_IMPORT;
+        }
+
+        return $integrationEntity;
     }
 }

@@ -1187,6 +1187,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true);
     }
 
+    public function isJpmcImportFlowEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ENABLE_JPMC_IMPORT_FLOW) === true);
+    }
+
     public function isOpgspImportSettlementEnabled(): bool
     {
         return ($this->isFeatureEnabled(Dcs\Features\Constants::ImportSettlement) === true);

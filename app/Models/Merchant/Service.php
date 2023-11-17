@@ -3141,7 +3141,8 @@ class Service extends Base\Service
         if(($this->app['basicauth']->isAdminAuth() === false) and
             (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true) or
             $merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === true or
-            $merchant->isLRSFlowEnabled() === true))
+            $merchant->isLRSFlowEnabled() === true or
+            ($merchant->isJpmcImportFlowEnabled() === true)))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
 
@@ -10666,6 +10667,16 @@ class Service extends Base\Service
         (new Validator)->validateIecCode($merchantFields[Merchant\Entity::PURPOSE_CODE],
             $merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE], $this->merchant->getBankIfsc());
 
+        if (($this->app['basicauth']->isAdminAuth() === false) and
+            ($this->merchant->isJpmcImportFlowEnabled() === true))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                null,
+                null,
+                "Purpose code cannot be updated for JPMC settlement flow.");
+        }
+
         if(!empty($merchantFields[Merchant\Entity::PURPOSE_CODE])) {
             $this->merchant->edit($merchantFields);
             $this->repo->merchant->saveOrFail($this->merchant);
@@ -11979,6 +11990,16 @@ class Service extends Base\Service
         $merchantId = $input['merchant_id'];
 
         $merchant =  $this->repo->merchant->fetchMerchantFromId($merchantId);
+
+        if (($this->app['basicauth']->isAdminAuth() === false) and
+            ($this->merchant->isJpmcImportFlowEnabled() === true))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                null,
+                null,
+                "Purpose code cannot be updated for JPMC settlement flow.");
+        }
 
         (new Validator)->validateIecCode(
             $merchantFields[Merchant\Entity::PURPOSE_CODE],

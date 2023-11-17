@@ -75,4 +75,9 @@ class HsCodeList
 
         return $data;
     }
+
+    public static function isBlacklistedHSCodeForJPMCImportFlow($hsCode): bool
+    {
+        return in_array($hsCode, BlackListedHsCodeList::BLACKLISTED_HSCODE_FOR_JPMC_IMPORT_FLOW) === true;
+    }
 }

@@ -1481,6 +1481,14 @@ class PurposeCodeList
         self::P1108,
     ];
 
+    // List of codes valid for JPMC import flow
+    const JPMC_IMPORT_FLOW_PURPOSE_CODES = [
+        self::S0802,
+        self::S1101,
+        self::S1103,
+    ];
+
+
     public static function getPurposeCodeDescDescription($purposeCode): string
     {
         return self::$purposeCodeDescMappings[$purposeCode];

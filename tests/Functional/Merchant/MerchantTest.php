@@ -19835,4 +19835,392 @@ The same has been enabled for the account.
                 return $response;
             });
     }
+
+    public function testHsCodeDetailsJpmc()
+    {
+        $hsCode = '02089010';
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->activate($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->addFeatures(['enable_jpmc_import_flow'], $merchantDetail['merchant_id']);
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'PATCH',
+                'url'       => '/merchant/hscode',
+                'content'   => [
+                    'hs_code'     => $hsCode,
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'success' => true,
+                ],
+                'status_code' => 200,
+            ]
+        ];
+
+        // first test: if hscode is blacklisted hscode
+        // 
+
+        try
+        {
+            $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+            $this->startTest();
+        }
+        catch (BadRequestException $e)
+        {
+            $this->assertEquals(
+                'Blacklisted HSCode cannot be updated for JPMC settlement flow.',
+                $e->getMessage());
+
+            $caughtException = true;
+        }
+
+        $this->assertEquals(true, $caughtException);
+
+        // second test: first time hscode update
+        // 
+
+        $hsCode = '1234567890';
+
+        $this->testData[__FUNCTION__]['request']['content']['hs_code'] = $hsCode;
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantInternationalIntegration = DB::table(Table::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->where('merchant_id', '=', $merchantDetail['merchant_id'])
+            ->first();
+
+        $notesContent = json_decode($merchantInternationalIntegration->notes, true);
+
+        self::assertEquals('jpmc_import_flow', $merchantInternationalIntegration->integration_entity);
+        self::assertEquals($hsCode, $notesContent['hs_code']);
+
+        // third test: test if hscode update is blocked, if previously updated
+        // 
+
+        $caughtException = false;
+
+        try
+        {
+            $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+            $this->startTest();
+        }
+        catch (BadRequestException $e)
+        {
+            $this->assertEquals(
+                'HSCode cannot be updated for JPMC settlement flow.',
+                $e->getMessage());
+
+            $caughtException = true;
+        }
+
+        $this->assertEquals(true, $caughtException);
+    }
+
+    public function testHsCodeDetailsJpmcAdmin()
+    {
+        $hsCode = '02089010'; // blacklisted
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->activate($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->addFeatures(['enable_jpmc_import_flow'], $merchantDetail['merchant_id']);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'PATCH',
+                'url'       => '/hscode',
+                'content'   => [
+                    'hs_code'     => $hsCode,
+                    'merchant_id' => $merchantDetail['merchant_id'],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'success' => true,
+                ],
+                'status_code' => 200,
+            ]
+        ];
+
+        // first test: if hscode is blacklisted hscode
+        // 
+
+        try
+        {
+            $this->startTest();
+        }
+        catch (BadRequestException $e)
+        {
+            $this->assertEquals(
+                'Blacklisted HSCode cannot be updated for JPMC settlement flow.',
+                $e->getMessage());
+
+            $caughtException = true;
+        }
+
+        $this->assertEquals(true, $caughtException);
+
+
+        // second test: first time hscode set
+        // 
+
+        $hsCode = '1234567890'; // whitelisted
+
+        $this->testData[__FUNCTION__]['request']['content']['hs_code'] = $hsCode;
+
+        $this->startTest();
+
+        $merchantInternationalIntegration = DB::table(Table::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->where('merchant_id', '=', $merchantDetail['merchant_id'])
+            ->first();
+
+        $notesContent = json_decode($merchantInternationalIntegration->notes, true);
+
+        self::assertEquals('jpmc_import_flow', $merchantInternationalIntegration->integration_entity);
+        self::assertEquals($hsCode, $notesContent['hs_code']);
+
+
+        // third test: if hscode to be modified is blacklisted hscode
+        //
+
+        $hsCode = '02089010'; //blacklisted
+
+        $this->testData[__FUNCTION__]['request']['content']['hs_code'] = $hsCode;
+
+        try
+        {
+            $this->startTest();
+        }
+        catch (BadRequestException $e)
+        {
+            $this->assertEquals(
+                'Blacklisted HSCode cannot be updated for JPMC settlement flow.',
+                $e->getMessage());
+
+            $caughtException = true;
+        }
+
+        $this->assertEquals(true, $caughtException);
+
+        // fourth test: subsequent  hscode update
+        // admin should be able to update hscode
+        // 
+
+        $hsCode = '85238020'; // whitelisted
+
+        $this->testData[__FUNCTION__]['request']['content']['hs_code'] = $hsCode;
+
+        $this->startTest();
+
+        $merchantInternationalIntegration = DB::table(Table::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->where('merchant_id', '=', $merchantDetail['merchant_id'])
+            ->first();
+
+        $notesContent = json_decode($merchantInternationalIntegration->notes, true);
+
+        self::assertEquals('jpmc_import_flow', $merchantInternationalIntegration->integration_entity);
+        self::assertEquals($hsCode, $notesContent['hs_code']);
+
+    }
+
+    // for jpmc settlement merchants
+    // only admin can set org_settl account
+    // this represents the merchant given account
+    // used by JPMC to settl to merchant after rzp settles to JPMC
+    public function testAddOrgBankAccountJpmcImportFlowByAdmin()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures(['enable_jpmc_import_flow']);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        // ifsc saved as swift code
+        $payload = [
+            'url' => '/merchants/bank_account',
+            'method' => 'post',
+            'content' => [
+                'ifsc_code'             => 'CITIUS33CHI',
+                'account_number'        => '0002020000304030434',
+                'beneficiary_name'      => 'Test Intl Merchant:',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_address4'  => 'address 4',
+                'beneficiary_city'      => 'New York',
+                'beneficiary_country'   => 'US',
+                'beneficiary_pin'       => '123456',
+                'type'                  => 'org_settlement',
+                'bank_name'             => 'Citi',
+                'iban'                  => 'FI211234569876543210',
+                'bank_sort_code'        => '609242'
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($payload);
+
+        $this->assertNotNull($response);
+
+        $this->assertEquals('10000000000000', $response['merchant_id']);
+        $this->assertEquals($payload['content']['type'], $response['type']);
+        $this->assertEquals($payload['content']['bank_name'], $response['notes']['bank_name']);
+        $this->assertEquals($payload['content']['account_number'], $response['account_number']);
+        $this->assertEquals($payload['content']['beneficiary_country'], $response['beneficiary_country']);
+    }
+
+    // for jpmc settlement merchants
+    // merchant cannot set org_settl account
+    // this represents the merchant given account
+    // used by JPMC to settl to merchant after rzp settles to JPMC
+    public function testAddOrgBankAccountJpmcImportFlowByMerchant()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(10000000000000);
+
+        $this->fixtures->merchant->addFeatures(['enable_jpmc_import_flow']);
+
+        $payload = [
+            'url' => '/merchants/bank_account',
+            'method' => 'post',
+            'content' => [
+                'ifsc_code'             => 'CITIUS33CHI',
+                'account_number'        => '0002020000304030434',
+                'beneficiary_name'      => 'Test Intl Merchant:',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_address4'  => 'address 4',
+                'beneficiary_city'      => 'New York',
+                'beneficiary_country'   => 'US',
+                'beneficiary_pin'       => '123456',
+                'type'                  => 'org_settlement',
+                'bank_name'             => 'Citi',
+                'iban'                  => 'FI211234569876543210',
+                'bank_sort_code'        => '609242'
+            ],
+        ];
+
+        $this->makeRequestAndCatchException(
+            function() use ($payload, $merchantUser)
+            {
+                $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser['id']);
+
+                $response = $this->makeRequestAndGetContent($payload);
+            },
+            BadRequestException::class,
+            'Something went wrong, please try again after sometime.'
+        );
+    }
+
+    // for jpmc settlement merchants
+    // only admin can set merchant settl account
+    // this represents the account used for settlement to JPMC,
+    // configured at merchant level
+    public function testAddMerchantBankAccountJpmcImportFlowByAdmin()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures(['enable_jpmc_import_flow']);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        // ifsc has to be set when bank_account type is merchant
+        // ifsc needs to be valid ifsc
+        $payload = [
+            'url' => '/merchants/bank_account',
+            'method' => 'post',
+            'content' => [
+                'ifsc_code'             => 'CHAS0INBX03',
+                'account_number'        => '5622422870',
+                'beneficiary_name'      => 'JPMORGAN CHASE BANK',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_address4'  => 'address 4',
+                'beneficiary_city'      => 'Bangalore',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '562110',
+                'type'                  => 'merchant',
+                'bank_name'             => 'JPMC'
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($payload);
+
+        $this->assertNotNull($response);
+
+        $this->assertEquals('10000000000000', $response['merchant_id']);
+        $this->assertEquals($payload['content']['type'], $response['type']);
+        $this->assertEquals($payload['content']['bank_name'], $response['notes']['bank_name']);
+        $this->assertEquals($payload['content']['account_number'], $response['account_number']);
+        $this->assertEquals($payload['content']['beneficiary_country'], $response['beneficiary_country']);
+    }
+
+    // for jpmc settlement merchants
+    // merchant cannot set merchant settl account
+    // this represents the account used for settlement to JPMC,
+    // configured at merchant level
+    public function testAddMerchantBankAccountJpmcImportFlowByMerchant()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(10000000000000);
+
+        $this->fixtures->merchant->addFeatures(['enable_jpmc_import_flow']);
+
+        $payload = [
+            'url' => '/merchants/bank_account',
+            'method' => 'post',
+            'content' => [
+                'ifsc_code'             => 'CHAS0INBX03',
+                'account_number'        => '5622422870',
+                'beneficiary_name'      => 'JPMORGAN CHASE BANK',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_address4'  => 'address 4',
+                'beneficiary_city'      => 'Bangalore',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '562110',
+                'type'                  => 'merchant',
+                'bank_name'             => 'JPMC'
+            ],
+        ];
+
+        $this->makeRequestAndCatchException(
+            function() use ($payload, $merchantUser)
+            {
+                $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser['id']);
+
+                $response = $this->makeRequestAndGetContent($payload);
+            },
+            BadRequestException::class,
+            'Something went wrong, please try again after sometime.'
+        );
+    }
 }

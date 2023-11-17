@@ -30,7 +30,6 @@ class Constants
     const EnableMerchantExpiryForPP = 'payment_page_no_expiry_enabled';
     const EnableMerchantExpiryForPL = 'payment_link_no_expiry_enabled';
     const DynamicPLOffset = 'dynamic_pl_offset';
-
     const EnablePaymentLinkSign = 'enable_payment_link_sign';
     const EnableMerchantCreateOwnTemplate = 'payment_page_create_own_template_enabled';
     const EnableCustomerAmount = 'payment_page_customer_decide_amount_enabled';
