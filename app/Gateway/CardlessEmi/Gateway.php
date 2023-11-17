@@ -527,14 +527,7 @@ class Gateway extends Base\Gateway
 
                     $content[RequestFields::PAYMENT_ID] = explode("_",$input['payment_id'])[1];
 
-                    $receipt = explode("_",$input['payment_id'])[1];
-
-                    if (isset($input['order']['receipt']))
-                    {
-                        $receipt = $input['order']['receipt'];
-                    }
-
-                    $content[RequestFields::RECEIPT] = $receipt;
+                    $content[RequestFields::RECEIPT] = explode("_",$input['payment_id'])[1];
                 }
 
                 break;
