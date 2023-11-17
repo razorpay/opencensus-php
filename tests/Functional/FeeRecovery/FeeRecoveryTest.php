@@ -807,6 +807,87 @@ class FeeRecoveryTest extends TestCase
         $this->assertEquals($nextRunTime->getTimestamp(), $task['next_run_at']);
     }
 
+    public function testFeeRecoveryPayoutCronNextRunUpdateForNegativeAmount()
+    {
+        $oldTime = Carbon::create(2020, 1, 4, 8, null, null, Timezone::IST);
+
+        Carbon::setTestNow($oldTime);
+
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->balance);
+
+        $this->setupScheduleAndScheduleTaskForMerchant();
+
+        $oldTimeStamp = $oldTime->getTimestamp();
+
+        $contact = $this->createContact();
+
+        $fundAccount = $this->createFundAccountForContact($contact);
+
+        // Create a payout
+        $this->createPayoutForFundAccount($fundAccount, $this->balance);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Updating FTA and Payout status to initiated to allow transition to reversed
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $payout->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::INITIATED]);
+
+        $this->fixtures->edit('payout', $payout->getId(), ['status' => Payout\Status::INITIATED]);
+
+        $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
+
+        // Recovering fees for the payout
+        $newTime = Carbon::create(2020, 1, 7, 7, 0, null);
+
+        Carbon::setTestNow($newTime);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $feeRecoveryPayout = $this->getDbLastEntity('payout');
+
+        // Moving this payout to initiated
+        $feeRecoveryPayout->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryPayout->saveOrFail();
+
+        // Fee Recovery entity for payout
+        $feeRecovery = $this->getDbEntity('fee_recovery', [
+            'entity_id' => $payout['id'],
+            'type'      => FeeRecovery\Type::DEBIT
+        ])->toArray();
+
+        $this->assertEquals($payout['id'], $feeRecovery['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecovery['status']);
+        $this->assertEquals(1, $feeRecovery['attempt_number']);
+        $this->assertEquals($feeRecovery['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        $this->updateFtaAndSource($payout, Payout\Status::REVERSED,'944926344925');
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals($reversal['entity_id'], $payout['id']);
+
+        $task = $this->getDbLastEntity('schedule_task')->toArray();
+
+        // Recovering fees for this balance in next cycle
+        $newTime = Carbon::create(2020, 1, 10, 7, 0, null);
+
+        Carbon::setTestNow($newTime);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $updatedTask = $this->getDbLastEntity('schedule_task')->toArray();
+
+        $this->assertEquals($updatedTask['last_run_at'], $task['last_run_at']);
+        $this->assertEquals($updatedTask['next_run_at'], $task['next_run_at'] + 86400);
+    }
+
     public function testFeeRecoveryPayoutCronNextAndLastRunUpdateForZeroAmount()
     {
         $oldTime = Carbon::create(2020, 1, 4, 8, null, null, Timezone::IST);

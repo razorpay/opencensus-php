@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use App;
 use Carbon\Carbon;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FeeRecovery\Entity;
 use Razorpay\Trace\Logger as Trace;
@@ -130,6 +131,11 @@ class FeeRecovery extends Job
             }
             else
             {
+                if ($ex->getCode() === ErrorCode::BAD_REQUEST_FEE_RECOVERY_AMOUNT_INSUFFICIENT)
+                {
+                    $feeRecoveryCore->updateNextRunAtForNegativeFees($this->task, $this->balanceId);
+                }
+
                 $this->release(self::DELAY);
 
                 $this->trace->traceException(

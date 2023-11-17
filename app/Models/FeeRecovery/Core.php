@@ -331,6 +331,35 @@ class Core extends Base\Core
         $task->setNextRunAt($endTime->timestamp);
     }
 
+    public function updateNextRunAtForNegativeFees(Task\Entity $task, string $balanceId)
+    {
+        $balance = $this->repo->balance->findOrFailById($balanceId);
+
+        $lastRunAt = $task->getLastRunAt();
+
+        $nextRunAt = $task->getNextRunAt();
+
+        $currentTimeStamp = Carbon::now(Timezone::IST)->timestamp;
+
+        do
+        {
+            $refTime = Carbon::createFromTimestamp($nextRunAt, Timezone::IST);
+
+            $nextRunAt = $refTime->copy()->addDay()->timestamp;
+
+            list ($payouts, $failedPayouts, $reversals) = $this->getPayoutAndReversalEntitiesForFeeRecovery($balance,
+                $lastRunAt + 1,
+                $nextRunAt);
+
+            $amount = $this->getFeesForFeeRecovery($payouts, $failedPayouts, $reversals);
+        }
+        while($nextRunAt < $currentTimeStamp and $amount < 0);
+
+        $task->setNextRunAt($nextRunAt);
+
+        $task->saveOrFail();
+    }
+
     // ref time will be the current nextRunAt - end time of the current interval
     public function getNextInterval(Carbon $refTime)
     {
