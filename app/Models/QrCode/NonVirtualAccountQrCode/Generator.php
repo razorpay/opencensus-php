@@ -156,6 +156,24 @@ class Generator extends QrCode\Generator
                     }
                 }
 
+                case Gateway::UPI_MINDGATE:
+                {
+                    if ((empty($qrCode->getCloseBy()) === false) or ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === true))
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_CREATE_HDFC);
+                    }
+
+                    $vpa = $terminal->getGatewayMerchantId2();
+
+                    if ((empty($vpa) === true) or ($vpa === null))
+                    {
+                        throw new InvalidArgumentException('VPA is required for generating QR');
+                    }
+
+                    return $vpa;
+
+                }
+
                 default:
                 {
                     if (empty($terminal->getGatewayMerchantId2()) === false)
@@ -207,6 +225,17 @@ class Generator extends QrCode\Generator
                 else
                 {
                     $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+                }
+                break;
+
+            case Gateway::UPI_MINDGATE:
+                if($qrCode->getUsageType() === UsageType::MULTIPLE_USE)
+                {
+                    $refId = 'STQ'. $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+                }
+                else
+                {
+                    $refId =$qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
                 }
                 break;
 

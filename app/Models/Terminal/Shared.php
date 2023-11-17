@@ -179,6 +179,7 @@ class Shared
     const UPI_YESBANK_DEDICATED_TERMINAL     = '100YesDedTrmnl';
     const UPI_LIVE_YESBANK_DEDICATED_TERMINAL= '100YesLivTrmnl';
     const UPI_KOTAK_DEDICATED_TERMINAL       = '100KotDedTrmnl';
+    const UPI_MINDGATE_TERMINAL_DEDICATED    = '100MinDedTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,

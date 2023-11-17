@@ -955,6 +955,7 @@ class PublicErrorDescription
     const BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_EMPTY                 = 'The cut off time is required';
     const BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_ALPHA_NUMERIC         = 'The cutoff time should be an integer';
     const BAD_REQUEST_QR_CODE_CREATE_KOTAK                                      = 'Your current configuration does not support QR creation. Contact support for further assistance';
+    const BAD_REQUEST_QR_CODE_CREATE_HDFC                                       = 'Your current configuration does not support QR creation with Close By field.';
 
     const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                 = 'Incomplete data for force authorization';
 
