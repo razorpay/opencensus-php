@@ -183,7 +183,7 @@ class Coupons extends Base\Core
 
         // This check is required to handle the combination discount feature
         foreach ($checkout['discountApplications']['edges'] as $key => $edge) {
-            
+
             if(isset($edge['node']['code']) === true)
             {
                 $promotions = $edge['node'];
@@ -193,6 +193,14 @@ class Coupons extends Base\Core
         // User entered valid code but cart item validation failed.
         if ($promotions['applicable'] !== true)
         {
+            return $this->getInvalidCouponApplicationResponse($input, $response, self::APPLY_COUPON_NOT_APPLICABLE);
+        }
+
+        // Do not apply shipping coupon
+        if (isset($promotions['targetType']) && $promotions['targetType'] === 'SHIPPING_LINE')
+        {
+            (new Coupons)->removeCoupon($checkoutId);
+
             return $this->getInvalidCouponApplicationResponse($input, $response, self::APPLY_COUPON_NOT_APPLICABLE);
         }
 
