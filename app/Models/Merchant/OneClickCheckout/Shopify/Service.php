@@ -753,7 +753,7 @@ class Service extends Base\Service
         $this->updateRzpOrder($order, $shopifyOrder);
 
         //sending fulfillments payload only in case of wingreen merchant
-        if($this->merchant->getId() === 'JIpL0bNjli3EKr')
+        if($this->merchant->getId() === 'LsgXO1I1dfZNeI')
         {
             (new Core)->moveFulfillmentOrders($orderArray, $shopifyOrder);
         }
