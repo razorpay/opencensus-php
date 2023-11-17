@@ -4,6 +4,7 @@ namespace RZP\Models\Admin;
 
 use Cache;
 use Carbon\Carbon;
+use RZP\Base\Common;
 use Illuminate\Support\Facades\DB;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\Redis;
@@ -40,12 +41,23 @@ use RZP\Models\Admin\Admin as AdminModel;
 use RZP\Models\User\Service as UserService;
 use RZP\Jobs\SFAllMerchantToUnclaimedGroup;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
-use RZP\Models\{Admin\Permission\Name, Base, Base\EsRepository, Base\UniqueIdEntity, Batch, Admin\Org, Pricing\Feature};
+use RZP\Models\Merchant\Document\Entity as MerchantDocumentEntity;
+use RZP\Models\
+{Admin\Permission\Name,
+    Base,
+    Base\EsRepository,
+    Base\UniqueIdEntity,
+    Batch,
+    Admin\Org,
+    Merchant\Document\Type,
+    Pricing\Feature};
 
 class Service extends Base\Service
 {
+
     use Base\RepositoryUpdateTestAndLive;
 
     const FROM_MODE                  = 'from_mode';
@@ -609,6 +621,168 @@ class Service extends Base\Service
         if ($isExternalAdmin === true)
         {
             $response = AdminFetch::filterAttributesForExternalAdminFetchMultiple($entityType, $response);
+        }
+
+        if ($entity === Entity::MERCHANT_DOCUMENT)
+        {
+            $merchantId = $input[Common::MERCHANT_ID] ?? null;
+
+            $merchant = $merchantId ? $this->repo->merchant->findOrFailPublic($merchantId) : null;
+
+            if (empty($merchant) === true)
+            {
+                //  $merchant when it's  null return response.
+                return $response;
+            }
+
+            $isExpiryDocsExits = false;
+
+            /*
+            The below loop determines whether to make a call to 'pgos'.
+            If a document with a license expiry is found, either singularly or among multiple documents, it necessitates a call to 'pgos'.
+            The loop is designed to break upon finding the first document with an expiry, rather than iterating through every item.
+            */
+
+            foreach ($response['items'] as $index => $document)
+            {
+                $documentType = $document[MerchantDocumentEntity::DOCUMENT_TYPE];
+
+                if (isset($documentType) === true and in_array($documentType, Type::LICENSE_EXPIRY_APPLICABLE_DOCUMENT_TYPES) === true)
+                {
+                    $isExpiryDocsExits = true;
+
+                    break;
+                }
+            }
+
+            if ($isExpiryDocsExits === false)
+            {
+                return $response;
+            }
+
+            // Fetch metadata for 'pgos' documents (applicable to documents with license expiry) and merge it with the API response for merchant_documents metadata.
+
+            $route = $this->app['api.route']->getCurrentRouteName();
+
+            try
+            {
+
+                $pgosProxyController = new MerchantOnboardingProxyController();
+
+                $pgosResponse = $pgosProxyController->handlePGOSProxyRequests($pgosProxyController::FETCH_MERCHANT_DOCUMENT_DETAILS, [], $merchant);
+
+                $this->trace->info(TraceCode::PGOS_FETCH_MERCHANT_DOCUMENT, [
+                    'merchant_id'   => $merchantId,
+                    'pgos_response' => $pgosResponse,
+                    'route'         => $route
+                ]);
+
+                $metadataLookup = [];
+
+                if (isset($pgosResponse) === true)
+                {
+                    // Get the keys from the pgos response array
+                    $documentTypes = array_keys($pgosResponse);
+
+                    $commonElements = array_intersect($documentTypes, Type::LICENSE_EXPIRY_APPLICABLE_DOCUMENT_TYPES);
+
+                    if (empty($commonElements) === true)
+                    {
+                        throw new Exception\ServerErrorException(
+                            ErrorCode::BAD_REQUEST_FAILED_TO_FETCH_PGOS_DOCUMENT_METADATA,
+                            ErrorCode::BAD_REQUEST_FAILED_TO_FETCH_PGOS_DOCUMENT_METADATA
+                        );
+
+                    }
+                }
+
+                $isAllDocsExpiryNull = true;
+
+                foreach ($pgosResponse as $documentType => $additionalMetadataDocs)
+                {
+                    foreach ($additionalMetadataDocs as $additionalMetadataDoc)
+                    {
+                        // Check if FILE_STORE_ID exists, and if not, provide a default value (e.g., null or an empty string).
+
+                        $fileStoreId = $additionalMetadataDoc[MerchantDocumentEntity::FILE_STORE_ID] ?? null;
+
+                        if (isset($fileStoreId) === true)
+                        {
+                            $metadataLookup[$documentType][$fileStoreId] = $additionalMetadataDoc[MerchantDocumentEntity::METADATA];
+
+                            if ((isset($additionalMetadataDoc[MerchantDocumentEntity::METADATA]) === true) and
+                                (isset($additionalMetadataDoc[MerchantDocumentEntity::METADATA]['expiry_date'])) and
+                                ($additionalMetadataDoc[MerchantDocumentEntity::METADATA]['expiry_date'] !== '0'))
+                            {
+                                $isAllDocsExpiryNull = false;
+                            }
+                        }
+                    }
+                }
+
+                $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+                    [
+                        'id'            => $merchant->getId(),
+                        'experiment_id' => $this->app['config']->get('app.enable_document_expiry_check_for_activation'),
+                    ],
+                    'variables'
+                );
+
+                // if experiment is off and merchant docs never given expiry date for not even one doc then we won't show expiry date in response
+                if ($isExpEnabled === false and $isAllDocsExpiryNull === true)
+                {
+                    return $response;
+                }
+
+
+                foreach ($response['items'] as $index => &$document)
+                {
+                    $documentType = $document[MerchantDocumentEntity::DOCUMENT_TYPE];
+
+                    $fileStoreId = $document[MerchantDocumentEntity::FILE_STORE_ID] ?? null;
+
+                    // Check if there is additional metadata for this document
+                    if (isset($fileStoreId) === true and isset($metadataLookup[$documentType][$fileStoreId]) === true)
+                    {
+                        // Merge the metadata into the original document's metadata
+                        $document[MerchantDocumentEntity::METADATA] = array_merge(
+                            $document[MerchantDocumentEntity::METADATA],
+                            $metadataLookup[$documentType][$fileStoreId]
+                        );
+
+                        /* example for item response
+                        {
+                            "id": string,
+                            "file_store_id":string,
+                            .... remainingfields
+                            "metadata": {
+                                "file_name": "Screenshot 2023-08-02 at 4.12.03 PM.png",
+                                "expiry_applicable": "true",
+                                "expiry_date": "1632284087",
+                                "expiry_mandatory": "true"
+                            },
+                            "entity": "merchant_document",
+                            "admin": true
+                        }
+                        */
+
+                    }
+
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->info(TraceCode::PGOS_FETCH_MERCHANT_DOCUMENT_ERROR, [
+                    'merchant_id'   => $merchantId,
+                    'route'         => $route,
+                    'error_message' => $ex->getMessage()
+                ]);
+
+                throw new Exception\ServerErrorException(
+                    $ex->getMessage(),
+                    $ex->getCode()
+                );
+            }
         }
 
         return $response;

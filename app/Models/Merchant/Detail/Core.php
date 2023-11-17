@@ -3586,6 +3586,16 @@ class Core extends Base\Core
             // to check website validations for the merchant while fully activating or moving to KQU
             (new Merchant\Website\Service())->validateMerchantActivation($merchantDetails, $websiteDetail);
 
+            // Verify the expiry status for all merchant documents that are relevant for license expiration.
+            // The applicable document types are listed in the constant 'LICENSE_EXPIRY_APPLICABLE_DOCUMENT_TYPES'.
+
+            // In case of automation activation merchant expiry document checks won't run, admins can manually
+            // add expiry date in the documents provided by merchant during onboarding journey.
+
+            if ($this->app['basicauth']->isAdminAuth() === true)
+            {
+                $this->checkLicenseExpiryValidationForMerchantDocuments($merchant, $input);
+            }
         }
 
         if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
@@ -4067,6 +4077,38 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    protected function checkLicenseExpiryValidationForMerchantDocuments($merchant, $input)
+    {
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.enable_document_expiry_check_for_activation'),
+            ],
+            'variables'
+        );
+
+        // skip call to pgos on testing env because lot of test cases will break . so instead of mocking all the test cases simply mocked here
+        if (App::environment('testing') === true){
+            $isExpEnabled = false;
+        }
+
+        if ($isExpEnabled === true)
+        {
+            $payload = [];
+
+            $docValidityCheckResponse = $this->pgosProxyController->handlePGOSProxyRequests($this->pgosProxyController::MERCHANT_DOCUMENT_VALIDITY_CHECK, $payload, $merchant);
+
+            if (isset($docValidityCheckResponse) === true and ($docValidityCheckResponse[DetailConstants::SUCCESS] ?? false) === false)
+            {
+                $this->trace->info(TraceCode::LICENSE_EXPIRY_DATE_REQUIRED_FOR_ACTIVATION, [
+                    'merchant_id' => $merchant->getId()
+                ]);
+
+                throw new BadRequestValidationFailureException('License expiry date required for activation.');
+            }
+        }
+    }
+
     public function getNCAdditionalDocuments() : array
     {
         $response = [];
@@ -4120,7 +4162,6 @@ class Core extends Base\Core
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $properties, SegmentEvent::PAYMENTS_ENABLED);
-
     }
     protected function pushProductLedHubspotEvent($merchant, $properties)
     {

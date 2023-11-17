@@ -102,45 +102,64 @@ class Service extends Base\Service
 
     public function uploadFilesByAgent(array $input)
     {
-        (new Validator())->validateInput(__FUNCTION__, $input);
-
         $merchantId = $input['merchant_id'];
 
-        (new Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+        try
+        {
+            (new Validator())->validateInput(__FUNCTION__, $input);
 
-        $merchantCore = new Merchant\Core();
+            (new Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
 
-        $merchant = $merchantCore->get($merchantId);
+            $merchantCore = new Merchant\Core();
 
-        $documentType = $input[Entity::DOCUMENT_TYPE];
+            $merchant = $merchantCore->get($merchantId);
 
-        $param = [
-            $documentType => $input[Entity::FILE]
-        ];
+            $documentType = $input[Entity::DOCUMENT_TYPE];
 
-        $adminId = $this->auth->getAdmin()->getId();
+            $param = [
+                $documentType => $input[Entity::FILE]
+            ];
 
-        $document = (new Entity)->generateId();
+            $adminId = $this->auth->getAdmin()->getId();
 
-        $document->setUploadByAdminId($adminId);
+            $document = (new Entity)->generateId();
 
-        $document->merchant()->associate($merchant);
+            $document->setUploadByAdminId($adminId);
 
-        $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
+            $document->merchant()->associate($merchant);
 
-        $params = [$documentType => $fileAttributes[$documentType]];
+            $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
 
-        $uploadedDocument = $this->core->storeInMerchantDocument($merchant, $merchant, $params, $document);
+            $params = [$documentType => $fileAttributes[$documentType]];
 
-        $documentMetaData = [
-            Entity::ID                 => $uploadedDocument[$documentType]->getId(),
-            Entity::FILE_STORE_ID      => $uploadedDocument[$documentType]->getFileStoreId(),
-            Entity::MERCHANT_ID        => $uploadedDocument[$documentType]->getMerchantId(),
-            Entity::UPLOAD_BY_ADMIN_ID => $uploadedDocument[$documentType]->getUploadByAdminId(),
-            Entity::CREATED_AT         => $uploadedDocument[$documentType]->getCreatedAt()
-        ];
+            $this->core->storeDocumentInPGOSIfExpiryApplicable($merchant, $fileAttributes[$documentType], $documentType, $document->getId());
 
-        return $documentMetaData;
+            $uploadedDocument = $this->core->storeInMerchantDocument($merchant, $merchant, $params, $document);
+
+            $documentMetaData = [
+                Entity::ID                 => $uploadedDocument[$documentType]->getId(),
+                Entity::FILE_STORE_ID      => $uploadedDocument[$documentType]->getFileStoreId(),
+                Entity::MERCHANT_ID        => $uploadedDocument[$documentType]->getMerchantId(),
+                Entity::UPLOAD_BY_ADMIN_ID => $uploadedDocument[$documentType]->getUploadByAdminId(),
+                Entity::CREATED_AT         => $uploadedDocument[$documentType]->getCreatedAt()
+            ];
+
+            return $documentMetaData;
+        }
+
+        catch (\Throwable $exception){
+
+            $this->trace->error(TraceCode::DOCUMENT_SAVE_FAILED, [
+                'merchant_id'   => $merchantId,
+                'error_message' => $exception->getMessage(),
+                'route'         => $this->app['api.route']->getCurrentRouteName()
+            ]);
+
+            throw new Exception\ServerErrorException(
+                $exception->getMessage(),
+                $exception->getCode()
+            );
+        }
     }
 
     protected function uploadActivationFileByPartner(Merchant\Entity $account, Base\PublicEntity $entity, array $input)
@@ -191,7 +210,7 @@ class Service extends Base\Service
         // check if merchant is to be onboarded via PGOS
         $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
-        if ($shouldMerchantOnboardViaPGOS === true) {
+        if ($shouldMerchantOnboardViaPGOS === true or in_array($entity->getDocumentType(), Type::LICENSE_EXPIRY_APPLICABLE_DOCUMENT_TYPES) === true) {
             // route request to PGOS for deletion
             try
             {
@@ -206,14 +225,17 @@ class Service extends Base\Service
                 ]);
 
                 $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests('merchant_document_delete',
-                    $payload, $this->merchant, true);
+                                                                                    $payload, $this->merchant, true);
 
                 $this->trace->info(TraceCode::PGOS_DOCUMENT_DELETE_RESPONSE, [
                     'merchant_id' => $merchantId,
                     'response'    => $pgosResponse,
                 ]);
 
-                return $pgosResponse['activation_response'];
+                if (in_array($entity->getDocumentType(), Type::LICENSE_EXPIRY_APPLICABLE_DOCUMENT_TYPES) === false)
+                {
+                    return $pgosResponse['activation_response'];
+                }
             }
             catch (\Throwable $exception) {
                 // this should not introduce error counts as it is running in shadow mode

@@ -564,5 +564,37 @@ return [
 
             ]
         ],
-    ]
+    ],
+
+    'testFetchMerchantDocumentsWithExpiryDate' => [
+        'request'  => [
+            'url'       => '/admin/merchant_document',
+            'method'    => 'GET',
+            'content' => [
+                'merchant_id' => 'KqsQEszAud2PqZ'
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testUploadFilesByAgentTypeFfmcLicense' => [
+        'request' => [
+            'url'     => '/merchant_document',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'ffmc_license',
+                'merchant_id'   => 'KqsQEszAud2PqZ'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
 ];

@@ -311,6 +311,8 @@ class RouteTeamMap
         'merchant_document_fetch'                         => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_document_admin_fetch'                   => [self::TEAM_PAYMENTS_GROWTH],
         'add_additional_website'                          => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_document_save'                          => [self::TEAM_PAYMENTS_GROWTH],
+
         'delete_additional_websites'                      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_autokyc_soft_limit'                     => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_autokyc_hard_limit'                     => [self::TEAM_PAYMENTS_GROWTH],

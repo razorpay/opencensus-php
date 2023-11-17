@@ -6,18 +6,28 @@ use Queue;
 use Config;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use Illuminate\Http\UploadedFile;
 use RZP\Constants\Timezone;
 use RZP\Services\UfhService;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
+use Illuminate\Support\Facades\Mail;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Exception\BadRequestValidationFailureException;
+
 
 class MerchantDocumentTest Extends TestCase
 {
@@ -633,5 +643,86 @@ class MerchantDocumentTest Extends TestCase
 
         return [$document, $fileStore];
     }
+
+
+    public function testUploadFilesByAgentTypeFfmcLicense($merchantId = null)
+    {
+        $this->ba->adminAuth();
+        $mid = $merchantId ?? 'KqsQEszAud2PqZ';
+        Config::set('pgos.proxy.request.mock', true);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'            => $mid,
+            'website'       => null,
+            'name'          => null,
+            'email'         => null,
+            'billing_label' => null,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id'      => $mid,
+            'contact_email'    => null,
+            'business_website' => null]);
+
+        $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($mid);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $mid,
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata'        => [
+                'service' => 'pgos'
+            ]
+        ]);
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $request                           = $this->testData[__FUNCTION__]['request'];
+        $request['content']['merchant_id'] = $mid;
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('id', $content);
+
+        $this->assertArrayHasKey('file_store_id', $content);
+
+        $this->assertArrayHasKey('merchant_id', $content);
+
+        $this->assertArrayHasKey('upload_by_admin_id', $content);
+    }
+
+    public function testFetchMerchantDocumentsWithExpiryDate()
+    {
+        $this->ba->adminAuth();
+        Mail::fake();
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->testUploadFilesByAgentTypeFfmcLicense();
+
+        $response = $this->startTest();
+
+        // Assert that the 'items' key exists within the 'data' array
+        $this->assertArrayHasKey('items', $response);
+
+        $foundExpiryDate = false;
+        foreach ($response['items'] as $item)
+        {
+            if (isset($item['metadata']['expiry_date']))
+            {
+                $foundExpiryDate = true;
+                break; // Found at least one item with 'expiry_date' in 'metadata'
+            }
+        }
+
+        // Assert that at least one item has 'expiry_date' in 'metadata'
+        $this->assertTrue($foundExpiryDate);
+
+    }
+
+
 }
 

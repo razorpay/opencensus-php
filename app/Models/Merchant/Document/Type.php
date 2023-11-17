@@ -426,6 +426,23 @@ class Type
         self::CANCELLED_CHEQUE_VIDEO => Format::VALID_VIDEO_EXTENSIONS
     ];
 
+    const LICENSE_EXPIRY_APPLICABLE_DOCUMENT_TYPES = [
+        self::FFMC_LICENSE,
+        self::FSSAI_CERTIFICATE,
+        self::FDA_CERTIFICATE,
+        self::FDA_LICENSE,
+        self::FSSAI_LICENSE,
+        self::AYUSH_CERTIFICATE,
+        self::SEBI_REGISTRATION_CERTIFICATE,
+        self::IRDA_CERTIFICATE,
+        self::AMFI_CERTIFICATE,
+        self::IATA_CERTIFICATE,
+        self::PCI_DSS_CERTIFICATE,
+        self::PHARMACY_DRUG_LICENSE,
+        self::DOMAIN_OWNERSHIP_DOCUMENT,
+        self::FORM_20_20b_21_21b
+    ];
+
     const DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING = [
         self::CANCELLED_CHEQUE_VIDEO            => self::ADDITIONAL_DOCUMENTS,
         self::FSSAI_CERTIFICATE                 => self::ADDITIONAL_DOCUMENTS,

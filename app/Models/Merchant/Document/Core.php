@@ -118,6 +118,70 @@ class Core extends Base\Core
         return $uploadedDocuments;
     }
 
+
+    public function storeDocumentInPGOSIfExpiryApplicable( Merchant\Entity $merchant, array $fileAttributes, string $documentType, string $documentId)
+    {
+
+        $merchantId = $merchant->getMerchantId();
+
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.enable_document_expiry_check_for_activation'),
+            ],
+            'variables'
+        );
+
+        if ($isExpEnabled === true and in_array($documentType, Type::LICENSE_EXPIRY_APPLICABLE_DOCUMENT_TYPES) === true)
+        {
+
+            $route = $this->app['api.route']->getCurrentRouteName();
+            // route request to PGOS for storing document metadata in pgos
+            try
+            {
+                $payload = [
+                    "document_type"      => $documentType,
+                    "file_store_id"      => $fileAttributes[Constants::FILE_ID],
+                    "merchant_id"        => $merchantId,
+                    "original_file_name" => $fileAttributes[Constants::ORIGINAL_FILE_NAME],
+                    "id"                 => $documentId
+                ];
+
+                $this->trace->info(TraceCode::PGOS_DOCUMENT_METADATA_CREATE_REQUEST, [
+                    'payload' => $payload,
+                    'route'   => $route
+                ]);
+
+                $response = $this->pgosProxyController->handlePGOSProxyRequests($this->pgosProxyController::MERCHANT_DOCUMENT_UPLOAD, $payload, $merchant);
+
+                $this->trace->info(TraceCode::PGOS_DOCUMENT_METADATA_CREATE_RESPONSE, [
+                    'merchant_id' => $merchantId,
+                    'response'    => $response,
+                    'route'       => $route
+                ]);
+
+                // if pgos is giving error we will have the key msg set always
+
+                if (isset($response) === true and isset($response[constants::MSG]) === true)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FAILED_TO_CREATE_PGOS_DOCUMENT_METADATA);
+                }
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id'   => $merchantId,
+                    'error_message' => $exception->getMessage(),
+                    'route'         => $route
+                ]);
+
+                throw new Exception\ServerErrorException(
+                    $exception->getMessage(),
+                    $exception->getCode()
+                );
+            }
+        }
+    }
     /**
      * this function store activation file in merchantDocument by new route.
      *
@@ -189,6 +253,10 @@ class Core extends Base\Core
 
                 return $response['activation_response'];
             }
+            else
+            {
+                $this->storeDocumentInPGOSIfExpiryApplicable($merchant, $fileAttributes[$documentType], $documentType, $document->getId());
+            }
 
         }
         catch (\Throwable $exception) {
@@ -202,6 +270,7 @@ class Core extends Base\Core
                 'error description' => 'submitted data could not be processed'
             ]);
         }
+
 
         $entity = $entity ?? $merchant;
 

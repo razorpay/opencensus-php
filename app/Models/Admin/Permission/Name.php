@@ -526,6 +526,8 @@ class Name
     // Permission to add business website.
     const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';
     const ADD_ADDITIONAL_WEBSITE              = 'add_additional_website';
+    const MERCHANT_DOCUMENT_SAVE              = 'merchant_document_save';
+    const MERCHANT_DOCUMENT_FETCH             = 'merchant_document_fetch';
 
     // Bulk IIR create Permission
     const INTERNAL_INSTRUMENT_CREATE_BULK     = "internal_instrument_create_bulk";

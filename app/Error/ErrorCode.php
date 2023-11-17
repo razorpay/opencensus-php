@@ -357,6 +357,10 @@ class ErrorCode
     const BAD_REQUEST_DEADLINE_EXCEEDED                                             = 'BAD_REQUEST_DEADLINE_EXCEEDED';
 
     const SERVER_ERROR_ACTION_UNIMPLEMENTED                                         = 'SERVER_ERROR_ACTION_UNIMPLEMENTED';
+
+    const BAD_REQUEST_FAILED_TO_CREATE_PGOS_DOCUMENT_METADATA                      = 'BAD_REQUEST_FAILED_TO_CREATE_PGOS_DOCUMENT_METADATA';
+    const BAD_REQUEST_FAILED_TO_FETCH_PGOS_DOCUMENT_METADATA                       = 'BAD_REQUEST_FAILED_TO_FETCH_PGOS_DOCUMENT_METADATA';
+
     const SERVER_ERROR_SERVICE_UNAVAILABLE                                          = 'SERVER_ERROR_SERVICE_UNAVAILABLE';
     const BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED                           = 'BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED';
     const BAD_REQUEST_ACCOUNTING_PAYOUTS_SERVICE_FAILED                             = 'BAD_REQUEST_ACCOUNTING_PAYOUTS_SERVICE_FAILED';
@@ -3037,6 +3041,7 @@ class ErrorCode
     const BAD_REQUEST_SPLIT_PAYMENT_FAILED                                          = 'BAD_REQUEST_SPLIT_PAYMENT_FAILED';
 
     const BAD_REQUEST_ENTITY_NOT_SUPPORTED                                          = 'BAD_REQUEST_ENTITY_NOT_SUPPORTED';
+
 
     static function getConstants()
     {

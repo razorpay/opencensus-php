@@ -683,7 +683,10 @@ return array(
 
     'enable_kyc_qualified_unactivated' => env('ENABLE_KYC_QUALIFIED_UNACTIVATED_EXP_ID'),
 
+    'enable_document_expiry_check_for_activation' => env('ENABLE_DOCUMENT_EXPIRY_CHECK_FOR_ACTIVATION_EXP_ID'),
+
     'enable_unverified_email_check_for_easy_onboarding' => env('ENABLE_UNVERIFIED_EMAIL_CHECK_FOR_EASY_ONBOARDING_EXP_ID'),
+
 
     '1cc_branded_btn_splitz_exp_id' => env('MAGIC_CHECKOUT_BRANDED_BUTTON_EXP_ID'),
 

@@ -62,6 +62,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL        = 'generate_merchant_identity_verification_url';
     const PROCESS_MERCHANT_IDENTITY_VERIFICATION             = 'process_merchant_identity_verification';
 
+    // merchant_document routes
+    const SAVE_MERCHANT_DOCUMENT_DETAILS      = 'save_merchant_document';
+    const FETCH_MERCHANT_DOCUMENT_DETAILS     = 'fetch_merchant_document';
+    const MERCHANT_DOCUMENT_VALIDITY_CHECK    = 'merchant_document_validity_check';
+
     const PGOS_SHADOW_MODE_EXPERIMENT_ID = 'app.pgos_shadow_mode_experiment_id';
     const PGOS_LIVE_MODE_EXPERIMENT_ID   = 'app.pgos_live_mode_experiment_id';
     const ENABLE                         = 'enable';
@@ -134,6 +139,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const ADMIN_ROUTES = [
         self::GET_MERCHANT_BMC_RESPONSE,
         self::MERCHANT_UPDATE_BY_ADMIN,
+        self::SAVE_MERCHANT_DOCUMENT_DETAILS,
+        self::FETCH_MERCHANT_DOCUMENT_DETAILS,
+        self::MERCHANT_DOCUMENT_VALIDITY_CHECK,
         self::MERCHANT_CATEGORIES_ADMIN_V3
     ];
 
@@ -145,8 +153,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
 
     const ADMIN_ROUTES_VS_PERMISSION   = [
-        self::GET_MERCHANT_BMC_RESPONSE   => Name::VIEW_ALL_ENTITY,
-        self::MERCHANT_UPDATE_BY_ADMIN    => Name::VIEW_ALL_ENTITY,
+        self::GET_MERCHANT_BMC_RESPONSE        => Name::VIEW_ALL_ENTITY,
+        self::MERCHANT_UPDATE_BY_ADMIN         => Name::VIEW_ALL_ENTITY,
+        self::SAVE_MERCHANT_DOCUMENT_DETAILS   => Name::MERCHANT_DOCUMENT_SAVE,
+        self::FETCH_MERCHANT_DOCUMENT_DETAILS  => Name::MERCHANT_DOCUMENT_FETCH,
     ];
 
     const ROUTES_URL_MAP = [
@@ -163,12 +173,18 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_RM_UPDATE               => 'twirp/rzp.pg_onboarding.external.rmdetails.v1.RmDetailsService/UpdateRMDetails',
         self::SEND_OTP                         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendOTP',
         self::MERCHANT_DETAILS_PATCH           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDetailsPatch',
+        self::SAVE_MERCHANT_DOCUMENT_DETAILS   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantDocumentMetadata',
+        self::FETCH_MERCHANT_DOCUMENT_DETAILS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantDocumentMetadata',
+        self::MERCHANT_DOCUMENT_VALIDITY_CHECK => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/CheckMerchantDocumentDetailsValidity',
+
+
 
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetPolicyComplianceDetails',
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantSavePolicyComplianceDetails',
         self::MERCHANT_POLICY_SECTION_PUBLISH_V2        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantPolicySectionPublish',
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDocVerification',
+
 
         self::MERCHANT_GATING_LOGIC_SAVE       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantGatingLogic',
         self::PAYMENT_ORDER_CREATE             => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderCreate',
@@ -189,6 +205,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     // timeout in seconds
     const PATH_TIMEOUT_MAP = [
+        //merchant_document routes
+        self::SAVE_MERCHANT_DOCUMENT_DETAILS   => 15,
+        self::FETCH_MERCHANT_DOCUMENT_DETAILS  => 15,
+        self::MERCHANT_DOCUMENT_VALIDITY_CHECK => 15,
+
+
         self::MERCHANT_ACTIVATION_SAVE                  => 15,
         self::MERCHANT_SIGN_UP                          => 20,
         self::MERCHANT_DOCUMENT_UPLOAD                  => 15,
@@ -212,6 +234,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_FETCH_GATING_LOGIC,
         self::PAYMENT_ORDER_WEBHOOK,
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION,
+        self::SAVE_MERCHANT_DOCUMENT_DETAILS,
+        self::FETCH_MERCHANT_DOCUMENT_DETAILS,
+        self::MERCHANT_DOCUMENT_VALIDITY_CHECK,
+        self::MERCHANT_DOCUMENT_UPLOAD,
         self::MERCHANT_CONSENTS_SAVE,
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL,
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION,
@@ -254,6 +280,35 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         if ($mock === true)
         {
+            //mocking default response based on routekey
+            switch ($routeKey)
+            {
+                case self::FETCH_MERCHANT_DOCUMENT_DETAILS :
+                    return  [
+                        "ffmc_license" => [
+                            [
+                                "id" => "MuiZWKXnd61h78",
+                                "file_store_id" => "1cXSLlUU8V9sXl",
+                                "merchant_id" => "KqsQEszAud2PqZ",
+                                "created_at" => "0",
+                                "metadata" => [
+                                    "expiry_applicable" => "true",
+                                    "expiry_date"       => "1699615221",
+                                    "expiry_mandatory"  => "true"
+                                ]
+                            ],
+                        ],
+                        // ... (and so on for the other document types)
+                    ];
+                case self::MERCHANT_DOCUMENT_UPLOAD :
+                    return [
+                        "activation_response" => [],
+                    ];
+                case self::MERCHANT_DOCUMENT_VALIDITY_CHECK:
+                    return [
+                        "success" => true
+                    ];
+            }
             return null;
         }
 
