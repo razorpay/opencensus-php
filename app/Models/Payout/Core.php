@@ -10144,7 +10144,7 @@ class Core extends Base\Core
         /** @var \RZP\Services\FTS\FundTransfer $transferService */
         $transferService = App::getFacadeRoot()['fts_fund_transfer'];
 
-        $transferService->setRequestTimeout(10);
+        $transferService->setRequestTimeout(1);
 
         try
         {
