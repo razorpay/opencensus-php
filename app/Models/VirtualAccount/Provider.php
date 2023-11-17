@@ -63,6 +63,8 @@ class Provider
         self::AXIS      => 'UTIB000RAZP'
     ];
 
+    const AXIS_COMMON_IFSC = 'UTIB0CCH274';
+
     // The default details are fixed by each provider, most specifically
     // the IFSC code where the virtual accounts are said to be located.
     // Further details can be derived from this IFSC, but are not required
@@ -148,6 +150,18 @@ class Provider
     const VALIDATE_CALLBACK_PROVIDERS = [
         self::AXIS,
     ];
+
+    public static function getIFSC(bool $useCommonIfsc = false): array
+    {
+        $ifsc = self::IFSC;
+
+        if ($useCommonIfsc)
+        {
+            $ifsc[self::AXIS] = self::AXIS_COMMON_IFSC;
+        }
+
+        return $ifsc;
+    }
 
     public static function getBankCode(string $provider)
     {

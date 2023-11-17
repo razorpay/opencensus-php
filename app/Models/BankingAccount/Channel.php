@@ -41,6 +41,7 @@ class Channel
         self::ICICI,
         self::KOTAK,
         self::YESBANK,
+        self::AXIS
     ];
 
     protected static $corpCardChannels = [

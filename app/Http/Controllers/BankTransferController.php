@@ -648,10 +648,21 @@ class BankTransferController extends Controller
         }
 
         $provider  = Provider::AXIS;
-        $payeeIfsc = Provider::IFSC[Provider::AXIS];
 
         $payerAccount = isset($input['Sndr_acnt'])?$input['Sndr_acnt']:'';
         $payerName = isset($input['Sndr_nm'])?$input['Sndr_nm']:'';
+
+        $xCorpCode = $this->config['applications.axis_va.x_corp_code'];
+        $corpCode = $input['Corp_code'] ?? '';
+
+        if ($corpCode === $xCorpCode)
+        {
+            $payeeIfsc = Provider::getIFSC(true)[Provider::AXIS];
+        }
+        else
+        {
+            $payeeIfsc = Provider::getIFSC()[Provider::AXIS];
+        }
 
         return array(
             'input' => [

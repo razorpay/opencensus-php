@@ -875,7 +875,9 @@ class Processor extends VirtualAccount\Processor
      *                     done so as to make the transaction happen as if it were to a invalid payee account and then
      *                     get refunded eventually.
      */
-    protected function verifyPayerUsingBankingAccountTpvIfEnabledAndSaveBankTransfer(Entity $bankTransfer)
+    protected function verifyPayerUsingBankingAccountTpvIfEnabledAndSaveBankTransfer(
+        Entity $bankTransfer,
+        bool $isValidationFlow = false)
     {
         $balanceType = $this->virtualAccount->getBalanceType();
 
@@ -883,17 +885,29 @@ class Processor extends VirtualAccount\Processor
                            [
                                'balance_type'       => $balanceType,
                                'virtual_account_id' => $this->virtualAccount->getId(),
+                               'validation_flow'    => $isValidationFlow
                            ]
         );
 
         if ($balanceType === Balance\Type::BANKING)
         {
-            $this->createAndAssociatePayerBankAccount($bankTransfer);
+            if (!$isValidationFlow)
+            {
+                $this->createAndAssociatePayerBankAccount($bankTransfer);
 
-            $payerDetails = [
-                BankAccount\Entity::ACCOUNT_NUMBER =>
-                    PayerBankAccount::getBankAccountInput($bankTransfer)[BankAccount\Entity::ACCOUNT_NUMBER],
-            ];
+                $payerDetails = [
+                    BankAccount\Entity::ACCOUNT_NUMBER =>
+                        PayerBankAccount::getBankAccountInput($bankTransfer)[BankAccount\Entity::ACCOUNT_NUMBER],
+                ];
+            }
+            else
+            {
+                $payerAccountNumber = PayerBankAccount::getPayerAccount($bankTransfer);
+
+                $payerDetails = [
+                    BankAccount\Entity::ACCOUNT_NUMBER => $payerAccountNumber,
+                ];
+            }
 
             /*
              * If the payer account is globally whitelisted, we don't have to check the tpv flow at all.
@@ -901,7 +915,10 @@ class Processor extends VirtualAccount\Processor
              */
             if($this->isGloballyWhitelistedPayerAccount($payerDetails) === true)
             {
-                $this->repo->saveOrFail($bankTransfer);
+                if (!$isValidationFlow)
+                {
+                    $this->repo->saveOrFail($bankTransfer);
+                }
 
                 // Logs to get the bank transfer id as well
                 $this->trace->info(
@@ -910,9 +927,10 @@ class Processor extends VirtualAccount\Processor
                         'balance_type'       => $balanceType,
                         'virtual_account_id' => $this->virtualAccount->getId(),
                         'bank_transfer_id'   => $bankTransfer->getId(),
+                        'validation_flow'    => $isValidationFlow
                     ]);
 
-                return;
+                return true;
             }
 
             $merchantId = $this->virtualAccount->getMerchantId();
@@ -935,6 +953,7 @@ class Processor extends VirtualAccount\Processor
                                    'disable_tpv_feature' => $disableTpvFeature,
                                    'merchant_id'         => $merchantId,
                                    'balance_id'          => $balanceId,
+                                   'validation_flow'     => $isValidationFlow
                                ]
             );
 
@@ -961,8 +980,14 @@ class Processor extends VirtualAccount\Processor
                                            'merchant_id'            => $merchantId,
                                            'balance_id'             => $balanceId,
                                            'banking_account_tpv_id' => $bankingAccountTpv->getId(),
+                                           'validation_flow'        => $isValidationFlow
                                        ]
                     );
+
+                    if ($isValidationFlow)
+                    {
+                        return true;
+                    }
                 }
                 else
                 {
@@ -971,8 +996,14 @@ class Processor extends VirtualAccount\Processor
                                            'disable_tpv_feature' => $disableTpvFeature,
                                            'merchant_id'         => $merchantId,
                                            'balance_id'          => $balanceId,
+                                           'validation_flow'     => $isValidationFlow
                                        ]
                     );
+
+                    if ($isValidationFlow)
+                    {
+                        return false;
+                    }
 
                     //
                     // NOTE: After the function `dissociateExpectedRelationsForBankTransfer`, we associate the
@@ -1032,13 +1063,18 @@ class Processor extends VirtualAccount\Processor
 
                     $this->sendFundLoadingFailedEmail($bankTransfer->getId(), $actualMerchantId);
 
-                    return;
+                    return false;
                 }
             }
         }
 
-        // this will record BT in created state.
-        $this->repo->saveOrFail($bankTransfer);
+        if (!$isValidationFlow)
+        {
+            // this will record BT in created state.
+            $this->repo->saveOrFail($bankTransfer);
+        }
+
+        return true;
     }
 
     /*

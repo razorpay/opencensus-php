@@ -243,6 +243,13 @@ class Generator extends Base\Core
     {
         $bankAccountInput = VirtualAccount\Provider::DEFAULT_DETAILS[$provider];
 
+        $isBalanceTypeBanking = $this->options[self::BANKING] !== null && $this->options[self::BANKING] == true;
+
+        if ($isBalanceTypeBanking && ($provider == VirtualAccount\Provider::AXIS))
+        {
+            $bankAccountInput[Entity::IFSC_CODE] = VirtualAccount\Provider::AXIS_COMMON_IFSC;
+        }
+
         $merchantDetails = [
             Entity::ACCOUNT_NUMBER     => $accountNumber,
             Entity::BENEFICIARY_NAME   => $this->options[Entity::NAME] ?? $entity->getName(),

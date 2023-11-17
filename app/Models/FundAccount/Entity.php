@@ -104,6 +104,7 @@ class Entity extends Base\PublicEntity
         '2224'      => Provider::IFSC[Provider::RBL],
         '2223'      => Provider::IFSC[Provider::RBL],
         '567890'    => Provider::IFSC[Provider::RBL],
+        '9845'      => Provider::AXIS_COMMON_IFSC,
     ];
 
     const PREFIX_TO_UNDERLYING_ACCOUNT_TYPE_MAP = [
@@ -111,6 +112,7 @@ class Entity extends Base\PublicEntity
         '5656'    => AccountType::NODAL,
         '456456'  => AccountType::CURRENT,
         '787878'  => AccountType::NODAL,
+        '9845'    => AccountType::NODAL,
     ];
 
     // Ledger routes for which fund account source account is coming empty

@@ -288,8 +288,9 @@ return [
         'org_token' => env('RBL_VA_SECRET'),
     ],
 
-    'axis_va'    => [
-        'org_token' => env('AXIS_VA_SECRET'),
+    'axis_va' => [
+        'org_token'   => env('AXIS_VA_SECRET'),
+        'x_corp_code' => env('AXIS_X_CORP_CODE', "RZPX"),
     ],
 
     'rbl' => [

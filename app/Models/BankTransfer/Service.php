@@ -229,7 +229,8 @@ class Service extends Base\Service
 
     protected function processValidationRequest(array $input, string $provider = null)
     {
-        if (($input['request_type'] == 'validation') &&
+        if ((array_key_exists('request_type', $input)) and
+            ($input['request_type'] == 'validation') and
             (in_array($provider, Provider::VALIDATE_CALLBACK_PROVIDERS) === true))
         {
             try

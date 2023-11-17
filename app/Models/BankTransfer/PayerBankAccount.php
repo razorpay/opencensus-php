@@ -78,7 +78,7 @@ class PayerBankAccount extends Base\Core
      *
      * @return null|string
      */
-    protected static function getPayerAccount(Entity $bankTransfer)
+    public static function getPayerAccount(Entity $bankTransfer)
     {
         $account = $bankTransfer->getPayerAccount();
 

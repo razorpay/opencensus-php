@@ -256,7 +256,7 @@ class Core extends Base\Core
         $bankAccount = $virtualAccount->bankAccount;
         $bankCode    = $bankAccount->getBankCode();
         $channel     = $this->isLiveMode() ?
-            array_flip(VirtualAccount\Provider::IFSC)[$bankAccount->getIfscCode()] : Channel::YESBANK;
+            array_flip(VirtualAccount\Provider::getIFSC(true))[$bankAccount->getIfscCode()] : Channel::YESBANK;
 
         $allowedChannels = BAChannel::getAllowedSharedChannels();
         $isChannelValid  = (in_array($channel, $allowedChannels) === true);
@@ -2060,7 +2060,7 @@ class Core extends Base\Core
     protected function getSharedAccountAttributes(BankAccount\Entity $bankAccount)
     {
         $channel = $this->isLiveMode() ?
-            array_flip(VirtualAccount\Provider::IFSC)[$bankAccount->getIfscCode()] : Channel::YESBANK;
+            array_flip(VirtualAccount\Provider::getIFSC(true))[$bankAccount->getIfscCode()] : Channel::YESBANK;
 
         $attributes = [
             Entity::CHANNEL                   => $channel,

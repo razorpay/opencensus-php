@@ -96,6 +96,10 @@ abstract class Processor extends Base\Core
     {
         $this->setVirtualAccount($entity);
 
+        $this->setMerchant();
+
+        $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();
+
         if ($this->virtualAccount->isActive() === false ||
             $this->virtualAccount->isDueToBeClosed() === true)
         {
@@ -111,6 +115,22 @@ abstract class Processor extends Base\Core
             if ($amountTotal > $expectedAmount)
             {
                 return false;
+            }
+        }
+
+        if ($isBusinessBankingVa === true)
+        {
+            if (($this->merchant->isLive() === false) and
+                ((new Merchant\Core())->isXVaActivated($this->merchant) === false))
+            {
+                return false;
+            }
+
+            $tpvResponse = $this->verifyPayerUsingBankingAccountTpvIfEnabledAndSaveBankTransfer($entity, true);
+
+            if (!$tpvResponse)
+            {
+                return $tpvResponse;
             }
         }
 
