@@ -236,6 +236,9 @@ export function Step3({
                     />
                     <span>{provider?.Gateway_details?.[label] ? 'Enabled' : 'Disabled'}</span>
                   </div>
+                  <p className="select-payment-method-desc">
+                    Available for Card and Netbanking, coming soon for UPI.
+                  </p>
                 </div>
               </div>
             </div>

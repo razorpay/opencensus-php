@@ -1292,10 +1292,11 @@ const getLogoPath = (logoName, extension = 'png') =>
 export const gatewayLogos = {
   razorpay: getLogoPath('razorpay'),
   smart_router: getLogoPath('razorpay'),
+  optimizer_razorpay: getLogoPath('razorpay'),
   payu: getLogoPath('payu'),
   paytm: getLogoPath('paytm'),
   billdesk_optimizer: getLogoPath('bill-desk'),
-  atom: getLogoPath('atom'),
+  atom: require('assets/optimizer/atom.png'),
   fss: getLogoPath('fss'),
   cybersource: getLogoPath('cybersource'),
   cybersource_hdfc: getLogoPath('cybersource'),
@@ -1304,16 +1305,14 @@ export const gatewayLogos = {
   ccavenue: getLogoPath('ccavenue', 'svg'),
   upi_mindgate: getLogoPath('hdfc'),
   pinelabs: getLogoPath('pinelabs'),
-  ingenico: getLogoPath('ingenico'),
+  ingenico: require('assets/optimizer/ingenico.png'),
   axis_migs: getLogoPath('axis'),
   upi_axis: getLogoPath('axis'),
   hdfc: getLogoPath('hdfc'),
   upi_icici: getLogoPath('icici'),
   netbanking_axis: getLogoPath('axis'),
-  checkout_dot_com_optimizer: require('assets/optimizer/checkout-dot-com.png'),
+  checkout_dot_com_optimizer: require('assets/optimizer/cko.png'),
 };
-
-export const popularGateways = ['payu'];
 
 export const mapRulesObjectToArray = (e) => {
   const rules = [];

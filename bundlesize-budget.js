@@ -70,7 +70,7 @@ module.exports = [
   {
     name: 'Optimizer AddProvider',
     path: 'js/merchant/AddProvider.*.js',
-    limit: '20 KB',
+    limit: '32 KB',
     gzip: true,
   },
   {

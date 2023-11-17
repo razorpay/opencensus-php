@@ -35,6 +35,7 @@
     "js/merchant/views/PartnerDashboard",
     "js/merchant/views/Marketplace",
     "js/merchant/views/Navigator",
+    "js/merchant/views/Optimizer/**/*",
     "js/merchant/views/ApiKeysAndPlugins",
     "js/merchant/views/Wallet",
     "js/merchant/views/MagicCheckout",

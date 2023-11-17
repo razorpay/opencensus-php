@@ -1,18 +1,25 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Route, Routes, Navigate } from 'react-router-dom';
+import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 import { fetchRules, fetchRule, fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import lazy from 'merchant/routes/LazyLoader';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { shouldShowRules, shouldShowOnBoarding } from 'merchant/views/Navigator/components/util';
-import { RouteGuard } from 'merchant/components/ShowWhen';
 
 const AddProvider = lazy(() =>
   import(/* webpackChunkName: 'AddProvider' */ 'merchant/views/Navigator/components/AddProvider'),
+);
+
+const AddProviderV2 = lazy(() =>
+  import(/* webpackChunkName: 'AddProviderV2' */ 'merchant/views/Optimizer/AddProvider'),
 );
 
 const CreateRule = lazy(() =>
@@ -27,18 +34,14 @@ const OnBoarding = lazy(() =>
   import(/* webpackChunkName: 'OnBoarding' */ 'merchant/views/Navigator/components/OnBoarding'),
 );
 
-@connect(
-  (state) => {
-    return {
-      user: state.session.user,
-    };
-  },
-  {
-    fetchRule,
-    fetchRules,
-    fetchTerminalProviders,
-  },
-)
+const addProviderRevamp = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { add_provider_revamp: undefined } };
+
+  if (!abExperiments?.add_provider_revamp) return false;
+
+  return isExperimentEnabled(abExperiments.add_provider_revamp);
+};
+
 class Navigator extends React.Component {
   componentDidMount() {
     const { fetchRules, fetchTerminalProviders } = this.props;
@@ -48,7 +51,8 @@ class Navigator extends React.Component {
   }
 
   render() {
-    const { user } = this.props;
+    const { user, splitz } = this.props;
+    const addProviderExpEnabled = addProviderRevamp(splitz);
 
     const redirectionURL = shouldShowRules(user) ? '/optimizer/rules' : '/optimizer/onboarding';
 
@@ -61,7 +65,7 @@ class Navigator extends React.Component {
                 path="add-provider/*"
                 element={
                   <RouteGuard>
-                    <AddProvider />
+                    {addProviderExpEnabled ? <AddProviderV2 /> : <AddProvider />}
                   </RouteGuard>
                 }
               />
@@ -69,7 +73,7 @@ class Navigator extends React.Component {
                 path="update-provider/:id/*"
                 element={
                   <RouteGuard>
-                    <AddProvider />
+                    {addProviderExpEnabled ? <AddProviderV2 /> : <AddProvider />}
                   </RouteGuard>
                 }
               />
@@ -116,4 +120,16 @@ class Navigator extends React.Component {
   }
 }
 
-export default withRouter(Navigator);
+export default compose(
+  withSplitzService,
+  connect(
+    (state) => ({
+      user: state.session.user,
+    }),
+    {
+      fetchRule,
+      fetchRules,
+      fetchTerminalProviders,
+    },
+  ),
+)(withRouter(Navigator));

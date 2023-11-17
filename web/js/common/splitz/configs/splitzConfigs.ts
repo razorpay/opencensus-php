@@ -410,5 +410,27 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      matchByDashboard: ['product'],
+      routesToMatch: [/^(\/optimizer\/(add-provider|update-provider\/[^/]*$))/i],
+      abExperiments: [
+        {
+          uniqueHashKey: 'add_provider_revamp',
+          experimentId: {
+            beta: 'MuLnzwkynPb089',
+            production: 'MyHpKJDgmv1kXU',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

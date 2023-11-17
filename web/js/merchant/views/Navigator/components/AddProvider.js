@@ -1,7 +1,7 @@
 import React from 'react';
 import qs from 'query-string';
 import { connect } from 'react-redux';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { CSSTransition } from 'react-transition-group';
 import { compose, bindActionCreators } from 'redux';
 
@@ -37,7 +37,6 @@ import { getSelectedProviderWithAcquirer as getSelectedProvider } from './util';
 
 class AddProvider extends React.Component {
   state = {
-    redirect: null,
     provider: deepClone(INIT_PROVIDER_STATE),
     terminalId: this.props?.match?.params?.id,
     steps: {
@@ -631,7 +630,6 @@ class AddProvider extends React.Component {
 
   render() {
     const {
-      redirect,
       providers,
       validationErrors,
       isEdit,
@@ -644,8 +642,6 @@ class AddProvider extends React.Component {
       selectedProvider,
     } = this.state;
     const { user } = this.props;
-
-    if (redirect) return <Navigate to={redirect} replace />;
 
     const _params = qs.parse(this.props?.location?.search);
     const onCloseLink = _params?.from ?? '/optimizer/rules';

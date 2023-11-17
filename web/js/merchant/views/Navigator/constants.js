@@ -5,6 +5,52 @@ import { CommonPoints } from 'merchant/views/Navigator/components/Provider/Seaml
 export const NETBANKING_FEATURES = 'Netbanking Features';
 export const UPI_FEATURES = 'UPI Features';
 
+export const INTERNATIONAL_GATEWAYS = ['checkout_dot_com_optimizer'];
+export const BANK_GATEWAYS = [
+  'upi_icici',
+  'upi_mindgate',
+  'upi_axis',
+  'netbanking_axis',
+  'hdfc',
+  'cybersource_hdfc',
+  'cybersource_axis',
+  'axis_migs',
+];
+
+export const GATEWAY_CATEGORIES = {
+  aggregators: 'Aggregators',
+  international_gateways: 'International Gateways',
+  bank_gateways: 'Bank Gateways',
+};
+
+export const RECOMMENDED_GATEWAYS = ['payu'];
+export const INCOMPLETE_GATEWAY = ['checkout_dot_com_optimizer'];
+
+export const METHODS = {
+  CARD: 'card',
+  EMANDATE: 'emandate',
+  EMI: 'emi',
+  NETBANKING: 'netbanking',
+  UPI: 'upi',
+  WALLET: 'wallet',
+  SODEXO: 'sodexo',
+};
+
+export const METHODS_MAP = {
+  card: 'Card',
+  emandate: 'E-Mandate',
+  emi: 'EMI',
+  netbanking: 'Netbanking',
+  upi: 'UPI',
+  wallet: 'Wallet',
+  sodexo: 'Sodexo',
+};
+
+export const PROVIDER_KEYS = {
+  SODEXO: 'Sodexo',
+  RECURRING: 'Recurring',
+};
+
 export const INIT_PROVIDER_STATE = {
   Provider_name: '',
   Description: '',
@@ -32,27 +78,6 @@ export const INIT_FORM_STATE = {
       show: true,
     },
   },
-};
-
-export const METHODS = {
-  CARD: 'card',
-  UPI: 'upi',
-  SODEXO: 'sodexo',
-};
-
-export const METHODS_MAP = {
-  card: 'Card',
-  emandate: 'E-Mandate',
-  emi: 'EMI',
-  netbanking: 'Netbanking',
-  upi: 'UPI',
-  wallet: 'Wallet',
-  sodexo: 'Sodexo',
-};
-
-export const PROVIDER_KEYS = {
-  SODEXO: 'Sodexo',
-  RECURRING: 'Recurring',
 };
 
 export const WALLET_AUTO_DEBIT_KEY = 'ENABLE_AUTO_DEBIT';
@@ -90,6 +115,8 @@ export const INSTANT_PROVIDER_UNSUPPORTED_METHODS = {
   payu: ['emi', 'emandate'],
   cashfree: ['card'],
 };
+
+export const SEAMLESS_NOT_SUPPORTED = ['checkout_dot_com_optimizer'];
 
 export const SEAMLESS_CONTENT = {
   paytm: {

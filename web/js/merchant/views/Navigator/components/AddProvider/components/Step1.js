@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+import debounce from 'lodash/debounce';
+
 import Input from 'common/new-ui/Input';
 import Spinner from 'common/ui/Spinner';
-import debounce from 'lodash/debounce';
-import { SeamlessOption } from 'merchant/views/Navigator/components/Provider/SeamlessOption';
 import SeamlessNote from 'merchant/views/Navigator/components/Provider/SeamlessNote';
-import { popularGateways, gatewayLogos } from 'merchant/views/Navigator/components/util';
+import { SeamlessOption } from 'merchant/views/Navigator/components/Provider/SeamlessOption';
+import { gatewayLogos } from 'merchant/views/Navigator/components/util';
 import {
+  RECOMMENDED_GATEWAYS,
   SEAMLESS_CONTENT,
   SEAMLESS_PROVIDERS,
   SEAMLESS_OPTIONS,
@@ -102,7 +104,7 @@ export const Step1 = (props) => {
             />
             <span>Popular Gateways</span>
           </div>
-          {popularGateways.map((provider, index) => renderProviderItem(provider, index))}
+          {RECOMMENDED_GATEWAYS.map((provider, index) => renderProviderItem(provider, index))}
           <div className="col-xs-12 all-gateways-header mb-2">All Gateways</div>
           {providersObjectKeys.map((provider, index) => {
             return renderProviderItem(provider, index);
