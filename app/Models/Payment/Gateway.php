@@ -3791,17 +3791,23 @@ class Gateway
             Currency::RUB, Currency::SAR, Currency::SGD, Currency::ZAR, Currency::SEK,
             Currency::CHF, Currency::THB, Currency::GBP, Currency::AED
         ],
-        IntlBankTransfer::ACH => [Currency::USD]
+        IntlBankTransfer::ACH => [Currency::USD],
+        IntlBankTransfer::BACS => [Currency::GBP],
+        IntlBankTransfer::SEPA => [Currency::EUR]
     ];
 
     const CURRENCY_TO_MODE_MAPPING_FOR_INTL_BANK_TRANSFER = [
         Currency::USD              => IntlBankTransfer::ACH,
-        self::SWIFT                => IntlBankTransfer::SWIFT
+        self::SWIFT                => IntlBankTransfer::SWIFT,
+        Currency::GBP              => IntlBankTransfer::BACS,
+        Currency::EUR              => IntlBankTransfer::SEPA
     ];
 
     const MODE_TO_VA_CURRENCY_ACCOUNT_MAPPING_FOR_INTL_BANK_TRANSFER = [
         IntlBankTransfer::SWIFT => self::SWIFT,
-        IntlBankTransfer::ACH => Currency::USD
+        IntlBankTransfer::ACH => Currency::USD,
+        IntlBankTransfer::SEPA => Currency::EUR,
+        IntlBankTransfer::BACS => Currency::GBP
     ];
 
     const OPGSP_SETTLEMENT_GATEWAYS = [

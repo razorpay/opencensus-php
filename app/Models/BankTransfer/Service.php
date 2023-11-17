@@ -1547,42 +1547,54 @@ class Service extends Base\Service
      */
     private function setDefaultPricing($merchantId, $va_currency):void {
 
-        $defaultPricing =  $this->getDefaultPricingForInternationalBankTransfer($merchantId,$va_currency);
+        $defaultPricing =  $this->fetchDefaultPricing($merchantId,$va_currency);
 
-        $pricingPlan = (new PricingService)->postAddBulkPricingRules([$defaultPricing]);
+        $pricingPlan = (new PricingService)->postAddBulkPricingRules($defaultPricing);
 
-        if($pricingPlan["items"][0]["success"] === false)
+        foreach ($pricingPlan["items"] as $plan)
         {
-            if ($pricingPlan["items"][0]["error"]["code"] === ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED )
+            if ($plan["success"] === false)
             {
-                // in case the pricing plan is already present don't throw the exception
+                if ($plan["error"]["code"] === ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED
+                    || $plan["error"]["code"] === ErrorCode::BAD_REQUEST_SAME_PRICING_RULE_ALREADY_EXISTS)
+                {
+                    // in case the pricing plan is already present don't throw the exception
+                    $this->trace->info(TraceCode::B2B_EXPORT_DEFAULT_PRICING_PLAN_CREATION_SUCCESSFUL,[
+                        'merchant_id'   => $merchantId,
+                        'description'  => $plan["error"]["description"],
+                        'code'   => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED
+                    ]);
+
+                    return;
+                }
+
+                throw new Exception\ServerErrorException('Default Pricing plan creation error',
+                    ErrorCode:: SERVER_ERROR_UNABLE_TO_ASSIGN_PRICING_PLAN_FOR_B2B_EXPORT,[
+                        'error_desc' => $plan["error"]["description"],
+                        'error_code' => $plan["error"]["code"],
+                    ]);
+            }
+            else
+            {
                 $this->trace->info(TraceCode::B2B_EXPORT_DEFAULT_PRICING_PLAN_CREATION_SUCCESSFUL,[
                     'merchant_id'   => $merchantId,
-                    'description'  => $pricingPlan["items"][0]["error"]["description"],
-                    'code'   => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED
+                    'pricing_plan'  => $plan,
+                    'va_currency'   => $va_currency
                 ]);
-
-                return;
             }
-
-            throw new Exception\ServerErrorException('Default Pricing plan creation error',
-                ErrorCode:: SERVER_ERROR_UNABLE_TO_ASSIGN_PRICING_PLAN_FOR_B2B_EXPORT,[
-                    'error_desc' => $pricingPlan["items"][0]["error"]["description"],
-                    'error_code' => $pricingPlan["items"][0]["error"]["code"],
-                ]);
-        }
-        else
-        {
-            $this->trace->info(TraceCode::B2B_EXPORT_DEFAULT_PRICING_PLAN_CREATION_SUCCESSFUL,[
-                'merchant_id'   => $merchantId,
-                'pricing_plan'  => $pricingPlan,
-                'va_currency'   => $va_currency
-            ]);
         }
     }
 
-    private function getDefaultPricingForInternationalBankTransfer($merchantId, $va_currency):array {
-        $defaultStaticPricing = [
+    private function fetchDefaultPricing($merchantId, $va_currency): array {
+
+        $mode = IntlBankTransfer::ACH;
+
+        if(strcasecmp($va_currency, Gateway::SWIFT) === 0)
+        {
+            $mode = IntlBankTransfer::SWIFT;
+        }
+
+        $defaultPricing = [
             PricingEntity::PRODUCT                  =>  Product::PRIMARY,
             PricingEntity::FEATURE                  =>  \RZP\Models\Pricing\Feature::PAYMENT,
             PricingEntity::PAYMENT_METHOD           =>  Payment\Method::INTL_BANK_TRANSFER,
@@ -1591,38 +1603,52 @@ class Service extends Base\Service
             PricingEntity::MERCHANT_ID              =>  $merchantId,
         ];
 
-        $mode = IntlBankTransfer::ACH;
-        if(strcasecmp($va_currency, Gateway::SWIFT) === 0)
-        {
-            $mode = IntlBankTransfer::SWIFT;
-        }
+        $defaultPricingArray = [];
 
-        return array_merge($this->fetchDefaultPricing($mode,$merchantId),$defaultStaticPricing);
-    }
-
-    private function fetchDefaultPricing($mode,$merchantId): array {
-        $defaultPricing = [];
+        // During Swift onboarding, we also have to add 2 default pricing plans(sepa, bacs) along with swift
         if($mode === IntlBankTransfer::SWIFT)
         {
-            $defaultPricing = array_merge($defaultPricing,$this->fetchSWIFTDefaultPricing());
+            $defaultPricingArray = array(array_merge($defaultPricing, $this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::BACS)));
+
+            array_push($defaultPricingArray,array_merge($defaultPricing, $this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::SEPA)));
+
+            $defaultPricing = array_merge($defaultPricing,$this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::SWIFT));
             $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::SWIFT;
         }
         else
         {
-            $defaultPricing = array_merge($defaultPricing,$this->fetchACHDefaultPricing());
+            $defaultPricing = array_merge($defaultPricing,$this->fetchDefaultPricingIntlBankTransfer(IntlBankTransfer::ACH));
             $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::ACH;
         }
 
-        return $defaultPricing;
+        array_push($defaultPricingArray, $defaultPricing);
+
+        return $defaultPricingArray;
     }
 
-    private function fetchACHDefaultPricing() : array {
+    private function fetchDefaultPricingIntlBankTransfer($paymentNetwork): array {
+
+        $defaultPricing = [];
         $staticPricing = [
-            PricingEntity::PAYMENT_NETWORK  => IntlBankTransfer::ACH,
             PricingEntity::PERCENT_RATE     => 200,
             PricingEntity::FIXED_RATE       => 0,
+            PricingEntity::PAYMENT_NETWORK => $paymentNetwork
         ];
-        $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_ACH);
+
+        switch ($paymentNetwork){
+            case IntlBankTransfer::ACH:
+                $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_ACH);
+                break;
+            case IntlBankTransfer::SWIFT:
+                $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_SWIFT);
+                break;
+            case IntlBankTransfer::SEPA:
+                $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_SEPA);
+                break;
+            case IntlBankTransfer::BACS:
+                $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_BACS);
+                break;
+        }
 
         if($defaultPricing == null)
         {
@@ -1630,30 +1656,9 @@ class Service extends Base\Service
         }
 
         return [
-            PricingEntity::PAYMENT_NETWORK  => $staticPricing[PricingEntity::PAYMENT_NETWORK],
             PricingEntity::PERCENT_RATE     => $defaultPricing[PricingEntity::PERCENT_RATE]??$staticPricing[PricingEntity::PERCENT_RATE],
             PricingEntity::FIXED_RATE       => $defaultPricing[PricingEntity::FIXED_RATE]??$staticPricing[PricingEntity::FIXED_RATE],
-            ];
-    }
-
-    private function fetchSWIFTDefaultPricing() : array {
-        $staticPricing = [
-            PricingEntity::PAYMENT_NETWORK   => IntlBankTransfer::SWIFT,
-            PricingEntity::PERCENT_RATE      => 200,
-            PricingEntity::FIXED_RATE        => 0,
-        ];
-
-        $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_SWIFT);
-
-        if($defaultPricing == null)
-        {
-            return $staticPricing;
-        }
-
-        return [
-            PricingEntity::PAYMENT_NETWORK   => $staticPricing[PricingEntity::PAYMENT_NETWORK ],
-            PricingEntity::PERCENT_RATE      => $defaultPricing[PricingEntity::PERCENT_RATE]??$staticPricing[PricingEntity::PERCENT_RATE],
-            PricingEntity::FIXED_RATE        => $defaultPricing[PricingEntity::FIXED_RATE]??$staticPricing[PricingEntity::FIXED_RATE],
+            PricingEntity::PAYMENT_NETWORK => $staticPricing[PricingEntity::PAYMENT_NETWORK ]
         ];
     }
 

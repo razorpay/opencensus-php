@@ -443,7 +443,9 @@ class Entity extends Base\PublicEntity
         ],
         self::INTL_BANK_TRANSFER => [
             IntlBankTransfer::ACH,
-            IntlBankTransfer::SWIFT
+            IntlBankTransfer::SWIFT,
+            IntlBankTransfer::BACS,
+            IntlBankTransfer::SEPA
         ],
         self::CREDIT_EMI => [
             CreditEmiProvider::HDFC,

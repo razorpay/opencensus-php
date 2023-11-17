@@ -76,7 +76,7 @@ class InternationalBankTransferTest extends TestCase
                 $this->sendRequest($request);
             }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
 
-        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'purpose_code' => PurposeCodeList::P1004,
                             'category' => '5813'
@@ -88,7 +88,7 @@ class InternationalBankTransferTest extends TestCase
                 $this->sendRequest($request);
             }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
 
-        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'category' => '8211',
                         ]);
@@ -157,7 +157,7 @@ class InternationalBankTransferTest extends TestCase
                 $this->sendRequest($request);
             }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
 
-        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'purpose_code' => PurposeCodeList::P1004,
                             'category' => '5813',
@@ -168,7 +168,7 @@ class InternationalBankTransferTest extends TestCase
                 $this->sendRequest($request);
             }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
 
-        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'category' => '8211',
                         ]);
@@ -194,7 +194,7 @@ class InternationalBankTransferTest extends TestCase
             }
         }
 
-        $this->assertCount(2,$pricing_rule);
+        $this->assertCount(4,$pricing_rule);
     }
 
     public function testCreateAccountForCurrencyCloudPricingPlanMultipleMerchant()
@@ -249,7 +249,7 @@ class InternationalBankTransferTest extends TestCase
                 $this->sendRequest($request);
             }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
 
-        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'purpose_code' => PurposeCodeList::P1004,
                             'category' => '5813',
@@ -260,7 +260,7 @@ class InternationalBankTransferTest extends TestCase
                 $this->sendRequest($request);
             }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
 
-        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'category' => '8211',
                         ]);
@@ -286,7 +286,7 @@ class InternationalBankTransferTest extends TestCase
             }
         }
 
-        $this->assertCount(2,$pricing_rule);
+        $this->assertCount(4,$pricing_rule);
         $this->assertNotEquals($planId,$pricing_plan['id']);
 
         $this->ba->adminAuth();
@@ -321,7 +321,7 @@ class InternationalBankTransferTest extends TestCase
                 $this->sendRequest($request);
             }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
 
-        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'purpose_code' => PurposeCodeList::P1004,
                             'category' => '5813',
@@ -332,7 +332,7 @@ class InternationalBankTransferTest extends TestCase
                 $this->sendRequest($request);
             }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
 
-        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'category' => '8211',
                         ]);
@@ -360,7 +360,7 @@ class InternationalBankTransferTest extends TestCase
                 $this->sendRequest($request);
             }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
 
-        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'purpose_code' => PurposeCodeList::P1004,
                             'category' => '5813',
@@ -371,7 +371,7 @@ class InternationalBankTransferTest extends TestCase
                 $this->sendRequest($request);
             }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
 
-        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'], 
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
                         [
                             'category' => '8211',
                         ]);
@@ -409,6 +409,80 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
         $this->assertEquals('ach',$paymentEntity['wallet']);
+        $this->assertEquals(83300000,$paymentEntity['base_amount']);
+        $this->assertEquals(8500000,$paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
+
+        $this->testSendNotificationForB2B($paymentEntity);
+    }
+
+    public function testCashManagerTransactionNotificationForCurrencyCloudForBACS()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        // Test to increase txn limit for B2B intl_bank_transfer payments
+        // Higher limit is now Rs 8.5L base amount
+        // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
+        $this->mockMozartResponseForCurrencyCloud(85000, 'GBP');
+
+        $this->ba->directAuth();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentEntity = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('authorized',$paymentEntity['status']);
+        $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
+        $this->assertEquals('bacs',$paymentEntity['wallet']);
+        $this->assertEquals(83300000,$paymentEntity['base_amount']);
+        $this->assertEquals(8500000,$paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
+
+        $this->testSendNotificationForB2B($paymentEntity);
+    }
+
+    public function testCashManagerTransactionNotificationForCurrencyCloudForSEPA()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        // Test to increase txn limit for B2B intl_bank_transfer payments
+        // Higher limit is now Rs 8.5L base amount
+        // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
+        $this->mockMozartResponseForCurrencyCloud(85000, 'EUR');
+
+        $this->ba->directAuth();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentEntity = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('authorized',$paymentEntity['status']);
+        $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
+        $this->assertEquals('sepa',$paymentEntity['wallet']);
         $this->assertEquals(83300000,$paymentEntity['base_amount']);
         $this->assertEquals(8500000,$paymentEntity['amount']);
         $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
@@ -613,7 +687,147 @@ class InternationalBankTransferTest extends TestCase
 
         $updatedPaymentEntity = $this->getLastPayment('payment',true);
 
-        $this->assertEquals($updatedPaymentEntity['status'],'captured');
+        $this->assertEquals('captured', $updatedPaymentEntity['status']);
+    }
+
+    public function testTransferCompletedNotificationSEPAFromCurrencyCloud()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->edit($merchantDetail['merchant_id'], ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->pricing->create([
+            'plan_id'        => 'IntbnkTrnsfrId',
+            'payment_method' => 'intl_bank_transfer',
+            'feature'             => 'payment',
+            'percent_rate'    => 300,
+        ]);
+
+        $this->merchantAssignPricingPlan('IntbnkTrnsfrId', $merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud(0,'EUR');
+
+        $this->ba->directAuth();
+
+        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloudForSEPA']['request'];
+        $firstResponse = $this->makeRequestAndGetContent($firstRequest);
+
+        $paymentEntity = $this->getLastPayment('payment',true);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'] , $merchantUser['id']);
+
+        $request = [
+            'url'    => '/payment/'.$paymentEntity['public_id'].'/update_b2b_invoice_details',
+            'method' => 'patch',
+            'content' => [
+                'document_id' => "doc_1234567890"
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['b2b_invoice_updated']);
+
+        $this->fixtures->payment->edit($paymentEntity['id'], ['reference16' => 'e68301d3-5b04-4c1d-8f8b-13a9b8437040']);
+
+        $this->fixtures->merchant->addFeatures('enable_settlement_for_b2b', $merchantDetail['merchant_id']);
+
+        $this->testSendNotificationForB2B($paymentEntity);
+
+        $secondRequest = $this->testData[__FUNCTION__]['request'];
+
+        Payment::verifyIdAndStripSign($paymentEntity['id']);
+
+        $secondRequest['content']['reason'] = "Sub Account Transfer to House; " . $paymentEntity['id'];
+
+        $this->collectAddress($paymentEntity, $merchantUser['id']);
+
+        $this->ba->directAuth();
+
+        $secondResponse = $this->makeRequestAndGetContent($secondRequest);
+
+        $updatedPaymentEntity = $this->getLastPayment('payment',true);
+
+        $this->assertEquals('captured', $updatedPaymentEntity['status']);
+    }
+
+    public function testTransferCompletedNotificationBACSFromCurrencyCloud()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->edit($merchantDetail['merchant_id'], ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->pricing->create([
+            'plan_id'        => 'IntbnkTrnsfrId',
+            'payment_method' => 'intl_bank_transfer',
+            'feature'             => 'payment',
+            'percent_rate'    => 300,
+        ]);
+
+        $this->merchantAssignPricingPlan('IntbnkTrnsfrId', $merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud(0,'GBP');
+
+        $this->ba->directAuth();
+
+        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloudForBACS']['request'];
+        $firstResponse = $this->makeRequestAndGetContent($firstRequest);
+
+        $paymentEntity = $this->getLastPayment('payment',true);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'] , $merchantUser['id']);
+
+        $request = [
+            'url'    => '/payment/'.$paymentEntity['public_id'].'/update_b2b_invoice_details',
+            'method' => 'patch',
+            'content' => [
+                'document_id' => "doc_1234567890"
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['b2b_invoice_updated']);
+
+        $this->fixtures->payment->edit($paymentEntity['id'], ['reference16' => 'e68301d3-5b04-4c1d-8f8b-13a9b8437040']);
+
+        $this->fixtures->merchant->addFeatures('enable_settlement_for_b2b', $merchantDetail['merchant_id']);
+
+        $this->testSendNotificationForB2B($paymentEntity);
+
+        $secondRequest = $this->testData[__FUNCTION__]['request'];
+
+        Payment::verifyIdAndStripSign($paymentEntity['id']);
+
+        $secondRequest['content']['reason'] = "Sub Account Transfer to House; " . $paymentEntity['id'];
+
+        $this->collectAddress($paymentEntity, $merchantUser['id']);
+
+        $this->ba->directAuth();
+
+        $secondResponse = $this->makeRequestAndGetContent($secondRequest);
+
+        $updatedPaymentEntity = $this->getLastPayment('payment',true);
+
+        $this->assertEquals('captured', $updatedPaymentEntity['status']);
     }
 
     public function testTransferCompletedNotificationSWIFTFromCurrencyCloud()
@@ -694,7 +908,7 @@ class InternationalBankTransferTest extends TestCase
 
         $updatedPaymentEntity = $this->getLastPayment('payment',true);
 
-        $this->assertEquals($updatedPaymentEntity['status'],'captured');
+        $this->assertEquals('captured', $updatedPaymentEntity['status']);
     }
 
     public function testCaptureCronForB2BPayments()
@@ -817,7 +1031,7 @@ class InternationalBankTransferTest extends TestCase
 
         $content = $this->getJsonContentFromResponse($response);
 
-        $this->assertEquals($content['currency'], "USD");
+        $this->assertEquals("USD", $content['currency']);
         $this->assertNotNull($content['amount']);
         $this->assertNotNull($content['account_id']);
 
@@ -862,7 +1076,7 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals($content['id'],$mii['notes']['beneficiary_id']);
     }
 
-    protected function mockMozartResponseForCurrencyCloud($amount = 0)
+    protected function mockMozartResponseForCurrencyCloud($amount = 0, $currency = 'USD')
     {
         $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)
             ->setConstructorArgs([$this->app])
@@ -875,7 +1089,7 @@ class InternationalBankTransferTest extends TestCase
 
         $mozartServiceMock->method('sendMozartRequest')
             ->will($this->returnCallback(
-                function ($namespace,$gateway,$action,$data,$version) use ($amount)
+                function ($namespace,$gateway,$action,$data,$version) use ($amount, $currency)
                 {
                     if($action == 'account_create')
                     {
@@ -952,7 +1166,7 @@ class InternationalBankTransferTest extends TestCase
                             'data' => [
                                 'id'                      => "e68301d3-5b04-4c1d-8f8b-13a9b8437040",
                                 'amount'                  => $amount,
-                                'currency'                => "USD",
+                                'currency'                => $currency,
                                 'additional_information'  => "USTRD-0001",
                                 'value_date'              => "2018-07-04T00:00:00+00:00",
                                 'sender'                  => "David Jenkins; 31 High Street, Brighton, East Sussex, BN1 2NW;GB;1111111111;;00000000",

@@ -9,10 +9,14 @@ class IntlBankTransfer
 {
     const ACH   = 'ach';
     const SWIFT = 'swift';
+    const BACS = 'bacs';
+    const SEPA = 'sepa';
 
     public static $fullName = [
         self::ACH    => 'ACH',
         self::SWIFT    => 'SWIFT',
+        self::BACS     => 'BACS',
+        self::SEPA      => 'SEPA',
     ];
 
     const MIN_INTL_BANK_TRANSFER_AMOUNT = 1163000; // Rs 11,630 slack ref: https://razorpay.slack.com/archives/C024U3B04LD/p1694511377729109?thread_ts=1694510816.389659&cid=C024U3B04LD

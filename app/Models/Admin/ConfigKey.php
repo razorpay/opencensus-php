@@ -435,6 +435,10 @@ class ConfigKey
 
     const DEFAULT_PRICING_FOR_SWIFT                 = self::PREFIX . 'default_pricing_for_swift';
 
+    const DEFAULT_PRICING_FOR_SEPA                  = self::PREFIX. 'default_pricing_for_sepa';
+
+    const DEFAULT_PRICING_FOR_BACS                  = self::PREFIX. 'default_pricing_for_bacs';
+
     const CURRENCY_METHOD_LEVEL_DCC_MARKUP          = self::PREFIX . 'default_currency_method_level_dcc_markup';
 
     const UPI_TURBO_SDK_TIMEOUTS                    = self::PREFIX . 'upi_turbo_sdk_timeouts';
@@ -616,6 +620,8 @@ class ConfigKey
         self::RX_CA_MISSING_STATEMENT_DETECTION_ICICI,
         self::DEFAULT_PRICING_FOR_ACH,
         self::DEFAULT_PRICING_FOR_SWIFT,
+        self::DEFAULT_PRICING_FOR_BACS,
+        self::DEFAULT_PRICING_FOR_SEPA,
         self::UPI_TURBO_POPULAR_BANK_LIST,
         self::CURRENCY_METHOD_LEVEL_DCC_MARKUP,
         self::UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME,

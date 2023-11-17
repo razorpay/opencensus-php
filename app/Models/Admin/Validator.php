@@ -271,6 +271,8 @@ class Validator extends Base\Validator
         ConfigKey::ACCOUNT_SUB_ACCOUNT_RESTRICTED_PERMISSIONS_LIST                     => 'filled|array',
         ConfigKey::DEFAULT_PRICING_FOR_ACH                                             => 'filled|array',
         ConfigKey::DEFAULT_PRICING_FOR_SWIFT                                           => 'filled|array',
+        ConfigKey::DEFAULT_PRICING_FOR_SEPA                                            => 'filled|array',
+        ConfigKey::DEFAULT_PRICING_FOR_BACS                                            => 'filled|array',
         ConfigKey::UPI_TURBO_POPULAR_BANK_LIST                                         => 'filled|array',
         ConfigKey::CURRENCY_METHOD_LEVEL_DCC_MARKUP                                    => 'filled|array',
         ConfigKey::UPI_TURBO_SDK_TIMEOUTS                                              => 'filled|array',
