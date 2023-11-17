@@ -174,7 +174,7 @@ class Authenticate
             // TODO: this logic has to be updated once Edge Passport is usable for other auth schemes as well
             $passportAuthType = ($this->passport->authenticated === false && $this->passport->identified === true) ? Type::PUBLIC_AUTH : Type::PRIVATE_AUTH;
 
-            $this->trace->info(TraceCode::AUTHENTICATING_USING_PASSPORT,
+            $this->trace->debug(TraceCode::AUTHENTICATING_USING_PASSPORT,
                 [
                     self::PUBLIC_KEY         => $this->passport->credential->publicKey,
                     self::MERCHANT_ID        => $this->passport->consumer->id,
@@ -450,7 +450,7 @@ class Authenticate
         // proxy auth also sets type as private hence ignore it
         // isKeylessPublicAuth checks for public auth by itself
         if ($this->ba->isStrictPrivateAuth() || $this->ba->isStrictPublicAuth()) {
-            $this->trace->info(TraceCode::RESPONSE_STATUS_AT_AUTH_MIDDLEWARE, [
+            $this->trace->debug(TraceCode::RESPONSE_STATUS_AT_AUTH_MIDDLEWARE, [
                 self::PUBLIC_KEY          => $this->ba->getPublicKey(),
                 self::MERCHANT_ID         => $this->ba->getMerchantId(),
                 self::PARTNER_MERCHANT_ID => $this->ba->getPartnerMerchantId(),
