@@ -24,53 +24,6 @@ return [
         ]
     ],
 
-    'testPublicAuthInternal' => [
-        'request' => [
-            'method' => 'GET',
-            'url' => '/internal/checkout/auth',
-            'content' => [
-                'merchant_public_key' => 'rzp_test_TheTestAuthKey',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'merchant_id' => '10000000000000',
-                'merchant_key' => 'rzp_test_TheTestAuthKey',
-                'mode' => 'test',
-            ],
-        ],
-    ],
-
-    'testPartnerAuthInternal' => [
-        'request' => [
-            'method' => 'GET',
-            'url' => '/internal/checkout/auth',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'merchant_id' => '100000Razorpay',
-                'merchant_key' => '',
-                'mode' => 'test',
-            ],
-        ],
-    ],
-
-    'testPublicAuthInternalKeyless' => [
-        'request' => [
-            'method' => 'GET',
-            'url' => '/internal/checkout/auth',
-            'content' => [], // Filled by the Test with various Keyless Entities with their Public Id's
-        ],
-        'response' => [
-            'content' => [
-                'merchant_id' => '10000000000000',
-                'merchant_key' => 'rzp_test_TheTestAuthKey',
-                'mode' => 'test',
-            ],
-        ],
-    ],
-
     'testCreateKeyForAxisOrgMerchantShouldUseAxisKeyForEncryption' => [
         'request' => [
             'method' => 'POST',
@@ -581,36 +534,7 @@ return [
             ],
         ],
     ],
-    'testGetInternalAccountConfigForCheckout' => [
-        'request' => [
-            'url' => '/internal/account/config/checkout',
-            'method' => 'GET',
-        ],
-        'response' => [
-            'content' => [
-                'id' => '1X4hRFHFx4UiXt',
-                'name' => 'Tester 2',
-                'brand_color' => '#123456',
-                'logo_url' => '/logos/random_image_original.png',
-                'display_name' => 'Tester Account 2',
-                'fee_bearer' => 'platform',
-                'billing_label' => 'Tester 2',
-                'international' => false,
-                'category' => '5945',
-                'activated' => false,
-                'country_code' => 'IN',
-                'partnership_url' => 'https://dummycdn.razorpay.com/logos/partnership.png',
-                'live' => false,
-                'org_id' => '100000razorpay',
-                'language_code' => 'en',
-                'checkout_logo_size_image_url' => 'https://dummycdn.razorpay.com/logos/random_image_original_medium.png',
-                'is_fee_bearer' => false,
-                'brand_name' => 'Tester 2',
-                'currency' => 'INR',
-                'category_name' => 'ecommerce',
-            ],
-        ],
-    ],
+
     'testGetMerchantConfigForActivatedMerchantFinanceRole'                          => [
         'request'  => [
             'url'    => '/merchant/user/app_config',
@@ -10666,16 +10590,6 @@ return [
         ],
     ],
 
-    'testGetMerchantPolicyDetails' => [
-        'request'  => [
-            'url'    => '/merchant/policy_details',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [],
-        ],
-    ],
-
     'testGetCheckoutPreferencesWithoutPublishedWebsiteMerchantPolicy' => [
         'request'  => [
             'url'    => '/preferences',
@@ -13512,34 +13426,6 @@ return [
         ],
     ],
 
-    'testGetOneCcMerchantConfigsForCheckout' => [
-        'request' => [
-            'url' => '/checkout/1cc/merchant/configs',
-            'method' => 'get',
-            'content' => [],
-        ],
-        'response' => [
-            'content'     => [
-                'cod_intelligence' => false,
-                'one_cc_auto_fetch_coupons' => true,
-                'one_cc_capture_billing_address' => false,
-                'one_cc_international_shipping' => false,
-                'manual_control_cod_order' => false,
-                'one_cc_capture_gstin' => false,
-                'one_cc_capture_order_instructions' => false,
-                'one_click_checkout' => true,
-                'one_cc_ga_analytics' => false,
-                'one_cc_fb_analytics' => false,
-                'one_cc_buy_now_button' => false,
-                'one_cc_gift_card' => false,
-                'one_cc_gift_card_restrict_coupon' => false,
-                'one_cc_buy_gift_card' => false,
-                'one_cc_multiple_gift_card' => false,
-                'one_cc_gift_card_cod_restrict' => false,
-            ],
-        ],
-    ],
-
     'testOneCcAutoFetchCouponsMerchant1ccConfig' => [
         'request' => [
             'url' => '/1cc/merchant/configs',
@@ -15180,7 +15066,7 @@ return [
             ],
         ],
     ],
-    
+
     'testProxyForActivationStatusBusinessBankingDisabled' => [
         'request'   => [
             'url'       => '/merchants/va_activation/{id}',

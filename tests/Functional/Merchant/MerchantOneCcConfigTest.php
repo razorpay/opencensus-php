@@ -29,14 +29,6 @@ class MerchantOneCcConfigTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetOneCcMerchantConfigsForCheckout()
-    {
-        $this->ba->checkoutServiceProxyAuth();
-        $this->fixtures->merchant->addFeatures(Constants::ONE_CLICK_CHECKOUT);
-        $this->startTest();
-    }
-
-
     public function testOneCcAutoFetchCouponsMerchant1ccConfig()
     {
         $this->ba->proxyAuth();

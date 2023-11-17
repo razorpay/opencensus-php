@@ -111,6 +111,9 @@
             <directory>./tests/Functional/Device/</directory>
             <directory>./tests/Functional/EMI/</directory>
             <exclude>./tests/Functional/Invoice/PaymentEInvoiceTest.php</exclude>
+            <exclude>./tests/Functional/Customer/CustomerDetailsForCheckoutTest.php</exclude>
+            <exclude>./tests/Functional/Customer/CustomerTokensInternalTest.php</exclude>
+            <exclude>./tests/Functional/Customer/TruecallerTest.php</exclude>
             <directory>./tests/Functional/Invitation/</directory>
             <!--<directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>-->
         </testsuite>
@@ -260,6 +263,7 @@
             <directory>./tests/Functional/FundTransfer/</directory>
             <directory>./tests/Functional/BankingAccountTpv/</directory>
             <file>./tests/Functional/Merchant/FeaturesTest.php</file>
+            <exclude>./tests/Functional/Contact/ContactsGetForCheckoutTest.php</exclude>
             <!--<file>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</file>-->
         </testsuite>
         <testsuite name="Feature-6-1 Test Suite">
@@ -462,6 +466,7 @@
             <directory>./tests/Functional/FundTransfer/</directory>
             <directory>./tests/Functional/BankingAccountTpv/</directory>
             <directory>./tests/Functional/BankTransfer/</directory>
+            <exclude>./tests/Functional/Contact/ContactsGetForCheckoutTest.php</exclude>
         </testsuite>
         <testsuite name="ES Ondemand Test Suite">
             <directory>./tests/Functional/Settlement/SettlementOndemand</directory>
@@ -604,6 +609,7 @@
             <directory>./tests/Functional/Item/</directory>
             <directory>./tests/Functional/PaymentLink/</directory>
             <directory>./tests/Unit/Models/PaymentLink</directory>
+            <exclude>./tests/Functional/Invoice/CheckoutInvoiceTest.php</exclude>
         </testsuite>
         <testsuite name="Platform Test Suite">
             <directory>./tests/Functional/Key/</directory>
@@ -639,6 +645,20 @@
         </testsuite>
         <testsuite name="Split_Payments_Test_Suite">
             <file>./tests/Functional/Payment/SplitPayment.php</file>
+        </testsuite>
+        <testsuite name="Dependencies_of_Checkout_Service_Test_Suite">
+            <file>./tests/Functional/Contact/ContactsGetForCheckoutTest.php</file>
+            <file>./tests/Functional/Customer/CustomerDetailsForCheckoutTest.php</file>
+            <file>./tests/Functional/Customer/CustomerTokensInternalTest.php</file>
+            <file>./tests/Functional/Customer/TruecallerTest.php</file>
+            <file>./tests/Functional/Invoice/CheckoutInvoiceTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantAccountConfigForCheckoutTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantGetPolicyDetailsTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantOneCcConfigForCheckoutTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantPublicAuthOverInternalAuthTest.php</file>
+            <file>./tests/Functional/Merchant/MethodsOffersTest.php</file>
+            <file>./tests/Functional/Order/OrderDetailsForCheckoutTest.php</file>
+            <file>./tests/Functional/Payment/Config/CheckoutPaymentConfigTest.php</file>
         </testsuite>
     </testsuites>
     <listeners>

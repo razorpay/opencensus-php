@@ -47,25 +47,6 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetContactDetailsForCheckout(): void
-    {
-        $contact = $this->fixtures->create(
-            'contact',
-            [
-                'id' => '1000000contact',
-                'email' => 'test@test5.com',
-                'contact' => '8888888888',
-                'name' => 'eum'
-            ]
-        );
-
-        $this->createFundAccount($contact->getPublicId());
-
-        $this->ba->checkoutServiceProxyAuth();
-
-        $this->startTest();
-    }
-
     public function testGetContactWithTypeVendorAndPrivateAuth()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor']);
@@ -908,7 +889,7 @@ class ContactsTest extends TestCase
         Carbon::setTestNow(Carbon::now(Timezone::IST)->addMinutes(5));
 
         $splitzMock = \Mockery::mock(SplitzService::class);
-        
+
         $splitzMock->shouldReceive("evaluateRequest")->andReturn([
             "response" => [
                 "variant" => [

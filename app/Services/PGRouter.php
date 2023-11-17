@@ -724,7 +724,7 @@ class PGRouter
                 $response['body']['notes'] = json_decode($response['body']['notes']);
             }
 
-            $response['body']['bank_account_data'] = $response['body']['bank_account'];
+            $response['body']['bank_account_data'] = $response['body']['bank_account'] ?? [];
 
             $order = (new Order\Entity())->forceFill($response['body']);
 
