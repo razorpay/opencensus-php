@@ -3675,13 +3675,13 @@ class Core extends Base\Core
      *    Here, we just change the email of the original user(owner).
      *
      * @param Entity $merchant
-     * @param string $originalEmail
+     * @param string|null $originalEmail
      * @param string $newEmail
      * @param string $product
      *
      * @return bool
      */
-    public function changeMerchantUsersEmail(Entity $merchant, string $originalEmail, string $newEmail, string $product)
+    public function changeMerchantUsersEmail(Entity $merchant, ?string $originalEmail, string $newEmail, string $product)
     {
         $merchantUsersCount = $merchant->users()->where(Entity::PRODUCT, $product)->count();
 

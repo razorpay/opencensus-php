@@ -1842,7 +1842,82 @@ class Repository extends Base\Repository
 
         return $childMerchantIds;
     }
+    
+    /**
+     * @throws \Exception
+     */
+    public function  fetchMerchantIdsWithSameEmailFromWDA(string $email): array
+    {
+        $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+            'method_name'  => __FUNCTION__,
+            'email'        => $email
+        ]);
+    
+        $startTimeMs = round(microtime(true) * 1000);
+    
+        $wdaClient = $this->app['wda-client']->wdaClient;
+    
+        $wdaQueryBuilder = new WDAQueryBuilder();
+    
+        $wdaQueryBuilder->addQuery($this->getTableName(), Entity::ID);
+    
+        $wdaQueryBuilder->resources($this->getTableName());
+    
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::EMAIL, [$email], Symbol::EQ);
+    
+        $wdaQueryBuilder->namespace($this->getEntityObject()->getConnection()->getDatabaseName());
+    
+        $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+    
+        $this->trace->info(TraceCode::WDA_SERVICE_QUERY, [
+            'wda_query_builder' => $wdaQueryBuilder->build()->serializeToJsonString(),
+            'route_name'        => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+    
+        $response = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $this->newQuery()->getModel(), []);
+    
+        $merchantIdsWithSameEmail = $this->convertWdaResponseToArray($response, Entity::ID);
+    
+        $endTimeMs = round(microtime(true) * 1000);
+    
+        $queryDuration = $endTimeMs - $startTimeMs;
+    
+        $this->trace->info(TraceCode::WDA_SERVICE_RESPONSE, [
+            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            'method_name'      => __FUNCTION__,
+            'merchants_count'  => count($merchantIdsWithSameEmail),
+            'duration_ms'      => $queryDuration,
+        ]);
+        
+        return $merchantIdsWithSameEmail;
+    }
+    
+    public function fetchMerchantIdsWithSameEmail(string $email): array
+    {
+        try
+        {
+            if($this->isExperimentEnabled(Constants::FETCH_MERCHANT_ID_SAME_EMAIL_FROM_WDA) === true)
+            {
+                return $this->fetchMerchantIdsWithSameEmailFromWDA($email);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_migration_error' => $ex->getMessage(),
+                'route_name'          => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+        
+        $connection = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
+        return $this->newQueryWithConnection($connection)
+                     ->select(Entity::ID)
+                     ->where(Entity::EMAIL, $email)
+                     ->pluck(Entity::ID)
+                     ->toArray();
+    }
+    
     public function fetchAllActiveLinkedAccounts(int $createdAt=null)
     {
         $query = $this->newQuery()

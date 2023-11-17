@@ -1500,15 +1500,35 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $orignalEmail = $merchant->getEmail();
+        $originalEmail = $merchant->getEmail();
+
+//        This check is added to prevent changing email of any Partner merchant's User email when following criteria are met,
+//        1. Merchant changing email has the same email as partner, and has NO user account of own, Or
+//        2. Merchant changing email has same email as any other merchant, and has NO user account of own.
+        $merchantIdsWithSameEmail = $this->repo->merchant->fetchMerchantIdsWithSameEmail($originalEmail);
+        
+        if (count($merchantIdsWithSameEmail) > 1)
+        {
+            $this->trace->info(TraceCode::MERCHANT_EMAIL_EDIT_FAILED, [
+                                        'input'                     => $input,
+                                        'original_email'            => $originalEmail,
+                                        'merchant_ids_same_email'    => $merchantIdsWithSameEmail,
+            ]);
+    
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                                          null,
+                                          null,
+                                          "Same email exist with other merchant");
+        
+        }
 
         $newEmail = $input[Merchant\Entity::EMAIL];
 
         // handle user management on PG
-        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, Product::PRIMARY);
+        $this->core()->changeMerchantUsersEmail($merchant, $originalEmail, $newEmail, Product::PRIMARY);
 
         // handle user management on X
-        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, Product::BANKING);
+        $this->core()->changeMerchantUsersEmail($merchant, $originalEmail, $newEmail, Product::BANKING);
 
         $merchant = $this->core()->editEmail($merchant, $input);
 

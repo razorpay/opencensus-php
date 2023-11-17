@@ -2450,6 +2450,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_HOLD_FUNDS_POST_TRANSCACTION                 = 'MERCHANT_HOLD_FUNDS_POST_TRANSCACTION';
     const MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION                  = 'MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION';
     const MERCHANT_RAS_SIGNUP_FRAUD                             = 'MERCHANT_RAS_SIGNUP_FRAUD';
+    const MERCHANT_EMAIL_EDIT_FAILED                            = 'MERCHANT_EMAIL_EDIT_FAILED';
     const PAYOUT_RETRY_REQUEST                                  = 'PAYOUT_RETRY_REQUEST';
     const PAYOUT_QUEUE_DISPATCH_INIT                            = 'PAYOUT_QUEUE_DISPATCH_INIT';
     const PAYOUT_QUEUE_DISPATCH_COMPLETE                        = 'PAYOUT_QUEUE_DISPATCH_COMPLETE';

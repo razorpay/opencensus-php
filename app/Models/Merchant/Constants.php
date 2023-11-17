@@ -168,6 +168,8 @@ final class Constants
 
     const RAZORX_EXPERIMENT_ON                    = 'on';
 
+    const FETCH_MERCHANT_ID_SAME_EMAIL_FROM_WDA   = 'fetch_merchant_id_same_email_from_wda';
+    
     // Splitz Constants
     const SPLITZ_LIVE                             = 'live';
     const SPLITZ_PILOT                            = 'pilot';
