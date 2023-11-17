@@ -339,7 +339,7 @@ class Service extends Base\Service
             $merchant = $this->repo->merchant->find($merchantId);
             $storageFileName = 'FIRS/'.$merchantId.'/'.$part[1].'/'.$part[0].'/'.$filename;
             $type = 'firs_file';
-            $documentDate = strtotime($part[0].'/'.date('d').'/'.$part[1]);
+            $documentDate = strtotime($part[0].'/'.'01'.'/'.$part[1]);
 
             $response = $ufhService->uploadFileAndGetResponse($file, $storageFileName, $type, $merchant);
 
@@ -428,7 +428,7 @@ class Service extends Base\Service
             $merchantId = $terminal->getMerchantId();
             $merchant = $this->repo->merchant->find($merchantId);
             $storageFileName = 'FIRS/'.$merchantId.'/'.$fromYear.'/'.$fromMonth.'/'.$filename;
-            $documentDate = strtotime($fromMonth.'/'.date('d').'/'.$fromYear);
+            $documentDate = strtotime($fromMonth.'/'.'01'.'/'.$fromYear);
 
             if ($fileType == self::FIRSTDATA_DETAIL_FIRS_TYPE)
             {
