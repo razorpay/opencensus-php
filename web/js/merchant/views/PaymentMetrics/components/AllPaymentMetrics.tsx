@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -32,7 +32,8 @@ const AllPaymentMetrics = ({
   }, []);
 
   return (
-    <Fragment>
+    <MetricsPanelContainer>
+      <TopSection category={category} />
       <TopBar className="payment-metrics">
         <PaymentMetricsFilter
           updateInterval={updateInterval}
@@ -49,15 +50,12 @@ const AllPaymentMetrics = ({
           isPaymentMetrics={true}
         />
       </TopBar>
-      <MetricsPanelContainer>
-        <TopSection category={category} />
-        <ChartCardContainer>
-          <OverallCR />
-          <MethodLevelCR startDate={startDate} endDate={endDate} interval={interval} />
-          {category && <IndustryLevelOverallCr category={category} />}
-        </ChartCardContainer>
-      </MetricsPanelContainer>
-    </Fragment>
+      <ChartCardContainer>
+        <OverallCR />
+        <MethodLevelCR startDate={startDate} endDate={endDate} interval={interval} />
+        {category && <IndustryLevelOverallCr category={category} />}
+      </ChartCardContainer>
+    </MetricsPanelContainer>
   );
 };
 

@@ -1,5 +1,10 @@
 import moment from 'moment';
-import { GRAPHS_DATA, tagStyles, defaultTagStyle } from 'merchant/views/PaymentMetrics/constants';
+import {
+  GRAPHS_DATA,
+  tagStyles,
+  defaultTagStyle,
+  CHART_NAME_MAP,
+} from 'merchant/views/PaymentMetrics/constants';
 import { getTimelineData } from './timelineData';
 import { LineData } from 'merchant/views/PaymentMetrics//types';
 /**
@@ -39,12 +44,24 @@ export const getUniqueMethodOrInstrumentList = (
 
 //  Method level split data for method level cr
 export const methodLevelSplit = ({ dataList, lte, gte, breakdown }) => {
-  const methodDataList = getUniqueMethodOrInstrumentList(dataList, 'last_selected_method') || [];
+  // product wants to show wallets instead of wallet , can't change in backend
+  const updatedDatList = dataList.map((data) => {
+    if (data.last_selected_method === 'wallet') {
+      data.last_selected_method = 'wallets';
+    }
+    return data;
+  });
+
+  // filtered 0 value data as card is coming with all 0 data for now
+  const filteredData = updatedDatList.filter((data) => data.value);
+
+  const methodDataList =
+    getUniqueMethodOrInstrumentList(filteredData, 'last_selected_method') || [];
   const datasets: Array<LineData> = [];
   methodDataList.forEach((method: string, ind: number) => {
     const color = tagStyles[ind] || defaultTagStyle.color;
     const data: Array<Record<string, string | number>> = [];
-    dataList.forEach((val: Record<string, string | number>) => {
+    filteredData.forEach((val: Record<string, string | number>) => {
       if (val?.last_selected_method === method) {
         data.push(val as never);
       }
@@ -71,4 +88,54 @@ export const methodLevelSplit = ({ dataList, lte, gte, breakdown }) => {
   });
 
   return datasets;
+};
+
+export const processOverallCrData = (
+  result: Record<string, any>,
+  gte: number,
+  lte: number,
+  breakdown: string,
+  type: string,
+) => {
+  try {
+    let data = (result.data && result.data[CHART_NAME_MAP[type]]?.result) || [];
+
+    if (data.length) {
+      // get missing timestamp data as well as from backend if value 0 they are not sending
+      // but for chart to get staring line we need to plot 0 otherwise it will act as dot
+      data = getTimelineData({ data, startTime: gte, endTime: lte, breakdown });
+
+      return [
+        {
+          label: GRAPHS_DATA[type].name,
+          data,
+          fill: true,
+          borderWidth: 2,
+          borderColor: defaultTagStyle.color,
+          pointBackgroundColor: defaultTagStyle.color,
+          xAxisID: GRAPHS_DATA[type].xAxisID,
+          yAxisID: GRAPHS_DATA[type].yAxisID,
+          tagName: GRAPHS_DATA[type].name,
+          backgroundColor: (context) => {
+            const chart = context.chart;
+            const { ctx, chartArea } = chart;
+
+            if (!chartArea || !chartArea.bottom || !chartArea.top) {
+              // This case happens on initial chart load
+              return defaultTagStyle.backgroundColor1;
+            }
+            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+
+            gradient?.addColorStop(1, defaultTagStyle.backgroundColor1);
+            gradient?.addColorStop(0.2, defaultTagStyle.backgroundColor2);
+
+            return gradient;
+          },
+        },
+      ];
+    }
+    return [];
+  } catch {
+    return [];
+  }
 };

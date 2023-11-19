@@ -15,8 +15,8 @@ const IndustryOverallCR = ({
 }: OverallCrProps): React.ReactElement => {
   const { interval, filters, chartData } = paymentMetrics;
   const { startDate, endDate } = filters || {};
-  const { checkout_industry_level_cr } = chartData || {};
-  const { datasets, error, isLoading } = checkout_industry_level_cr || {};
+  const { checkout_industry_level_overall_cr } = chartData || {};
+  const { datasets, error, isLoading } = checkout_industry_level_overall_cr || {};
 
   useEffect(() => {
     getIndustryOverallCR({

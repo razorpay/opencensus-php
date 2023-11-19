@@ -201,7 +201,7 @@ export const CardFooter = styled.div`
       flex-shrink: 0;
     }
     .red {
-      color: #c32f00;
+      color: rgb(191, 122, 3);
       flex-shrink: 0;
     }
   }

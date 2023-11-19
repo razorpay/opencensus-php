@@ -2,16 +2,14 @@ import { set, merge } from 'common/utils/immutable';
 import {
   initialFilters,
   getOverallCRData,
-  getTimelineData,
   getMethodLevelCRData,
   methodLevelSplit,
   getIndustryOverallCRData,
+  processOverallCrData,
 } from 'merchant/views/PaymentMetrics/helpers';
 import {
   CHART_INITIAL_DATA,
   CHART_NAME_MAP,
-  GRAPHS_DATA,
-  defaultTagStyle,
   GRAPH_INTERVALS_MAP,
 } from 'merchant/views/PaymentMetrics/constants';
 
@@ -41,8 +39,7 @@ export const getOverallCR =
       result = error;
     }
     let error = '';
-    let data = [];
-    const datasets = [];
+
     if (result.data?.ERROR || result.errors) {
       error = result.data?.ERROR || result.errors?.[0];
       dispatch({
@@ -53,28 +50,8 @@ export const getOverallCR =
         },
       });
     } else {
-      data = (result.data && result.data[CHART_NAME_MAP[OVERALL_CR]]?.result) || [];
-      if (data.length) {
-        // get missing timestamp data as well as from backend if value 0 they are not sending
-        // but for chart to get staring line we need to plot 0 otherwise it will act as dot
-        data = getTimelineData({ data, startTime: gte, endTime: lte, breakdown });
-        const ctx = document.getElementsByClassName('chartjs-render-monitor')[0]?.getContext('2d');
-        const gradient = ctx?.createLinearGradient(0, 0, 0, 400);
-        gradient?.addColorStop(0, defaultTagStyle.backgroundColor1);
-        gradient?.addColorStop(1, defaultTagStyle.backgroundColor2);
-        datasets.push({
-          label: GRAPHS_DATA[OVERALL_CR].name,
-          data,
-          fill: true,
-          borderWidth: 2,
-          borderColor: defaultTagStyle.color,
-          pointBackgroundColor: defaultTagStyle.color,
-          backgroundColor: gradient || defaultTagStyle.backgroundColor1,
-          xAxisID: GRAPHS_DATA[OVERALL_CR].xAxisID,
-          yAxisID: GRAPHS_DATA[OVERALL_CR].yAxisID,
-          tagName: GRAPHS_DATA[OVERALL_CR].name,
-        });
-      }
+      const datasets = processOverallCrData(result, lte, gte, breakdown, OVERALL_CR);
+
       dispatch({
         type: `${OVERALL_CR}::SUCCESS`,
         payload: {
@@ -112,7 +89,7 @@ export const getMethodLevelCR =
         },
       });
     } else {
-      data = result.data?.checkout_method_level_cr?.result || [];
+      data = result.data?.checkout_method_level_overall_cr?.result || [];
       if (data.length) {
         data = methodLevelSplit({ dataList: data, lte, gte, breakdown });
       }
@@ -144,8 +121,7 @@ export const getIndustryOverallCR =
     }
 
     let error = '';
-    let data = [];
-    const datasets = [];
+
     if (result.data?.ERROR || result.errors) {
       error = result.data?.ERROR || result.errors?.[0];
       dispatch({
@@ -156,30 +132,7 @@ export const getIndustryOverallCR =
         },
       });
     } else {
-      data = (result.data && result.data[CHART_NAME_MAP[INDUSTRY_OVERALL_CR]]?.result) || [];
-
-      if (data.length) {
-        // get missing timestamp data as well as from backend if value 0 they are not sending
-        // but for chart to get staring line we need to plot 0 otherwise it will act as dot
-        data = getTimelineData({ data, startTime: gte, endTime: lte, breakdown });
-        const ctx = document.getElementsByClassName('chartjs-render-monitor')[1]?.getContext('2d');
-
-        const gradient = ctx?.createLinearGradient(0, 0, 0, 400);
-        gradient?.addColorStop(0, defaultTagStyle.backgroundColor1);
-        gradient?.addColorStop(1, defaultTagStyle.backgroundColor2);
-        datasets.push({
-          label: GRAPHS_DATA[INDUSTRY_OVERALL_CR].name,
-          data,
-          fill: true,
-          borderWidth: 2,
-          borderColor: defaultTagStyle.color,
-          pointBackgroundColor: defaultTagStyle.color,
-          backgroundColor: gradient || defaultTagStyle.backgroundColor1,
-          xAxisID: GRAPHS_DATA[INDUSTRY_OVERALL_CR].xAxisID,
-          yAxisID: GRAPHS_DATA[INDUSTRY_OVERALL_CR].yAxisID,
-          tagName: GRAPHS_DATA[INDUSTRY_OVERALL_CR].name,
-        });
-      }
+      const datasets = processOverallCrData(result, lte, gte, breakdown, INDUSTRY_OVERALL_CR);
       dispatch({
         type: `${INDUSTRY_OVERALL_CR}::SUCCESS`,
         payload: {

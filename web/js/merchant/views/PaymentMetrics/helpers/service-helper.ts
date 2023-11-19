@@ -15,7 +15,7 @@ export const getOverallCRData = ({
       checkout_overall_cr: {
         details: {
           index: 'cx_high_level_funnel',
-          group_by: [`histogram_${breakdown}`, 'behav_submit_event', 'render_checkout_open_event'],
+          group_by: [`histogram_${breakdown}`, 'status'],
           mode: 'live',
         },
         agg_type: 'count',
@@ -40,15 +40,10 @@ export const getOverallCRData = ({
 export const getMethodLevelCRData = ({ lte, gte, breakdown = 'daily' }) => {
   const payload = {
     aggregations: {
-      checkout_method_level_cr: {
+      checkout_method_level_overall_cr: {
         details: {
           index: 'cx_high_level_funnel',
-          group_by: [
-            `histogram_${breakdown}`,
-            'behav_submit_event',
-            'render_checkout_open_event',
-            'last_selected_method',
-          ],
+          group_by: [`histogram_${breakdown}`, 'status', 'last_selected_method'],
           mode: 'live',
         },
         agg_type: 'count',
@@ -83,18 +78,18 @@ export const getIndustryOverallCRData = ({
 }) => {
   const payload = {
     aggregations: {
-      checkout_industry_level_cr: {
-        filter_key: 'checkout_industry_level_cr',
+      checkout_industry_level_overall_cr: {
+        filter_key: 'checkout_industry_level_overall_cr',
         details: {
           index: 'cx_high_level_funnel',
-          group_by: [`histogram_${breakdown}`, 'behav_submit_event', 'render_checkout_open_event'],
+          group_by: [`histogram_${breakdown}`, 'status'],
           mode: 'live',
         },
         agg_type: 'count',
       },
     },
     filters: {
-      checkout_industry_level_cr: [
+      checkout_industry_level_overall_cr: [
         {
           merchant_category: category,
           created_at: {

@@ -99,3 +99,10 @@ export type SelectedMetricPanelProps = {
   handleBack: () => any;
   selectedMetric: string;
 };
+
+export type ComparisonGraphs = {
+  crData: Record<string, number>;
+  isFetching: boolean;
+  error: string;
+  industryData?: Record<string, number>;
+};

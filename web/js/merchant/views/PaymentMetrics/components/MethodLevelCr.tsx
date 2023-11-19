@@ -16,8 +16,8 @@ const MethodLevelCR = ({
   endDate,
 }: MethodLevelCrProps): React.ReactElement => {
   const { chartData } = paymentMetrics || {};
-  const { checkout_method_level_cr } = chartData || {};
-  const { isLoading, datasets, error } = checkout_method_level_cr || {};
+  const { checkout_method_level_overall_cr } = chartData || {};
+  const { isLoading, datasets, error } = checkout_method_level_overall_cr || {};
 
   useEffect(() => {
     getMethodLevelCR({

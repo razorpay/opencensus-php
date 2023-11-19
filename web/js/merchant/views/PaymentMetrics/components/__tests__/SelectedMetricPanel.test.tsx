@@ -13,7 +13,7 @@ const updateServerResponse = () => {
         ctx.json({
           status_code: 200,
           data: {
-            checkout_method_level_cr: {
+            checkout_method_level_overall_cr: {
               result: [
                 {
                   last_selected_method: 'upi',

@@ -12,7 +12,7 @@ const updateServerResponse = () => {
         ctx.json({
           status_code: 200,
           data: {
-            checkout_industry_level_cr: {
+            checkout_industry_level_overall_cr: {
               result: [
                 {
                   timestamp: moment().endOf('hour').unix(),
@@ -37,14 +37,14 @@ describe('CR Comparison for Indutry Level', () => {
     updateServerResponse();
     render(<IndustryLevelOverallCr />, { category: 'others' });
     await waitFor(() => {
-      expect(screen.queryByText('Industry Level Conversion Rate')).toBeInTheDocument();
+      expect(screen.queryByText('Category Level Conversion Rate')).toBeInTheDocument();
     });
   });
   test('should render Overall Conversion rate with dots and canvas graph', async () => {
     updateServerResponse();
     const { container } = render(<IndustryLevelOverallCr />, { category: 'others' });
     await waitFor(() => {
-      expect(screen.queryByText('Industry Level Conversion Rate')).toBeInTheDocument();
+      expect(screen.queryByText('Category Level Conversion Rate')).toBeInTheDocument();
       expect(container.getElementsByClassName('chartjs-render-monitor').length).toBe(1);
     });
   });

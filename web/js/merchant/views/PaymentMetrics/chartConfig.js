@@ -142,7 +142,6 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel, xAxisID, yAxisID
             drawOnChartArea: true,
           },
           ticks: {
-            beginAtZero: true,
             maxTicksLimit: 10,
             fontColor: chartFontColor,
           },
