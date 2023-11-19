@@ -205,6 +205,21 @@ class Core extends Base\Core
                         $input['consent_for'] = ConsentConstant::L2_MILESTONE.'_'.ConsentConstant::TERMS_OF_SERVICE;
                     }
 
+                    //We are changing names for sub-merchant consents based on sub-merchant consent mapping.
+                    // This is to update older consents with the new name.
+                    if (in_array($consentDetailForMerchant['consent_for'] , array_keys(ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING))
+                        and $documents_detail[0]['type'] === ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING[$consentDetailForMerchant['consent_for']])
+                    {
+                        if(str_starts_with($consentDetailForMerchant['consent_for'], ConsentConstant::OAUTH) === true)
+                        {
+                            $input['consent_for'] = ConsentConstant::OAUTH.'_'.ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING[$consentDetailForMerchant['consent_for']].'_'.MerchantConstants::TERMS;
+                        }
+                        else if (str_starts_with($consentDetailForMerchant['consent_for'], ConsentConstant::L2_MILESTONE) === true)
+                        {
+                            $input['consent_for'] = ConsentConstant::L2_MILESTONE.'_'.ConsentConstant::SUBMERCHANT_CONSENTS_TO_NAME_MAPPING[$consentDetailForMerchant['consent_for']];
+                        }
+                    }
+
                     $this->updateConsentDetails($merchantConsentDetail, $input);
                 }
             }

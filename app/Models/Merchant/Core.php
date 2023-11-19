@@ -10115,7 +10115,7 @@ class Core extends Base\Core
             foreach ($data[ConsentConstant::SCOPE_POLICIES] as $policy => $policyUrl)
             {
                 $documentDetail = [
-                    DEConstants::TYPE => $policy . '_' . Constants::TERMS,
+                    DEConstants::TYPE => ConsentConstant::OAUTH_POLICY_TO_CONSENT_NAME_MAPPING[$policy] . '_' . Constants::TERMS,
                     DEConstants::URL  => $policyUrl,
                 ];
 
@@ -10159,7 +10159,7 @@ class Core extends Base\Core
         else
         {
             $input[DEConstants::DOCUMENTS_DETAIL][] = [
-                DEConstants::TYPE => Constants::TERMS,
+                DEConstants::TYPE => 'RazorpayX App Policy' . Constants::TERMS,
                 DEConstants::URL  => Constants::RAZORPAY_PARTNERSHIP_OAUTH_TERMS,
             ];
         }

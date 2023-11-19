@@ -73,7 +73,10 @@ class Constants
         'Oauth_App Policies_Terms & Conditions',
         'Oauth_RazorpayX Policies_Terms & Conditions',
         'Oauth_Terms & Conditions',
-        'Oauth_Custom Policy_Terms & Conditions'
+        'Oauth_Custom Policy_Terms & Conditions',
+        'Oauth_App Policy_Terms & Conditions',
+        'Oauth_RazorpayX App Policy_Terms & Conditions',
+        'Oauth_Platform Partnerships Policy_Terms & Conditions'
     ];
 
     const PARTNERSHIP_MILESTONES_WITH_APP_POLICIES = [
@@ -114,6 +117,9 @@ class Constants
                                  'Oauth_App Policies' . '_' . MeConstants::TERMS . ',' .
                                  'Oauth_RazorpayX Policies' . '_' . MeConstants::TERMS . ',' .
                                  'Oauth_Custom Policy' . '_' . MeConstants::TERMS . ',' .
+                                 'Oauth_App Policy' . '_' . MeConstants::TERMS . ',' .
+                                 'Oauth_RazorpayX App Policy' . '_' . MeConstants::TERMS . ',' .
+                                 'Oauth_Platform Partnerships Policy' . '_' . MeConstants::TERMS . ',' .
                                  self::PARTNER_AUTH_TERMS;
 
     const VALID_LEGAL_DOC = [
@@ -207,6 +213,21 @@ class Constants
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
+        'Oauth_App Policy' . '_' . MeConstants::TERMS                     => [
+            self::DOC_NAME  => 'App Policy',
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'Oauth_RazorpayX App Policy' . '_' . MeConstants::TERMS           => [
+            self::DOC_NAME  => 'RazorpayX App Policy',
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'Oauth_Platform Partnerships Policy' . '_' . MeConstants::TERMS   => [
+            self::DOC_NAME  => 'Platform Partnerships Policy',
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
         'EasyKycSubMerchant_Terms of Service'                      => [
             self::DOC_NAME  => 'Terms of Service',
             self::MANDATORY => true,
@@ -288,4 +309,24 @@ class Constants
 
     ];
 
+    const ONBOARDING_APIS_CONSENT_NAME_MAPPING = [
+        'terms'   => 'Terms of Service',
+        'privacy' => 'Privacy Policy'
+    ];
+
+    const OAUTH_POLICY_TO_CONSENT_NAME_MAPPING = [
+        'App Policies'       => 'App Policy',
+        'RazorpayX Policies' => 'RazorpayX App Policy',
+        'Custom Policy'      => 'Platform Partnerships Policy'
+    ];
+
+    // This mapping is used to update older sub-merchant consents where the consent type mismatched its name.
+    const SUBMERCHANT_CONSENTS_TO_NAME_MAPPING = [
+        'Oauth_App Policies_Terms & Conditions'         => 'App Policy',
+        'Oauth_RazorpayX Policies_Terms & Conditions'   => 'RazorpayX App Policy',
+        'Oauth_Terms & Conditions'                      => 'App Policy',
+        'Oauth_Custom Policy_Terms & Conditions'        => 'Platform Partnerships Policy',
+        'L2_terms'                                      => 'Terms of Service',
+        'L2_privacy'                                    => 'Privacy Policy',
+    ];
 }

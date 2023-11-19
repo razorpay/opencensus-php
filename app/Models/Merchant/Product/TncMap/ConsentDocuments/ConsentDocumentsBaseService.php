@@ -101,7 +101,7 @@ class ConsentDocumentsBaseService extends Base\Service
                 }
 
                 $tncAgreementDetail = [
-                    DEConstants::TYPE => $type,
+                    DEConstants::TYPE => ConsentConstant::ONBOARDING_APIS_CONSENT_NAME_MAPPING[$type],
                     DEConstants::URL  => $url
                 ];
                 array_push($documentsDetail, $tncAgreementDetail);
