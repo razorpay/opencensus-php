@@ -62,7 +62,9 @@ app/Models/Merchant/AccessMap/MigrateKongTarget.php           @razorpay/spine-ed
 app/Models/Merchant/AccessMap/MigrateSource.php               @razorpay/spine-edge
 app/Models/OAuthApplication/                                  @razorpay/spine-edge
 app/Models/OAuthToken/                                        @razorpay/spine-edge
-
+app/Models/FeeRecovery/                                       @razorpay/x-acquisition-be
+app/Models/BankingAccount/                                    @razorpay/x-acquisition-be
+app/Models/BankingAccountService/                             @razorpay/x-acquisition-be
 #
 # Services
 #
@@ -72,7 +74,8 @@ app/Services/AuthService.php                           @razorpay/spine-edge
 app/Services/CheckoutService.php                       @razorpay/checkout-backend-leads
 app/Services/Mock/CheckoutService.php                  @razorpay/checkout-backend-leads
 app/Services/Edge/                                     @razorpay/spine-edge
-
+app/Services/BankingAccountService.php                 @razorpay/x-acquisition-be
+app/Services/Mock/BankingAccountService.php            @razorpay/x-acquisition-be
 #
 # Gateways
 #
@@ -86,7 +89,8 @@ app/Gateway/Upi                                        @razorpay/techupicore sha
 # Unit Tests
 #
 tests/Unit/Edge/                                       @razorpay/spine-edge
-
+tests/Unit/Models/BankingAccount/                      @razorpay/x-acquisition-be
+tests/Unit/Services/BankingAccountServiceTest.php      @razorpay/x-acquisition-be
 #
 # Functional Tests
 #
@@ -96,6 +100,11 @@ tests/Functional/Transfer/                             @razorpay/enterprise-apps
 tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
 tests/Functional/Key/                                  @razorpay/spine-edge
 tests/Functional/Edge/                                 @razorpay/spine-edge
+tests/Functional/FeeRecovery/                          @razorpay/x-acquisition-be
+tests/Functional/BankingAccount/                       @razorpay/x-acquisition-be
+tests/Functional/BankingAccountService/                @razorpay/x-acquisition-be
+tests/Functional/Merchant/MerchantBankingInvoiceTest.php   @razorpay/x-acquisition-be
+
 #
 # Jobs
 #
@@ -107,13 +116,14 @@ app/Jobs/BulkMigrateAggregatorToResellerJob.php        @razorpay/spine-edge
 app/Jobs/BulkMigrateResellerToAggregatorJob.php        @razorpay/spine-edge
 app/Jobs/TriggerAcsFullSync.php                        @razorpay/spine-edge @razorpay/identity-core
 app/Jobs/TriggerAcsSync.php                            @razorpay/spine-edge @razorpay/identity-core
-
+app/Jobs/FeeRecovery.php                               @razorpay/x-acquisition-be
+app/Jobs/BankingAccount/                               @razorpay/x-acquisition-be
 #
 # Mails
 #
 
 app/Mail/OAuth/                                       @razorpay/spine-edge
-
+app/Mail/BankingAccount/                              @razorpay/x-acquisition-be
 
 .github/actions/                                       @razorpay/ZeroTouchWarriors
 devspace.yaml                                          @razorpay/devstack-devs
@@ -290,3 +300,10 @@ app/Jobs/BackFillReferredApplications                      @razorpay/partnership
 app/Jobs/CallBackFillMerchantApps                          @razorpay/partnership-be
 app/Jobs/CallBackFillReferredApps                          @razorpay/partnership-be
 app/Jobs/ProductConfig                                     @razorpay/partnership-be
+
+#
+# X Acquisition BE
+#
+app/Http/Controllers/FeeRecoveryController.php             @razorpay/x-acquisition-be
+resources/views/emails/banking_account/                    @razorpay/x-acquisition-be
+resources/views/merchant/invoice/invoice.blade.php         @razorpay/x-acquisition-be
