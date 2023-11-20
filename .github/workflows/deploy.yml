@@ -518,6 +518,38 @@ jobs:
           CLOVER_NAME: yesbank_qr
           RUN_FIXTURES: false
           RUN_FIXTURES_ONCE: false
+      - name: UPI Kotak QR Code Test Suite
+        run: ci-assets/route_unit_coverage.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ENTITY_ORIGIN_CACHE_REDIS_HOST: redis
+          ENTITY_ORIGIN_CACHE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 5
+          TEST_SUITE_NAME: "UPI Kotak QR Code Test Suite"
+          CLOVER_NAME: kotak_qr
+          RUN_FIXTURES: false
+          RUN_FIXTURES_ONCE: false
       - name: Checkout Orders Test Suite
         run: ci-assets/route_unit_coverage.sh
         env:
@@ -632,7 +664,7 @@ jobs:
             -Dsonar.projectVersion=${{ env.GIT_COMMIT_ID }}
             -Dsonar.login=${{ env.SONAR_TOKEN }}
             -Dsonar.sources=${{ env.SOURCE_DIR }}
-            -Dsonar.php.coverage.reportPaths=clover_files/clover_cov_non_va_qr.xml,clover_files/clover_cov_bqr.xml,clover_files/clover_cov_yesbank_qr.xml,clover_files/clover_cov_checkout_orders.xml,clover_files/clover_cov_qr_dedicated_terminal_test.xml,clover_files/clover_cov_qr_status_check.xml
+            -Dsonar.php.coverage.reportPaths=clover_files/clover_cov_non_va_qr.xml,clover_files/clover_cov_bqr.xml,clover_files/clover_cov_yesbank_qr.xml,clover_files/clover_cov_kotak_qr.xml,clover_files/clover_cov_checkout_orders.xml,clover_files/clover_cov_qr_dedicated_terminal_test.xml,clover_files/clover_cov_qr_status_check.xml
             -Dsonar.exclusions=${{ env.EXCLUDE_FILES }}
     services:
       redis:

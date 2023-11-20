@@ -414,6 +414,9 @@
         <testsuite name="UPI Yesbank QR Code Test Suite">
             <file>./tests/Functional/QrCode/UpiYesBankQRCodeTest.php</file>
         </testsuite>
+        <testsuite name="UPI Kotak QR Code Test Suite">
+            <file>./tests/Functional/QrCode/UpiKotakQRCodeTest.php</file>
+        </testsuite>
         <testsuite name="Checkout Orders Test Suite">
             <file>./tests/Functional/CheckoutOrder/CheckoutOrdersTest.php</file>
         </testsuite>
