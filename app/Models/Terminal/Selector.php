@@ -873,6 +873,13 @@ class Selector extends Base\Core
                 $paymentData['emi'] = $this->getPaymentEmiArray($payment);
             }
 
+            if ($payment->isUpiRecurring() === true)
+            {
+                $upiMandate = $this->repo->upi_mandate->findByTokenId($payment->getTokenId());
+
+                $paymentData['mandate']['frequency'] = $upiMandate->getFrequency();
+            }
+
             if (isset($paymentData['vpa']) === true)
             {
                 $paymentData['vpa'] = $payment->getBankCodeFromVpa();
