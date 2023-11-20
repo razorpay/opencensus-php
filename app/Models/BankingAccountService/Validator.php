@@ -23,6 +23,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Constants::CHANNEL        => 'required|string|custom',
         Constants::ACCOUNT_NUMBER => 'required|string',
+        Constants::BAS_BUSINESS_ID  => 'sometimes|string'
     ];
 
     protected static $businessRules = [
@@ -77,8 +78,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $archiveBankingAccountRules = [
-        Constant::MERCHANT_ID     => 'required|string|max:14',
-        Constants::BALANCE_ID     => 'required|string|max:14',
+        Constant::MERCHANT_ID       => 'required|string|max:14',
+        Constants::BALANCE_ID       => 'required|string|max:14',
+        Constants::IS_CA_TRANSFER   => 'sometimes|bool'
     ];
 
     protected static $unarchiveBankingAccountRules = [

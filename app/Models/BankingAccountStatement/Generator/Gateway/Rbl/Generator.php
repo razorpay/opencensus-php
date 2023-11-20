@@ -271,7 +271,7 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::ACCOUNT_STATUS       => $bankingAccount->getStatus(),
 
-            AccountOwnerInfo::ACCOUNT_NUMBER       => $bankingAccount->getAccountNumber(),
+            AccountOwnerInfo::ACCOUNT_NUMBER       => (new \RZP\Models\BankingAccountService\Service())->decodeAccountNumberForCaTransfer($bankingAccount->getAccountNumber()),
 
             AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
 

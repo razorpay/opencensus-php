@@ -3651,6 +3651,7 @@ class Route
         '_via_batch'                              => ['post',     'banking_accounts/activation/details/batch',                'BankingAccountController@postUpdateActivationDetailsFromBatchService' ],
 
         'banking_account_statement_generate'            => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                                  ],
+        'banking_account_statement_generate_admin'      => ['post',     'banking_account_statement/generate-admin',                  'BankingAccountStatementController@generate'                                  ],
         'banking_account_statement_process_cron'        => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'                  ],
 
         'banking_account_statement_process_pool'        => ['post',     'banking_account_statement/pool/process',                    'BankingAccountStatementController@fetchStatementForPoolAccount'              ],
@@ -4904,7 +4905,8 @@ class Route
         'ufh_admin_upload_file',
         'ufh_get_file_signed_url_by_mid',
         'proxy_for_activation_status',
-        'banking_account_service_rbl_migration'
+        'banking_account_service_rbl_migration',
+        'banking_account_statement_generate_admin',
     ];
 
     /**
@@ -8902,6 +8904,7 @@ class Route
         'banking_account_statement_update_missing',
         'banking_account_statement_async_insert_missing',
         'banking_account_statement_detect_missing',
+        'banking_account_statement_generate_admin',
 
         // xperience admin routes
         'bulk_payouts_migrate_admin',
@@ -10480,6 +10483,7 @@ class Route
         'banking_account_statement_fetch_missing'        => Permission::FETCH_MISSING_BAS,
         'banking_account_statement_async_insert_missing' => Permission::FETCH_MISSING_BAS,
         'banking_account_statement_detect_missing'       => Permission::FETCH_MISSING_BAS,
+        'banking_account_statement_generate_admin'       => Permission::VIEW_ACTIVATION_FORM,
 
         'merchant_features_edit'                     => Permission::UPDATE_MERCHANT_FEATURE,
         'enable_non_3ds_self_serve'                  => Permission::ENABLE_NON_3DS_PROCESSING,
@@ -15410,6 +15414,7 @@ class Route
             'banking_account_statement_fetch_missing',
             'banking_account_statement_update_missing',
             'banking_account_statement_detect_missing',
+            'banking_account_statement_generate_admin',
 
             //CAC
             'cac_privileges_fetch',

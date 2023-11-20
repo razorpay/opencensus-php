@@ -14,8 +14,9 @@ return [
             'url'     => '/bas/merchant/10000000000000/banking_accounts',
             'method'  => 'POST',
             'content' => [
-                Constants::ACCOUNT_NUMBER => '12345678903833',
-                Constants::CHANNEL        => 'icici',
+                Constants::ACCOUNT_NUMBER   => '12345678903833',
+                Constants::CHANNEL          => 'icici',
+                Constants::BAS_BUSINESS_ID  => 'dummy-id' // Note: This is only sent when transferring CA from 1 MID to another
             ]
         ],
         'response' => [

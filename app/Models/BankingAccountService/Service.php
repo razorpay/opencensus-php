@@ -858,6 +858,11 @@ class Service extends Base\Service
 
         $balanceId = $input[Constants::BALANCE_ID];
 
+        $merchantId = $input[Constants::MERCHANT_ID];
+
+        $encodedAccountNumber = '';
+
+        /** @var Merchant\Balance\Entity $balance */
         $balance = null;
 
         if ($balanceId !== '')
@@ -865,9 +870,25 @@ class Service extends Base\Service
             $balance = $this->repo->balance->find($balanceId);
         }
 
-        $this->core()->removeBusinessId($input[Constants::MERCHANT_ID]);
+        if ($input[Constants::IS_CA_TRANSFER])
+        {
+            $encodedAccountNumber = $this->encodeAccountNumberForCaTransfer($balance->getAccountNumber());
+        }
 
-        (new \RZP\Models\BankingAccount\Core())->archiveBankingAccount($balance);
+        $this->repo->transaction(function()
+            use ($merchantId, $encodedAccountNumber, $balance)
+        {
+            if (!empty($encodedAccountNumber))
+            {
+                $balance->setAccountNumber($this->encodeAccountNumberForCaTransfer($encodedAccountNumber));
+
+                $this->repo->balance->saveOrFail($balance);
+            }
+
+            (new \RZP\Models\BankingAccount\Core())->archiveBankingAccount($balance, $encodedAccountNumber);
+
+            $this->core()->removeBusinessId($merchantId);
+        });
 
         return ['success' => true];
     }
@@ -2260,6 +2281,52 @@ class Service extends Base\Service
         }
 
         return $result;
+    }
+
+    /**
+     * Changes the last char of accountNumber to ASCII uppercase equivalent
+     *
+     * Example: 1234 becomes 123E
+     *
+     * @param string|null $accountNumber
+     * @return string|null
+     */
+    public function encodeAccountNumberForCaTransfer(?string $accountNumber): ?string
+    {
+        if (empty($accountNumber) or
+            ($accountNumber[-1] < '0' or $accountNumber[-1] > '9'))
+        {
+            return $accountNumber;
+        }
+
+        $encodedAccountNumber = substr($accountNumber, 0, strlen($accountNumber) - 1);
+
+        $encodedAccountNumber .= chr(ord('A') + intval($accountNumber[-1]));
+
+        return $encodedAccountNumber;
+    }
+
+    /**
+     * Changes the last char of accountNumber from uppercase to integer
+     *
+     * Example: 123E becomes 1234
+     *
+     * @param string|null $accountNumber
+     * @return string|null
+     */
+    public function decodeAccountNumberForCaTransfer(?string $accountNumber): ?string
+    {
+        if (empty($accountNumber) or
+            ($accountNumber[-1] < 'A' or $accountNumber[-1] > 'J'))
+        {
+            return $accountNumber;
+        }
+
+        $decodedAccountNumber = substr($accountNumber, 0, strlen($accountNumber) - 1);
+
+        $decodedAccountNumber .= ord($accountNumber[-1]) - ord('A');
+
+        return $decodedAccountNumber;
     }
 
     private function removeBankingAccountIdPrefix(string $bankingAccountId): string

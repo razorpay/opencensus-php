@@ -58,7 +58,7 @@ abstract class Generator extends Base
 
         $statementPeriod = $fromDate . ' to ' . $toDate;
 
-        /** 
+        /**
          * Note: __multi_ca__ Replacing with getBusinessDetailsByMerchantIdAndAccountNumber
          * We also send beneficiary name in details response
          */
@@ -67,7 +67,7 @@ abstract class Generator extends Base
         $accountOwnerInfo = [
             AccountOwnerInfo::ACCOUNT_NAME         => $this->getAccountName($businessDetails),
 
-            AccountOwnerInfo::ACCOUNT_NUMBER       => $basDetails->getAccountNumber(),
+            AccountOwnerInfo::ACCOUNT_NUMBER       => (new \RZP\Models\BankingAccountService\Service())->decodeAccountNumberForCaTransfer($basDetails->getAccountNumber()),
 
             AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
 

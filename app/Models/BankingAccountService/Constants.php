@@ -191,4 +191,8 @@ class Constants
     const ADDRESS_PIN_CODE              = 'address_pin_code';
 
     const VA_ENABLED = 'va_enabled';
+
+    const BAS_BUSINESS_ID = 'bas_business_id';
+
+    const IS_CA_TRANSFER = 'is_ca_transfer';
 }

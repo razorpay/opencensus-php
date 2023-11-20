@@ -36,9 +36,22 @@ class Core extends Base\Core
 
         list($balance, $createdNow, $basDetailEntity) = $this->repo->transaction(function () use ($merchantId, $input)
         {
+            // Note: This is only sent when transferring CA from 1 MID to another
+            $basBusinessId = array_pull($input,Constants::BAS_BUSINESS_ID);
+
             list($balance, $createdNow, $basDetailEntity) = $this->createBalanceAndBankingAccountStatementDetails($merchantId, $input);
 
+            /** @var Merchant\Entity $merchant */
             $merchant = $balance->merchant;
+
+            if (!empty($basBusinessId))
+            {
+                $merchantDetail = $merchant->merchantDetail;
+
+                $merchantDetail->setBasBusinessId($basBusinessId);
+
+                $this->repo->merchant_detail->saveOrFail($merchantDetail);
+            }
 
             (new BankingAccount\Core)->createScheduleTaskForFeeRecovery($balance, $merchant);
 

@@ -2835,25 +2835,29 @@ class Core extends Base\Core
 
     /**
      * Actions taken after archiving any banking account (Used for both RBL and ICICI accounts)
-     * Currently updating state of Banking Account Statement Details table
+     * Currently updating state of Banking Account Statement Details table & the account_number if present
      *
      * @param Balance\Entity|null $balance
+     * @param string|null $accountNumber
      *
      * @return array[Optional[banking_account_statement_details]]
      */
 
-    public function archiveBankingAccount(?Balance\Entity $balance): array
+    public function archiveBankingAccount(?Balance\Entity $balance, ?string $accountNumber = ''): array
     {
-        if (empty($balance) === false)
+        if (empty($balance))
         {
-            $bankingAccountStatementDetails = $this->repo->banking_account_statement_details->fetchAccountStatementByBalance($balance->getId());
-            if (empty($bankingAccountStatementDetails) === false)
-            {
-                return (new BankingAccountStatementDetailsCore())->archiveStatementDetail($bankingAccountStatementDetails)->toArray();
-            }
+            return [];
         }
 
-        return [];
+        $bankingAccountStatementDetails = $this->repo->banking_account_statement_details->fetchAccountStatementByBalance($balance->getId());
+
+        if (empty($bankingAccountStatementDetails))
+        {
+            return [];
+        }
+
+        return (new BankingAccountStatementDetailsCore())->archiveStatementDetail($bankingAccountStatementDetails, $accountNumber)->toArray();
     }
 
     /**

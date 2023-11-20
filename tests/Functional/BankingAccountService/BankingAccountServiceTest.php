@@ -125,6 +125,12 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals($feature['name'], 'enable_ip_whitelist');
         $this->assertEquals($feature['entity_id'], '10000000000000');
 
+        $merchantDetail = $this->getDbEntity('merchant_detail', [
+            'merchant_id'   => '10000000000000'
+        ]);
+
+        $this->assertEquals('dummy-id', $merchantDetail->getBasBusinessId());
+
         return $response;
     }
 
@@ -187,7 +193,7 @@ class BankingAccountServiceTest extends TestCase
         $this->assertNotEquals($balance_id1, $response['balance_id']);
     }
 
-    public function testArchive()
+    public function verifyDependenciesArchival(bool $isCaTransfer)
     {
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'ICICI');
 
@@ -196,6 +202,8 @@ class BankingAccountServiceTest extends TestCase
         $response = $this->testCreateBankingEntities();
 
         $balance_id1 = $response['balance_id'];
+
+        $this->testData[__FUNCTION__] = $this->testData['testArchive'];
 
         $dataToReplace = [
             'request' => [
@@ -207,16 +215,49 @@ class BankingAccountServiceTest extends TestCase
             ]
         ];
 
+        if ($isCaTransfer)
+        {
+            $dataToReplace['request']['content']['is_ca_transfer'] = true;
+        }
+
         $this->ba->bankingAccountServiceAppAuth();
 
         $response = $this->startTest($dataToReplace);
 
-        $merchant_detail = $this->getDbEntity('merchant_detail',
-                                              [
-                                                  'merchant_id'    => '10000000000000',
-                                              ]);
+        $merchantDetail = $this->getDbEntity('merchant_detail', [
+            'merchant_id'    => '10000000000000',
+        ]);
 
-        $this->assertNull($merchant_detail->getBasBusinessId());
+        $balance = $this->getDbEntity('balance', [
+            'merchant_id'   => '10000000000000',
+        ]);
+
+        $bankingAccountStatementDetails = $this->getDbEntity('banking_account_statement_details', [
+            'balance_id'    => $balance->getId(),
+        ]);
+
+        $this->assertNull($merchantDetail->getBasBusinessId());
+
+        $expectedAccountNumber = '12345678903833';
+
+        if ($isCaTransfer)
+        {
+            $expectedAccountNumber = '1234567890383D';
+        }
+
+        $this->assertEquals($expectedAccountNumber, $balance->getAccountNumber());
+
+        $this->assertEquals($expectedAccountNumber, $bankingAccountStatementDetails->getAccountNumber());
+    }
+
+    public function testArchiveNonCaTransfer()
+    {
+        $this->verifyDependenciesArchival(false);
+    }
+
+    public function testArchiveForCaTransfer()
+    {
+        $this->verifyDependenciesArchival(true);
     }
 
     public function testGetMerchantAttributes()
