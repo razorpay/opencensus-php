@@ -990,7 +990,13 @@ class OrderTest extends TestCase
 
         $rzpPayment = $this->doAuthPaymentOAuth($payment);
 
-        $payment = $this->getLastEntity('payment');
+        $this->fixtures->edit('payment', $rzpPayment['razorpay_payment_id'], ['reference2' => '123456']);
+
+        $payment = $this->getDbEntityById('payment', $rzpPayment['razorpay_payment_id']);
+
+        $card = $this->getDbEntityById('card', $payment['card_id']);
+
+        $card = $this->fixtures->edit('card', $card->id, ['token_iin' => '999999']);
 
         $this->assertEquals($orderId, $rzpPayment['razorpay_order_id']);
 
@@ -1009,6 +1015,9 @@ class OrderTest extends TestCase
         $this->assertFullyMasked($payments['items'][0]['card']['name']);
         $this->assertFullyMasked($payments['items'][0]['card']['last4']);
         $this->assertFullyMasked($payments['items'][0]['card']['sub_type']);
+        $this->assertFullyMasked($payments['items'][0]['card']['token_iin']);
+        $this->assertFullyMasked($payments['items'][0]['card']['iin']);
+        $this->assertFullyMasked($payments['items'][0]['acquirer_data']['auth_code']);
     }
 
     public function testGetOrderPaymentsWithMaskingNotEnabled()
@@ -1045,8 +1054,6 @@ class OrderTest extends TestCase
 
         $rzpPayment = $this->doAuthPaymentOAuth($payment);
 
-        $payment = $this->getLastEntity('payment');
-
         $this->assertEquals($orderId, $rzpPayment['razorpay_order_id']);
 
         $testData = $this->testData[__FUNCTION__];
@@ -1064,6 +1071,7 @@ class OrderTest extends TestCase
         $this->assertNotFullyMasked($payments['items'][0]['card']['name']);
         $this->assertNotFullyMasked($payments['items'][0]['card']['last4']);
         $this->assertNotFullyMasked($payments['items'][0]['card']['sub_type']);
+        $this->assertNotFullyMasked($payments['items'][0]['acquirer_data']['auth_code']);
     }
 
     public function testMaskSensitiveFieldsWithEmptyData()

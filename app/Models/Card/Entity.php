@@ -305,7 +305,8 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::EMI,
         self::SUBTYPE,
-        self::TOKEN_IIN
+        self::TOKEN_IIN,
+        self::IIN
     ];
 
     public function buildCard(array $input = [], string $operation = 'create')

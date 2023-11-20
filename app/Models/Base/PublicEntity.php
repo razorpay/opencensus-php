@@ -1133,15 +1133,15 @@ class PublicEntity extends UniqueIdEntity
 
     protected function maskSensitiveFields($data, array $sensitiveFields)
     {
-        if (!is_array($data))
+        if (!is_array($data) and !is_object($data))
         {
             return $data;
         }
 
         foreach ($data as $key => $value)
         {
-            // if the field is an array, recursively call the function to mask its elements
-            if (is_array($value))
+            // if the field is an array or object, recursively call the function to mask its elements
+            if (is_array($value) or is_object($value))
             {
                 $data[$key] = $this->maskSensitiveFields($value, $sensitiveFields);
             }

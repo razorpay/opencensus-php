@@ -62,7 +62,6 @@ use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Fpx;
-use RZP\Gateway\Base\Gateway as GatewayBase;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\CardMandate\CardMandateNotification;
@@ -208,6 +207,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const DEFAULT_CURRENCY      = 'INR';
 
     const ACQUIRER_DATA         = 'acquirer_data';
+
+    const AUTH_CODE             = 'auth_code';
 
     // Query params
     const TRANSFERRED           = 'transferred';
@@ -868,7 +869,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CONTACT,
         self::FEE,
         self::TAX,
-        GatewayBase::AUTH_CODE
+        self::AUTH_CODE
     ];
 
     // --------------------- Modifiers ---------------------------------------------
@@ -2086,6 +2087,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 break;
 
             case Method::PAYLATER:
+            case Method::WALLET:
             case Method::CARDLESS_EMI:
 
                 $acquirerData = [
@@ -2096,13 +2098,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             case Method::EMANDATE:
 
                 $acquirerData = [];
-                break;
-
-            case Method::WALLET:
-
-                $acquirerData = [
-                    'transaction_id' => $this->getAttribute(self::REFERENCE1)
-                ];
                 break;
 
             case Method::UPI:
