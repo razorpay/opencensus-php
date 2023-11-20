@@ -715,6 +715,7 @@ class Core extends Base\Core
             $orderInput[Order\Entity::BANK_ACCOUNT] = [Order\Entity::ACCOUNT_NUMBER => $token->getAccountNumber() ?? null,
                                                        BankAccount\Entity::NAME     => '',
                                                        BankAccount\Entity::IFSC     => $token->getIfsc() ?? null];
+            $orderInput[Order\Entity::METHOD]       = Payment\Method::UPI;
         }
 
         $this->trace->info(
