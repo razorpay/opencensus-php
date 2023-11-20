@@ -3885,6 +3885,15 @@ EOT;
         return $payments;
     }
 
+    public function getPaymentsForInvoice(string $invoiceId)
+    {
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        return $this->newQueryWithConnection($connectionType)
+                    ->where(Entity::INVOICE_ID, $invoiceId)
+                    ->get();
+    }
+
     public function fetchCreatedPaymentsBetween(string $gateway, int $from, int $to)
     {
         return $this->newQuery()

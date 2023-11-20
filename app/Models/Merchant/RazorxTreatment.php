@@ -129,6 +129,8 @@ final class RazorxTreatment
 
     const RENDERING_PREFERENCES_PAYMENT_LINKS = 'rendering_preferences_payment_links';
 
+    const INVOICE_PAYMENTS_EXPAND = 'invoice_payments_expand';
+
     // Decides if fund account and contact creation should have duplicate checks
     const X_CONTACT_AND_FUND_ACCOUNT_CREATION = 'x_contact_and_fund_account_creation';
 

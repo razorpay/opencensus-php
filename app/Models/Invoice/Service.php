@@ -141,7 +141,32 @@ class Service extends Base\Service
                                             $this->userRole,
                                             $input);
 
-        return $invoice->toArrayPublic();
+        $variant = $this->app->razorx->getTreatment(
+            $invoice->merchant->getId(),
+            Merchant\RazorxTreatment::INVOICE_PAYMENTS_EXPAND,
+            $this->mode ?? Mode::LIVE
+        );
+
+        $invoice = $invoice->toArrayPublic();
+
+        if (strtolower($variant) === 'on')
+        {
+            $invoice = $this->handleInvoiceExpands($invoice, $input['expand'] ?? []);
+        }
+
+        return $invoice;
+    }
+
+    protected function handleInvoiceExpands($invoiceArray, array $expands)
+    {
+        if (in_array('payments', $expands) === true)
+        {
+            $payments = $this->repo->payment->getPaymentsForInvoice(Entity::stripDefaultSign($invoiceArray[Entity::ID]));
+
+            $invoiceArray['payments'] = $payments->toArrayPublic();
+        }
+
+        return $invoiceArray;
     }
 
     public function getInvoiceDetailsForCheckout(string $invoiceId, array $input): object|array
