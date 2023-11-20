@@ -467,6 +467,8 @@ class Entity
     const BATCH_FILE_STORE             = 'batch.file_store';
     const REPORTING_CONFIGS            = 'reporting.configs';
     const REPORTING_SCHEDULES          = 'reporting.schedules';
+    const REPORTING_FILE_LOGS          = 'reporting.file_logs';
+    const REPORTING_FILE_CONFIGS       = 'reporting.file_configs';
 
 
     // Service: Auth Service
@@ -1644,6 +1646,8 @@ class Entity
         self::REPORTING_LOGS                => \RZP\Services\Reporting::class,
         self::REPORTING_CONFIGS             => \RZP\Services\Reporting::class,
         self::REPORTING_SCHEDULES           => \RZP\Services\Reporting::class,
+        self::REPORTING_FILE_LOGS           => \RZP\Services\Reporting::class,
+        self::REPORTING_FILE_CONFIGS        => \RZP\Services\Reporting::class,
         self::AUTH_SERVICE_APPLICATIONS     => \RZP\Services\AuthService::class,
         self::AUTH_SERVICE_CLIENTS          => \RZP\Services\AuthService::class,
         self::AUTH_SERVICE_TOKENS           => \RZP\Services\AuthService::class,

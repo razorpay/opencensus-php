@@ -369,6 +369,47 @@ class AdminFetch
                     Fetch::TYPE         => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::REPORTING_FILE_LOGS => [
+                'log_id'         => [
+                    Fetch::LABEL        => 'Log Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'file_config_id'        => [
+                    Fetch::LABEL        => 'File Config Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'generated',
+                        'sent',
+                        'failed',
+                        'processing'
+                    ],
+                ],
+                'type' => [
+                    Fetch::LABEL  => 'Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'emandate_debit',
+                    ],
+                ],
+                'target' => [
+                    Fetch::LABEL  => 'Target',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'rbl'
+                    ],
+                ]
+            ],
+            Entity::REPORTING_FILE_CONFIGS => [
+                'config_id'        => [
+                    Fetch::LABEL        => 'Config Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
             Entity::AUTH_SERVICE_APPLICATIONS => [
                 'merchant_id'           => Fetch::FIELD_MERCHANT_ID,
                 'type' => [

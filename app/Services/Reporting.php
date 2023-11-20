@@ -43,6 +43,8 @@ class Reporting implements ExternalService
      */
     const CONFIG_PATH              = '/v1/configs';
     const LOG_PATH                 = '/v1/logs';
+    const FILE_CONFIG_PATH         = '/v1/file_configs';
+    const FILE_LOG_PATH            = '/v1/file_logs';
     const ADMIN_LOG_PATH           = '/v1/admin-logs';
     const SCHEDULE_PATH            = '/v1/schedules';
     const SCHEDULE_PATH_V2         = '/v2/schedules';
@@ -54,6 +56,8 @@ class Reporting implements ExternalService
     const LOGS          = 'logs';
     const CONFIGS       = 'configs';
     const SCHEDULES     = 'schedules';
+    const FILE_LOGS     = 'file_logs';
+    const FILE_CONFIGS  = 'file_configs';
 
     const REPORT_TYPE = 'report_type';
 
@@ -249,6 +253,12 @@ class Reporting implements ExternalService
 
             case self::SCHEDULES:
                 return $this->fetchScheduleMultipleAdmin($input);
+
+            case self::FILE_LOGS:
+                return $this->fetchFileLogsMultipleAdmin($input);
+
+            case self::FILE_CONFIGS:
+                return $this->fetchFileConfigsMultipleAdmin($input);
         }
 
         return [];
@@ -266,6 +276,12 @@ class Reporting implements ExternalService
 
             case self::SCHEDULES:
                 return $this->fetchScheduleByIdAdmin($id);
+
+            case self::FILE_LOGS:
+                return $this->fetchFileLogByIdAdmin($id);
+
+            case self::FILE_CONFIGS:
+                return $this->fetchFileConfigByIdAdmin($id);
         }
 
         return [];
@@ -672,6 +688,20 @@ class Reporting implements ExternalService
         return $this->createAndSendRequest(Requests::GET, $path);
     }
 
+    public function fetchFileLogByIdAdmin(string $id): array
+    {
+        $path = self::FILE_LOG_PATH . '/' . $id . '/full';
+
+        return $this->createAndSendRequest(Requests::GET, $path);
+    }
+
+    public function fetchFileConfigByIdAdmin(string $id): array
+    {
+        $path = self::FILE_CONFIG_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::GET, $path);
+    }
+
     public function fetchLogMultipleAdmin(array $input): array
     {
         $headers = $this->fetchHeadersFromInput($input);
@@ -710,6 +740,20 @@ class Reporting implements ExternalService
         $headers = $this->fetchHeadersFromInput($input);
 
         return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input, $headers);
+    }
+
+    public function fetchFileLogsMultipleAdmin(array $input): array
+    {
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::FILE_LOG_PATH . '/full', $input, $headers);
+    }
+
+    public function fetchFileConfigsMultipleAdmin(array $input): array
+    {
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::FILE_CONFIG_PATH, $input, $headers);
     }
 
     protected function createScheduleOnApi(array $input)
