@@ -46,4 +46,24 @@ describe('Settlements Pagination', () => {
     await userEvent.click(nextButton);
     expect(defaultProps.next).toHaveBeenCalled();
   });
+
+  describe('with showActualValues true', () => {
+    test('should show actual range', () => {
+      renderApp({
+        showActualValues: true,
+        listData: [1, 2, 3],
+      });
+      expect(screen.getByText('Showing 1 - 3')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument();
+    });
+
+    test('should show no records found when count is 0', () => {
+      renderApp({
+        showActualValues: true,
+        listData: [],
+      });
+      expect(screen.getByText('No records found')).toBeInTheDocument();
+    });
+  });
 });

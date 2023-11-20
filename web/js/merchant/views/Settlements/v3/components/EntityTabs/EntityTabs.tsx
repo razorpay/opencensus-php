@@ -13,6 +13,7 @@ const RenderTabs = ({
   handleTabChange,
   entityType,
   settlement,
+  isDetailsRevampFlow,
 }): JSX.Element => {
   const instrumentTabClick = (clickedTab) => {
     const entityView = entityType === 'credit' ? 'Gross Settlements' : 'Deductions';
@@ -45,6 +46,7 @@ const RenderTabs = ({
               instrumentTabClick(tabKey);
             }}
             isActive={isTabActive}
+            isCountSuffix={isDetailsRevampFlow}
           >
             <Badge size="small" variant={isTabActive ? 'blue' : 'neutral'}>
               {tabCount}
@@ -63,7 +65,7 @@ type TabsData = Record<string, number>;
 
 const Tabs = (props): JSX.Element => {
   let { items } = props.breakupDetails;
-  const { activeTab, sectionType, settlement, entityType } = props;
+  const { activeTab, sectionType, settlement, entityType, isDetailsRevampFlow } = props;
 
   const getTabData = () => {
     items = removeUnreconciledEntity(items);
@@ -95,6 +97,7 @@ const Tabs = (props): JSX.Element => {
         handleTabChange={props.handleTabChange}
         entityType={props.entityType}
         settlement={settlement}
+        isDetailsRevampFlow={isDetailsRevampFlow}
       />
     </TabsContainer>
   );

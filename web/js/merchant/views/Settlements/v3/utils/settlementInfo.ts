@@ -3,13 +3,17 @@ import { SETTLEMENT_INFO } from 'merchant/views/Settlements/v3/constants/info';
 import {
   AlertInterface,
   SettlementDetailViewInterface,
+  SettlementFailedStatus,
   SettlementInfoInterface,
   SettlementPropsInterface,
+  SettlementStatus,
+  SettlementStatusIcons,
   TimelineJourneyInterface,
 } from 'merchant/views/Settlements/v3/typings';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import moment from 'moment';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { getHumanReadableTimestamp } from 'merchant/views/Transactions/v2/Payments/components/Timeline/utils';
 
 const FailedBannerConfig = {
   FAILED: {
@@ -41,9 +45,29 @@ const FailedBannerConfig = {
     }),
   },
   RETRYING: {
-    heading: 'Your failed settlement is being automatically retried ',
+    heading: 'Your failed settlement is being automatically retried',
     description:
       "We encountered a few issues with your given bank account while processing your settlement. We'll share an update soon",
+  },
+};
+
+export const FailedSettlementInfo = {
+  [SettlementFailedStatus.SOH_HOLD]: {
+    title: 'Your settlements are temporary on-hold.',
+    subtitle: 'Please update your Bank account to unblock your settlements.',
+  },
+  [SettlementFailedStatus.FOH_HOLD]: {
+    title: 'Contact support to resume settlements for your account.',
+    subtitle:
+      'Your account Your settlements are on-hold as we’ve noticed unusual activity in your account.',
+  },
+  [SettlementFailedStatus.RETRYING]: {
+    title: FailedBannerConfig.RETRYING.heading,
+    subtitle: FailedBannerConfig.RETRYING.description,
+  },
+  [SettlementFailedStatus.FAILED]: {
+    title: FailedBannerConfig.FAILED.heading,
+    subtitle: FailedBannerConfig.FAILED.description,
   },
 };
 
@@ -67,7 +91,7 @@ export const getTimelineJourneyDetails = ({
 }: Pick<SettlementPropsInterface, 'created_at' | 'status'>): TimelineJourneyInterface[] => {
   const journey: TimelineJourneyInterface[] = [
     {
-      id: 'created',
+      id: SettlementStatus.CREATED,
       status: 'Created',
       timeline: moment.unix(created_at).format('llll'),
     },
@@ -76,6 +100,119 @@ export const getTimelineJourneyDetails = ({
     journey.push({
       id: status,
       status: titleCase(status),
+    });
+  }
+  return journey;
+};
+
+function isPastSettlementTime(unixTimestamp) {
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const currentDate = new Date();
+  const initialDate = new Date(unixTimestamp * 1000 + istOffset);
+
+  initialDate.setHours(23, 0, 0, 0);
+
+  return currentDate > initialDate;
+}
+
+function getSettlementProcessedTime(unixTimestamp) {
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const currentDate = new Date();
+  const initialDate = new Date(unixTimestamp * 1000 + istOffset);
+
+  if (currentDate < initialDate) {
+    return `Processed today`;
+  } else {
+    const daysPassed = Math.floor((+currentDate - +initialDate) / (24 * 60 * 60 * 1000));
+    return `Processed on ${initialDate.toDateString()} (${daysPassed} days ago)`;
+  }
+}
+
+export const getTimelineJourneyDetailsRevamp = ({
+  settlement,
+  settlementConfig,
+  user,
+}: any): any[] => {
+  const { created_at, status, amountInINR, utr } = settlement;
+  const now = moment();
+  const breachTime = moment.unix(created_at).add(7, 'hours');
+
+  let failedType;
+  const {
+    merchant: { hold_funds },
+  } = user;
+  const { global_hold_config, hold } = settlementConfig?.data?.config?.features || {};
+
+  if (status !== SettlementStatus.FAILED) {
+    failedType = '';
+  } else if (global_hold_config?.status || hold_funds) {
+    failedType = SettlementFailedStatus.FOH_HOLD;
+  } else if (hold?.status) {
+    failedType = SettlementFailedStatus.SOH_HOLD;
+  } else if (now.isBefore(breachTime)) {
+    failedType = SettlementFailedStatus.RETRYING;
+  } else {
+    failedType = SettlementFailedStatus.FAILED;
+  }
+
+  const journey: any[] = [
+    {
+      status,
+      title: 'Settlement created',
+      subtitle: getHumanReadableTimestamp(created_at),
+      icon: SettlementStatusIcons.DONE,
+    },
+  ];
+  if (status === SettlementStatus.CREATED) {
+    journey.push(
+      {
+        status,
+        title: 'Settlement processed',
+        subtitle: 'To be processed today',
+        icon: SettlementStatusIcons.IN_PROGRESS,
+      },
+      {
+        status,
+        title: 'Money to be deposited in bank account',
+        subtitle: `Net amount: ₹${amountInINR}`,
+        secondarySubtitle: 'To be deposited latest by 11:00 pm, today',
+        icon: SettlementStatusIcons.IN_PROGRESS,
+      },
+    );
+  }
+
+  if (status === SettlementStatus.PROCESSED) {
+    const shouldHaveSettled = isPastSettlementTime(created_at);
+    journey.push(
+      {
+        status,
+        title: 'Settlement processed',
+        subtitle: getSettlementProcessedTime(created_at),
+        mutedInfo: `We have successfully processed the settlement. It may take 2-3 hours for the funds to reflect in your bank account. If the money has still not been deposited after this time, please contact your bank using the UTR number (${
+          utr ?? '-'
+        }).`,
+        icon: SettlementStatusIcons.DONE,
+      },
+      {
+        status,
+        title: shouldHaveSettled
+          ? 'Money deposited in bank account'
+          : 'Money to be deposited in bank account',
+        subtitle: `Net amount: ₹${amountInINR ?? '-'}`,
+        secondarySubtitle: shouldHaveSettled
+          ? `UTR number: ${utr ?? '-'}`
+          : 'To be deposited latest by 11:00 pm, today',
+        icon: shouldHaveSettled ? SettlementStatusIcons.DONE : SettlementStatusIcons.IN_PROGRESS,
+      },
+    );
+  }
+
+  if (status === SettlementStatus.FAILED) {
+    journey.push({
+      status,
+      title: 'Settlement failed',
+      icon: SettlementStatusIcons.FAILED,
+      failedType,
     });
   }
   return journey;

@@ -28,7 +28,7 @@ import {
 } from './utils';
 import { ERROR_DESCRIPTION_CONTENT_MAP } from './constants';
 
-const OverviewIcon = ({ status }) => {
+export const OverviewIcon = ({ status }) => {
   const Icon = getBadgeIcon(status);
   return <OverviewIconWrapper>{Icon}</OverviewIconWrapper>;
 };

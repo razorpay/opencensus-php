@@ -1,6 +1,10 @@
 import React from 'react';
 
-const Pagination = ({ next, prev, listData, skip, count }) => {
+const Pagination = ({ next, prev, listData, skip, count, showActualValues = false }) => {
+  const totalRecords = listData?.length ?? 0;
+  const endRange = Math.min(skip + count, totalRecords);
+  const startRange = totalRecords >= count ? skip + 1 : 1;
+
   return (
     <div
       class="clearfix text-center"
@@ -15,6 +19,9 @@ const Pagination = ({ next, prev, listData, skip, count }) => {
           class="btn btn-default btn-sm i"
           disabled={skip === 0}
           onClick={prev}
+          style={{
+            marginRight: showActualValues ? '4px' : '',
+          }}
         >
           <i class="i i-chevron-left" />
         </button>
@@ -28,9 +35,15 @@ const Pagination = ({ next, prev, listData, skip, count }) => {
           <i class="i i-chevron-right" />
         </button>
       </div>
-      <small class="text-muted">
-        Showing {skip + 1} - {skip + count}
-      </small>
+      {showActualValues ? (
+        <small class="text-muted">
+          {totalRecords > 0 ? `Showing ${startRange} - ${endRange}` : `No records found`}
+        </small>
+      ) : (
+        <small class="text-muted">
+          Showing {skip + 1} - {skip + count}
+        </small>
+      )}
     </div>
   );
 };

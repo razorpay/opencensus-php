@@ -30,3 +30,30 @@ export const fetchSettlementDetails = ({ type }) => {
     );
   });
 };
+
+export const mockFetchSettlementConfig = (status = true) => {
+  return rest.post('*/settlements/dashboard/merchant_config/get', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {
+          config: {
+            features: {
+              hold: {
+                status,
+              },
+            },
+            schedules: {
+              payment: {
+                'domestic:default': 'T+2 Working days',
+                'international:default': 'T+7 Working days',
+              },
+            },
+          },
+        },
+      }),
+    );
+  });
+};

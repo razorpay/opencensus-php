@@ -19,13 +19,32 @@ export enum ERROR_TYPE {
 
 type AmountTypes = 'info' | 'breakup' | 'subBreakup' | 'net';
 
-export type SettlementStatus = 'failed' | 'created' | 'processed';
+export enum SettlementStatus {
+  CREATED = 'created',
+  PROCESSED = 'processed',
+  FAILED = 'failed',
+  INITIATED = 'initiated',
+}
+
+export enum SettlementFailedStatus {
+  FOH_HOLD = 'FOH_HOLD',
+  SOH_HOLD = 'SOH_HOLD',
+  RETRYING = 'RETRYING',
+  FAILED = 'FAILED',
+}
+
+export enum SettlementStatusIcons {
+  IN_PROGRESS = 'IN_PROGRESS',
+  DONE = 'DONE',
+  FAILED = 'FAILED',
+}
 
 export interface SettlementDetailsInterface extends RouteComponentProps<MatchParams> {
   error: any;
   loading: boolean;
   fetchItem: (id: string) => Promise<void>;
   showNotification: ShowNotificationType;
+  user: Required<User>;
 }
 
 export interface DateInfo {

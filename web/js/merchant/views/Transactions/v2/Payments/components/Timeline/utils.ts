@@ -6,6 +6,7 @@ import {
   RefundStatus,
   DisputeStatus,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/types';
+import { SettlementStatusIcons } from 'merchant/views/Settlements/v3/typings';
 
 export const getHumanReadableTimestamp = (epochTime: number): string => {
   const readableTimeStamp = moment.unix(epochTime).format('llll');
@@ -23,6 +24,7 @@ export const getIconBackgroundColor = (status: string, theme: Theme): string => 
       DisputeStatus.WON,
       DisputeStatus.LOST,
       DisputeStatus.CLOSED,
+      SettlementStatusIcons.DONE,
     ].includes(status as PaymentStatus | DisputeStatus | RefundStatus)
   ) {
     return `${theme.colors.feedback.background.positive.lowContrast}`;
@@ -33,10 +35,11 @@ export const getIconBackgroundColor = (status: string, theme: Theme): string => 
       RefundStatus.PROCESSING,
       DisputeStatus.OPEN,
       DisputeStatus.UNDER_REVIEW,
+      SettlementStatusIcons.IN_PROGRESS,
     ].includes(status)
   ) {
     return `${theme.colors.feedback.background.notice.lowContrast}`;
-  } else if (status === PaymentStatus.FAILED || status === 'auth-failed') {
+  } else if ([PaymentStatus.FAILED, 'auth-failed', SettlementStatusIcons.FAILED].includes(status)) {
     return `${theme.colors.feedback.background.negative.lowContrast}`;
   } else {
     return `${theme.colors.feedback.background.neutral.lowContrast}`;

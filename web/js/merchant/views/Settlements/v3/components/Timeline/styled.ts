@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { StyledJourneyMetadata } from 'merchant/views/Transactions/v2/Payments/components/Timeline/styled';
 
 export const StyledTimeline = styled.div`
   background: ${({ theme }) => `${theme.colors.surface.background.level2.lowContrast}`};
@@ -12,6 +13,13 @@ export const StyledTimeline = styled.div`
 export const TimelineHeader = styled.div`
   padding: 12px 24px;
   border-bottom: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+`;
+
+export const StyledTimelineRevamp = styled(StyledTimeline)`
+  flex: 1;
+  border: 1.5px solid rgba(120, 134, 155, 0.18);
+  border-radius: ${({ theme }) => theme.spacing[2]}px;
+  overflow-y: scroll;
 `;
 
 const handleBackground = (status, theme) => {
@@ -40,4 +48,8 @@ export const StyledVerticalPath = styled.div`
   height: 44px;
   width: 0;
   border: 1px solid ${({ theme }) => `${theme.colors.surface.border.normal.lowContrast}`};
+`;
+
+export const StyledSettlementJourneyMetadata = styled(StyledJourneyMetadata)`
+  width: 100%;
 `;

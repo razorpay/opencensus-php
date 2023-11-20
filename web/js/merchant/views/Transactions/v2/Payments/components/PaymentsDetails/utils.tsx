@@ -23,6 +23,7 @@ import CreatedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie
 import FailedAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Failed';
 import RefundAnimationData from 'merchant/views/Transactions/v2/Payments/lottie/Refund';
 import moment from 'moment';
+import { SettlementStatus } from 'merchant/views/Settlements/v3/typings';
 
 export const shouldHideCapturePaymentAction = (
   payment: IPaymentDetails,
@@ -322,16 +323,22 @@ export const getAmountColor = (type: string, theme: Theme): string => {
   }
 };
 
-export const getBaseVariant = (status: IPaymentDetails['status']): BadgeProps['variant'] => {
+export const getBaseVariant = (
+  status: IPaymentDetails['status'] | SettlementStatus,
+): BadgeProps['variant'] => {
   switch (status) {
     case PaymentStatus.CREATED:
+    case SettlementStatus.CREATED:
       return 'notice';
     case PaymentStatus.AUTHENTICATED:
     case PaymentStatus.AUTHORIZED:
+    case SettlementStatus.INITIATED:
       return 'neutral';
     case PaymentStatus.CAPTURED:
+    case SettlementStatus.PROCESSED:
       return 'positive';
     case PaymentStatus.FAILED:
+    case SettlementStatus.FAILED:
       return 'negative';
     case PaymentStatus.REFUNDED:
       return 'information';
@@ -340,21 +347,25 @@ export const getBaseVariant = (status: IPaymentDetails['status']): BadgeProps['v
   }
 };
 
-export const getBadgeIcon = (status: IPaymentDetails['status']): JSX.Element => {
+export const getBadgeIcon = (status: IPaymentDetails['status'] | SettlementStatus): JSX.Element => {
   let animationData = {};
 
   switch (status) {
     case PaymentStatus.CREATED:
+    case SettlementStatus.CREATED:
       animationData = CreatedAnimationData;
       break;
     case PaymentStatus.AUTHENTICATED:
     case PaymentStatus.AUTHORIZED:
+    case SettlementStatus.INITIATED:
       animationData = AuthorizedAnimationData;
       break;
     case PaymentStatus.CAPTURED:
+    case SettlementStatus.PROCESSED:
       animationData = CapturedAnimationData;
       break;
     case PaymentStatus.FAILED:
+    case SettlementStatus.FAILED:
       animationData = FailedAnimationData;
       break;
     case PaymentStatus.REFUNDED:

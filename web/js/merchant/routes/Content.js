@@ -39,6 +39,7 @@ import { RouteGuard } from 'merchant/components/ShowWhen';
 
 // import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
+import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
 import { withI18Service } from 'common/i18';
 
 const B2bPaymentsList = lazy(() =>
@@ -254,6 +255,11 @@ const SettlementDetailsV2 = lazy(() =>
 );
 const SettlementDetailsV3 = lazy(() =>
   import(/* webpackChunkName: "SettlementDetails" */ 'merchant/views/Settlements/v3'),
+);
+const SettlementDetailsV3Revamp = lazy(() =>
+  import(
+    /* webpackChunkName: "SettlementDetailsRevamp" */ 'merchant/views/Settlements/v3/SettlementDetailsRevamp'
+  ),
 );
 const PaymentLinks = lazy(() =>
   import(/* webpackChunkName: "PaymentLinks" */ 'merchant/views/PaymentLinks/Index'),
@@ -497,6 +503,10 @@ class Content extends Component {
     const { splitz, user } = this.props;
     return isTransactionsV2Enabled(splitz, user);
   };
+  checkIsSettlementsV3RevampEnabled = () => {
+    const { splitz, user } = this.props;
+    return isSettlementsV3detailsRevamp(splitz, user);
+  };
 
   setBaseLocation = (location) => {
     const blacklistedDetailsRoutes = ['/payments/:id', '/refunds/:id'];
@@ -627,6 +637,7 @@ class Content extends Component {
 
     const PaymentMethods = user.isAccountAndSettingsRevampEnabled ? PaymentMethodsV2 : Settings;
     const isTransactionV2Enabled = this.checkIsTransactionsV2Enabled();
+    const isSettlementV3RevampEnabled = this.checkIsSettlementsV3RevampEnabled();
     return (
       <Suspense fallback={<Loader />}>
         <Routes location={this.baseLocation}>
@@ -895,7 +906,11 @@ class Content extends Component {
                   }
                 >
                   {user.isSettlementV3RevampEnabled ? (
-                    <SettlementDetailsV3 />
+                    isSettlementV3RevampEnabled ? (
+                      <SettlementDetailsV3Revamp />
+                    ) : (
+                      <SettlementDetailsV3 />
+                    )
                   ) : (
                     <SettlementDetailsV2 />
                   )}

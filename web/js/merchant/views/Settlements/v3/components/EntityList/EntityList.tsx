@@ -10,7 +10,7 @@ import {
 import Amount from 'common/ui/Amount';
 import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
-import { titleCase } from 'common/utils/rzp-utils';
+import { capitalizeFirstLetter, titleCase } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -52,6 +52,7 @@ const ListItem = ({
   onItemClick,
   sectionType,
   activeTab,
+  isDetailsRevampFlow,
 }) => {
   const { selfServeActionName, page, INIT_POINT, INIT_PAGE } =
     getSelfServeDetailForSettlementDetails(source);
@@ -227,9 +228,11 @@ const ListItem = ({
                 <Text type="subtle" size="medium">
                   {id}
                 </Text>
-                <CustomClipboard value={id} onCopy={onIdCopied.bind(null, id)}>
-                  <CopyIcon size="medium" color="feedback.icon.neutral.lowContrast" />
-                </CustomClipboard>
+                {isDetailsRevampFlow ? null : (
+                  <CustomClipboard value={id} onCopy={onIdCopied.bind(null, id)}>
+                    <CopyIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                  </CustomClipboard>
+                )}
               </StyledTd>
             );
             break;
@@ -254,7 +257,11 @@ const ListItem = ({
           case 'net_value':
             row = (
               <td key={idx}>
-                <Text weight="regular" color="surface.text.subtle.lowContrast" size="medium">
+                <Text
+                  weight={isDetailsRevampFlow ? 'bold' : 'regular'}
+                  color="surface.text.subtle.lowContrast"
+                  size="medium"
+                >
                   <Amount value={netValue} currency={currency} />
                 </Text>
               </td>
@@ -307,6 +314,7 @@ type Props = {
   activeTab: string;
   settlementId: string;
   sectionType: string;
+  isDetailsRevampFlow?: boolean;
 } & RouteComponentProps;
 
 const EntityList = (props) => {
@@ -315,7 +323,15 @@ const EntityList = (props) => {
   const [skip, setskip] = useState(DEFAULT_SKIP);
   const [count, setcount] = useState(DEFAULT_COUNT);
 
-  const { settlementId, showNotification, activeTab, user, terminalProviders, sectionType } = props;
+  const {
+    settlementId,
+    showNotification,
+    activeTab,
+    user,
+    terminalProviders,
+    sectionType,
+    isDetailsRevampFlow,
+  } = props;
 
   const fetchData = (skipVal, countVal, type) => {
     const tab = sanitizeTabName(type);
@@ -390,9 +406,9 @@ const EntityList = (props) => {
               color="surface.text.subtle.lowContrast"
               weight="bold"
             >
-              {titleCase(key)}
+              {isDetailsRevampFlow ? capitalizeFirstLetter(key) : titleCase(key)}
             </Text>
-            {key === 'Net amount' || key === 'Net deduction' ? (
+            {(key === 'Net amount' || key === 'Net deduction') && !isDetailsRevampFlow ? (
               <div>
                 <InfoIcon size="small" color="surface.text.subtle.lowContrast" />
                 <Popover theme="dark" align="top">
@@ -474,12 +490,20 @@ const EntityList = (props) => {
                       onItemClick={onItemClick}
                       sectionType={sectionType}
                       activeTab={activeTab}
+                      isDetailsRevampFlow={isDetailsRevampFlow}
                     />
                   ))}
               </TableBody>
             </table>
           </div>
-          <Pagination next={next} prev={prev} listData={listData} skip={skip} count={count} />
+          <Pagination
+            next={next}
+            prev={prev}
+            listData={listData}
+            skip={skip}
+            count={count}
+            showActualValues={isDetailsRevampFlow}
+          />
         </React.Fragment>
       ) : error ? null : (
         <StyledSpinner>

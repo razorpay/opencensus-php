@@ -45,4 +45,37 @@ const BreakupShimmer = (): JSX.Element => {
   );
 };
 
+export const BreakupRevampShimmer = (): JSX.Element => {
+  return (
+    <StyledBreakUp style={{ height: '200px' }} data-testid="breakup-shimmer">
+      <BreakupContent>
+        {grossSettlementsPlaceholder.slice(1).map(
+          (each, index): JSX.Element => (
+            <BreakupItem key={index}>
+              <Shimmer height="20px" width="100px" variant="rounded" borderRadius="12px" />
+              <Shimmer height="20px" width={each} variant="rounded" borderRadius="12px" />
+            </BreakupItem>
+          ),
+        )}
+        <Divider noMargin />
+        {deductionsPlaceholder.slice(1)?.map(
+          (each, index): JSX.Element => (
+            <BreakupItem key={index}>
+              <Shimmer height="20px" width="100px" variant="rounded" borderRadius="12px" />
+              <Shimmer height="20px" width={each} variant="rounded" borderRadius="12px" />
+            </BreakupItem>
+          ),
+        )}
+        <Divider noMargin />
+        <BreakupItem>
+          <Text size="medium" weight="bold">
+            Net settlement
+          </Text>
+          <Shimmer height="20px" width="61px" variant="rounded" borderRadius="12px" />
+        </BreakupItem>
+      </BreakupContent>
+    </StyledBreakUp>
+  );
+};
+
 export default BreakupShimmer;

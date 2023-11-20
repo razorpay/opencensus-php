@@ -2,6 +2,7 @@ import styled, { css } from 'styled-components';
 
 interface StyledActiveProps {
   isActive: boolean;
+  isCountSuffix?: boolean;
 }
 
 export const TabsContainer = styled.div`
@@ -25,6 +26,8 @@ export const Tab = styled.div<StyledActiveProps>`
   padding-right: 6px;
   padding-left: 6px;
   cursor: pointer;
+  flex-direction: ${({ isCountSuffix }) => (isCountSuffix ? 'row-reverse' : 'row')};
+  gap: ${({ theme }) => `${theme.spacing[2]}px`};
   ${({ isActive, theme }) =>
     isActive &&
     css`
@@ -34,7 +37,6 @@ export const Tab = styled.div<StyledActiveProps>`
 
 export const StyledDivTabText = styled.div<StyledActiveProps>`
   p {
-    margin-left: ${({ theme }) => `${theme.spacing[2]}px`};
     color: ${({ isActive, theme }) => {
       return isActive
         ? `${theme.colors.brand.primary[500]}`

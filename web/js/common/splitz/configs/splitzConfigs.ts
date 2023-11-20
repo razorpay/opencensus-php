@@ -69,6 +69,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'settlementsV3_details_revamp',
+        experimentId: {
+          beta: 'MPFDhXp1ooZQom',
+          production: 'N02pvjbyZUaw4f',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

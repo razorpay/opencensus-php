@@ -15,6 +15,7 @@ import {
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/types';
 
 import { getIconBackgroundColor } from './utils';
+import { SettlementStatusIcons } from 'merchant/views/Settlements/v3/typings';
 
 export const IconBackground = styled.div<{ status: string }>`
   height: 20px;
@@ -98,6 +99,7 @@ export const getStatusIcon = (status: string): JSX.Element => {
       DisputeStatus.WON,
       DisputeStatus.LOST,
       DisputeStatus.CLOSED,
+      SettlementStatusIcons.DONE,
     ].includes(status as PaymentStatus | DisputeStatus | RefundStatus)
   ) {
     return <CheckIcon color="feedback.icon.positive.lowContrast" size="small" />;
@@ -108,10 +110,11 @@ export const getStatusIcon = (status: string): JSX.Element => {
       RefundStatus.PROCESSING,
       DisputeStatus.OPEN,
       DisputeStatus.UNDER_REVIEW,
+      SettlementStatusIcons.IN_PROGRESS,
     ].includes(status)
   ) {
     return <ClockIcon color="feedback.icon.notice.lowContrast" size="small" />;
-  } else if (status === PaymentStatus.FAILED || status == 'auth-failed') {
+  } else if ([PaymentStatus.FAILED, 'auth-failed', SettlementStatusIcons.FAILED].includes(status)) {
     return <CloseIcon color="feedback.icon.negative.lowContrast" size="small" />;
   }
 

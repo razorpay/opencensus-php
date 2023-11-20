@@ -38,7 +38,7 @@ export const OverviewSubtextWrapper = styled.div(
 `,
 );
 
-const DashedDividerWrapper = styled.div`
+export const DashedDividerWrapper = styled.div`
   & > div {
     border-style: dashed;
   }
@@ -102,7 +102,7 @@ export const SectionHeader = styled.div(
 );
 
 export const RowWrapper = styled.div(
-  ({ theme }) => `
+  ({ theme, tooltipSpacing = '2px' }: { theme: Theme; tooltipSpacing?: string }) => `
   display: flex;
   padding: ${theme.spacing[4]}px 0px;
   & > p:first-child {
@@ -111,7 +111,7 @@ export const RowWrapper = styled.div(
     span{
       position:absolute;
       top:-1px;
-      padding-left: 2px;
+      padding-left: ${tooltipSpacing};
     }
   }
   flex-direction: column;

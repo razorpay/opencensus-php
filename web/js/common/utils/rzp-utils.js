@@ -58,6 +58,10 @@ export function isDefined(value) {
   return typeof value !== 'undefined';
 }
 
+export function capitalizeFirstLetter(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 /* Delimiters are space / underscore */
 export function titleCase(sentence) {
   return (sentence || '')

@@ -1,7 +1,8 @@
-import { Text, Box } from '@razorpay/blade/components';
+import { Text, Box, Heading, Card, CardBody } from '@razorpay/blade/components';
 import Shimmer from 'common/components/Shimmer';
 import React from 'react';
 import { InfoItem } from './styled';
+import { SectionHeader } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/styled';
 
 const placeHolderData = [
   { name: 'Net settlement' },
@@ -29,6 +30,25 @@ const SettlementInfoShimmer = (): JSX.Element => {
           <Shimmer height="24px" width="140px" variant="rounded" borderRadius="12px" />
         </InfoItem>
       ))}
+    </Box>
+  );
+};
+
+export const SettlementInfoRevampShimmer = (): JSX.Element => {
+  return (
+    <Box testID="settlement-info-details-section-loading">
+      <SectionHeader enableBorderBottomRadius={false}>
+        <Heading type="normal" size="small" weight="bold" contrast="low">
+          Details
+        </Heading>
+      </SectionHeader>
+      <Card padding="spacing.5" elevation="none">
+        <CardBody>
+          <Box display="flex" flexWrap="wrap" gap="spacing.3" padding="spacing.3">
+            <Shimmer height="50px" width="100%" />
+          </Box>
+        </CardBody>
+      </Card>
     </Box>
   );
 };
