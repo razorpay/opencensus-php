@@ -153,6 +153,7 @@ const Signin = () => {
                           theme={getTheme(orgData)}
                           isGoogleOauthEnabled={orgData.orgName !== BANK_NAMES.AXIS}
                           skipCaptcha={isTestEnvironment() || captchaDisabled}
+                          orgData={orgData}
                         />
                       </CommanderShieldThemeWrapper>
                       <CaptchaTextView>
