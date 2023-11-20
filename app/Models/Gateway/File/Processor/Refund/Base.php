@@ -153,6 +153,14 @@ class Base extends BaseProcessor
             // Returning payments for the relevant,
             // refunds have been populated in $scroogeRefunds
             //
+
+            foreach ($payments as $payment)
+            {
+                if($payment->merchant->isLRSFlowEnabled() ===  true)
+                {
+                    $payment['amount'] = $payment->getGatewayAmount();
+                }
+            }
             return $payments;
         }
         else
