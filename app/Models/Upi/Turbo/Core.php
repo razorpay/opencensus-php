@@ -302,8 +302,8 @@ class Core extends Base\Core
     private function populateFallbackErrorMapping(&$mappingArray)
     {
         $fallbackError[Error::DESCRIPTION]           = Constants::FALLBACK_ERROR_DESCRIPTION;
-        $fallbackError[Error::INTERNAL_ERROR_CODE]   = Constants::FALLBACK_INTERNAL_ERROR_CODE;
         $fallbackError[Constants::PUBLIC_ERROR_CODE] = Constants::FALLBACK_PUBLIC_ERROR_CODE;
+        $fallbackError[Error::REASON]                = Constants::FALLBACK_REASON;
 
         $mappingArray[Constants::FALLBACK] = $fallbackError;
     }
