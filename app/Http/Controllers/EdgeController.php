@@ -105,7 +105,8 @@ class EdgeController extends Controller
         {
             return [
                 'user_id' => $this->ba->getUser()->getId(),
-                'product' => $this->ba->isBankLms() ? 'lms' : $this->ba->getRequestOriginProduct(),
+                'product' => $this->ba->getRequestOriginProduct(),
+                'is_lms' => $this->ba->isBankLms(),
                 'roles' => $this->service->getUserRoles(),
                 'enforcement_roles' => $this->service->getUserEnforcementRoles()
             ];

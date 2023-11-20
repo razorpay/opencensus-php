@@ -147,14 +147,14 @@ class Service
     {
         $this->adminAccess = $adminAccess ?? new AdminAccess($this->app);
         $adminGroupCore = $adminGroupCore ?? new Core();
-        $orgId = $this->getOrgId($input);
-        $this->ba->setOrgId($orgId);
-        $this->adminAccess->setOrgType($orgId);
+        $signedOrgId = $this->getSignedOrgId($input);
+        $this->ba->setOrgId($signedOrgId);
+        $this->adminAccess->setOrgType($signedOrgId);
         $admin = $this->ba->getAdmin();
         $merchant = $this->adminAccess->getMerchant(isset($input['dashboard']['route_params']) ? $input['dashboard']['route_params']['merchant_id']: null);
 
         $this->trace->info(TraceCode::EDGE_THIRD_PARTY_ADMIN_AUTHORIZE,
-            [   'org_id' => $orgId,
+            [   'org_id' => $signedOrgId,
                 'admin_id' => $admin->getId(),
                 'admin_public_org_id' => $admin->getPublicOrgId(),
                 'merchant_id' => $merchant ? $merchant->getId() : null
@@ -170,7 +170,7 @@ class Service
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_USER_ACCOUNT_DISABLED);
         }
 
-        if ($orgId !== $admin->getOrgId())
+        if ($signedOrgId !== $admin->getPublicOrgId())
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_INVALID_ORG_ID);
         }
@@ -300,29 +300,28 @@ class Service
     }
 
     /**
-     * @return mixed|string|null
+     * @return string|null
      * @throws BadRequestValidationFailureException
      */
-    private function getOrgId($input): mixed
+    private function getSignedOrgId($input): ?string
     {
         $dashboardRequestInfo = $input['dashboard'];
-        $orgId = null;
+        $signedOrgId = null;
         if(empty($dashboardRequestInfo['org_id']) === false)
         {
-            $orgId = $dashboardRequestInfo['org_id'];
-            // org ID is expected to be already stripped
-            Entity::verifyUniqueId($orgId);
-            $this->repo->org->isValidOrg($orgId);
+            $unsignedOrgId = $dashboardRequestInfo['org_id'];
+            Entity::verifyUniqueId($unsignedOrgId);
+            $this->repo->org->isValidOrg($unsignedOrgId);
+            $signedOrgId = Entity::getSignedId($unsignedOrgId);
         }
         else if (empty($this->getHeader(AdminAccess::ORG_HOSTNAME_HEADER_KEY)) === false)
         {
             // Resolving OrgId from hostname.
             $orgHostname = $this->getHeader(AdminAccess::ORG_HOSTNAME_HEADER_KEY);
-
-            $orgId = $this->adminAccess->resolveOrgIdFromHostname($orgHostname);
+            $signedOrgId = $this->adminAccess->resolveOrgIdFromHostname($orgHostname);
         }
 
-        return $orgId;
+        return $signedOrgId;
     }
 
     private function setRequestOriginProduct(): void

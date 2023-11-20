@@ -490,13 +490,14 @@ class ServiceTest extends TestCase
 
     private function authorizeExceptRBACAdminAuthCommonExpectations($orgId, $adminEntity, $merchantId, $merchantEntity)
     {
-        $this->baMock->expects($this->once())->method('setOrgId')->with($orgId);
-        $this->adminAccessMock->expects($this->once())->method('setOrgType')->with($orgId);
+        $signedOrgId = is_null($orgId) ? null: "org_" . $orgId;
+        $this->baMock->expects($this->once())->method('setOrgId')->with($signedOrgId);
+        $this->adminAccessMock->expects($this->once())->method('setOrgType')->with($signedOrgId);
         $this->baMock->expects($this->once())->method('getAdmin')->willReturn($adminEntity);
         $this->adminAccessMock->expects($this->once())->method('getMerchant')->with($merchantId)->willReturn($merchantEntity);
 
         $this->traceMock->shouldReceive('info')->once()->with(TraceCode::EDGE_THIRD_PARTY_ADMIN_AUTHORIZE, [
-            'org_id' => $orgId,
+            'org_id' => $signedOrgId,
             'admin_id' => $adminEntity->getId(),
             'admin_public_org_id' => $adminEntity->getPublicOrgId(),
             'merchant_id' => $merchantEntity ? $merchantEntity->getId() : null
@@ -509,7 +510,6 @@ class ServiceTest extends TestCase
 
         $orgId = $this->dashboardRequest1Info['org_id'];
         $adminEntity = $this->getAdminEntity($orgId);
-
 
         $merchantEntity = $this->getMockMerchantEntity();
 
@@ -537,8 +537,7 @@ class ServiceTest extends TestCase
 
         $merchantEntity = $this->getMockMerchantEntity();
 
-
-        $this->adminAccessMock->expects($this->once())->method('resolveOrgIdFromHostname')->with($input['dashboard']['headers'][AdminAccess::ORG_HOSTNAME_HEADER_KEY])->willReturn($orgId);
+        $this->adminAccessMock->expects($this->once())->method('resolveOrgIdFromHostname')->with($input['dashboard']['headers'][AdminAccess::ORG_HOSTNAME_HEADER_KEY])->willReturn("org_" . $orgId);
         $this->authorizeExceptRBACAdminAuthCommonExpectations($orgId, $adminEntity, $input['dashboard']['route_params']['merchant_id'], $merchantEntity);
 
         $this->adminGroupCore->expects($this->once())->method('groupCheck')->with($adminEntity, $merchantEntity)->willReturn(true);
@@ -610,7 +609,6 @@ class ServiceTest extends TestCase
         $adminEntity = $this->getAdminEntity($orgId);
 
         $merchantEntity = $this->getMockMerchantEntity();
-
 
         $this->authorizeExceptRBACAdminAuthCommonExpectations(null, $adminEntity, $input['dashboard']['route_params']['merchant_id'], $merchantEntity);
         $this->adminGroupCore->expects($this->never())->method('groupCheck');
