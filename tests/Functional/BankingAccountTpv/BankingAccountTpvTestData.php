@@ -785,4 +785,60 @@ return [
             ],
         ],
     ],
+
+    'testBankingAccountTpvApproval_SuccessfulSourceAccountAdditionForRxWalletBalanceId' => [
+        'request'  => [
+            'url'     => '/admin/tpv/',
+            'method'  => 'patch',
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'payer_account_number' => '98711120003344',
+                'status'               => Status::APPROVED,
+                'remarks'              => 'Morphed docs',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::APPROVED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'is_active'            => true,
+                'type'                 => 'bank_account',
+                'remarks'              => 'Morphed docs'
+            ],
+        ],
+    ],
+
+    'testBankingAccountTpvApproval_SourceAccountAdditionMozartFailureWithActionableErrorCode' => [
+        'request'  => [
+            'url'     => '/admin/tpv/',
+            'method'  => 'patch',
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'payer_account_number' => '98711120003344',
+                'status'               => Status::APPROVED,
+                'remarks'              => 'Morphed docs',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SOURCE_ACCOUNT_ADDITION_FAILURE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SOURCE_ACCOUNT_ADDITION_FAILURE,
+        ],
+    ],
 ];

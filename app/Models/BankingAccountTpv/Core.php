@@ -12,10 +12,14 @@ use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Merchant\Balance\Type;
+use RZP\Models\BankingAccount\Gateway;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\BankingAccount\Gateway\Yesbank;
+use RZP\Services\BankingAccountService as BasService;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
 
 class Core extends Base\Core
@@ -60,6 +64,8 @@ class Core extends Base\Core
 
         if ($input[Entity::STATUS] === Status::APPROVED)
         {
+            $this->sourceAccountAdditionForRxWallet($tpv);
+
             $tpv->setIsActive(true);
         }
 
@@ -72,6 +78,7 @@ class Core extends Base\Core
     {
         $tpvId = Entity::verifyIdAndSilentlyStripSign($id);
 
+        /** @var Entity $tpv */
         $tpv = $this->repo->banking_account_tpv->findOrFail($tpvId);
 
         $this->trace->info(TraceCode::ADMIN_EDIT_TPV, $input);
@@ -88,6 +95,8 @@ class Core extends Base\Core
         {
             if ($input[Entity::STATUS] === Status::APPROVED)
             {
+                $this->sourceAccountAdditionForRxWallet($tpv);
+
                 $tpv->setIsActive(true);
             }
             else
@@ -344,5 +353,116 @@ class Core extends Base\Core
             FundAccountValidation::CURRENCY     => 'INR',
             FundAccountValidation::NOTES        => []
         ];
+    }
+
+    public function getMozartRequestDataForSourceAccountAddition($merchantCredentials, $sourceAccountDetails)
+    {
+        return [
+            Constants::REQUEST_ID            => $this->app['request']->getId(),
+            Constants::CLIENT_IDENTIFIER     => $merchantCredentials[Gateway\Fields::CREDENTIALS][Yesbank\Fields::CLIENT_ID],
+            Constants::SOURCE_ACCOUNT_NUMBER => $sourceAccountDetails[Entity::PAYER_ACCOUNT_NUMBER],
+            Constants::SOURCE_ACCOUNT_IFSC   => $sourceAccountDetails[Entity::PAYER_IFSC],
+        ];
+    }
+
+    public function validateSourceAccountAdditionResponse($bankResponse)
+    {
+        $isSourceAccountAdditionSuccessful = (isset($bankResponse[Constants::DATA][Constants::STATUS]) and
+                                              ($bankResponse[Constants::DATA][Constants::STATUS] === Constants::SUCCESS));
+
+        if ($isSourceAccountAdditionSuccessful === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Source Account Addition failure. Invalid Response.', null, $bankResponse
+            );
+        }
+    }
+
+    /**
+     * @return void
+     *
+     * @var $bankingAccountTpv Entity
+     * Before marking the banking account Tpv as active, we first add the source accounts to bank.
+     */
+    public function sourceAccountAdditionForRxWallet(Entity $bankingAccountTpv)
+    {
+        $balance = $bankingAccountTpv->balance;
+
+        if ($balance->getAccountType() !== AccountType::RX_WALLET)
+        {
+            return;
+        }
+
+        $sourceAccountDetails = [
+            Entity::PAYER_ACCOUNT_NUMBER => $bankingAccountTpv->getPayerAccountNumber(),
+            Entity::PAYER_IFSC           => $bankingAccountTpv->getPayerIfsc(),
+        ];
+
+        $merchantId    = $bankingAccountTpv->getMerchantId();
+        $accountNumber = $sourceAccountDetails[Entity::PAYER_ACCOUNT_NUMBER];
+
+        try
+        {
+            /** @var BasService $bankingAccountService */
+            $bankingAccountService = $this->app['banking_account_service'];
+
+            // Get Client ID from BAS
+            $merchantCredentials = $bankingAccountService->fetchBankingCredentials(
+                $merchantId, $balance->getChannel(), $accountNumber);
+
+            $requestData = $this->getMozartRequestDataForSourceAccountAddition($merchantCredentials, $sourceAccountDetails);
+
+            // Make Mozart Call to initiate Source Account Addition
+            $bankResponse = $this->app->mozart->sendMozartRequest(Constants::SOURCE_ACCOUNT_ADDITION_MOZART_NAMESPACE,
+                                                                  $balance->getChannel(),
+                                                                  Constants::SOURCE_ACCOUNT_ADDITION_MOZART_ACTION,
+                                                                  $requestData);
+
+            $this->validateSourceAccountAdditionResponse($bankResponse);
+        }
+        catch (\Throwable $exception)
+        {
+            $exceptionTraceData = [
+                Entity::MERCHANT_ID               => $merchantId,
+                Entity::BALANCE_ID                => $balance->getId(),
+                Constants::SOURCE_ACCOUNT_DETAILS => $sourceAccountDetails,
+                BalanceEntity::CHANNEL            => $balance->getChannel(),
+            ];
+
+            if ($exception instanceof Exception\GatewayErrorException)
+            {
+                $errorCodeAndDesc = $exception->getGatewayErrorCodeAndDesc();
+
+                $exceptionTraceData += [
+                    'gateway_exception_details' => $errorCodeAndDesc
+                ];
+
+                $errorCode = $errorCodeAndDesc[0] ?? '';
+                $nonActionableErrorCodes = Constants::NON_ACTIONABLE_ERROR_CODES[$balance->getChannel()] ?? [];
+
+                if (in_array($errorCode, $nonActionableErrorCodes, true) === true)
+                {
+                    $this->trace->traceException(
+                        $exception,
+                        Trace::INFO,
+                        TraceCode::SOURCE_ACCOUNT_ADDITION_NON_ACTIONABLE_FAILURE,
+                        $exceptionTraceData);
+
+                    return;
+                }
+            }
+
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::SOURCE_ACCOUNT_ADDITION_FAILURE,
+                $exceptionTraceData);
+
+            $this->trace->count(Metric::SOURCE_ACCOUNT_ADDITION_FAILURES_COUNT);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SOURCE_ACCOUNT_ADDITION_FAILURE, null, $exceptionTraceData
+            );
+        }
     }
 }

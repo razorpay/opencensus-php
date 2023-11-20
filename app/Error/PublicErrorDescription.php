@@ -1612,6 +1612,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_TPV_ERROR                                                     = 'Error in processing the tpv request';
 
+    const BAD_REQUEST_SOURCE_ACCOUNT_ADDITION_FAILURE                               = 'Source Account Addition failed for account details provided.';
+
     const BAD_REQUEST_FUND_LOADING_REFUND_PAYOUT_CREATION_FAILED                    = 'Error in creating refund payout for failed fund loading attempt';
 
     // Templating Service

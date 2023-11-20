@@ -2,13 +2,21 @@
 
 namespace RZP\Tests\Functional\BankingAccountTpv;
 
+use Mockery;
+
+use RZP\Exception;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\User\Role;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\BankingAccountTpv\Type;
 use RZP\Models\BankingAccountTpv\Entity;
 use RZP\Models\BankingAccountTpv\Status;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\BankingAccountTpv\Constants;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
@@ -30,6 +38,94 @@ class BankingAccountTpvTest extends TestCase
             'merchant_id'   => '10000000000000',
             'account_type'  => 'shared',
         ]);
+    }
+
+    protected function mockMozartResponseForSourceAccountAddition(
+        $expectedInput, $expectedResponse = [], $throwError = false, $times = 1): void
+    {
+        $mozartServiceMock = Mockery::mock('RZP\Services\Mock\Mozart', [$this->app])
+                                    ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $expectedResponse = (empty($expectedResponse) === true) ? [
+            "success" => true,
+            "error"   => [],
+            "data"    => [
+                "request_id"        => "24020231264",
+                "status"            => "SUCCESS",
+                "response_code"     => "00",
+                "response_message"  => "Source account has been added successfully.",
+                "client_identifier" => "Z82"
+            ],
+            "next"    => [],
+            "mozart_id" => "cl7381c2b5po4din5q8g",
+            "external_trace_id" => "5a31015763304f49dd130b9e6d4f0363"
+        ] : $expectedResponse;
+
+        if ($throwError === false)
+        {
+            $mozartServiceMock->shouldReceive('sendMozartRequest')
+                              ->andReturnUsing(function(string $namespace,
+                                                        string $gateway,
+                                                        string $action,
+                                                        array  $input,
+                                                        string $version = 'v1',
+                                                        bool   $useMozartMappedInternalErrorCode = false,
+                                                        int    $timeout = 60,
+                                                        int    $connectTimeout = 10,
+                                                        bool   $logResponse = true, bool $addEntities = true) use ($expectedInput, $expectedResponse) {
+
+                                  self::assertEquals(COnstants::SOURCE_ACCOUNT_ADDITION_MOZART_NAMESPACE, $namespace);
+                                  self::assertEquals(Channel::YESBANK, $gateway);
+                                  self::assertEquals(Constants::SOURCE_ACCOUNT_ADDITION_MOZART_ACTION, $action);
+                                  self::assertArraySelectiveEquals($expectedInput, $input);
+
+                                  return $expectedResponse;
+                              })->times($times);
+        }
+        else
+        {
+            $mozartServiceMock->shouldReceive('sendMozartRequest')
+                              ->andReturnUsing(function(string $namespace,
+                                                        string $gateway,
+                                                        string $action,
+                                                        array  $input,
+                                                        string $version = 'v1',
+                                                        bool   $useMozartMappedInternalErrorCode = false,
+                                                        int    $timeout = 60,
+                                                        int    $connectTimeout = 10,
+                                                        bool   $logResponse = true, bool $addEntities = true) use ($expectedInput, $expectedResponse) {
+
+                                  self::assertEquals(COnstants::SOURCE_ACCOUNT_ADDITION_MOZART_NAMESPACE, $namespace);
+                                  self::assertEquals(Channel::YESBANK, $gateway);
+                                  self::assertEquals(Constants::SOURCE_ACCOUNT_ADDITION_MOZART_ACTION, $action);
+                                  self::assertArraySelectiveEquals($expectedInput, $input);
+
+                                  throw new Exception\GatewayErrorException(
+                                      ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
+                                      $expectedResponse['error']['gateway_error_code'] ?? 'gateway_error_code',
+                                      $expectedResponse['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                                      [
+                                          'error' => $expectedResponse['error'],
+                                          'data'  => $expectedResponse['data']
+                                      ]);
+                              })->times($times);
+        }
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function mockBasFetchCredentialsToThrowError($times = 1)
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', false);
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $basMock = Mockery::mock('RZP\Services\BankingAccountService', [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $basMock->shouldReceive('fetchBankingCredentials')
+                ->andThrowExceptions([new \Exception("Server Error")])->times($times);
+
+        $this->app->instance('banking_account_service', $basMock);
     }
 
     public function testAdminTpvCreate()
@@ -1079,5 +1175,283 @@ class BankingAccountTpvTest extends TestCase
         $this->ba->addXOriginHeader();
 
         $this->startTest();
+    }
+
+    // Source Account Addition for Rx Wallet flows
+    public function testBankingAccountTpvApproval_SuccessfulSourceAccountAdditionForRxWalletBalanceId()
+    {
+        $expectedMozartInput = [
+            Constants::CLIENT_IDENTIFIER     => 'client_123',
+            Constants::SOURCE_ACCOUNT_NUMBER => $this->getTpvInput()[Entity::PAYER_ACCOUNT_NUMBER],
+            Constants::SOURCE_ACCOUNT_IFSC   => $this->getTpvInput()[Entity::PAYER_IFSC],
+        ];
+
+        $this->mockMozartResponseForSourceAccountAddition($expectedMozartInput);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $attributes = $this->getTpvInput(
+            [
+                Entity::STATUS    => Status::PENDING,
+                Entity::IS_ACTIVE => false
+            ]);
+
+        $tpv = $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $this->fixtures->edit('balance', $this->getTpvInput()[Entity::BALANCE_ID], [
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $tpv->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'balance_id'           => '10000000000000',
+                                      'payer_ifsc'           => 'CITI0000006',
+                                      'status'               => Status::APPROVED,
+                                      'is_active'            => true,
+                                      'payer_account_number' => '98711120003344',
+                                  ]);
+
+        $this->assertNotNull($tpv);
+    }
+
+    public function testBankingAccountTpvApproval_SourceAccountAdditionMozartFailureWithNonActionableErrorCode()
+    {
+        $expectedMozartInput = [
+            Constants::CLIENT_IDENTIFIER     => 'client_123',
+            Constants::SOURCE_ACCOUNT_NUMBER => $this->getTpvInput()[Entity::PAYER_ACCOUNT_NUMBER],
+            Constants::SOURCE_ACCOUNT_IFSC   => $this->getTpvInput()[Entity::PAYER_IFSC],
+        ];
+
+        $expectedErrorResponse = [
+            "success"           => false,
+            "error"             => [
+                "gateway_status_code"       => 200,
+                "internal_error_code"       => "GATEWAY_ERROR_UNKNOWN_ERROR",
+                "description"               => "",
+                "gateway_error_code"        => "DCA018",
+                "gateway_error_description" => "Source Account Number is already mapped to the client"
+            ],
+            "data"              => [
+                "request_id"        => "24020231264",
+                "status"            => "ERROR",
+                "response_code"     => "DCA018",
+                "response_message"  => "Source account has been added successfully.",
+                "client_identifier" => "client_123"
+            ],
+            "next"              => [],
+            "mozart_id"         => "cl7381c2b5po4din5q8g",
+            "external_trace_id" => "5a31015763304f49dd130b9e6d4f0363"
+        ];
+
+        $this->mockMozartResponseForSourceAccountAddition($expectedMozartInput, $expectedErrorResponse, true);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $attributes = $this->getTpvInput(
+            [
+                Entity::STATUS    => Status::PENDING,
+                Entity::IS_ACTIVE => false
+            ]);
+
+        $tpv = $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $this->fixtures->edit('balance', $this->getTpvInput()[Entity::BALANCE_ID], [
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+        ]);
+
+        $testData = $this->testData['testBankingAccountTpvApproval_SuccessfulSourceAccountAdditionForRxWalletBalanceId'];
+
+        $testData['request']['url'] .= $tpv->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'balance_id'           => '10000000000000',
+                                      'payer_ifsc'           => 'CITI0000006',
+                                      'status'               => Status::APPROVED,
+                                      'is_active'            => true,
+                                      'payer_account_number' => '98711120003344',
+                                  ]);
+
+        $this->assertNotNull($tpv);
+    }
+
+    public function testBankingAccountTpvApproval_SourceAccountAdditionMozartFailureWithActionableErrorCode()
+    {
+        $expectedMozartInput = [
+            Constants::CLIENT_IDENTIFIER     => 'client_123',
+            Constants::SOURCE_ACCOUNT_NUMBER => $this->getTpvInput()[Entity::PAYER_ACCOUNT_NUMBER],
+            Constants::SOURCE_ACCOUNT_IFSC   => $this->getTpvInput()[Entity::PAYER_IFSC],
+        ];
+
+        $expectedErrorResponse = [
+            "success"           => false,
+            "error"             => [
+                "gateway_status_code"       => 200,
+                "internal_error_code"       => "GATEWAY_ERROR_UNKNOWN_ERROR",
+                "description"               => "",
+                "gateway_error_code"        => "DCA020",
+                "gateway_error_description" => "Unable to add source account, please try again later"
+            ],
+            "data"              => [
+                "request_id"        => "24020231264",
+                "status"            => "ERROR",
+                "response_code"     => "DCA020",
+                "response_message"  => "Unable to add source account, please try again later",
+                "client_identifier" => "client_123"
+            ],
+            "next"              => [],
+            "mozart_id"         => "cl7381c2b5po4din5q8g",
+            "external_trace_id" => "5a31015763304f49dd130b9e6d4f0363"
+        ];
+
+        $this->mockMozartResponseForSourceAccountAddition($expectedMozartInput, $expectedErrorResponse, true);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $attributes = $this->getTpvInput(
+            [
+                Entity::STATUS    => Status::PENDING,
+                Entity::IS_ACTIVE => false
+            ]);
+
+        $tpv = $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $this->fixtures->edit('balance', $this->getTpvInput()[Entity::BALANCE_ID], [
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $tpv->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'balance_id'           => '10000000000000',
+                                      'payer_ifsc'           => 'CITI0000006',
+                                      'status'               => Status::PENDING,
+                                      'is_active'            => false,
+                                      'payer_account_number' => '98711120003344',
+                                  ]);
+
+        $this->assertNotNull($tpv);
+    }
+
+    public function testBankingAccountTpvApproval_SourceAccountAdditionMozartFailureWithResponseValidationError()
+    {
+        $expectedMozartInput = [
+            Constants::CLIENT_IDENTIFIER     => 'client_123',
+            Constants::SOURCE_ACCOUNT_NUMBER => $this->getTpvInput()[Entity::PAYER_ACCOUNT_NUMBER],
+            Constants::SOURCE_ACCOUNT_IFSC   => $this->getTpvInput()[Entity::PAYER_IFSC],
+        ];
+
+        $expectedErrorResponse = [
+            "success"           => true,
+            "error"             => [],
+            "data"              => [
+                "request_id"        => "24020231264",
+                "status"            => "ERROR",
+                "response_code"     => "DCA020",
+                "response_message"  => "Unable to add source account, please try again later",
+                "client_identifier" => "client_123"
+            ],
+            "next"              => [],
+            "mozart_id"         => "cl7381c2b5po4din5q8g",
+            "external_trace_id" => "5a31015763304f49dd130b9e6d4f0363"
+        ];
+
+        $this->mockMozartResponseForSourceAccountAddition($expectedMozartInput, $expectedErrorResponse);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $attributes = $this->getTpvInput(
+            [
+                Entity::STATUS    => Status::PENDING,
+                Entity::IS_ACTIVE => false
+            ]);
+
+        $tpv = $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $this->fixtures->edit('balance', $this->getTpvInput()[Entity::BALANCE_ID], [
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+        ]);
+
+        $testData = $this->testData['testBankingAccountTpvApproval_SourceAccountAdditionMozartFailureWithActionableErrorCode'];
+
+        $testData['request']['url'] .= $tpv->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'balance_id'           => '10000000000000',
+                                      'payer_ifsc'           => 'CITI0000006',
+                                      'status'               => Status::PENDING,
+                                      'is_active'            => false,
+                                      'payer_account_number' => '98711120003344',
+                                  ]);
+
+        $this->assertNotNull($tpv);
+    }
+
+    public function testBankingAccountTpvApproval_BasCredentialsFetchFailure()
+    {
+        $this->mockBasFetchCredentialsToThrowError();
+
+        $this->mockMozartResponseForSourceAccountAddition([], [], false, 0);
+
+        $attributes = $this->getTpvInput(
+            [
+                Entity::STATUS    => Status::PENDING,
+                Entity::IS_ACTIVE => false
+            ]);
+
+        $tpv = $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $this->fixtures->edit('balance', $this->getTpvInput()[Entity::BALANCE_ID], [
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+        ]);
+
+        $testData = $this->testData['testBankingAccountTpvApproval_SourceAccountAdditionMozartFailureWithActionableErrorCode'];
+
+        $testData['request']['url'] .= $tpv->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'balance_id'           => '10000000000000',
+                                      'payer_ifsc'           => 'CITI0000006',
+                                      'status'               => Status::PENDING,
+                                      'is_active'            => false,
+                                      'payer_account_number' => '98711120003344',
+                                  ]);
+
+        $this->assertNotNull($tpv);
     }
 }
