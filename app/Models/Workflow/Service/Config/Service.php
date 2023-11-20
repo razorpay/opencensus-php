@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Workflow\Service\Config;
 
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Exception;
@@ -121,7 +122,7 @@ class Service extends Base\Service
                 $this->app['basicauth']->getMode() === Constants\Mode::TEST);
         }
 
-        $configType = array_pull($input, WorkflowConstants::CONFIG_TYPE, WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE);
+        $configType = $input[ WorkflowConstants::CONFIG_TYPE] ?? WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE;
 
         $workflowInput = $this->generateWorkflowInput($input);
 
@@ -152,6 +153,20 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::SELF_SERVE_WORKFLOW_LIST_CONFIG_REQUEST);
 
+        /* @var $ba BasicAuth */
+        $ba = app('basicauth');
+
+        // Set merchant id if present (proxy auth)
+        if ($ba->isProxyAuth())
+        {
+            $merchantId = $ba->getMerchantId();
+            if (!empty($merchantId))
+            {
+                $input['config']['owner_id'] = $merchantId;
+            }
+        }
+
+
         return $this->core->listWorkflowConfig($input);
     }
 
@@ -178,7 +193,7 @@ class Service extends Base\Service
 
         }
 
-        $configType = array_pull($input, WorkflowConstants::CONFIG_TYPE, WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE);
+        $configType = $input[ WorkflowConstants::CONFIG_TYPE] ?? WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE;
 
         $workflowInput = $this->generateWorkflowInput($input);
 
@@ -221,7 +236,7 @@ class Service extends Base\Service
 
         }
 
-        $configType = array_pull($input, WorkflowConstants::CONFIG_TYPE, WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE);
+        $configType = $input[ WorkflowConstants::CONFIG_TYPE] ?? WorkflowConstants::PAYOUT_APPROVAL_CONFIG_TYPE;
 
         $workflowInput = $this->generateWorkflowInput($input);
 

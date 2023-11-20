@@ -7,6 +7,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Workflow\Service\Builder\Constants;
 use RZP\Models\Workflow\Service\Client;
 use RZP\Error\ErrorCode;
+use RZP\Http\BasicAuth\BasicAuth;
 
 
 class Service extends Base\Service
@@ -35,6 +36,25 @@ class Service extends Base\Service
         $input[Constants::SELECTED_ENTITIES] = [Constants::STATES, Constants::ASSIGNEE];
 
         return $this->workflowServiceClient->listWorkflows($input);
+    }
+
+
+    public function listPendingWorkflows($input) : array
+    {
+        /* @var $ba BasicAuth */
+        $ba = app('basicauth');
+
+        // Set merchant id if present (proxy auth)
+        if ($ba->isProxyAuth())
+        {
+            $merchantId = $ba->getMerchantId();
+            if (!empty($merchantId))
+            {
+                $input[Constants::WORKFLOW][Constants::OWNER_ID] = $merchantId;
+            }
+        }
+
+        return $this->workflowServiceClient->listPendingWorkflows($input);
     }
 
     public function getWorkflow( string $id )

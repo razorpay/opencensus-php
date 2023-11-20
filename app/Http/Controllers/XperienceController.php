@@ -146,4 +146,37 @@ class XperienceController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getCostCenter(string $costCenterId)
+    {
+
+        $response = $this->xperience->getCostCenter($costCenterId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateCostCenter(string $costCenterId, array $input)
+    {
+        $input = Request::all();
+
+        $response = $this->xperience->updateCostCenter($costCenterId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteCostCenter(string $costCenterId)
+    {
+
+        $response = $this->xperience->deleteCostCenter($costCenterId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function disableCostCenter(string $costCenterId)
+    {
+
+        $response = $this->xperience->disableCostCenter($costCenterId);
+
+        return ApiResponse::json($response);
+    }
 }

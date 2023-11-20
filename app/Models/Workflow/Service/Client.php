@@ -21,6 +21,7 @@ class Client
     const WFS_WORKFLOW_GET_ROUTE                = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Get";
     const WFS_WORKFLOW_LIST_BY_IDS_ROUTE        = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/ListByIds";
     const WFS_WORKFLOW_LIST_ROUTE               = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/List";
+    const WFS_WORKFLOW_LIST_PENDING_ROUTE       = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/ListPending";
     const WFS_ACTION_CREATE_ON_ENTITY_ROUTE     = "twirp/rzp.workflows.action.v1.ActionAPI/CreateWithEntityId";
     const WFS_DIRECT_ACTION_CREATE_ROUTE        = "twirp/rzp.workflows.action.v1.ActionAPI/CreateDirectOnWorkflow";
     const WFS_WORKFLOW_CREATE_ROUTE             = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Create";
@@ -369,6 +370,27 @@ class Client
             throw new Exception\ServerErrorException(
                 null,
                 ErrorCode::SERVER_ERROR_WORKFLOW_LIST_FAILED,
+                ['input' => $input]);
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function listPendingWorkflows(array $input)
+    {
+
+        $res = $this->workflowServiceClient->request(self::WFS_WORKFLOW_LIST_PENDING_ROUTE, $input);
+
+        if ($res->status_code !== 200 && $res->status_code != 404)
+        {
+            throw new Exception\ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_WORKFLOW_LIST_PENDING_FAILED,
                 ['input' => $input]);
         }
 

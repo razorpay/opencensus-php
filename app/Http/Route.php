@@ -1856,6 +1856,7 @@ class Route
         'workflow_config_list'                      => ['post',     'workflow/config/list',                         'WorkflowServiceController@listWorkflowConfig'                        ],
         'workflow_config_update'                    => ['put',      'workflow/config',                              'WorkflowServiceController@updateWorkflowConfig'                        ],
         'workflow_config_delete'                    => ['delete',   'workflow/config',                              'WorkflowServiceController@deleteWorkflowConfig'                        ],
+        'workflow_list_pending'                     => ['post',     'workflow/list/pending',                        'WorkflowServiceController@listPendingWorkflows'                        ],
         'payouts_bulk_reject_owner'                 => ['post',     'payouts/reject/bulk/owner',                    'PayoutController@ownerBulkRejectPayouts'                               ],
         'payout_links_bulk_reject_owner'            => ['post',     'payout-links/reject/bulk/owner',               'PayoutLinkController@ownerBulkRejectPayoutLinks'                       ],
         'fetch_pending_payouts_summary'             => ['post',     'payouts/pending/summary',                      'PayoutController@fetchPendingPayoutsSummary'                                  ],
@@ -1881,10 +1882,14 @@ class Route
         'bulk_payout_validate'                     => ['post',  'xperience/bulk-payouts/validate',           'XperienceController@createBulkPayout'                 ],
         'bulk_payout_fetch_rows'                   => ['get',   'xperience/bulk-payouts/{id}/rows',          'XperienceController@getBulkPayoutRows'                ],
         'bulk_payout_process'                      => ['post',  'xperience/bulk-payouts/{id}/process',       'XperienceController@processBulkPayout'                ],
-        'bulk_payouts_migrate_admin'               => ['post',  'xperience/bulk-payouts/migrate',                 'XperienceController@migrateBulkPayouts'        ],
+        'bulk_payouts_migrate_admin'               => ['post',  'xperience/bulk-payouts/migrate',            'XperienceController@migrateBulkPayouts'        ],
 
         'cost_center_list'                          => ['get',      'xperience/cost-centers',                   'XperienceController@getCostCenters'],
         'cost_center_create'                        => ['post',     'xperience/cost-centers',                   'XperienceController@createCostCenters'],
+        'cost_center_get'                           => ['get',      'xperience/cost-centers/{id}',              'XperienceController@getCostCenter'],
+        'cost_center_update'                        => ['put',      'xperience/cost-centers/{id}',              'XperienceController@updateCostCenter'],
+        'cost_center_delete'                        => ['delete',   'xperience/cost-centers/{id}',              'XperienceController@deleteCostCenter'],
+        'cost_center_disable'                       => ['post',     'xperience/cost-centers/{id}/disable',      'XperienceController@disableCostCenter'],
 
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
@@ -7542,6 +7547,7 @@ class Route
         'workflow_config_update',
         'workflow_config_list',
         'workflow_config_delete',
+        'workflow_list_pending',
         'payouts_bulk_reject_owner',
         'payout_links_bulk_reject_owner',
         'fetch_pending_payouts_summary',
@@ -7564,6 +7570,10 @@ class Route
 
         'cost_center_list',
         'cost_center_create',
+        'cost_center_get',
+        'cost_center_update',
+        'cost_center_delete',
+        'cost_center_disable',
 
         'payout_partner_bank_status',
 
@@ -11021,8 +11031,9 @@ class Route
         // self serve workflow
         'workflow_config_create'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_update'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
-        'workflow_config_list'                      => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'workflow_config_list'                      => Permission::VIEW_PAYOUT,
         'workflow_config_delete'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'workflow_list_pending'                     => Permission::VIEW_PAYOUT,
         'payouts_bulk_reject_owner'                 => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'payout_links_bulk_reject_owner'            => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'fetch_pending_payouts_summary'             => Permission::SELF_SERVE_WORKFLOW_CONFIG,
@@ -11042,6 +11053,10 @@ class Route
         'bulk_payouts_workflow_summary'             => Permission::APPROVE_PAYOUT,
         'cost_center_list'                          => Permission::VIEW_COST_CENTER,
         'cost_center_create'                        => Permission::CREATE_COST_CENTER,
+        'cost_center_get'                           => Permission::VIEW_COST_CENTER,
+        'cost_center_update'                        => Permission::CREATE_COST_CENTER,
+        'cost_center_delete'                        => Permission::CREATE_COST_CENTER,
+        'cost_center_disable'                       => Permission::CREATE_COST_CENTER,
 
         'payout_partner_bank_status'                  => Permission::CREATE_PAYOUT,
     ];
@@ -12978,6 +12993,7 @@ class Route
             'workflow_config_update',
             'workflow_config_list',
             'workflow_config_delete',
+            'workflow_list_pending',
             'payouts_bulk_reject_owner',
             'payout_links_bulk_reject_owner',
             'fetch_pending_payouts_summary',
@@ -13004,6 +13020,10 @@ class Route
 
             'cost_center_list',
             'cost_center_create',
+            'cost_center_get',
+            'cost_center_update',
+            'cost_center_delete',
+            'cost_center_disable',
 
 
             'get_all_country_dashboard_config',
@@ -15500,6 +15520,10 @@ class Route
             'bulk_payouts_workflow_summary',
             'cost_center_list',
             'cost_center_create',
+            'cost_center_get',
+            'cost_center_update',
+            'cost_center_delete',
+            'cost_center_disable',
             // xperience admin routes
             'bulk_payouts_migrate_admin',
 
@@ -17970,6 +17994,7 @@ class Route
         'workflow_config_update',
         'workflow_config_list',
         'workflow_config_delete',
+        'workflow_list_pending',
         'payouts_bulk_reject_owner',
         'payout_links_bulk_reject_owner',
         'fetch_pending_payouts_summary',
@@ -17990,6 +18015,10 @@ class Route
         'bulk_payouts_workflow_summary',
         'cost_center_list',
         'cost_center_create',
+        'cost_center_get',
+        'cost_center_update',
+        'cost_center_delete',
+        'cost_center_disable',
     ];
 
     const PAYOUT_LINKS_SPECIFIC_PUBLIC_ROUTES = [

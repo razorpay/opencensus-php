@@ -45,6 +45,8 @@ class Xperience
     const MIGRATE                            = 'v1/bulk-payouts/migrate';
     const CREATE_COST_CENTER_PATH            = 'v1/cost-centers';
     const GET_COST_CENTERS_PATH              = 'v1/cost-centers';
+    const SINGLE_COST_CENTER_PATH            = 'v1/cost-centers/%s';
+    const DISABLE_COST_CENTER_PATH           = 'v1/cost-centers/%s/disable';
 
 
     // header constants
@@ -60,8 +62,10 @@ class Xperience
     const BASIC_AUTH_USER       = 'api';
 
     // http method constants
-    const POST = 'POST';
-    const GET  = 'GET';
+    const POST   = 'POST';
+    const GET    = 'GET';
+    const PUT    = 'PUT';
+    const DELETE = 'DELETE';
 
     // parameter constants
     const IS_BULK_WORKFLOW_ENABLED = 'is_bulk_workflow_enabled';
@@ -442,6 +446,42 @@ class Xperience
         $url = $this->getConstructedUrl(self::GET_COST_CENTERS_PATH);
 
         $response = $this->makeRequest($url, $queryParams, [], self::GET);
+
+        return $response;
+    }
+
+    public function getCostCenter(string $costCenterId)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::SINGLE_COST_CENTER_PATH, $costCenterId));
+
+        $response = $this->makeRequest($url, [], [], self::GET);
+
+        return $response;
+    }
+
+    public function updateCostCenter(string $costCenterId, array $input)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::SINGLE_COST_CENTER_PATH, $costCenterId));
+
+        $response = $this->makeRequest($url, $input, [], self::PUT);
+
+        return $response;
+    }
+
+    public function deleteCostCenter(string $costCenterId)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::SINGLE_COST_CENTER_PATH, $costCenterId));
+
+        $response = $this->makeRequest($url, [], [], self::DELETE);
+
+        return $response;
+    }
+
+    public function disableCostCenter(string $costCenterId)
+    {
+        $url = $this->getConstructedUrl(sprintf(self::DISABLE_COST_CENTER_PATH, $costCenterId));
+
+        $response = $this->makeRequest($url, [], [], self::POST);
 
         return $response;
     }

@@ -77,6 +77,15 @@ class WorkflowServiceController extends Controller
         return response()->json($response);
     }
 
+    public function listPendingWorkflows()
+    {
+        $input = Request::all();
+
+        $response = $this->workflowService->listPendingWorkflows($input);
+
+        return response()->json($response);
+    }
+
     public function updateWorkflowConfig()
     {
         $input = Request::all();
