@@ -126,6 +126,10 @@ class Constants
   const LABEL_HTTP_REQUESTS_API_DOWNSTREAM_PRODUCT           = 'product';
   const LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_ROUTE_NAME    = 'api_route_name';
   const LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME = 'response_time';
+  const LABEL_HTTP_REQUESTS_API_ADMIN_EMAIL                  = 'admin_email';
+  const LABEL_HTTP_REQUESTS_API_ADMIN_ID                     = 'admin_id';
+  const LABEL_HTTP_REQUESTS_API_RESPONSE_BODY_SIZE           = 'response_size';
+  const LABEL_HTTP_REQUESTS_API_MERCHANT_ID                  = 'merchant_id';
 
   /* Possible Login actions */
   //when user sigin after enterin OTP

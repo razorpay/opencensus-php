@@ -673,9 +673,12 @@ class ApiRequestAny
 
             try
             {
+                $clientBody = $client->getBody();
+                $responseBodySize = strlen($clientBody);
+
                 $apiPathName = $apiRouteCircuitBreaker->getApiPathName();
 
-                $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
+                $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken, $responseBodySize);
 
                 $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
 
@@ -685,10 +688,11 @@ class ApiRequestAny
             {
                 $app['trace']->warning(TraceCode::PUSH_METRICS_FAILED, [
                     'message' => $t->getMessage() ?? 'unknown_message',
+                    'location' => 'send handler'
                 ]);
             }
 
-            $response = json_decode($client->getBody(), true);
+            $response = json_decode($clientBody, true);
 
             return [null, $response, $httpCode];
         }
@@ -946,7 +950,7 @@ class ApiRequestAny
      *
      * @return array
      */
-    public function getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken): array
+    public function getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken, $responseBodySize = 0): array
     {
         $domain = \Request::server('SERVER_NAME');
 
@@ -958,10 +962,48 @@ class ApiRequestAny
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_PRODUCT           => ApiUrl::isPrimaryOriginRequest() ? Constants::PRIMARY : Constants::BANKING ,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_DASHBOARD_METHOD  => $method,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_ROUTE_NAME    => $apiPathName,
-            //Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME => $time_taken,
         ];
 
         $app = \App::getFacadeRoot();
+
+        try {
+            // Attach more details to capture admin and merchant details
+            if (Auth::guard('api')->check() === true) {
+                $adminUser = Auth::guard('api')->user();
+                $adminEmail = $adminUser->email ?? null;
+
+                // Add more details in dimentions
+                if ($this->clientType === 'admin') {
+                    $adminEmail = $adminUser->email ?? null;
+                    $adminId = $adminUser->id ?? null;
+
+                    $dimensions = array_merge($dimensions, [
+                        Constants::LABEL_HTTP_REQUESTS_API_ADMIN_EMAIL => $adminEmail,
+                        Constants::LABEL_HTTP_REQUESTS_API_ADMIN_ID => $adminId,
+                        Constants::LABEL_HTTP_REQUESTS_API_RESPONSE_BODY_SIZE => $responseBodySize,
+                    ]);
+                }
+                else if ($this->clientType === 'merchant') {
+
+                    $user = Auth::guard('user')->user();
+                    $currentMerchant = $user->currentMerchant();
+                    $merchantId = $currentMerchant->id ?? null;
+
+                    $dimensions = array_merge($dimensions, [
+                        Constants::LABEL_HTTP_REQUESTS_API_ADMIN_EMAIL => $adminEmail,
+                        Constants::LABEL_HTTP_REQUESTS_API_RESPONSE_BODY_SIZE => $responseBodySize,
+                        Constants::LABEL_HTTP_REQUESTS_API_MERCHANT_ID => $merchantId,
+                    ]);
+                }
+            }
+        }
+        catch (\Throwable $t)
+        {
+            $app['trace']->warning(TraceCode::PUSH_METRICS_FAILED, [
+                'message' => $t->getMessage() ?? 'unknown_message',
+                'location' => 'getApiMetricDimensions handler'
+            ]);
+        }
 
         $app['trace']->info(TraceCode::API_RESPONSE_METRIC, $dimensions + [Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME => $time_taken]);
 
