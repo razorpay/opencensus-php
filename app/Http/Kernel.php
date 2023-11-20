@@ -34,6 +34,7 @@ class Kernel extends HttpKernel {
             \App\Http\Middleware\VerifyCsrfToken::class,
             \App\Http\Middleware\SessionInActivity::class,
             \App\Http\Middleware\CacheControl::class,
+            \App\Http\Middleware\OTPVerificationSession::class,
         ],
         'jwt_session' => [
             \App\Http\Middleware\EncryptCookies::class,
