@@ -142,6 +142,50 @@ class NbPlusPaymentServicePayPalTest extends TestCase
         $this->assertEquals($this->terminal->getId(), $payment[Payment\Entity::TERMINAL_ID]);
     }
 
+    public function testAuthPaymentForPaylaterFlow()
+    {
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT][NbPlusPaymentService\Request::GATEWAY],self::GATEWAY_INPUT);
+                    break;
+            }
+        });
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestDataPaylater());
+
+        $responseContent = json_decode($response->getContent(), true);
+
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->payment['dcc_currency'] = 'USD';
+
+        $this->payment['currency_request_id'] = $currencyRequestId;
+
+        $this->payment['contact'] = "8448720400";
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
+
+        $this->assertEquals($this->terminal->getId(), $payment[Payment\Entity::TERMINAL_ID]);
+
+    }
+
     public function testVerifyPayment()
     {
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
@@ -259,6 +303,17 @@ class NbPlusPaymentServicePayPalTest extends TestCase
     {
         $flowsData = [
             'content' => ['amount' => 50000, 'currency' => 'INR', 'wallet' => 'paypal'],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        return $flowsData;
+    }
+
+    private function getDefaultPaymentFlowsRequestDataPaylater()
+    {
+        $flowsData = [
+            'content' => ['amount' => 50000, 'currency' => 'INR', 'wallet' => 'paypal', 'flow' => 'paylater'],
             'method'  => 'POST',
             'url'     => '/payment/flows',
         ];

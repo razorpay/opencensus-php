@@ -456,6 +456,11 @@ class Core extends Base\Core
         $data[Payment\Method::PAYLATER] =
             $methods->isPayLaterEnabled() ? $this->getProviders($merchant, Payment\Method::PAYLATER, $methods) : [];
 
+        if($methods->isPayLaterEnabled() === true && $methods->isPaypalEnabled() === true)
+        {
+            $data[Payment\Method::PAYLATER][Gateway::PAYPAL] = true;
+        }
+
         $data[Entity::SODEXO] = $methods->isSodexoEnabled();
 
         if ($merchant->isFeatureEnabled(Constants::BANK_TRANSFER_ON_CHECKOUT) === true)
@@ -1334,7 +1339,6 @@ class Core extends Base\Core
                 }
 
             }
-
             $this->sortPaylaterProviders($providers);
         }
 

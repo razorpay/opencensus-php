@@ -1252,6 +1252,19 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals(true, $response['methods']['wallet']['paypal']);
     }
 
+    public function testGetCheckoutPreferencesForPaylaterPaypalCurrency()
+    {
+        $this->fixtures->merchant->enablePaypal();
+
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->create('terminal:paypal_usd_terminal');
+
+        $response = $this->getPreferences(null, 'USD');
+
+        $this->assertEquals(true, $response['methods']['paylater']['paypal']);
+    }
+
     public function testGetCheckoutPreferencesForPaypalCurrencyWithOrder()
     {
         $order = $this->fixtures->order->createWalletInternationalOrder();

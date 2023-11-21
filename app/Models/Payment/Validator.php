@@ -316,7 +316,8 @@ class Validator extends Base\Validator
         'token'                     => 'sometimes|string|max:20',
         'language_code'             => 'sometimes',
         'wallet'                    => 'sometimes|string',
-        'provider'                  => 'sometimes|string'
+        'provider'                  => 'sometimes|string',
+        'flow'                      => 'sometimes|string'
     ];
 
     protected static $postFlowsRules = [
@@ -326,7 +327,8 @@ class Validator extends Base\Validator
         'amount'             => 'sometimes|integer',
         'token'              => 'sometimes|string|max:20',
         'wallet'             => 'sometimes|string',
-        'provider'           => 'sometimes|string'
+        'provider'           => 'sometimes|string',
+        'flow'               => 'sometimes|string',
     ];
 
     protected static array $paymentsDualWriteSyncRules = [

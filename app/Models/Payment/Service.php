@@ -2695,6 +2695,12 @@ class Service extends Base\Service
 
         // REMOVE DISABLED PAYPAL CURRENCIES
         $enabledCurrencyList = array_diff($enabledCurrencyList, Gateway\Constants::PAYPAL_DISABLED_CURRENCIES);
+
+        if($input['flow'] === Method::PAYLATER)
+        {
+            $enabledCurrencyList = array_intersect(Gateway\Constants::PAYPAL_PAYLATER_SUPPORTED_CURRENCIES, $enabledCurrencyList);
+        }
+
         if (empty($enabledCurrencyList) === true)
         {
             return;

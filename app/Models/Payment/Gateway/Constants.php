@@ -30,5 +30,12 @@ class Constants
         Currency::CHF,
         Currency::THB,
         Currency::USD
-    ];        
+    ];
+
+    const PAYPAL_PAYLATER_SUPPORTED_CURRENCIES = [
+        Currency::USD,
+        Currency::GBP,
+        Currency::AUD,
+        Currency::EUR
+    ];
 }
