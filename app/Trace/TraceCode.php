@@ -9464,6 +9464,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_1CC_API_ERROR                               = 'SHOPIFY_1CC_API_ERROR';
     const MAGIC_SPLITZ_ERROR                                  = 'MAGIC_SPLITZ_ERROR';
     const MAGIC_SPLITZ_RESPONSE                               = 'MAGIC_SPLITZ_RESPONSE';
+    const MAGIC_DECOMP_API_ERROR                              = 'MAGIC_DECOMP_API_ERROR';
     const SHOPIFY_1CC_API_ACCESS_DENIED                       = 'SHOPIFY_1CC_API_ACCESS_DENIED';
     const SHOPIFY_1CC_API_ERROR_RESPONSE                      = 'SHOPIFY_1CC_API_ERROR_RESPONSE';
     const SHOPIFY_1CC_PG_ROUTER_FAILED                        = 'SHOPIFY_1CC_PG_ROUTER_FAILED';

@@ -3,10 +3,10 @@
 namespace RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 
 use App;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\IntegrationException;
 use Throwable;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\IntegrationException;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -15,19 +15,16 @@ use RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 class Service extends Base\Service
 {
-
   const SHIPPING_OPTIONS_PATH = 'v1/shipping/options';
   const POLL_FOR_SHIPPING_RATES_PATH = 'v1/checkouts/shipping/poll';
   const UPDATE_SHIPPING_ADDRESS_PATH = 'v1/checkouts/address';
-
-  protected $app;
-
   const MAGIC_CHECKOUT_SERVICE_THEME_LIQUID_FILES_FETCH_PATH = 'v1/admin/shopify/theme/liquid_files';
+  const SHOPIFY_COMPLETE_CHECKOUT_PATH       = 'v1/checkouts/shopify/complete';
+  const CHECK_SHOPIFY_COMPLETE_CHECKOUT_PATH = 'v1/checkouts/order_status';
 
   public function __construct()
   {
       parent::__construct();
-      $this->app = App::getFacadeRoot();
   }
 
   // handleMerchantDashboardReq forwards requests from Rzp merchant dashboard to Magic Checkout svc.
@@ -113,5 +110,15 @@ class Service extends Base\Service
   public function updateShippingAddress(array $input): array
   {
       return $this->app['magic_checkout_service_client']->sendRequest(self::UPDATE_SHIPPING_ADDRESS_PATH, $input, Requests::POST);
+  }
+
+  public function completeShopifyCheckout(array $input): array
+  {
+    return $this->app['magic_checkout_service_client']->sendRequest(self::SHOPIFY_COMPLETE_CHECKOUT_PATH, $input, Requests::POST);
+  }
+
+  public function getCheckoutOrderStatus(array $input): array
+  {
+    return $this->app['magic_checkout_service_client']->sendRequest(self::CHECK_SHOPIFY_COMPLETE_CHECKOUT_PATH, $input, Requests::GET);
   }
 }

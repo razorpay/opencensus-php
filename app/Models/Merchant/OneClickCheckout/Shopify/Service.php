@@ -34,7 +34,7 @@ use RZP\Models\Merchant\OneClickCheckout\Shopify\Constants as ShopifyConstants;
 use RZP\Models\Merchant\OneClickCheckout\Config\Service as OneClickCheckoutConfigService;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\MerchantProvider;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Nector;
-
+use RZP\Models\Merchant\OneClickCheckout\Shopify\Decomp;
 
 class Service extends Base\Service
 {
@@ -91,6 +91,7 @@ class Service extends Base\Service
     protected $monitoring;
 
     protected $cache;
+    protected $decompUtils;
 
     public function __construct()
     {
@@ -99,6 +100,7 @@ class Service extends Base\Service
         $this->mutex = App::getFacadeRoot()['api.mutex'];
 
         $this->monitoring = new Monitoring();
+        $this->decompUtils = new Decomp();
     }
 
     public function shopifyCartLineItems(array $checkout, array $productTypeMap, array $cart) : array
@@ -692,6 +694,10 @@ class Service extends Base\Service
     // updates shopify order post payment and redirects the user
     protected function shopifyCompleteCheckout(array $input, bool $fromShopifyApi): array
     {
+        $orderId = $input['razorpay_order_id'];
+        $paymentId = $input['razorpay_payment_id'];
+        $source = isset($input['abandoned_cart']) && $input['abandoned_cart'] === true ? 'abandoned_cart': 'default';
+
         // set the merchant, mode for SQS job
         if ($fromShopifyApi === false)
         {
@@ -703,14 +709,21 @@ class Service extends Base\Service
         }
         else
         {
+            // Enable decomp only for API flows.
+            $useMCS = $this->decompUtils->useMCSForCompleteCheckout();
+            if ($useMCS)
+            {
+                $response = $this->decompUtils->completeCheckoutDecompFlow($input);
+                $this->monitoring->addTraceCount(
+                    Metric::PLACE_SHOPIFY_ORDER_SUCCESS_COUNT,
+                    ['source' => $source, 'method' => $fromShopifyApi ? 'api': 'sqs', 'service' => 'mcs']
+                );
+                // We mark order as paid in API and MCS as a resiliency mechanism.
+                (new Core)->markShopifyOrderPlaced($orderId);
+                return $response;
+            }
             (new Validator)->setStrictFalse()->validateInput(Validator::COMPLETE_CHECKOUT, $input);
         }
-
-        $orderId = $input['razorpay_order_id'];
-
-        $paymentId = $input['razorpay_payment_id'];
-
-        $source = isset($input['abandoned_cart']) && $input['abandoned_cart'] === true ? 'abandoned_cart': 'default';
 
         $order = (new RzpOrders())->findOrderByIdAndMerchant($orderId);
 
@@ -724,14 +737,6 @@ class Service extends Base\Service
         {
             if ($fromShopifyApi === true)
             {
-                $this->trace->error(
-                    TraceCode::SHOPIFY_1CC_API_ERROR,
-                    [
-                        'type'             => 'duplicate_order_received',
-                        'order_id'         => $order->getPublicId(),
-                        'method'           => 'api',
-                        'source'           => $source,
-                    ]);
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
             }
             return [];
@@ -915,7 +920,10 @@ class Service extends Base\Service
 
         $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi, $utmParameters, $orderMeta, $nectorCoinsResponse);
 
-        $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_SUCCESS_COUNT, ['source' => $source, 'method' => $fromShopifyApi?'api':'sqs']);
+        $this->monitoring->addTraceCount(
+            Metric::PLACE_SHOPIFY_ORDER_SUCCESS_COUNT,
+            ['source' => $source, 'method' => $fromShopifyApi?'api':'sqs', 'service' => 'api']
+        );
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,

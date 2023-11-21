@@ -980,6 +980,8 @@ class Core extends Base\Core
 
             $this->monitoring->traceResponseTime(Metric::PLACE_SHOPIFY_ORDER_CALL_TIME, $placeOrderStart, []);
 
+            $this->markShopifyOrderPlaced($rzpOrder['id']);
+
             $order = json_decode($order, true);
 
             $this->updateShopifyTransaction($order['order'], $rzpPayment);
@@ -2662,10 +2664,43 @@ class Core extends Base\Core
     }
 
     // canShopifyOrderBePlaced checks if the Rzp order receipt is updated or local storage (Redis).
+    // In decomp flow, it is possible due to network failures the PG Router receipt is not updated
+    // so we make an additional call to MCS to ensure no duplicate orders are placed.
     public function canShopifyOrderBePlaced(string $orderId, string $receipt): bool
     {
         $key = $this->getCacheKeyForPlacedOrders($orderId);
-        return empty($this->cache->get($key)) === true and $receipt === (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT;
+        $value = $this->cache->get($key);
+        $isShopifyOrderPlacedByMCS = (new Decomp)->isShopifyOrderPlacedByMCS($orderId);
+        $canOrderBePlaced = (
+            empty($value) === true &&
+            $receipt === (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT &&
+            $isShopifyOrderPlacedByMCS === false
+        );
+        $reasons = [];
+        if (empty($value) === false)
+        {
+            array_push($reasons, 'redis_monolith');
+        }
+        if ($receipt !== (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT)
+        {
+            array_push($reasons, 'pgrouter_receipt');
+        }
+        if ($isShopifyOrderPlacedByMCS === true)
+        {
+            array_push($reasons, 'redis_mcs');
+        }
+        if (!$canOrderBePlaced)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_API_ERROR,
+                [
+                    'type'     => 'duplicate_order_received',
+                    'order_id' => $orderId,
+                    'reasons'  => $reasons,
+                    'api_redis' => $value,
+                ]);
+        }
+        return $canOrderBePlaced;
     }
 
     public function createCustomerAccount($customer) : array

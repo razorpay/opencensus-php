@@ -110,6 +110,13 @@ class SplitzExperimentEvaluator extends Base\Core
         return $result['variant'] === 'enable';
     }
 
+    public function useMCSForShopifyCompleteCheckout(): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.magic_complete_checkout_decomp_experiment_id');
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
     // To be used when merchant_id is the only param required for evaluating the experiment.
     protected function merchantIdBasedPayload(string $experimentPath): array
     {
