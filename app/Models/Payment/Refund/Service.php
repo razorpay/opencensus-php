@@ -14,6 +14,7 @@ use RZP\Error\Error;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
+use RZP\Models\Transaction;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment;
@@ -935,10 +936,19 @@ class Service extends Base\Service
                             }
                             else if ($key === Constants\Entity::BALANCE_CONFIG)
                             {
+
+                                $txnType = Transaction\Type::REFUND;
                                 $merchant = $payment->merchant;
 
                                 $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
                                 $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
+
+                                $negativeAllowedFlows = (new BalanceConfig\Core)->getNegativeFlowsForBalance($balance->getId());
+
+                                if (in_array($txnType, $negativeAllowedFlows) === false)
+                                {
+                                    $negativeLimit = 0;
+                                }
 
                                 $data = [
                                   RefundConstants::MAX_NEGATIVE_MANUAL_LIMIT => $negativeLimit

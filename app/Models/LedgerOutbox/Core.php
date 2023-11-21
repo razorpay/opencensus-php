@@ -1114,10 +1114,8 @@ class Core extends Base\Core
                         );
 
                         $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_FAILURE, [
-                            [
                                 LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
                                 Constants::SOURCE                       => Constants::CRON
-                            ]
                         ]);
 
                         $this->trace->count(Metric::PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE, [

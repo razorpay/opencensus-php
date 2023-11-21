@@ -15,6 +15,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Feature;
 use RZP\Models\Dispute\Entity;
 use RZP\Services\KafkaProducer;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Payment\Refund\Speed as Speed;
@@ -91,6 +92,8 @@ class Core extends Base\Core
 
     public function createRefundJournalPayload(RefundEntity $refund, PaymentEntity $payment)
     {
+
+        $txnType = Transaction\Type::REFUND;
         $commission = $refund->getFee() - $refund->getTax();
 
         $tax = $refund->getTax();
@@ -99,7 +102,17 @@ class Core extends Base\Core
 
         $balance = $merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
 
+
+        $balanceConfigCore = new Balance\BalanceConfig\Core();
+        $negativeAllowedFlows = $balanceConfigCore->getNegativeFlowsForBalance($balance->getId());
+
         $negativeLimit = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
+
+        if (in_array($txnType, $negativeAllowedFlows) === false)
+        {
+            $negativeLimit = 0;
+        }
+
 
         $discount = $this->getDiscountIfApplicable($payment, $refund->getBaseAmount());
 

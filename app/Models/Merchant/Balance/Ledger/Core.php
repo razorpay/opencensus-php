@@ -185,7 +185,7 @@ class Core extends Base\Core
         }
     }
 
-    public function updatePGMerchantBalance(Merchant $merchant, int $balanceAmount, $reserveBalanceAmount)
+    public function updatePGMerchantBalance(Merchant $merchant, int $balanceAmount)
     {
         try
         {
@@ -196,7 +196,6 @@ class Core extends Base\Core
                     self::FUND_ACCOUNT_TYPE => [self::MERCHANT_BALANCE]
                 ],
                 self::BALANCE => strval($balanceAmount),
-                self::MIN_BALANCE => strval(-$reserveBalanceAmount),
             ];
 
             $requestHeaders = [

@@ -479,7 +479,7 @@ class Service extends Base\Service
             }
 
             // sync merchant balance and credits on API and CLS
-            $result[Constants::BALANCE_RESPONSE] = (new BalanceCore)->updatePGMerchantBalance($merchant, $primaryBalance->getBalance(), $reserveBalanceAmount);
+            $result[Constants::BALANCE_RESPONSE] = (new BalanceCore)->updatePGMerchantBalance($merchant, $primaryBalance->getBalance());
 
             $result[Constants::CREDITS_RESPONSE] = (new BalanceCore)->updatePGLedgerMerchantCreditBalances($merchant, $creditBalances);
 
@@ -489,14 +489,14 @@ class Service extends Base\Service
 
     }
 
-    private function updatePGMerchantBalanceAccount($merchant, $reserveBalanceAmount): array
+    private function updatePGMerchantBalanceAccount($merchant): array
     {
         $merchantId = $merchant->getId();
 
         // Taking lock on balance table
         $balance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
 
-        return (new BalanceCore)->updatePGMerchantBalance($merchant, $balance->getBalance(), $reserveBalanceAmount);
+        return (new BalanceCore)->updatePGMerchantBalance($merchant, $balance->getBalance());
     }
 
     private function updatePGMerchantReserveBalanceAccount($merchant, $reserveBalanceAmount): array
@@ -1716,7 +1716,7 @@ class Service extends Base\Service
 
                        $reserveBalanceAmount =  isset($reserveBalance) ? $reserveBalance->getBalance() : 0;
 
-                       $result[Constants::BALANCE_RESPONSE] = $this->updatePGMerchantBalanceAccount($merchant, $reserveBalanceAmount);
+                       $result[Constants::BALANCE_RESPONSE] = $this->updatePGMerchantBalanceAccount($merchant);
 
                        $result[Constants::RESERVE_BALANCE_RESPONSE] = $this->updatePGMerchantReserveBalanceAccount($merchant, $reserveBalanceAmount);
 

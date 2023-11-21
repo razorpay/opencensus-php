@@ -4,9 +4,11 @@ namespace RZP\Models\Ledger\ReverseShadow\Transfers\Reversal;
 
 use App;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
-use RZP\Models\Payment\Refund;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Services\KafkaProducer;
@@ -96,6 +98,23 @@ class Core extends Base\Core
         {
             $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
         }
+
+        $txnType = Transaction\Type::REFUND;
+
+        $balance = $refund->merchant->getBalanceByTypeOrFail(RefundConstants::PRIMARY);
+
+        $balanceConfigCore = new Balance\BalanceConfig\Core();
+
+        $negativeAllowedFlows = $balanceConfigCore->getNegativeFlowsForBalance($balance->getId());
+
+        $negativeLimit = (new Balance\BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
+
+        if (in_array($txnType, $negativeAllowedFlows) === false)
+        {
+            $negativeLimit = 0;
+        }
+
+        $moneyParams[LedgerConstants::MERCHANT_BALANCE_LIMIT] = strval($negativeLimit);
 
         return $moneyParams;
     }
