@@ -69,7 +69,7 @@ class ApplicableOn extends React.Component {
       abExperiments: { Low_cost_offer },
     } = this.props.splitz;
 
-    const isLowCostExperimentEnabled = Low_cost_offer.variables.result === 'on';
+    const isLowCostExperimentEnabled = Low_cost_offer?.variables?.result === 'on';
     return (
       <StyledOfferForm className={isLowCostExperimentEnabled ? 'low-cost-offer-container' : ''}>
         <Input.Select
