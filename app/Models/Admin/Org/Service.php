@@ -219,6 +219,12 @@ class Service extends Base\Service
         $org['hostname'] = $hostname;
 
         $org["configurations"] =$configurations;
+
+        if($org['business_name'] === 'Curlec'){
+            $org['security_branding_logo'] =  'https://cdn.razorpay.com/static/assets/i18n/malaysia/security-branding.png';
+        }
+        else $org['security_branding_logo'] = 'https://cdn.razorpay.com/static/assets/pay_methods_branding.png';
+
         return $org;
     }
     public function delete(string $id)
