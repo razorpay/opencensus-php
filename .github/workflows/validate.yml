@@ -24,15 +24,15 @@ jobs:
 
       - name: Install dependencies with caching
         uses: ./.github/actions
-        with: 
+        with:
           npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
-          
+
       - name: Validate
         # Automatically installs npm ci in web too
         run: |
           yarn lint
-          cd web && yarn tsc
+          cd web && yarn tsc --allowJs false
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

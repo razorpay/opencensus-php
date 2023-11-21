@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { XCAHeaderProps } from './../TypeDeclare/XCATypeDeclare';
 
 const XCAHeader = ({
@@ -8,7 +9,7 @@ const XCAHeader = ({
 }: XCAHeaderProps): React.ReactElement => (
   <div className="xcaHeader">
     <div className="xcaHeader__image">
-      {imageArr.map((item) => (
+      {imageArr?.map((item) => (
         <img src={item?.imagePath} alt={item?.imageAlt} key={item?.imagePath} />
       ))}
     </div>
