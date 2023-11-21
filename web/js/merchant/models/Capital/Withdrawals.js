@@ -132,4 +132,11 @@ export default class LoanOriginationEntity extends GenericEntity {
       data,
     );
   }
+
+  getPreclosureAmount(data) {
+    return this.request(
+      this.resourceUrlPrefix('withdrawal', 'WithdrawalAPI', 'GetPreClosureAmount'),
+      data,
+    );
+  }
 }

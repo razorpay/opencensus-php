@@ -87,7 +87,9 @@
     "js/merchant/views/Settings/Configuration",
     "js/merchant/views/Offers/New/Screens/NoCostEMI",
     "js/merchant/views/Capital/CashAdvance/components/WithdrawalDetails/useWithdrawalRepaymentSummary.ts",
-    "js/common/utils"
+    "js/common/utils",
+    "js/merchant/views/Capital/CashAdvance/components/WithdrawalDetails/usePreclosureAmount.ts",
+    "js/merchant/views/Capital/CashAdvance/components/WithdrawalDetails/PreClosure.tsx"
   ],
   "exclude": ["node_modules"],
   "types": ["resize-observer-browser"]

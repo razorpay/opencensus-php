@@ -334,7 +334,7 @@ export const createAndProcessRepayment = async (paymentParams) => {
   }
 };
 
-export const handleRepayment = async ({ repayAmount, merchantId, withdrawalId }) => {
+export const handleRepayment = async ({ repayAmount, merchantId, withdrawalId, metadata = {} }) => {
   try {
     await loadCheckoutScript();
     const paymentParams = {
@@ -345,6 +345,7 @@ export const handleRepayment = async ({ repayAmount, merchantId, withdrawalId })
       product_entity_type: 'PRODUCT_ENTITY_TYPE_WITHDRAWAL',
       product_entity_reference_id: withdrawalId,
       amount: repayAmount,
+      metadata,
     };
     return createAndProcessRepayment(paymentParams);
   } catch (error) {

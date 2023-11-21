@@ -448,5 +448,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: [/capital\/cash-advance.*/i],
+      abExperiments: [
+        {
+          uniqueHashKey: 'capitalPreclosureEdiExp',
+          experimentId: {
+            beta: 'N0GTyuOXHLrynG',
+            production: 'N0GTyuOXHLrynG',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

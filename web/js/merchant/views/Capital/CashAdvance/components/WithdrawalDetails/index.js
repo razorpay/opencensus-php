@@ -21,6 +21,7 @@ import {
 import { isLenderLiquiloans } from 'merchant/views/Capital/CashAdvance/utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
+import PreClosure from './PreClosure';
 import RepayNow from './RepayNow';
 import { RepaymentDetails } from './RepaymentDetails';
 import { gaEventDispatcher } from './utils';
@@ -35,6 +36,7 @@ const WithdrawalDetails = ({
 }) => {
   const [withdrawalId, setWithdrawalId] = useState(id);
   const [planIdPresent, setPlanIdPresent] = useState(false);
+  const [dueDate, setDueDate] = useState(null);
 
   useEffect(() => {
     if (id !== withdrawalId) {
@@ -46,6 +48,7 @@ const WithdrawalDetails = ({
       }).then((response) => {
         const plan_id = response?.data?.withdrawal?.plan_id;
         setPlanIdPresent(!!plan_id);
+        setDueDate(response?.data?.withdrawal?.due_date);
       });
     }
   }, [id]);
@@ -62,6 +65,7 @@ const WithdrawalDetails = ({
     }).then((response) => {
       const plan_id = response?.data?.withdrawal?.plan_id;
       setPlanIdPresent(!!plan_id);
+      setDueDate(response?.data?.withdrawal?.due_date);
     });
 
     return () => {
@@ -105,7 +109,10 @@ const WithdrawalDetails = ({
       </span>
     ),
   };
+
   const isLiquiloans = isLenderLiquiloans(withdrawalConfigurationDetails);
+
+  const canShowPreclosure = isLiquiloans && dueDate;
 
   return (
     <div className="content-wrapper content-sm txn-details CA--entity-details">
@@ -172,6 +179,10 @@ const WithdrawalDetails = ({
                         />
                       </div>
                     </>
+                  )}
+
+                  {canShowPreclosure && (
+                    <PreClosure withdrawalId={withdrawalId} dueDate={dueDate} />
                   )}
                 </div>
               </div>
