@@ -83,6 +83,11 @@ const userId = {
   value: (item) => <div>{item.user_id}</div>,
 };
 
+const email = {
+  title: withNoWrap('Email'),
+  value: (item) => <div>{item.email}</div>,
+};
+
 const partnerCustomerId = {
   title: withNoWrap('Partner Customer ID'),
   value: (item) => <div>{item.partner_customer_id}</div>,
@@ -128,6 +133,7 @@ export const Accounts = ({ location, history }: RouteComponentProps): JSX.Elemen
         columns={[
           id,
           userId,
+          email,
           partnerCustomerId,
           type,
           account_holder_name,
