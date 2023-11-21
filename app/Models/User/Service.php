@@ -241,6 +241,23 @@ class Service extends Base\Service
 
                 (new DeviceDetail\Core)->createDeviceDetail($ddInput);
             }
+
+            try {
+                if ($operation == 'createOauth' and (empty($signupCampaign) === false))
+                {
+                    $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                    $this->handlePGOSOnboardingForOAuthMerchants($merchant, $signupCampaign, $input, $user);
+                }
+            } catch (\Throwable $exception) {
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'message'       => "Error in handlePGOSOnboardingForOAuthMerchants()",
+                    'merchant_id'   => $merchantId,
+                    'error_message' => $exception->getMessage()
+                ]);
+            }
+
+
         }
 
         $signupMethod = Constants::PASSWORD;
@@ -870,6 +887,121 @@ class Service extends Base\Service
                 $pgosPayload = [
                     'contact_mobile' => $input[Entity::CONTACT_MOBILE],
                     'merchant_id' => $merchant->getId(),
+                ] ;
+
+                // this response is not used in this flow
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $pgosPayload, $merchant, true);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'response' => $response
+                ]);
+            }
+            catch (\Throwable $exception) {
+                // this should not introduce error counts as it is running in shadow mode
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id'   => $merchant->getId(),
+                    'error_message' => $exception->getMessage()
+                ]);
+            }
+        }
+    }
+
+    private function handlePGOSOnboardingForOAuthMerchants($merchant, $signupCampaign, $input, $user)
+    {
+        $shouldOnboardViaPGOS = false;
+
+        $countryCode = $input['country_code'] ?? 'IN';
+
+        //Determine whether onboarding should be done via PGOS or not
+        //Not checking the experiment here because FE checks the experiment
+        //All merchants who onboard via OAuth and FE sends signup campaign as EASY_ONBOARDING, needs to be onboarded via PGOS
+        if ($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING
+            and (new Merchant\Core)->isRegularMerchant($merchant) === true
+            and $countryCode === 'IN')
+        {
+            $shouldOnboardViaPGOS = true;
+        }
+        else
+        {
+            return;
+        }
+
+        // Create OBS Workflow For Merchant via PGOS.
+        // Workflow will only be created for merchants who will be onboarded via PGOS
+        try
+        {
+            $orgId = $this->auth->getOrgId();
+            Org\Entity::silentlyStripSign($orgId);
+            $createWorkflowRequestBody = [
+                'account_id'                         => $merchant->getId(),
+                'account_type'                       => "merchant",
+                DeviceDetail\Entity::SIGNUP_SOURCE   => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
+                                                        $this->auth->getRequestOriginProduct(),
+                DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
+                Merchant\Entity::COUNTRY_CODE        => $countryCode,
+                'org_id'                             => $orgId,
+                'user_id'                            => $user['id'],
+            ];
+
+            // sign up response is not driven by PGOS
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_sign_up', $createWorkflowRequestBody, $merchant, true);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'merchant_id' => $merchant->getId(),
+                'response'    => $response,
+            ]);
+        }
+        catch (\Throwable $exception)
+        {
+            $shouldOnboardViaPGOS = false;
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id'   => $merchant->getId(),
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+
+        if (empty($response['workflow_id']) === true)
+        {
+            $shouldOnboardViaPGOS = false;
+        }
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
+
+        if ($shouldOnboardViaPGOS === false)
+        {
+            //Merchant onboarding to be continued with API as PGOS account creation failed
+            $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_API]];
+        }
+        else
+        {
+            $ddInput = [DeviceDetail\Entity::METADATA => [DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS]];
+        }
+
+        $ddInput[DeviceDetail\Entity::METADATA] = $this->mergeJson($userDeviceDetail->getMetadata(), $ddInput[DeviceDetail\Entity::METADATA]);
+
+        $userDeviceDetail->setAttribute('metadata', $ddInput['metadata']);
+        $this->repo->user_device_detail->saveOrFail($userDeviceDetail);
+
+        if ($shouldOnboardViaPGOS === false)
+        {
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id' => $merchant->getId(),
+                'message'     => "Reverting back the merchant onboarding service to API"
+            ]);
+
+            return;
+        }
+
+        if ((isset($input[Entity::EMAIL]) === true))
+        {
+            // update email
+            try
+            {
+                // merge input with detail input
+                $pgosPayload = [
+                    'email' => $input[Entity::EMAIL],
+                    'merchant_id' => $merchant->getId(),
+                    'skip_email_uniqueness' => true,
                 ] ;
 
                 // this response is not used in this flow

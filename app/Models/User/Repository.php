@@ -165,6 +165,18 @@ class Repository extends Base\Repository
         return $this->saveOrFailTestAndLive($entity, $options);
     }
 
+    /**
+     * saveOrFailForPGOSDualWrite is a variation of saveOrFail that lets us save both contact_mobile
+     * and contact_mobile verified in a single call. This handles the use case for saving these fields
+     * via PGOS dual write.
+     * This handles the use-case of Google OAuth onboarded merchants redirected to Easy dashboard and
+     * onboarding handled by PGOS.
+     */
+    public function saveOrFailForPGOSDualWrite($entity, array $options = [])
+    {
+        return $this->saveOrFailTestAndLive($entity, $options);
+    }
+
 
     /**
      * select `email` from `users`

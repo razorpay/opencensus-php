@@ -55,6 +55,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS            = 'merchant_save_policy_compliance_details';
     const MERCHANT_POLICY_SECTION_PUBLISH_V2                 = 'merchant_policy_section_publish_v2';
 
+    const SEND_SMS_OTP                                       = 'send_sms_otp';
+    const VERIFY_OTP                                         = 'verify_otp';
+
     const GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION          = 'get_merchant_onboarding_docs_verification';
     const GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION = 'get_merchant_eligibility_for_automation_activation';
     const MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2              = 'merchant_policy_preview';
@@ -133,7 +136,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_FETCH_GATING_LOGIC,
         self::PAYMENT_ORDER_WEBHOOK,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
-        self::MERCHANT_CATEGORIES_V3
+        self::MERCHANT_CATEGORIES_V3,
+        self::SEND_SMS_OTP,
+        self::VERIFY_OTP
     ];
 
     const ADMIN_ROUTES = [
@@ -201,6 +206,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantWebsitePolicyPreview',
         self::MERCHANT_CATEGORIES_V3                       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesV3Map',
         self::MERCHANT_CATEGORIES_ADMIN_V3                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesAdminV3Map',
+
+        self::SEND_SMS_OTP      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendSMSOTP',
+        self::VERIFY_OTP        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/VerifyOTP'
     ];
 
     // timeout in seconds
@@ -374,13 +382,25 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         try
         {
-            $this->routeSpecificPreProcessor($routeKey, $body);
+            $validationResponse = $this->routeSpecificPreValidations($routeKey, $body);
 
-            $response = $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $body, $headers);
+            if ($validationResponse['validated'] === true)
+            {
+                $this->routeSpecificPreProcessor($routeKey, $body);
 
-            $this->routeSpecificPostProcessor($routeKey, $body);
+                $response = $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $body, $headers);
 
-            return $response;
+                $this->routeSpecificPostProcessor($routeKey, $body);
+
+                return $response;
+            }
+            else
+            {
+                unset($validationResponse['validated']);
+
+                return $validationResponse;
+            }
+
         }
         catch (\Throwable $e)
         {
@@ -494,6 +514,41 @@ class MerchantOnboardingProxyController extends BaseProxyController
             case self::PAYMENT_ORDER_CREATE:
                 (new Merchant\Detail\Core())->preProcessCreateOrderRequest($body);
         }
+    }
+
+    private function routeSpecificPreValidations(string $routeKey, array &$body) : array
+    {
+        $response = [];
+
+        //Setting true by default
+        $response['validated'] = true;
+
+        switch ($routeKey)
+        {
+            case self::SEND_SMS_OTP:
+                try
+                {
+                    $userExists = (new \RZP\Models\User\Core())->checkIfMobileAlreadyExists($body["contact_mobile"]);
+
+                    $response['validated'] = !($userExists);
+
+                    if ($response['validated'] === false) {
+                        $response['success'] = false;
+                        $response['error']['code'] = "";
+                        $response['error']['description'] = "Phone number already exists";
+                    }
+
+                } catch (\Throwable $e)
+                {
+                    $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                        'section'   => "Error in Pre Validation",
+                        'case'      => self::SEND_SMS_OTP,
+                        'error'     => $e->getMessage()
+                    ]);
+                }
+        }
+
+        return $response;
     }
 
     public function canUpdateMerchantViaPGOS(Merchant\Entity $merchant): bool

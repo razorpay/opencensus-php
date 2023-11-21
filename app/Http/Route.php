@@ -1403,6 +1403,9 @@ class Route
         'onboarding_payment_webhook'               => ['post',     'pg/onboarding/payment_order_webhook',            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_activation_business_categories_v3'       => ['get',      'pg/onboarding/fetch_merchant_categories',        'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_activation_business_categories_admin_v3' => ['get',      'pg/onboarding/fetch_merchant_categories_admin',  'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'pgos_send_sms_otp'                        => ['post',     'pg/onboarding/send_sms_otp',                     'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'pgos_verify_otp'                          => ['post',     'pg/onboarding/verify_otp',                       'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+
 
         'merchant_get_l2_dynamic_configs'          => ['get',     'pg/onboarding/merchant_get_l2_dynamic_configs',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_policy_section_publish_v2'       => ['post',    'pg/onboarding/merchant_policy_section_publish_v2', 'MerchantOnboardingProxyController@handleDashboardProxyRequests'   ],
@@ -6482,6 +6485,8 @@ class Route
     //
 
     public static $proxy = [
+        'pgos_send_sms_otp',
+        'pgos_verify_otp',
         'merchant_activation_business_categories_v3',
         'merchant_policy_section_publish_v2',
         'merchant_website_section_page_load_v2',
@@ -9017,6 +9022,8 @@ class Route
         'merchant_bmc_response_fetch'                     => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_fetch_admin'               => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_save'                      => Permission::EDIT_MERCHANT,
+        'pgos_send_sms_otp'                               => Permission::EDIT_MERCHANT,
+        'pgos_verify_otp'                                 => Permission::EDIT_MERCHANT,
         'onboarding_order_create'                         => Permission::EDIT_MERCHANT,
         'onboarding_order_verify'                         => Permission::EDIT_MERCHANT,
         'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
@@ -11497,6 +11504,8 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'pgos_send_sms_otp',
+            'pgos_verify_otp',
             'merchant_activation_business_categories_v3',
             'merchant_policy_section_publish_v2',
             'merchant_get_l2_dynamic_configs',

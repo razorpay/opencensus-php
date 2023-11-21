@@ -6562,4 +6562,49 @@ class Core extends Base\Core
 
         return $user;
     }
+
+    //assuming that a record for the merchant will already be existing in the api database
+    //since signup will be done at api monolith only
+    //so we are only editing the record and not creating it
+    public function savePGOSDataToAPI(array $data)
+    {
+        $splitzResult = (new Merchant\Detail\Core())->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+
+        if ($splitzResult === 'variables')
+        {
+            $users = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($data[Entity::MERCHANT_ID]);
+            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
+
+            // dual write only for below merchants
+            // merchants for whom pgos is serving onboarding requests
+            // merchants who are not completely activated
+            if ($merchant->getService() === Merchant\Constants::PGOS and
+                empty($users) === false and
+                $merchant->merchantDetail->getActivationStatus() != Merchant\Detail\Status::ACTIVATED)
+            {
+                $user = $this->repo->user->find($users[0]);
+
+                // This is for saving contact_mobile and contact_mobile_verified fields only,
+                // when existing contact mobile is null
+                if (empty($user->getContactMobile()) === true) {
+
+                    unset($data[Entity::MERCHANT_ID]);
+
+                    $this->trace->info(TraceCode::PGOS_DUAL_WRITE_REQUEST, [
+                        'data' => $data,
+                    ]);
+
+                    // Setting contact_mobile_verified if contact_mobile is sent
+                    if (empty($data[Entity::CONTACT_MOBILE]) === false) {
+                        $user->setContactMobileVerified(true);
+                    }
+
+                    $user->edit($data);
+
+                    $this->repo->user->saveOrFailForPGOSDualWrite($user);
+                }
+            }
+        }
+
+    }
 }

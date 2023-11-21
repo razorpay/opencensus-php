@@ -5,16 +5,18 @@ namespace RZP\Base;
 use App;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Foundation\Application;
+use RZP\Models\User\Transformers as User;
 use Selective\Transformer\ArrayTransformer;
 use RZP\Models\Merchant\Transformers as Merchant;
-use RZP\Models\ClarificationDetail\Transformers as ClarificationDetail;
 use RZP\Models\Merchant\Detail\Transformers as MerchantDetail;
 use RZP\Models\Merchant\Website\Transformers as MerchantWebsite;
 use RZP\Models\Merchant\Document\Transformers as MerchantDocument;
+use RZP\Models\ClarificationDetail\Transformers as ClarificationDetail;
 use RZP\Models\Merchant\Stakeholder\Transformers as MerchantStakeholder;
 use RZP\Models\Merchant\BvsValidation\Transformers as MerchantBvsValidation;
 use RZP\Models\Merchant\BusinessDetail\Transformers as MerchantBusinessDetail;
 use RZP\Models\Merchant\VerificationDetail\Transformers as MerchantVerificationDetail;
+
 
 class Transformer
 {
@@ -147,7 +149,8 @@ class Transformer
                     new Merchant\MerchantsTransformer(),
                     new MerchantDetail\MerchantsTransformer(),
                     new MerchantStakeholder\MerchantsTransformer(),
-                    new MerchantBusinessDetail\MerchantsTransformer()
+                    new MerchantBusinessDetail\MerchantsTransformer(),
+                    new User\MerchantsTransformer()
                 ];
                 break;
 
