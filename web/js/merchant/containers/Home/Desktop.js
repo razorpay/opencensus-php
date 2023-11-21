@@ -237,6 +237,7 @@ class AnalyticsDesktop extends Component {
       websiteComplianceModalVisibility,
       splitz,
       user,
+      isPolicyWizardV2Eligible,
     } = this.props;
 
     if (
@@ -245,7 +246,12 @@ class AnalyticsDesktop extends Component {
       websiteComplianceModalVisibility.data
     ) {
       const shouldShowModal =
-        !isPolicyWizardV2Enabled({ splitz, user, activationData: activationData.data }) &&
+        !isPolicyWizardV2Enabled({
+          splitz,
+          user,
+          activationData: activationData.data,
+          isPolicyWizardV2Eligible,
+        }) &&
         shouldShowWebsiteComplianceModal(
           activationData,
           websiteSectionDetailsData,
@@ -1073,6 +1079,7 @@ const mapStateToProps = (state) => ({
   bannerCarouselData: state?.growthService?.banner_carousel_items,
   internationalSettingStatus: state.config.internationalSettingStatus,
   isNcEligibile: state.home.isNcEligibile,
+  isPolicyWizardV2Eligible: state.home.isPolicyWizardV2Eligible,
 });
 
 export default withRouter(

@@ -158,7 +158,12 @@ export function isUrlFieldEmpty(activationData) {
   return !businessWebsiteUrl && !appStoreUrl && !playStoreUrl;
 }
 
-export const isPolicyWizardV2Enabled = ({ splitz, activationData, user }) => {
+export const isPolicyWizardV2Enabled = ({
+  splitz,
+  activationData,
+  user,
+  isPolicyWizardV2Eligible = false,
+}) => {
   const { abExperiments: { noCodePolicyWizard, policyWizardV2 } = {} } = splitz;
 
   const isNoCodePolicyExpEnabled = isExperimentEnabled(noCodePolicyWizard) && user.isOrgRZP;
@@ -168,5 +173,5 @@ export const isPolicyWizardV2Enabled = ({ splitz, activationData, user }) => {
 
   const isFeExpEnable = isWebsiteMerchant ? isWebsitePolicyExpEnabled : isNoCodePolicyExpEnabled;
 
-  return isFeExpEnable;
+  return isFeExpEnable && isPolicyWizardV2Eligible;
 };

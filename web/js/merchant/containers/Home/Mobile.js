@@ -76,6 +76,7 @@ const TerminalStatus = lazy(() =>
     transactionAmount: state.transactionAmount.amount,
     ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
     bannerCarouselData: state?.growthService?.banner_carousel_items,
+    isPolicyWizardV2Eligible: state.home.isPolicyWizardV2Eligible,
   }),
   {
     openModal,
@@ -180,6 +181,7 @@ class AnalyticsMobile extends Component {
       websiteComplianceModalVisibility,
       splitz,
       user,
+      isPolicyWizardV2Eligible,
     } = this.props;
 
     if (
@@ -188,7 +190,12 @@ class AnalyticsMobile extends Component {
       websiteComplianceModalVisibility.data
     ) {
       const shouldShowModal =
-        !isPolicyWizardV2Enabled({ splitz, user, activationData: activationData.data }) &&
+        !isPolicyWizardV2Enabled({
+          splitz,
+          user,
+          activationData: activationData.data,
+          isPolicyWizardV2Eligible,
+        }) &&
         shouldShowWebsiteComplianceModal(
           activationData,
           websiteSectionDetailsData,

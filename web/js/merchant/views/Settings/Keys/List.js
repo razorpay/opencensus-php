@@ -111,7 +111,7 @@ class KeysListContainer extends ListContainer {
     const { websiteComplianceModalVisibility } = this.props;
     const { user } = this.props;
 
-    const { splitz } = this.props;
+    const { splitz, isPolicyWizardV2Eligible } = this.props;
 
     const isMobileResolution = isMobileDevice();
 
@@ -121,7 +121,12 @@ class KeysListContainer extends ListContainer {
       websiteComplianceModalVisibility.data
     ) {
       const shouldShowModal =
-        !isPolicyWizardV2Enabled({ splitz, user, activationData: activationData.data }) &&
+        !isPolicyWizardV2Enabled({
+          splitz,
+          user,
+          activationData: activationData.data,
+          isPolicyWizardV2Eligible,
+        }) &&
         shouldShowWebsiteComplianceModal(
           activationData,
           websiteSectionDetailsData,
@@ -183,6 +188,7 @@ export default compose(
         websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
         websiteComplianceModalVisibility: state.websiteCompliance.bannerAndModalVisibility,
         activationData: state.websiteCompliance.activationData,
+        isPolicyWizardV2Eligible: state.home.isPolicyWizardV2Eligible,
       };
     },
     { ...KeyActions, ...ModalActions, ...NotificationsActions },
