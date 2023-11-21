@@ -263,6 +263,27 @@ class InvitationTest extends TestCase
         });
     }
 
+
+    public function testPostSendInvitationToNewUserForPartnerAgent()
+    {
+        Mail::fake();
+
+        $this->startTest();
+
+        Mail::assertQueued(InvitationMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('sender_name', $viewData);
+            $this->assertArrayHasKey('merchant_name', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+
+            $this->assertEquals('emails.invitation.new', $mail->view);
+
+            return true;
+        });
+    }
+
     public function testPostSendInvitationToExistingUser()
     {
         Mail::fake();
@@ -272,6 +293,33 @@ class InvitationTest extends TestCase
                 'id'    => '1000InviteUser',
                 'email' => 'existinginvite@razorpay.com'
             ]);
+
+        $this->startTest();
+
+        Mail::assertQueued(InvitationMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('sender_name', $viewData);
+            $this->assertArrayHasKey('merchant_name', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+
+            $this->assertEquals('emails.invitation.existing', $mail->view);
+
+            return true;
+        });
+    }
+
+
+    public function testPostSendInvitationToExistingUserForPartnerAgent()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('user',
+                                [
+                                    'id'    => '1000InviteUser',
+                                    'email' => 'existinginvite@razorpay.com'
+                                ]);
 
         $this->startTest();
 

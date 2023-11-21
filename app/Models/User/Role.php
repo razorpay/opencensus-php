@@ -20,6 +20,7 @@ class Role
     const SELLERAPP             = 'sellerapp';
     const OWNER                 = 'owner';
     const PARTNER               = 'partner';
+    const PARTNER_AGENT         = 'partner_agent';
     const LINKED_ACCOUNT_OWNER  = 'linked_account_owner';
     const LINKED_ACCOUNT_ADMIN  = 'linked_account_admin';
     const RBL_SUPERVISOR        = 'rbl_supervisor';
@@ -55,6 +56,7 @@ class Role
         self::SELLERAPP,
         self::OWNER,
         self::PARTNER,
+        self::PARTNER_AGENT,
         self::AGENT,
         self::SELLERAPP_PLUS,
         self::AUTH_LINK_AGENT,

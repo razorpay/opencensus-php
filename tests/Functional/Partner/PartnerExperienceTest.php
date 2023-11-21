@@ -443,6 +443,27 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals('accounting', $legalEntity->getBusinessSubcategory());
     }
 
+    //Validate that partner_agent user could do proxy auth impersonation request with partner user session for the subM onboarding
+    public function testSubmerchantPresignUpByPartnerAgent()
+    {
+        $this->createResellerPartnerSubmerchant(true, true);
+
+        $partnerAgentUser = $this->fixtures->user->create(['email' => 'partneragent@razorpay.com']);
+        $merchantUser = $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => self::DEFAULT_MERCHANT_ID,
+                'user_id'     => $partnerAgentUser->getId(),
+                'role'        => 'partner_agent',
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['partner_sub_kyc_access'], self::DEFAULT_MERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_'.self::DEFAULT_MERCHANT_ID, $partnerAgentUser->getId());
+
+        $this->startTest();
+
+    }
+
     public function testSubmerchantPresignUpByPartner()
     {
         $this->createResellerPartnerSubmerchant(true, true);

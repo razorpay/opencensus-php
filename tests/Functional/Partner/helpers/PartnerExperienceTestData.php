@@ -27,6 +27,24 @@ return [
         ],
      ],
 
+
+    'testSubmerchantPresignUpByPartnerAgent' => [
+        'request'  => [
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+            'server'    => [
+                'HTTP_X-Razorpay-Account'    => '10000000000009',
+            ],
+            'content' => [
+                'contact_name'    => 'Test Contact name',
+            ],
+        ],
+        'response' => [
+            'content' => ['contact_name' => 'Test Contact name'],
+            'status' => 200
+        ],
+    ],
+
     'testRequestKycAccessByPartner' => [
         'request'  => [
             'url'     => '/partner/kyc_access_request',
