@@ -26,7 +26,7 @@ class Constants
         Error::REASON,
     ];
 
-    const FALLBACK_INTERNAL_ERROR_CODE = "FALLBACK_ERROR";
+    const FALLBACK_PUBLIC_ERROR_CODE   = "UNKNOWN_ERROR";
     const FALLBACK_REASON              = "unknown_error";
     const FALLBACK_ERROR_DESCRIPTION   = "Something went wrong, please try again.";
 }
