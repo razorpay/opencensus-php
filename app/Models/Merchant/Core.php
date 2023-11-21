@@ -10159,7 +10159,7 @@ class Core extends Base\Core
         else
         {
             $input[DEConstants::DOCUMENTS_DETAIL][] = [
-                DEConstants::TYPE => 'RazorpayX App Policy' . Constants::TERMS,
+                DEConstants::TYPE => 'RazorpayX App Policy_' . Constants::TERMS,
                 DEConstants::URL  => Constants::RAZORPAY_PARTNERSHIP_OAUTH_TERMS,
             ];
         }
