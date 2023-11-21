@@ -1054,6 +1054,77 @@ class Currency
         self::ZAR => 'South African Rand',
     ];
 
+    // Currency list supported for JPMC
+    // 
+    // Some currencies which are not supported:
+    // - BAM
+    // - BGN
+    // - BRL
+    // - CLP
+    // - ISK
+    // - JPY
+    // - KRW
+    // - PLN
+    // - RON
+    // - TWD
+    // - UGX
+    // - VND
+    // - XAF
+    // - XOF
+    const JPMC_IMPORT_FLOW_SUPPORTED_CURRENCIES = [
+        self::AED,
+        self::ARS,
+        self::AUD,
+        self::BBD,
+        self::BDT,
+        self::BHD,
+        self::BND,
+        self::BSD,
+        self::CAD,
+        self::CHF,
+        self::CNY,
+        self::COP,
+        self::CZK,
+        self::DKK,
+        self::DOP,
+        self::EGP,
+        self::EUR,
+        self::FJD,
+        self::GBP,
+        self::GHS,
+        self::HKD,
+        self::HTG,
+        self::HUF,
+        self::IDR,
+        self::ILS,
+        self::INR,
+        self::JMD,
+        self::KES,
+        self::KWD,
+        self::LKR,
+        self::MAD,
+        self::MNT,
+        self::MOP,
+        self::MUR,
+        self::MXN,
+        self::MYR,
+        self::NOK,
+        self::NZD,
+        self::OMR,
+        self::PEN,
+        self::PGK,
+        self::PHP,
+        self::PKR,
+        self::QAR,
+        self::SAR,
+        self::SEK,
+        self::SGD,
+        self::THB,
+        self::TRY,
+        self::USD,
+        self::ZAR,
+    ];
+
     public static function getIsoCode(string $currency)
     {
         return self::ISO_NUMERIC_CODES[$currency] ?? null;
@@ -1162,5 +1233,10 @@ class Currency
         $currency = self::getCurrency($isoCode);
 
         return (in_array($currency, self::THREE_DECIMAL_CURRENCIES) === true);
+    }
+
+    public static function isJPMCImportFlowSupportedCurrency($currency): bool
+    {
+        return (in_array($currency, self::JPMC_IMPORT_FLOW_SUPPORTED_CURRENCIES) === true);
     }
 }

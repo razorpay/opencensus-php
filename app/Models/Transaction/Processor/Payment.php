@@ -14,6 +14,9 @@ use RZP\Models\Base as BaseCollection;
 use RZP\Models\Payment as PaymentEntity;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Invoice\Type as InvoiceType;
+use RZP\Models\Invoice\Service as InvoiceService;
+use RZP\Models\Invoice\Constants as InvoiceConstants;
 use RZP\Models\Partner\Service as PartnerService;
 use RZP\Models\Schedule\Library as ScheduleLibrary;
 use RZP\Models\EntityOrigin\Constants as EntityOriginConstants;
@@ -574,10 +577,53 @@ class Payment extends Base
 
         if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_ON_HOLD) === true or
             $merchant->isOpgspImportEnabled() === true or
+            ($this->txnOnHoldForJPMCMerchant($payment, $merchant) === true) or
             self::shouldHoldSubmerchantPayment($payment, $merchant) === true)
         {
             $this->txn->setOnHold(true);
         }
+    }
+
+    public function txnOnHoldForJPMCMerchant($payment, $merchant)
+    {
+        $setOnHoldFlag = false;
+
+        if ($merchant->isJpmcImportFlowEnabled() === true)
+        {
+            $paymentNotes = $payment->getNotes()->toArray();
+
+            $invoiceNumber = $paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER] ?? '';
+
+            // if invoice number not present, then put txn on hold
+            if (empty($invoiceNumber) === true)
+            {
+                $setOnHoldFlag = true;
+                return $setOnHoldFlag;
+            }
+
+            $invoice = (new InvoiceService())
+                ->findByMerchantIdDocumentTypeDocumentNumber($payment->getMerchantId(), InvoiceType::JPMC_INVOICE, $invoiceNumber);
+
+            // if invoice is not created, then put txn on hold
+            if (empty($invoice) === true)
+            {
+                $setOnHoldFlag = true;
+                return $setOnHoldFlag;
+            }
+
+            // if invoice was uploaded before capture, then
+            // dont put txn on hold
+            if (empty($invoice->getRefNum()) === false)
+            {
+                $setOnHoldFlag = false;
+                return $setOnHoldFlag;
+            }
+
+            // for all other cases, put txn on hold
+            $setOnHoldFlag = true;
+        }
+
+        return $setOnHoldFlag;
     }
 
     protected function getDiscountIfApplicable($payment)

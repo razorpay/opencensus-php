@@ -10705,6 +10705,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TURBO_ERROR_MAPPING_UPDATER_QUEUE_PUSH_FAILURE         = 'TURBO_ERROR_MAPPING_UPDATER_QUEUE_PUSH_FAILURE';
     const TRANSACTION_ISOLATION_SPLITZ_ERROR                     = 'TRANSACTION_ISOLATION_SPLITZ_ERROR';
 
+    const JPMC_INVOICE_SAVE_SUCCESS                            = 'JPMC_INVOICE_SAVE_SUCCESS';
+    const JPMC_INVOICE_SAVE_FAILED                             = 'JPMC_INVOICE_SAVE_FAILED';
+    const INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW                 = 'INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

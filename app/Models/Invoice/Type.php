@@ -12,6 +12,7 @@ class Type
     const DCC_INV = 'dcc_inv';
     const DCC_CRN = 'dcc_crn';
     const OPGSP_INVOICE = 'opgsp_invoice';
+    const JPMC_INVOICE = 'jpmc_invoice';
     const OPGSP_AWB = 'opgsp_awb';
 
     protected static $paymentLinkTypes = [

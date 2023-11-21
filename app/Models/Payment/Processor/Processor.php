@@ -713,6 +713,11 @@ class Processor
         return $this->merchant->isLRSFlowEnabled();
     }
 
+    private function isJPMCImportFlowMerchant(): bool
+    {
+        return $this->merchant->isJpmcImportFlowEnabled();
+    }
+
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
@@ -2559,6 +2564,7 @@ class Processor
 
             if (($this->isLRSEducationMerchant() === false) and
                 ($this->isOpgspImportMerchant() === false) and
+                ($this->isJPMCImportFlowMerchant() === false) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or

@@ -93,6 +93,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
+use RZP\Models\Merchant\HsCode\HsCodeList;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Ledger\CaptureJournalEvents;
 use RZP\Gateway\Base\Action as GatewayAction;
@@ -100,9 +101,11 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Reward\Entity as RewardEntity;
 use RZP\Models\P2p\Preferences as P2pPreferences;
 use RZP\Models\Payment\Processor\App as AppMethod;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
+use RZP\Models\Merchant\InternationalIntegration\Service as MIIService;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Order as Order;
 use RZP\Models\Checkout\Order\Repository as CheckoutOrderRepository;
@@ -208,6 +211,8 @@ trait Authorize
         // to be present which happens at this stage.
         // all validation for opgsp payment happens inside `runPaymentInputValidations`
         $this->saveOpgspImportDataIfApplicable($payment);
+
+        $this->saveJPMCImportFlowDataIfApplicable($payment);
 
         return $authPaymentData;
     }
@@ -2216,6 +2221,8 @@ trait Authorize
 
             $this->validateLRSDataIfApplicable($payment);
 
+            $this->validateJPMCImportFlowDataIfApplicable($payment);
+
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
         catch (\Throwable $ex)
@@ -4063,6 +4070,175 @@ trait Authorize
         }
     }
 
+    protected function validateJPMCImportFlowDataIfApplicable(Payment\Entity $payment)
+    {
+        if($payment->merchant->isJpmcImportFlowEnabled() === false)
+        {
+            return;
+        }
+
+        // validate if jpmc supported payment libraries
+        // currently s2s
+        $library = (new Payment\Service)->getLibraryFromPayment($payment);
+
+        if(in_array($library, Analytics\Metadata::JPMC_IMPORT_FLOW_SUPPORTED_LIBRARIES) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_LIBRARY,
+                [
+                    'merchant_id' => $payment->merchant->getId(),
+                    'payment_id'  => $payment->getId(),
+                ]);
+        }
+
+        // validate if jpmc supported payment methods
+        if (in_array($payment->getMethod(), Method::JPMC_IMPORT_FLOW_SUPPORTED_METHODS) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
+                [
+                    'merchant_id' => $payment->merchant->getId(),
+                    'payment_id'  => $payment->getId(),
+                ]);
+        }
+
+        // validate if jpmc supported recurring methods
+        if (($payment->isRecurring() === true) and
+            (in_array($payment->getMethod(), Method::JPMC_IMPORT_FLOW_SUPPORTED_RECURRING_METHODS) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_NOT_ENABLED,
+                [
+                    'merchant_id' => $payment->merchant->getId(),
+                    'payment_id'  => $payment->getId(),
+                    'method'      => $payment->getMethod(),
+                ]);
+        }
+
+        if ($payment->merchant->isInternational() === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment method request not allowed as international is disabled on the merchant.');
+        }
+
+        if ($payment->isInternational() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED, [
+                    'merchant_id' => $payment->merchant->getId(),
+                    'payment_id'  => $payment->getId(),
+                ]
+            );
+        }
+
+        // validate notes sent in payment request
+        if (empty($payment->getNotes()) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Notes field is required with invoice_number and goods_description.', 'notes');
+        }
+
+        $paymentNotes = $payment->getNotes()->toArray();
+
+        // validate if invoice_number is present in notes
+        if (empty($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invoice number field is required within the notes.', 'notes.invoice_number');
+        }
+
+        // validate if goods_description is present in notes
+        if (empty($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_GOODS_DESCRIPTION]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Goods Description field is required within the notes.', 'notes.goods_description');
+        }
+
+        // validate if payment has order
+        if ($payment->hasOrder() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID, [
+                    'merchant_id' => $payment->merchant->getId(),
+                    'payment_id'  => $payment->getId(),
+                ]
+            );
+        }
+
+        // validate payment order has customer
+        if ((empty($payment->order->getCustomerId()) === true) &&
+            (empty($payment->customer) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment does not have a customer_id.', 'customer_id');
+        }
+
+        // validate if order has customer shipping address
+        if($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment order does not have a customer shipping address.', 'order.shipping_details');
+        }
+
+        // validate if payment raised in jpmc supported currencies
+        if (Currency\Currency::isJPMCImportFlowSupportedCurrency($payment->getCurrency()) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                'currency');
+        }
+
+        if (($payment->getCurrency() !== Currency\Currency::INR) && ($payment->isCard() === false)) 
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                'currency');
+        }
+
+        // validate merchant purpose code
+        if ((empty($payment->merchant->getPurposeCode()) === true) or
+            (in_array($payment->merchant->getPurposeCode(), PurposeCodeList::JPMC_IMPORT_FLOW_PURPOSE_CODES) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Merchant Purpose Code is invalid', 'merchant.purpose_code');
+        }
+
+        $hsCodeData = (new MIIService())->getMerchantHsCode($payment->merchant->getId());
+
+        // validate merchant hscode
+        if((empty($hsCodeData) === true) or 
+           (isset($hsCodeData['hs_code']) === false) or
+           (HsCodeList::isBlacklistedHSCodeForJPMCImportFlow($hsCodeData['hs_code']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Merchant HSCode is invalid', 'merchant.hs_code');
+        }
+
+        $invoiceNumber = trim($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]);
+
+        // validate uniqueness of invoice number
+        $invoice = (new InvoiceService())
+            ->findByMerchantIdDocumentTypeDocumentNumber($payment->getMerchantId(), InvoiceType::JPMC_INVOICE, $invoiceNumber);
+
+        if (isset($invoice) === false) return;
+
+        $existingPayment = $this->repo->payment->findOrFail($invoice->getEntityId());
+
+        if (isset($existingPayment) and $existingPayment->getStatus() !== Status::FAILED)
+        {
+            $this->trace->error(
+                TraceCode::INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW, [
+                    'payment_id'            => $payment->getId(),
+                    'existing_payment_id'   => $existingPayment->getId(),
+                    'message'               => 'Payment already exist with same invoice number'
+                ]
+            );
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment already exist with same invoice number.', 'notes.invoice_number');
+        }
+    }
+
     protected function validateLRSDataIfApplicable(Payment\Entity $payment)
     {
         if ($payment->merchant->isLRSFlowEnabled() === false)
@@ -4608,6 +4784,7 @@ trait Authorize
             $payment->setConvertCurrency(true);
         }
     }
+
     /**
      * @throws Exception\BadRequestException
      */
@@ -13563,6 +13740,44 @@ trait Authorize
                     'invoiceEntity' => $invoiceEntity,
                 ]);
             $this->trace->traceException($e);
+            throw new Exception\ServerErrorException(Error\PublicErrorDescription::SERVER_ERROR, ErrorCode::REPO_FAILED_TO_SAVE);
+        }
+    }
+
+    protected function saveJPMCImportFlowDataIfApplicable($payment)
+    {
+        if($payment->merchant->isJpmcImportFlowEnabled() === false)
+        {
+            return;
+        }
+
+        $invoiceEntity = [];
+
+        try
+        {
+            $paymentNotes = $payment->getNotes()->toArray();
+
+            $invoiceEntity[InvoiceEntity::TYPE] = InvoiceType::JPMC_INVOICE;
+
+            $invoice = (new InvoiceService())->createPaymentSupportingDocuments($invoiceEntity, $payment);
+
+            $receipt = trim($paymentNotes[InvoiceConstants::JPMC_IMPORT_FLOW_INVOICE_NUMBER]);
+
+            $invoice->setReceipt($receipt);
+
+            $this->repo->saveOrFail($invoice);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::JPMC_INVOICE_SAVE_FAILED, [
+                    'payment' => $payment,
+                    'invoiceEntity' => $invoiceEntity,
+                    'payment_notes' => $paymentNotes ?? [],
+                ]);
+
+            $this->trace->traceException($e);
+
             throw new Exception\ServerErrorException(Error\PublicErrorDescription::SERVER_ERROR, ErrorCode::REPO_FAILED_TO_SAVE);
         }
     }

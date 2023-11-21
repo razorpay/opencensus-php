@@ -110,6 +110,17 @@ class Method
         self::NETBANKING,
     ];
 
+    const JPMC_IMPORT_FLOW_SUPPORTED_METHODS = [
+        self::CARD,
+        self::NETBANKING,
+        self::UPI,
+    ];
+
+    const JPMC_IMPORT_FLOW_SUPPORTED_RECURRING_METHODS = [
+        self::CARD,
+        self::EMANDATE,
+    ];
+
     const LRS_SUPPORTED_METHODS = [
         self::UPI,
         self::NETBANKING,

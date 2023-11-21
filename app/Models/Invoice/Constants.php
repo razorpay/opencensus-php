@@ -101,4 +101,7 @@ final class Constants
     const NON_RETRYABLE_ERROR_CODES = [
         self::BUILDING_REQUEST_DATA_FAILED
     ];
+
+    const JPMC_IMPORT_FLOW_INVOICE_NUMBER = 'invoice_number';
+    const JPMC_IMPORT_FLOW_GOODS_DESCRIPTION = 'goods_description';
 }

@@ -1269,6 +1269,30 @@ class Validator extends Base\Validator
                       'opgsp' =>  $opgspLimitAmountINR, ]);
             }
         }
+
+        if($this->entity->merchant->isJpmcImportFlowEnabled() === true)
+        {
+            $purposeCode = $this->entity->merchant->getPurposeCode();
+
+            $maxAmountAllowedInUSD = Constants::PURPOSE_CODE_TXN_LIMIT_MAP[$purposeCode] ?? null;
+
+            if (empty($maxAmountAllowedInUSD) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid purpose code while validating amount - '. $purposeCode);
+            }
+
+            $merchantAmountInUSD = (new CurrencyCore)->getBaseAmount($amount, $currency, Currency::USD);
+
+            if($merchantAmountInUSD > $maxAmountAllowedInUSD)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Amount exceeds maximum amount allowed.',
+                    'amount',
+                    ['amount_in_usd' => $merchantAmountInUSD,
+                      'limit_in_usd' =>  $maxAmountAllowedInUSD, ]);
+            }
+        }
     }
 
     public function validatePosPaymentCreation($input)

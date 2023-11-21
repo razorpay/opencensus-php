@@ -55,6 +55,9 @@ jobs:
           DB_LIVE_DATABASE: api_live
           DB_TEST_DATABASE: api_test
           DB_AUTH_DATABASE: api_auth
+          DB_UPI_PAYMENTS_MOCKED: "false"
+          DB_UPI_PAYMENTS_LIVE_HOST: mysql
+          DB_UPI_PAYMENTS_TEST_HOST: mysql
           REDIS_HOST: redis
           QUERY_CACHE_REDIS_HOST: redis
           QUERY_CACHE_REDIS_PORT: 6379

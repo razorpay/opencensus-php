@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
+
 class Constants
 {
     const REQUEST_TYPE                  = 'request_type';
@@ -125,6 +127,19 @@ class Constants
     const AUTO_CAPTURE_DEFAULT_TIMEOUT_CARD_RECURRING_AUTO = 4320;
 
     const OPGSP_TRANSACTION_LIMIT_USD = 200000;
+
+    // For purpose code: S0802
+    const JPMC_IMPORT_FLOW_SOFTWARE_TRANSACTION_LIMIT_USD = 199500;
+
+    // For purpose code: S1101, S1103
+    const JPMC_IMPORT_FLOW_DIGITAL_CONTENT_TRANSACTION_LIMIT_USD = 19500;
+
+    const PURPOSE_CODE_TXN_LIMIT_MAP = [
+        PurposeCodeList::S0802 => self::JPMC_IMPORT_FLOW_SOFTWARE_TRANSACTION_LIMIT_USD,
+        PurposeCodeList::S1101 => self::JPMC_IMPORT_FLOW_DIGITAL_CONTENT_TRANSACTION_LIMIT_USD,
+        PurposeCodeList::S1103 => self::JPMC_IMPORT_FLOW_DIGITAL_CONTENT_TRANSACTION_LIMIT_USD,
+    ];
+
 
     // optimizer
     const OPTIMIZER_GATEWAY_DATA = 'optimizer_gateway_data';
