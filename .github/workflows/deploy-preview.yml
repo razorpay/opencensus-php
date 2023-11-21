@@ -40,7 +40,8 @@ jobs:
               "self": {
                   "name": "dashboard",
                   "commit_id": "${{ github.event.pull_request.head.sha }}",
-                  "repository_name": "${{ github.repository }}"
+                  "repository_name": "${{ github.repository }}",
+                  "node_selector":"node.kubernetes.io/worker-tests-app"
               },
               "dependencies": []
             }

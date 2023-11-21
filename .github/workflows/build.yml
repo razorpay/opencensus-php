@@ -165,12 +165,14 @@ jobs:
               "self": {
                   "name": "dashboard",
                   "commit_id": "${{ github.sha }}",
-                  "repository_name": "${{ github.repository }}"
+                  "repository_name": "${{ github.repository }}",
+                  "node_selector":"node.kubernetes.io/worker-tests-app"
               },
               "dependencies": [
                 {
                   "name": "api",
-                  "commit_id": ${{ steps.prodApiCommitId.outputs.response }}
+                  "commit_id": ${{ steps.prodApiCommitId.outputs.response }},
+                  "node_selector":"node.kubernetes.io/worker-tests-app"
                 }
               ]
             }
