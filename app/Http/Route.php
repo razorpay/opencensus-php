@@ -16294,6 +16294,7 @@ class Route
             'fund_account_create_internal',
             'banking_accounts_list_internal',
             'tax_payments_internal_icici_action',
+            'bulk_payout_purpose_post',
         ],
 
         'razorflow' => [

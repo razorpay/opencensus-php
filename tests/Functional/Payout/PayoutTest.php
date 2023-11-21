@@ -11788,6 +11788,17 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddBulkCustomPayoutPurposeForXPayrollInternalAuth()
+    {
+        $this->ba->appAuthLive($this->app['config']['applications.xpayroll.secret']);
+
+        $testData = $this->testData['testAddBulkCustomPayoutPurposeVendorPaymentsInternalAuth'];
+
+        $testData['request']['url'] = '/payouts/purposes/10000000000000';
+
+        $this->startTest($testData);
+    }
+
     public function testGetAllCustomPayoutPurposesInternalRoute()
     {
         $this->testAddCustomPayoutPurpose();
