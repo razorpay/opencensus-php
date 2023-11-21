@@ -6,11 +6,13 @@ export const CREATE_LOADS_OPTIONS = [
 export const CREATE_ACCOUNTS_OPTIONS = [
   { label: 'Create Wallet Accounts', name: 'account' },
   { label: 'Create User Containers', name: 'user' },
+  { label: 'Create Gift Cards', name: 'gift_cards' },
 ];
 
 export const ACCOUNT_TYPES = {
   ACCOUNT: 'account',
   CONTAINER: 'user',
+  GIFT_CARDS: 'gift_cards',
 };
 
 export const LOAD_TYPES = {
@@ -31,4 +33,5 @@ export const BATCH_TYPES = {
   CREATE_WALLET_ACCOUNTS: 'create_wallet_accounts',
   CREATE_WALLET_USERS_CONTAINERS: 'create_wallet_user_containers',
   CREATE_WALLET_REVERSAL_CONTAINERS: 'create_wallet_reversal_containers',
+  CREATE_BULK_GIFT_CARDS: 'create_bulk_gift_cards',
 };

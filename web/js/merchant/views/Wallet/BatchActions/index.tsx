@@ -9,6 +9,8 @@ import { titleCase } from 'common/utils/rzp-utils';
 import DataTable from 'common/ui/Table/DataTable';
 import { Button, DownloadIcon } from '@razorpay/blade/components';
 import { AxiosResponse } from 'axios';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const typesLabelMap = {
   create_wallet_accounts: 'Accounts',
@@ -58,7 +60,7 @@ interface FilterParams {
 }
 
 interface ListProps {
-  fetchAll: (params: FilterParams) => void;
+  fetchAll: (params: FilterParams, isCreateGiftCardBatchEnabled: boolean) => void;
   batchDownload: (id: string) => Promise<AxiosResponse>;
   [x: string]: unknown;
 }
@@ -66,14 +68,22 @@ interface ListProps {
 export const List = ({ fetchAll, batchDownload, ...rest }: ListProps): JSX.Element => {
   const onDownload = (id) => batchDownload(id).then((res) => (window.location = res.data?.url));
 
+  const splitz = useSplitzService();
+  const isCreateGiftCardBatchEnabled = isExperimentEnabled(
+    splitz?.abExperiments?.create_bulk_gift_cards,
+  );
+
   useEffect(() => {
     if (fetchAll) {
-      fetchAll({
-        count: 25,
-        skip: 0,
-      });
+      fetchAll(
+        {
+          count: 25,
+          skip: 0,
+        },
+        isCreateGiftCardBatchEnabled,
+      );
     }
-  }, [fetchAll]);
+  }, [fetchAll, isCreateGiftCardBatchEnabled]);
 
   return (
     <div className="content-wrapper">
@@ -101,7 +111,8 @@ const mapStateToProps = (state) => ({
   ...state.batches,
 });
 
-export default connect(mapStateToProps, {
-  fetchAll,
+export default connect(mapStateToProps, (dispatch) => ({
+  fetchAll: (params, isCreateGiftCardBatchEnabled) =>
+    dispatch(fetchAll(params, isCreateGiftCardBatchEnabled)),
   batchDownload,
-})(List);
+}))(List);

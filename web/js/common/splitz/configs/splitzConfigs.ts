@@ -128,6 +128,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['/wallet/batch-actions'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'create_bulk_gift_cards',
+          experimentId: {
+            beta: 'MumLEub9N56cvC',
+            production: 'MvCbAPF7OTRc1H',
+          },
+          defaultVariant: {
+            name: 'variant',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: ['/smartcollect'],
       abExperiments: [
         {

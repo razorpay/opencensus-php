@@ -498,13 +498,22 @@ export const validateReversalsBatch = validateBatch('transfer_reversal');
 export const fetchRouteBatchDetails = fetchBatchDetails();
 
 /* batches for wallet */
-export const fetchAllWalletBatches = fetchBatches([
-  'create_wallet_accounts',
-  'create_wallet_loads',
-  'create_wallet_container_loads',
-  'create_wallet_user_containers',
-  'create_wallet_container_reversals',
-]);
+export const fetchAllWalletBatches = (params, isCreateGiftCardBatchEnabled) => {
+  let batchToFetch = [
+    'create_wallet_accounts',
+    'create_wallet_loads',
+    'create_bulk_gift_cards',
+    'create_wallet_container_loads',
+    'create_wallet_user_containers',
+    'create_wallet_container_reversals',
+  ];
+
+  if (!isCreateGiftCardBatchEnabled) {
+    batchToFetch = batchToFetch.filter((batch) => batch !== 'create_bulk_gift_cards');
+  }
+  return fetchBatches(batchToFetch)(params);
+};
+
 export const createWalletAccountsBatch = createBatch('create_wallet_accounts');
 export const validateWalletAccountsBatch = validateBatch('create_wallet_accounts');
 export const createWalletLoadsBatch = createBatch('create_wallet_loads');
@@ -515,6 +524,8 @@ export const createUsersBatch = createBatch('create_wallet_user_containers');
 export const validateUsersBatch = validateBatch('create_wallet_user_containers');
 export const createReversalBatch = createBatch('create_wallet_container_reversals');
 export const validateReversalBatch = validateBatch('create_wallet_container_reversals');
+export const createGiftCardsBatch = createBatch('create_bulk_gift_cards');
+export const validateGiftCardsBatch = validateBatch('create_bulk_gift_cards');
 
 /* reducers */
 export const refundBatchesReducer = makeActionCollectionReducer(REFUND);

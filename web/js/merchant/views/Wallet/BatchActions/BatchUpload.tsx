@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { connect } from 'react-redux';
 
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import {
   createWalletAccountsBatch,
   validateWalletAccountsBatch,
@@ -12,66 +14,103 @@ import {
   createUsersBatch,
   createReversalBatch,
   validateReversalBatch,
+  createGiftCardsBatch,
+  validateGiftCardsBatch,
 } from 'merchant/reducers/batches';
-import InputSelector from 'merchant/views/Wallet/BatchActions/components/InputSelector';
 import { BatchUploadWrapper } from 'merchant/views/Wallet/BatchActions/components/BatchUploadWrapper';
+import InputSelector from 'merchant/views/Wallet/BatchActions/components/InputSelector';
 import {
+  ACCOUNT_TYPES,
   BATCH_TYPES,
   CREATE_ACCOUNTS_OPTIONS,
   CREATE_LOADS_OPTIONS,
   LOAD_TYPES,
 } from 'merchant/views/Wallet/BatchActions/constants';
 
+import { getSelectedBatchType } from './utils';
+
 export const AccountsBatchUpload = connect(null, {
   createBatch: createWalletAccountsBatch as () => void,
   validateBatch: validateWalletAccountsBatch as () => void,
   validateUserLoadsBatch: validateUsersBatch as () => void,
   createUserLoadsBatch: createUsersBatch as () => void,
-})(({ createBatch, validateBatch, validateUserLoadsBatch, createUserLoadsBatch }) => {
-  const [provider, setProvider] = useState<string>('accounts');
+  createGiftCardsBatch: createGiftCardsBatch as () => void,
+  validateGiftCardsBatch: validateGiftCardsBatch as () => void,
+})(
+  ({
+    createBatch,
+    validateBatch,
+    validateUserLoadsBatch,
+    createUserLoadsBatch,
+    createGiftCardsBatch,
+    validateGiftCardsBatch,
+  }) => {
+    const splitz = useSplitzService();
+    const [provider, setProvider] = useState<string>('accounts');
 
-  const selectedBatch = useMemo(() => {
-    const batchType =
-      provider === LOAD_TYPES.ACCOUNT
-        ? BATCH_TYPES.CREATE_WALLET_ACCOUNTS
-        : BATCH_TYPES.CREATE_WALLET_USERS_CONTAINERS;
+    const isCreateGiftCardBatchEnabled = isExperimentEnabled(
+      splitz?.abExperiments?.create_bulk_gift_cards,
+    );
 
-    let selectedValidateBatch, selectedCreateBatch, selectedBatchType;
-    if (provider === LOAD_TYPES.ACCOUNT) {
-      selectedValidateBatch = validateBatch;
-      selectedCreateBatch = createBatch;
-      selectedBatchType = BATCH_TYPES.CREATE_WALLET_ACCOUNTS;
-    } else {
-      selectedValidateBatch = validateUserLoadsBatch;
-      selectedCreateBatch = createUserLoadsBatch;
-      selectedBatchType = batchType;
-    }
+    const createAccountOptions = useMemo(() => {
+      if (isCreateGiftCardBatchEnabled) {
+        return CREATE_ACCOUNTS_OPTIONS;
+      } else {
+        return CREATE_ACCOUNTS_OPTIONS.filter(
+          (options) => options?.name !== ACCOUNT_TYPES.GIFT_CARDS,
+        );
+      }
+    }, [isCreateGiftCardBatchEnabled]);
 
-    const sampleUrl = `/files/sample_${batchType}.xlsx`;
+    const selectedBatch = useMemo(() => {
+      const batchType = getSelectedBatchType(provider);
 
-    return {
-      selectedValidateBatch,
-      selectedCreateBatch,
-      selectedBatchType,
-      sampleUrl,
-    };
-  }, [createBatch, createUserLoadsBatch, provider, validateBatch, validateUserLoadsBatch]);
+      let selectedValidateBatch, selectedCreateBatch;
+      if (provider === ACCOUNT_TYPES.ACCOUNT) {
+        selectedValidateBatch = validateBatch;
+        selectedCreateBatch = createBatch;
+      } else if (provider === ACCOUNT_TYPES.CONTAINER) {
+        selectedValidateBatch = validateUserLoadsBatch;
+        selectedCreateBatch = createUserLoadsBatch;
+      } else {
+        selectedValidateBatch = validateGiftCardsBatch;
+        selectedCreateBatch = createGiftCardsBatch;
+      }
 
-  return (
-    <BatchUploadWrapper
-      batchType={selectedBatch.selectedBatchType}
-      docUrl={selectedBatch.sampleUrl}
-      title="Batch Accounts Upload"
-      points={[
-        'partner_customer_id, contact should be unique for each account.',
-        'The number of rows in the file should not exceed 50 thousand.',
-      ]}
-      createBatch={selectedBatch.selectedCreateBatch}
-      validateBatch={selectedBatch.selectedValidateBatch}
-      component={<InputSelector options={CREATE_ACCOUNTS_OPTIONS} setInput={setProvider} />}
-    />
-  );
-});
+      const sampleUrl = `/files/sample_${batchType}.xlsx`;
+
+      return {
+        selectedValidateBatch,
+        selectedCreateBatch,
+        batchType,
+        sampleUrl,
+      };
+    }, [
+      createBatch,
+      createGiftCardsBatch,
+      createUserLoadsBatch,
+      provider,
+      validateBatch,
+      validateGiftCardsBatch,
+      validateUserLoadsBatch,
+    ]);
+
+    return (
+      <BatchUploadWrapper
+        batchType={selectedBatch.batchType}
+        docUrl={selectedBatch.sampleUrl}
+        title="Batch Accounts Upload"
+        points={[
+          'partner_customer_id, contact should be unique for each account.',
+          'The number of rows in the file should not exceed 50 thousand.',
+        ]}
+        createBatch={selectedBatch.selectedCreateBatch}
+        validateBatch={selectedBatch.selectedValidateBatch}
+        component={<InputSelector options={createAccountOptions} setInput={setProvider} />}
+      />
+    );
+  },
+);
 
 export const LoadsBatchUpload = connect(null, {
   createBatch: createWalletLoadsBatch as () => void,
