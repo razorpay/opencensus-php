@@ -25,6 +25,10 @@ class ReconService
 
     const FILE_TYPE_ID = 'file_type_id';
 
+    const BULK_MANUAL_RECON_FILE = 'bulk_manual_recon_file';
+
+    const GENERAL_FILE = 'general_file';
+
     const FILE = 'file';
 
     const NAME = 'name';
@@ -42,6 +46,10 @@ class ReconService
     const ART_UFH_BULK_RULE = 'art_bulk_rule';
 
     const ART_UFH_SAMPLE_FILE = 'art_sample_file';
+
+    const ART_UFH_GENERAL_FILE = 'art_general_file';
+
+    const ART_UFH_MANUAL_RECON_FILE = 'art_manual_recon_file';
 
     const BULK_RULE_URL = 'bulk_rule';
 
@@ -128,6 +136,14 @@ class ReconService
             unset($input[self::FILE]);
         }
 
+        if (array_key_exists(self::BULK_MANUAL_RECON_FILE, $input)  and !(is_null($input[self::BULK_MANUAL_RECON_FILE]) or  $input[self::BULK_MANUAL_RECON_FILE] == self::NULL))
+        {
+            $data = $input;
+            $data['bulk_file_path'] = $this->manalReconUploadFile($input);
+            unset($input[self::BULK_MANUAL_RECON_FILE]);
+            unset($data[self::BULK_MANUAL_RECON_FILE]);
+        }
+
         if (in_array($url, [self::FILE_TYPE_URL, self::SAMPLE_FILE_PARSER_URL]) and in_array($method, $allowed_methods))
         {
             if(array_key_exists(self::FILE, $input) and !(is_null($input[self::FILE]) or  $input[self::FILE] == self::NULL))
@@ -135,6 +151,14 @@ class ReconService
                 $data->sample_file_path = $this->uploadSampleFile($input);
                 unset($input[self::FILE]);
             }
+        }
+
+        if (array_key_exists(self::GENERAL_FILE, $input) and !(is_null($input[self::GENERAL_FILE]) or  $input[self::GENERAL_FILE] == self::NULL))
+        {
+            $data = $input;
+            $data['general_file'] = $this->uploadGeneralFile($input);
+            unset($input[self::GENERAL_FILE]);
+            unset($data[self::GENERAL_FILE]);
         }
 
         $this->trace->info(
@@ -175,6 +199,25 @@ class ReconService
         unset($input[self::FILE]);
 
         return $this->sendRequest('file', 'POST', $input);
+    }
+
+    public function manalReconUploadFile($input)
+    {
+        $merchant_id = $input[self::MERCHANT_ID];
+
+        $date = date('Y-m-d');
+
+        $workspace_id = $input[self::WORKSPACE_ID];
+
+        $file_type_id = $input[self::FILE_TYPE_ID];
+
+        $file = $input[self::BULK_MANUAL_RECON_FILE];
+
+        $fileName = $file->getClientOriginalName();
+
+        $storageFileName = self::ADMIN_DASHBOARD_WORKFLOW_UPLOAD . '/' . $merchant_id . '/' . $workspace_id . '/manual_recon_raw_files/' . $date . '/' . $file_type_id . '/' . $fileName;
+
+        return $this->uploadFileToUfh($file, $storageFileName, self::ART_UFH_WORKFLOW_FILE_TYPE);
     }
 
     public function workflowFileUpload($input)
@@ -250,6 +293,26 @@ class ReconService
         $storageFileName = self::ADMIN_DASHBOARD_UPLOAD . '/' . $merchant_id . '/' . $workspace_id . '/' . $date . '/' . $name .  '/sample/' . $fileName;
 
         return $this->uploadFileToUfh($file, $storageFileName, self::ART_UFH_SAMPLE_FILE);
+    }
+
+    protected function uploadGeneralFile($input)
+    {
+
+        $date = date('Y-m-d');
+
+        $merchant_id = $input[self::MERCHANT_ID];
+
+        $workspace_id = $input[self::WORKSPACE_ID];
+
+        $name = $input[self::NAME];
+
+        $file = $input[self::GENERAL_FILE];
+
+        $fileName = $file->getClientOriginalName();
+
+        $storageFileName = self::ADMIN_DASHBOARD_UPLOAD . '/' . $merchant_id . '/' . $workspace_id . '/general/'. $name . '/'. $date . '/' . $fileName;
+
+        return $this->uploadFileToUfh($file, $storageFileName, self::ART_UFH_WORKFLOW_FILE_TYPE);
     }
 
     protected function uploadFileToUfh($file, $storageFileName, $type)
