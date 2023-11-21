@@ -245,6 +245,15 @@ class Service extends Base\Service
         return $configData ?? [];
     }
 
+    public function checkDefaultPartnerConfigExist(array $input): array
+    {
+        $data = $this->fetchDefaultPartnerConfig($input);
+
+        $defaultPlanDetails = (empty($data) === false ? $data['default_plan_id_details'] : null);
+
+        return ['is_default_plan_exists' => (empty($defaultPlanDetails) === false)];
+    }
+
 
     /**
      * @param string $id

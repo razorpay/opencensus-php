@@ -52,6 +52,15 @@ class PartnerConfigController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function checkDefaultPartnerConfigExist()
+    {
+        $input = Request::all();
+
+        $data  = $this->service()->checkDefaultPartnerConfigExist($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function bulkUpsert() {
 
         $input = Request::all();

@@ -913,6 +913,7 @@ class UserRolesScope
             'partner_activation_details'                           => Role::READER_ROLES,
             'partner_sales_poc'                                    => [Role::OWNER, Role::ADMIN, Role::PARTNER],
             'default_partner_config_fetch_guest'                   => Role::READER_ROLES,
+            'default_config_for_oauth_authorize'                   => Role::READER_ROLES,
             'get_app_name_from_payment'                            => Role::READER_ROLES,
             'partner_request_migration'                            => [Role::OWNER, Role::ADMIN],
             'partner_activation_save'                              => [Role::OWNER, Role::ADMIN],

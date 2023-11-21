@@ -3280,7 +3280,8 @@ class Route
         'partner_config_edit'                      => ['put',      'partner_config/{id}',                            'PartnerConfigController@update'                                    ],
         'partner_config_edit_logo'                 => ['post',     'partner_config/{id}/logo',                       'PartnerConfigController@uploadLogo'                                ],
         'partner_config_fetch_guest'               => ['get',      'partner_config_guest',                           'PartnerConfigController@getConfig'                                 ],
-        'default_partner_config_fetch_guest'       => ['get',      'partner_config/default',                          'PartnerConfigController@getDefaultPartnerConfig'                                 ],
+        'default_partner_config_fetch_guest'       => ['get',      'partner_config/default',                         'PartnerConfigController@getDefaultPartnerConfig'                   ],
+        'default_config_for_oauth_authorize'       => ['get',      'partner_config/check_default',                   'PartnerConfigController@checkDefaultPartnerConfigExist'            ],
         'create_partner_sub_merchant_config'       => ['post',     'partner_configs/submerchant/config',             'PartnerConfigController@createPartnersSubMerchantConfig'           ],
         'update_partner_sub_merchant_config'       => ['put',      'partner_configs/submerchant/config',             'PartnerConfigController@updatePartnersSubMerchantConfig'           ],
         'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'                        ],
@@ -5356,6 +5357,7 @@ class Route
         'payments_api_backfill',
         'refunds_reversal_create',
         'adj_transaction_create',
+        'default_config_for_oauth_authorize',
         'internal_enterprise_dashboard_login_otp_email',
         'transfer_transaction_create',
         'merchant_entities_info',
@@ -16349,6 +16351,7 @@ class Route
             'merchant_banking_accounts_webhook',
             'user_details_unified',
             'partner_config_fetch_guest',
+            'default_config_for_oauth_authorize',
         ],
 
         'reporting' => [
