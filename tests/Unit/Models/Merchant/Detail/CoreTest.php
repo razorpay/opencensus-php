@@ -12824,4 +12824,46 @@ class CoreTest extends TestCase
         $this->assertEquals(false, $response['fee_based_gating']['invoice_sent']);
 
     }
+
+    public function testIsMerchantApplicableForWebsiteSections_BankingPlusPrimary()
+    {
+
+        $merchant = $this->fixtures->create('merchant', [
+            'business_banking'             => true,
+        ]);
+
+        $user = $this->fixtures->create('user', []);
+
+        $merchantUser = $this->fixtures->create('merchant_user', [
+            'merchant_id'         => $merchant->getId(),
+            'user_id'             => $user->getId(),
+            'product'             => 'primary',
+        ]);
+
+        $res = (new WebsiteService())->isMerchantApplicableForWebsiteSections($merchant);
+
+        $this->assertEquals(true, $res);
+
+    }
+
+    public function testIsMerchantApplicableForWebsiteSections_BankingNotPrimary()
+    {
+
+        $merchant = $this->fixtures->create('merchant', [
+            'business_banking'             => true,
+        ]);
+
+        $user = $this->fixtures->create('user', []);
+
+        $merchantUser = $this->fixtures->create('merchant_user', [
+            'merchant_id'         => $merchant->getId(),
+            'user_id'             => $user->getId(),
+            'product'             => 'banking',
+        ]);
+
+        $res = (new WebsiteService())->isMerchantApplicableForWebsiteSections($merchant);
+
+        $this->assertEquals(false, $res);
+
+    }
 }

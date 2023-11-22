@@ -671,6 +671,11 @@ class Service extends Base\Service
         // RazorpayX
         if ($merchant->isBusinessBankingEnabled() === true)
         {
+            $merchantUserProducts = $this->repo->merchant_user->fetchMerchantUserProductsByMerchantId($merchant->getId());
+            if (empty($merchantUserProducts) === false and in_array("primary", $merchantUserProducts, true) === true)
+            {
+                return true;
+            }
             return false;
         }
 

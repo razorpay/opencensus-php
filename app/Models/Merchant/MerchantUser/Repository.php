@@ -396,4 +396,15 @@ class Repository extends Base\Repository
                     ->whereIn($merchantIdCol, $merchantIds)
                     ->get();
     }
+
+    public function fetchMerchantUserProductsByMerchantId(string $merchantId)
+    {
+        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->where($merchantIdCol, $merchantId)
+                    ->get()
+                    ->pluck(Entity::PRODUCT)
+                    ->toArray();
+    }
 }
