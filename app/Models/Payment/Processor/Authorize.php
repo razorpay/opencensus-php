@@ -4188,7 +4188,7 @@ trait Authorize
                 'currency');
         }
 
-        if (($payment->getCurrency() !== Currency\Currency::INR) && ($payment->isCard() === false)) 
+        if (($payment->getCurrency() !== Currency\Currency::INR) && ($payment->isCard() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -4206,7 +4206,7 @@ trait Authorize
         $hsCodeData = (new MIIService())->getMerchantHsCode($payment->merchant->getId());
 
         // validate merchant hscode
-        if((empty($hsCodeData) === true) or 
+        if((empty($hsCodeData) === true) or
            (isset($hsCodeData['hs_code']) === false) or
            (HsCodeList::isBlacklistedHSCodeForJPMCImportFlow($hsCodeData['hs_code']) === true))
         {
@@ -11713,7 +11713,10 @@ trait Authorize
     {
         $routeName = $this->app['request.ctx']->getRoute();
         $this->isCheckoutRoute = $this->app['api.route']->isCheckoutPaymentCreateRoute($routeName);
-        if(($payment->isCard() === true || $payment->isEmi() === true) and ($this->isCheckoutRoute === true)){
+        $this->isPrivateRedirectRoute = $this->app['api.route']->isPaymentCreateRedirectRoute($routeName);
+
+        if($payment->isMethodCardOrEmi() === true and ($this->isCheckoutRoute === true
+            || ($this->isPrivateRedirectRoute and $payment->isRecurringTypeInitial()))) {
             $payload = [
                 'merchant_id' => $payment->getMerchantId(),
                 'payment_id' => $payment->getPublicId(),

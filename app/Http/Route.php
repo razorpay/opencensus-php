@@ -17029,6 +17029,10 @@ class Route
         'payment_create_ajax'
     ];
 
+    protected static $privateRedirectRoute = [
+        'payment_create_private_old'
+    ];
+
     protected static $skipCardMetaCallToVault = [
         'admin_fetch_entity_by_id',
         'admin_fetch_entity_multiple',
@@ -18996,6 +19000,13 @@ class Route
         $jsonpRoutes = self::$checkoutRoutes;
 
         return (in_array($route, $jsonpRoutes, true) === true);
+    }
+
+    public static function isPaymentCreateRedirectRoute($route)
+    {
+        $privateRedirectOld = self::$privateRedirectRoute;
+
+        return (in_array($route, $privateRedirectOld, true) === true);
     }
 
     public static function isAjaxPaymentCreateRoute($route)
