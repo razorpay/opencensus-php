@@ -65,6 +65,10 @@ class Feature
         self::OPTIMIZER
     ];
 
+    const METHOD_AGNOSTIC_FEATURES = [
+        self::OPTIMIZER
+    ];
+
     public static function validateFeature($feature)
     {
         if (defined(__CLASS__ . '::' . strtoupper($feature)) === false)

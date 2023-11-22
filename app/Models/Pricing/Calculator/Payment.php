@@ -154,12 +154,35 @@ class Payment extends Base
 
             $rules = $this->applyFiltersOnRules($pricing, $filters);
 
-            if (count($rules) > 0)
-            {
-                $rule = $this->getPricingRule($rules, $method);
+            if (count($rules) > 0){
+                // For features where a single rule is added for all payment methods,
+                // skip method level filtering if such rule found
+                if (in_array($feature, Pricing\Feature::METHOD_AGNOSTIC_FEATURES)){
 
-                $this->pricingRules->push($rule);
+                    if ($rules[0]->getPaymentMethod() == null){
+                        if (count($rules) > 1)
+                        {
+                            throw new Exception\LogicException(
+                                'Only 1 pricing rule should have been present here. Found: ' . count($rules),
+                                null);
+                        }else{
+                            $this->pricingRules->push($rules[0]);
+                        }
+                    }else{
+
+                        $rule = $this->getPricingRule($rules, $method);
+
+                        $this->pricingRules->push($rule);
+                    }
+                }
+                else
+                {
+                    $rule = $this->getPricingRule($rules, $method);
+
+                    $this->pricingRules->push($rule);
+                }
             }
+
         }
     }
 
@@ -1084,7 +1107,7 @@ class Payment extends Base
 
     private function getBasicPricingRuleFiltersForFeature(string $product, $feature, $method)
     {
-        if ($feature == Pricing\Feature::OPTIMIZER)
+        if (in_array($feature, Pricing\Feature::METHOD_AGNOSTIC_FEATURES))
         {
             $filters = [
                 [Pricing\Entity::PRODUCT,        $product, false, null],

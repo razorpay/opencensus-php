@@ -2176,6 +2176,148 @@ class PricingTest extends TestCase
         $this->assertEquals('5000', $paymentObj['fee']);
     }
 
+    public function testCreatePaymentOptionalMethodForAddonPricing()
+    {
+        $defaultPricingPlan = [
+            'plan_name'                 => 'TestPlan1',
+            'payment_method'            => 'card',
+            'payment_method_type'       => 'credit',
+            'payment_method_subtype'    => 'business',
+            'percent_rate'              => 1000,
+            'fixed_rate'                =>  0,
+            'payment_network'           => 'MC',
+            'payment_issuer'            => 'SBIN',
+            'org_id'                    => '10000000000000',
+            'type'                      => 'pricing',
+        ];
+
+        $optimizerSinglePricingPlan = [
+            'plan_name' => 'TestPlan1',
+            'feature'   => 'optimizer',
+            'payment_method' => null,
+            'payment_method_type' => null,
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 0,
+            'fixed_rate' => 13,
+            'type' => 'pricing',
+            'international' => 0,
+            'amount_range_active' => '0',
+            'amount_range_min' => null,
+            'amount_range_max' => null,
+        ];
+
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+            'sub_type'=> 'business',
+        ]);
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        $this->addPricingPlanRule($plan['id'], $optimizerSinglePricingPlan);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan['id']]);
+
+        $this->fixtures->merchant->addFeatures(['raas']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('5013', $paymentObj['fee']);
+    }
+
+    public function testCreatePaymentOptionalAndNonOptionalMethodForAddonPricing()
+    {
+        $defaultPricingPlan = [
+            'plan_name'                 => 'TestPlan1',
+            'payment_method'            => 'card',
+            'payment_method_type'       => 'credit',
+            'payment_method_subtype'    => 'business',
+            'percent_rate'              => 1000,
+            'fixed_rate'                =>  0,
+            'payment_network'           => 'MC',
+            'payment_issuer'            => 'SBIN',
+            'org_id'                    => '10000000000000',
+            'type'                      => 'pricing',
+        ];
+
+        $optimizerNullMethodPricingPlan = [
+            'plan_name' => 'TestPlan1',
+            'feature'   => 'optimizer',
+            'payment_method' => null,
+            'payment_method_type' => null,
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 0,
+            'fixed_rate' => 13,
+            'type' => 'pricing',
+            'international' => 0,
+            'amount_range_active' => '0',
+            'amount_range_min' => null,
+            'amount_range_max' => null,
+        ];
+
+        $optimizerCardMethodPricingPlan = [
+            'plan_name' => 'TestPlan1',
+            'feature'   => 'optimizer',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_method_subtype'    => 'business',
+            'payment_network'           => 'MC',
+            'payment_issuer'            => 'SBIN',
+            'percent_rate' => 0,
+            'fixed_rate' => 17,
+            'type' => 'pricing',
+            'international' => 0,
+            'amount_range_active' => '0',
+            'amount_range_min' => null,
+            'amount_range_max' => null,
+        ];
+
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '555555555555558';
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+            'sub_type'=> 'business',
+        ]);
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        $this->addPricingPlanRule($plan['id'], $optimizerNullMethodPricingPlan);
+        $this->addPricingPlanRule($plan['id'], $optimizerCardMethodPricingPlan);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan['id']]);
+
+        $this->fixtures->merchant->addFeatures(['raas']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('5017', $paymentObj['fee']);
+    }
+
     public function testCreatePaymentCardWithoutSubTypePricing()
     {
         $this->mockCardVault();
