@@ -115,7 +115,7 @@ class TestCase extends ParentTestCase
             {
                 foreach (Redis::connection($cluster)->getConnection() as $node)
                 {
-                    $node->executeCommand(new \Predis\Command\ServerFlushDatabase());
+                    $node->executeCommand(new \Predis\Command\Redis\FLUSHDB());
                 }
             }
         }

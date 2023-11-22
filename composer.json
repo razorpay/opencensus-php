@@ -19,7 +19,7 @@
         "razorpay/ifsc": "~2.0.3",
         "propaganistas/laravel-phone": "^4.3",
         "giggsey/libphonenumber-for-php": "^8",
-        "predis/predis": "^1.1.6",
+        "predis/predis": "^2.2.2",
         "php-http/guzzle7-adapter": "dev-master",
         "phpseclib/phpseclib": "2.0.31",
         "jenssegers/agent": "^2.3",
@@ -43,7 +43,7 @@
         "razorpay/ufh-sdk-php": "v1.0.1",
         "bacon/bacon-qr-code": "2.0.3",
         "watson/rememberable": "^6.0",
-        "razorpay/hodor": "dev-master",
+        "razorpay/hodor": "dev-upgrade_redis",
         "razorpay/oauth": "dev-oauth_dualwrite",
         "fideloper/proxy": "^4.0",
         "nojacko/email-validator": "^1.1",
@@ -97,9 +97,9 @@
         "razorpay/account-service-php-sdk": "v1.0.12",
         "ext-grpc": "*",
         "ext-pdo": "*",
-        "code-orange/redis-counting-semaphore": "^1.2",
         "guzzlehttp/guzzle": "7.7",
-        "razorpay/config-proto": "dev-master"
+        "razorpay/config-proto": "dev-master",
+        "razorpay/redis-counting-semaphore": "dev-added_package_changes"
     },
     "repositories": [
         {
@@ -185,6 +185,11 @@
             "type": "vcs",
             "no-api": true,
             "url": "git@github.com:razorpay/account-service-php-sdk.git"
+        },
+        {
+            "type": "vcs",
+            "no-api": true,
+            "url": "git@github.com:razorpay/redis-counting-semaphore.git"
         }
     ],
     "require-dev": {
@@ -236,7 +241,10 @@
         ]
     },
     "config": {
-        "preferred-install": "dist"
+        "preferred-install": "dist",
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
     },
     "minimum-stability": "dev"
 }

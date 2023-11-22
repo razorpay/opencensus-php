@@ -76,7 +76,7 @@ trait TestsThrottle
 
     protected function flushRedis()
     {
-        $flushDbCommand = new \Predis\Command\ServerFlushDatabase();
+        $flushDbCommand = new \Predis\Command\Redis\FLUSHDB();
 
         foreach ($this->redis->getConnection() as $node) {
             $node->executeCommand($flushDbCommand);
