@@ -127,6 +127,7 @@ final class Metric
     const ZIP_CODE_WITHOUT_ADDRESS_FOUND_COUNT          = 'zip_code_without_address_found_count';
 
     const MAGIC_COD_ENGINE_EVALUATE_API_ERROR_COUNT     = 'magic_cod_engine_evaluate_api_error_count';
+    const MAGIC_ORDER_FETCH_OFFER_ERROR_COUNT           = 'magic_order_fetch_offer_error_count';
 
     const PRE_MAGIC_ORDER_JOB_CREATE_ERROR_COUNT = 'pre_magic_order_job_create_error_count';
 

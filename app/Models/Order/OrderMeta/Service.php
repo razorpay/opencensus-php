@@ -730,6 +730,20 @@ class Service extends \RZP\Models\Base\Service
         $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
 
         if (empty($input['amount']) == true || $order->getAmount() != $input['amount']) {
+
+            $this->trace->error(TraceCode::MAGIC_ORDER_FETCH_OFFER_ERROR,
+                [
+                    'code'    => ErrorCode::BAD_REQUEST_ERROR,
+                    'message' => PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
+                    'order_amount' => $order->getAmount(),
+                    'amount' => $input['amount']
+                ]
+            );
+
+            $this->trace->count(Metric::MAGIC_ORDER_FETCH_OFFER_ERROR_COUNT, [
+                'type'    => 'payment_order_amount_mismatch',
+            ]);
+
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,
                 null,
