@@ -2,6 +2,10 @@
 
 namespace RZP\Gateway\Upi\Mindgate;
 
+use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
+use Monolog\Logger;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -9,6 +13,7 @@ use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
+use RZP\Models\QrCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Upi\Base;
 use RZP\Models\UpiTransfer;
@@ -92,6 +97,9 @@ class Gateway extends Base\Gateway
         Entity::GATEWAY_DATA              => Entity::GATEWAY_DATA,
     ];
 
+    protected $qrPaymentMerchantRefPrefix = QrCode\Constants::QR_CODE_V2_HDFC_PREFIX;
+
+    protected $qrPaymentMerchantRefSuffix = QrCode\Constants::QR_CODE_V2_HDFC_SUFFFIX;
     /**
      * Authorizes a payment using UPI Gateway
      * @param array $input
@@ -517,6 +525,11 @@ class Gateway extends Base\Gateway
     {
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
+        if ($routeName === 'payment_callback_bharatqr_internal')
+        {
+            return $this->getQrDataV2(json_decode($input, true));
+        }
+
         if ($routeName === 'gateway_payment_callback_recurring') {
 
             $decodeData = json_decode($input, true);
@@ -709,9 +722,21 @@ class Gateway extends Base\Gateway
 
     public function getTerminalDetailsFromCallbackIfApplicable($input)
     {
-        return [
-            Terminal\Entity::GATEWAY_MERCHANT_ID => $input[ResponseFields::CALLBACK_RESPONSE_PGMID]
-        ];
+        if (is_array($input)) {
+            if (isset($input[ResponseFields::CALLBACK_RESPONSE_PGMID])) {
+                return [
+                    Terminal\Entity::GATEWAY_MERCHANT_ID => $input[ResponseFields::CALLBACK_RESPONSE_PGMID]
+                ];
+            }
+
+            if (isset($input['data']['terminal'][ResponseFields::GATEWAY_MERCHANT_ID])) {
+                return [
+                    Terminal\Entity::GATEWAY_MERCHANT_ID => $input['data']['terminal'][ResponseFields::GATEWAY_MERCHANT_ID]
+                ];
+            }
+        }
+
+        return null;
     }
 
     protected function getQrData(array $input)
@@ -737,6 +762,109 @@ class Gateway extends Base\Gateway
             'callback_data' => $input,
             'qr_data'       => $qrData
         ];
+    }
+
+    public function getQrDataV2(array $input)
+    {
+        $inputFields = $input['data'];
+
+        $this->checkForPaymentFailure($inputFields);
+
+        $qrData = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $inputFields['payment'][ResponseFields::AMOUNT_AUTHORIZED],
+            BharatQr\GatewayResponseParams::VPA                   => $inputFields['upi']['vpa'],
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $inputFields['terminal'][ResponseFields::GATEWAY_MERCHANT_ID],
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $this->getQrPaymentMerchantReference($inputFields['upi'][ResponseFields::MERCHANT_REFERENCE]),
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $inputFields['upi'][ResponseFields::NPCI_REFERENCE_ID],
+        ];
+
+        $payerAccountType = $this->getInternalPayerAccountTypeV2($inputFields);
+
+        if (isset($payerAccountType) === true) {
+            $qrData[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE] = $payerAccountType;
+        }
+
+        $transactionTime = null;
+
+        if (empty($inputFields['gateway_timestamp'] === false))
+        {
+            try
+            {
+                $transactionTime = Carbon::createFromFormat('Y-m-d H:i:s.v', $inputFields['gateway_timestamp'],
+                    Timezone::IST);
+            }
+            catch (InvalidFormatException $e)
+            {
+                // We are only catching this exception and tracing it for now
+                // We know that recon can only send timestamp in Y-m-d format
+                // Thus missing H:i:s.v data can cause this exception
+                $this->trace->traceException(
+                    $e,
+                    Logger::WARNING,
+                    TraceCode::QR_DATA_TIMESTAMP_DATA_MISSING,
+                    [
+                        'input_timestamp' => $inputFields['gateway_timestamp'],
+                    ]
+                );
+            }
+
+            if (empty($transactionTime) !== true)
+            {
+                $qrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
+            }
+        }
+
+        return [
+            'callback_data' => $input,
+            'qr_data'       => $qrData
+        ];
+    }
+
+    public function getQrPaymentMerchantReference($merchantReference)
+    {
+        $merchantReference = $this->removeGatewayPrefixIfPresent($merchantReference);
+
+        if ((empty($this->qrPaymentMerchantRefSuffix)) === false and
+            (str_ends_with($merchantReference, $this->qrPaymentMerchantRefSuffix)))
+        {
+            $merchantReference = substr($merchantReference, 0, -1 * strlen($this->qrPaymentMerchantRefSuffix));
+        }
+
+        return $merchantReference;
+    }
+
+    public function removeGatewayPrefixIfPresent($merchantReference)
+    {
+        if ((empty($this->qrPaymentMerchantRefPrefix) === false) and
+            (str_starts_with($merchantReference, $this->qrPaymentMerchantRefPrefix)))
+        {
+            $merchantReference = substr($merchantReference, strlen($this->qrPaymentMerchantRefPrefix));
+        }
+
+        return $merchantReference;
+    }
+
+    protected function checkForPaymentFailure($input)
+    {
+        if ($input[ResponseFields::STATUS] !== Status::SUCCESS_STATUS)
+        {
+            $this->trace->error(
+                TraceCode::QR_PAYMENT_FAILED_TRANSACTION_CALLBACK,
+                [
+                    'notification_request' => $input,
+                    'gateway'              => $this->gateway
+                ]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
+                null,
+                null,
+                [
+                    'notification_request' => $input,
+                    'gateway'              => $this->gateway
+                ]);
+        }
     }
 
     public function getUpiTransferData(array $input)
@@ -2293,6 +2421,19 @@ class Gateway extends Base\Gateway
               return PayerAccountType::getPayerAccountType(strtolower($payerAccountType[0]));
           }
       }
+
+    }
+
+    protected function getInternalPayerAccountTypeV2($input)
+    {
+        if (array_key_exists(BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE, $input['payment']) === true)
+        {
+            $payerAccountType = explode("!", (string)$input['payment'][BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE]);
+            if ((sizeof($payerAccountType)) > 0 and
+                (in_array(strtolower($payerAccountType[0]), PayerAccountType::SUPPORTED_PAYER_ACCOUNT_TYPES)) === true) {
+                return PayerAccountType::getPayerAccountType(strtolower($payerAccountType[0]));
+            }
+        }
 
     }
 }

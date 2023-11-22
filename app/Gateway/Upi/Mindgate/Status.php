@@ -10,6 +10,8 @@ class Status
 
     const SUCCESS = 'SUCCESS';
 
+    const SUCCESS_STATUS = 'payment_successful';
+
     // Only in case of payment
     const PENDING = 'PENDING';
 

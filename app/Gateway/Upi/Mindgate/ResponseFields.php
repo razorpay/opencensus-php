@@ -38,6 +38,10 @@ class ResponseFields
     const REFERENCE_8               = 'reference_8';
     const REFERENCE_9               = 'reference_9';
     const PAYER_ACCOUNT_TYPE        = 'payer_account_type';
+    const AMOUNT_AUTHORIZED         = 'amount_authorized';
+    const MERCHANT_REFERENCE        = 'merchant_reference';
+    const GATEWAY_MERCHANT_ID       = 'gateway_merchant_id';
+    const NPCI_REFERENCE_ID         = 'npci_reference_id';
 
     // Recurring fields
     const MANDATE_TYPE              = 'mandateType';

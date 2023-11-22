@@ -343,6 +343,9 @@ class Service extends Base\Service
             case Gateway::UPI_YESBANK:
                 return $gatewayResponse['callback_data']['data']['upi'][YesBankFields::MERCHANT_REFERENCE];
 
+            case Gateway::UPI_MINDGATE:
+                return $gatewayResponse['callback_data']['data']['upi'][\RZP\Gateway\Upi\Mindgate\ResponseFields::MERCHANT_REFERENCE];
+
             case Gateway::UPI_KOTAK:
                 return $gatewayResponse['callback_data']['data']['upi']['merchant_reference'];
         }

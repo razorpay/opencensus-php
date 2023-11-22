@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Icici\Fields;
+use RZP\Gateway\Upi\Mindgate\ResponseFields;
 
 return [
     'testCreateBharatQrCode' => [
@@ -237,6 +238,35 @@ return [
             Fields::TXN_COMPLETION_DATE => '20200601085715',
             Fields::RESPONSE_CODE       => '',
             Fields::PAYER_ACCOUNT_TYPE  => 'INVALIDTYPE',
+        ],
+    ],
+
+    'testProcessMindgateQrPaymentInternal' => [
+        'url'     => '/payment/callback/bharatqr/upi_mindgate/internal',
+        'method'  => 'post',
+        'content' => [
+            'data'    =>
+                [
+                    'payment'  =>
+                        [
+                            'amount_authorized' => '4000',
+                            'currency'          => 'INR',
+                        ],
+                    'status'   => 'payment_successful',
+                    'terminal' =>
+                        [
+                            'gateway' => 'upi_mindgate',
+                            'gateway_merchant_id' => 'razorpay upi',
+                            'vpa'     => 'testvpa@hdfc',
+                        ],
+                    'upi'      =>
+                        [
+                            'merchant_reference' => 'dummy_id',
+                            'npci_reference_id'  => '015306767323',
+                            'vpa'                => 'random@ybl',
+                        ],
+                ],
+            'success' => true,
         ],
     ],
 
