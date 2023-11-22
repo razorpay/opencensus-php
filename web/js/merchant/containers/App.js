@@ -34,10 +34,7 @@ import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
 import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics';
 import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
-import {
-  fetchEligibilityForNcRevamp,
-  fetchEligibilityForPolicyWizardV2,
-} from 'merchant/reducers/home';
+import { fetchEligibilityForNcRevamp } from 'merchant/reducers/home';
 import { matchFullPageView } from 'merchant/routes';
 import {
   classList,
@@ -523,16 +520,6 @@ class App extends Component {
           rank: Ranks.P2,
         });
       }
-    }
-    try {
-      this.props.fetchEligibilityForPolicyWizardV2();
-    } catch (error) {
-      errorService.captureError(error, {
-        tags: {
-          team: Teams.GROWTH,
-        },
-        rank: Ranks.P2,
-      });
     }
   }
 
@@ -1359,7 +1346,6 @@ const mapDispatchToProps = (dispatch) =>
       fetchPayments,
       fetchTransactionAmount: fetchAmount,
       fetchEligibilityForNcRevamp,
-      fetchEligibilityForPolicyWizardV2,
       fetchConfigTags,
     },
     dispatch,

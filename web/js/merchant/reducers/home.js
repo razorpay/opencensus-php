@@ -38,7 +38,6 @@ const ESCALATIONS_FETCH = 'ESCALATIONS_FETCH';
 const FETCH_ELIGIBILITY_FOR_NC_REVAMP = 'FETCH_ELIGIBILITY_FOR_NC_REVAMP';
 const SHOW_PARTNER_KYC_STATUS_MODAL = 'SHOW_PARTNER_KYC_STATUS_MODAL';
 const HIDE_PARTNER_KYC_STATUS_MODAL = 'HIDE_PARTNER_KYC_STATUS_MODAL';
-const FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2 = 'FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2';
 
 // Invalid Merchant call
 const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
@@ -108,7 +107,6 @@ const initialState = {
     data: {},
   },
   isNcEligibile: false,
-  isPolicyWizardV2Eligible: false,
 };
 
 const getTransactionCountData = (data, mode) => {
@@ -181,16 +179,6 @@ export const fetchEligibilityForNcRevamp = () => {
     type: FETCH_ELIGIBILITY_FOR_NC_REVAMP,
     payload: merchantFetch({
       url: `merchant/activation/clarifications/eligibility`,
-      mode: 'live',
-    }),
-  };
-};
-
-export const fetchEligibilityForPolicyWizardV2 = () => {
-  return {
-    type: FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2,
-    payload: merchantFetch({
-      url: 'pg/onboarding/merchant_get_l2_dynamic_configs',
       mode: 'live',
     }),
   };
@@ -599,21 +587,15 @@ export default function homeReducer(state = initialState, action) {
         },
       });
 
-    case `${FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2}::PENDING`:
     case `${FETCH_ELIGIBILITY_FOR_NC_REVAMP}::PENDING`:
       return set(state);
 
-    case `${FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2}::ERROR`:
     case `${FETCH_ELIGIBILITY_FOR_NC_REVAMP}::ERROR`:
       return set(state);
 
     case `${FETCH_ELIGIBILITY_FOR_NC_REVAMP}::SUCCESS`:
       return merge(state, {
         isNcEligibile: action.payload.data.nc_revamp_enabled,
-      });
-    case `${FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2}::SUCCESS`:
-      return merge(state, {
-        isPolicyWizardV2Eligible: action.payload.data.is_policy_wizard_v2_eligible,
       });
 
     case INVALID_MERCHANT_CALL:

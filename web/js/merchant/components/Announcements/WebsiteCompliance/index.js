@@ -13,22 +13,11 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { useSplitzService } from 'common/splitz';
 
 /* Renders only on dWeb */
-function WebsiteComplianceBanner({
-  activationData,
-  websiteSectionDetailsData,
-  user,
-  screen,
-  isPolicyWizardV2Eligible,
-}) {
+function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, user, screen }) {
   const splitz = useSplitzService();
 
   const shouldShowBanner =
-    !isPolicyWizardV2Enabled({
-      splitz,
-      user,
-      activationData: activationData.data,
-      isPolicyWizardV2Eligible,
-    }) &&
+    !isPolicyWizardV2Enabled({ splitz, user, activationData: activationData.data }) &&
     (isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
       isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data));
 
@@ -112,7 +101,6 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
   websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
   activationData: state.websiteCompliance.activationData,
-  isPolicyWizardV2Eligible: state.home.isPolicyWizardV2Eligible,
 });
 
 export default connect(mapStateToProps, null)(WebsiteComplianceBanner);

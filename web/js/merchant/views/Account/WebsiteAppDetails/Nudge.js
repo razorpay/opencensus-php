@@ -26,17 +26,11 @@ function WebsiteAppDetailsNudge({
   screen,
   user,
   history,
-  isPolicyWizardV2Eligible,
 }) {
   const isMobileResolution = isMobileDevice();
   const splitz = useSplitzService();
   const shouldShowNudge =
-    !isPolicyWizardV2Enabled({
-      user,
-      activationData: activationData.data,
-      splitz,
-      isPolicyWizardV2Eligible,
-    }) &&
+    !isPolicyWizardV2Enabled({ user, activationData: activationData.data, splitz }) &&
     (isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
       isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data));
 
@@ -151,7 +145,6 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
   websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
   activationData: state.websiteCompliance.activationData,
-  isPolicyWizardV2Eligible: state.home.isPolicyWizardV2Eligible,
 });
 
 const mapDispatchToProps = (dispatch) =>

@@ -33,7 +33,6 @@ function WebsiteAppDetails({
   fetchActivationDetails,
   fetchMerchantWebsiteDetails,
   user,
-  isPolicyWizardV2Eligible,
 }) {
   const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
@@ -46,7 +45,6 @@ function WebsiteAppDetails({
     splitz,
     user,
     activationData: activationData.data,
-    isPolicyWizardV2Eligible,
   });
 
   useEffect(() => {
@@ -308,7 +306,6 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
   websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
   activationData: state.websiteCompliance.activationData,
-  isPolicyWizardV2Eligible: state.home.isPolicyWizardV2Eligible,
 });
 
 const mapDispatchToProps = (dispatch) =>
