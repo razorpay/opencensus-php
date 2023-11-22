@@ -38,6 +38,17 @@ describe('Step 1 Screen', () => {
             data_value: ['card'],
           },
         },
+        optimizer_razorpay: {
+          'Gateway Name': { data_value: 'Razorpay' },
+          'Gateway Acquirer': {
+            data_value: [
+              { name: 'Axis Bank', value: 'axis_vas' },
+              { name: 'HDFC Bank', value: 'hdfc_vas' },
+              { name: 'ICICI Bank', value: 'icici_vas' },
+            ],
+          },
+          'Payment Methods': { data_value: ['card', 'upi', 'netbanking'] },
+        },
       },
       loadingProviders: false,
       selectedProvider: null,
@@ -58,7 +69,7 @@ describe('Step 1 Screen', () => {
       render(<Step1 {...mockProps} />);
       expect(screen.getByText('Popular Gateways')).toBeInTheDocument();
       expect(screen.getByText('All Gateways')).toBeInTheDocument();
-      expect(screen.getAllByTestId('gateway-provider')).toHaveLength(4);
+      expect(screen.getAllByTestId('gateway-provider')).toHaveLength(5);
       expect(screen.getByText('PayTm')).toBeInTheDocument();
       expect(screen.queryAllByText(/PayU/)).toHaveLength(2);
     });
@@ -165,6 +176,52 @@ describe('Step 1 Screen', () => {
       expect(getByText('Checkout.com')).toBeInTheDocument();
       expect(getByText('Change Gateway')).toBeInTheDocument();
       expect(queryByText(/Enable seamless option/)).not.toBeInTheDocument();
+    });
+
+    it('should render Razorpay in list of All Gateways', () => {
+      render(<Step1 {...mockProps} />);
+      expect(screen.getByText('All Gateways')).toBeInTheDocument();
+      expect(screen.getByText('Razorpay')).toBeInTheDocument();
+    });
+
+    it('should render Razorpay as selected gateway', async () => {
+      const { getByText, getAllByTestId } = render(
+        <Step1
+          {...mockProps}
+          selectedProvider="optimizer_razorpay"
+          changeGatewayDetails={() => jest.fn()}
+        />,
+      );
+
+      expect(getAllByTestId('selected-gateway')).toHaveLength(1);
+      expect(getByText('Razorpay')).toBeInTheDocument();
+      expect(getByText('Change Gateway')).toBeInTheDocument();
+      expect(getByText(/Account type/)).toBeInTheDocument();
+
+      const bankingVasRadio = screen.getByLabelText('Banking VAS');
+      expect(bankingVasRadio).toBeInTheDocument();
+
+      await act(async () => {
+        await userEvent.click(bankingVasRadio);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/Bank/)).toBeInTheDocument();
+      });
+
+      const bankList = screen.getByPlaceholderText('Select bank');
+      expect(bankList).toBeInTheDocument();
+      await act(async () => {
+        await userEvent.click(bankList);
+      });
+
+      const axisBank = screen.getByText('Axis Bank');
+      expect(axisBank).toBeInTheDocument();
+      await act(async () => {
+        await userEvent.click(axisBank);
+      });
+
+      expect(bankList).toHaveValue('Axis Bank');
     });
   });
 });

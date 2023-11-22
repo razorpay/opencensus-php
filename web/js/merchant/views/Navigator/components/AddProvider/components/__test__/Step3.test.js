@@ -10,6 +10,7 @@ import {
   PAYTM_PROVIDER,
   NETBANKING_AXIS_PROVIDER,
   CKO_PROVIDER,
+  OPTIMIZER_RAZORPAY_PROVIDER,
 } from './mocks/Step3';
 import { TPV_OPTIONS } from './mocks/constants';
 
@@ -117,6 +118,24 @@ describe('Add Provider Step 3 Screen', () => {
     test.each(FIELDS)('should rendered the requried fields: %s', (field) => {
       renderApp(CKO_PROVIDER);
       expect(screen.getByText(field)).toBeInTheDocument();
+    });
+  });
+
+  describe('For optimizer_razorpay gateway', () => {
+    const FIELDS = ['Key', 'Secret', 'Payment Methods'];
+
+    test('should render without any errors', () => {
+      expect(() => renderApp(OPTIMIZER_RAZORPAY_PROVIDER)).not.toThrowError();
+    });
+
+    test.each(FIELDS)('should rendered the requried fields: %s', (field) => {
+      renderApp(OPTIMIZER_RAZORPAY_PROVIDER);
+      expect(screen.getByText(field)).toBeInTheDocument();
+    });
+
+    test('should not render Gateway Acquirer field', () => {
+      renderApp(OPTIMIZER_RAZORPAY_PROVIDER);
+      expect(screen.queryByText('Gateway Acquirer')).not.toBeInTheDocument();
     });
   });
 });

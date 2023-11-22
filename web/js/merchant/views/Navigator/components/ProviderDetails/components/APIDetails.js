@@ -12,6 +12,7 @@ const IGNORE_FIELDS = [
   PROVIDER_KEYS.SODEXO,
   WALLET_AUTO_DEBIT_KEY,
   PROVIDER_KEYS.RECURRING,
+  PROVIDER_KEYS.GATEWAY_ACQUIRER,
 ];
 
 function APIDetails({ providerDetails, isPaytmAutoDebitEnabled, walletAutoDebit }) {

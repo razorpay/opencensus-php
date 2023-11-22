@@ -1495,6 +1495,11 @@ export const gatewayDetailsMapping = {
       'https://www.axisbank.com/business-banking/collection-solutions/internet-payment-gateway-solutions/overview',
     dashboardUrlLabel: 'axisbank.com',
   },
+  optimizer_razorpay: {
+    dashboardImg: require('assets/optimizer/razorpay-dashboard.png'),
+    dashboardUrl: null,
+    dashboardUrlLabel: null,
+  },
 };
 
 export const createMappedProviders = (terminalProviders) => {

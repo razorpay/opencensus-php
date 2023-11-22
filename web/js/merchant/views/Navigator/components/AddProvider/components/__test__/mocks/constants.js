@@ -166,6 +166,48 @@ export const SUPPORTED_GATEWAYS = {
       terminals_key: '',
     },
   },
+  optimizer_razorpay: {
+    'Gateway Acquirer': {
+      data_type: 'string',
+      data_value: [
+        {
+          name: 'Axis Bank',
+          value: 'axis_vas',
+        },
+        {
+          name: 'HDFC Bank',
+          value: 'hdfc_vas',
+        },
+        {
+          name: 'ICICI Bank',
+          value: 'icici_vas',
+        },
+      ],
+      terminals_key: '',
+    },
+    'Gateway Name': {
+      data_type: 'string',
+      data_value: 'Razorpay',
+      terminals_key: '',
+    },
+    Key: {
+      data_type: 'string',
+      data_value: 'key',
+      min_length: 1,
+      terminals_key: '',
+    },
+    'Payment Methods': {
+      data_type: 'array',
+      data_value: ['card', 'upi', 'netbanking'],
+      terminals_key: '',
+    },
+    Secret: {
+      data_type: 'string',
+      data_value: 'secret',
+      min_length: 1,
+      terminals_key: '',
+    },
+  },
 };
 
 export const TPV_OPTIONS = ['Non TPV', 'TPV Only', 'Both (TPV and Non TPV)'];

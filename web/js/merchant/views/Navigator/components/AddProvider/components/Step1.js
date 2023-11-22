@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import debounce from 'lodash/debounce';
 
 import Input from 'common/new-ui/Input';
 import Spinner from 'common/ui/Spinner';
 import SeamlessNote from 'merchant/views/Navigator/components/Provider/SeamlessNote';
 import { SeamlessOption } from 'merchant/views/Navigator/components/Provider/SeamlessOption';
+import Select from 'merchant/views/Navigator/components/Select';
 import { gatewayLogos } from 'merchant/views/Navigator/components/util';
 import {
   RECOMMENDED_GATEWAYS,
   SEAMLESS_CONTENT,
   SEAMLESS_PROVIDERS,
   SEAMLESS_OPTIONS,
+  SEAMLESS_NOT_SUPPORTED,
+  ACCOUNT_TYPE_OPTIONS,
+  RAZORPAY_GATEWAY_KEY,
 } from 'merchant/views/Navigator/constants';
 
 /**
@@ -29,18 +33,38 @@ export const Step1 = (props) => {
     toggleSeamless,
     isEdit,
     gatewayDetails,
+    changeGatewayDetails,
   } = props;
 
   const [search, setSearch] = useState('');
   const [filteredProviders, setFilteredProviders] = useState({});
+  const [isBankingVasAccount, setIsBankingVasAccount] = useState(null);
+  const [bankingVasList, setBankingVasList] = useState([]);
+  const [selectedBank, setSelectedBank] = useState([]);
+
+  useEffect(() => {
+    if (selectedProvider === RAZORPAY_GATEWAY_KEY) {
+      const list = providers?.[selectedProvider]?.['Gateway Acquirer']?.data_value?.map(
+        (bank, index) => {
+          return {
+            id: index,
+            name: bank.name,
+            value: bank.value,
+          };
+        },
+      );
+      setBankingVasList(list);
+    }
+  }, [selectedProvider, providers]);
 
   const providersObjectKeys = Object.keys(providers) ?? [];
   const selectedProviderDetails = providers?.[selectedProvider] ?? {};
   const showSeamlessNote =
-    selectedProvider && selectedProvider !== 'checkout_dot_com_optimizer' && steps[1].edit;
+    selectedProvider && !SEAMLESS_NOT_SUPPORTED.includes(selectedProvider) && steps[1].edit;
   const seamlessOptionExist =
     SEAMLESS_PROVIDERS?.includes(selectedProvider) &&
     providers?.[selectedProvider]?.hasOwnProperty('optimizer_seamless_disabled');
+  const showAccountType = selectedProvider === RAZORPAY_GATEWAY_KEY && steps[1].edit;
 
   const filterOnSearch = (e) => {
     const val = e.target.value;
@@ -48,9 +72,16 @@ export const Step1 = (props) => {
       setSearch('');
       setFilteredProviders({});
     } else {
-      const res = providersObjectKeys.reduce((obj, item) => {
+      const gatewayList = providersObjectKeys.map((key) =>
+        key === RAZORPAY_GATEWAY_KEY ? 'razorpay' : key,
+      );
+      const res = gatewayList.reduce((obj, item) => {
         if (item?.toLowerCase()?.startsWith(val.toLowerCase())) {
-          obj[item] = providers[item];
+          if (item === 'razorpay') {
+            obj[RAZORPAY_GATEWAY_KEY] = providers[RAZORPAY_GATEWAY_KEY];
+          } else {
+            obj[item] = providers[item];
+          }
         }
         return obj;
       }, {});
@@ -142,6 +173,23 @@ export const Step1 = (props) => {
         isEdit={isEdit}
       />
     );
+  };
+
+  const onAccountTypeChange = ({ target }) => {
+    const isBankingVasAccountVal = target.value === 'true';
+    setIsBankingVasAccount(isBankingVasAccountVal);
+    const gatewayAcquirer = isBankingVasAccountVal ? '' : 'razorpay';
+    changeGatewayDetails({
+      target: { name: 'Gateway Acquirer', id: 'Gateway Acquirer', value: gatewayAcquirer },
+    });
+  };
+
+  const changeBank = (value) => {
+    setSelectedBank(value);
+    const bankingVas = value[0].value;
+    changeGatewayDetails({
+      target: { name: 'Gateway Acquirer', id: 'Gateway Acquirer', value: bankingVas },
+    });
   };
 
   if (loadingProviders) {
@@ -239,6 +287,47 @@ export const Step1 = (props) => {
               type="warning"
               providers={providers}
               selectedProvider={selectedProvider}
+            />
+          </div>
+        </div>
+      )}
+
+      {showAccountType && (
+        <div className="row mt-1">
+          <div className="col-xs-2">
+            <label for="account type" className="title-left mt-1">
+              Account type
+            </label>
+          </div>
+          <div className="col-xs-10">
+            <Input.Radio
+              className="Input--vTop Input--capitalize"
+              name="account_type"
+              size="small"
+              noDefaultSelectedValue={true}
+              defaultValue={isBankingVasAccount}
+              options={ACCOUNT_TYPE_OPTIONS}
+              onChange={onAccountTypeChange}
+            />
+          </div>
+        </div>
+      )}
+
+      {showAccountType && isBankingVasAccount && (
+        <div className="row mt-1">
+          <div className="col-xs-2">
+            <label for="bank" className="title-left mt-1">
+              Bank
+            </label>
+          </div>
+          <div className="col-xs-4">
+            <Select
+              multiple={false}
+              placeholder="Select bank"
+              options={bankingVasList}
+              searchable
+              selected={selectedBank}
+              select={changeBank}
             />
           </div>
         </div>

@@ -10,6 +10,7 @@ const StorageStatePath = {
   MOBILE_LIVE_LOGIN_STATE: `${BASE_PATH}/mobile-live-mode-login.json`,
   ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
   RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
+  OPTIMIZER_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-login.json`,
 };
 
 const routes = {
@@ -43,6 +44,7 @@ const routes = {
   PARTNER_DASHBOARD: '/app/partners',
   AFFILIATE_ACCOUNTS: '/app/partners/submerchants',
   AFFILIATE_ACCOUNTS_CAPITAL: '/app/partners/submerchants/capital',
+  OPTIMIZER: 'app/optimizer/rules',
 };
 
 const EmailCredentials = [
@@ -75,6 +77,12 @@ const EmailCredentials = [
     username: process.env.RESELLER_PARTNER_TEST_MODE_USERNAME,
     password: process.env.RESELLER_PARTNER_TEST_MODE_PASSWORD,
     storagePath: StorageStatePath.RESELLER_PARTNER_TEST_LOGIN_STATE,
+  },
+  {
+    type: 'desktop-optimizer-login.json',
+    username: ENV.EMAIL_OPTIMIZER_USERNAME,
+    password: ENV.EMAIL_OPTIMIZER_PASSWORD,
+    storagePath: StorageStatePath.OPTIMIZER_LOGIN_STATE,
   },
 ];
 

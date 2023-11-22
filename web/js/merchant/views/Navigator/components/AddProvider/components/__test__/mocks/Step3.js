@@ -1,4 +1,5 @@
 import { Step3 } from 'merchant/views/Navigator/components/AddProvider/components/Step3';
+import { RAZORPAY_GATEWAY_KEY } from 'merchant/views/Navigator/constants';
 import { SUPPORTED_GATEWAYS } from './constants';
 
 export const PAYU_PROVIDER = {
@@ -85,4 +86,20 @@ export const CKO_PROVIDER = {
 
 export const App = (props) => {
   return <Step3 {...props} />;
+};
+
+export const OPTIMIZER_RAZORPAY_PROVIDER = {
+  isEdit: true,
+  selectedProvider: RAZORPAY_GATEWAY_KEY,
+  providers: SUPPORTED_GATEWAYS,
+  provider: {
+    Provider_name: 'razorpay test 1',
+    Description: 'test',
+    Gateway: RAZORPAY_GATEWAY_KEY,
+    Gateway_details: {
+      'Payment Methods': [],
+    },
+  },
+  validationErrors: {},
+  changeGatewayDetails: jest.fn(),
 };

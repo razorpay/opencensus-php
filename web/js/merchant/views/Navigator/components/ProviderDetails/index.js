@@ -14,6 +14,7 @@ import {
   SEAMLESS_PROVIDERS,
   PROVIDER_KEYS,
   WALLET_AUTO_DEBIT_KEY,
+  RAZORPAY_GATEWAY_KEY,
 } from 'merchant/views/Navigator/constants';
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -92,6 +93,9 @@ class ProviderDetails extends Component {
       const isPaytmAutoDebitEnabled =
         provider?.Gateway === 'paytm' && !!user?.isPaytmAutoDebitEnabled;
 
+      const gatewayName =
+        provider?.Gateway === RAZORPAY_GATEWAY_KEY ? 'Razorpay' : provider?.Gateway;
+
       return (
         <div className="content-wrapper content-sm txn-details optimizer-provider-detail">
           {this.props.provider_detail_loading ? (
@@ -130,9 +134,9 @@ class ProviderDetails extends Component {
                       value={() => (
                         <>
                           <div className="provider-logo-holder">
-                            <img src={gatewayLogos[provider.Gateway.toLowerCase()]} />
+                            <img src={gatewayLogos[provider?.Gateway?.toLowerCase()]} />
                           </div>
-                          {provider?.Gateway}
+                          {gatewayName}
                         </>
                       )}
                     />

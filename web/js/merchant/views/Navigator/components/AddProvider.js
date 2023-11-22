@@ -23,6 +23,7 @@ import {
   INSTANT_PROVIDER_UNSUPPORTED_METHODS,
   SEAMLESS_PROVIDERS,
   METHODS,
+  RAZORPAY_GATEWAY_KEY,
 } from 'merchant/views/Navigator/constants';
 import { addProvider, editProvider } from 'merchant/views/Navigator/service';
 import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
@@ -144,15 +145,17 @@ class AddProvider extends React.Component {
     });
 
     this.setState((prevState) => {
+      const provider_name = provider === RAZORPAY_GATEWAY_KEY ? 'razorpay' : provider;
       const provider_st = prevState.provider;
       provider_st.Gateway = provider;
-      provider_st.Provider_name = provider;
+      provider_st.Provider_name = provider_name;
 
       const { activeProviders, user } = this.props;
       let num = 1;
       activeProviders.forEach((item) => {
-        if (provider_st.Provider_name === item.Provider_name) {
-          provider_st.Provider_name = `${provider}_${num}`;
+        // Case insensitive check
+        if (provider_st.Provider_name.toLowerCase() === item.Provider_name.toLowerCase()) {
+          provider_st.Provider_name = `${provider_name}_${num}`;
           num++;
         }
       });
@@ -194,6 +197,10 @@ class AddProvider extends React.Component {
       'optimizer_seamless_disabled',
     );
 
+    const isAccountTypeNotSelected =
+      selectedProviderWithAcquirer === RAZORPAY_GATEWAY_KEY &&
+      !provider?.Gateway_details?.['Gateway Acquirer'];
+
     let isDisabled = false;
     switch (step) {
       case 1:
@@ -203,6 +210,11 @@ class AddProvider extends React.Component {
         }
 
         if (seamlessOptionExist && !seamlessRadioValue) {
+          isDisabled = true;
+          break;
+        }
+
+        if (isAccountTypeNotSelected) {
           isDisabled = true;
         }
         break;
@@ -307,7 +319,11 @@ class AddProvider extends React.Component {
         let isProviderNameValid = true;
         const { activeProviders } = this.props;
         activeProviders?.forEach((item) => {
-          if (val === item?.Provider_name && item?.Terminal_id !== provider?.Terminal_id) {
+          // Case insensitive check
+          if (
+            val?.toLowerCase() === item?.Provider_name?.toLowerCase() &&
+            (item?.Provider_name === 'razorpay' || item?.Terminal_id !== provider?.Terminal_id)
+          ) {
             isProviderNameValid = false;
           }
         });
@@ -646,6 +662,10 @@ class AddProvider extends React.Component {
     const _params = qs.parse(this.props?.location?.search);
     const onCloseLink = _params?.from ?? '/optimizer/rules';
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
+    const gatewayName =
+      selectedProviderWithAcquirer === RAZORPAY_GATEWAY_KEY
+        ? 'Razorpay'
+        : selectedProviderWithAcquirer;
 
     return (
       <FullPageCover>
@@ -713,6 +733,7 @@ class AddProvider extends React.Component {
                           selectProvider={this.selectProvider}
                           changeGateway={this.changeGateway}
                           toggleSeamless={this.toggleSeamless}
+                          changeGatewayDetails={this.changeGatewayDetails}
                           isEdit={isEdit}
                         />
                       </div>
@@ -794,7 +815,7 @@ class AddProvider extends React.Component {
                               onClick={this.howtoGetDetails}
                             >
                               <i className="i i-help" />
-                              Where do I find {selectedProviderWithAcquirer} details?
+                              {`Where do I find ${gatewayName} details?`}
                             </p>
                           </div>
                         ) : null}

@@ -23,8 +23,10 @@ export const GATEWAY_CATEGORIES = {
   bank_gateways: 'Bank Gateways',
 };
 
+export const RAZORPAY_GATEWAY_KEY = 'optimizer_razorpay';
+
 export const RECOMMENDED_GATEWAYS = ['payu'];
-export const INCOMPLETE_GATEWAY = ['checkout_dot_com_optimizer'];
+export const INCOMPLETE_GATEWAY = ['checkout_dot_com_optimizer', RAZORPAY_GATEWAY_KEY];
 
 export const METHODS = {
   CARD: 'card',
@@ -44,11 +46,6 @@ export const METHODS_MAP = {
   upi: 'UPI',
   wallet: 'Wallet',
   sodexo: 'Sodexo',
-};
-
-export const PROVIDER_KEYS = {
-  SODEXO: 'Sodexo',
-  RECURRING: 'Recurring',
 };
 
 export const INIT_PROVIDER_STATE = {
@@ -80,6 +77,21 @@ export const INIT_FORM_STATE = {
   },
 };
 
+export const PROVIDER_KEYS = {
+  GATEWAY_NAME: 'Gateway Name',
+  GATEWAY_ACQUIRER: 'Gateway Acquirer',
+  SEAMLESS_KEY: 'optimizer_seamless_disabled',
+  SODEXO: 'Sodexo',
+  RECURRING: 'Recurring',
+};
+
+export const SKIP_INPUT_FOR_PROVIDER_KEYS = [
+  PROVIDER_KEYS.GATEWAY_NAME,
+  PROVIDER_KEYS.GATEWAY_ACQUIRER,
+  PROVIDER_KEYS.SODEXO,
+  PROVIDER_KEYS.SEAMLESS_KEY,
+];
+
 export const WALLET_AUTO_DEBIT_KEY = 'ENABLE_AUTO_DEBIT';
 
 export const SKIP_VALIDATION_KEYS = [
@@ -102,6 +114,11 @@ export const TPV_OPTIONS = {
 export const HAS_UPI_FEATURES = ['upi_mindgate', 'upi_icici', 'upi_axis', 'billdesk_optimizer'];
 export const HAS_NETBANKING_FEATURES = ['atom', 'netbanking_axis', 'billdesk_optimizer'];
 
+export const ACCOUNT_TYPE_OPTIONS = [
+  { label: 'Regular', value: false },
+  { label: 'Banking VAS', value: true },
+];
+
 /** Seamless option constants - Start **/
 export const SEAMLESS_PROVIDERS = ['paytm', 'payu', 'cashfree'];
 
@@ -116,7 +133,7 @@ export const INSTANT_PROVIDER_UNSUPPORTED_METHODS = {
   cashfree: ['card'],
 };
 
-export const SEAMLESS_NOT_SUPPORTED = ['checkout_dot_com_optimizer'];
+export const SEAMLESS_NOT_SUPPORTED = ['checkout_dot_com_optimizer', RAZORPAY_GATEWAY_KEY];
 
 export const SEAMLESS_CONTENT = {
   paytm: {
