@@ -5167,7 +5167,16 @@ class Processor
 
         if ($offers->count() === 1)
         {
-            return $offers->first();
+            $offer = $offers->first();
+
+            $this->trace->info(TraceCode::ORDER_FORCED_OFFER_APPLIED_ON_PAYMENT,
+                [
+                    'order_id'     => $order->getId(),
+                    'offer_id'     => $offer->getPublicId(),
+                ]
+            );
+
+            return $offer;
         }
 
         throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
