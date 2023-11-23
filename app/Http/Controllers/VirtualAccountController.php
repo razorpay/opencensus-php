@@ -329,6 +329,13 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($this->service()->bulkMigrateRblBank($input));
     }
 
+    public function deactivateMigratedBA()
+    {
+        $input = Request::all();
+
+        return ApiResponse::json($this->service()->deactivateMigratedBA($input));
+    }
+
     public function createForInternal()
     {
         $input = Request::all();

@@ -996,6 +996,12 @@ class Service extends Base\Service
         return (new Core)->bulkMigrateRblBank($input);
     }
 
+    /* Deactivate AXIS migrated RBL Bank Accounts */
+    public function deactivateMigratedBA(array $input)
+    {
+        return (new Core)->deactivateMigratedBA($input);
+    }
+
     protected function getDeviceForQr(array $input)
     {
         if (isset($input['notifications']['device_id']) === false)

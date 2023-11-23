@@ -604,4 +604,15 @@ class Repository extends Base\Repository
                     ->where($balanceTypeColumn, '=', 'banking')
                     ->get();
     }
+
+    public function fetchBankAccountsWithTypeDeleted($merchantIds, $ifscCode, $limit)
+    {
+        return $this->newQueryOnSlave()
+            ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::VIRTUAL_ACCOUNT)
+            ->where(Entity::IFSC_CODE,'=', $ifscCode)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->whereNull(Entity::DELETED_AT)
+            ->limit($limit)
+            ->get();
+    }
 }

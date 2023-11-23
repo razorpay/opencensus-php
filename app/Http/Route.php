@@ -2412,6 +2412,8 @@ class Route
         'payment_on_hold_bulk_update'              => ['post',     'payments/on_hold/bulk_update',                   'PaymentController@updateOnHoldBulkUpdate'                          ],
 
         'migrate_virtual_account_rbl_axis'        =>  ['post',     'migrate_rbl',                                    'VirtualAccountController@migrateRblToAxis'                         ],
+        // Cron to deactivate Bank accounts for migrated virtual accounts
+        'deactivate_migrated_ba'                  =>  ['post',     'virtual_accounts/ba/deactivate',                 'VirtualAccountController@deactivateMigratedBA'                         ],
 
         // Dummy routes to test Account Auth
         'admin_dummy_account_test'                 => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
@@ -5779,6 +5781,7 @@ class Route
         'payment_transfer_process_pending_key_merchants',
         'fetch_pending_transfers_count',
         'migrate_virtual_account_rbl_axis',
+        'deactivate_migrated_ba',
         'merchant_mtu_update',
         'webhook_send_email',
         'transaction_settled_data_fix',
@@ -15886,6 +15889,7 @@ class Route
             'payment_transfer_process_pending_key_merchants',
             'fetch_pending_transfers_count',
             'migrate_virtual_account_rbl_axis',
+            'deactivate_migrated_ba',
             'transfer_settlement_status_update',
             'banking_account_statement_process_cron',
             'banking_account_statement_process_pool',

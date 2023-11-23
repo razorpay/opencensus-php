@@ -1255,4 +1255,92 @@ class Core extends Base\Core
         ];
 
     }
+
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function deactivateMigratedBA(array $input): array
+    {
+
+        $this->trace->info(TraceCode::DEACTIVATE_RBL_BA_REQUEST, ['input' => $input]);
+
+        $limit        = $input['limit'] ?? 1000;
+        $gateway     = $input['gateway'];
+
+        if ($gateway == Gateway::BT_RBL)
+        {
+            $ifscCode = Provider::IFSC[Provider::RBL];
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Right Now we are not supporting this provider for migration' . $gateway);
+        }
+        $merchantIds  = $input['merchant_ids'] ?? [];
+
+        $bank_accounts = $this->repo->bank_account->fetchBankAccountsWithTypeDeleted($merchantIds, $ifscCode, $limit);
+
+        if ($bank_accounts->isEmpty() === true)
+        {
+            return [
+                'Success' => true,
+                'Count'   => 0
+            ];
+        }
+
+        $virtualAccountIds = $bank_accounts->pluck(\RZP\Models\BankAccount\Entity::ENTITY_ID)->toArray();
+
+        $virtualAccounts = $this->repo->virtual_account->fetchActiveOrPaidVirtualAccountIds($virtualAccountIds, $limit);
+
+        if (empty($virtualAccounts) === true)
+        {
+            return [
+                'Success' => true,
+                'Count'   => 0
+            ];
+        }
+
+        $virtualAccountsMap = [];
+
+        foreach($virtualAccounts as $va)
+        {
+            $virtualAccountsMap[$va[Entity::ID]] = $va;
+        }
+
+        $deletedCount = 0;
+        foreach ($bank_accounts as $bankAccount)
+        {
+            $this->trace->debug(TraceCode::DEACTIVATE_RBL_BA_TRIGGERED,
+                [
+                    'bankAccount' => $bankAccount->getId()
+                ]);
+
+            $virtualAccountForBank = $virtualAccountsMap[$bankAccount[\RZP\Models\BankAccount\Entity::ENTITY_ID]];
+
+            $validPrefixes = ["2223", "2224", "VAJS"];
+
+            $accountPrefix = substr($bankAccount->getAccountNumber(), 0, 4);
+
+            if((isset($virtualAccountForBank)) === true and
+                ($virtualAccountForBank->hasBankAccount2()) === true and
+                (in_array($accountPrefix, $validPrefixes)) === true)
+            {
+                $this->repo->deleteOrFail($bankAccount);
+
+                $deletedCount++;
+
+                $this->trace->info(TraceCode::DEACTIVATE_RBL_BA_DELETED,
+                    [
+                        'bankAccount' => $bankAccount->getId()
+                    ]);
+            }
+        }
+
+        return [
+            'Success' => true,
+            'Count'   => $deletedCount
+        ];
+    }
 }
