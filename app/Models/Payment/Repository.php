@@ -518,13 +518,21 @@ EOT;
             ->get();
     }
 
-    public function fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bank)
+    public function fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bank, $type = 'credit')
     {
         (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
 
         $tRepo = $this->repo->terminal;
+        $cRepo = $this->repo->card;
 
         $tTableName = $tRepo->getTableName();
+        $cardTableName = $cRepo->getTableName();
+
+        $paymentCardIdCol = $this->dbColumn(Payment\Entity::CARD_ID);
+
+        $cardIdCol = $cRepo->dbColumn(Card\Entity::ID);
+
+        $cardType = $cRepo->dbColumn(Card\Entity::TYPE);
 
         $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
 
@@ -538,10 +546,12 @@ EOT;
 
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+                    ->join($cardTableName, $paymentCardIdCol, '=', $cardIdCol)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where($paymentStatus, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
+                    ->where($cardType, '=' ,$type)
                     ->where($terminalEmi, '=', false)
                     ->with('card.globalCard', 'emiPlan', 'merchant', 'terminal')
                     ->select($paymentData)

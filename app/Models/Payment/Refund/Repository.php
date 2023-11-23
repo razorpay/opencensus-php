@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Card;
 
 use RZP\Models\Payment\Status;
 use RZP\Models\Terminal;
@@ -87,7 +88,7 @@ class Repository extends Base\Repository
         }
     }
 
-    public function fetchEmiRefundsWithCardTerminalsBetween($from, $to, $bank)
+    public function fetchEmiRefundsWithCardTerminalsBetween($from, $to, $bank, $type = 'credit')
     {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchEmiRefundsWithCardTerminalsBetween',
@@ -98,9 +99,13 @@ class Repository extends Base\Repository
 
         $tRepo = $this->repo->terminal;
 
+        $cRepo = $this->repo->card;
+
         $paymentRepo = $this->repo->payment;
 
         $tTableName = $tRepo->getTableName();
+
+        $cardTableName = $cRepo->getTableName();
 
         $pTableName = $paymentRepo->getTableName();
 
@@ -110,9 +115,15 @@ class Repository extends Base\Repository
 
         $paymentTerminalId = $paymentRepo->dbColumn(Payment\Entity::TERMINAL_ID);
 
+        $paymentCardIdCol = $paymentRepo->dbColumn(Payment\Entity::CARD_ID);
+
         $refundData = $this->dbColumn('*');
 
         $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
+        $cardIdCol = $cRepo->dbColumn(Card\Entity::ID);
+
+        $cardType = $cRepo->dbColumn(Card\Entity::TYPE);
 
         $paymentStatus = $paymentRepo->dbColumn(Payment\Entity::STATUS);
 
@@ -123,11 +134,13 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)
             ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+            ->join($cardTableName, $paymentCardIdCol, '=', $cardIdCol)
             ->whereBetween($refundCreatedAt, [$from, $to])
             ->where($paymentStatus, '=', Payment\Status::REFUNDED)
             ->where($paymentBank, '=', $bank)
             ->where($paymentMethod, '=', Payment\Method::EMI)
             ->where($terminalEmi, '=', false)
+            ->where($cardType, '=' ,$type)
             ->with('payment', 'payment.card.globalCard', 'payment.emiPlan', 'payment.merchant')
             ->select($refundData)
             ->get();
