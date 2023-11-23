@@ -30,6 +30,7 @@ use RZP\Models\Base\EsRepository;
 use RZP\Models\PaymentLink;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\GstinAuth;
+use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Metro\Constants as MetroConstants;
 use RZP\Models\Feature\Core as FeatureCore;
@@ -3246,6 +3247,11 @@ class Core extends Base\Core
 
         if ($this->hasBusinessWebsiteOrAppUrls($merchant) === false)
         {
+            return;
+        }
+
+        // skip set has_key_access to true when merchant is enabled for key_less_activation
+        if ($this->isKLAEnabled($merchant) === true){
             return;
         }
 
@@ -6659,8 +6665,10 @@ class Core extends Base\Core
 
         $merchant = $merchantDetails->merchant;
 
+        // skip set has_key_access to true when merchant is enabled for key_less_activation
+
         if ((empty($merchantDetails->getWebsite()) === true) and
-            (empty($merchantDetails->getAdditionalWebsites()) === true))
+            (empty($merchantDetails->getAdditionalWebsites()) === true) and $this->isKLAEnabled($merchant) === false)
         {
             $this->trace->info(
                 TraceCode::MERCHANT_MARK_HAS_KEY_ACCESS,
@@ -10237,6 +10245,31 @@ class Core extends Base\Core
             }
         }
 
+    }
+
+    /**
+     * Checks if KLA (Key Less Activation) is enabled for a given merchant based on metadata.
+     * @param Merchant\Entity $merchant The merchant entity to check.
+     * @return bool True if KLA is enabled, false otherwise.
+     */
+    public function isKLAEnabled(Merchant\Entity $merchant) : bool
+    {
+        $isKLAEnabled    = false;
+        $merchantDetails = $merchant->merchantDetail;
+        $businessDetails = $merchantDetails->businessDetail;
+
+        if (empty($businessDetails) === false and isset($businessDetails[BusinessDetail\Entity::METADATA]) === true)
+        {
+            // Check if metadata has key_less_activation_enable set to true
+            $metadata = $businessDetails[BusinessDetail\Entity::METADATA];
+            if (isset($metadata[BusinessDetail\Constants::KEY_LESS_ACTIVATION_ENABLE]) === true and
+                $metadata[BusinessDetail\Constants::KEY_LESS_ACTIVATION_ENABLE] === true)
+            {
+                $isKLAEnabled = true;
+            }
+        }
+
+        return $isKLAEnabled;
     }
 
     public function hasBusinessWebsiteOrAppUrls(Merchant\Entity $merchant)

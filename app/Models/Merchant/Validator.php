@@ -54,6 +54,7 @@ use RZP\Models\Partner\Config\Constants as ConfigConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 use RZP\Models\Merchant\Analytics\Constants as AnalyticsConstants;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessConstant;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Merchant\ShippingInfo\Constants as ShippingInfoConstants;
@@ -374,7 +375,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $keyAccessRules = [
-        Entity::HAS_KEY_ACCESS => 'required|boolean',
+        Entity::HAS_KEY_ACCESS                       => 'required|boolean',
+        BusinessConstant::KEY_LESS_ACTIVATION_ENABLE => 'sometimes|boolean',
     ];
 
     protected static $updateChannelRules = [

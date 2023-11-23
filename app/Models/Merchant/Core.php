@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PartnerMigrationAuditJob;
+use RZP\Models\Merchant\BusinessDetail;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use Razorpay\OAuth\Client\Repository as OAuthRepo;
 use \WpOrg\Requests\Exception as RequestsException;
@@ -3109,6 +3110,11 @@ class Core extends Base\Core
              'merchant_id' => $merchant->getId()
             ]);
 
+        if (isset($input[BusinessDetail\Constants::KEY_LESS_ACTIVATION_ENABLE]) === true)
+        {
+            return $this->updateHasKeyAccessAndKLAWithoutWorkflow($merchant, $input);
+        }
+
         $oldMerchant = clone $merchant;
 
         $merchant->setHasKeyAccess($input[Entity::HAS_KEY_ACCESS]);
@@ -3118,6 +3124,26 @@ class Core extends Base\Core
             ->handle($oldMerchant, $merchant);
 
         $this->repo->saveOrFail($merchant);
+
+        return $merchant;
+    }
+
+    public function updateHasKeyAccessAndKLAWithoutWorkflow(Entity $merchant, array $input) : Entity
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_KEY_LESS_ACTIVATION,
+            ['input'       => $input,
+             'merchant_id' => $merchant->getId()
+            ]);
+
+        $merchant->setHasKeyAccess($input[Entity::HAS_KEY_ACCESS]);
+        $this->repo->saveOrFail($merchant);
+
+        (new BusinessDetail\Service)->saveBusinessDetailsForMerchant($merchant->getId(), [
+            BusinessDetail\Entity::METADATA => [
+                BusinessDetail\Constants::KEY_LESS_ACTIVATION_ENABLE => $input[BusinessDetail\Constants::KEY_LESS_ACTIVATION_ENABLE]
+            ]
+        ]);
 
         return $merchant;
     }
@@ -8390,9 +8416,10 @@ class Core extends Base\Core
     public function addHasKeyAccessToMerchantIfApplicable(Merchant\Entity $merchant)
     {
         // Merchant's has_key_access is set to true when website Url or App Store url or PlayStore url is set.
+        // skip set has_key_access to true when merchant is enabled for key_less_activation
 
         if (((new Merchant\Detail\Core())->hasBusinessWebsiteOrAppUrls($merchant) === true) and
-            ($merchant->getHasKeyAccess() === false))
+            ($merchant->getHasKeyAccess() === false) and (new Merchant\Detail\Core())->isKLAEnabled($merchant) === false)
         {
             $merchant->setHasKeyAccess(true);
 

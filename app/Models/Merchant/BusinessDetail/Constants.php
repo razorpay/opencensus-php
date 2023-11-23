@@ -58,6 +58,7 @@ class Constants
     const TXN_PLAYSTORE_URL_COUNT_LIMIT = 10;
     const TXN_PLAYSTORE_URLS = 'txn_playstore_urls';
 
+    const KEY_LESS_ACTIVATION_ENABLE = "key_less_activation_enable";
     const APP_URLS_FIELDS = [
         self::PLAYSTORE_URL,
         self::APPSTORE_URL

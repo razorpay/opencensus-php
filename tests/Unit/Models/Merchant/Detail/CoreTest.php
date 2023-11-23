@@ -8367,82 +8367,82 @@ class CoreTest extends TestCase
         ]);
 
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
-            'category'             => '5945',
+            'category' => '5945',
         ]);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
 
         $this->fixtures->create('user_device_detail', [
-            'merchant_id' => $merchantDetails->getId(),
-            'user_id' => $merchantUser->getId(),
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
             'signup_campaign' => 'easy_onboarding'
         ]);
 
         $this->fixtures->create('merchant_verification_detail', [
-            'id'                   => 'LGjQP2ZQxa02as',
-            'merchant_id'          => $merchantDetails->getMerchantId(),
-            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
-            'artefact_identifier'  => 'number',
-            'status'               => 'verified'
+            'id'                  => 'LGjQP2ZQxa02as',
+            'merchant_id'         => $merchantDetails->getMerchantId(),
+            'artefact_type'       => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier' => 'number',
+            'status'              => 'verified'
         ]);
 
         $this->fixtures->create('merchant_verification_detail', [
-            'id'                   => 'LGjQP2ZQxa02aT',
-            'merchant_id'          => $merchantDetails->getMerchantId(),
-            'artefact_type'        => Constant::WEBSITE_POLICY,
-            'artefact_identifier'  => 'number',
-            'status'               => 'failed',
+            'id'                  => 'LGjQP2ZQxa02aT',
+            'merchant_id'         => $merchantDetails->getMerchantId(),
+            'artefact_type'       => Constant::WEBSITE_POLICY,
+            'artefact_identifier' => 'number',
+            'status'              => 'failed',
             "metadata"            => [
-        "refund"              => [
-            "analysis_result" => [
-                "links_found"       => [
-                    "https://ilovesarees.com/pages/returns"
+                "refund"              => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesarees.com/pages/returns"
+                        ],
+                        "confidence_score"  => 0.5465,
+                        "relevant_details"  => [
+                        ],
+                        "validation_result" => true
+                    ]
                 ],
-                "confidence_score"  => 0.5465,
-                "relevant_details"  => [
+                "privacy"             => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesares.myshopify.com/pages/privacy-policy"
+                        ],
+                        "confidence_score"  => 0.9853,
+                        "relevant_details"  => [
+                            "note" => "Privacy Policy is majorly about First Party Collection/Use, Third Party Sharing/Collection, Data Security, Introductory/Generic, Practice not covered. Privacy Policy includes the following attributes Does, Explicit, Implicit, Collect on website, Unspecified, Identifiable, Aggregated or anonymized, Contact, Cookies and tracking elements, Basic service/feature, Additional service/feature, Marketing, Analytics/Research, Personalization/Customization, Service operation and security, Unspecified, User with account, Opt-in, Dont use service/feature, Opt-out via contacting company, Browser/device privacy controls, Collection, First party use, Unnamed third party, Named third party, Receive/Shared with, Track on first party website/app, Secure data transfer"
+                        ],
+                        "validation_result" => true
+                    ]
                 ],
-                "validation_result" => true
+                "shipping"            => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesarees.com/policies/shipping-policy"
+                        ],
+                        "confidence_score"  => 0.6079,
+                        "relevant_details"  => [
+                            "5 ",
+                            "7 ",
+                            "10 "
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "contact_us"          => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesarees.com/pages/contact-us"
+                        ],
+                        "relevant_details"  => [
+                            "9043222190"
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "policy_details_file" => "file_MH8jjmKC3s9G3a"
             ]
-        ],
-        "privacy"             => [
-            "analysis_result" => [
-                "links_found"       => [
-                    "https://ilovesares.myshopify.com/pages/privacy-policy"
-                ],
-                "confidence_score"  => 0.9853,
-                "relevant_details"  => [
-                    "note" => "Privacy Policy is majorly about First Party Collection/Use, Third Party Sharing/Collection, Data Security, Introductory/Generic, Practice not covered. Privacy Policy includes the following attributes Does, Explicit, Implicit, Collect on website, Unspecified, Identifiable, Aggregated or anonymized, Contact, Cookies and tracking elements, Basic service/feature, Additional service/feature, Marketing, Analytics/Research, Personalization/Customization, Service operation and security, Unspecified, User with account, Opt-in, Dont use service/feature, Opt-out via contacting company, Browser/device privacy controls, Collection, First party use, Unnamed third party, Named third party, Receive/Shared with, Track on first party website/app, Secure data transfer"
-                ],
-                "validation_result" => true
-            ]
-        ],
-        "shipping"            => [
-            "analysis_result" => [
-                "links_found"       => [
-                    "https://ilovesarees.com/policies/shipping-policy"
-                ],
-                "confidence_score"  => 0.6079,
-                "relevant_details"  => [
-                    "5 ",
-                    "7 ",
-                    "10 "
-                ],
-                "validation_result" => true
-            ]
-        ],
-        "contact_us"          => [
-            "analysis_result" => [
-                "links_found"       => [
-                    "https://ilovesarees.com/pages/contact-us"
-                ],
-                "relevant_details"  => [
-                    "9043222190"
-                ],
-                "validation_result" => true
-            ]
-        ],
-        "policy_details_file" => "file_MH8jjmKC3s9G3a"
-    ]
         ]);
 
         /*we don't have all urls in merchant_website fixture, once updation is done ,
@@ -8497,19 +8497,18 @@ class CoreTest extends TestCase
             ]
         ]);
 
-
         $this->fixtures->create('merchant_verification_detail', [
-            'id'                   => 'LGjQP2ZQxa02aZ',
-            'merchant_id'          => $merchantDetails->getMerchantId(),
-            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
-            'artefact_identifier'  => 'number',
-            'status'               => 'verified',
-            'metadata'             => [
-                'status'            => 'completed',
-                'category'          => 'education',
-                'subcategory'       => 'college',
-                'predicted_mcc'     => 8220,
-                'confidence_score'  => 0.83
+            'id'                  => 'LGjQP2ZQxa02aZ',
+            'merchant_id'         => $merchantDetails->getMerchantId(),
+            'artefact_type'       => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier' => 'number',
+            'status'              => 'verified',
+            'metadata'            => [
+                'status'           => 'completed',
+                'category'         => 'education',
+                'subcategory'      => 'college',
+                'predicted_mcc'    => 8220,
+                'confidence_score' => 0.83
             ]
         ]);
 
@@ -8531,6 +8530,134 @@ class CoreTest extends TestCase
         $this->mockSplitzTreatment($input, $output);
 
         $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testUpdateActivationStatusSplitzKquWithKLA()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category' => '5945',
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'metadata'    => [
+                'key_less_activation_enable' => true
+            ]
+        ]);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                  => 'LGjQP2ZQxa02as',
+            'merchant_id'         => $merchantDetails->getMerchantId(),
+            'artefact_type'       => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier' => 'number',
+            'status'              => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                  => 'LGjQP2ZQxa02aT',
+            'merchant_id'         => $merchantDetails->getMerchantId(),
+            'artefact_type'       => Constant::WEBSITE_POLICY,
+            'artefact_identifier' => 'number',
+            'status'              => 'failed'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                  => 'LGjQP2ZQxa02aZ',
+            'merchant_id'         => $merchantDetails->getMerchantId(),
+            'artefact_type'       => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier' => 'number',
+            'status'              => 'verified',
+            'metadata'            => [
+                'status'           => 'completed',
+                'category'         => 'education',
+                'subcategory'      => 'college',
+                'predicted_mcc'    => 8220,
+                'confidence_score' => 0.83
+            ]
+        ]);
+
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $merchantDetails->getMerchantId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::KYC_QUALIFIED_UNACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $basicAuthMock = Mockery::mock('RZP\Http\BasicAuth\BasicAuth')->makePartial();
+
+        $this->app->instance('basicauth', $basicAuthMock);
+
+        $basicAuthMock
+            ->shouldReceive('getOrgId')
+            ->andReturn(OrgEntity::RAZORPAY_ORG_ID);
+
+        $basicAuthMock
+            ->shouldReceive('isAdminAuth')
+            ->andReturn(true);
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        $this->mockSplitzTreatment($input, $output);
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $merchantDetailData['activation_status']);
+
     }
 
     public function testGetApplicableActivationStatusActivatedSplitzKquPhantomOnboarding()

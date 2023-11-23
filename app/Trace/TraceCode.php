@@ -2401,6 +2401,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_DECRYPT_WEBSITE_COMMENT_FOR_SELF_SERVE       = 'MERCHANT_DECRYPT_WEBSITE_COMMENT_FOR_SELF_SERVE';
     const MERCHANT_UPDATE_INTERNATIONAL                         = 'MERCHANT_UPDATE_INTERNATIONAL';
     const MERCHANT_UPDATE_KEY_ACCESS                            = 'MERCHANT_UPDATE_KEY_ACCESS';
+    const MERCHANT_UPDATE_KEY_LESS_ACTIVATION                   = 'MERCHANT_UPDATE_KEY_LESS_ACTIVATION';
+
     const MERCHANT_TAGS_ADD                                     = 'MERCHANT_TAGS_ADD';
     const MERCHANT_TAGS_APPEND                                  = 'MERCHANT_TAGS_APPEND';
     const MERCHANT_TAGS_APPEND_COMPLETED                        = 'MERCHANT_TAGS_APPEND_COMPLETED';

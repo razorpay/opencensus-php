@@ -981,6 +981,11 @@ class Service extends Base\Service
                 return false;
             }
 
+            // skip validation of webiste when merchant is enabled for key_less_activation and merchant not activated
+            if ((new DetailCore())->isKLAEnabled($merchantDetails->merchant) === true and $merchantDetails->merchant->isActivated() === false){
+                return false;
+            }
+
             if ($hasKeyAccess === false)
             {
                 return false;
@@ -1037,7 +1042,6 @@ class Service extends Base\Service
                             continue;
                         }
                     }
-
                     if (empty($sectionUrl) === true)
                     {
                         throw new BadRequestValidationFailureException(

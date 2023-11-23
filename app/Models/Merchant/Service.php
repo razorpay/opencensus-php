@@ -1506,7 +1506,7 @@ class Service extends Base\Service
 //        1. Merchant changing email has the same email as partner, and has NO user account of own, Or
 //        2. Merchant changing email has same email as any other merchant, and has NO user account of own.
         $merchantIdsWithSameEmail = $this->repo->merchant->fetchMerchantIdsWithSameEmail($originalEmail);
-        
+
         if (count($merchantIdsWithSameEmail) > 1)
         {
             $this->trace->info(TraceCode::MERCHANT_EMAIL_EDIT_FAILED, [
@@ -1514,12 +1514,12 @@ class Service extends Base\Service
                                         'original_email'            => $originalEmail,
                                         'merchant_ids_same_email'    => $merchantIdsWithSameEmail,
             ]);
-    
+
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
                                           null,
                                           null,
                                           "Same email exist with other merchant");
-        
+
         }
 
         $newEmail = $input[Merchant\Entity::EMAIL];
@@ -8177,7 +8177,9 @@ class Service extends Base\Service
             {
                 (new Merchant\Attribute\Service())->upsertProductsEnabledMerchantAttributeForX($merchant->getId());
 
-                if ($merchant->getHasKeyAccess() === false)
+                // skip set has_key_access to true when merchant is enabled for key_less_activation
+
+                if ($merchant->getHasKeyAccess() === false and (new MerchantDetailCore())->isKLAEnabled($merchant) === false)
                 {
                     $merchant->setHasKeyAccess(true);
 

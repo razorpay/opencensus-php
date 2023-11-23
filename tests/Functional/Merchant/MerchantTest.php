@@ -42,6 +42,7 @@ use RZP\Models\BankAccount\Repository;
 use RZP\Models\FundAccount\Validation;
 use RZP\Mail\Merchant as MerchantMail;
 use Illuminate\Cache\Events\KeyWritten;
+use RZP\Models\Merchant\BusinessDetail;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
@@ -3266,6 +3267,32 @@ class MerchantTest extends TestCase
         $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
         $this->startTest();
+    }
+
+    public function testMerchantUpdateKeyAccessWithKLA()
+    {
+        $attribute = ['business_website' => 'https://www.example.com'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $url = $testData['request']['url'];
+
+        $url = sprintf($url, $merchantId);
+
+        $testData['request']['url'] = $url;
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest();
+
+        $merchantBusinessDetail = $this->getLastEntity('merchant_business_detail', true);
+        $this->assertEquals(false, $merchantBusinessDetail[BusinessDetail\Entity::METADATA][BusinessDetail\Constants::KEY_LESS_ACTIVATION_ENABLE]);
+
+
     }
 
     public function testMerchantEnableLive()
@@ -19663,7 +19690,7 @@ The same has been enabled for the account.
         ];
 
         // first test: if hscode is blacklisted hscode
-        // 
+        //
 
         try
         {
@@ -19683,7 +19710,7 @@ The same has been enabled for the account.
         $this->assertEquals(true, $caughtException);
 
         // second test: first time hscode update
-        // 
+        //
 
         $hsCode = '1234567890';
 
@@ -19703,7 +19730,7 @@ The same has been enabled for the account.
         self::assertEquals($hsCode, $notesContent['hs_code']);
 
         // third test: test if hscode update is blocked, if previously updated
-        // 
+        //
 
         $caughtException = false;
 
@@ -19757,7 +19784,7 @@ The same has been enabled for the account.
         ];
 
         // first test: if hscode is blacklisted hscode
-        // 
+        //
 
         try
         {
@@ -19776,7 +19803,7 @@ The same has been enabled for the account.
 
 
         // second test: first time hscode set
-        // 
+        //
 
         $hsCode = '1234567890'; // whitelisted
 
@@ -19818,7 +19845,7 @@ The same has been enabled for the account.
 
         // fourth test: subsequent  hscode update
         // admin should be able to update hscode
-        // 
+        //
 
         $hsCode = '85238020'; // whitelisted
 

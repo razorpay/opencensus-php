@@ -2624,6 +2624,22 @@ return [
         ],
     ],
 
+    'testMerchantUpdateKeyAccessWithKLA' => [
+        'request' => [
+            'content' => [
+                'has_key_access'             => 1,
+                'key_less_activation_enable' => 0,
+            ],
+            'url'     => '/merchants/%s/update_key_access',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'has_key_access' => true,
+            ],
+        ],
+    ],
+
     'testMerchantEnableLive' => [
         'request' => [
             'content' => [],
