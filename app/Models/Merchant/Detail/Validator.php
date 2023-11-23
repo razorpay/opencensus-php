@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use App;
 
 use RZP\Base;
+use RZP\Constants\MalaysianStates;
 use RZP\Exception;
 use Lib\PhoneBook;
 use Razorpay\IFSC\IFSC;
@@ -83,14 +84,14 @@ class Validator extends Base\Validator
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_ADDRESS     => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_ADDRESS_L2  => 'sometimes|max:255',
-        Entity::BUSINESS_REGISTERED_STATE       => 'sometimes|alpha_space|max:2|custom',
+        Entity::BUSINESS_REGISTERED_STATE       => 'sometimes|alpha_space|max:3|custom',
         Entity::BUSINESS_REGISTERED_CITY        => 'sometimes|alpha_space_num|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT    => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_COUNTRY     => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS      => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_ADDRESS_L2   => 'sometimes|max:255',
-        Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:2|custom',
+        Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:3|custom',
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space_num|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT     => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_COUNTRY      => 'sometimes|alpha_space|max:255',
@@ -200,14 +201,14 @@ class Validator extends Base\Validator
         Entity::BUSINESS_MODEL                           => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_ADDRESS              => 'filled|max:255',
         Entity::BUSINESS_REGISTERED_ADDRESS_L2           => 'sometimes|max:255',
-        Entity::BUSINESS_REGISTERED_STATE                => 'filled|alpha_space|max:2|custom',
+        Entity::BUSINESS_REGISTERED_STATE                => 'filled|alpha_space|max:3|custom',
         Entity::BUSINESS_REGISTERED_COUNTRY              => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY                 => 'filled|alpha_space_num|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT             => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_PIN                  => 'filled|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS               => 'filled|max:255',
         Entity::BUSINESS_OPERATION_ADDRESS_L2            => 'sometimes|max:255',
-        Entity::BUSINESS_OPERATION_STATE                 => 'filled|alpha_space|max:2|custom',
+        Entity::BUSINESS_OPERATION_STATE                 => 'filled|alpha_space|max:3|custom',
         Entity::BUSINESS_OPERATION_COUNTRY               => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY                  => 'filled|alpha_space_num|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT              => 'sometimes|alpha_space|max:255',
@@ -443,11 +444,11 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DBA                => 'required|string|max:255',
         Entity::BUSINESS_TYPE               => 'required|numeric|digits_between:1,10',
         Entity::BUSINESS_OPERATION_ADDRESS  => 'sometimes|max:255',
-        Entity::BUSINESS_OPERATION_STATE    => 'sometimes|alpha_space|max:2|custom',
+        Entity::BUSINESS_OPERATION_STATE    => 'sometimes|alpha_space|max:3|custom',
         Entity::BUSINESS_OPERATION_CITY     => 'sometimes|alpha_space_num|max:255',
         Entity::BUSINESS_OPERATION_PIN      => 'sometimes|size:6',
         Entity::BUSINESS_REGISTERED_ADDRESS => 'sometimes|max:255',
-        Entity::BUSINESS_REGISTERED_STATE   => 'sometimes|alpha_space|max:2|custom',
+        Entity::BUSINESS_REGISTERED_STATE   => 'sometimes|alpha_space|max:3|custom',
         Entity::BUSINESS_REGISTERED_CITY    => 'sometimes|alpha_space_num|max:255',
         Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|size:6',
         Entity::ACTIVATION_FORM_MILESTONE   => 'sometimes|string|max:30|custom',
@@ -465,11 +466,11 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DBA                => 'required|string|max:255',
         Entity::BUSINESS_TYPE               => 'required|numeric|digits_between:1,10',
         Entity::BUSINESS_REGISTERED_ADDRESS => 'required|max:255',
-        Entity::BUSINESS_REGISTERED_STATE   => 'required|alpha_space|max:2|custom',
+        Entity::BUSINESS_REGISTERED_STATE   => 'required|alpha_space|max:3|custom',
         Entity::BUSINESS_REGISTERED_CITY    => 'required|alpha_space_num|max:255',
         Entity::BUSINESS_REGISTERED_PIN     => 'required|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS  => 'required|max:255',
-        Entity::BUSINESS_OPERATION_STATE    => 'required|alpha_space|max:2|custom',
+        Entity::BUSINESS_OPERATION_STATE    => 'required|alpha_space|max:3|custom',
         Entity::BUSINESS_OPERATION_CITY     => 'required|alpha_space_num|max:255',
         Entity::BUSINESS_OPERATION_PIN      => 'required|size:6',
     ];
@@ -493,7 +494,7 @@ class Validator extends Base\Validator
 
     protected static $patchMerchantDetailsRules = [
         Entity::BUSINESS_OPERATION_ADDRESS               => 'filled|max:255',
-        Entity::BUSINESS_OPERATION_STATE                 => 'filled|alpha_space|max:2|custom',
+        Entity::BUSINESS_OPERATION_STATE                 => 'filled|alpha_space|max:3|custom',
         Entity::BUSINESS_OPERATION_CITY                  => 'filled|alpha_space_num|max:255',
         Entity::BUSINESS_OPERATION_PIN                   => 'filled|size:6',
         Entity::CONTACT_MOBILE                           => 'sometimes|max:15|contact_syntax',
@@ -513,7 +514,7 @@ class Validator extends Base\Validator
     protected static $updateEntityBatchActionRules = [
         Entity::BUSINESS_NAME               => 'filled|max:255',
         Entity::BUSINESS_REGISTERED_ADDRESS => 'filled|max:255',
-        Entity::BUSINESS_REGISTERED_STATE   => 'filled|max:2|custom',
+        Entity::BUSINESS_REGISTERED_STATE   => 'filled|max:3|custom',
     ];
 
     protected static $batchInstantActivationRules = [
@@ -523,11 +524,11 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DBA                => 'sometimes|string|max:255',
         Entity::BUSINESS_TYPE               => 'sometimes|numeric|digits_between:1,10',
         Entity::BUSINESS_REGISTERED_ADDRESS => 'sometimes|max:255',
-        Entity::BUSINESS_REGISTERED_STATE   => 'sometimes|alpha_space|max:2|custom',
+        Entity::BUSINESS_REGISTERED_STATE   => 'sometimes|alpha_space|max:3|custom',
         Entity::BUSINESS_REGISTERED_CITY    => 'sometimes|alpha_space_num|max:255',
         Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS  => 'sometimes|max:255',
-        Entity::BUSINESS_OPERATION_STATE    => 'sometimes|alpha_space|max:2|custom',
+        Entity::BUSINESS_OPERATION_STATE    => 'sometimes|alpha_space|max:3|custom',
         Entity::BUSINESS_OPERATION_CITY     => 'sometimes|alpha_space_num|max:255',
         Entity::BUSINESS_OPERATION_PIN      => 'sometimes|size:6',
         Entity::SEND_ACTIVATION_EMAIL       => 'sometimes|in:0,1',
@@ -658,7 +659,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        if(IndianStates::stateValueExist($value) === false)
+        if(IndianStates::stateValueExist($value) === false && MalaysianStates::stateValueExist($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_INVALID_STATE_CODE
@@ -673,7 +674,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        if(IndianStates::stateValueExist($value) === false)
+        if(IndianStates::stateValueExist($value) === false && MalaysianStates::stateValueExist($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_INVALID_STATE_CODE

@@ -2633,6 +2633,29 @@ class CoreTest extends TestCase
         $this->assertEquals($merchantDetail->getBusinessRegisteredState(), 'MH');
     }
 
+    public function testMalaysiaBusinessRegisteredStateCodeValidationSuccess()
+    {
+        $input = [
+            DetailEntity::BUSINESS_REGISTERED_STATE => 'MLK'     // Malaysia state code
+        ];
+
+        $merchantDetail = (new DetailEntity)->build($input);
+
+        $this->assertEquals($merchantDetail->getBusinessRegisteredState(), 'MLK');
+    }
+
+    public function testMalaysiaBusinessRegisteredStateCodeValidation()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_INVALID_STATE_CODE);
+
+        $input = [
+            DetailEntity::BUSINESS_REGISTERED_STATE => 'Malacca'
+        ];
+
+        (new DetailEntity)->build($input);
+    }
+
     public function testActivationProgressAfterFirstLogin()
     {
         $this->mockRazorxTreatment();
