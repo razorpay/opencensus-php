@@ -111,8 +111,17 @@ class Mailgun extends Base
                 "destination" => "recon/input/WALLET_BAJAJ/transaction_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
-        ]
-    ]; 
+        ],
+        self::UPI_HDFC => [
+            [
+                "from" => "upi@hdfcbank.net",
+                "subject_pattern" => "/(?i)^Merchant Payout Report(.+)?/",
+                "filename_pattern" => "/(?i)^\d*-Merchant_Payout_Report_146403673_STID_23277826(.+)?/",
+                "destination" => "recon/input/UPI_MINDGATE/mpr/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
+    ];
 
     protected $inputDetails;
 
@@ -174,7 +183,7 @@ class Mailgun extends Base
                 $fileName = $fileDetails['file_name'];
                 $filePath = $fileDetails['file_path'];
                 $extension = $fileDetails['extension'];
-                
+
                 $gatewayDetails = self::GATEWAY_EMAIL_DETAILS[$gateway] ?? null;
                 if(is_null($gatewayDetails)){
                     $this->trace->info(TraceCode::GATEWAY_EMAIL_CONFIG_NOT_ENABLED, [
@@ -190,7 +199,7 @@ class Mailgun extends Base
                         break;
                     }
                 }
-                
+
             }
 
         }
@@ -201,7 +210,7 @@ class Mailgun extends Base
         ];
     }
 
-    public function automaticFileFetchUpload($filePath, $destinationPath, $extension, $fileName, $bucketConfigType) 
+    public function automaticFileFetchUpload($filePath, $destinationPath, $extension, $fileName, $bucketConfigType)
     {
         $creator = new FileStore\Creator;
 
@@ -217,7 +226,7 @@ class Mailgun extends Base
         {
             $creator->localFilePath($filePath)
                     ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
-                    ->name($destinationPath) 
+                    ->name($destinationPath)
                     ->type($bucketConfigType)
                     ->extension($extension)
                     ->additionalParameters(['ACL' => 'bucket-owner-full-control']);
@@ -293,7 +302,7 @@ class Mailgun extends Base
         {
             $from = $input['X-Original-Sender'] ?? $input['sender'];
         }
-        
+
         $inputDetails = [
             self::FROM           => strtolower($from),
             self::SUBJECT        => $input[self::SUBJECT],

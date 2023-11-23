@@ -231,7 +231,7 @@ class Base extends Core
         self::CARD_FSS_BOB             => [],
         self::CARD_FSS_SBI             => ['ipay.support@sbi.co.in'],
         self::UPI_AXIS                 => [],
-        self::UPI_HDFC                 => [],
+        self::UPI_HDFC                 => ['art-recon@razorpay.com', 'upi@hdfcbank.net'],
         self::UPI_HULK                 => [],
         self::UPI_YESBANK              => [],
         self::AMEX                     => [],
@@ -271,7 +271,6 @@ class Base extends Core
         self::NETBANKING_DBS           => [],
         self::ICICI                    =>[],
         self::WALLET_BAJAJ             => ['art-recon@razorpay.com', 'kishor.kangune@bajajfinserv.in'],
-
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN                  => ['kajol.nigam@razorpay.com'],
