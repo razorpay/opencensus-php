@@ -331,7 +331,8 @@ class Core extends Base\Core
             $item = $paymentPageItem->item;
 
             if (($paymentPageItem[Entity::MANDATORY] === true) and
-                (!in_array($item[PaymentLink::NAME],$keys)))
+                ((!in_array($item[PaymentLink::NAME],$keys)) or 
+                (strlen($input[$item[PaymentLink::NAME]]) == 0)))
             {
                 array_push($errors,
                     'Mandatory field entry missing for '.$item[PaymentLink::NAME]);
@@ -358,8 +359,11 @@ class Core extends Base\Core
             $other_details[$item[PaymentLink::NAME]] = $input[$item[PaymentLink::NAME]];
 
             // add all price fields in amount
-
-            $resp[Entity::AMOUNT] = $resp[Entity::AMOUNT] + $input[$item[PaymentLink::NAME]];
+            if ((isset($input[$item[PaymentLink::NAME]]) === true) and 
+               (strlen($input[$item[PaymentLink::NAME]]) > 0)) 
+               {
+                   $resp[Entity::AMOUNT] = $resp[Entity::AMOUNT] + $input[$item[PaymentLink::NAME]];
+               }
         }
 
         // total_amount will be populated when a payment is captured for this record
