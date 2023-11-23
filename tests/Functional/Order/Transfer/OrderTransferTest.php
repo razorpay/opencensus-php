@@ -372,4 +372,82 @@ class OrderTransferTest extends TestCase
 
         $this->assertNotNull($transfer['processed_at']);
     }
+
+    public function testFetchPendingTransfersCount()
+    {
+        $order = $this->fixtures->create('order', ['status' => 'paid']);
+
+        $payment = $this->fixtures->create('payment:captured', ['order_id' => $order['id']]);
+
+        $dummyTransferData = [
+            'id'                 => 'AnyRandomID123',
+            'source_id'          => $order['id'],
+            'source_type'        => 'order',
+            'status'             => 'pending',
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => 'merchant',
+            'amount'             => 50000,
+            'currency'           => 'INR',
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->subDays(2)->getTimestamp(),
+            'updated_at'         => Carbon::now()->subDays(2)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $dummyTransferData['id'] = "AnyRandomID456";
+        $dummyTransferData['created_at'] = Carbon::now()->subDays(3)->getTimestamp();
+        $dummyTransferData['updated_at'] = Carbon::now()->subDays(3)->getTimestamp();
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $response = $this->runRequestResponseFlow($data);
+
+        $this->assertEquals(2, $response['order_transfers_count']['category3']);
+    }
+
+    public function testFetchPendingTransfersCountCategory1()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['category' => '6211']);
+
+        $order = $this->fixtures->create('order', ['status' => 'paid']);
+
+        $payment = $this->fixtures->create('payment:captured', ['order_id' => $order['id']]);
+
+        $dummyTransferData = [
+            'id'                 => 'AnyRandomID123',
+            'source_id'          => $order['id'],
+            'source_type'        => 'order',
+            'status'             => 'pending',
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => 'merchant',
+            'amount'             => 50000,
+            'currency'           => 'INR',
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->subDays(2)->getTimestamp(),
+            'updated_at'         => Carbon::now()->subDays(2)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $dummyTransferData['id'] = "AnyRandomID456";
+        $dummyTransferData['created_at'] = Carbon::now()->subDays(3)->getTimestamp();
+        $dummyTransferData['updated_at'] = Carbon::now()->subDays(3)->getTimestamp();
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $response = $this->runRequestResponseFlow($data);
+
+        $this->assertEquals(2, $response['order_transfers_count']['category1']);
+    }
 }

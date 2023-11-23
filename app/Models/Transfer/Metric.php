@@ -41,6 +41,8 @@ class Metric extends Base\Core
     const IS_SYNC_PROCESSING_ENABLED                    = 'is_sync_processing_enabled';
     const PAYMENT_TRANSFERS_CREATE_LATENCY              = 'payment_transfers_create_latency';
     const PG_LEDGER_TRANSFER_TRANSACTION_CREATION_DELAY = 'pg_ledger_transfer_transaction_creation_delay';
+    const PENDING_PAYMENT_TRANSFERS_COUNT               = 'pending_payment_transfers_count';
+    const PENDING_ORDER_TRANSFERS_COUNT                 = 'pending_order_transfers_count';
     const TRANSFER_WEBHOOK_DISPATCH_FAILURE             = 'transfer_webhook_dispatch_failure';
 
     public function pushCreateSuccessMetrics(array $input = [])
@@ -221,6 +223,15 @@ class Metric extends Base\Core
             $latency,
             $dimensions
         );
+    }
+
+    public function pushPendingTransfersCount($paymentTransfersCount, $orderTransfersCount, $category)
+    {
+        $dimensions = ['category' => $category];
+
+        $this->trace->gauge(self::PENDING_PAYMENT_TRANSFERS_COUNT, $paymentTransfersCount, $dimensions);
+
+        $this->trace->gauge(self::PENDING_ORDER_TRANSFERS_COUNT, $orderTransfersCount, $dimensions);
     }
 
     public function pushWebhookDispatchFailureMetrics()

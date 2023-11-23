@@ -445,6 +445,103 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Fetch count of pending order transfers for the merchants belonging to the provided category codes
+     *
+     * Query:
+     * select COUNT(transfers.id) AS count from `transfers`
+     * inner join `payments` on `transfers`.`source_id` = `payments`.`order_id`
+     * inner join `merchants` on `merchants`.`id` = `transfers`.`merchant_id`
+     * where `source_type` = 'order'
+     *     and `transfers`.`status` = 'pending' and `payments`.`status` = 'captured'
+     *     and `transfers`.`updated_at` < ? and `merchants`.`category` in (?)
+     *
+     * @param $categoryCodes
+     * @return int
+     */
+    public function fetchPendingOrderTransfersCount($categoryCodes = null): int
+    {
+        $orderId            = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
+        $paymentStatus      = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+        $sourceId           = $this->repo->transfer->dbColumn(Entity::SOURCE_ID);
+        $merchantEntityId   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantCategory   = $this->repo->merchant->dbColumn(Merchant\Entity::CATEGORY);
+        $transferMerchantId = $this->repo->transfer->dbColumn(Entity::MERCHANT_ID);
+        $transferStatus     = $this->repo->transfer->dbColumn(Entity::STATUS);
+        $updatedAt          = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
+
+        $query = $this->newQueryOnSlave();
+
+        $query = $query
+            ->join(Table::PAYMENT, $sourceId, '=', $orderId)
+            ->join(Table::MERCHANT, $merchantEntityId, '=', $transferMerchantId)
+            ->selectRaw('COUNT(' . 'transfers.id' . ') AS count')
+            ->where(Entity::SOURCE_TYPE, Constant::ORDER)
+            ->where($transferStatus, Status::PENDING)
+            ->where($paymentStatus, Payment\Status::CAPTURED)
+            ->where($updatedAt, '<', Carbon::now()->subDays(1)->getTimestamp());
+
+        if ($categoryCodes !== null)
+        {
+            $query = $query->whereIn($merchantCategory, $categoryCodes);
+        }
+        else
+        {
+            $category3Codes = array_merge(Constant::CATEGORY_1_MCC, Constant::CATEGORY_2_MCC);
+            $query = $query->whereNotIn($merchantCategory, $category3Codes);
+        }
+
+        $result =  $query->get();
+
+        return $result[0]['count'];
+    }
+
+    /**
+     * Fetch count of pending payment transfers for the merchants belonging to the provided category codes
+     *
+     *  Query:
+     *  select COUNT(transfers.id) AS count from `transfers`
+     *  inner join `merchants` on `merchants`.`id` = `transfers`.`merchant_id`
+     *  where `transfers`.`source_type` = 'payment'
+     *      and `transfers`.`status` = 'pending'
+     *      and `transfers`.`updated_at` < ?
+     *      and `merchants`.`category` in (?)
+     *
+     * @param $categoryCodes
+     * @return int     */
+    public function fetchPendingPaymentTransfersCount($categoryCodes = null): int
+    {
+        $merchantEntityId   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantCategory   = $this->repo->merchant->dbColumn(Merchant\Entity::CATEGORY);
+        $transferMerchantId = $this->repo->transfer->dbColumn(Entity::MERCHANT_ID);
+        $sourceType         = $this->repo->transfer->dbColumn(Entity::SOURCE_TYPE);
+        $status             = $this->repo->transfer->dbColumn(Entity::STATUS);
+        $updatedAt          = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        $query = $query
+            ->join(Table::MERCHANT, $merchantEntityId, '=', $transferMerchantId)
+            ->selectRaw('COUNT(' . 'transfers.id' . ') AS count')
+            ->where($sourceType, Constant::PAYMENT)
+            ->where($status, Status::PENDING)
+            ->where($updatedAt, '<', Carbon::now()->subDays(1)->getTimestamp());
+
+        if ($categoryCodes !== null)
+        {
+            $query = $query->whereIn($merchantCategory, $categoryCodes);
+        }
+        else
+        {
+            $category3Codes = array_merge(Constant::CATEGORY_1_MCC, Constant::CATEGORY_2_MCC);
+            $query = $query->whereNotIn($merchantCategory, $category3Codes);
+        }
+
+        $result = $query->get();
+
+        return $result[0]['count'];
+    }
+
+    /**
      * Was used for data backfill activity.
      * Check updateSettlementStatusAndErrorCode() in Models\Transfer\Service.php for more.
      *

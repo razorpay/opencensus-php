@@ -228,4 +228,13 @@ class TransferController extends Controller
 
         return ApiResponse::json(['success' => true]);
     }
+
+    public function fetchPendingTransfersCount() {
+
+        $input = Request::all();
+
+        $response = $this->service()->fetchPendingTransfersCount($input);
+
+        return ApiResponse::json($response);
+    }
 }

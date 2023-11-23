@@ -42,4 +42,12 @@ final class Constant
         Feature::CAPITAL_FLOAT_ROUTE_MERCHANT,
         Feature::SLICE_ROUTE_MERCHANT,
     ];
+
+    const CATEGORY_1_MCC = ['6211'];
+
+    const CATEGORY_2_MCC = ['6012', '4900', '9399'];
+
+    const CATEGORY_1 = 'category1';
+    const CATEGORY_2 = 'category2';
+    const CATEGORY_3 = 'category3';
 }

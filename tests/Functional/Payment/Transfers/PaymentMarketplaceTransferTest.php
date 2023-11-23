@@ -1510,6 +1510,88 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->transferPayment($this->payment['id'], $transfers);
     }
 
+    public function testFetchPendingTransfersCount()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $paymentId = $this->payment['id'];
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->subDays(10)->getTimestamp(),
+            'updated_at'         => Carbon::now()->subDays(10)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $dummyTransferData['id'] = "AnyRandomID456";
+        $dummyTransferData['created_at'] = Carbon::now()->subDays(2)->getTimestamp();
+        $dummyTransferData['updated_at'] = Carbon::now()->subDays(2)->getTimestamp();
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $response = $this->runRequestResponseFlow($data);
+
+        $this->assertEquals(2, $response['payment_transfers_count']['category3']);
+    }
+
+    public function testFetchPendingTransfersCountCategory1()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['category' => '6211']);
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $paymentId = $this->payment['id'];
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->subDays(10)->getTimestamp(),
+            'updated_at'         => Carbon::now()->subDays(10)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $dummyTransferData['id'] = "AnyRandomID456";
+        $dummyTransferData['created_at'] = Carbon::now()->subDays(2)->getTimestamp();
+        $dummyTransferData['updated_at'] = Carbon::now()->subDays(2)->getTimestamp();
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $response = $this->runRequestResponseFlow($data);
+
+        $this->assertEquals(2, $response['payment_transfers_count']['category1']);
+    }
+
     protected function mockSplitzTreatmentBulkRequest($output)
     {
         $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();

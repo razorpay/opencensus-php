@@ -796,4 +796,48 @@ return [
             'content' => [],
         ],
     ],
+
+    'testFetchPendingTransfersCount' => [
+        'request'   => [
+            'method'    => 'get',
+            'url'       => '/transfers/pending',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [
+                'payment_transfers_count' => [
+                    'category1' => 0,
+                    'category2' => 0,
+                    'category3' => 0,
+                ],
+                'order_transfers_count' => [
+                    'category1' => 0,
+                    'category2' => 0,
+                    'category3' => 2,
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchPendingTransfersCountCategory1' => [
+        'request'   => [
+            'method'    => 'get',
+            'url'       => '/transfers/pending',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [
+                'payment_transfers_count' => [
+                    'category1' => 0,
+                    'category2' => 0,
+                    'category3' => 0,
+                ],
+                'order_transfers_count' => [
+                    'category1' => 2,
+                    'category2' => 0,
+                    'category3' => 0,
+                ]
+            ],
+        ],
+    ],
 ];

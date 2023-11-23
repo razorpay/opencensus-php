@@ -1614,4 +1614,40 @@ class Service extends Base\Service
     {
         return $this->core->createTransferReversalTransactions($input);
     }
+
+    public function fetchPendingTransfersCount()
+    {
+        $category1_order_transfers_count = $this->repo->transfer->fetchPendingOrderTransfersCount(Constant::CATEGORY_1_MCC);
+        $category1_payment_transfers_count = $this->repo->transfer->fetchPendingPaymentTransfersCount(Constant::CATEGORY_1_MCC);
+
+        $category2_order_transfers_count = $this->repo->transfer->fetchPendingOrderTransfersCount(Constant::CATEGORY_2_MCC);
+        $category2_payment_transfers_count = $this->repo->transfer->fetchPendingPaymentTransfersCount(Constant::CATEGORY_2_MCC);
+
+        $category3_order_transfers_count = $this->repo->transfer->fetchPendingOrderTransfersCount();
+        $category3_payment_transfers_count = $this->repo->transfer->fetchPendingPaymentTransfersCount();
+
+        (new Metric())->pushPendingTransfersCount($category1_payment_transfers_count, $category1_order_transfers_count, Constant::CATEGORY_1);
+        (new Metric())->pushPendingTransfersCount($category2_payment_transfers_count, $category2_order_transfers_count, Constant::CATEGORY_2);
+        (new Metric())->pushPendingTransfersCount($category3_payment_transfers_count, $category3_order_transfers_count, Constant::CATEGORY_3);
+
+        $data = [
+            'payment_transfers_count' => [
+                'category1' => $category1_payment_transfers_count,
+                'category2' => $category2_payment_transfers_count,
+                'category3' => $category3_payment_transfers_count,
+            ],
+            'order_transfers_count' => [
+                'category1' => $category1_order_transfers_count,
+                'category2' => $category2_order_transfers_count,
+                'category3' => $category3_order_transfers_count,
+            ]
+        ];
+
+        $this->trace->info(
+            TraceCode::PENDING_TRANSFERS_COUNT,
+            $data
+        );
+
+        return $data;
+    }
 }

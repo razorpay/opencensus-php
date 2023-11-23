@@ -2400,13 +2400,13 @@ class Route
 
         // Route cron APIs
         'order_transfer_process_pending'                    => ['post',     'order_transfers/process_pending',                  'TransferController@processPendingOrderTransfers'                   ],
-        'order_transfer_process_rearch'                    => ['post',      'order_transfers/process_rearch',                   'TransferController@processOrderTransferForRearch'                   ],
+        'order_transfer_process_rearch'                     => ['post',     'order_transfers/process_rearch',                   'TransferController@processOrderTransferForRearch'                  ],
         'order_transfer_process_pending_key_merchants'      => ['post',     'order_transfers/process_pending/key_merchants',    'TransferController@processPendingOrderTransfersForKeyMerchants'    ],
-        'order_transfer_process_created'                    => ['post',     'order_transfers/process_created',    'TransferController@processCreatedOrderTransfers'    ],
-
+        'order_transfer_process_created'                    => ['post',     'order_transfers/process_created',                  'TransferController@processCreatedOrderTransfers'                   ],
         'order_transfer_process_failed'                     => ['post',     'order_transfers/process_failed',                   'TransferController@processFailedOrderTransfers'                    ],
         'payment_transfer_process_pending'                  => ['post',     'payment_transfers/process_pending',                'TransferController@processPendingPaymentTransfers'                 ],
         'payment_transfer_process_pending_key_merchants'    => ['post',     'payment_transfers/process_pending/key_merchants',  'TransferController@processPendingPaymentTransfersForKeyMerchants'  ],
+        'fetch_pending_transfers_count'                     => ['get',      'transfers/pending',                                'TransferController@fetchPendingTransfersCount'                     ],
 
         'payment_update_on_hold'                   => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
         'payment_on_hold_bulk_update'              => ['post',     'payments/on_hold/bulk_update',                   'PaymentController@updateOnHoldBulkUpdate'                          ],
@@ -5777,6 +5777,7 @@ class Route
         'order_transfer_process_failed',
         'payment_transfer_process_pending',
         'payment_transfer_process_pending_key_merchants',
+        'fetch_pending_transfers_count',
         'migrate_virtual_account_rbl_axis',
         'merchant_mtu_update',
         'webhook_send_email',
@@ -15883,6 +15884,7 @@ class Route
             'order_transfer_process_failed',
             'payment_transfer_process_pending',
             'payment_transfer_process_pending_key_merchants',
+            'fetch_pending_transfers_count',
             'migrate_virtual_account_rbl_axis',
             'transfer_settlement_status_update',
             'banking_account_statement_process_cron',
