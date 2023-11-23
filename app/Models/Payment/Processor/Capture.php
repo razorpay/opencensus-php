@@ -1144,7 +1144,7 @@ trait Capture
 
         $this->repo->transaction(function() use ($payment, $txn)
         {
-            (new Transaction\Core)->asyncUpdateMerchantBalance($payment, $txn);
+            $feesSplit = (new Transaction\Core)->asyncUpdateMerchantBalance($payment, $txn);
 
             if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)
             {
@@ -1161,6 +1161,10 @@ trait Capture
                 $this->repo->saveOrFail($payment);
 
                 $this->repo->saveOrFail($txn);
+
+                if ($feesSplit !== null) {
+                    (new Transaction\Core)->saveFeeDetails($txn, $feesSplit);
+                }
 
                 $this->trace->info(
                     TraceCode::PAYMENT_MERCHANT_CAPTURED_ASYNC_TXN_FILL_DETAILS,

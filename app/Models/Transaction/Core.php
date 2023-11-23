@@ -2295,6 +2295,8 @@ class Core extends Base\Core
         $txn->setBalanceUpdated(true);
 
         $this->repo->saveOrFail($txn);
+
+        return $processor->getFeeSplit();
     }
 
     /**

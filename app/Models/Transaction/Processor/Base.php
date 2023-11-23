@@ -371,6 +371,11 @@ abstract class Base extends BaseCore
         $processor->setOtherDetails();
     }
 
+    public function getFeeSplit(): BaseCollection\PublicCollection
+    {
+        return $this->feesSplit;
+    }
+
     public function setMerchantFeeDefaults()
     {
         list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
