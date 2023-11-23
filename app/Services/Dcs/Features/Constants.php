@@ -18,6 +18,7 @@ class Constants
     const DisableAutoRefund = 'disable_auto_refund';
     const EligibilityEnabled = 'eligibility_enabled';
     const EligibilityCheckDecline = 'eligibility_check_decline';
+    const WidgetEligibilityEnabled = 'widget_eligibility_enabled';
     const ShowEmailOnCheckout = 'show_email_on_checkout';
     const EmailOptionalOnCheckout = 'email_optional_oncheckout';
     const RtbWidgetEnabled = 'rtb_widget_enabled';
@@ -275,6 +276,7 @@ class Constants
         self::DisableAutoRefund => "example/pg/merchant/refund/Features",
         self::EligibilityEnabled => "rzp/pg/merchant/affordability/EligibilityFeatures",
         self::EligibilityCheckDecline => "rzp/pg/merchant/affordability/EligibilityFeatures",
+        self::WidgetEligibilityEnabled => "rzp/pg/merchant/affordability/Widget",
         self::ShowEmailOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::UpiNumberDisabled => "rzp/pg/merchant/checkout/Upi",
@@ -498,6 +500,7 @@ class Constants
         self::DisableAutoRefund                                             => self::DisableAutoRefund,
         self::EligibilityEnabled                                            => self::EligibilityEnabled,
         self::EligibilityCheckDecline                                       => self::EligibilityCheckDecline,
+        APIFeaturesConstants::WIDGET_ELIGIBILITY_ENABLED                    => self::WidgetEligibilityEnabled,
         self::ShowEmailOnCheckout                                           => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout                                       => self::EmailOptionalOnCheckout,
         self::CvvLessFlowDisabled                                           => self::CvvLessFlowDisabled,
@@ -721,6 +724,7 @@ class Constants
         self::DisableAutoRefund => 'direct',
         self::EligibilityEnabled => 'client',
         self::EligibilityCheckDecline => 'client',
+        self::WidgetEligibilityEnabled => 'client',
         self::AutoCommissionInvoiceDisabled => 'direct',
         self::AffordabilityWidgetSet => 'client',
         self::EnableMerchantExpiryForPP => 'direct',
@@ -800,6 +804,7 @@ class Constants
             "stop_settlement_sms" => "direct",
             "settlement_service_onboarded" => "direct",
             "skip_approval_if_creator_is_checker" => "client",
+            "widget_eligibility_enabled" => "client",
         ],
         "org" => [
             "disable_free_credit_unreg"=> "client",

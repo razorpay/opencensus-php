@@ -1891,6 +1891,7 @@ class Constants
     const PUSH_PROVISIONING_LIVE = 'push_provisioning_live';
 
     const DISABLE_UPI_NUM_CHECKOUT = 'disable_upi_num_checkout';
+    const WIDGET_ELIGIBILITY_ENABLED = 'eligibility_on_widget';
     const DISABLE_UPI_NUM_ON_L0 = 'disable_upi_num_on_l0';
     const DISABLE_UPI_NUM_ON_L1 = 'disable_upi_num_on_l1';
     const CLOSE_QR_ON_DEMAND    = 'close_qr_on_demand';
@@ -2700,6 +2701,7 @@ class Constants
         self::ENABLE_JPMC_IMPORT_FLOW         => true,
         self::CustomMessageForCFB             => true,
         self::SKIP_APPROVAL_FOR_CREATOR       => true,
+        self::WIDGET_ELIGIBILITY_ENABLED      => true,
     ];
 
     // Entity type constants
@@ -3780,6 +3782,11 @@ class Constants
             'display_name'  => 'Skip approval for creator',
             'documentation' => 'Feature to skip approvals of the creator in payout workflow',
         ],
+        self::WIDGET_ELIGIBILITY_ENABLED => [
+            'feature'       => self::WIDGET_ELIGIBILITY_ENABLED,
+            'display_name'  => 'Feature to enable Eligibility api on affordability Widget',
+            'documentation' => 'Feature to enable Eligibility api on affordability Widget',
+        ],
     ];
 
     /**
@@ -3834,6 +3841,7 @@ class Constants
         self::BULK_PAYOUT_WORKFLOW,
         self::ENABLE_SMART_ROUTING,
         self::SKIP_APPROVAL_FOR_CREATOR,
+        self::WIDGET_ELIGIBILITY_ENABLED,
     ];
 
     /*
