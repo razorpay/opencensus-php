@@ -499,11 +499,11 @@ class Service
         return $this->makeRequest($payout->merchant, $url, $input, [], 'POST', $mode);
     }
 
-    public function getVendorPaymentById(MerchantEntity $merchant, string $vendorPaymentId)
+    public function getVendorPaymentById(MerchantEntity $merchant, string $vendorPaymentId, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_PAYMENT);
 
-        $input = ['id' => $vendorPaymentId];
+        $input[self::ID] = $vendorPaymentId;
 
         return $this->makeRequest($merchant, $url, $input);
     }
@@ -1164,7 +1164,7 @@ class Service
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    public function getPurchaseOrder(MerchantEntity $merchant, string $poId)
+    public function getPurchaseOrder(MerchantEntity $merchant, string $poId, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_PURCHASE_ORDER);
 

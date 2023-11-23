@@ -1111,7 +1111,8 @@ class VendorPaymentTest extends TestCase
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 
         $vpMock->shouldReceive('getPurchaseOrder')->andReturn([
-            'id' => 'po_dummyTestId'
+            'id' => 'po_dummyTestId',
+            'expand_workflow_history' => 'true'
         ]);
 
         $this->app->instance('vendor-payment', $vpMock);

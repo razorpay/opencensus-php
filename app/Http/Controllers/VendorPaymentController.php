@@ -200,7 +200,7 @@ class VendorPaymentController extends Controller
 
     public function get(string $vendorPaymentId)
     {
-        return $this->service->getVendorPaymentById($this->ba->getMerchant(), $vendorPaymentId);
+        return $this->service->getVendorPaymentById($this->ba->getMerchant(), $vendorPaymentId, $this->input);
     }
 
     public function create()
@@ -466,7 +466,7 @@ class VendorPaymentController extends Controller
 
     public function getPurchaseOrder($poId)
     {
-        return $this->service->getPurchaseOrder($this->ba->getMerchant(), $poId);
+        return $this->service->getPurchaseOrder($this->ba->getMerchant(), $poId, $this->input);
     }
 
     public function listPurchaseOrder()

@@ -1185,6 +1185,7 @@ return [
         'response' => [
             'content' => [
                 'id' => 'po_dummyTestId',
+                'expand_workflow_history' => 'true',
             ]
         ]
     ],
