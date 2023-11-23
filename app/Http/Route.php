@@ -153,7 +153,8 @@ class Route
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_json'              => ['post',     'payments/create/json',                           'PaymentCreateController@postCreateS2SJsonPayment'                  ],
-        'payment_create_checkout_json'              => ['post',    'payments/create/checkout/json',                  'PaymentCreateController@postCreateCheckoutJsonPayment'                  ],
+        'payment_create_private_json_internal'     => ['post',     'internal/payments/create/json',                  'PaymentCreateController@postInternalCreateS2SJsonPayment'          ],
+        'payment_create_checkout_json'              => ['post',    'payments/create/checkout/json',                  'PaymentCreateController@postCreateCheckoutJsonPayment'             ],
         'payment_create_aeps'                      => ['post',     'payments/create/aeps',                           'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_subscriptions'             => ['post',     'payments/create/subscriptions',                  'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_recurring'                 => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -4369,6 +4370,7 @@ class Route
         'internal_validate_order_checkout_config'    => ['post',       'internal/order/validate/checkout_config',             'OrderController@internalOrderValidateCheckoutConfig'],
         'internal_validate_order_tpv'                => ['post',       'internal/order/validate/tpv',                         'OrderController@internalOrderValidateTPV'],
         'internal_create_order_relations'            => ['post',       'internal/create/order/relations',                     'OrderController@internalCreateOrderRelations'],
+        'internal_order_relations_fetch'             => ['post',       'internal/order/relations/fetch',                      'OrderController@internalOrderRelationsFetch'],
         'internal_create_order_bank_account'         => ['post',       'internal/create/order/bank_account',                  'OrderController@internalCreateOrderBankAccountRelations'],
         'payment_update_reference6'                  => ['patch',      'payments/{id}/updateReference6',                       'PaymentController@updateReference6'                           ],
         'internal_payment_pricing'                   => ['get',        'internal/payments/{id}/pricing',                       'PaymentController@internalPricingFetchForPayment'                         ],
@@ -6125,6 +6127,8 @@ class Route
         'internal_validate_order_checkout_config',
         'internal_validate_order_tpv',
         'internal_create_order_relations',
+        'internal_order_relations_fetch',
+        'payment_create_private_json_internal',
         'internal_create_order_bank_account',
         'payment_update_reference6',
         'internal_payment_pricing',
@@ -16632,6 +16636,8 @@ class Route
             'internal_validate_order_checkout_config',
             'internal_validate_order_tpv',
             'internal_create_order_relations',
+            'internal_order_relations_fetch',
+            'payment_create_private_json_internal',
             'internal_create_order_bank_account',
             'recon_update_data',
             'internal_payment_pricing',
@@ -17016,7 +17022,7 @@ class Route
 
     protected static $s2sJsonRoutes = [
         'payment_create_private_json',
-        'payment_create_checkout_json'
+        'payment_create_checkout_json',
     ];
 
     protected static $checkoutRoutes = [
@@ -17449,6 +17455,7 @@ class Route
         'payment_create_private',
         'payment_create_private_old',
         'payment_create_private_json',
+        'transaction_create',
         'payment_create_recurring',
         'payment_create_nach_register',
         'payment_create_aeps',
@@ -19473,6 +19480,7 @@ class Route
      * @var array
      */
     public static $internalAuthWithPassportRoutes = [
+        'payment_create_private_json_internal',
     ];
 
 

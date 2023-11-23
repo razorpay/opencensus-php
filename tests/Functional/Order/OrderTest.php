@@ -215,6 +215,56 @@ class OrderTest extends TestCase
         return $this->startTest();
     }
 
+    public function testPaymentConsolidateCreateSuccess()
+    {
+        $request = [
+            'amount'        => 50000,
+            'currency'      => 'INR',
+        ];
+
+        $request["payment"] = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $this->app['config']->set('applications.pg_router.mock', true);
+
+        $response = $this->consolidatePaymentCreate($request);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment["id"], $response["payment_workflow"]["razorpay_payment_id"]);
+
+        $this->assertEquals($payment["order_id"], $response["id"]);
+    }
+
+    public function testPaymentConsolidateCreateFailure()
+    {
+        $request = [
+            'amount'        => 50000,
+            'currency'      => 'INR',
+        ];
+
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['email']);
+
+        $request["payment"] = $payment;
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $this->app['config']->set('applications.pg_router.mock', true);
+
+        try
+        {
+            $this->consolidatePaymentCreate($request);
+        }
+        catch(\Throwable $e)
+        {
+            $this->assertEquals("BAD_REQUEST_VALIDATION_FAILURE", $e->getCode());
+            $this->assertEquals("The email field is required.", $e->getMessage());
+        }
+    }
+
     public function testCreateOrderMYRMerchantMY()
     {
         $this->fixtures->edit('merchant', 10000000000000, [

@@ -534,6 +534,27 @@ class Service extends Base\Service
         return $order->toArrayPublic();
     }
 
+    public function fetchOrderCreateResponse($id)
+    {
+        $order = $this->repo->order->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $res = $order->toArrayPublic();
+
+        //Setting merchant_id as this is required for the order relation fetch
+        $res[Entity::MERCHANT_ID] = $this->merchant->getMerchantId();
+
+        $data = $this->internalOrderRelationsFetch($res);
+
+        unset($res[Entity::MERCHANT_ID]);
+
+        if ($data !== null)
+        {
+            return array_merge($res, $data);
+        }
+
+        return $res;
+    }
+
     public function fetchByIdInternal($id)
     {
         $order = $this->repo->order->findByPublicId($id);
@@ -1011,6 +1032,16 @@ class Service extends Base\Service
         }
 
        return (new Core)->internalCreateOrderRelations($input);
+    }
+
+    public function internalOrderRelationsFetch($input)
+    {
+        if (isset($input['merchant_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_IS_REQUIRED);
+        }
+
+        return (new Core)->internalOrderRelationsFetch($input);
     }
 
     public function internalCreateOrderBankAccountRelations($input)

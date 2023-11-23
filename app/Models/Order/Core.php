@@ -959,6 +959,59 @@ class Core extends Base\Core
         return $data;
     }
 
+    public function internalOrderRelationsFetch($input)
+    {
+        $data = null;
+
+        $order = (new Entity())->forceFill($input);
+
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        if (($order->products !== null) and
+            (count($order->products) > 0))
+        {
+            $data['products'] = $order->products;
+        }
+
+        $orderId = $order->getId();
+
+        Entity::silentlyStripSign($orderId);
+
+        $transfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER, $orderId, $merchant);
+
+        if ((empty($transfers) === false) and (count($transfers) > 0))
+        {
+            $tn = $transfers->toArrayPublic();
+            $data['transfers'] = $tn["items"];
+        }
+
+        $token = $order->getTokenRegistration();
+
+        if ($token !== null)
+        {
+            $invoice = $order->getMethod() === Payment\Method::NACH ? $order->invoice : null;
+
+            $tokenVar = $token->toArrayTokenFields($invoice);
+
+            // Doing this as per the requirement for the orders api response for CAW Card methods.
+            if (($order->getMethod() === null) or
+                ($order->getMethod() === Payment\Method::CARD))
+            {
+                unset($tokenVar[SubscriptionRegistration\Entity::NOTES]);
+                unset($tokenVar[SubscriptionRegistration\Entity::METHOD]);
+                unset($tokenVar[SubscriptionRegistration\Entity::CURRENCY]);
+                unset($tokenVar[SubscriptionRegistration\Entity::AUTH_TYPE]);
+                unset($tokenVar[SubscriptionRegistration\Entity::FAILURE_REASON]);
+                unset($tokenVar[SubscriptionRegistration\Entity::RECURRING_STATUS]);
+                unset($tokenVar[SubscriptionRegistration\Entity::FIRST_PAYMENT_AMOUNT]);
+            }
+
+            $data['token'] = $tokenVar;
+        }
+
+        return $data;
+    }
+
     public function internalCreateOrderBankAccountRelations($input)
     {
         $order = (new Entity())->forceFill($input);

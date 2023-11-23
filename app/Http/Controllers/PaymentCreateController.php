@@ -140,6 +140,76 @@ class PaymentCreateController extends Controller
 
         $data = $this->createPaymentWihoutCoproto($input);
 
+        $response = $this->generatePaymentResponse($input, $data);
+
+        $this->logResponseIfApplicable($response);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Creates an internal S2S payment and return json response
+     * NOTE: This function can't be used in the public api as error handling is done as per internal contracts
+     */
+    public function postInternalCreateS2SJsonPayment()
+    {
+        try
+        {
+            $data = $this->postCreateS2SJsonPayment();
+        }
+        catch (\Throwable $ex)
+        {
+            return $this->handlePaymentCreateExceptionInternal($ex);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Creates an S2S payment from the order and return response
+     * Note: Not used this function for the public api.
+     */
+    public function createS2SPaymentFromOrderRequest($paymentRequest)
+    {
+        $this->logPaymentRequestEvent($paymentRequest);
+
+        try
+        {
+            $data = $this->createPaymentWihoutCoproto($paymentRequest);
+        }
+        catch (\Throwable $ex)
+        {
+            if (($ex instanceof Exception\BaseException) === true)
+            {
+                $metadata = $ex->getData();
+
+                //Adding order id if not present in the error metadata
+                if (isset($metadata['order_id']) === true)
+                {
+                    throw $ex;
+                }
+                else
+                {
+                    $metadata['order_id'] = $paymentRequest["order_id"];
+
+                    $ex->setData($metadata);
+
+                    throw $ex;
+                }
+            }
+
+            throw $ex;
+        }
+
+        $response = $this->generatePaymentResponse($paymentRequest, $data);
+
+        $this->logResponseIfApplicable($response);
+
+        return $response;
+    }
+
+    protected function generatePaymentResponse($input, $data)
+    {
         if (isset($input['authentication']['authentication_channel']) &&
             ($input['authentication']['authentication_channel'] == "app"))
         {
@@ -160,7 +230,7 @@ class PaymentCreateController extends Controller
         {
             unset($data['processed_via_pg_router']);
 
-            return ApiResponse::json($data);
+            return $data;
         }
 
         $merchant = $this->app['basicauth']->getMerchant();
@@ -169,10 +239,9 @@ class PaymentCreateController extends Controller
 
         $response = $this->processCoprotoJsonData($data);
 
-        $this->logResponseIfApplicable($response);
-
-        return ApiResponse::json($response);
+        return $response;
     }
+
 
      /**
      * Creates an checkout json payment and return json response
@@ -504,6 +573,36 @@ class PaymentCreateController extends Controller
         $this->setMerchantCallbackUrlIfApplicable($input);
 
         return $this->createFeeBearerCustomerPayment($input);
+    }
+
+    /*
+     * This function is only used in the internal payment create flow as the error handling is different
+     * than the public payment create flow
+     */
+    protected function handlePaymentCreateExceptionInternal(\Throwable $ex){
+        // For handling gateway error in the case of internal payment create call
+        // we will send 200 status code with actual status in the request body
+        if (($ex instanceof Exception\GatewayErrorException) === true)
+        {
+            $this->app['exception.handler']->setErrorMetadataIfApplicable($ex);
+
+            $publicError = $ex->getError()->toPublicArray();
+
+            $response['error'] = $publicError['error'];
+
+            $response['status_code'] = 502;
+
+            $errorCode = $ex->getError()->getInternalErrorCode();
+
+            if ($errorCode === ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT)
+            {
+                $response['status_code'] = 504;
+            }
+
+            return ApiResponse::json($response);
+        }
+
+        throw $ex;
     }
 
     public function postCalculatePaymentFees()

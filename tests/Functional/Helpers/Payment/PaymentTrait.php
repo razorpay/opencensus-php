@@ -599,6 +599,20 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function consolidatePaymentCreate($requestBody, $server = null)
+    {
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => $requestBody
+        ];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function doS2SRecurringPayment($payment = null, $server = null)
     {
         if ($payment === null)

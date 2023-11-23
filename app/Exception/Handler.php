@@ -503,7 +503,7 @@ class Handler extends ExceptionHandler
         return ApiResponse::generateEmandateNpciErrorResponse($error, $data, $debug);
     }
 
-    protected function setErrorMetadataIfApplicable($exception)
+    public function setErrorMetadataIfApplicable($exception)
     {
         $error = $exception->getError();
 

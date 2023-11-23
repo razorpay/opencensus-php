@@ -10,6 +10,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Order\OrderMeta;
 use RZP\Exception\BaseException;
 use RZP\Trace\TraceCode;
+use function PHPUnit\Framework\isEmpty;
 
 class OrderController extends Controller
 {
@@ -19,11 +20,46 @@ class OrderController extends Controller
 
     public function createOrder()
     {
-        $input = Request::all();
+        $orderRequest = Request::all();
 
-        $data = $this->service()->create($input);
+        if (isset($orderRequest["payment"]) === true || isset($orderRequest["payment_config"]) === true)
+        {
+            $paymentRequest = $this->getPaymentRequest($orderRequest);
+        }
 
-        return ApiResponse::json($data);
+        //If order id is passed in the request - retry payment request scenario
+        if (isset($orderRequest["id"]) === true)
+        {
+            $orderResponse = $this->service()->fetchOrderCreateResponse($orderRequest["id"]);
+        }
+        else
+        {
+            $orderResponse = $this->service()->create($orderRequest);
+        }
+
+        $response = $orderResponse;
+
+        //If payment request is not empty then create the payment after removing capture config
+        if (empty($paymentRequest) === false)
+        {
+            $paymentRequest["order_id"] = $orderResponse["id"];
+
+            if (isset($paymentRequest["amount"]) === false)
+            {
+                $paymentRequest["amount"] = $orderResponse["amount"];
+            }
+
+            $paymentRequest["currency"] = $orderResponse["currency"];
+
+            $paymentResponse = (new PaymentCreateController)->createS2SPaymentFromOrderRequest($paymentRequest);
+
+            //Updating the order response, to get the latest value of status and attempt field
+            $response = $this->service()->fetchOrderCreateResponse($orderResponse["id"]);
+
+            $response["payment_workflow"] = $paymentResponse;
+        }
+
+        return ApiResponse::json($response);
     }
 
     public function getOrders()
@@ -225,6 +261,15 @@ class OrderController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function internalOrderRelationsFetch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalOrderRelationsFetch($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function internalCreateOrderBankAccountRelations()
     {
         $input = Request::all();
@@ -390,4 +435,58 @@ class OrderController extends Controller
                 ]);
         }
     }
+
+    protected function getPaymentRequest(array &$orderRequest)
+    {
+        $paymentRequest = $orderRequest["payment"];
+
+        //Removing the payment request body from the order request
+        //Will refill the capture config details in the order request
+        unset($orderRequest["payment"]);
+
+        $captureConfig = [];
+
+        if (isset($paymentRequest["capture"]) === true)
+        {
+            $captureConfig["capture"] = $paymentRequest["capture"];
+
+            unset($paymentRequest["capture"]);
+        }
+
+        if (isset($paymentRequest["capture_options"]) === true)
+        {
+            $captureConfig["capture_options"] = $paymentRequest["capture_options"];
+
+            unset($paymentRequest["capture_options"]);
+        }
+
+        //Adding capture config in the order request only if capture config is not empty
+        if (empty($captureConfig) === false)
+        {
+            $orderRequest["payment"] = $captureConfig;
+        }
+
+        // payment capture config is accepted either in the payment_config key as per the new contract
+        // or in the payment struct as the per old struct.
+        if (isset($orderRequest["payment_config"]) === true && empty($orderRequest["payment_config"]) === false)
+        {
+            $orderRequest["payment"] = $orderRequest["payment_config"];
+
+            unset($orderRequest["payment_config"]);
+        }
+
+        //If payment key is not empty after removing capture config
+        // then it is consolidate api
+        if (empty($paymentRequest) === false)
+        {
+            //for handling unique receipt condition ir-respective of merchant features
+            if (isset($orderRequest["receipt"]) === true)
+            {
+                $orderRequest["unique_receipt"] = true;
+            }
+        }
+
+        return $paymentRequest;
+    }
+
 }
