@@ -143,6 +143,7 @@ class Service extends Base\Service
 
     protected $config;
 
+    protected bool $isGSTBvsSyncFlowSuccess = true;
 
     public function __construct(Core $core = null, Validator  $validator = null, Account\Core $accountCore = null)
     {
@@ -3070,9 +3071,92 @@ class Service extends Base\Service
 
         return null;
     }
+    
+    /**
+     * Trigger BVS sync flow validation to verify whether the given GST number is valid or not.
+     * Sync flow validation is done so that we can get the success/failure response of BVS at the time of execution.
+     * @throws Exception\ServerErrorException
+     */
+    private function triggerBvsValidationSyncFlowForGSTUpdateV2(bool $isAddAction, array $input): Merchant\BvsValidation\Entity
+    {
+        $payload = $this->getUpdateGstinSelfServeBvsPayload($input);
+    
+        $input = array_merge($input, [
+            Merchant\Entity::MERCHANT_ID               => $this->merchant->getId(),
+            DEConstants::IS_ADD_GSTIN_OPERATION        => $isAddAction,
+            DetailConstants::VERSION                   => 'v2',
+        ]);
+        
+        $this->storeGstinSelfServeInput($input);
+    
+        $validation = (new BvsCore($this->merchant, $this->merchant->merchantDetail))->verify($this->merchant->getId(), $payload, true, true);
+    
+        if ($validation === null)
+        {
+            throw new Exception\ServerErrorException('bvs validation create failed for gst update v2', ErrorCode::SERVER_ERROR);
+        }
+    
+        $this->trace->info(TraceCode::GSTIN_BVS_VALIDATION_TRIGGERED, [
+            BvsConstant::VALIDATION_ID  => $validation->getValidationId(),
+            BvsConstant::STATUS         => $validation->getValidationStatus(),
+        ]);
+        
+        return $validation;
+    }
+    
+    /**
+     * @throws BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    private function addMerchantGSTDetailV2(bool $isAddAction, array $input)
+    {
+        $this->validator->validateInput('gstin_self_serve_v2', $input);
+        
+        $gstList = $this->core->getGSTDetailsList()[DetailConstants::RESULTS];
+        
+        if (in_array($input[Entity::GSTIN], $gstList) === false)
+        {
+            throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR,
+                        null,
+                        null,
+                        "The gstin is not verified.");
+        }
+        
+        $validation = $this->triggerBvsValidationSyncFlowForGSTUpdateV2($isAddAction, $input);
 
+        $response = $input;
+        $response[DetailConstants::VERSION] = 'v2';
+        $response[Constants::WORKFLOW_CREATED] = false;
+        
+        if ($validation->getValidationStatus() !== BvsValidationConstants::SUCCESS)
+        {
+            $response[Constants::SYNC_FLOW] = false;
+            
+            return $response;
+        }
+    
+        $merchantDetails = $this->merchant->merchantDetail;
+        
+        $this->handleGstinSelfServeCallback($merchantDetails, $validation);
+        
+        $response[Constants::SYNC_FLOW] = $this->isGSTBvsSyncFlowSuccess;
+        
+        return $response;
+    }
+    
     public function updateGstinSelfServe($input)
     {
+        $version = 'v1';
+        
+        if ((isset($input[DetailConstants::VERSION]) === true) and
+            ($input[DetailConstants::VERSION] === 'v2'))
+        {
+            $version = $input[DetailConstants::VERSION];
+        
+            unset($input[DetailConstants::VERSION]);
+        }
+        
         $isAddAction = $this->isAddGstinSelfServeAction($this->merchant->merchantDetail);
 
         $traceCode = ($isAddAction) ? TraceCode::GSTIN_ADD_SELF_SERVE_INITIATED : TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED;
@@ -3081,14 +3165,19 @@ class Service extends Base\Service
             Entity::GSTIN => $input[Entity::GSTIN]
         ]);
 
-        $this->validator->validateInput('gstin_self_serve', $input);
-
         // only activated merchants can update gstin detail
         if ($isAddAction === false)
         {
             $this->merchant->getValidator()->validateIsActivated($this->merchant);
         }
-
+    
+        if ($version === 'v2')
+        {
+            return $this->addMerchantGSTDetailV2($isAddAction, $input);
+        }
+        
+        $this->validator->validateInput('gstin_self_serve', $input);
+        
         $payload = $this->getUpdateGstinSelfServeBvsPayload($input);
 
         $fileId = $this->uploadGstInCertificateForGstinSelfServe(
@@ -3231,6 +3320,14 @@ class Service extends Base\Service
                 'Failed to get gstin data from cache',
                 ErrorCode::SERVER_ERROR);
         }
+    
+        $version = 'v1';
+    
+        if (((isset($input[DetailConstants::VERSION])) === true) and
+            ($input[DetailConstants::VERSION] === 'v2'))
+        {
+            $version = $input[DetailConstants::VERSION];
+        }
 
         $isAddOperation = $input[DetailConstants::IS_ADD_GSTIN_OPERATION];
 
@@ -3261,6 +3358,17 @@ class Service extends Base\Service
 
         catch (\Throwable $e)
         {
+            if ($version ==='v2')
+            {
+                $this->isGSTBvsSyncFlowSuccess = false;
+    
+                $this->trace->traceException($e,
+                    Trace::INFO,
+                    TraceCode::GSTIN_SELF_SERVE_SUCCESS_CALLBACK_UPDATE_FAILED_VERSION_V2, []);
+                
+                return;
+            }
+            
             $this->trace->info(TraceCode::GSTIN_SELF_SERVE_WORKFLOW_RAISED_AFTER_BVS_SUCCESS, []);
 
             $this->handleGstinSelfServeCallbackFailure($detail);
@@ -3380,7 +3488,17 @@ class Service extends Base\Service
     protected function handleGstinSelfServeCallbackFailure(Entity $oldDetailEntity)
     {
         $input = $this->getGstinSelfServeInputFromCache($oldDetailEntity->getId());
-
+    
+        if (((isset($input[DetailConstants::VERSION])) === true) and
+            ($input[DetailConstants::VERSION] === 'v2'))
+        {
+            $this->isGSTBvsSyncFlowSuccess = false;
+            
+            $this->trace->info(TraceCode::GSTIN_SELF_SERVE_FAILURE_CALLBACK_VERSION_V2, []);
+            
+            return;
+        }
+        
         if (isset($input[Entity::GSTIN]) === false)
         {
             throw new Exception\ServerErrorException(

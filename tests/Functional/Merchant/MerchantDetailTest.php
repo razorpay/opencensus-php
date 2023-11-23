@@ -18,6 +18,7 @@ use RZP\Models\Base\EsDao;
 use RZP\Constants\Timezone;
 use RZP\Models\ClarificationDetail\Repository;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\Cron\Jobs\NcRevampReminderCronJob;
 use RZP\Models\User\Role;
@@ -7768,6 +7769,119 @@ Team Razorpay', '+911234567890');
             'request_under_validation' =>  true
         ]);
     }
+    
+    public function testUpdateGstInSelfServeSuccessV2()
+    {
+        Config::set('services.bvs.response', Constant::SUCCESS);
+    
+        $additionalInput = [
+            'merchant_detail' => [
+                'promoter_pan'            => 'BRRPK8070K',
+                'poi_verification_status' => 'verified',
+            ]
+        ];
+        
+        extract($this->setupMerchantForGstinSelfServeTest(true, $additionalInput));
+    
+        $this->enableRazorXTreatmentForSyncGstinBvsValidation('on');
+    
+        $this->setBvsValidationDetailForGstinUpdateSelfServe();
+        
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServeSuccessV2'];
+        
+        $response = $this->startTest();
+    
+        $this->assertEquals(true, $response['sync_flow']);
+    
+        $this->assertEquals(false, $response['workflow_created']);
+    
+        $merchantDetail = $this->getEntityById('merchant_detail', $merchant['id'], true);
+    
+        $this->assertArraySelectiveEquals([
+            'gstin'                       => '13AAACR5055K1ZG',
+            'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
+            'business_registered_pin'     => '400018',
+            'business_registered_city'    => 'Mumbai City',
+            'business_registered_state'   => 'MH'
+        ], $merchantDetail);
+    }
+    
+    public function testUpdateGstInSelfServeSyncFlowAsFalseDueToBVSValidationDetailsForPrimaryAddressNotFoundV2()
+    {
+        Config::set('services.bvs.response', Constant::SUCCESS);
+        
+        $additionalInput = [
+            'merchant_detail' => [
+                'promoter_pan'            => 'BRRPK8070K',
+                'poi_verification_status' => 'verified',
+            ]
+        ];
+        
+        extract($this->setupMerchantForGstinSelfServeTest(true, $additionalInput));
+        
+        $this->enableRazorXTreatmentForSyncGstinBvsValidation('on');
+    
+        $data = $this->testData['testUpdateGstinSelfServeSuccessV2'];
+    
+        $data['response']['content'] = [
+            'gstin'             => '13AAACR5055K1ZG',
+            'sync_flow'         => false,
+            'workflow_created'  => false,
+            'version'           => 'v2',
+        ];
+    
+        $response = $this->startTest($data);
+        
+        $this->assertEquals(false, $response['sync_flow']);
+        
+        $this->assertEquals(false, $response['workflow_created']);
+    }
+    
+    public function testUpdateGstInSelfServeSyncFlowAsFalseDueToGSTBVSValidationStatusV2()
+    {
+        Config::set('services.bvs.response', Constant::SUCCESS);
+        
+        $additionalInput = [
+            'merchant_detail' => [
+                'promoter_pan'            => 'BRRPK8070K',
+                'poi_verification_status' => 'verified',
+            ]
+        ];
+        
+        extract($this->setupMerchantForGstinSelfServeTest(true, $additionalInput));
+    
+        $data = $this->testData['testUpdateGstinSelfServeSuccessV2'];
+    
+        $data['response']['content'] = [
+            'gstin'             => '13AAACR5055K1ZG',
+            'sync_flow'         => false,
+            'workflow_created'  => false,
+            'version'           => 'v2',
+        ];
+    
+        $response = $this->startTest($data);
+        
+        $this->assertEquals(false, $response['sync_flow']);
+
+        $this->assertEquals(false, $response['workflow_created']);
+    }
+    
+    public function testUpdateGstinSelfServeFailureV2()
+    {
+        Config::set('services.bvs.response', Constant::SUCCESS);
+        
+        $additionalInput = [
+            'merchant_detail' => [
+                'poi_verification_status' => 'verified',
+            ]
+        ];
+        
+        extract($this->setupMerchantForGstinSelfServeTest(true, $additionalInput));
+        
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServeFailureV2'];
+        
+        $this->startTest();
+    }
 
     public function testAddGstinSelfServeValidationFailWorkflowApprove()
     {
@@ -9131,7 +9245,7 @@ Team Razorpay',
        $this->startTest($data);
     }
 
-    protected function setupMerchantForGstinSelfServeTest($isAddGstinFlow = true)
+    protected function setupMerchantForGstinSelfServeTest($isAddGstinFlow = true, $additionalInput = [])
     {
         Mail::fake();
 
@@ -9142,6 +9256,8 @@ Team Razorpay',
             'name' => 'Test name'
         ]);
 
+        $merchantDetailAdditionalData = array_get($additionalInput, 'merchant_detail', []);
+
         $this->fixtures->create('merchant_detail', [
             'merchant_id'       => $merchant['id'],
             'contact_name'      => $merchant['name'],
@@ -9151,8 +9267,8 @@ Team Razorpay',
             'business_registered_pin'     => '451111',
             'business_registered_city'    => 'Pune',
             'business_registered_state'   => 'MP',
-            'gstin'                       => ($isAddGstinFlow) ? null : 'abcdefghijklmno'
-        ]);
+            'gstin'                       => ($isAddGstinFlow) ? null : 'abcdefghijklmno',
+        ] + $merchantDetailAdditionalData);
 
         $user = $this->fixtures->create('user', [
             'contact_mobile'          => '1234567890',

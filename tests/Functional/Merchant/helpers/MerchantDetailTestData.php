@@ -4901,6 +4901,49 @@ return [
             ],
         ],
     ],
+  
+    'testUpdateGstinSelfServeSuccessV2'      => [
+        'request'   => [
+            'url'       => '/merchant/gstin_self_serve',
+            'method'    => 'POST',
+            'content'   => [
+                'gstin'         => '13AAACR5055K1ZG',
+                'version'       => 'v2',
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'gstin'             => '13AAACR5055K1ZG',
+                'sync_flow'         => true,
+                'workflow_created'  => false,
+                'version'           => 'v2',
+            ],
+        ],
+    ],
+  
+    'testUpdateGstinSelfServeFailureV2'      => [
+        'request'   => [
+            'url'       => '/merchant/gstin_self_serve',
+            'method'    => 'POST',
+            'content'   => [
+                'gstin'         => '13AAACR5055K1ZG',
+                'version'       => 'v2',
+            ],
+        ],
+        'response'  => [
+            'status_code' => 400,
+            'content'   => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The gstin is not verified.',
+                ],
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
 
     'testUpdateGstinSelfServeInvalidUserRole'      => [
         'request'   => [

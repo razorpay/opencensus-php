@@ -735,5 +735,8 @@ class Constants
     const UNDETERMINED                            = 'undetermined';
     const NO                                      = 'no';
     const YES                                     = 'yes';
+    
+    const VERSION                                 = 'version';
+    const RESULTS                                 = 'results';
 }
 

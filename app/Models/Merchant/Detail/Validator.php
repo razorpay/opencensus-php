@@ -538,6 +538,10 @@ class Validator extends Base\Validator
         Entity::GSTIN                           => 'filled|string|size:15',
         Constants::GSTIN_SELF_SERVE_CERTIFICATE => 'required|file|mimes:pdf,jpeg,jpg,png,jfif,heic,heif'
     ];
+    
+    protected static $gstinSelfServeV2Rules = [
+        Entity::GSTIN                           => 'required|string|size:15',
+    ];
 
     protected static $gstinSelfServeValidators = [
         'gstin_self_serve_not_in_progress',

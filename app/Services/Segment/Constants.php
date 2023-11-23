@@ -62,4 +62,6 @@ class Constants
     const SUCCESS           = 'Success';
 
     const BE                = 'BE';
+    
+    const GST_NEW_FLOW      = 'gstNewFlow';
 }
