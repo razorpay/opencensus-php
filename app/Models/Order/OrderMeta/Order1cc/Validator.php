@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         Fields::SHIPPING_METHOD  => 'sometimes|array|custom',
         Fields::UTM_PARAMETERS   => 'sometimes|array|custom',
         Fields::TAX_DETAILS      => 'sometimes|array',
+        Fields::POST_CHECKOUT_DETAILS => 'sometimes|array|custom',
     ];
 
     protected static $editCustomerDetailsRules = [
@@ -147,6 +148,14 @@ class Validator extends Base\Validator
         Fields::REF                  => 'sometimes|string',
     ];
 
+    protected static $postCheckoutDetailsRules = [
+        Fields::PAYMENT_ID          => 'sometimes|string',
+        Fields::ORDER_STATUS_URL    => 'sometimes|string',
+        Fields::REASON              => 'sometimes|string',
+        Fields::DESCRIPTION         => 'sometimes|string',
+        Fields::STATUS              => 'required|string|in:pending,failed,completed',
+    ];
+
 
     protected function validateShippingAddress($attribute, $value)
     {
@@ -169,6 +178,11 @@ class Validator extends Base\Validator
     protected function validateUtmParameters($attribute, $value)
     {
         $this->validateInput('utmParameters', $value);
+    }
+
+    protected function validatePostCheckoutDetails($attribute, $value)
+    {
+        $this->validateInput('postCheckoutDetails', $value);
     }
 
     protected function validatePromotions($attribute, $value)

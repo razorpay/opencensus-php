@@ -202,6 +202,18 @@ class Client
                         ]);
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_ACCESS_DENIED);
                 }
+                if ($responseArr['status_code'] === 430 )
+                {
+                    $this->trace->error(
+                        TraceCode::SHOPIFY_1CC_API_ERROR,
+                        [
+                            'type'      => 'rejected',
+                            'api_type'  => $apiType,
+                            'response'  => $responseArr,
+                            'status_code' => '430',
+                        ]);
+                    throw new Exception\ServerErrorException($responseArr["raw_contents"],ErrorCode::SERVER_ERROR_SHOPIFY_SERVICE_FAILURE);
+                }
 
                 $delay = $this->getBackoffIfRetriableRequest($responseArr, $apiType, $attempts);
                 if ($delay === -1)

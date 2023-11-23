@@ -223,6 +223,7 @@ final class Metric
 
     const SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT         = 'shopify_complete_checkout_error_count';
     const SHOPIFY_TAX_EXPERIMENT_DISABLED               = 'shopify_tax_experiment_disabled';
+    const SHOPIFY_POST_CHECKOUT_STATUS_COUNT            = 'shopify_post_checkout_status_count';
 
     const SHOPIFY_ADD_CHECKOUT_URL_ERROR_COUNT          = 'shopify_add_checkout_url_error_count';
 

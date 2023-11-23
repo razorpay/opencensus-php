@@ -662,7 +662,7 @@ class Service extends Base\Service
         return [];
     }
 
-    public function completeCheckoutWithLock(array $input, bool $fromShopifyApi = true): array
+    public function completeCheckoutWithLock(array $input, bool $fromShopifyApi = true, bool $lastRetry = false): array
     {
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_MUTEX_INITIATED,
@@ -677,9 +677,9 @@ class Service extends Base\Service
 
         $res = $this->mutex->acquireAndRelease(
             $key,
-            function () use ($input, $fromShopifyApi)
+            function () use ($input, $fromShopifyApi, $lastRetry)
             {
-                return $this->shopifyCompleteCheckout($input, $fromShopifyApi);
+                return $this->shopifyCompleteCheckout($input, $fromShopifyApi, $lastRetry);
             },
             self::MUTEX_LOCK_TTL_SEC,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
@@ -692,7 +692,7 @@ class Service extends Base\Service
     }
 
     // updates shopify order post payment and redirects the user
-    protected function shopifyCompleteCheckout(array $input, bool $fromShopifyApi): array
+    protected function shopifyCompleteCheckout(array $input, bool $fromShopifyApi, bool $lastRetry = false): array
     {
         $orderId = $input['razorpay_order_id'];
         $paymentId = $input['razorpay_payment_id'];
@@ -748,7 +748,7 @@ class Service extends Base\Service
 
         $orderArray = $order->toArrayPublic();
 
-        $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi, $source, $nectorCoinsResponse);
+        $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi, $source, $nectorCoinsResponse, $lastRetry);
 
         if($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_ACC_CREATE))
         {
@@ -852,6 +852,15 @@ class Service extends Base\Service
         $response['customer_details'] = $orderArray['customer_details'];
         $response['order_status_url'] = $shopifyOrder['order']['order_status_url'];
 
+        (new OrderMeta\Service())->updatePostCheckoutDetailsFor1ccOrder([
+            'id' => $input['razorpay_order_id'],
+            Order1cc\Fields::POST_CHECKOUT_DETAILS => [
+                Order1cc\Fields::STATUS => 'completed',
+                Order1cc\Fields::ORDER_STATUS_URL => $response['order_status_url'],
+                Order1cc\Fields::PAYMENT_ID => $response['payment_id'],
+            ]
+        ], $this->merchant->getMerchantId());
+
         if(empty($orderArray['promotions']) === false)
         {
             foreach ($orderArray['promotions'] as $promotion) {
@@ -898,7 +907,7 @@ class Service extends Base\Service
     }
 
     // places final order and gateway transaction to Shopify
-    public function placeShopifyOrder($order, $payment, $fromShopifyApi, $source, $nectorCoinsResponse): array
+    public function placeShopifyOrder($order, $payment, $fromShopifyApi, $source, $nectorCoinsResponse, bool $lastRetry = false): array
     {
         $utmParameters =[];
 
@@ -918,7 +927,7 @@ class Service extends Base\Service
 
         $orderMeta = $this->getOrderMeta($order);
 
-        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi, $utmParameters, $orderMeta, $nectorCoinsResponse);
+        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi, $utmParameters, $orderMeta, $nectorCoinsResponse, $lastRetry);
 
         $this->monitoring->addTraceCount(
             Metric::PLACE_SHOPIFY_ORDER_SUCCESS_COUNT,

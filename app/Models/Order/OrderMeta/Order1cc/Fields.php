@@ -69,6 +69,12 @@ class Fields
     const NAME                         = 'name';
     const DESCRIPTION                  = 'description';
     const TAX_DETAILS                  = 'tax_details';
+    // post checkout details fields
+    const POST_CHECKOUT_DETAILS = 'post_checkout_details';
+    const STATUS                = 'status';
+    const REASON                = 'reason';
+    const ORDER_STATUS_URL      = 'order_status_url';
+    const PAYMENT_ID            = 'payment_id';
 
     //rto recommendation fields
     const REVIEW_STATUS = 'review_status';

@@ -627,6 +627,42 @@ class Service extends \RZP\Models\Base\Service
         (new Core())->update1CCOrderByMerchantId($input[Order\Entity::ID],$param,$merchantId);
     }
 
+    public function updatePostCheckoutDetailsFor1ccOrder($input,$merchantId)
+    {
+        try
+        {
+            $this->trace->info(TraceCode::ONECC_UPDATE_POST_CHECKOUT_DETAILS,
+                [
+                    'order_id' =>  $input['id']
+                ]
+            );
+
+            (new Order1cc\Validator())->validateInput('postCheckoutDetails', $input[Order1cc\Fields::POST_CHECKOUT_DETAILS]);
+
+            $this->trace->count(
+                Metric::SHOPIFY_POST_CHECKOUT_STATUS_COUNT,
+                [
+                    'status' => $input[Order1cc\Fields::POST_CHECKOUT_DETAILS][Order1cc\Fields::STATUS],
+                ]);
+
+            $param = [
+                Order1cc\Fields::POST_CHECKOUT_DETAILS => $input[Order1cc\Fields::POST_CHECKOUT_DETAILS],
+            ];
+
+            (new Core())->update1CCOrderByMerchantId($input[Order\Entity::ID],$param,$merchantId);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::ONECC_UPDATE_POST_CHECKOUT_DETAILS_ERROR,
+                [
+                    'order_id' =>  $input['id'],
+                    'error' => $ex->getMessage(),
+                ]
+            );
+        }
+
+    }
+
     protected function get1ccOrderMutex(string $orderId) : string
     {
         return self::MUTEX_PREFIX_1CC . $orderId;

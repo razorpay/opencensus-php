@@ -25,6 +25,8 @@ use RZP\Models\Customer\CustomerConsent1cc;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Models\Order\OrderMeta\Type as OrderMetaType;
+use RZP\Models\Order\OrderMeta;
+use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 
@@ -887,6 +889,24 @@ class Core extends Base\Core
             }
         }
 
+        //Update order_meta with post_checkout_details.
+        $errorKey = $this->getRZPErrorFromShopifyMessage($message);
+
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, [
+            'error_type' => TraceCode::SHOPIFY_1CC_SQS_PLACE_ORDER_ERROR,
+            'error_message' => $errorKey,
+            'error_code' => $e->getCode(),
+        ]);
+
+        (new OrderMeta\Service())->updatePostCheckoutDetailsFor1ccOrder([
+            'id' => $rzpOrder['id'],
+            Order1cc\Fields::POST_CHECKOUT_DETAILS => [
+                Order1cc\Fields::STATUS => 'failed',
+                Order1cc\Fields::REASON => $errorKey,
+                Order1cc\Fields::DESCRIPTION => $message,
+            ]
+        ], $this->merchant->getId());
+
         // Refund if applicable, please double check
         if (strtolower($rzpPayment['method']) !== 'cod')
         {
@@ -934,8 +954,6 @@ class Core extends Base\Core
                 ]
             );
 
-            $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_SQS_PLACE_ORDER_ERROR]);
-
             throw new Exception\BadRequestException(
               ErrorCode::BAD_REQUEST_ERROR,
               null,
@@ -945,6 +963,34 @@ class Core extends Base\Core
         }
 
         return [];
+    }
+
+    protected function getRZPErrorFromShopifyMessage(string $message): string
+    {
+        $knownErrorMessages = array(
+            "unable to reserve inventory"   => "inventory_reservation_failed",
+            "phone has already been taken"  => "phone_already_taken",
+            "has already been taken"        => "customer_already_taken",
+            "{\"phone\":[\"is invalid\"]}"  => "phone_invalid",
+            "430" => "shopify_server_unresponsive",
+        );
+
+        foreach ($knownErrorMessages as $key => $value)
+        {
+            if (str_contains($message, $key) === true)
+            {
+                return $value;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_API_ERROR_RESPONSE,
+            [
+                'message'       => $message
+            ]
+        );
+
+        return "unknown";
     }
 
     protected function retryPlaceShopifyOrder($client, array $rzpOrder, array $body, $rzpPayment, bool $fromShopifyApi, array $orderMeta = [])
@@ -1054,7 +1100,7 @@ class Core extends Base\Core
 
     }
 
-    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi,array $utmParameters=[], array $orderMeta = [], array $nectorCoinsResponse = []): array
+    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi,array $utmParameters=[], array $orderMeta = [], array $nectorCoinsResponse = [], bool $lastRetry = false): array
     {
         $start = millitime();
 
@@ -1130,13 +1176,17 @@ class Core extends Base\Core
 
                 $finalErrorCode = "DELEGATED_TO_SQS";
             }
-            else
+            else if ($e->getCode() != ErrorCode::SERVER_ERROR_SHOPIFY_SERVICE_FAILURE || $lastRetry === true)
             {
                 $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => 'SQS_TOO_FAILED']);
 
                 $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderSQS($client, $e, $rzpOrder, $rzpPayment, $body, $orderMeta);
 
                 $finalErrorCode = "SQS_TOO_FAILED";
+            }
+            else
+            {
+                throw $e;
             }
 
             if (!empty($exceptionHandlerResponse))

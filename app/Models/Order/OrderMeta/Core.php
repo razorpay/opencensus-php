@@ -325,6 +325,7 @@ class Core extends Base\Core
             {
                 $pgRouterInput = [
                     "amount"      => $order->getAmount(),
+                    "receipt"     => $order->getReceipt(),
                     "order_metas" => [
                         $orderMeta->toArrayPublic(),
                     ],

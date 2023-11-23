@@ -16,6 +16,8 @@ class OneCCShopifyCreateOrder extends Job
     const BASE_RETRY_INTERVAL_SEC = 60;
     const BACKOFF_FACTOR = 5;
     const MAX_RETRY_ATTEMPTS = 7;
+    const MAX_CREATE_ORDER_RETRY_ATTEMPTS = 2;
+    const BASE_CREATE_ORDER_RETRY_INTERVAL_SEC = 300;
 
     /**
      * @var string
@@ -106,11 +108,12 @@ class OneCCShopifyCreateOrder extends Job
 
         try
         {
+            $lastRetry = $this->attempts() > self::MAX_CREATE_ORDER_RETRY_ATTEMPTS;
             // skipping test env as shopify has a max limit on test orders and
             // running the job will hit the limit very quickly
             if ($app->environment(Environment::PRODUCTION) === true)
             {
-                (new OneClickCheckout\Shopify\Service)->completeCheckoutWithLock($this->data, false);
+                (new OneClickCheckout\Shopify\Service)->completeCheckoutWithLock($this->data, false, $lastRetry);
             }
             $this->handlePrepayCODFlow();
             $this->delete();
@@ -131,14 +134,28 @@ class OneCCShopifyCreateOrder extends Job
                 Trace::ERROR,
                 TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB_EXCEPTION,
                 []);
-            $this->delete();
-            // $this->checkRetry('create_order');
+
+            if ($e->getCode() === ErrorCode::SERVER_ERROR_SHOPIFY_SERVICE_FAILURE) {
+                $this->checkRetry('create_order');
+            } else {
+                $this->delete();
+            }
         }
     }
 
     protected function checkRetry(string $event): void
     {
-        if ($this->attempts() > self::MAX_RETRY_ATTEMPTS)
+        $maxRetries = self::MAX_RETRY_ATTEMPTS;
+        $retryInterval = self::BASE_RETRY_INTERVAL_SEC;
+        $backoffFactor = self::BACKOFF_FACTOR;
+
+        if ($event === 'create_order')
+        {
+            $maxRetries = self::MAX_CREATE_ORDER_RETRY_ATTEMPTS;
+            $retryInterval = self::BASE_CREATE_ORDER_RETRY_INTERVAL_SEC;
+        }
+
+        if ($this->attempts() > $maxRetries)
         {
             $trace = $event === 'webhook' ? TraceCode::SHOPIFY_1CC_PROCESS_WEBHOOK_JOB_FAILED: TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB_FAILED;
             $this->trace->error(
@@ -153,7 +170,7 @@ class OneCCShopifyCreateOrder extends Job
         else
         {
             $trace = $event === 'webhook' ? TraceCode::SHOPIFY_1CC_PROCESS_WEBHOOK_JOB_RELEASED: TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB_RELEASED;
-            $delay = self::BASE_RETRY_INTERVAL_SEC + pow($this->attempts() + 1, self::BACKOFF_FACTOR);
+            $delay = $retryInterval + pow($this->attempts() + 1, $backoffFactor);
 
             $this->trace->info(
                 $trace,
