@@ -1642,7 +1642,6 @@ class Core extends Base\Core
             $codFeeApplied = $rzpOrder['cod_fee'];
         }
 
-
         $isTaxExpEnabled = (new CommonUtils())->isTaxesExpEnabled();
 
         if($isTaxExpEnabled === false && $body['taxes_included'] === false)
@@ -1660,13 +1659,81 @@ class Core extends Base\Core
             $this->monitoring->addTraceCount(Metric::SHOPIFY_TAX_EXPERIMENT_DISABLED, ['taxes_included' => $body['taxes_included']]);
         }
 
+        $taxLineRequired = false;
+
+        $totalTax = $totalTax * 100;
+
+        if(empty($orderMeta) === false)
+        {
+            $value = $orderMeta->getValue();
+
+            if (empty($value['tax_details']) === false)
+            {
+                $taxLineRequired = ($value['tax_details']['total_tax'] > 0) ? true : false;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_MAGIC_TAX_INFO,
+            [
+                'type'            => 'MagicOrderTaxInfo',
+                'order_id'        => $rzpOrder['id'],
+                'taxLineRequired' => $taxLineRequired,
+                'isTaxExpEnabled' => $isTaxExpEnabled
+            ]
+        );
+
+        // Based on experiment value and tax amount field value will add tax_lines to the order create payload
+        if($isTaxExpEnabled === true && $taxLineRequired === true)
+        {
+            $adminCheckoutCallExp = (new CommonUtils())->isAdminCheckoutRequiredExp();
+
+            if($adminCheckoutCallExp === true)
+            {
+                //To fetch the tax line details from admin REST api
+                $adminCheckoutRes = (new Checkout)->getCheckoutFromAdminApi($checkoutId);
+
+                if(empty($adminCheckoutRes) === false && empty($adminCheckoutRes['tax_lines']) === false)
+                {
+                    $body['tax_lines'] = $adminCheckoutRes['tax_lines'];
+                }
+            }
+            else
+            {
+                $value = $orderMeta->getValue();
+
+                $calculateDraftOrder = $this->calculateDraftOrder($rzpOrder, $value);
+
+                if(empty($calculateDraftOrder) === false && empty($calculateDraftOrder['tax_lines']) === false)
+                {
+                    $body['tax_lines'] = $calculateDraftOrder['tax_lines'];
+
+                    if ($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_OPT_SHIPPING_TAX) === true || $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_TAX_INCLUSION) === true)
+                    {
+                        $body['total_tax'] = $calculateDraftOrder['total_tax'] / 100;
+
+                        $totalTax = $calculateDraftOrder['total_tax'];
+                    }
+                }
+            }
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_MAGIC_TAX_INFO,
+                [
+                    'type'            => 'MagicOrderTaxLines',
+                    'order_id'        => $rzpOrder['id'],
+                    'tax_lines'       => $body['tax_lines'] ?? [],
+                ]
+            );
+        }
+
         if($body['taxes_included'] === true)
         {
             $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
         }
         else if($isTaxExpEnabled === true)
         {
-            $discountAmountPaise = $rzpOrder['line_items_total'] + ($totalTax*100) + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
+            $discountAmountPaise = $rzpOrder['line_items_total'] + $totalTax + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
         }
         else
         {
@@ -1866,63 +1933,6 @@ class Core extends Base\Core
 
                 $body['note_attributes'] = $noteAttributes;
             }
-        }
-
-        $taxLineRequired = false;
-
-        if(empty($orderMeta) === false)
-        {
-            $value = $orderMeta->getValue();
-
-            if (empty($value['tax_details']) === false)
-            {
-                $taxLineRequired = ($value['tax_details']['total_tax'] > 0) ? true : false;
-            }
-        }
-
-        $this->trace->info(
-            TraceCode::SHOPIFY_MAGIC_TAX_INFO,
-            [
-                'type'            => 'MagicOrderTaxInfo',
-                'order_id'        => $rzpOrder['id'],
-                'taxLineRequired' => $taxLineRequired,
-                'isTaxExpEnabled' => $isTaxExpEnabled
-            ]
-        );
-
-        // Based on experiment value and tax amount field value will add tax_lines to the order create payload
-        if($isTaxExpEnabled === true && $taxLineRequired === true)
-        {
-            $adminCheckoutCallExp = (new CommonUtils())->isAdminCheckoutRequiredExp();
-
-            if($adminCheckoutCallExp === true)
-            {
-                //To fetch the tax line details from admin REST api
-                $adminCheckoutRes = (new Checkout)->getCheckoutFromAdminApi($checkoutId);
-
-                if(empty($adminCheckoutRes) === false && empty($adminCheckoutRes['tax_lines']) === false)
-                {
-                    $body['tax_lines'] = $adminCheckoutRes['tax_lines'];
-                }
-            }
-            else
-            {
-                $calculateDraftOrder = $this->calculateDraftOrder($rzpOrder, $orderMeta);
-
-                if(empty($calculateDraftOrder) === false && empty($calculateDraftOrder['tax_lines']) === false)
-                {
-                    $body['tax_lines'] = $calculateDraftOrder['tax_lines'];
-                }
-            }
-
-            $this->trace->info(
-                TraceCode::SHOPIFY_MAGIC_TAX_INFO,
-                [
-                    'type'            => 'MagicOrderTaxLines',
-                    'order_id'        => $rzpOrder['id'],
-                    'tax_lines'       => $body['tax_lines'] ?? [],
-                ]
-            );
         }
 
         return $body;
@@ -2188,6 +2198,11 @@ class Core extends Base\Core
                 ]
             ]
         ];
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_TAX_INCLUSION) === true)
+        {
+            $order['taxes_included'] = true;
+        }
 
         $order['note'] =  $checkout['note'];
 
@@ -2749,11 +2764,48 @@ class Core extends Base\Core
         }
     }
 
+    public function fetchTaxForShippingRate($orderId, $address = [], $rates = [])
+    {
+        $order = (new RzpOrders())->findOrderByIdAndMerchant($orderId);
+
+        $orderArray = $order->toArrayPublic();
+
+        $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
+        {
+            return $orderMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
+        });
+
+        $stateCode = (new StateMap)->getShopifyStateCode($address);
+
+        $orderMetaValue = $orderMeta->getValue();
+
+        $orderMetaValue['customer_details'] =[
+            'shipping_address' => [
+                'country' => $address['country'],
+                'state_code' => $stateCode ?? $address['state_code'],
+                'zipcode' => $address['zipcode'],
+                'state' => $address['state'],
+            ]
+        ];
+
+        $orderMetaValue['shipping_fee'] = $rates['shipping_fee'];
+
+        $taxRate = (new Core)->calculateDraftOrder($order, $orderMetaValue);
+
+        $totalTax = null;
+
+        if(empty($taxRate) === false && empty($taxRate['total_tax']) === false)
+        {
+            $totalTax = $taxRate['total_tax'];
+        }
+
+        return $totalTax;
+    }
+
+
     public function calculateDraftOrder($order, $orderMeta) : array
     {
         try {
-
-            $orderMeta = $orderMeta->getValue();
 
             // Merchant Config will be passed in request body to magic checkout service which will use the
             // merchant configs to call shopify
@@ -2766,9 +2818,13 @@ class Core extends Base\Core
             $customerDetails = $orderMeta['customer_details'];
             $shippingAddress = $customerDetails['shipping_address'];
 
-            $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($shippingAddress);
+            if(isset($shippingAddress['state_code']) === false)
+            {
+                $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($shippingAddress);
 
-            $orderMeta['customer_details']['shipping_address']['state_code'] = $stateCodeFromName;
+                $orderMeta['customer_details']['shipping_address']['state_code'] = $stateCodeFromName;
+
+            }
 
             $input = [
                 'rzp_order'       => $order,

@@ -1899,6 +1899,8 @@ class Constants
     const ONE_CC_SHOPIFY_MULTIPLE_SHIPPING = 'one_cc_multiple_shipping';
     const ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION = 'disable_pre_magic_order_ingestion';
     const ONE_CC_ENABLE_NECTOR_COINS = 'one_cc_enable_nector_coin';
+    const ONE_CC_OPT_SHIPPING_TAX = 'one_cc_opt_shipping_tax';
+    const ONE_CC_TAX_INCLUSION = 'one_cc_tax_inclusion';
     /**
      * Feature flag is used to disable auto read and auto submit feature on checkout.
      */
@@ -2000,6 +2002,8 @@ class Constants
         self::WALLET_PAYTM_AUTO_DEBIT,
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
         self::ONE_CC_ENABLE_NECTOR_COINS,
+        self::ONE_CC_OPT_SHIPPING_TAX,
+        self::ONE_CC_TAX_INCLUSION,
         self::REMOVE_RAZORPAY_BRANDING,
         DcsConstants::ShowSingleDCCCurrency,
         DcsConstants::LRSEducationFlow,
@@ -2030,7 +2034,9 @@ class Constants
         self::ONE_CC_DISABLE_PRE_MAGIC_ORDER_INGESTION,
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT,
         self::ONE_CC_SHOPIFY_DRAFT_ORDER,
-        self::ONE_CC_ENABLE_NECTOR_COINS
+        self::ONE_CC_ENABLE_NECTOR_COINS,
+        self::ONE_CC_OPT_SHIPPING_TAX,
+        self::ONE_CC_TAX_INCLUSION
     ];
 
     const TRUECALLER_FEATURES = [
@@ -2684,6 +2690,8 @@ class Constants
         self::ONE_CC_ENABLE_PLUGIN_DISCOUNT    => true,
         self::ONE_CC_SHOPIFY_DRAFT_ORDER       => true,
         self::ONE_CC_ENABLE_NECTOR_COINS       => true,
+        self::ONE_CC_OPT_SHIPPING_TAX          => true,
+        self::ONE_CC_TAX_INCLUSION             => true,
         self::OMNI_ENABLED                     => true,
         self::DEBIT_CARD_VALIDATION            => true,
         self::REMOVE_RAZORPAY_BRANDING         => true,

@@ -1152,16 +1152,17 @@ class Service extends Base\Service
     {
         $checkoutId = $input['order_id'];
         $address = $input['address'];
+        $orderId = $input['rzp_order_id'] ?? null;
 
         $address['city'] = empty($address['city']) === false ? $address['city'] : 'NA';
 
         $address['zipcode'] = empty($address['zipcode']) === false ? $address['zipcode'] : $address['state_code']; //handles null check
 
-        return $this->getShippingForOneAddress($checkoutId, $address);
+        return $this->getShippingForOneAddress($orderId, $checkoutId, $address);
     }
 
     // get serviceability and fee for single address
-    public function getShippingForOneAddress(string $checkoutId, array $address): array
+    public function getShippingForOneAddress($orderId, string $checkoutId, array $address): array
     {
         $response = (new Core)->updateShippingAddress($checkoutId, $address);
 
@@ -1178,6 +1179,33 @@ class Service extends Base\Service
             'total_tax' => $tax,
             'taxes_included' => $checkout['taxesIncluded'],
         ];
+
+        $rates = (new Core)->sleepAndPollForShippingInfo($checkoutId);
+
+        // Either any of the feature flag is enabled we will consider the total tax amount from calculate draft order flow.
+        if (($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_OPT_SHIPPING_TAX) === true || $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_TAX_INCLUSION) === true) && $orderId != null)
+        {
+            $totalTax = (new Core)->fetchTaxForShippingRate($orderId, $address, $rates);
+
+            if($totalTax !== null)
+            {
+                $taxDetails['total_tax'] = $totalTax;
+
+                $this->trace->info(
+                      TraceCode::SHOPIFY_1CC_API_TAX_INFO,
+                      [
+                          'type'        => 'calculate_draft_order_flow',
+                          'order_id'    => $orderId,
+                          'totalTax'    => $totalTax
+                      ]
+                  );
+            }
+        }
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_TAX_INCLUSION) === true)
+        {
+            $taxDetails['taxes_included'] = true;
+        }
 
         if (empty($response['errors']) === false
         or empty($response['data']['checkoutShippingAddressUpdateV2']['checkoutUserErrors']) === false)
@@ -1234,8 +1262,6 @@ class Service extends Base\Service
               return $shippingResponse;
           }
         }
-
-        $rates = (new Core)->sleepAndPollForShippingInfo($checkoutId);
 
         if($digitalProductConfigFlagValue === true)
         {

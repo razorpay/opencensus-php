@@ -9473,6 +9473,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_1CC_API_ORDER_ERROR                         = 'SHOPIFY_1CC_API_ORDER_ERROR';
     const SHOPIFY_1CC_API_ORDER_ERROR_RETRY                   = 'SHOPIFY_1CC_API_ORDER_ERROR_RETRY';
     const SHOPIFY_1CC_API_SHIPPING_ERROR                      = 'SHOPIFY_1CC_API_SHIPPING_ERROR';
+    const SHOPIFY_1CC_API_TAX_INFO                            = 'SHOPIFY_1CC_API_TAX_INFO';
     const SHOPIFY_1CC_API_TRANSACTION_ERROR                   = 'SHOPIFY_1CC_API_TRANSACTION_ERROR';
     const SHOPIFY_1CC_API_COUPONS_ERROR                       = 'SHOPIFY_1CC_API_COUPONS_ERROR';
     const SHOPIFY_1CC_PARTIALLY_PAID_ORDER                    = 'SHOPIFY_1CC_PARTIALLY_PAID_ORDER';

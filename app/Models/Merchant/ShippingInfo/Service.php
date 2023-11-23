@@ -278,6 +278,7 @@ class Service extends Base\Service
                 // shopifyShippingOverride allows shopify merchants to use rzp shipping platform
                 $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_SHOPIFY_CALL_COUNT, $dimensions);
                 $decodedResponse = (new Shopify\Service)->getShippingInfo([
+                    'rzp_order_id' => $orderId,
                     'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
                     'address' => array_merge($address, [self::SHIPPING_INFO_ID => 0]),
                 ]);
@@ -1355,6 +1356,8 @@ class Service extends Base\Service
 
         try {
             $orderMeta = $this->addCustomerDetailsToOrder($orderMeta, $address);
+
+            $orderMeta = $orderMeta->getValue();
 
             // Calculate the draft order
             $calculateDraftOrder = (new Shopify\Core())->calculateDraftOrder($order, $orderMeta);
