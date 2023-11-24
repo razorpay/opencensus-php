@@ -3684,6 +3684,7 @@ return [
                 'rm_phone_number' => '9234567890',
                 'additional_details' => [
                     'api_onboarding_login_date' => '26-Jun-2020',
+                    'docket_estimated_delivery_date'    => '1700505000',
                     'entity_proof_documents'    => [
                         [
                             'document_type' => 'gst_certificate',
@@ -3706,6 +3707,7 @@ return [
                 "is_documents_walkthrough_complete" => '1',
                 'additional_details' => [
                     'api_onboarding_login_date' => '1593109800',
+                    'docket_estimated_delivery_date'    => '1700505000',
                     'entity_proof_documents'    => [
                         [
                             'document_type' => 'gst_certificate',

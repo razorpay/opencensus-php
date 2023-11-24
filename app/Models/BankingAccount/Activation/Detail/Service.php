@@ -723,7 +723,8 @@ class Service extends Base\Service
         {
             if (array_key_exists($dateField, $currentAdditionalDetails))
             {
-                if (strtotime($currentAdditionalDetails[$dateField]))
+                if (strtotime($currentAdditionalDetails[$dateField]) &&
+                    !ctype_digit($currentAdditionalDetails[$dateField]))
                 {
                     $currentAdditionalDetails[$dateField] =
                         strtoepoch($currentAdditionalDetails[$dateField], 'd-M-Y', true);
