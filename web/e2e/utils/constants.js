@@ -6,6 +6,7 @@ const StorageStatePath = {
   EMAIL_LIVE_LOGIN_STATE: `${BASE_PATH}/desktop-live-mode-login.json`,
   TRANSACTIONS_LOGIN_STATE: `${BASE_PATH}/desktop-transactions-login.json`,
   SETTLEMENTS_LOGIN_STATE: `${BASE_PATH}/desktop-settlement-login.json`,
+  INTERNATIONAL_LOGIN_STATE: `${BASE_PATH}/desktop-international-login.json`,
   MOBILE_TEST_LOGIN_STATE: `${BASE_PATH}/mobile-test-mode-login.json`,
   MOBILE_LIVE_LOGIN_STATE: `${BASE_PATH}/mobile-live-mode-login.json`,
   ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
@@ -41,6 +42,7 @@ const routes = {
   BATCH_REFUNDS_UPLOAD: 'app/refunds/batchupload',
   SUCCESS_RATE: 'app/success-rate',
   PAYMENT_PAGES: 'app/paymentpages',
+  FIRS: 'app/international-settings/firs',
   PARTNER_DASHBOARD: '/app/partners',
   AFFILIATE_ACCOUNTS: '/app/partners/submerchants',
   AFFILIATE_ACCOUNTS_CAPITAL: '/app/partners/submerchants/capital',
@@ -71,6 +73,12 @@ const EmailCredentials = [
     username: ENV.EMAIL_SETTLEMENT_USERNAME,
     password: ENV.EMAIL_SETTLEMENT_PASSWORD,
     storagePath: StorageStatePath.SETTLEMENTS_LOGIN_STATE,
+  },
+  {
+    type: 'desktop-international-login.json',
+    username: ENV.EMAIL_INTERNATIONAL_USERNAME,
+    password: ENV.EMAIL_INTERNATIONAL_PASSWORD,
+    storagePath: StorageStatePath.INTERNATIONAL_LOGIN_STATE,
   },
   {
     type: 'reseller-partner-desktop-test-mode-login.json',
