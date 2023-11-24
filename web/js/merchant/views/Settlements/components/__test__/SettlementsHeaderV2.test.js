@@ -1,13 +1,14 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import SettlementsHeaderV2 from 'merchant/views/Settlements/components/SettlementsHeaderV2';
-import { render, screen, waitFor, updateUseI18ServiceSpy } from 'test-utils';
 import userEvent from '@testing-library/user-event';
-import * as details from 'merchant/reducers/settlements/details';
+
 import * as home from 'merchant/reducers/home';
 import * as profile from 'merchant/reducers/profile';
-import * as modals from 'merchant_common/reducers/modals';
+import * as details from 'merchant/reducers/settlements/details';
 import * as analytics from 'merchant/views/Settlements/Settlements/analytics';
+import SettlementsHeaderV2 from 'merchant/views/Settlements/components/SettlementsHeaderV2';
+import * as modals from 'merchant_common/reducers/modals';
+import { render, screen, waitFor, updateUseI18ServiceSpy } from 'test-utils';
 
 jest.mock('merchant/views/TicketSupport/utils', () => ({
   CreateTicketEmitter: {
@@ -111,6 +112,9 @@ describe('SettlementsHeaderV2', () => {
             currency: 'INR',
           },
         },
+        org: {
+          custom_code: 'rzp',
+        },
       },
     };
     render(<SettlementsHeaderV2 />, { initialState });
@@ -129,6 +133,54 @@ describe('SettlementsHeaderV2', () => {
       expect(fetchSettlementConfigSpy).toHaveBeenCalledTimes(1);
       expect(fetchBankAccountChangeStatusSpy).toHaveBeenCalledWith('testing123');
       expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  test('documentation link for curlec orgs', async () => {
+    const initialState = {
+      session: {
+        user: {
+          isAllowedEdit: () => true,
+          id: 'testing123',
+          merchant: {
+            currency: 'RM',
+          },
+        },
+        org: {
+          custom_code: 'curlec',
+        },
+      },
+    };
+
+    render(<SettlementsHeaderV2 />, { initialState });
+    const url = 'https://curlec.com/docs/payments/settlements';
+    await waitFor(() => {
+      const docLink = screen.getByRole('link', { name: 'Documentation' });
+      expect(docLink).toHaveAttribute('href', url);
+    });
+  });
+
+  test('documentation link for rzp orgs', async () => {
+    const initialState = {
+      session: {
+        user: {
+          isAllowedEdit: () => true,
+          id: 'testing123',
+          merchant: {
+            currency: 'IN',
+          },
+        },
+        org: {
+          custom_code: 'rzp',
+        },
+      },
+    };
+
+    render(<SettlementsHeaderV2 />, { initialState });
+    const url = 'http://razorpay.com/settlement';
+    await waitFor(() => {
+      const docLink = screen.getByRole('link', { name: 'Documentation' });
+      expect(docLink).toHaveAttribute('href', url);
     });
   });
 

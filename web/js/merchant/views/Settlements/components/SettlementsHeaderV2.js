@@ -1,36 +1,42 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import moment from 'moment';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { withRouter } from 'common/deprecated/withRouter';
-import TestModeBanner from 'merchant/components/TestModeBanner';
-import {
-  openModal as fnOpenModal,
-  closeModal as fnCloseModal,
-} from 'merchant_common/reducers/modals';
-import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
-import { handleAnalytics } from 'merchant/views/Settlements/Settlements/analytics';
-import SettlementsBannerV2 from 'merchant/views/Settlements/components/SettlementsBannerV2';
-import BalanceCard from 'merchant/views/Settlements/components/BalanceCard';
-import SettlementDueTodayCard from 'merchant/views/Settlements/components/SettlementDueTodayCard';
-import PreviousSettlementCard from 'merchant/views/Settlements/components/PreviousSettlementCard';
-import UpcomingSettlementCard from 'merchant/views/Settlements/components/UpcomingSettlementCard';
-import {
-  fetchOnDemandBlocked as fnFetchOnDemandBlocked,
-  fetchSettlementConfig as fnFetchSettlementConfig,
-  fetchPreviousSettlements as fnPreviousFetchSettlements,
-} from 'merchant/reducers/settlements/details';
-import {
-  fetchCurrentBalance as fnFetchCurrentBalance,
-  fetchSettlementAmount as fnFetchSettlementAmount,
-} from 'merchant/reducers/home';
-import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
+import React, { useState, useEffect } from 'react';
 import {
   Link,
   RotateCounterClockWiseIcon,
   ExternalLinkIcon,
   ClockIcon,
 } from '@razorpay/blade/components';
+import moment from 'moment';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import { withRouter } from 'common/deprecated/withRouter';
+import { useI18Service } from 'common/i18';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import ShowWhen from 'merchant/components/ShowWhen';
+import TestModeBanner from 'merchant/components/TestModeBanner';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import {
+  fetchCurrentBalance as fnFetchCurrentBalance,
+  fetchSettlementAmount as fnFetchSettlementAmount,
+} from 'merchant/reducers/home';
+import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
+import {
+  fetchOnDemandBlocked as fnFetchOnDemandBlocked,
+  fetchSettlementConfig as fnFetchSettlementConfig,
+  fetchPreviousSettlements as fnPreviousFetchSettlements,
+} from 'merchant/reducers/settlements/details';
+import { handleAnalytics } from 'merchant/views/Settlements/Settlements/analytics';
+import BalanceCard from 'merchant/views/Settlements/components/BalanceCard';
+import PreviousSettlementCard from 'merchant/views/Settlements/components/PreviousSettlementCard';
+import SettlementDueTodayCard from 'merchant/views/Settlements/components/SettlementDueTodayCard';
+import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
+import SettlementsBannerV2 from 'merchant/views/Settlements/components/SettlementsBannerV2';
+import UpcomingSettlementCard from 'merchant/views/Settlements/components/UpcomingSettlementCard';
+import {
+  openModal as fnOpenModal,
+  closeModal as fnCloseModal,
+} from 'merchant_common/reducers/modals';
+
 import {
   SummaryHeader,
   SummaryHeaderSection,
@@ -42,10 +48,11 @@ import {
   Documentation,
   SettlementCycle,
 } from './styledUtils';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { getCustomURL } from 'merchant/components/DocsLink';
-import { useI18Service } from 'common/i18';
+
+const SETTLEMENT_DOC_LINK = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: 'http://razorpay.com/settlement',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: 'https://curlec.com/docs/payments/settlements',
+};
 
 const SettlementsHeaderV2 = ({
   user,
@@ -64,6 +71,7 @@ const SettlementsHeaderV2 = ({
   fetchBankAccountChangeStatus,
   fetchOnDemandBlocked,
   current_balance,
+  org,
 }) => {
   const prevSettlementParams = {
     count: 25,
@@ -83,7 +91,8 @@ const SettlementsHeaderV2 = ({
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
   const isOnHold = no_settlement?.on_hold;
   const isSettlementOnHold = isOnTemporaryHold || isOnHold;
-  const docHref = useMemo(() => getCustomURL('http://razorpay.com/settlement'), []);
+  const orgCode = org.custom_code;
+  const docHref = SETTLEMENT_DOC_LINK[orgCode] || SETTLEMENT_DOC_LINK.rzp;
   const { isConfigTagEnabled } = useI18Service();
 
   const viewSettlementCycle = () => {
@@ -269,6 +278,7 @@ const SettlementsHeaderV2 = ({
 const mapStateToProps = (state) => {
   return {
     user: state?.session?.user,
+    org: state.session.org,
     mode: state?.session?.mode,
     settlement_amount: state?.home?.settlement_amount,
     holidayList: state?.settlement?.holidayList,
