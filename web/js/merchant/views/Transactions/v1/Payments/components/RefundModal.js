@@ -640,8 +640,7 @@ class RefundModal extends Component {
               ) {
                 return (
                   <div className="low-funds">
-                    Currently, Instant Refunds are available on TPV, netbanking, UPI and select
-                    credit cards and debit cards.
+                    Currently, Instant Refunds are available on TPV, netbanking and UPI only.
                   </div>
                 );
               }

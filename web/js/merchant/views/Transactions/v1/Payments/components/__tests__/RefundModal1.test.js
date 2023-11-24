@@ -7,9 +7,9 @@ import {
   renderApp,
   payment,
   session,
+  showWhenUtilSpy,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/RefundModal';
 import { screen, userEvent, delay, waitFor } from 'test-utils';
-import * as showWhen from 'merchant/components/ShowWhen';
 
 describe('RefundModal', () => {
   beforeEach(() => {
@@ -551,11 +551,11 @@ describe('RefundModal', () => {
         default_refund_speed: 'normal',
       },
     });
-    jest.spyOn(showWhen, 'showWhenUtil').mockImplementation(() => false);
+    showWhenUtilSpy.mockImplementation(() => false);
 
     expect(
       screen.queryByText(
-        'Currently, Instant Refunds are available on TPV, netbanking, UPI and select credit cards and debit cards.',
+        'Currently, Instant Refunds are available on TPV, netbanking and UPI only.',
       ),
     ).not.toBeInTheDocument();
   });

@@ -1,13 +1,13 @@
 import '@testing-library/jest-dom/extend-expect';
-import { screen, userEvent } from 'test-utils';
+import User from 'merchant/models/User';
 import {
   renderApp,
   payment,
   session,
   showWhenUtilSpy,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/RefundModal';
-import User from 'merchant/models/User';
 import { PAYMENT_STATUS } from 'merchant/views/Transactions/v1/Payments/constants';
+import { screen, userEvent } from 'test-utils';
 
 jest.mock('react-query', () => ({
   useQuery: jest.fn().mockReturnValue({
@@ -198,7 +198,7 @@ describe('RefundModal', () => {
       });
       expect(
         screen.getByText(
-          'Currently, Instant Refunds are available on TPV, netbanking, UPI and select credit cards and debit cards.',
+          'Currently, Instant Refunds are available on TPV, netbanking and UPI only.',
         ),
       ).toBeInTheDocument();
     });
