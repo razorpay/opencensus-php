@@ -1550,6 +1550,13 @@ class Constants
 
     const AFFORDABILITY_WIDGET_WHITE_LABEL = 'aff_widget_white_label';
 
+
+    const AFF_WIDGET_CHECKOUT_ENABLED =  'aff_widget_checkout_enbld';
+
+    const AFF_WIDGET_V3_DESIGN_ENABLED =  'aff_wgt_v3_design_enbld';
+
+    const AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED = 'aff_wgt_discnt_whp_enbld';
+
     /**
      * Feature flag to allow the transition from older flow to newer flow
      * for payouts to cards tokenisation
@@ -2627,6 +2634,9 @@ class Constants
         DcsConstants::DisableAutoRefund       => true,  // Example Feature for DCS
         DcsConstants::EligibilityEnabled      => true,
         DcsConstants::EligibilityCheckDecline => true,
+        self::AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED => true,
+        self::AFF_WIDGET_V3_DESIGN_ENABLED => true,
+        self::AFF_WIDGET_CHECKOUT_ENABLED => true,
         DcsConstants::EmailOptionalOnCheckout => true,
         DcsConstants::ShowEmailOnCheckout     => true,
         DcsConstants::RtbWidgetEnabled        => true,
@@ -3787,6 +3797,21 @@ class Constants
             'display_name'  => 'Feature to enable Eligibility api on affordability Widget',
             'documentation' => 'Feature to enable Eligibility api on affordability Widget',
         ],
+        self::AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED => [
+            'feature'       => self::AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED,
+            'display_name'  => 'Feature to enable Discount Whisperer on Affordability Widget',
+            'documentation' => '',
+        ],
+        self::AFF_WIDGET_V3_DESIGN_ENABLED => [
+            'feature'       => self::AFF_WIDGET_V3_DESIGN_ENABLED,
+            'display_name'  => 'Feature flag enables the V3 design of Affordability widget',
+            'documentation' => '',
+        ],
+        self::AFF_WIDGET_CHECKOUT_ENABLED => [
+            'feature'       => self::AFF_WIDGET_CHECKOUT_ENABLED,
+            'display_name'  => 'Feature to enable Checkout from Affordability Widget',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -3841,7 +3866,6 @@ class Constants
         self::BULK_PAYOUT_WORKFLOW,
         self::ENABLE_SMART_ROUTING,
         self::SKIP_APPROVAL_FOR_CREATOR,
-        self::WIDGET_ELIGIBILITY_ENABLED,
     ];
 
     /*

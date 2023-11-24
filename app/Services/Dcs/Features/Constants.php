@@ -19,6 +19,9 @@ class Constants
     const EligibilityEnabled = 'eligibility_enabled';
     const EligibilityCheckDecline = 'eligibility_check_decline';
     const WidgetEligibilityEnabled = 'widget_eligibility_enabled';
+    const AffWidgetCheckoutEnabled =  'affordability_widget_checkout_enabled';
+    const AffWidgetV3DesignEnabled =  'affordability_widget_v3_design_enabled';
+    const AffWidgetDiscountWhispererEnabled = 'affordability_widget_discount_whisperer_enabled';
     const ShowEmailOnCheckout = 'show_email_on_checkout';
     const EmailOptionalOnCheckout = 'email_optional_oncheckout';
     const RtbWidgetEnabled = 'rtb_widget_enabled';
@@ -277,6 +280,9 @@ class Constants
         self::EligibilityEnabled => "rzp/pg/merchant/affordability/EligibilityFeatures",
         self::EligibilityCheckDecline => "rzp/pg/merchant/affordability/EligibilityFeatures",
         self::WidgetEligibilityEnabled => "rzp/pg/merchant/affordability/Widget",
+        self::AffWidgetCheckoutEnabled => "rzp/pg/merchant/affordability/Widget",
+        self::AffWidgetV3DesignEnabled => "rzp/pg/merchant/affordability/Widget",
+        self::AffWidgetDiscountWhispererEnabled => "rzp/pg/merchant/affordability/Widget",
         self::ShowEmailOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::UpiNumberDisabled => "rzp/pg/merchant/checkout/Upi",
@@ -501,6 +507,9 @@ class Constants
         self::EligibilityEnabled                                            => self::EligibilityEnabled,
         self::EligibilityCheckDecline                                       => self::EligibilityCheckDecline,
         APIFeaturesConstants::WIDGET_ELIGIBILITY_ENABLED                    => self::WidgetEligibilityEnabled,
+        APIFeaturesConstants::AFF_WIDGET_V3_DESIGN_ENABLED                  => self::AffWidgetV3DesignEnabled,
+        APIFeaturesConstants::AFF_WIDGET_CHECKOUT_ENABLED                   => self::AffWidgetCheckoutEnabled,
+        APIFeaturesConstants::AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED         => self::AffWidgetDiscountWhispererEnabled,
         self::ShowEmailOnCheckout                                           => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout                                       => self::EmailOptionalOnCheckout,
         self::CvvLessFlowDisabled                                           => self::CvvLessFlowDisabled,
@@ -725,6 +734,9 @@ class Constants
         self::EligibilityEnabled => 'client',
         self::EligibilityCheckDecline => 'client',
         self::WidgetEligibilityEnabled => 'client',
+        self::AffWidgetDiscountWhispererEnabled => 'client',
+        self::AffWidgetCheckoutEnabled => 'client',
+        self::AffWidgetV3DesignEnabled => 'client',
         self::AutoCommissionInvoiceDisabled => 'direct',
         self::AffordabilityWidgetSet => 'client',
         self::EnableMerchantExpiryForPP => 'direct',
@@ -805,6 +817,9 @@ class Constants
             "settlement_service_onboarded" => "direct",
             "skip_approval_if_creator_is_checker" => "client",
             "widget_eligibility_enabled" => "client",
+            "affordability_widget_discount_whisperer_enabled" => 'client',
+            "affordability_widget_checkout_enabled" => 'client',
+            "affordability_widget_v3_design_enabled" => 'client',
         ],
         "org" => [
             "disable_free_credit_unreg"=> "client",
