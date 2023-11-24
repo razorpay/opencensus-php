@@ -849,15 +849,6 @@ class Gateway extends Base\Gateway
             $amount = $input[Fields::AMOUNT];
 
             $input[Fields::AMOUNT] = (new Generator())->formatAmountToRupees($this->input['qr_code']['amount']);
-
-            if ($input[Fields::AMOUNT] !== $amount)
-            {
-                $this->trace->info(TraceCode::QR_INTENT_LINK_AMOUNT_MISMATCH, [
-                    'id'               => $qrCode->getId(),
-                    'incorrect_amount' => $amount,
-                    'correct_amount'   => $input[Fields::AMOUNT],
-                ]);
-            }
         }
 
         if (isset($qrCode[QrEntity::CLOSE_BY]) === true)

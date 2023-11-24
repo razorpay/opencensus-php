@@ -353,15 +353,6 @@ class Generator extends QrCode\Generator
             if ($this->checkIfExperimentEnabledforAmountMismatchFix($qrCode->getMerchantId()) === true)
             {
                 $content[Base\IntentParams::TXN_AMOUNT] = $this->formatAmountToRupees($qrCode->getAmount());
-
-                if ($content[Base\IntentParams::TXN_AMOUNT] !== (string) $amount)
-                {
-                    $this->trace->info(TraceCode::QR_INTENT_LINK_AMOUNT_MISMATCH, [
-                        'id'               => $qrCode->getId(),
-                        'incorrect_amount' => $amount,
-                        'correct_amount'   => $content[Base\IntentParams::TXN_AMOUNT],
-                    ]);
-                }
             }
             else
             {
