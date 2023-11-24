@@ -1411,7 +1411,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_FILE_NAME                                    = 'EMANDATE_FILE_NAME';
 
     const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VALIDATION_ERROR';
-
+    
+    const EMANDATE_ENACH_ENTITY_ERROR                           = 'EMANDATE_ENACH_ENTITY_ERROR';
     const EMANDATE_NR_TOKEN_UPDATE_ERROR                        = 'EMANDATE_NR_TOKEN_UPDATE_ERROR';
     const EMANDATE_DCS_CONFIG_FETCH_ERROR                       = 'EMANDATE_DCS_CONFIG_FETCH_ERROR';
     const EMANDATE_TOKEN_BLOCK_ERROR                            = 'EMANDATE_TOKEN_BLOCK_ERROR';

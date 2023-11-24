@@ -4,6 +4,7 @@ namespace RZP\Models\Batch\Processor\Nach\Debit;
 
 use RZP\Error;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Citi\Status;
 use RZP\Models\Payment\RecurringType;
@@ -14,8 +15,10 @@ use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
 
 class NachCiti extends Base
 {
-    protected $gateway = Gateway::NACH_CITI;
-
+    protected $gateway  = Gateway::NACH_CITI;
+    
+    protected $acquirer = Gateway::ACQUIRER_CITI;
+    
     protected function getDataFromRow(array & $row): array
     {
         $row = array_map('trim', $row);
@@ -154,13 +157,38 @@ class NachCiti extends Base
         {
             return;
         }
-
-        $gatewayPayment = $this->getGatewayPayment($payment->getId());
-
+    
+        try
+        {
+            $gatewayPayment = $this->getGatewayPayment($payment->getId());
+    
+            $this->saveGatewayEntity($content, $gatewayPayment);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException($exception, null, TraceCode::EMANDATE_ENACH_ENTITY_ERROR,
+                [
+                    "merchant_id" => $payment->getMerchantId(),
+                    "payment_id"  => $payment->getId()
+                ]);
+    
+            $gatewayPayment = $this->fetchGatewayPayment($payment->getId());
+            
+            if($gatewayPayment === null)
+            {
+                $gatewayPayment = $this->createGatewayEntity($payment);
+    
+                $this->saveGatewayEntity($content, $gatewayPayment);
+            }
+        }
+    }
+    
+    protected function saveGatewayEntity($content, $gatewayPayment)
+    {
         $attrs = $this->getGatewayAttributes($content);
-
+    
         $gatewayPayment->fill($attrs);
-
+    
         $this->repo->saveOrFail($gatewayPayment);
     }
 

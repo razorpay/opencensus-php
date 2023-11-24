@@ -7,12 +7,14 @@ use RZP\Models\Batch;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Base\Entity;
 use RZP\Gateway\Enach\Npci\Netbanking;
-use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Gateway\Base\Action as GatewayAction;
 
 class EnachNpciNetbanking extends Base
 {
-    protected $gateway = Gateway::ENACH_NPCI_NETBANKING;
-
+    protected $gateway   = Gateway::ENACH_NPCI_NETBANKING;
+    
+    protected $acquirer  = Gateway::ACQUIRER_YESB;
+    
     const UMRN = 'umrn';
 
     protected function getDataFromRow(array & $row): array

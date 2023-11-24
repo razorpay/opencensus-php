@@ -4,8 +4,10 @@ namespace RZP\Models\Batch\Processor\Nach\Debit;
 
 use RZP\Error;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\RecurringType;
+use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 use RZP\Gateway\Enach\Npci\Combined\Icici\Debit\Status;
 use RZP\Gateway\Enach\Npci\Combined\Icici\Debit\ErrorCodes as ErrorCode;
@@ -13,7 +15,9 @@ use RZP\Gateway\Enach\Npci\Combined\Icici\Debit\DebitFileHeadings as Headings;
 
 class NachIcici extends Base
 {
-    protected $gateway = Gateway::NACH_ICICI;
+    protected $gateway  = Gateway::NACH_ICICI;
+    
+    protected $acquirer = Gateway::ACQUIRER_ICIC;
 
     protected function getDataFromRow(array & $row): array
     {
@@ -146,20 +150,45 @@ class NachIcici extends Base
 
         return $payment;
     }
-
+    
     protected function updateGatewayPaymentEntity($content, $payment)
     {
         if ($payment->getGateway() !== Gateway::ENACH_NPCI_NETBANKING)
         {
             return;
         }
-
-        $gatewayPayment = $this->getGatewayPayment($payment->getId());
-
+        
+        try
+        {
+            $gatewayPayment = $this->getGatewayPayment($payment->getId());
+            
+            $this->saveGatewayEntity($content, $gatewayPayment);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException($exception, null, TraceCode::EMANDATE_ENACH_ENTITY_ERROR,
+                [
+                    "merchant_id" => $payment->getMerchantId(),
+                    "payment_id"  => $payment->getId()
+                ]);
+            
+            $gatewayPayment = $this->fetchGatewayPayment($payment->getId());
+            
+            if($gatewayPayment === null)
+            {
+                $gatewayPayment = $this->createGatewayEntity($payment);
+                
+                $this->saveGatewayEntity($content, $gatewayPayment);
+            }
+        }
+    }
+    
+    protected function saveGatewayEntity($content, $gatewayPayment)
+    {
         $attrs = $this->getGatewayAttributes($content);
-
+        
         $gatewayPayment->fill($attrs);
-
+        
         $this->repo->saveOrFail($gatewayPayment);
     }
 

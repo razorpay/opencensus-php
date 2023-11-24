@@ -2,23 +2,23 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
-use RZP\Constants\HyperTrace;
 use RZP\Exception;
-use Carbon\Carbon;
 use RZP\Models\Batch;
+use RZP\Trace\Tracer;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\HyperTrace;
+use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
-use RZP\Trace\Tracer;
 
 class Base extends BaseProcessor
 {
@@ -29,7 +29,7 @@ class Base extends BaseProcessor
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_MESSAGE = 'gateway_error_message';
-
+    
     protected function processEntry(array & $entry)
     {
         $content = $this->getDataFromRow($entry);
@@ -126,13 +126,49 @@ class Base extends BaseProcessor
     protected function updateGatewayPayment(array $content)
     {
         $paymentId = $content[self::PAYMENT_ID];
-
-        $gatewayPayment = $this->getGatewayPayment($paymentId);
-
+    
+        try
+        {
+            $gatewayPayment = $this->getGatewayPayment($paymentId);
+            
+            $this->saveGatewayEntity($content, $gatewayPayment);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException($exception, null, TraceCode::EMANDATE_ENACH_ENTITY_ERROR,
+                [
+                    "payment_id"  => $paymentId
+                ]);
+    
+            $payment = $this->repo->payment->findOrFail($paymentId);
+    
+            if ($payment->getGateway() === Gateway::ENACH_NPCI_NETBANKING)
+            {
+                $gatewayPayment = $this->fetchGatewayPayment($paymentId);
+    
+                if($gatewayPayment === null)
+                {
+                    $gatewayPayment = $this->createGatewayEntity($payment);
+    
+                    $this->saveGatewayEntity($content, $gatewayPayment);
+                }
+            }
+        }
+    }
+    
+    protected function fetchGatewayPayment(string $paymentId)
+    {
+        return $this->repo
+            ->enach
+            ->findByPaymentIdAndAction($paymentId, GatewayAction::AUTHORIZE);
+    }
+    
+    protected function saveGatewayEntity($content, $gatewayPayment)
+    {
         $attrs = $this->getGatewayAttributes($content);
-
+    
         $gatewayPayment->fill($attrs);
-
+    
         $this->repo->saveOrFail($gatewayPayment);
     }
 
@@ -482,5 +518,29 @@ class Base extends BaseProcessor
     protected function shouldBlockOrResetToken()
     {
         return false;
+    }
+    
+    protected function createGatewayEntity($payment)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+        
+        $gatewayPayment = new EnachEntity;
+        
+        $gatewayPayment->setPaymentId($payment->getId());
+        
+        $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
+        
+        $gatewayPayment->setBank($payment->getBank());
+        
+        $gatewayPayment->setAmount($payment->getAmount());
+        
+        $gatewayPayment->setAcquirer($this->acquirer);
+        
+        if($token->getGatewayToken() !== null)
+        {
+            $gatewayPayment->setUmrn($token->getGatewayToken());
+        }
+        
+        return $gatewayPayment;
     }
 }

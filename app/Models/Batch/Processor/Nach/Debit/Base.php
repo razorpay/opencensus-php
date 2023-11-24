@@ -14,6 +14,8 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Processor\Processor;
+use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
 class Base extends BaseProcessor
@@ -26,7 +28,7 @@ class Base extends BaseProcessor
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_MESSAGE = 'gateway_error_message';
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
-
+    
     protected function processEntry(array &$entry)
     {
         $content = $this->getDataFromRow($entry);
@@ -266,6 +268,13 @@ class Base extends BaseProcessor
     {
         return;
     }
+    
+    protected function fetchGatewayPayment(string $paymentId)
+    {
+        return $this->repo
+            ->enach
+            ->findByPaymentIdAndAction($paymentId, GatewayAction::AUTHORIZE);
+    }
 
     protected function increaseAllowedSystemLimits()
     {
@@ -442,5 +451,29 @@ class Base extends BaseProcessor
                 TraceCode::NACH_PROCESSING_REDIS_FAILURE
             );
         }
+    }
+    
+    protected function createGatewayEntity($payment)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+        
+        $gatewayPayment = new EnachEntity;
+        
+        $gatewayPayment->setPaymentId($payment->getId());
+        
+        $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
+        
+        $gatewayPayment->setBank($payment->getBank());
+        
+        $gatewayPayment->setAmount($payment->getAmount());
+        
+        $gatewayPayment->setAcquirer($this->acquirer);
+        
+        if($token->getGatewayToken() !== null)
+        {
+            $gatewayPayment->setUmrn($token->getGatewayToken());
+        }
+        
+        return $gatewayPayment;
     }
 }

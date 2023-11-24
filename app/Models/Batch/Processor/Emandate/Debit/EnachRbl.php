@@ -8,12 +8,15 @@ use RZP\Gateway\Enach\Rbl;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as Headings;
 
 class EnachRbl extends Base
 {
-    protected $gateway = Gateway::ENACH_RBL;
-
+    protected $gateway   = Gateway::ENACH_RBL;
+    
+    protected $acquirer  = Gateway::ACQUIRER_RATN;
+    
     const UMRN = 'umrn';
 
     protected function getDataFromRow(array & $row): array
