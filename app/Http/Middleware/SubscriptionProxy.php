@@ -11,12 +11,11 @@ use Razorpay\Edge\Passport\Passport;
 use Illuminate\Foundation\Application;
 
 use RZP\Exception;
-use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
 use RZP\Http\RequestContextV2;
-use RZP\Models\Merchant\RazorxTreatment;
 
 class SubscriptionProxy
 {
@@ -156,6 +155,8 @@ class SubscriptionProxy
         {
             $headers[Passport::PASSPORT_JWT_V1] = $jwt;
         }
+
+        $headers[RequestHeader::DEV_SERVE_USER] = $request->header(RequestHeader::DEV_SERVE_USER);
 
         return $headers;
     }
