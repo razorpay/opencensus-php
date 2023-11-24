@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use Illuminate\Support\Collection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Trace\TraceCode;
@@ -28,18 +29,17 @@ class Repository extends Base\Repository
      * Gets all ACTIVE status payment links which are past EXPIRE_BY.
      * Payment links which are in INACTIVE status are not affected.
      *
-     * @return Base\PublicCollection
+     * @return Collection
      */
-    public function getActiveAndPastExpireByPaymentLinks(): Base\PublicCollection
+    public function getActiveAndPastExpireByPaymentLinks(): Collection
     {
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $replica_data = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
             ->where(Entity::STATUS, '=', Status::ACTIVE)
             ->where(Entity::EXPIRE_BY, '<', $currentTime)
-            ->get();
-
-        return $replica_data;
+            ->select(["id"])
+            ->pluck("id");
     }
 
     /**

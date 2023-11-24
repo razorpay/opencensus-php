@@ -2461,35 +2461,35 @@ class Core extends Base\Core
     {
         $timeStarted = microtime(true);
 
-        $paymentLinks = Tracer::inSpan(['name' => 'payment_page.expire.get_active_and_past_expire_by_payment_link'], function()
+        $paymentLinkIds = Tracer::inSpan(['name' => 'payment_page.expire.get_active_and_past_expire_by_payment_link'], function()
         {
             return $this->repo->payment_link->getActiveAndPastExpireByPaymentLinks();
         });
 
         $summary = [
-            'total_count' => $paymentLinks->count(),
+            'total_count' => $paymentLinkIds->count(),
             'failed_ids'  => [],
         ];
 
-        foreach ($paymentLinks as $paymentLink)
+        foreach ($paymentLinkIds as $paymentLinkId)
         {
             try
             {
-                Tracer::inSpan(['name' => 'payment_page.expire.payment_link.core'], function() use($paymentLink)
+                Tracer::inSpan(['name' => 'payment_page.expire.payment_link.core'], function() use($paymentLinkId)
                 {
-                    $this->expirePaymentLink($paymentLink);
+                    $this->expirePaymentLink($paymentLinkId);
                 });
             }
             catch (\Throwable $e)
             {
-                $summary['failed_ids'][] = $paymentLink->getId();
+                $summary['failed_ids'][] = $paymentLinkId;
 
                 $this->trace->traceException(
                     $e,
                     null,
                     TraceCode::PAYMENT_LINK_EXPIRE_ERROR,
                     [
-                        Entity::ID => $paymentLink->getId(),
+                        Entity::ID => $paymentLinkId,
                     ]);
             }
         }
@@ -2861,13 +2861,20 @@ class Core extends Base\Core
     /**
      * Updates the status to INACTIVE, status_reason to EXPIRED of an individual expired payment link by locking it.
      *
-     * @param Entity $paymentLink
+     * @param string $paymentLinkId
      */
-    protected function expirePaymentLink(Entity $paymentLink)
+    protected function expirePaymentLink(string $paymentLinkId)
     {
+        $paymentLink = new Entity();
+
         $this->repo->transaction(
-            function () use ($paymentLink)
+            function () use ($paymentLinkId, &$paymentLink)
             {
+                /**
+                 * @var $paymentLink \RZP\Models\PaymentLink\Entity
+                 */
+                $paymentLink = $this->repo->payment_link->findOrFail($paymentLinkId);
+
                 $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
                 // Continues with expiration only if current status is active and expire_by's value is past now
