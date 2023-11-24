@@ -119,7 +119,7 @@ use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Constants as InvoiceConstants;
 use RZP\Models\Invoice\Type as InvoiceType;
 use RZP\Models\Payment\Processor\App as PaymentApp;
-use RZP\Models\Card\TokenisedIIN;
+
 trait Authorize
 {
     /**
@@ -1070,36 +1070,9 @@ trait Authorize
 
         $this->repo->saveOrFail($payment->card);
 
-        try {
-            if ((isset($altIdData['alt_id']['value']))) {
-                $this->mapTokenAltIIN($payment, $altIdData);
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->warning(
-                $e,
-                TraceCode::PAYMENT_CARD_TOKEN_IIN_MAPPING_ERROR, [
-            ]);
-        }
-
         return $altIdData;
     }
 
-    public function mapTokenAltIIN($payment, $altIdData) {
-        $iin = $payment->card->getIin();
-        if (strtolower($payment->card->getNetwork()) === "amex") {
-            $altIin = substr($altIdData['alt_id']['value'], 0, 6);
-        }
-        elseif (strtolower($payment->card->getNetwork()) === "rupay"){
-            $altIin = substr($altIdData['alt_id']['value'], 0, 8);
-        }
-        else {
-            $altIin = substr($altIdData['alt_id']['value'], 0, 9);
-        }
-        $mapCardIinToTokenIin = new TokenisedIIN\Service();
-        $mapCardIinToTokenIin->addMapping($iin, $altIin);
-    }
     /**
      * @param $gatewayResponse
      * @throws Exception\BadRequestException

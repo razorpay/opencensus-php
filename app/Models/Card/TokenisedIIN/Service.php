@@ -20,20 +20,6 @@ class Service extends Base\Service
         return $tokenisedIin->toArrayAdmin();
     }
 
-    public function createMapping($card_iin, $token_iin)
-    {
-        $input[TokenisedIIN\Entity::HIGH_RANGE] = $token_iin;
-        $input[TokenisedIIN\Entity::LOW_RANGE] = $token_iin;
-        $input[TokenisedIIN\Entity::IIN] = $card_iin;
-        $input[TokenisedIIN\Entity::TOKEN_IIN_LENGTH] = $this->getIINLength($token_iin);
-
-        $tokenisedIin = (new Entity)->build($input);
-
-        $this->repo->saveOrFail($tokenisedIin);
-
-        return $tokenisedIin->toArrayPublic();
-    }
-
     public function updateIin($iin , $input)
     {
         $iin = $this->repo->tokenised_iin->findByIin($iin);
@@ -106,22 +92,6 @@ class Service extends Base\Service
         else{
 
             $response = $this->createIin($iin);
-
-        }
-
-        return $response;
-    }
-
-    public function addMapping($iin, $tokenIin) : array
-    {
-        $response = array();
-        $token_iin_high = $this->repo->tokenised_iin->findHighRange($tokenIin) ;
-
-        $token_iin_low = $this->repo->tokenised_iin->findLowRange($tokenIin);
-
-        if(isset($token_iin_high) === false && isset($token_iin_low) === false){
-
-            $response = $this->createMapping($iin, $tokenIin);
 
         }
 
