@@ -199,11 +199,15 @@ class Validator extends Base\Validator
     {
         $now = Carbon::now()->getTimestamp();
 
+        // adding 15 min buffer for starts at
+        $nowWithBuffer = Carbon::now()->subMinutes(10)->getTimestamp();
+
         $endsAt = $input[Entity::ENDS_AT];
 
         $startsAt = $input[Entity::STARTS_AT] ?? $now;
 
-        if (($startsAt < $now) or
+
+        if (($startsAt < $nowWithBuffer) or
             ($endsAt <= $now) or
             ($startsAt >= $endsAt))
         {
@@ -499,6 +503,10 @@ class Validator extends Base\Validator
 
     protected function validateMerchantCategory(array $input)
     {
+        if ($this->entity->merchant === null){
+            return null;
+        }
+
         $isInsuranceCategory = $this->entity->merchant->isInsuranceCategory($this->entity->merchant->getCategory());
 
         if($isInsuranceCategory === true)
@@ -510,6 +518,9 @@ class Validator extends Base\Validator
 
     protected function validateOfferFeatureBlock(array $input)
     {
+        if ($this->entity->merchant === null){
+            return null;
+        }
         $hasBlockingFeature = $this->entity->merchant->isFeatureEnabled(Constants::BLOCK_OFFER_CREATION);
 
         if($hasBlockingFeature === true)

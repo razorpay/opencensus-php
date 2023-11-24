@@ -64,24 +64,28 @@ class Core extends Base\Core
                     if (isset($input[Entity::EMI_SUBVENTION]) and $input[Entity::EMI_SUBVENTION] == 1)
                     {
                         $offers_array = $this->createSubventedOffer($input, $offers_array, $merchant);
-
                     }
-                    else {
-                        try {
+                    else
+                    {
+                        $offer = $this->createOffer($merchant, $input);
 
-                            array_push($offers_array, $this->createOffer($merchant, $input));
-                        }
-                        catch (\Exception $exception) {
-
-                            $error = new Error($exception->getError()->getPublicErrorCode(), $exception->getError()->getDescription(), null, null);
-                            array_push($offers_array, $error);
-                        }
+                        array_push($offers_array, $offer);
                     }
-
                     return $offers_array;
 
                 });
             });
+    }
+
+    public function validateBulkOfferInput(array $input)
+    {
+
+        $input_offer = $input['offer'];
+
+        $offer = new Entity;
+
+        $offer->build($input_offer);
+
     }
 
     public function update(Entity $offer, array $input)
@@ -999,7 +1003,7 @@ class Core extends Base\Core
             $properties = [
                 "id" => $merchantId,
                 "experiment_id" => $this->app['config']->get('app.route_to_offers_engine_experiment_id'),
-                'request_data'  => json_encode(
+                'request_data' => json_encode(
                     [
                         'merchant_id' => $merchantId,
                     ]),
@@ -1031,50 +1035,53 @@ class Core extends Base\Core
      */
     protected function createSubventedOffer(array $input, array $offers_array, Merchant\Entity $merchant): array
     {
-        // If LC emi fields are not populated in the request, even empty emi_durations is acceptable for no cost emi
-        // Otherwise, If LC emi fields are populated, emi durations is mandatory
-        if (empty($input[Entity::LOW_COST_EMI]) === true or empty($input[Entity::EMI_DURATIONS]) === false)
+        if (empty($input[Entity::LOW_COST_EMI]) === true)
         {
-            try {
-
-                array_push($offers_array, $this->createOffer($merchant, $input));
-
-            }
-            catch (\Exception $exception) {
-
-                $error = new Error($exception->getError()->getPublicErrorCode(), $exception->getError()->getDescription(), null, null);
-                array_push($offers_array, $error);
-            }
+            array_push($offers_array, $this->createOffer($merchant, $input));
         }
-
-        // If the offer has LC emi component, then lc emi key is populated
-        if (empty($input[Entity::LOW_COST_EMI]) === false)
+        else
         {
-
             $lc_emi_values = $input[Entity::LOW_COST_EMI];
 
+            $success = 0;
+
+            $exception = null;
             foreach ($lc_emi_values as $lc_emi)
             {
 
-                $merchant_subvention =
-                    $lc_emi["discount_to_avail"]["discount_percentage"];
+                $merchant_subvention = $lc_emi["discount_to_avail"]["discount_percentage"];
 
                 $tenure = array($lc_emi["tenure"]);
 
                 $input[Entity::EMI_DURATIONS] = $tenure;
+
                 $input[Entity::PERCENT_RATE] = $merchant_subvention;
+
                 try
                 {
                     $lc_emi_offer = $this->createOffer($merchant, $input);
+
                     array_push($offers_array, $lc_emi_offer);
+
+                    $success++;
+
                 }
-                catch (\Exception $exception)
+                catch (\Exception $e)
                 {
-                    $error = new Error($exception->getError()->getPublicErrorCode(), $exception->getError()->getDescription(), null, null);
+                    $error = new Error($e->getError()->getPublicErrorCode(), $e->getError()->getDescription(), null, null);
+
                     array_push($offers_array, $error);
+
+                    $exception = $e;
                 }
             }
+
+            if ($success === 0)
+            {
+                throw $exception;
+            }
         }
+
         return $offers_array;
     }
 }

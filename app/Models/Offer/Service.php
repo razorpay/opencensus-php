@@ -50,11 +50,14 @@ class Service extends Base\Service
 
         $input_offer = $input['offer'];
 
+        $this->core->validateBulkOfferInput($input);
+
         $merchantIds = $input['merchant_ids'];
 
         $success = 0;
         $failures = [];
 
+        $exception = null;
         foreach ($merchantIds as $merchantId) {
             try {
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -77,9 +80,17 @@ class Service extends Base\Service
             }
             catch(\Exception $e)
             {
+                $exception = $e;
+
                 $this->trace->traceException($e);
+
                 $failures[] = $merchantId;
             }
+        }
+
+        if($success === 0)
+        {
+            throw $exception;
         }
 
         $summary = [
