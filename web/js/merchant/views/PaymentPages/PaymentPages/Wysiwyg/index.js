@@ -2,12 +2,12 @@
 import React, { Suspense } from 'react';
 import { Spinner } from '@razorpay/blade/components';
 import PropTypes from 'prop-types';
-import { withRouter } from 'common/deprecated/withRouter';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import debounce from 'common/utils/debounce';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
@@ -604,6 +604,11 @@ class PaymentPagesWysiwyg extends React.PureComponent {
           }
         } else {
           prunedFi.item.currency = currency; // Currency cannot be edited from UI once Payment page is created
+        }
+
+        // batch pp - minimum amount should be null
+        if (isBatchPaymentPages) {
+          prunedFi.min_amount = null;
         }
 
         /*
