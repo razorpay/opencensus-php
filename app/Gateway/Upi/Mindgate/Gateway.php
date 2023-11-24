@@ -739,8 +739,15 @@ class Gateway extends Base\Gateway
         return null;
     }
 
-    protected function getQrData(array $input)
+    public function getQrData(array $input)
     {
+        $version = $input['data']['version'] ?? '';
+
+        if ($version === 'v2')
+        {
+            return $this->getQrDataV2($input);
+        }
+
         $amount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
 
         $qrData = [
@@ -768,6 +775,8 @@ class Gateway extends Base\Gateway
     {
         $inputFields = $input['data'];
 
+        // Check if the payment was successful or not
+        // Make sure that Mozart is returning success as true in the response to make this work
         $this->checkForPaymentFailure($inputFields);
 
         $qrData = [
@@ -779,15 +788,15 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $inputFields['upi'][ResponseFields::NPCI_REFERENCE_ID],
         ];
 
-        $payerAccountType = $this->getInternalPayerAccountTypeV2($inputFields);
 
-        if (isset($payerAccountType) === true) {
-            $qrData[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE] = $payerAccountType;
+        if(empty($inputFields['payment'][Payment\Entity::PAYER_ACCOUNT_TYPE]) === false)
+        {
+            $qrData[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE] = $inputFields['payment'][Payment\Entity::PAYER_ACCOUNT_TYPE];
         }
 
         $transactionTime = null;
 
-        if (empty($inputFields['gateway_timestamp'] === false))
+        if (empty($inputFields['gateway_timestamp']) === false)
         {
             try
             {
@@ -815,6 +824,15 @@ class Gateway extends Base\Gateway
             }
         }
 
+        if (isset($input['data']['meta']) === true)
+        {
+            unset($input['data']['meta']);
+        }
+        if (isset($input['data']['_raw']) === true)
+        {
+            unset($input['data']['_raw']);
+        }
+
         return [
             'callback_data' => $input,
             'qr_data'       => $qrData
@@ -836,6 +854,8 @@ class Gateway extends Base\Gateway
 
     public function removeGatewayPrefixIfPresent($merchantReference)
     {
+        $merchantReferenceDetails = explode("!", $merchantReference);
+        $merchantReference = $merchantReferenceDetails[0];
         if ((empty($this->qrPaymentMerchantRefPrefix) === false) and
             (str_starts_with($merchantReference, $this->qrPaymentMerchantRefPrefix)))
         {
@@ -2297,6 +2317,27 @@ class Gateway extends Base\Gateway
 
     protected function getBharatQrGatewayAttributes($input)
     {
+        $version = $input['data']['version'] ?? '';
+
+        if ($version === 'v2')
+        {
+            $inputFields = $input['data'];
+
+            $attrs = [
+                Entity::TYPE                    => Base\Type::PAY,
+                Entity::RECEIVED                => true,
+                Entity::MERCHANT_REFERENCE      => $input['payment']['receiver_id'],
+                Entity::VPA                     => $inputFields['upi']['vpa'],
+                ResponseFields::UPI_TXN_ID      => $inputFields['upi']['gateway_payment_id'],
+                ResponseFields::NPCI_UPI_TXN_ID => $inputFields['upi'][ResponseFields::NPCI_REFERENCE_ID],
+                ResponseFields::ACCOUNT_NUMBER  => $inputFields['upi'][ResponseFields::ACCOUNT_NUMBER],
+                ResponseFields::IFSC_CODE       => $inputFields['upi']['ifsc'],
+                ResponseFields::RESPCODE        => $inputFields['upi']['npci_response_code'],
+            ];
+
+            return $attrs;
+        }
+
         $attrs = [
             Entity::TYPE                    => Base\Type::PAY,
             Entity::RECEIVED                => true,
@@ -2421,19 +2462,6 @@ class Gateway extends Base\Gateway
               return PayerAccountType::getPayerAccountType(strtolower($payerAccountType[0]));
           }
       }
-
-    }
-
-    protected function getInternalPayerAccountTypeV2($input)
-    {
-        if (array_key_exists(BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE, $input['payment']) === true)
-        {
-            $payerAccountType = explode("!", (string)$input['payment'][BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE]);
-            if ((sizeof($payerAccountType)) > 0 and
-                (in_array(strtolower($payerAccountType[0]), PayerAccountType::SUPPORTED_PAYER_ACCOUNT_TYPES)) === true) {
-                return PayerAccountType::getPayerAccountType(strtolower($payerAccountType[0]));
-            }
-        }
 
     }
 }

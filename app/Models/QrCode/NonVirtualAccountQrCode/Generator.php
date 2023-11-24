@@ -231,7 +231,7 @@ class Generator extends QrCode\Generator
             case Gateway::UPI_MINDGATE:
                 if($qrCode->getUsageType() === UsageType::MULTIPLE_USE)
                 {
-                    $refId = 'STQ'. $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+                    $refId = QrCode\Constants::QR_CODE_V2_HDFC_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
                 }
                 else
                 {

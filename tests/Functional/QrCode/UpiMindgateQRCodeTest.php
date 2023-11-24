@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\QrCode\Type;
+use RZP\Models\QrCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\LogicException;
 use RZP\Error\PublicErrorDescription;
@@ -24,6 +25,8 @@ class UpiMindgateQRCodeTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use NonVirtualAccountQrCodeTrait;
+
+    private $terminal;
 
     protected function setUp(): void
     {
@@ -52,6 +55,8 @@ class UpiMindgateQRCodeTest extends TestCase
         $this->fixtures->on('live')->merchant->enableMethod('LiveAccountMer', 'upi');
 
         $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal');
 
         $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
 
@@ -88,8 +93,6 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCreateStaticQrDedicatedTerminal()
     {
-        $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal');
-
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -103,8 +106,6 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCreateStaticQrWithFixedAmount(): void
     {
-        $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal');
-
         $this->createQrCode(
             [
                 'usage'          => 'multiple_use',
@@ -120,8 +121,6 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCreateDynamicQrDedicatedTerminal()
     {
-        $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal');
-
         $this->createQrCode(
             [
                 'usage'         => 'single_use',
@@ -138,8 +137,6 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testSingleUseQrCodeWithCloseBy()
     {
-        $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal');
-
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CREATE_HDFC);
@@ -159,8 +156,6 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCreateQrWithCloseQrOnDemandFlagEnabled(): void
     {
-        $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal');
-
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CREATE_HDFC);
@@ -181,8 +176,6 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCloseMindgateQrWithCloseQrOnDemandFlagEnabled(): void
     {
-        $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal');
-
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
@@ -204,8 +197,6 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testCloseMindgateQrWithCloseQrOnDemandFlagDisabled(): void
     {
-        $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal');
-
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
@@ -238,7 +229,7 @@ class UpiMindgateQRCodeTest extends TestCase
             }
             else
             {
-                $this->assertStringContainsString( $intentParam['tr'], 'STQ' . $qrCodeEntity['reference'] . 'qrv2');
+                $this->assertStringContainsString( $intentParam['tr'], QrCode\Constants::QR_CODE_V2_HDFC_PREFIX . $qrCodeEntity['reference'] . 'qrv2');
             }
         }
 
@@ -253,6 +244,164 @@ class UpiMindgateQRCodeTest extends TestCase
                 $amount = $qrCodeEntity['amount'] / 100;
                 $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
             }
+    }
+
+    public function testPaymentForStaticQrCode(): void
+    {
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+
+        $response = $this->makeUpiMindgatePayment($qrCodeEntity, $this->terminal);
+
+        $this->runQrPaymentEntityAssertions();
+
+        $this->assertTrue($response['success']);
+    }
+
+    public function testPaymentOnDynamicQrCode() :void
+    {
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+
+        $response = $this->makeUpiMindgatePayment($qrCodeEntity, $this->terminal);
+
+        $this->runQrPaymentEntityAssertions();
+
+        $this->assertTrue($response['success']);
+    }
+
+    public function testQrPaymentOnInvalidQrCode()
+    {
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        // Changing the ID of the QR to make the request invalid
+        $qrCodeEntity['id'] = 'qr_ABCEDF12345678';
+        $qrCodeEntity['reference'] = 'ABCEDF12345678';
+
+        $countOfQrPaymentRequestsBefore = count($this->getDbEntities(entity: 'qr_payment_request', mode: 'live'));
+        $countOfQrPaymentsBefore        = count($this->getDbEntities(entity: 'qr_payment', mode: 'live'));
+        $countOfPaymentsBefore          = count($this->getDbEntities(entity: 'payment', mode: 'live'));
+        $countOfUpiEntitiesBefore       = count($this->getDbEntities(entity: 'upi', mode: 'live'));
+
+        $response = $this->makeUpiMindgatePayment($qrCodeEntity,$this->terminal);
+
+        $countOfQrPaymentRequestsAfter = count($this->getDbEntities(entity: 'qr_payment_request', mode: 'live'));
+        $countOfQrPaymentsAfter        = count($this->getDbEntities(entity: 'qr_payment', mode: 'live'));
+        $countOfPaymentsAfter          = count($this->getDbEntities(entity: 'payment', mode: 'live'));
+        $countOfUpiEntitiesAfter       = count($this->getDbEntities(entity: 'upi', mode: 'live'));
+
+        $this->assertEquals($countOfUpiEntitiesBefore, $countOfUpiEntitiesAfter);
+        $this->assertEquals($countOfQrPaymentsBefore, $countOfQrPaymentsAfter);
+        $this->assertEquals($countOfQrPaymentRequestsBefore, $countOfQrPaymentRequestsAfter);
+        $this->assertEquals($countOfPaymentsBefore, $countOfPaymentsAfter);
+    }
+
+    public function testMultipleQrPaymentsOnDynamicQrCode()
+    {
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $response = $this->makeUpiMindgatePayment($qrCodeEntity,$this->terminal, ['rrn' => '107611570998',]);
+
+        $this->assertTrue($response['success']);
+
+        $response = $this->makeUpiMindgatePayment($qrCodeEntity, $this->terminal);
+
+        $this->runQrPaymentEntityAssertions( false);
+
+        $this->assertTrue($response['success']);
+    }
+
+    public function runQrPaymentEntityAssertions($expected = true, $paymentRequestEntity = [], $upiRequestEntity = []): void
+    {
+        $qrPayment        = $this->getLastEntity('qr_payment', true,'live');
+        $payment          = $this->getLastEntity('payment', true,'live');
+        $qrPaymentRequest = $this->getLastEntity('qr_payment_request', true,'live');
+        $qrCodeEntity     = $this->getLastEntity('qr_code', true,'live');
+        $upi              = $this->getLastEntity('upi', true,'live');
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(300, $payment['amount']);
+        $this->assertEquals('107611570997', $payment['reference16']);
+
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeEntity['reference'], $qrPayment['qr_code_id']);
+        $this->assertEquals($qrCodeEntity['reference'], $qrPayment['merchant_reference']);
+        $this->assertEquals($paymentRequestEntity['description'], $qrPayment['notes']);
+        $this->assertEquals('107611570997', $upi['npci_reference_id']);
+
+        if ($qrCodeEntity['usage'] === 'single_use')
+        {
+            $this->assertEquals($upi['merchant_reference'] . 'qrv2', $intentParam['tr']);
+            $this->assertEquals('closed', $qrCodeEntity['status']);
+        }
+        else
+        {
+            $this->assertEquals(QrCode\Constants::QR_CODE_V2_HDFC_PREFIX . $upi['merchant_reference'] . 'qrv2', $intentParam['tr']);
+            $this->assertEquals('active', $qrCodeEntity['status']);
+        }
+
+        if ($expected === true)
+        {
+            $this->assertEquals(null, $qrPaymentRequest['failure_reason']);
+            $this->assertEquals(true, $qrPaymentRequest['expected']);
+            $this->assertEquals('captured', $payment['status']);
+            $this->assertEquals(true, $qrPayment['expected']);
+        }
+        else
+        {
+            $this->assertEquals(false, $qrPaymentRequest['expected']);
+            $this->assertEquals('refunded', $payment['status']);
+            $this->assertEquals(false, $qrPayment['expected']);
+        }
     }
 
     // payment is not found against qr code data so create a new payment and capture it
@@ -348,7 +497,7 @@ class UpiMindgateQRCodeTest extends TestCase
         $request = $this->testData["testProcessMindgateQrPaymentInternal"];
 
         $rrn = '000011100101';
-        $payerAccountType = 'CREDIT!123456';
+        $payerAccountType = 'bank_account';
 
         $request['content']['data']['upi']['npci_reference_id'] = $rrn;
         $request['content']['data']['upi']['merchant_reference'] = $qrCodeId . 'qrv2';
@@ -365,7 +514,7 @@ class UpiMindgateQRCodeTest extends TestCase
         $this->assertEquals('qr_code', $payment['receiver_type']);
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
         $this->assertEquals('captured', $response['payment']['status']);
-        $this->assertEquals('credit_card', $payment['reference2']);
+        $this->assertEquals('bank_account', $payment['reference2']);
     }
 
     // payment is not found against qr code data so create a new payment and capture it

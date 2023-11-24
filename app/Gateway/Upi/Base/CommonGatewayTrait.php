@@ -298,7 +298,15 @@ trait CommonGatewayTrait
 
     public function upiPaymentIdFromServerCallback($input)
     {
-        return $input['data']['upi']['merchant_reference'];
+        $merchantReference = $input['data']['upi']['merchant_reference'];
+
+        if(str_starts_with($merchantReference, QrCode\Constants::QR_CODE_V2_HDFC_PREFIX))
+        {
+            $merchantReferenceDetails = explode("!", $merchantReference);
+            $merchantReference = $merchantReferenceDetails[0];
+        }
+
+        return $merchantReference;
     }
 
     public function upiGetParsedDataFromUnexpectedCallback($input)

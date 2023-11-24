@@ -237,6 +237,22 @@ class Server extends Base\Mock\Server
         ];
     }
 
+    public function getCallback(array $upiEntity, array $payment, array $meta = [])
+    {
+        $this->action = Action::CALLBACK;
+
+        $content = $this->callbackQRResponseContent($upiEntity, $payment);
+
+        $this->content($content, 'callback');
+
+        $response = $this->makeResponse($content, $meta['key'] ?? null);
+
+        return [
+            'pgMerchantId' => $meta['merchant_id'] ?? 'HDFC000000000',
+            'meRes'        => $response->content()
+        ];
+    }
+
     public function getAsyncCallbackContentForBharatQr($qrCodeId, $amount = 100, $meta = [])
     {
         $this->action = Action::CALLBACK;
@@ -436,6 +452,37 @@ class Server extends Base\Mock\Server
             'NA',
             'NA',
             'PNB!10000000000!PNBI1111111!8966829290'
+        ];
+    }
+
+    protected function callbackQRResponseContent(array $upiEntity, array $payment)
+    {
+        $status = Status::SUCCESS;
+        $respCode = '00';
+
+        return [
+            $upiEntity['gateway_payment_id'],
+            $upiEntity['payment_id'],
+            $this->formatAmount($payment['amount']),
+            '2017:12:01 00:00:02',
+            $status,
+            'Transaction success',
+            $respCode,
+            // Approval Number
+            'NA',
+            $payment['vpa'] ?? self::DEFAULT_VPA,
+            // NPCI Reference Id
+            $payment['rrn'] ?? '107611570997',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'HDFC BANK LTD!50100538943621!HDFC0000053!919918600000',
+            'PAY!https://upi.hdfcbank.com!NA!HDF14f1d39e1029466a900e8da219065806!NA!',
+            'akemibusinessschool.70500005@hdfcbank!NA!NA',
+		    'SAVINGS!NA!NA!NA!NA',
         ];
     }
 

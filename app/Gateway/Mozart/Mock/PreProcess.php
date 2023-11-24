@@ -441,11 +441,21 @@ class PreProcess extends Base\Mock\Server
         $response->setPayment([
             Payment\Entity::CURRENCY          => 'INR',
             Payment\Entity::AMOUNT_AUTHORIZED => round(floatval($data['amount']) * 100),
+            Payment\Entity::PAYER_ACCOUNT_TYPE => 'bank_account',
         ]);
 
         $response->setTerminal([
             Terminal\Entity::GATEWAY_MERCHANT_ID   => $payload['pgMerchantId'],
             Terminal\Entity::GATEWAY               => 'upi_mindgate',
+        ]);
+
+        $response->setStatus(true);
+
+        $response->setMeta([
+            'response' =>    [
+                'content'     => $payload,
+                'plain'       => $data,
+            ]
         ]);
 
         if($data['respcode'] === 'ZA')

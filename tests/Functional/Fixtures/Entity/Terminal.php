@@ -1242,7 +1242,7 @@ class Terminal extends Base
 
     public function createDedicatedUpiMindgateTerminalTestMerchant($attributes)
     {
-        $termId = Shared::UPI_MINDGATE_TERMINAL_DEDICATED;
+        $termId = Shared::UPI_MINDGATE_TEST_TERMINAL_DEDICATED;
 
         $defaultValues = [
             'id'                        => $termId,

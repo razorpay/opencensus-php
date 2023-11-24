@@ -113,6 +113,7 @@ class Service extends Base\Service
             {
                 case BaseConstants::UPI_YESBANK:
                 case BaseConstants::UPI_KOTAK:
+                case BaseConstants::UPI_MINDGATE:
                 {
                     $input = $input['data'];
 

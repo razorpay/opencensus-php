@@ -271,6 +271,41 @@ trait NonVirtualAccountQrCodeTrait
         $this->makeRequestAndGetContent($request);
     }
 
+    private function makeUpiMindgatePayment($qrCodeEntity,$terminal, $payment = [], $upiEntity = [])
+    {
+        $this->ba->directAuth();
+
+        $defaultPaymentData = [
+            'amount'      => '300',
+            'description' => '',
+            'vpa'         => 'testvpa@hdfcbank',
+        ];
+
+        $payment = array_merge($defaultPaymentData, $payment);
+
+        $payment_id = $qrCodeEntity['reference'] . 'qrv2' ;
+        $gateway_payment_id = '80276224983';
+
+        if ($qrCodeEntity['usage'] === 'multiple_use')
+        {
+            $payment_id = 'STQ' . $payment_id . '!' . $gateway_payment_id;
+        }
+
+        $defaultUPIData = [
+            'gateway_payment_id' => $gateway_payment_id,
+            'vpa'                => 'testvpa@hdfcbank',
+            'payment_id'         =>  $payment_id,
+        ];
+
+        $upiEntity = array_merge($defaultUPIData, $upiEntity);
+
+        $content = $this->getMockServer('upi_mindgate')->getCallback($upiEntity, $payment);
+
+        $content['pgMerchantId'] = $terminal['gateway_merchant_id'];
+
+        return $this->makeS2SCallbackAndGetContent($content,'upi_mindgate');
+    }
+
     private function makeUpiKotakPayment($qrCodeEntity, $contents = [])
     {
         $this->ba->directAuth();
