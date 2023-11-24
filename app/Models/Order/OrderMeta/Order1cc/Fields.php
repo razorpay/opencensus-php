@@ -75,6 +75,7 @@ class Fields
     const REASON                = 'reason';
     const ORDER_STATUS_URL      = 'order_status_url';
     const PAYMENT_ID            = 'payment_id';
+    const PAYMENT_METHOD        = 'payment_method';
 
     //rto recommendation fields
     const REVIEW_STATUS = 'review_status';

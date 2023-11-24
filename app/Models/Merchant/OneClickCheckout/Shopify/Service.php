@@ -855,9 +855,10 @@ class Service extends Base\Service
         (new OrderMeta\Service())->updatePostCheckoutDetailsFor1ccOrder([
             'id' => $input['razorpay_order_id'],
             Order1cc\Fields::POST_CHECKOUT_DETAILS => [
-                Order1cc\Fields::STATUS => 'completed',
+                Order1cc\Fields::STATUS           => 'completed',
                 Order1cc\Fields::ORDER_STATUS_URL => $response['order_status_url'],
-                Order1cc\Fields::PAYMENT_ID => $response['payment_id'],
+                Order1cc\Fields::PAYMENT_ID       => $response['payment_id'],
+                Order1cc\Fields::PAYMENT_METHOD   => $response['payment_method'],
             ]
         ], $this->merchant->getMerchantId());
 

@@ -150,6 +150,7 @@ class Validator extends Base\Validator
 
     protected static $postCheckoutDetailsRules = [
         Fields::PAYMENT_ID          => 'sometimes|string',
+        Fields::PAYMENT_METHOD      => 'sometimes|string',
         Fields::ORDER_STATUS_URL    => 'sometimes|string',
         Fields::REASON              => 'sometimes|string',
         Fields::DESCRIPTION         => 'sometimes|string',
