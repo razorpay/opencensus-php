@@ -13054,6 +13054,11 @@ class Route
         ],
 
         'admin_dashboard' => [
+            '1cc_prepay_cod_configs_get',
+            'shipping_provider_list',
+            'shipping_provider_post',
+            'shipping_provider_patch',
+            'shipping_provider_delete',
             'merchant_activation_business_categories_admin_v3',
             '1cc_merchant_file_upload_audit_list',
             '1cc_merchant_file_upload_audit_create',
