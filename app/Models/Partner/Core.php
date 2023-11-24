@@ -1978,4 +1978,24 @@ class Core extends Detail\Core
         }
         return $response;
     }
+
+    public function isPOSEnabledForPartner(string $partnerId): bool
+    {
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.pos_partnership_experiment_id'),
+        ];
+
+        $isExpEnabled = $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
+
+        $this->trace->info(
+            TraceCode::PARTNER_POS_EXPERIMENT,
+            [
+                "properties" => $properties,
+                "enabled"    => $isExpEnabled,
+            ]
+        );
+
+        return $isExpEnabled;
+    }
 }

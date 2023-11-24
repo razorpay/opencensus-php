@@ -33,11 +33,17 @@ final class Product
      */
     const ISSUING = 'issuing';
 
+    /**
+     * Razorpay POS
+     */
+    const POS = 'pos';
+
     const VALID_SUBMERCHANT_PRODUCTS =
         [
             self::PRIMARY,
             self::BANKING,
-            self::CAPITAL
+            self::CAPITAL,
+            self::POS,
         ];
 
     /**

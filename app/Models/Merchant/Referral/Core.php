@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Models\Merchant;
+use RZP\Models\Partner;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
@@ -174,27 +175,9 @@ class Core extends Base\Core
 
         $productConfig = $this->getReferralConfig();
 
-        $isExpEnabled = (new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($merchant->getId());
+        $productConfig = $this->addCapitalProductConfig($merchant, $productConfig);
 
-        if ($isExpEnabled === true)
-        {
-            $this->trace->info(
-                TraceCode::PARTNER_REFERRAL_LINK_FOR_CAPITAL,
-                [
-                    "partner_id" => $merchant->getId()
-                ]
-            );
-
-            $url = Merchant\Constants::RAZORPAY_LINE_OF_CREDIT_SIGN_UP;
-
-            $productConfig[Product::CAPITAL] = [
-                "url"    => $url,
-                "params" => [
-                    "referral_code" => null,
-                    "intent"        => Merchant\Attribute\Type::CAPITAL_LOC_EMI,
-                ]
-            ];
-        }
+        $productConfig = $this->addPOSProductConfig($merchant, $productConfig);
 
         $this->addOptionalParams($productConfig, $merchant);
 
@@ -390,5 +373,57 @@ class Core extends Base\Core
             $productConfig[Product::PRIMARY]["params"][self::EASY_ONBOARDING_TYPE_PARAM] = "1";
         }
 
+    }
+
+    private function addCapitalProductConfig(Merchant\Entity $merchant, array $productConfig): array
+    {
+        $isExpEnabled = (new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($merchant->getId());
+
+        if ($isExpEnabled === true)
+        {
+            $this->trace->info(
+                TraceCode::PARTNER_REFERRAL_LINK_FOR_CAPITAL,
+                [
+                    "partner_id" => $merchant->getId()
+                ]
+            );
+
+            $url = Merchant\Constants::RAZORPAY_LINE_OF_CREDIT_SIGN_UP;
+
+            $productConfig[Product::CAPITAL] = [
+                "url"    => $url,
+                "params" => [
+                    "referral_code" => null,
+                    "intent"        => Merchant\Attribute\Type::CAPITAL_LOC_EMI,
+                ]
+            ];
+        }
+
+        return $productConfig;
+    }
+
+
+    private function addPOSProductConfig(Merchant\Entity $merchant, array $productConfig): array
+    {
+        $isExpEnabled = (new Partner\Core())->isPOSEnabledForPartner($merchant->getId());
+
+        if ($isExpEnabled === true)
+        {
+            $this->trace->info(
+                TraceCode::PARTNER_REFERRAL_LINK_FOR_POS,
+                [
+                    "partner_id" => $merchant->getId()
+                ]
+            );
+
+            $productConfig[Product::POS] = [
+                "url"    => $productConfig[Product::PRIMARY]['url'],   // reuse PG url only
+                "params" => [
+                    "referral_code" => null,
+                ]
+            ];
+        }
+
+        return $productConfig;
     }
 }

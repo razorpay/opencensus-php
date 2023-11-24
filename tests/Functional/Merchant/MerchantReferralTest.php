@@ -52,18 +52,27 @@ class MerchantReferralTest extends OAuthTestCase
 
         $testData = &$this->testData[__FUNCTION__];
 
+        $this->mockAllExperiments();
+
         $this->ba->proxyAuth();
 
         $testData['request']['url'] = "/merchant/referral";
 
         $this->startTest();
 
-        $referrals = $this->getDbEntity('referrals',
+        $primaryProductReferral = $this->getDbEntity('referrals',
                                         [
                                             'merchant_id' => $merchantId, 'product' => 'primary'
                                         ], 'live');
 
-        $this->assertNotEmpty($referrals->getReferralLink());
+        $this->assertNotEmpty($primaryProductReferral->getReferralLink());
+
+        $posProductReferral = $this->getDbEntity('referrals',
+                                                     [
+                                                         'merchant_id' => $merchantId, 'product' => 'pos'
+                                                     ], 'live');
+
+        $this->assertNotEmpty($posProductReferral->getReferralLink());
     }
 
     public function testEasyKycAccessReferral()

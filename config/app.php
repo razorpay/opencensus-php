@@ -651,6 +651,8 @@ return array(
 
     'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),
 
+    'pos_partnership_experiment_id' => env('POS_PARTNERSHIP_EXPERIMENT_ID'),
+
     'easy_kyc_access_referral_experiment_id' => env('EASY_KYC_ACCESS_REFERRAL_EXP_ID'),
 
     'capital_invite_existing_merchant_via_batch_experiment_id' => env('CAPITAL_INVITE_EXISTING_MERCHANT_VIA_BATCH_EXPERIMENT_ID'),

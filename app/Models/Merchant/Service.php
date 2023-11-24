@@ -9161,11 +9161,48 @@ class Service extends Base\Service
 
         $result['referrals'] = $referrals;
 
+        $result = $this->appendReferralWithConsentPrimary($merchant, $result);
+
+        $result = $this->appendReferralWithConsentPOS($merchant, $result);
+
+        return $result;
+    }
+
+    /**
+     * This function would fetch the referral link with consent for primary product
+     * @param       $merchant
+     * @param array $result
+     *
+     * @return array
+     */
+    private function appendReferralWithConsentPrimary($merchant, array $result): array
+    {
         $isExpEnabled = $this->isEasyKycAccessReferralEnabledForPartner($merchant);
 
         if ($isExpEnabled)
         {
-            $result['referrals'][Product::PRIMARY]['easy_kyc_access_url'] = $this->getReferralLinkWithKycAccessConsent($merchant, $referrals);
+            $primaryProductReferral = $result['referrals'][Product::PRIMARY];
+
+            $result['referrals'][Product::PRIMARY]['easy_kyc_access_url'] = $this->getReferralLinkWithKycAccessConsent($merchant, $primaryProductReferral);
+        }
+
+        return $result;
+    }
+
+    /**
+     * This function would fetch the referral link with consent for POS product
+     * @param       $merchant
+     * @param array $result
+     *
+     * @return array
+     */
+    private function appendReferralWithConsentPOS($merchant, array $result): array
+    {
+        if (empty($result['referrals'][Product::POS]) === false)
+        {
+            $posProductReferral = $result['referrals'][Product::POS];
+
+            $result['referrals'][Product::POS]['easy_kyc_access_url'] = $this->getReferralLinkWithKycAccessConsent($merchant, $posProductReferral);
         }
 
         return $result;
@@ -9179,10 +9216,10 @@ class Service extends Base\Service
             $parameters = [
                 'entity_id'      => $merchant->getId(),
                 'entity_type'    => 'merchant',
-                'product'        => Product::PRIMARY,
+                'product'        => $referrals['product'],
                 'name'           => PartnerConstants::REFERRAL_WITH_CONSENT,
                 'meta'           => [
-                    'referral_code' => $referrals['primary']['ref_code'],
+                    'referral_code' => $referrals['ref_code'],
                 ]
             ];
 

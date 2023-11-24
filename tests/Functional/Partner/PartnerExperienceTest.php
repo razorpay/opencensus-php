@@ -3216,7 +3216,7 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals(['Ref-' . $partner->getId()], $subMerchants->first()->tagNames());
         $this->assertEquals(['Ref-' . $partner->getId()], $subMerchants->last()->tagNames());
 
-        $this->assertCount(3, $referrals);
+        $this->assertCount(4, $referrals);
     }
 
     public function testNotifyPartnerAboutPPToResellerPartnerTypeSwitch()
@@ -3354,7 +3354,7 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals($newReferredAppId, $accessMaps[0]['entity_id']);
         $this->assertEquals(['Ref-' . $partner->getId()], $subMerchant->tagNames());
 
-        $this->assertCount(3, $referrals);
+        $this->assertCount(4, $referrals);
     }
 
     private function assertMailSentForPPToReseller($partner)

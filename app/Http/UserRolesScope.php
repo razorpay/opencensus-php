@@ -825,10 +825,10 @@ class UserRolesScope
             'merchant_create_lead_to_salesforce'                   => [Role::OWNER, Role::ADMIN],
             'merchant_credits_balance_fetch'                       => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT],
             'merchant_delete_config_logo'                          => [Role::OWNER, Role::ADMIN, Role::MANAGER],
-            'merchant_document_delete'                             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
+            'merchant_document_delete'                             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
             'merchant_document_fetch'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
-            'merchant_document_upload'                             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
-            'merchant_document_url_fetch'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
+            'merchant_document_upload'                             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
+            'merchant_document_url_fetch'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
             'merchant_edit_email2fa'                               => [Role::OWNER, Role::ADMIN],
             'generate_gifu_file' => [Role::OWNER, Role::ADMIN], // testing
             'merchant_edit_pre_signup_details'                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
