@@ -3841,8 +3841,6 @@ trait Authorize
 
                 $payment->setSave(false);
 
-                $this->preProcessForUpiIfApplicable($input);
-
                 $this->validateAndSetReceiverIfApplicable($payment, $input);
 
                 $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);

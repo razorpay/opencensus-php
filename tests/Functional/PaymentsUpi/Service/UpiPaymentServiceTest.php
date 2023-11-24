@@ -13,6 +13,7 @@ use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -252,6 +253,62 @@ class UpiPaymentServiceTest extends TestCase
                 Entity::VPA => 'test.cust@icici'
             ], $payment->toArray()
         );
+    }
+
+    /**
+     * test payment create with fees using encrypted Vpa
+     * it passes vpa_token instead of vpa in payment create request
+     *
+     * @return void
+     */
+    public function testCreatePaymentFeesWithVpaToken()
+    {
+        // 1. Hit /validate/account to get vpa_token from number
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $input = [
+            'entity' => 'vpa',
+            'value' => '9815225341',  // this is mapped to 'test.vpa@icici' in file app/Services/UpiPayment/Mock/Service.php
+        ];
+
+        $request = [
+            'content' => $input,
+            'url'     => '/v1/payments/validate/account',
+            'method'  => 'post'
+        ];
+
+        $this->ba->publicAuth();
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'numeric_mapper_encrypted_vpa', 'encrypted');
+        });
+
+        $response =  $this->makeRequestAndGetContent($request);
+
+        // 2. Create payment with vpa_token instead of vpa
+        $payment = $this->payment;
+
+        // 2. 1. Unset vpa for payment request
+        unset($payment['vpa']);
+
+        // 2. 2. Set vpa_token got from /validate/account response
+        $payment['upi']['vpa_token'] = $response['vpa_token'];
+
+        $payment['_']['library'] = 'checkoutjs';
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/fees',
+            'content' => $payment,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(14.76, $response['display']['fees']);
     }
 
     /**

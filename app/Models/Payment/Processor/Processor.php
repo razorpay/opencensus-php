@@ -3978,6 +3978,12 @@ class Processor
                 // of bharat qr terminal selection and returning it.
                 // It's not going to be saved in the database.
                 //
+
+                // Call preprocess of upi early to unset if vpa_token
+                // is present instead of vpa in input to build payment
+                // entity without failure.
+                $this->preProcessForUpiIfApplicable($input);
+
                 $payment = $this->buildPaymentEntity($input);
 
                 $payment->setMetadata($input);
@@ -4144,6 +4150,12 @@ class Processor
         // of pre-calculating fees and returning it.
         // It's not going to be saved in the database.
         //
+
+        // Call preprocess of upi early to unset if vpa_token
+        // is present instead of vpa in input to build payment
+        // entity without failure.
+        $this->preProcessForUpiIfApplicable($input);
+
         $payment = $this->buildPaymentEntity($input);
 
         if($payment->merchant->isLRSFlowEnabled() === true)
