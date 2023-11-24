@@ -739,16 +739,34 @@ class PGRouter
             }
 
             $entityOffers = (new EntityOfferRepository())->findByEntityIdAndType($order->getId(), 'offer');
+            $offersFromPGRouter = $response['body']['offers'] ?? [];
 
-            if ((isset($entityOffers) === true) and
-                (count($entityOffers) > 0))
-            {
+            unset($response['body']['offers']);
+
+            if (isset($entityOffers) && count($entityOffers) > 0) {
+                $offersFromAPI = [];
+                foreach ($entityOffers as $entityOffer) {
+                    $offersFromAPI[] = "offer_" . $entityOffer->offer_id;
+                }
+
+                $differenceFromAPIToPGRouter = array_diff($offersFromAPI, $offersFromPGRouter);
+                $differenceFromPGRouterToAPI = array_diff($offersFromPGRouter, $offersFromAPI);
+
+                $this->trace->info(TraceCode::OFFER_RESPONSE_PARITY, [
+                    "entityOffersFromAPI" => $entityOffers,
+                    "offersDataFromPGRouter" => $offersFromPGRouter,
+                    "offersFromAPI" => $offersFromAPI,
+                    "differenceFromAPIToPGRouter" => $differenceFromAPIToPGRouter,
+                    "differenceFromPGRouterToAPI" => $differenceFromPGRouterToAPI,
+                ]);
+            }
+
+            if (isset($entityOffers) and
+                (count($entityOffers) > 0)) {
                 $order->offers = new PublicCollection();
 
-                foreach ($entityOffers as $entityOffer)
-                {
+                foreach ($entityOffers as $entityOffer) {
                     $offer = Offer\Entity::findOrFail($entityOffer->offer_id);
-
                     $order->offers->push($offer);
                 }
             }
