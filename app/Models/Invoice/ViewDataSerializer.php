@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
 use Config;
+use RZP\Constants\Country;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Feature;
@@ -310,7 +311,10 @@ class ViewDataSerializer extends Base\Core
 
     protected function serializeMerchantForHosted(): array
     {
-        $cin           = $this->merchant->getCompanyCin();
+
+        if(Country::matches($this->merchant->getCountry() , Country::IN)){
+            $cin           = $this->merchant->getCompanyCin();
+        }
         $gstin         = $this->merchant->getGstin();
         $pan           = optional($this->merchant->merchantDetail)->getPan();
         $hasCinOrGstin = (($cin !== null) or ($gstin !== null));

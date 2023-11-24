@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
 use Config;
+use RZP\Constants\Country;
 use RZP\Services;
 use RZP\Constants\Org;
 use RZP\Diag\EventCode;
@@ -139,7 +140,7 @@ class ViewDataSerializerHosted extends Base\Core
         $merchantCountryCode = $this->merchant->getCountry();
 
         $branding = Org::ORG_BRANDING[$merchantCountryCode];
-        $branding['bussiness_name'] = $org->getBusinessName() ?: Org::ORG_BRANDING[$merchantCountryCode][Org::BUSSINESS_NAME];
+        $branding[Org::BUSINESS_NAME] = $org->getBusinessName() ?: Org::ORG_BRANDING[$merchantCountryCode][Org::BUSINESS_NAME];
         $branding['branding_logo'] = $org->getInvoiceLogo()   ?: Org::ORG_BRANDING[$merchantCountryCode][Org::BRANDING_LOGO];
 
         if($this->merchant->shouldShowCustomOrgBranding() === true and $merchantCountryCode === 'IN')
@@ -148,7 +149,7 @@ class ViewDataSerializerHosted extends Base\Core
 
             $branding['branding_logo'] = $org->getInvoiceLogo() ?: 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
 
-            $branding['bussiness_name'] = $org->getBusinessName() ?: 'Razorpay';
+            $branding['business_name'] = $org->getBusinessName() ?: Org::ORG_BRANDING[$merchantCountryCode][Org::BUSINESS_NAME];
         }
 
         return [
@@ -323,7 +324,9 @@ class ViewDataSerializerHosted extends Base\Core
 
     protected function serializeMerchantForHosted(): array
     {
-        $cin           = $this->merchant->getCompanyCin();
+        if(Country::matches($this->merchant->getCountry() , Country::IN)) {
+            $cin           = $this->merchant->getCompanyCin();
+        }
         $gstin         = $this->merchant->getGstin();
         $hasCinOrGstin = (($cin !== null) or ($gstin !== null));
 
