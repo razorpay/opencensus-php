@@ -356,14 +356,15 @@ class Core extends Base\Core
                 continue;
             }
 
-            $other_details[$item[PaymentLink::NAME]] = $input[$item[PaymentLink::NAME]];
 
             // add all price fields in amount
             if ((isset($input[$item[PaymentLink::NAME]]) === true) and 
                (strlen($input[$item[PaymentLink::NAME]]) > 0)) 
-               {
-                   $resp[Entity::AMOUNT] = $resp[Entity::AMOUNT] + $input[$item[PaymentLink::NAME]];
-               }
+            {
+                $resp[Entity::AMOUNT] = $resp[Entity::AMOUNT] + $input[$item[PaymentLink::NAME]];
+                
+                $other_details[$item[PaymentLink::NAME]] = $input[$item[PaymentLink::NAME]];
+            }
         }
 
         // total_amount will be populated when a payment is captured for this record

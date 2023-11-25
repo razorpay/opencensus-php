@@ -1684,6 +1684,58 @@ Secondary reference id should be unique, duplicate value for test123";
         $this->startTest($this->testData[__FUNCTION__]);
     }
 
+    public function testOptionalPriceFieldsForBatchPP()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $res = $this->startTest();
+
+        $id = $res["id"];
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'Due date' => $formattedDate,
+            'item1' => 100,
+            'item2' => ''
+        ]);
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+
+        // verify item2 isn't getting stored
+        $this->assertEquals($paymentPageRecord['other_details'],'{"DOB": "test123", "item1": "100", "sec__ref__id_1": "test123"}');
+
+        $paymentPageItems = \DB::connection('test')->select("select * from payment_page_items");
+
+        $orderCreateRequest = [
+            'method' => 'POST',
+            'url' => '/payment_pages/' . $id . '/order',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[0]->id,
+                        'amount' => 100
+                    ]
+                ],
+                'notes' => [
+                    'pri__ref__id' => '1231231234',
+                    'email' => 'test@test.com',
+                    'phone' => '1231231234',
+                    'DOB' => 'test123'
+                ]
+            ]
+        ];
+
+
+        $this->ba->directAuth();
+
+        $res = $this->makeRequestAndGetContent($orderCreateRequest);
+
+        $this->assertEquals($res['order']['amount'], 100);
+    }
+
     // form builder late fee tests
     public function testCreatePaymentPageWithLateFeeConfig()
     {
