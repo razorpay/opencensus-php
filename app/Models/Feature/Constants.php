@@ -254,20 +254,21 @@ class Constants
     const OPTIMIZER_RAZORPAY_VAS          = 'optimizer_razorpay_vas';
 
     // Ledger constants
-    const IDEMPOTENCY_KEY                   = 'idempotency_key';
-    const MERCHANT_ID                       = 'merchant_id';
-    const MODE                              = 'mode';
-    const PG_GATEWAY_ONBOARD                = 'pg_gateway_onboard';
-    const SUCCESS                           = 'success';
-    const FAILURE                           = 'failure';
-    const MERCHANT_FEATURE_ENABLED          = 'merchant feature enabled';
-    const MERCHANT_FEATURE_ALREADY_ENABLED  = 'merchant feature already enabled';
-    const MERCHANT_FEATURE_ALREADY_DISABLED = 'merchant feature already disabled';
-    const ACCOUNT_CREATION_FAILED           = 'account creation failed';
-    const BALANCE_RESPONSE                  = 'balance_response';
-    const CREDITS_RESPONSE                  = 'credits_response';
-    const ACCOUNTS_CREATED_RESPONSE         = 'accounts_created_response';
-    const RESERVE_BALANCE_RESPONSE          = 'reserve_balance_response';
+    const IDEMPOTENCY_KEY                       = 'idempotency_key';
+    const MERCHANT_ID                           = 'merchant_id';
+    const MODE                                  = 'mode';
+    const PG_GATEWAY_ONBOARD                    = 'pg_gateway_onboard';
+    const SUCCESS                               = 'success';
+    const FAILURE                               = 'failure';
+    const MERCHANT_FEATURE_ENABLED              = 'merchant feature enabled';
+    const MERCHANT_FEATURE_ALREADY_ENABLED      = 'merchant feature already enabled';
+    const MERCHANT_FEATURE_ALREADY_DISABLED     = 'merchant feature already disabled';
+    const ACCOUNT_CREATION_FAILED               = 'account creation failed';
+    const BALANCE_RESPONSE                      = 'balance_response';
+    const CREDITS_RESPONSE                      = 'credits_response';
+    const ACCOUNTS_CREATED_RESPONSE             = 'accounts_created_response';
+    const ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE = 'accounts_es_ondemand_response';
+    const RESERVE_BALANCE_RESPONSE              = 'reserve_balance_response';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
     const VISA_SAFE_CLICK                 = 'vsc_authorization';

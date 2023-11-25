@@ -465,7 +465,9 @@ class Activate extends Base\Core
                 $reserveBalanceAmount
             );
 
-            if ($isPgLedgerAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+            $isESOndemandAccountCreated = (new LedgerCore())->createLedgerOndemandSettlementAccount($merchant, $this->mode);
+
+            if ($isPgLedgerAccountCreated === true and $isESOndemandAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
             {
                 (new FeatureCore)->create(
                     [

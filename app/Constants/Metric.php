@@ -170,6 +170,7 @@ class Metric
     const PG_LEDGER_CREATE_TRANSACTION_FAILURE                  = 'pg_ledger_create_transaction_failure';
     const PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_SUCCESS           = 'pg_ledger_outbox_update_retry_count_success';
     const PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_FAILURE           = 'pg_ledger_outbox_update_retry_count_failure';
+    const LEDGER_ACCOUNT_CREATION_FAILURE                       = 'ledger_account_creation_failure';
 
     const KAFKA_ADJUSTMENT_API_TXN_PUSH_SUCCESS                 = 'kafka_adjustment_api_txn_push_success';
     const KAFKA_TRANSFER_API_TXN_PUSH_SUCCESS                   = 'kafka_transfer_api_txn_push_success';

@@ -3991,9 +3991,36 @@ return [
                             "merchant_refund_credits"=> 0,
                         ],
                         "accounts_created_response" => true,
+                        "accounts_es_ondemand_response" => true,
                         "reserve_balance_response"  => [
                             "merchant_reserve_balance" => 0
                         ],
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testOnboardMerchantOnPGReverseShadowESOndemandFailure' => [
+        'request'  => [
+            'content' => [
+                'ledger_mode'=> 'reverse-shadow',
+                'merchant_ids'     => ['10000000000000']
+            ],
+            'url'     => '/pg_ledger/merchant/onboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     =>  [
+                    [
+                        'merchant_id'               => '10000000000000',
+                        'status'                    => 'failure',
+                        'feature'                   => 'pg_ledger_reverse_shadow',
+                        'message'                   =>'account creation failed',
                     ],
                 ],
             ],
@@ -4028,6 +4055,7 @@ return [
                             "merchant_refund_credits"=> 0,
                         ],
                         "accounts_created_response" => true,
+                        "accounts_es_ondemand_response" => true,
                         "reserve_balance_response"  => [
                             "merchant_reserve_balance" => 0
                         ],

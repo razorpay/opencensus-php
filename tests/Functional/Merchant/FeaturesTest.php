@@ -1719,7 +1719,7 @@ class FeaturesTest extends OAuthTestCase
     protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
     {
         $storkMock->shouldReceive('sendSms')
-                  ->times(2)
+                  ->times(1)
                   ->with(
                       Mockery::on(function ($mockInMode)
                       {
@@ -1802,6 +1802,8 @@ class FeaturesTest extends OAuthTestCase
         $expectedStorkParametersForTemplate = [
             'feature' => 'Smart Collect'
         ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.feature_enabled', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.feature_enabled', '1234567890', $expectedStorkParametersForTemplate);
 
@@ -3365,7 +3367,7 @@ Regards,
         $this->app->instance('ledger', $mockLedger);
 
         $mockLedger->shouldReceive('createAccountsOnEvent')
-            ->times(1)
+            ->times(2)
             ->andReturn([
                 'body' => [
                         "accounts" => [
@@ -3941,7 +3943,7 @@ Regards,
         $this->app->instance('ledger', $mockLedger);
 
         $mockLedger->shouldReceive('createAccountsOnEvent')
-            ->times(1)
+            ->times(2)
             ->andReturn([
                 'body' => [
                     "accounts" => [
@@ -3997,6 +3999,73 @@ Regards,
         $this->assertContains('pg_ledger_reverse_shadow', $featuresArray);
     }
 
+    public function testOnboardMerchantOnPGReverseShadowESOndemandFailure()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andReturn([
+                'body' => [
+                    "accounts" => [
+                        "pg_merchant_onboarding" => null
+                    ]
+                ],
+                'code' => 200
+            ]);
+
+        $this->mockDCS();
+
+        $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
+            ->times(5)
+            ->andReturn([
+                'body' => [
+                    "balance" => 12000
+                ],
+                'code' => 200
+            ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ]);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andThrowExceptions([new \Exception("test message")]);
+
+        $response = $this->startTest($testData);
+    }
+
     public function testOnboardMerchantOnPGReverseShadowWithJournalWritesSuccess()
     {
         $this->app['config']->set('applications.ledger.enabled', true);
@@ -4014,7 +4083,7 @@ Regards,
         $this->app->instance('ledger', $mockLedger);
 
         $mockLedger->shouldReceive('createAccountsOnEvent')
-            ->times(1)
+            ->times(2)
             ->andReturn([
                 'body' => [
                     "accounts" => [

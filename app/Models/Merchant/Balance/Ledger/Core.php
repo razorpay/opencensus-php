@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Balance\Ledger;
 use App;
 
 use Ramsey\Uuid\Uuid;
+use RZP\Constants\Metric;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -21,12 +22,13 @@ use RZP\Models\BankingAccountStatement\Details\Entity as BankingAccountStatement
 
 class Core extends Base\Core
 {
-    const LEDGER_ACCOUNT_ONBOARDING     = 'ledger_account_onboarding';
-    const DIRECT_MERCHANT_ONBOARDING    = 'direct_merchant_onboarding';
-    const SHARED_MERCHANT_ONBOARDING    = 'shared_merchant_onboarding';
-    const SHARED_GATEWAY_ONBOARDING     = 'shared_gateway_onboarding';
-    const PG_MERCHANT_ONBOARDING        = 'pg_merchant_onboarding';
-    const PG_GATEWAY_ONBOARDING         = 'pg_gateway_onboarding';
+    const LEDGER_ACCOUNT_ONBOARDING             = 'ledger_account_onboarding';
+    const DIRECT_MERCHANT_ONBOARDING            = 'direct_merchant_onboarding';
+    const SHARED_MERCHANT_ONBOARDING            = 'shared_merchant_onboarding';
+    const SHARED_GATEWAY_ONBOARDING             = 'shared_gateway_onboarding';
+    const PG_MERCHANT_ONBOARDING                = 'pg_merchant_onboarding';
+    const PG_GATEWAY_ONBOARDING                 = 'pg_gateway_onboarding';
+    const LEDGER_ONDEMAND_SETTLEMENT_ONBOARDING = "capital_odsettlement_onboarding";
 
     const MODE                              = 'mode';
     const TENANT                            = 'tenant';
@@ -928,4 +930,63 @@ class Core extends Base\Core
         return (strtolower($variant) === 'on');
     }
 
+    public function getLedgerOnDemandSettlementAccountCreatePayload(Merchant $merchant, string $mode, string $event): array
+    {
+        $eventObj = [
+            self::EVENT_NAME            => $event,
+        ];
+
+        $payload = [
+            self::TENANT            => self::PG, // do we need tenant? not sending via collections
+            self::MODE              => $mode,
+            self::MERCHANT_ID       => $merchant->getId(),
+            self::EVENTS            => [
+                $eventObj
+            ],
+        ];
+
+        $this->trace->info(
+            TraceCode::LEDGER_REQUEST_PAYLOAD_ES_ONDEMAND_CREATED,
+            [
+                'payload'               => $payload,
+                self::TENANT            => self::PG
+            ]
+        );
+        return $payload;
+    }
+
+    public function createLedgerOndemandSettlementAccount(Merchant $merchant, string $mode)
+    {
+        try
+        {
+            $payload = $this->getLedgerOnDemandSettlementAccountCreatePayload($merchant, $mode, self::LEDGER_ONDEMAND_SETTLEMENT_ONBOARDING);
+
+            $requestHeaders = [
+                LedgerService::LEDGER_TENANT_HEADER    => self::PG,
+                LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()->toString()
+            ];
+            $ledgerService = $this->app['ledger'];
+            $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
+            // TODO add logs
+            return true;
+        }
+        catch (\Throwable $ex)
+        {
+            // trace and ignore exception and retry in async
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::LEDGER_ACCOUNT_ES_ONDEMAND_CREATE_REQUEST_FAILED,
+                [
+                    self::MERCHANT_ID => $merchant->getMerchantId(),
+                    self::TENANT      => self::PG,
+                    self::EVENT_NAME  => self::LEDGER_ONDEMAND_SETTLEMENT_ONBOARDING,
+                ]);
+
+            $this->trace->count(Metric::LEDGER_ACCOUNT_CREATION_FAILURE, [
+                self::EVENT_NAME => self::LEDGER_ONDEMAND_SETTLEMENT_ONBOARDING,
+            ]);
+            return false;
+        }
+    }
 }

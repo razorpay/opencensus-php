@@ -475,7 +475,7 @@ class Service extends Base\Service
 
             if ($result[Constants::ACCOUNTS_CREATED_RESPONSE] === false)
             {
-               return $result;
+                return $result;
             }
 
             // sync merchant balance and credits on API and CLS
@@ -484,6 +484,8 @@ class Service extends Base\Service
             $result[Constants::CREDITS_RESPONSE] = (new BalanceCore)->updatePGLedgerMerchantCreditBalances($merchant, $creditBalances);
 
             $result[Constants::RESERVE_BALANCE_RESPONSE] = (new BalanceCore)->updatePGMerchantReserveBalance($merchant, $reserveBalanceAmount);
+
+            $result[Constants::ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE] = (new BalanceCore)->createLedgerOndemandSettlementAccount($merchant, $this->mode);
 
             return $result;
 
@@ -1793,11 +1795,6 @@ class Service extends Base\Service
                     throw new \Exception(Constants::MERCHANT_FEATURE_ALREADY_ENABLED);
                 }
 
-                if($merchant->isFeatureEnabled(Constants::ES_ON_DEMAND))
-                {
-                    throw new \Exception(Constants::MERCHANT_FEATURE_ENABLED . ": " . Constants::ES_ON_DEMAND );
-                }
-
                 $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
                     EntityConstants::MERCHANT,
                     $merchant->getId(),
@@ -1822,7 +1819,7 @@ class Service extends Base\Service
                     // Create PG account on ledger service
                     $response = $this->ledgerPGAccountCreateRequest($merchant);
 
-                    if (!$response[Constants::ACCOUNTS_CREATED_RESPONSE])
+                    if (!$response[Constants::ACCOUNTS_CREATED_RESPONSE] || !$response[Constants::ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE])
                     {
                         throw new \Exception(Constants::ACCOUNT_CREATION_FAILED);
                     }
@@ -1860,6 +1857,7 @@ class Service extends Base\Service
                     $result[Constants::CREDITS_RESPONSE]          = $response[Constants::CREDITS_RESPONSE];
                     $result[Constants::RESERVE_BALANCE_RESPONSE]  = $response[Constants::RESERVE_BALANCE_RESPONSE];
                     $result[Constants::ACCOUNTS_CREATED_RESPONSE] = $response[Constants::ACCOUNTS_CREATED_RESPONSE];
+                    $result[Constants::ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE] = $response[Constants::ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE];
 
                 });
 
