@@ -225,6 +225,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => 15,
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => 15,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2     => 15,
+
+        // TODO: Revert back once the root cause for OBS latency is found and fixed.
+        // This is temporarily being increased to unblock curlec signup flows.
+        // https://razorpay.slack.com/archives/C043K5N223F/p1700641894030849?thread_ts=1699005756.802759&cid=C043K5N223F
+        self::SEND_OTP                                  => 20,
     ];
 
     const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
