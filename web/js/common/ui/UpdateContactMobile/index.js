@@ -57,7 +57,7 @@ class UpdateContactMobile extends React.Component {
     // Passing contact_mobile_verified hardcoded as true in callback
     // Ideally this should come from API, but BE is unable send that as response
     // in current state
-    const { user } = this.props;
+    const { user, showNotification } = this.props;
     const page = this.getPageOpenedOn();
     if (page) {
       selfServeTrackSuccess({
@@ -69,6 +69,10 @@ class UpdateContactMobile extends React.Component {
       });
     }
     this.props.updateUser({ contact_mobile: data.data.contact_mobile });
+    showNotification({
+      type: 'success',
+      message: 'Phone number updated successfully.',
+    });
     return this.props.onComplete({ contact_mobile_verified: true });
   };
 

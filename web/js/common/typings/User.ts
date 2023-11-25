@@ -92,6 +92,13 @@ type UserProperties = {
   business_subcategory: BUSINESS_SUBCATEGORIES | string;
   isTransacted: boolean;
   isAllowedView: (args: string) => boolean;
+  business_registered_address?: string;
+  business_registered_address_l2?: string;
+  business_operation_city?: string;
+  business_operation_district?: string;
+  business_registered_state?: string;
+  business_registered_country?: string;
+  business_registered_pin?: string;
 };
 
 // as user properties are not available initially

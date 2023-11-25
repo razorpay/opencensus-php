@@ -31,6 +31,7 @@ import { connect } from 'react-redux';
 import { NavLink, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { BusinessSettingsProps } from './typings';
 import { withRouter } from 'common/deprecated/withRouter';
+import { useGSTUpdateExperiment } from './Tabs/GSTDetails/utils';
 
 const AccountDetails = lazy(
   () => import(/* webpackChunkName: "AccountDetails" */ './Tabs/AccountDetails/v1'),
@@ -51,6 +52,13 @@ const BusinessDetails = lazy(
 const GSTDetails = lazy(
   () =>
     import(/* webpackChunkName: "GSTDetails" */ 'merchant/views/Account/Profile/components/GST'),
+);
+
+const GSTDetailsV2 = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "GSTDetailsV2" */ 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/GSTDetails'
+    ),
 );
 
 const CustomerSupportDetails = lazy(
@@ -86,6 +94,9 @@ const TeamInvitations = lazy(
 const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Element => {
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
+  const { isGSTUpdateEnabled } = useGSTUpdateExperiment();
+  const GSTDetailsComponet = isGSTUpdateEnabled ? GSTDetailsV2 : GSTDetails;
+  const isHideStyle = isGSTUpdateEnabled && location.pathname === ROUTES_INFO.GST_DETAILS;
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   if (!user.isAccountAndSettingsRevampEnabled) {
     const path = location.pathname;
@@ -160,7 +171,10 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
                   />
                   <Route
                     element={
-                      <StyledTabContentContainer className="content">
+                      <StyledTabContentContainer
+                        className={isHideStyle ? '' : 'content'}
+                        hideStyle={isHideStyle}
+                      >
                         <Outlet />
                       </StyledTabContentContainer>
                     }
@@ -185,7 +199,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
                       path={getRefRoute(ROUTES_INFO.GST_DETAILS)}
                       element={
                         <RouteGuard>
-                          <GSTDetails />
+                          <GSTDetailsComponet />
                         </RouteGuard>
                       }
                     />

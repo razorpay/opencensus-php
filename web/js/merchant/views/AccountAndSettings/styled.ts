@@ -2,8 +2,8 @@ import styled from 'styled-components';
 import lazy from 'merchant/routes/LazyLoader';
 import { Theme } from '@razorpay/blade/components';
 
-const Configuration = lazy(() =>
-  import(/* webpackChunkName: "Configuration" */ 'merchant/views/Settings/Configuration'),
+const Configuration = lazy(
+  () => import(/* webpackChunkName: "Configuration" */ 'merchant/views/Settings/Configuration'),
 );
 
 export const StyledConfiguration = styled(Configuration)`
@@ -40,8 +40,10 @@ export const StyledDivider = styled.div`
   margin: 25px 0px 0px 0px;
 `;
 
-export const StyledTabContentContainer = styled.div(
-  ({ theme }: { theme: Theme }) => `
+export const StyledTabContentContainer = styled.div<{ hideStyle?: boolean }>(
+  ({ theme, hideStyle }: { theme: Theme; hideStyle?: boolean }) =>
+    !hideStyle &&
+    `
   && {
     background: white;
     padding: ${theme.spacing[7]}px;

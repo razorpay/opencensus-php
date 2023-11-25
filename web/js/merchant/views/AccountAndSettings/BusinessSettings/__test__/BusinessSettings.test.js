@@ -7,6 +7,7 @@ import BusinessSettings from 'merchant/views/AccountAndSettings/BusinessSettings
 import { render, screen, waitFor } from 'test-utils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import * as gstUtils from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/GSTDetails/utils';
 
 jest.mock('merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails/v1', () => ({
   __esModule: true,
@@ -60,6 +61,11 @@ jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isSupportTicketEnabled: jest.fn(),
   shouldShowTeamInvitations: jest.fn(),
 }));
+
+const useGSTUpdateExperimentSpy = jest.spyOn(gstUtils, 'useGSTUpdateExperiment');
+useGSTUpdateExperimentSpy.mockReturnValue({
+  isGSTUpdateEnabled: false,
+});
 
 const renderApp = ({ user, pathname } = {}) => {
   return render(<BusinessSettings />, {

@@ -71,9 +71,7 @@ export const isWebsiteDetailsEnabled = ({
   !extraConfig.isConfigTagEnabled('contact.website_app_details');
 
 export const isGstDetailsEnabled = (user: User, extraConfig: ExtraConfig): boolean =>
-  user.isAllowedView('profile_gst') &&
-  !user.isUnregisteredBusiness &&
-  !extraConfig.isConfigTagEnabled('account.gst');
+  user.isAllowedView('profile_gst') && !extraConfig.isConfigTagEnabled('account.gst');
 
 export const isAccountDetailsEnabled = (user: User): boolean => user.isActivated;
 

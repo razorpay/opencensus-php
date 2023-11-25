@@ -490,5 +490,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/business-settings/gst'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'gst_update',
+          experimentId: {
+            beta: 'MxayRehE3jY1Sq',
+            production: 'Mxawn4bg3JADhR',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

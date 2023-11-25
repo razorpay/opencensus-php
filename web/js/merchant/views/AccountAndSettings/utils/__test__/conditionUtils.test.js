@@ -252,16 +252,14 @@ describe('Condition Utils', () => {
 
   describe('isGstDetailsEnabled', () => {
     test.each([
-      [false, false, false, false],
-      [false, true, true, false],
-      [false, true, false, true],
-      [true, true, false, false],
+      [false, false, false],
+      [false, true, true],
+      [true, true, false],
     ])(
-      'should return %s when user.isAllowedView returns %s, isUnregisteredBusiness is %s and isConfigTagEnabled returns %s on passing profile_gst and Gst tags',
-      (flag, isAllowedViewOutput, isUnregisteredBusiness, configTagOutput) => {
+      'should return %s when user.isAllowedView returns %s, and isConfigTagEnabled returns %s on passing profile_gst and Gst tags',
+      (flag, isAllowedViewOutput, configTagOutput) => {
         user.isAllowedView.mockReturnValueOnce(isAllowedViewOutput);
         const extraConfig = { isConfigTagEnabled: () => configTagOutput };
-        user.isUnregisteredBusiness = isUnregisteredBusiness;
         expect(conditionalUtils.isGstDetailsEnabled(user, extraConfig)).toBe(flag);
       },
     );
