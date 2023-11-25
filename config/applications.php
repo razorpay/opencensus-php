@@ -1667,6 +1667,7 @@ return [
         'splitz_experiment_implicit_join_document_by_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_IMPLICIT_JOIN_DOCUMENT_BY_MERCHANT_ID', ''),
         'splitz_experiment_merchant_detail_find_for_implicit_join' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_DETAIL_FIND_FOR_IMPLICIT_JOIN', ''),
         'splitz_experiment_merchant_find_for_implicit_join' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_FIND_FOR_IMPLICIT_JOIN', ''),
+        'splitz_send_filter_to_asv' => env('ASV_SPLITZ_SEND_FILTER_TO_ASV', ''),
     ],
 
     'recon'         => [

@@ -7,6 +7,8 @@ use Razorpay\Asv\RequestMetadata;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\Asv\Client as ASVClient;
 use Razorpay\Asv\Error\GrpcError;
+use Rzp\Accounts\Merchant\V1\FilterRequest;
+use Rzp\Accounts\Merchant\V1\FilterResponse;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BaseException;
@@ -21,6 +23,7 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\EntityToProtoConverter\Factory;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\GetFieldsForEntityFromProto\Factory as GetFieldsForEntityFromProtoFactory;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\GetFieldsForEntityFromProto\GetFieldsForEntityFromProtoInterface;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\ProtoToEntityConverter\Merchant as MerchantProtoMapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Utils\RequestHeadersHelper\RequestHeadersHelper;
 use RZP\Models\Merchant\Website\Entity;
 use RZP\Trace\TraceCode;
@@ -374,5 +377,50 @@ class Base
         return function() use ($id, $requestMetadata) {
             return $this->getLatestByMerchantId($id, $requestMetadata);
         };
+    }
+
+    /**
+     * @param FilterRequest $filterRequest
+     * @return mixed
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function getFilterResponseFromAsv(FilterRequest $filterRequest, int $timeout = 0): mixed
+    {
+        $requestMetadata = $this->getRequestMetaData();
+        if($timeout != 0){
+            $requestMetadata->setTimeoutInMicroSeconds($timeout);
+        }
+
+        list($response, $err) = $this->asvSdkClient->getFilterService()->Fetch(
+            $filterRequest,
+            $this->getRequestMetaData()
+        );
+
+        if ($err !== null) {
+            $this->handleError($err);
+        }
+        return $response;
+    }
+
+    /**
+     * @param mixed $response
+     * @return \Illuminate\Database\Eloquent\Collection|PublicCollection
+     */
+    public function getMerchantCollectionFromResponse(mixed $response): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    {
+        $merchants = $response->getMerchants();
+        $merchantArray = [];
+
+        /**
+         * @var $merchant \Rzp\Accounts\Merchant\V1\Merchant
+         */
+        foreach ($merchants as $merchant) {
+            $merchantProtoConvertor = new MerchantProtoMapper($merchant);
+            $websiteEntity = $merchantProtoConvertor->ToEntity();
+            $merchantArray[] = $websiteEntity;
+        }
+
+        return (new \RZP\Models\Merchant\Entity())->newCollection($merchantArray);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
+use Rzp\Accounts\Merchant\V1\FilterRequest;
 use RZP\Exception\BaseException;
 use Razorpay\Asv\RequestMetadata;
 use RZP\Exception\BadRequestException;
@@ -38,4 +39,28 @@ class Merchant extends Base
 
         return (new MerchantProtoMapper($merchant))->ToEntity();
     }
+
+    /**
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function fetchActivatedMerchantsBeforeTimestamp(int   $limit,
+                                                           int   $skip,
+                                                           int   $end,
+                                                           array $merchantIds = [],
+                                                           array $merchantIdsExcluded = []): array
+    {
+        $filterRequest =  new FilterRequest();
+        $filterRequest->setQueryIdentifier('merchant_03');
+        $filterRequest->setBindings(
+            json_encode([
+                1, $end, $merchantIdsExcluded, $merchantIds, $merchantIdsExcluded, strval($limit), strval($skip)
+            ])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest);
+
+        return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
+    }
+
 }

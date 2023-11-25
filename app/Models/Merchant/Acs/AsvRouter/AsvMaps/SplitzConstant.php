@@ -61,4 +61,6 @@ final class SplitzConstant
     const SPLITZ_SEND_PARTNER_WRITE_TO_ASV = 'splitz_send_partner_write_to_asv';
 
     const SPLITZ_SEND_WRITE_TO_ASV = 'splitz_send_write_to_asv';
+
+    const SPLITZ_SEND_FILTER_TO_ASV = 'splitz_send_filter_to_asv';
 }

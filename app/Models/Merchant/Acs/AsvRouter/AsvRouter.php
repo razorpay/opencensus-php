@@ -429,4 +429,23 @@ class AsvRouter
         return $partnerId;
     }
 
+    public function shouldRouteFilterToAsv(string $callingIdentifier) : bool
+    {
+        try {
+
+            $isExclusionFlow = $this->isExclusionFlowOrFailure();
+
+            if ($isExclusionFlow === true) {
+                return false;
+            }
+
+            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForFilterMigration();
+
+            return $this->spitzHelper->isSplitzOnByExperimentName($experimentName, $callingIdentifier);
+        } catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
+            return false;
+        }
+    }
+
 }
