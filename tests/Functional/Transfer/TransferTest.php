@@ -666,24 +666,77 @@ class TransferTest extends TestCase
         $transfers = $this->startTest();
 
         $payment = $this->getEntityById('payment', $payment->getId(), true);
-        $this->assertEquals(1000, $payment['amount_transferred']);
+        $transferPayment = $this->getLastEntity('transfer_payment', true);
+
+
+        $this->assertEquals(1000, $transferPayment['amount_transferred']);
 
         // dual write assertions : This can be removed when stopping payments dual write
         $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', Payment::stripDefaultSign($payment['id']))->get()->first();
         $this->assertNotNull($paymentsNew);
         $paymentsNewArray = (array) $paymentsNew;
-        $this->assertEquals(1000, $paymentsNewArray['amount_transferred']);
+
+        $transferPayment = $this->getLastEntity('transfer_payment', true);
+
+        $this->assertEquals(1000, $transferPayment['amount_transferred']);
+
+        $this->createReversal($transfers['items'][0]['id'], 200);
+
+        $transferPayment = $this->getLastEntity('transfer_payment', true);
+
+
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+        $this->assertEquals(800, $transferPayment['amount_transferred']);
+
+        // dual write assertions : This can be removed when stopping payments dual write
+        $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', Payment::stripDefaultSign($payment['id']))->get()->first();
+        $this->assertNotNull($paymentsNew);
+        $paymentsNewArray = (array) $paymentsNew;
+
+        $transferPayment = $this->getLastEntity('transfer_payment', true);
+        $this->assertEquals(800, $transferPayment['amount_transferred']);
+    }
+
+    /**
+     * @return void
+     * This test case creates a payment with existing amount_transferred so that
+     * subsequent transfers and reversals are update on payment entity (old flow)
+     */
+    public function testPaymentTransferForExistingTransfer()
+    {
+        $payment = $this->fixtures->create('payment:captured', ['amount_transferred' => 1000]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/transfers';
+
+        $this->ba->privateAuth();
+
+        $transfers = $this->startTest();
+
+        $payment = $this->getEntityById('payment', $payment->getId(), true);
+
+        $this->assertEquals(2000, $payment['amount_transferred']);
+
+
+        // dual write assertions : This can be removed when stopping payments dual write
+        $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', Payment::stripDefaultSign($payment['id']))->get()->first();
+        $this->assertNotNull($paymentsNew);
+        $paymentsNewArray = (array) $paymentsNew;
+
+        $this->assertEquals(2000, $paymentsNewArray['amount_transferred']);
 
         $this->createReversal($transfers['items'][0]['id'], 200);
 
         $payment = $this->getEntityById('payment', $payment['id'], true);
-        $this->assertEquals(800, $payment['amount_transferred']);
+        $this->assertEquals(1800, $payment['amount_transferred']);
 
         // dual write assertions : This can be removed when stopping payments dual write
         $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', Payment::stripDefaultSign($payment['id']))->get()->first();
         $this->assertNotNull($paymentsNew);
         $paymentsNewArray = (array) $paymentsNew;
-        $this->assertEquals(800, $paymentsNewArray['amount_transferred']);
+
+        $this->assertEquals(1800, $paymentsNewArray['amount_transferred']);
     }
 
     public function testLaNotesTransfer()
@@ -1406,6 +1459,7 @@ class TransferTest extends TestCase
 
     public function testRearchPaymentTransferMarketplace()
     {
+
         $this->enablePgRouterConfig();
 
         $transaction = $this->fixtures->create('transaction', [
@@ -1647,23 +1701,6 @@ class TransferTest extends TestCase
 
                     return  $paymentData;
 
-                }
-
-                if ($method === 'POST')
-                {
-                    $this->cpsCount += 1;
-
-                    if ($this->cpsCount === 1)
-                    {
-                        $this->assertEquals($data['amount_transferred'], 1000);
-                    }
-
-                    if ($this->cpsCount === 2)
-                    {
-                        $this->assertEquals($data['amount_transferred'], 800);
-                    }
-
-                    return [];
                 }
 
             });

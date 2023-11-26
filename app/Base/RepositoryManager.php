@@ -238,6 +238,7 @@ use Razorpay\Trace\Logger as Trace;
  * @property Models\Customer\CustomerConsent1cc\Repository                   $customer_consent_1cc
  * @property Models\Merchant\Referral\Repository                             $referrals
  * @property Models\Payment\UpiMetadata\Repository                           $upi_metadata
+ * @property Models\Transfer\Payment\Repository                              $transfer_payment
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

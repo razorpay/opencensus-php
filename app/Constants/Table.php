@@ -476,6 +476,8 @@ class Table
 
     const CLARIFICATION_DETAIL          = 'clarification_details';
 
+    const TRANSFER_PAYMENT              = 'transfer_payment';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,

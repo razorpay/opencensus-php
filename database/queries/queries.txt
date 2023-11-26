@@ -7191,3 +7191,16 @@ ALTER TABLE pricing
 
 ALTER TABLE user_device_details
     ADD COLUMN `metadata` json DEFAULT NULL;
+
+CREATE TABLE transfer_payment (
+   id char(14) COLLATE utf8mb4_bin NOT NULL,
+   payment_id char(14) COLLATE utf8mb4_bin NOT NULL,
+   amount bigint unsigned NOT NULL,
+   amount_transferred bigint unsigned NOT NULL,
+   created_at bigint NOT NULL,
+   updated_at bigint DEFAULT NULL,
+   PRIMARY KEY (id),
+   INDEX `idx_transfer_payment_payment_id` (`payment_id`),
+   INDEX `idx_created_at` (`created_at`),
+   INDEX `idx_updated_at` (`updated_at`)
+)DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;

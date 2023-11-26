@@ -22,6 +22,7 @@ use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Models\Feature;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Models\Transfer\Payment\Core as TransferPaymentCore;
 
 abstract class AbstractTransfer
 {
@@ -546,18 +547,31 @@ abstract class AbstractTransfer
 
     private function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount)
     {
-        $this->repo->payment->lockForUpdateAndReload($payment);
+        if ($payment->isTransferredInOldFlow())
+        {
+            $this->repo->payment->lockForUpdateAndReload($payment);
 
-        $this->trace->info(
-            TraceCode::PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
-            [
-                'payment_id'    => $payment->getId(),
-                'amount'        => $amount,
-            ]);
+            $this->trace->info(
+                TraceCode::PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'amount'        => $amount,
+                ]);
 
-        $payment->transferAmount($amount);
+            $payment->transferAmount($amount);
 
-        $this->repo->saveOrFail($payment);
+            $this->repo->saveOrFail($payment);
+
+            return;
+        }
+
+        $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
+
+        $this->repo->transfer_payment->lockForUpdateAndReload($transferPayment);
+
+        $transferPayment->transferAmount($amount);
+
+        $this->repo->saveOrFail($transferPayment);
     }
 
     protected function verifyAndSetErrorCode(Entity $transfer, string $errorCode)

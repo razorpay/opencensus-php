@@ -17,6 +17,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\Transfer\Payment\Core as TransferPaymentCore;
 use RZP\Trace\TraceCode;
 
 trait Reversal
@@ -61,7 +62,7 @@ trait Reversal
         {
             $sourcePayment = $transfer->source;
 
-            $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);
+            $this->decrementAmountTransferred($sourcePayment, $input[ReversalEntity::AMOUNT]);
 
         }
         else if ($transfer->getSourceType() === E::ORDER)
@@ -75,7 +76,7 @@ trait Reversal
             // This will also prevent columns like _record_source from warm storage to be present in entity attributes
             $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
 
-            $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);
+            $this->decrementAmountTransferred($sourcePayment, $input[ReversalEntity::AMOUNT]);
         }
 
         $refundNotes = (new Transfer\Core)->getLinkedAccountNotes($input);
@@ -144,6 +145,20 @@ trait Reversal
         }
 
         return array($reversal, $refund);
+    }
+
+    protected function decrementAmountTransferred($payment, $amount)
+    {
+        if ($payment->isTransferredInOldFlow() === true)
+        {
+            $payment->decrementAmountTransferred($amount);
+
+            return;
+        }
+
+        $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
+
+        $transferPayment->decrementAmountTransferred($amount);
     }
 
     /**

@@ -795,6 +795,8 @@ class Entity
 
     const CORP_CARD = 'corp_card';
 
+    const TRANSFER_PAYMENT = 'transfer_payment';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -1046,7 +1048,7 @@ class Entity
         Entity::BATCH_FUND_TRANSFER,
         self::CHECKOUT_ORDER,
         Entity::TERMINAL,
-        Entity::REFUND
+        Entity::REFUND,
     ];
 
     const ARCHIVED_ENTITIES = [
@@ -1515,6 +1517,8 @@ class Entity
         self::CUSTOMER_CONSENT_1CC          => \RZP\Models\Customer\CustomerConsent1cc::class,
 
         self::TRUECALLER_AUTH_REQUEST => \RZP\Models\Customer\Truecaller\AuthRequest::class,
+
+        self::TRANSFER_PAYMENT              => \RZP\Models\Transfer\Payment::class,
     ];
 
     protected static $repository = [

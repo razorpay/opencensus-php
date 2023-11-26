@@ -40,6 +40,7 @@ use RZP\Models\Currency;
 use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Models\Transfer;
 use RZP\Constants\Table;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
@@ -2604,6 +2605,30 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isTransferred()
     {
+        $isTransferred = false;
+        $transferPayments = (new Transfer\Payment\Repository())->getTransferPayment($this->getId());
+
+        $newAmountTransferred = 0;
+        if ($transferPayments->count() > 0  === true)
+        {
+            $newAmountTransferred = $transferPayments[0]->getAmountTransferred();
+        }
+
+        if (($this->getAttribute(self::AMOUNT_TRANSFERRED) > 0 === true) or
+            ($newAmountTransferred > 0 === true))
+        {
+            $isTransferred =  true;
+        }
+
+        return $isTransferred;
+    }
+
+    /**
+     * @return bool
+     * This checks if payment entity has amount transferred or not.
+     */
+    public function isTransferredInOldFlow()
+    {
         return (($this->getAttribute(self::AMOUNT_TRANSFERRED) > 0) === true);
     }
 
@@ -3437,6 +3462,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function getAmountTransferred()
     {
+        $transferPayments = (new Transfer\Payment\Repository())->getTransferPayment($this->getId());
+
+        if  ($transferPayments->count() > 0  === true)
+        {
+            return $transferPayments[0]->getAmountTransferred();
+        }
+
         return $this->getAttribute(self::AMOUNT_TRANSFERRED);
     }
 
@@ -4877,6 +4909,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $this->setUpiIfApplicable($attributes);
 
+        $attributes[Entity::AMOUNT_TRANSFERRED] = $this->getAmountTransferred();
+
         return $attributes;
     }
 
@@ -6094,6 +6128,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $this->setUpiIfApplicable($data);
 
+        $data[self::AMOUNT_TRANSFERRED] = $this->getAmountTransferred();
+
         // MCC CFB Payments which are in authorized state will have the fees in payment currency,
         // so we are converting it into base currency(INR) and sending it as an additional param to Merchant Dashboard.
         // If its a captured payment, then it would have already been handled in the post capture to make sure fees are stored in Base currency(INR)
@@ -6216,6 +6252,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $this->setConvenienceFeeAttributesForDashboard($data);
+
+        $data[self::AMOUNT_TRANSFERRED] = $this->getAmountTransferred();
+
         return $data;
     }
 
@@ -6246,6 +6285,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $this->setUpiIfApplicable($data, Constants::WEBHOOK);
+
+        $data[self::AMOUNT_TRANSFERRED] = $this->getAmountTransferred();
 
         return $data;
     }

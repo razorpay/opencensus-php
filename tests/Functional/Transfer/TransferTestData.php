@@ -379,6 +379,34 @@ return [
         ],
     ],
 
+    'testPaymentTransferForExistingTransfer' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '', // set dynamically
+            'content' => [
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => 1000,
+                        'currency' => 'INR',
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 1000,
+                        'currency'  => 'INR',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testRetrieveLaTransfers' => [
         'request' => [
             'method'  => 'GET',
