@@ -829,6 +829,37 @@ class Service extends \RZP\Models\Base\Service
         }
     }
 
+    public function updateShopifyStatusFor1ccOrder(string $orderId, string $shopifyStatus)
+    {
+        if (strlen($shopifyStatus) == 0 || $shopifyStatus === null)
+        {
+            return;
+        }
+        try {
+            $orderMetaInput = [];
+
+            $orderMetaInput = array_merge($orderMetaInput, [
+                Order1cc\Fields::SHOPIFY_ORDER_STATUS => $shopifyStatus,
+            ]);
+
+            (new OneClickCheckoutCore)->update1CcOrder($orderId, $orderMetaInput);
+        }
+        catch (\Exception $ex) {
+            $this->trace->count(TraceCode::UPDATE_1CC_ORDER_SHOPIFY_STATUS_ERROR_COUNT, [
+                'order_id' =>  $orderId
+            ]);
+
+            $this->trace->error(TraceCode::UPDATE_1CC_ORDER_SHOPIFY_STATUS_REQUEST_ERROR,
+                [
+                    'order_id' =>  $orderId,
+                    'shopify_order_status' => $shopifyStatus,
+                    'exception'=> $ex->getTrace()
+                ]
+            );
+            throw $ex;
+        }
+    }
+
     public function getUtmParametersFor1CCOrder(string $orderId):array
     {
         $utmParameters = [];

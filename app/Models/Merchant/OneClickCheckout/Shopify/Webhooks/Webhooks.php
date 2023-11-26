@@ -28,6 +28,8 @@ class Webhooks extends Base\Core
     const REFUND_CREATED = 'refund/created';
     const REFUND_MUTEX_KEY = 'shopify_1cc_refund_order_mutex';
 
+    const SHOPIFY_ORDER_CANCELLED = 'cancelled';
+
     const SHOPIFY_WEBHOOK_CACHE_KEY = 'shopify_1cc_webhook';
 
     const SHOPIFY_WEBHOOK_CACHE_KEY_TTL = 1 * 86400; // 1 day
@@ -90,6 +92,86 @@ class Webhooks extends Base\Core
         {
             $this->processFulfillmentUpdateEvent($data);
         }
+        elseif ($headers['x-shopify-topic'][0] == 'orders/cancelled')
+        {
+            $this->processShopifyOrderCancellationEvent($data);
+        }
+    }
+
+    protected function processShopifyOrderCancellationEvent(array $data)
+    {
+        $headers = $data['headers'];
+        $rawContents = $data['raw_contents'];
+
+        $input = $data['input'];
+
+        $shopId = $this->utils->stripAndReturnShopId($headers['x-shopify-shop-domain'][0]);
+        $configs = $this->getMerchantConfigs($shopId);
+
+        if (empty($configs) === true)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ORDER_CANCELLATION_EVENT_VALIDATION_FAILED,
+                [
+                    'type'  => 'configs_not_found',
+                ]);
+            return;
+        }
+
+        $signature = $headers['x-shopify-hmac-sha256'][0];
+        $isSignatureValid = $this->validator->isSignatureValid($rawContents, $signature, $configs['api_secret']);
+
+        if ($isSignatureValid === false)
+        {
+            return;
+        }
+
+        $client = new Shopify\Client($configs);
+        $txns = $this->getTransactionsByOrder($client, (string)$input['id']);
+
+        if (empty($txns['transactions']) === true)
+        {
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_CANCELLATION_COUNT,
+                [
+                    'status' => 'not_applicable',
+                    'reason' => 'txns_not_found',
+                ]);
+            return;
+        }
+
+        $txn = $this->getPrepaidTransaction($txns['transactions']);
+        if (empty($txn) === true)
+        {
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                [
+                    'status' => 'not_applicable',
+                    'reason' => 'cod_transaction',
+                ]);
+            return;
+        }
+
+        $keys = explode('|', $txn['authorization']);
+
+        // Structure for all 1cc Razorpay payments
+        if (count($keys) !== 2)
+        {
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                [
+                    'status' => 'not_applicable',
+                    'reason' => 'non_rzp_order',
+                ]);
+            return;
+        }
+
+        [$merchantRzpOrderId, $paymentId] = $keys;
+
+        $this->findAndSetMerchantOrFail($configs['merchant_id']);
+
+        (new Order\OrderMeta\Service)->updateShopifyStatusFor1ccOrder(substr($merchantRzpOrderId,6),
+            self::SHOPIFY_ORDER_CANCELLED);
     }
 
     public function processWebhookWithLock(array $data)
@@ -507,6 +589,7 @@ class Webhooks extends Base\Core
 
     protected function getTransactionsByOrder($client, string $merchantOrderId)
     {
+
         try {
           $txns = $client->getTransactionsByOrder($merchantOrderId);
           return json_decode($txns, true);

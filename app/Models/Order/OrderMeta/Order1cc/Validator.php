@@ -17,19 +17,20 @@ class Validator extends Base\Validator
     ];
 
     protected static $edit1CCOrderRules = [
-        Fields::LINE_ITEMS       => 'sometimes|custom',
-        Fields::SHIPPING_FEE     => 'sometimes|integer',
-        Fields::COD_FEE          => 'sometimes|integer',
-        Fields::PROMOTIONS       => 'sometimes|array|custom',
-        Fields::CUSTOMER_DETAILS => 'sometimes|array|custom',
-        Fields::COD_INTELLIGENCE => 'sometimes|array',
-        Fields::REVIEWED_AT      => 'sometimes|integer',
-        Fields::REVIEWED_BY      => 'sometimes|email',
-        Fields::REVIEW_STATUS    => 'sometimes|in:approved,canceled,hold,approval_initiated,hold_initiated,cancel_initiated',
-        Fields::SHIPPING_METHOD  => 'sometimes|array|custom',
-        Fields::UTM_PARAMETERS   => 'sometimes|array|custom',
-        Fields::TAX_DETAILS      => 'sometimes|array',
+        Fields::LINE_ITEMS            => 'sometimes|custom',
+        Fields::SHIPPING_FEE          => 'sometimes|integer',
+        Fields::COD_FEE               => 'sometimes|integer',
+        Fields::PROMOTIONS            => 'sometimes|array|custom',
+        Fields::CUSTOMER_DETAILS      => 'sometimes|array|custom',
+        Fields::COD_INTELLIGENCE      => 'sometimes|array',
+        Fields::REVIEWED_AT           => 'sometimes|integer',
+        Fields::REVIEWED_BY           => 'sometimes|email',
+        Fields::REVIEW_STATUS         => 'sometimes|in:approved,canceled,hold,approval_initiated,hold_initiated,cancel_initiated',
+        Fields::SHIPPING_METHOD       => 'sometimes|array|custom',
+        Fields::UTM_PARAMETERS        => 'sometimes|array|custom',
+        Fields::TAX_DETAILS           => 'sometimes|array',
         Fields::POST_CHECKOUT_DETAILS => 'sometimes|array|custom',
+        Fields::SHOPIFY_ORDER_STATUS  => 'sometimes|in:cancelled',
     ];
 
     protected static $editCustomerDetailsRules = [

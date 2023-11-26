@@ -109,6 +109,9 @@ class Fields
     const FBCLID            = 'fbclid';
     const REF               = 'ref';
 
+    // Shopify Order Status
+    const SHOPIFY_ORDER_STATUS = 'shopify_order_status';
+
 
     public static $dataFields = [
         self::LINE_ITEMS,
