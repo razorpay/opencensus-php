@@ -25,6 +25,7 @@ class Client
     const AUTHORIZATION                    = 'Authorization';
     const X_REQUEST_ID                     = 'X-Request-Id';
     const TIMEOUT                          = 'timeout';
+    const X_PASSPORT_JWT_V1                = 'X-Passport-JWT-V1';
 
     public function __construct($app = null)
     {
@@ -158,6 +159,7 @@ class Client
             self::CONTENT_TYPE  => 'application/json',
             self::AUTHORIZATION => $this->getAuthorizationHeader(),
             self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
+            self::X_PASSPORT_JWT_V1 => $this->auth->getPassportJwt($this->getBaseUrl()),
         ];
         if (empty($this->merchant) === false)
         {
