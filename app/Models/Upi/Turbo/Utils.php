@@ -75,6 +75,8 @@ class Utils extends \RZP\Models\Base\Core
                 $errorDetails[Error::ERROR_DESCRIPTION]     = $errorObj[Error::ERROR_DESCRIPTION];
                 $errorDetails[Constants::PUBLIC_ERROR_CODE] = $errorObj[Constants::PUBLIC_ERROR_CODE];
                 $errorDetails[Error::INTERNAL_ERROR_CODE]   = $errorObj[Error::INTERNAL_ERROR_CODE];
+                $errorDetails[Entity::ERROR_SOURCE]         = $errorObj[Error::SOURCE];
+                $errorDetails[Entity::ERROR_STEP]           = $errorObj[Error::STEP];
 
                 break;
             }

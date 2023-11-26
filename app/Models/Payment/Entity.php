@@ -6321,6 +6321,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::ERROR_REASON]      = $reference17['payer'][self::ERROR_REASON];
             $data[self::ERROR_CODE]        = $reference17['payer'][\RZP\Models\Upi\Turbo\Constants::PUBLIC_ERROR_CODE];
             $data[self::ERROR_DESCRIPTION] = $reference17['payer'][Error::ERROR_DESCRIPTION];
+            $data[self::ERROR_SOURCE]      = $reference17['payer'][self::ERROR_SOURCE] ?? '';
+            $data[self::ERROR_STEP]        = $reference17['payer'][self::ERROR_STEP] ?? '';
 
             if ($app['basicauth']->isAdminAuth() === true)
             {

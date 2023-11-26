@@ -2437,6 +2437,8 @@ class PaymentFetchTest extends TestCase
                 'public_error_code' => 'BAD_REQUEST_ERROR',
                 'error_description' => 'You have entered an incorrect PIN on the UPI app. Please retry with the correct PIN.',
                 'error_reason'      => 'incorrect_pin',
+                'error_step'        => 'payment_authentication',
+                'error_source'      => 'customer',
                 'primary'           => true // as payment status moved to authorized
             ]
         ];
@@ -2450,6 +2452,8 @@ class PaymentFetchTest extends TestCase
         $this->assertEquals('BAD_REQUEST_ERROR', $fetchedPayment['error_code']);
         $this->assertEquals('You have entered an incorrect PIN on the UPI app. Please retry with the correct PIN.', $fetchedPayment['error_description']);
         $this->assertEquals('incorrect_pin', $fetchedPayment['error_reason']);
+        $this->assertEquals('payment_authentication', $fetchedPayment['error_step']);
+        $this->assertEquals('customer', $fetchedPayment['error_source']);
 
         //Now we update primary flag to false and assert that payment error details are not picked from payer callback
         $reference17['payer']['primary'] = false;
@@ -2462,6 +2466,8 @@ class PaymentFetchTest extends TestCase
         $this->assertNull($fetchedPayment['error_code']);
         $this->assertNull($fetchedPayment['error_description']);
         $this->assertNull($fetchedPayment['error_reason']);
+        $this->assertNull($fetchedPayment['error_step']);
+        $this->assertNull($fetchedPayment['error_source']);
     }
 
     public function enableInAppPaymentMethodOnMerchant()
