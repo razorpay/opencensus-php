@@ -16603,6 +16603,10 @@ class Route
             'pricing_fetch_plan'
         ],
 
+        'pcp_service' => [
+            'internal_transactions',
+        ],
+
         'nbplus_payment_service' => [
             'internal_payment_pricing',
             'internal_pricing',

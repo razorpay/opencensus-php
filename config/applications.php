@@ -533,6 +533,9 @@ return [
         'key'       => 'ezetap-api',
         'secret'    =>  env('EZETAP_API_SECRET'),
     ],
+    'pcp_service' => [
+        'secret'    =>  env('PCP_SERVICE_SECRET'),
+    ],
     'friend_buy' => [
         // Api url for merchant risks service.
         'url'                => env('FRIEND_BUY_URL'),
