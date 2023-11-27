@@ -58,12 +58,12 @@ class MccConfig
         return;
     }
 
-    public function validateCollectPayment(Payment\Entity $payment)
+    public function validateCollectPayment(Payment\Entity $payment, $tokenStatus)
     {
         $isCollectAllowed = array_get($this->config, self::IS_COLLECT_ALLOWED, null);
 
         // Hard check on config
-        if ($isCollectAllowed === false)
+        if (($isCollectAllowed === false) and ($tokenStatus !== 'confirmed'))
         {
             $this->throwException(ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_MCC_BLOCKED);
         }

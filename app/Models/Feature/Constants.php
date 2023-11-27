@@ -3813,6 +3813,11 @@ class Constants
             'display_name'  => 'Feature to enable Checkout from Affordability Widget',
             'documentation' => '',
         ],
+        self::TPV => [
+            'feature'       => self::TPV,
+            'display_name'  => 'Recurring tpv flow for the merchant',
+            'documentation' => '',
+        ],
     ];
 
     /**

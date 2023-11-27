@@ -10668,7 +10668,13 @@ trait Authorize
         // Upi Transfer payments.
         else if (($this->isFlowCollect($input) === true) and (isset($payment['receiver_type']) === false))
         {
-            $config->validateCollectPayment($payment);
+            $tokenStatus = null;
+            if((isset($payment['token_id']) === true) and ($payment['token_id'] !== null))
+            {
+                $token = $this->repo->token->find($payment['token_id']);
+                $tokenStatus = $token['recurring_status'];
+            }
+            $config->validateCollectPayment($payment, $tokenStatus);
         }
     }
 
