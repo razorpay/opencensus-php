@@ -772,8 +772,6 @@ return array(
 
     'transaction_isolation_for_dispute_experiment_id' => env('TRANSACTION_ISOLATION_FOR_DISPUTE_EXP_ID'),
 
-    'phantom_nc_sms' => env('PHANTOM_NC_SMS'),
-
     'restrict_pii_data_access_experiment_id' => env('RESTRICT_PII_DATA_ACCESS_EXP_ID'),
 
     'merchant_policies_subdomain' =>  env('MERCHANT_POLICIES_SUBDOMAIN'),

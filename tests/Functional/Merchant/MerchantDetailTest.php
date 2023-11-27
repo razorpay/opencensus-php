@@ -12267,7 +12267,6 @@ We look forward to transacting with you!
             'ncUrl'         => $shortenNCUrl
         ];
 
-        // if the exp 'PHANTOM_NC_SMS' is enabled, SMS template name should be picked up as ''sms.onboarding.custom_nc_url''
         $this->expectStorkSendSmsRequest($storkMock,'sms.onboarding.custom_nc_url', '+919123456789', $expectedParams);
 
         $whatsAppText = "Hi " . $merchant->name . ",
@@ -12379,8 +12378,7 @@ We look forward to transacting with you!
             'ncUrl'         => $shortenNCUrl
         ];
 
-        // if 'PHANTOM_NC_SMS' exp is not enabled then use the existing SMS template 'sms.onboarding.nc_revamp'
-        $this->expectStorkSendSmsRequest($storkMock,'sms.onboarding.nc_revamp', '+919123456789', $expectedParams);
+        $this->expectStorkSendSmsRequest($storkMock,'sms.onboarding.custom_nc_url', '+919123456789', $expectedParams);
 
         $whatsAppText = "Hi " . $merchant->name . ",
             In order to complete KYC verification for your account, we need a few more details from you as below.
@@ -12505,7 +12503,6 @@ We look forward to transacting with you!
             'ncUrl'         => $shortenNCUrl
         ];
 
-        // if the exp is enabled, SMS template name should be picked up as 'sms.onboarding.custom_nc_url'
         $this->expectStorkSendSmsRequest($storkMock,'sms.onboarding.custom_nc_url', '+919123456789', $expectedParams);
 
         $whatsAppText = "Hi " . $merchant->name . ",
@@ -12628,8 +12625,7 @@ We look forward to transacting with you!
             'ncUrl' => $shortenNCUrl
         ];
 
-        // if the exp is not enabled, SMS template should be picked up as 'sms.onboarding.nc_revamp'
-        $this->expectStorkSendSmsRequest($storkMock, 'sms.onboarding.nc_revamp', '+919123456789', $expectedParams);
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.onboarding.custom_nc_url', '+919123456789', $expectedParams);
 
         $whatsAppText = "Hi " . $merchant->name . ",
             In order to complete KYC verification for your account, we need a few more details from you as below.

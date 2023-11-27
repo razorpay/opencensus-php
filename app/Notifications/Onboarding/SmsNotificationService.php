@@ -221,19 +221,7 @@ class SmsNotificationService extends BaseNotificationService
         if (Handler::isNCEvent($this->event) === true and
             empty($this->args[Constants::PARAMS][OnboardingConstants::NC_URL]) === false)
         {
-            $merchant = $this->args[Constants::MERCHANT];
-
-            $properties = [
-                'id'            => $merchant->getMerchantId(),
-                'experiment_id' => $this->app['config']->get('app.phantom_nc_sms')
-            ];
-
-            $isExpEnabled = (new Core())->isSplitzExperimentEnable($properties, 'enable');
-
-            if ($isExpEnabled === true)
-            {
-                return Events::SMS_TEMPLATE_CUSTOM_NC[$this->event];
-            }
+            return Events::SMS_TEMPLATE_CUSTOM_NC[$this->event];
         }
 
         return Events::SMS_TEMPLATES[$this->event];
