@@ -95,6 +95,9 @@ class Constants
 
     const VALID_EXPAND_COLUMNS = [Entity::EXPLICIT_PLAN_ID, Entity::IMPLICIT_PLAN_ID, Entity::DEFAULT_PLAN_ID];
     const PRICING_PLAN_DETAIL_COLUMNS = [PricingEntity::PAYMENT_METHOD,
+                                         PricingEntity::PAYMENT_METHOD_TYPE,
+                                         PricingEntity::PAYMENT_NETWORK,
+                                         PricingEntity::PERCENT_RATE_SCALE_FACTOR,
                                          PricingEntity::PERCENT_RATE,
                                          PricingEntity::FIXED_RATE,
                                          PricingEntity::MIN_FEE,
