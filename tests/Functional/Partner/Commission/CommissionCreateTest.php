@@ -4215,6 +4215,23 @@ class CommissionCreateTest extends TestCase
         $this->assertInvoiceEntityCreation('issued');
     }
 
+    public function testCreateInvoiceIssuedWithRegenerateFromPRTS()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->createTaxes();
+
+        $this->createInvoice();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest($testData);
+
+        $this->assertInvoiceEntityCreation('issued');
+    }
+
     public function testCreateInvoiceAndFinanceWorkflowFromPRTS()
     {
         $this->createPurePlatFormMerchantAndSubMerchant();
@@ -4332,6 +4349,24 @@ class CommissionCreateTest extends TestCase
         $this->startTest($testData);
 
         $this->assertInvoiceEntityCreation('processed');
+    }
+
+    private function createInvoice()
+    {
+        DB::connection('test')->table('commission_invoice')->insert(
+            [
+                'id' => '9nDpYjuyZsOlMK',
+                'merchant_id' => '1000000000plat',
+                'month' =>7,
+                'year'=>2023,
+                'gross_amount'=>1264,
+                'tax_amount'=>0,
+                'status'=>'issued',
+                'balance_id'=>'FD7BWf1yiyRo18',
+                'created_at' => '1548745646',
+                'updated_at' => '1548745646',
+            ],
+        );
     }
 
     protected function assertInvoiceEntityCreation($status)

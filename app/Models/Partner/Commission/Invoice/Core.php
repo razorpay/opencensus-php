@@ -1535,7 +1535,9 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_PROCESS_REQUEST, ['payload' => $payload]);
 
-            $invoice = $this->createInvoiceForPRTS($input, $payload['Invoice']);
+            $regenerate = $payload[Entity::REGENERATE_IF_EXISTS] ?? false;
+
+            $invoice = $this->createInvoiceForPRTS($payload['Invoice'], $regenerate);
 
             return $this->buildAckResponse(['processed' => true], null, $input[Entity::ID], $input[Constants::CREATED_AT]);
         }
@@ -1565,7 +1567,7 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_PROCESS_REQUEST, ['payload' => $payload]);
 
-            $invoice = $this->createInvoiceForPRTS($input, $payload['Invoice']);
+            $invoice = $this->createInvoiceForPRTS($payload['Invoice']);
 
             return $this->createFinanceWorkflowFromPRTS($input);
         }
@@ -1635,7 +1637,7 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::PRTS_COMMISSION_INVOICE_PROCESS_REQUEST, ['payload' => $payload]);
 
-            $invoice = $this->createInvoiceForPRTS($input, $payload['Invoice']);
+            $invoice = $this->createInvoiceForPRTS($payload['Invoice']);
 
             $this->settlementTDSForPRTS($payload['Invoice'], $payload['TdsPercentage'], $payload['CreateTds']);
 
@@ -1693,19 +1695,37 @@ class Core extends Base\Core
     }
 
     /**
-     * @param $input
      * @param $payload
+     * @param bool $regenerate
      * @return Entity
      */
-    private function createInvoiceForPRTS($input, $payload): Entity
+    private function createInvoiceForPRTS($payload, bool $regenerate = false): Entity
     {
         $resource   = 'COMMISSION_INVOICE_CREATE_' . $payload[Entity::ID];
 
         return $this->app['api.mutex']->acquireAndRelease(
-            $resource, function() use ($input, $payload)
+            $resource, function() use ($payload, $regenerate)
             {
-                // return existing commission if commission with same ID already exists
-                $invoice = $this->repo->commission_invoice->find($payload[Entity::ID]);
+                $invoices = $this->repo->commission_invoice->fetchInvoices(
+                    $payload[Entity::MERCHANT_ID],
+                    $payload[Entity::MONTH],
+                    $payload[Entity::YEAR]);
+
+                if ($invoices->isEmpty() === false)
+                {
+                    $invoice = $invoices->first();
+                }
+
+                if ($regenerate)
+                {
+                    foreach ($invoices as $invoice)
+                    {
+                        // delete the existing invoices
+                        $this->repo->deleteOrFail($invoice);
+                    }
+                    unset($invoice);
+                }
+
                 if (isset($invoice) === false)
                 {
                     $timeNow = millitime();

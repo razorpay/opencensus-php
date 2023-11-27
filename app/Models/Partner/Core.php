@@ -1884,7 +1884,8 @@ class Core extends Detail\Core
             Merchant\Entity::CREATED_AT   => $merchant->getCreatedAt(),
             PartnerConstants::COUNTRY     => $merchant->getCountry(),
             Merchant\Entity::EMAIL        => $merchant->getEmail(),
-            Merchant\Entity::ORG_ID       => $merchant->getOrgId()
+            Merchant\Entity::ORG_ID       => $merchant->getOrgId(),
+            Merchant\Entity::HOLD_FUNDS   => $merchant->isFundsOnHold(),
         ];
     }
 
