@@ -233,8 +233,8 @@ class Service extends Base\Service
         if ($contact != null)
         {
             $customer = $this->core->getGlobalCustomerByContact("+91" . $contact);
-        } 
-        else 
+        }
+        else
         {
             $customer = $this->core->fetchGlobalCustomerEntityByID($input['customer_id']);
         }
@@ -1554,5 +1554,26 @@ class Service extends Base\Service
             true);
 
         return $customer;
+    }
+
+    public function fetchCustomerConsent1cc($input)
+    {
+        $contact = $input['contact'];
+        $merchantID = $input['merchant_id'];
+
+        if(strlen($contact) == 0)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
+        }
+
+        if(strlen($merchantID) == 0)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PRESENT);
+        }
+
+        $customerConsent = $this->core->fetchCustomerConsentFor1CC($contact, $merchantID);
+        $result['status'] = $customerConsent;
+
+        return $result;
     }
 }

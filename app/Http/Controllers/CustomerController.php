@@ -618,4 +618,13 @@ class CustomerController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function fetchCustomerConsent1cc()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchCustomerConsent1cc($input);
+
+        return ApiResponse::json($response);
+    }
 }

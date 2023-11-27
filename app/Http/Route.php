@@ -1323,6 +1323,7 @@ class Route
         'customer_record_1cc_address_consent_view'     => ['put',      '1cc/consent/address/view',                   'CustomerController@recordAddressConsent1ccAudits'                  ],
         'customer_record_1cc_address_consent'          => ['put',      '1cc/address/consent',                        'CustomerController@recordAddressConsent1cc'                        ],
         'record_1cc_customer_consent'              => ['post',     '1cc/customer/consent/marketing',                 'CustomerController@recordCustomerConsent1cc'                       ],
+        'fetch_1cc_customer_consent_internal'              => ['get',     'internal/1cc/customer/consent',                 'CustomerController@fetchCustomerConsent1cc'                       ],
         'customer_one_cc_get_or_create_global'     => ['post',     'customers/1cc/global',                           'CustomerController@getOrCreateGlobalCustomer1cc'                   ],
         'customer_fetch_by_id_global'              => ['get',      'customers/1cc/global/{id}',                      'CustomerController@fetchGlobalCustomerByID' ],
         'customer_create_address'                  => ['post',     'customers/{id}/addresses',                       'CustomerController@postCreateAddress'                              ],
@@ -6364,7 +6365,8 @@ class Route
 
         // Edge
         'third_party_authenticate',
-        'internal_1cc_configs_update'
+        'internal_1cc_configs_update',
+        'fetch_1cc_customer_consent_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -16979,6 +16981,7 @@ class Route
             '1cc_internal_otp_verify',
             '1cc_internal_fetch_global_addresses',
             'payment_fetch_by_id_internal',
+            'fetch_1cc_customer_consent_internal',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',
