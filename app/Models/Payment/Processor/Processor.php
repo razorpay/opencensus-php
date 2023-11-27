@@ -6267,6 +6267,7 @@ class Processor
             'currency'      => $payment->getCurrency(),
             'created_at'    => $payment->getCreatedAt(),
             'cps_route'     => $payment->getCpsRoute(),
+            'receiver_type' => $payment->getReceiverType(),
         ];
 
         $terminal = $payment->terminal;
@@ -6344,6 +6345,7 @@ class Processor
             'is_direct_settlement' => $payment->isDirectSettlement(),
             'settled_by' => $payment->getSettledBy(),
             'convert_currency' => $payment->getConvertCurrency(),
+            'receiver_type' => $payment->getReceiverType(),
         ];
         $terminal = $payment->terminal;
 
