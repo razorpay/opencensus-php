@@ -6,7 +6,14 @@ run_devstack() {
   skipDevstack=${SKIP_DEVSTACK}
   roastPRCommit=${ROAST_PR_COMMIT}
   WEBHOOK_TRIGGER=${WEBHOOK_TRIGGER}
-  PIPELINE_ID="51ab409e-1ce1-4c59-ae13-f702c02a9c4a"
+
+  isGraviton=${IS_GRAVITON}
+  if [ $isGraviton == 'false' ]; then
+    PIPELINE_ID="51ab409e-1ce1-4c59-ae13-f702c02a9c4a"
+  else
+    PIPELINE_ID="ddd298a8-c1bf-4fdd-8c8e-7db88a22599d"
+  fi
+
   FILES_CHANGED=${FILES_CHANGED}
 
   statusCode=$(curl -c /tmp/cookies -o -s -w "%{http_code}" --location --request GET 'https://deploy-api.razorpay.com/login' \

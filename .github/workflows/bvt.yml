@@ -103,6 +103,7 @@ jobs:
   pull_request_approved:
     env:
       old_commit: ${{ github.event.pull_request.head.sha }}
+      UPDATED_DOCKER: false
     if: ${{ (github.event_name == 'workflow_dispatch' || github.event.review.state == 'approved') }}
     runs-on:
       - self-hosted
@@ -321,19 +322,50 @@ jobs:
         shell: bash
       - name: Print Files Changed
         run: echo ${{ steps.pr_files.outputs.files_changed_json }}
-      - name: Run BVT Suite on Devstack with Successful Build Image Workflow
+      # Check Docker file changes
+      - name: Check Docker file changes
+        id: Changed_file
+        run: |
+            changed=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/razorpay/api/pulls/${{ github.event.pull_request.number }}/files" | jq -r '.[] | select(.filename? | match("Dockerfile")) | .status')
+            echo "Status of 'changed file': $changed"
+
+            if [ "$changed" = "modified" ]; then
+              echo "Status check succeeded."
+              echo "UPDATED_DOCKER=true" >> "$GITHUB_ENV"
+            else
+              echo "Found no change in Dockerfile"
+            fi
+      # Run BVT Suite on Devstack [Graviton] with Successful Build Image Workflow
+      - name: Run BVT Suite on Devstack [Graviton] with Successful Build Image Workflow
         if: env.WORKFLOW_STATUS == 'success'
         env:
-          SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
-          WEBHOOK_TRIGGER: api-pr-commit-devstack
-          GITHUB_TOKEN: ${{ github.token }}
-          ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
-          GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          COMMIT_ID: ${{ steps.pr_info.outputs.latest_commit }}
-          SKIP_DEVSTACK: false
-          FILES_CHANGED: ${{ steps.pr_files.outputs.files_changed_json }}
+            SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
+            WEBHOOK_TRIGGER: api-pr-commit-devstack-graviton
+            GITHUB_TOKEN: ${{ github.token }}
+            ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
+            GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+            COMMIT_ID: ${{ steps.pr_info.outputs.latest_commit }}
+            SKIP_DEVSTACK: false
+            IS_GRAVITON: true
+            FILES_CHANGED: ${{ steps.pr_files.outputs.files_changed_json }}
         run: |
           sh ./.github/actions/triggerDevstack.sh
+      # Run BVT Suite on Devstack [AMD] with Successful Build Image Workflow (On Dockerfile change)
+      - name: Run BVT Suite on Devstack with Successful Build Image Workflow
+        if: ${{ env.WORKFLOW_STATUS == 'success' && env.UPDATED_DOCKER == 'true' }}
+        env:
+            SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
+            WEBHOOK_TRIGGER: api-pr-commit-devstack
+            GITHUB_TOKEN: ${{ github.token }}
+            ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
+            GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+            COMMIT_ID: ${{ steps.pr_info.outputs.latest_commit }}
+            SKIP_DEVSTACK: false
+            IS_GRAVITON: false
+            FILES_CHANGED: ${{ steps.pr_files.outputs.files_changed_json }}
+        run: |
+            sh ./.github/actions/triggerDevstack.sh
       - name: Run ITF E2E Tests on Devstack with Successful Build Image Workflow
         if: env.WORKFLOW_STATUS == 'success'
         uses: fjogeleit/http-request-action@master

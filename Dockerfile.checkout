@@ -13,3 +13,6 @@ WORKDIR /app
 RUN echo "${GIT_COMMIT_HASH}" > /app/commit.txt
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
+
+# Adding commit for testing...
+

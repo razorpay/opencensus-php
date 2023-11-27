@@ -64,3 +64,4 @@ ENV PHP_IDE_CONFIG serverName=Devstack
 EXPOSE 80
 
 ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.web.sh"]
+
