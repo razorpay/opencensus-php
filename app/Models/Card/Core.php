@@ -245,7 +245,35 @@ class Core extends Base\Core
             $this->repo->saveOrFail($tokenisedCard);
         }
 
+        try {
+            if (isset($response['service_provider_tokens'][0]['provider_data']['token_number'])) {
+                $this->mapTokenAltIIN($card, $response, $tokenisedCard);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->warning(
+                TraceCode::PAYMENT_CARD_TOKEN_IIN_MAPPING_ERROR, [
+                    'error' => $e
+            ]);
+        }
+
         return [$tokenisedCard, $response['service_provider_tokens']];
+    }
+
+    public function mapTokenAltIIN($card, $response, $tokenisedCard) {
+        $iin = $card->getIin();
+        if (strtolower($response['service_provider_tokens'][0]['provider_name']) === "amex") {
+            $tokenIin = substr($response['service_provider_tokens'][0]['provider_data']['token_number'], 0, 6);
+        }
+        elseif (strtolower($response['service_provider_tokens'][0]['provider_name']) === "rupay"){
+            $tokenIin = substr($response['service_provider_tokens'][0]['provider_data']['token_number'], 0, 8);
+        }
+        else {
+            $tokenIin = substr($response['service_provider_tokens'][0]['provider_data']['token_number'], 0, 9);
+        }
+        $mapCardIinToTokenIin = new TokenisedIIN\Service();
+        $mapCardIinToTokenIin->addMapping($iin, $tokenIin);
     }
 
     protected function createTokenizedCardEntity($input, $merchant, $response)

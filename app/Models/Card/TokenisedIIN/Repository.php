@@ -66,4 +66,15 @@ class Repository extends Base\Repository
         return $this->newQuery()->where(Entity::HIGH_RANGE,'=',$tokenIin)->first();
     }
 
+    public function findHighRange($tokenIin)
+    {
+        return $this->newQuery()->where(Entity::HIGH_RANGE,'=',$tokenIin)->first();
+    }
+
+    public function findLowRange($tokenIin)
+    {
+        return $this->newQuery()->where(Entity::LOW_RANGE,'=',$tokenIin)->first();
+    }
+
 }
+
