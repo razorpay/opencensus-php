@@ -402,7 +402,7 @@ class Webhooks extends Base\Core
 
         $webhookCacheKey = $this->getWebhookCacheKey($this->merchant->getId(), $webhookId);
 
-        $isValid = $this->validator->validateOrderAndPayment($order, $payment, $this->merchant, $merchantRzpOrderId, $webhookCacheKey, $rzpPaymentRefundTxn);
+        $isValid = $this->validator->validateOrderAndPayment($order, $payment, $this->merchant, $merchantRzpOrderId, $webhookCacheKey, $rzpPaymentRefundTxn, $refundFromWebhook);
 
         if ($isValid === false)
         {

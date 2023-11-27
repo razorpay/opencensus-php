@@ -57,7 +57,8 @@ class Validator extends Base\Core
         Merchant\Entity $merchant,
         string $merchantRzpOrderId,
         $webhookCacheKey,
-        $rzpPaymentRefundTxn): bool
+        $rzpPaymentRefundTxn,
+        $refundFromWebhook): bool
     {
         if ($order->is1ccShopifyOrder() === false)
         {
@@ -77,6 +78,18 @@ class Validator extends Base\Core
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
                 [
                     'type'                 => 'mismatch_order_id',
+                    'order_id'             => $orderId,
+                    'payment_id'           => $payment->getPublicId(),
+                    'merchant_rzp_orderId' => $merchantRzpOrderId,
+                ]);
+            return false;
+        }
+        if ($refundFromWebhook < 100)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
+                [
+                    'type'                 => 'refund_amount_less_than_one',
                     'order_id'             => $orderId,
                     'payment_id'           => $payment->getPublicId(),
                     'merchant_rzp_orderId' => $merchantRzpOrderId,
