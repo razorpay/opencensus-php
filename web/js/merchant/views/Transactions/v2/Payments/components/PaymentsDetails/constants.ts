@@ -42,6 +42,8 @@ export const ERROR_DESCRIPTION_CONTENT_MAP = {
     'Payment was unsuccessful as we experienced a few issues with the bank server or wallet gateway. Your customer will have to retry the payment.',
   'Payment was unsuccessful as your account does not pass the risk checks done by your bank. Try using another account.':
     'Payment was unsuccessful as it was declined by the bank.',
+  'Your payment could not be completed due to insufficient account balance. Try again with another account.':
+    'Your payment could not be completed due to insufficient account balance. Try again with another account.',
 };
 
 export const REFUND_ELIBILITY_TEXT = {
