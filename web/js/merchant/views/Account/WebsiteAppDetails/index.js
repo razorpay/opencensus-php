@@ -6,6 +6,7 @@ import isEmpty from 'lodash/isEmpty';
 import {
   fetchActivationDetails,
   fetchMerchantWebsiteDetails,
+  fetchEligibilityForPolicyWizardV2,
 } from 'merchant/reducers/websitecompliance';
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 import { websiteComplianceEntryPointsData } from 'merchant/views/Account/WebsiteAppDetails/data';
@@ -15,6 +16,8 @@ import {
   getStatusClass,
   isUrlFieldEmpty,
   isPolicyWizardV2Enabled,
+  isNudgeSoftForWebsiteCompliance,
+  isNudgeHardForWebsiteCompliance,
 } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import ViewComments from 'merchant/views/Account/WebsiteAppDetails/ViewComments';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -33,6 +36,8 @@ function WebsiteAppDetails({
   fetchActivationDetails,
   fetchMerchantWebsiteDetails,
   user,
+  fetchEligibilityForPolicyWizardV2,
+  policyWizardV2Data,
 }) {
   const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
@@ -47,11 +52,14 @@ function WebsiteAppDetails({
     activationData: activationData.data,
   });
 
+  const isPolicyV2Merchant = isExpEnabled && policyWizardV2Data.isEligible;
+
   useEffect(() => {
     // send analytics on wizard entry load
     if (
       Object.keys(activationData.data).length &&
-      Object.keys(websiteSectionDetailsData.data).length
+      Object.keys(websiteSectionDetailsData.data).length &&
+      (policyWizardV2Data.isDataLoaded || policyWizardV2Data.error)
     ) {
       const { data } = websiteSectionDetailsData;
       let status;
@@ -60,14 +68,14 @@ function WebsiteAppDetails({
       if (typeof data === 'object' && !Array.isArray(data)) status = formatStatus(data.status);
 
       analyticsTrack({
-        objectName: isExpEnabled ? 'Business Policy Section' : 'Website compliance visit',
+        objectName: isPolicyV2Merchant ? 'Business Policy Section' : 'Website compliance visit',
         actionName: 'Loaded',
         screen: 'Website/App details',
         properties: {
           websiteCompliance: true,
           pageTitle: 'Website/App details',
           previousPageUrl: document.referrer,
-          [isExpEnabled ? 'status' : 'websiteComplianceStatus']: status,
+          [isPolicyV2Merchant ? 'status' : 'websiteComplianceStatus']: status,
           from: from ? from : 'Merchant dashboard',
           websiteUrl: activationData.data.business_website || '--',
           appStoreUrl: activationData.data.appstore_url || '--',
@@ -76,7 +84,7 @@ function WebsiteAppDetails({
         },
       });
     }
-  }, [activationData, websiteSectionDetailsData, from]);
+  }, [activationData, websiteSectionDetailsData, from, policyWizardV2Data]);
 
   // fetch details if not present already
   useEffect(() => {
@@ -90,6 +98,10 @@ function WebsiteAppDetails({
     if (!Object.keys(websiteSectionDetailsData.data).length && !websiteSectionDetailsData.error) {
       fetchMerchantWebsiteDetails();
     }
+
+    if (isExpEnabled && !policyWizardV2Data.isDataLoaded && !policyWizardV2Data.error) {
+      fetchEligibilityForPolicyWizardV2();
+    }
   }, []);
 
   useEffect(() => {
@@ -102,7 +114,7 @@ function WebsiteAppDetails({
     }
   }, [websiteSectionDetailsData, showNotification]);
 
-  if (activationData.loading && !activationData.error)
+  if ((activationData.loading && !activationData.error) || policyWizardV2Data.loading)
     return (
       <div className="website-app-details-container">
         <Loader />
@@ -119,7 +131,7 @@ function WebsiteAppDetails({
 
   const isWebsiteMerchant = !isUrlFieldEmpty(activationData.data);
 
-  const shouldEnableForNoCode = isExpEnabled && !isWebsiteMerchant;
+  const shouldEnableForNoCode = isPolicyV2Merchant && !isWebsiteMerchant;
 
   const getCTAText = () => {
     const { data, error } = websiteSectionDetailsData;
@@ -156,7 +168,7 @@ function WebsiteAppDetails({
 
   const onButtonClick = () => {
     analyticsTrack({
-      objectName: isExpEnabled ? 'Wizard Visit' : 'Website compliance visit',
+      objectName: isPolicyV2Merchant ? 'Wizard Visit' : 'Website compliance visit',
       actionName: 'Clicked',
       screen: 'Website/App details',
       properties: {
@@ -179,7 +191,7 @@ function WebsiteAppDetails({
       });
     } else {
       window.open(
-        isExpEnabled
+        isPolicyV2Merchant
           ? `${window.EASY_ONBOARDING_URL}/onboarding/policy?source=dashboard`
           : `${window.EASY_ONBOARDING_URL}/website-compliance`,
         '_self',
@@ -257,12 +269,30 @@ function WebsiteAppDetails({
     );
   }
 
+  const checkIfUpdateCTAVisible = () => {
+    if (!ctaText) {
+      return false;
+    }
+    const shouldShowUpdateCTA =
+      isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
+      isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data);
+    if (isPolicyV2Merchant || showShouldNeedsClarificationComments() || shouldShowUpdateCTA) {
+      return true;
+    }
+
+    return false;
+  };
+
   return (
     <div className="website-app-details-container">
       <div className="section-content">
         <div className="section-header">
-          {websiteSectionDetailsData.loading ? <LoaderDots /> : renderStatus()}
-          <p className="text">{data && !isEmpty(data) ? title : <LoaderDots />}</p>
+          {checkIfUpdateCTAVisible() ? (
+            <>
+              {websiteSectionDetailsData.loading ? <LoaderDots /> : renderStatus()}
+              <p className="text">{data && !isEmpty(data) ? title : <LoaderDots />}</p>
+            </>
+          ) : null}
           {showShouldNeedsClarificationComments() ? (
             <div className="comment">
               {latestNeedsClarificationComments[0].reason_code}{' '}
@@ -291,7 +321,7 @@ function WebsiteAppDetails({
           </div>
         ) : null}
         <div className="section-footer">
-          {ctaText ? (
+          {checkIfUpdateCTAVisible() ? (
             <button onClick={onButtonClick} disabled={websiteSectionDetailsData.loading}>
               {websiteSectionDetailsData.loading ? <LoaderDots /> : ctaText}
             </button>
@@ -306,6 +336,7 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
   websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
   activationData: state.websiteCompliance.activationData,
+  policyWizardV2Data: state.websiteCompliance.policyWizardV2Data,
 });
 
 const mapDispatchToProps = (dispatch) =>
@@ -315,6 +346,7 @@ const mapDispatchToProps = (dispatch) =>
       ...ModalActions,
       fetchActivationDetails,
       fetchMerchantWebsiteDetails,
+      fetchEligibilityForPolicyWizardV2,
     },
     dispatch,
   );

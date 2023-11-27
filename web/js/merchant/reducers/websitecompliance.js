@@ -5,12 +5,23 @@ const FETCH_MERCHANT_WEBSITE_DETAILS = 'FETCH_MERCHANT_WEBSITE_DETAILS';
 const UPDATE_BANNER_MODAL_VISIBILITY = 'UPDATE_BANNER_MODAL_VISIBILITY';
 const GET_BANNER_MODAL_VISIBILITY = 'GET_BANNER_MODAL_VISIBILITY';
 export const GET_USER_ACTIVATION_DETAILS = 'GET_USER_ACTIVATION_DETAILS';
+const FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2 = 'FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2';
 
 export const fetchActivationDetails = () => {
   return {
     type: GET_USER_ACTIVATION_DETAILS,
     payload: merchantFetch({
       url: 'merchant/activation',
+    }),
+  };
+};
+
+export const fetchEligibilityForPolicyWizardV2 = () => {
+  return {
+    type: FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2,
+    payload: merchantFetch({
+      url: 'pg/onboarding/merchant_get_l2_dynamic_configs',
+      mode: 'live',
     }),
   };
 };
@@ -60,6 +71,12 @@ const initialState = {
     data: {},
     error: false,
   },
+  policyWizardV2Data: {
+    loading: false,
+    isEligible: false,
+    isDataLoaded: false,
+    error: false,
+  },
 };
 
 export default function websiteComplianceReducer(state = initialState, action) {
@@ -84,6 +101,30 @@ export default function websiteComplianceReducer(state = initialState, action) {
         ...state.websiteSectionDetailsData,
         loading: false,
         data: {},
+        error: action.payload.errors.join(''),
+      });
+    }
+
+    case `${FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2}::PENDING`:
+      return set(state, 'policyWizardV2Data', {
+        ...state.policyWizardV2Data,
+        loading: true,
+      });
+
+    case `${FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2}::SUCCESS`: {
+      return set(state, 'policyWizardV2Data', {
+        ...state.policyWizardV2Data,
+        loading: false,
+        isEligible: !!action?.payload?.data?.is_policy_wizard_v2_eligible,
+        isDataLoaded: true,
+      });
+    }
+
+    case `${FETCH_ELIGIBILITY_FOR_POLICY_WIZARD_V2}::ERROR`: {
+      return set(state, 'policyWizardV2Data', {
+        ...state.policyWizardV2Data,
+        loading: false,
+        isEligible: false,
         error: action.payload.errors.join(''),
       });
     }

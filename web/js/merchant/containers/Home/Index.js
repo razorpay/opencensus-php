@@ -130,6 +130,7 @@ const recentActivityTitle = 'Recent Activity';
       support_detail: state.supportdetails.merchantSupportDetail,
       showTnCModal: state.home.showTnCModal,
       referee: state.merchantReferral.data.referee,
+      websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
     };
   },
   {
@@ -787,11 +788,19 @@ class HomeContainer extends Component {
       fetchMerchantWebsiteDetails,
       getBannerAndModalVisibility,
       fetchActivationDetails,
+      websiteSectionDetailsData,
     } = this.props;
 
     const l1Promises = [fetchAmount, fetchActivationDetails(user.id)];
     if (user.isWebsiteComplianceFlowEnabled) {
-      l1Promises.push(fetchMerchantWebsiteDetails());
+      const {
+        data: websiteSectionData,
+        error,
+        loading: isDetailsLoading,
+      } = websiteSectionDetailsData;
+      if (!Object.keys(websiteSectionData).length && !error && !isDetailsLoading) {
+        l1Promises.push(fetchMerchantWebsiteDetails());
+      }
       l1Promises.push(getBannerAndModalVisibility());
     }
 
