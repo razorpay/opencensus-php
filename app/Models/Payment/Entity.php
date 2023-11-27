@@ -4638,7 +4638,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($app['basicauth']->isCron() === true)))
         {
             unset($attributes[self::AMOUNT_TRANSFERRED]);
+
+            return;
         }
+
+        $attributes[self::AMOUNT_TRANSFERRED] = $this->getAmountTransferred();
     }
 
     public function setPublicGatewayProviderAttribute(array & $array)
@@ -4908,8 +4912,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setConvenienceFeeAttributesForDashboard($attributes);
 
         $this->setUpiIfApplicable($attributes);
-
-        $attributes[Entity::AMOUNT_TRANSFERRED] = $this->getAmountTransferred();
 
         return $attributes;
     }
@@ -6128,8 +6130,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $this->setUpiIfApplicable($data);
 
-        $data[self::AMOUNT_TRANSFERRED] = $this->getAmountTransferred();
-
         // MCC CFB Payments which are in authorized state will have the fees in payment currency,
         // so we are converting it into base currency(INR) and sending it as an additional param to Merchant Dashboard.
         // If its a captured payment, then it would have already been handled in the post capture to make sure fees are stored in Base currency(INR)
@@ -6253,8 +6253,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $this->setConvenienceFeeAttributesForDashboard($data);
 
-        $data[self::AMOUNT_TRANSFERRED] = $this->getAmountTransferred();
-
         return $data;
     }
 
@@ -6285,8 +6283,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $this->setUpiIfApplicable($data, Constants::WEBHOOK);
-
-        $data[self::AMOUNT_TRANSFERRED] = $this->getAmountTransferred();
 
         return $data;
     }

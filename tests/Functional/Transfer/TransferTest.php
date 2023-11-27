@@ -737,6 +737,24 @@ class TransferTest extends TestCase
         $paymentsNewArray = (array) $paymentsNew;
 
         $this->assertEquals(1800, $paymentsNewArray['amount_transferred']);
+
+        $fetchedPayment = $this->fetchPayment($payment['id']);
+
+        $this->assertEquals($fetchedPayment['id'], $payment['id']);
+
+        $this->assertArrayNotHasKey('amount_transferred', $fetchedPayment);
+    }
+
+    protected function fetchPayment($paymentId, $content = [])
+    {
+        $request['url'] = '/payments/'.$paymentId;
+        $request['method'] = 'GET';
+
+        $request['content'] = $content;
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     public function testLaNotesTransfer()
