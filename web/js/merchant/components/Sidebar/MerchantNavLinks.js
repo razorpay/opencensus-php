@@ -232,7 +232,7 @@ function MerchantNavLinks(props) {
         icon="i i-refresh text-info"
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('subscriptions') &&
-          !isConfigTagEnabled('subscription.subscription')
+          !isConfigTagEnabled('subscriptions.subscription')
         }
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
         customBadge={getProductBadge(['subscriptions'])}
@@ -311,7 +311,7 @@ function MerchantNavLinks(props) {
         icon="i i-people text-warning"
         to="/customers"
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('customers') && !isConfigTagEnabled('customers.customer')
+          currentUser.isAllowedView('customers') && !isConfigTagEnabled('customers.customers')
         }
       />
 

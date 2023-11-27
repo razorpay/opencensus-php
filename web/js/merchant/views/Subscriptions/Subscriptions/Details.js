@@ -898,7 +898,7 @@ class SubscriptionDetailsContainer extends React.Component {
           curInvoiceIndex={this.state.curInvoiceIndex}
           isSubscriptionOffersEnabled={
             user.isSubscriptionOffersEnabled &&
-            !this.props.i18.isConfigTagEnabled('subscription.subcription_offers')
+            !this.props.i18.isConfigTagEnabled('subscriptions.subscription_offers')
           }
         />
       );
@@ -947,7 +947,7 @@ class SubscriptionDetailsContainer extends React.Component {
           isSubscriptionPauseAndResumeEnabled={user.isSubscriptionPauseAndResumeEnabled}
           isSubscriptionOffersEnabled={
             user.isSubscriptionOffersEnabled &&
-            !this.props.i18.isConfigTagEnabled('subscription.subcription_offers')
+            !this.props.i18.isConfigTagEnabled('subscriptions.subscription_offers')
           }
           removeOffer={this.removeOffer}
         />

@@ -76,7 +76,7 @@ export const PRODUCTS_DATA = {
   customers: {
     icon: 'i-people',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
-      user.isAllowedView('customers') && !isConfigTagEnabled('customers.customer'),
+      user.isAllowedView('customers') && !isConfigTagEnabled('customers.customers'),
   },
   optimizer: {
     icon: 'i-routing',
@@ -117,7 +117,7 @@ export const PRODUCTS_DATA = {
   subscriptions: {
     icon: 'i-refresh',
     additionalCondition: (user: any, { isConfigTagEnabled }: ExtraConfig): boolean =>
-      user.isAllowedView('subscriptions') && !isConfigTagEnabled('subscription.subscription'),
+      user.isAllowedView('subscriptions') && !isConfigTagEnabled('subscriptions.subscription'),
     getHref: ({ routes, user }) =>
       routes[user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'],
   },

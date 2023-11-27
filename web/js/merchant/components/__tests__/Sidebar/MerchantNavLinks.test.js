@@ -63,7 +63,7 @@ const MERCHANT_NAV_LINKS = [
   },
   {
     label: 'Subscriptions',
-    configPath: 'subscription.subscription',
+    configPath: 'subscriptions.subscription',
   },
   {
     label: 'QR Codes',
@@ -75,7 +75,7 @@ const MERCHANT_NAV_LINKS = [
   },
   {
     label: 'Customers',
-    configPath: 'customers.customer',
+    configPath: 'customers.customers',
   },
   {
     label: 'Offers',

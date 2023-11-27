@@ -90,7 +90,7 @@ class NewSubscriptionLink extends React.Component {
     await this.props.fetchPlans({ count: 100 }).then(() => this.initializePlan());
     if (
       this.props.user.isSubscriptionOffersEnabled &&
-      !this.props.i18.isConfigTagEnabled('subscription.subcription_offers') &&
+      !this.props.i18.isConfigTagEnabled('subscriptions.subscription_offers') &&
       this.props.subscriptionOffers.items.length === 0
     ) {
       this.props.fetchSettings().then((resp) => {
@@ -520,7 +520,7 @@ class NewSubscriptionLink extends React.Component {
             offers={this.props.subscriptionOffers}
             showOffers={
               this.props.user.isSubscriptionOffersEnabled &&
-              !this.props.i18.isConfigTagEnabled('subscription.subcription_offers')
+              !this.props.i18.isConfigTagEnabled('subscriptions.subscription_offers')
             }
             onChangeInPlan={this.handleChangeInPlan}
             onDateChange={this.handleDateChange}

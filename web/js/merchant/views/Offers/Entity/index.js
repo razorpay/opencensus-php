@@ -49,7 +49,7 @@ class OffersDetails extends React.Component {
     return (
       offer?.product_type === 'subscription' &&
       user?.isSubscriptionOffersEnabled &&
-      !isConfigTagEnabled('subscription.subcription_offers')
+      !isConfigTagEnabled('subscriptions.subscription_offers')
     );
   }
 

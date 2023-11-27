@@ -92,7 +92,7 @@ export enum CONFIG_TAGS_ENUM {
   'app_switcher.app_switcher' = 'app_switcher.app_switcher',
   'checkout_rewards.checkout_rewards' = 'checkout_rewards.checkout_rewards',
   'contact.website_app_details' = 'contact.website_app_details',
-  'customers.customer' = 'customers.customer',
+  'customers.customers' = 'customers.customers',
   'disputes.disputes' = 'disputes.disputes',
   'documentation.documentation' = 'documentation.documentation',
   'flash_checkout.flash_checkout' = 'flash_checkout.flash_checkout',
@@ -141,12 +141,12 @@ export enum CONFIG_TAGS_ENUM {
   'settlements.settlement_guide' = 'settlements.settlement_guide',
   'smart_collect.virtual_accounts' = 'smart_collect.virtual_accounts',
   'stores.stores' = 'stores.stores',
-  'subscription.emandate' = 'subscription.emandate',
-  'subscription.subcription_offers' = 'subscription.subcription_offers',
-  'subscription.subcription_settings' = 'subscription.subcription_settings',
-  'subscription.subscription' = 'subscription.subscription',
-  'subscription.subscription_payment_button' = 'subscription.subscription_payment_button',
-  'subscription.supported_bank_links' = 'subscription.supported_bank_links',
+  'subscriptions.emandate' = 'subscriptions.emandate',
+  'subscriptions.subscription_offers' = 'subscriptions.subscription_offers',
+  'subscriptions.subscription_settings' = 'subscriptions.subscription_settings',
+  'subscriptions.subscription' = 'subscriptions.subscription',
+  'subscriptions.subscription_payment_button' = 'subscriptions.subscription_payment_button',
+  'subscriptions.supported_bank_links' = 'subscriptions.supported_bank_links',
   'webhooks.downtime_payment_events' = 'webhooks.downtime_payment_events',
   'webhooks.fund_account' = 'webhooks.fund_account',
   'webhooks.invoice' = 'webhooks.invoice',
@@ -188,7 +188,7 @@ export const CONFIG_TO_TAG_MAPPING = {
     HIDDEN_INTERNATIONAL_FEATURES_TAGS.Checkoutrewards,
   [CONFIG_TAGS_ENUM['contact.website_app_details']]:
     HIDDEN_INTERNATIONAL_FEATURES_TAGS.WebsiteAppDetails,
-  [CONFIG_TAGS_ENUM['customers.customer']]: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Customers,
+  [CONFIG_TAGS_ENUM['customers.customers']]: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Customers,
   [CONFIG_TAGS_ENUM['disputes.disputes']]: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Disputes,
   [CONFIG_TAGS_ENUM['documentation.documentation']]:
     HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation,
@@ -258,15 +258,16 @@ export const CONFIG_TO_TAG_MAPPING = {
   [CONFIG_TAGS_ENUM['smart_collect.virtual_accounts']]:
     HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect,
   [CONFIG_TAGS_ENUM['stores.stores']]: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Stores,
-  [CONFIG_TAGS_ENUM['subscription.emandate']]: HIDDEN_INTERNATIONAL_FEATURES_TAGS.EMandate,
-  [CONFIG_TAGS_ENUM['subscription.subcription_offers']]:
+  [CONFIG_TAGS_ENUM['subscriptions.emandate']]: HIDDEN_INTERNATIONAL_FEATURES_TAGS.EMandate,
+  [CONFIG_TAGS_ENUM['subscriptions.subcription_offers']]:
     HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubcriptionOffers,
-  [CONFIG_TAGS_ENUM['subscription.subcription_settings']]:
+  [CONFIG_TAGS_ENUM['subscriptions.subcription_settings']]:
     HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionSettings,
-  [CONFIG_TAGS_ENUM['subscription.subscription']]: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions,
-  [CONFIG_TAGS_ENUM['subscription.subscription_payment_button']]:
+  [CONFIG_TAGS_ENUM['subscriptions.subscription']]:
+    HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions,
+  [CONFIG_TAGS_ENUM['subscriptions.subscription_payment_button']]:
     HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionPaymentButton,
-  [CONFIG_TAGS_ENUM['subscription.supported_bank_links']]:
+  [CONFIG_TAGS_ENUM['subscriptions.supported_bank_links']]:
     HIDDEN_INTERNATIONAL_FEATURES_TAGS.SupportedBankLinks,
   [CONFIG_TAGS_ENUM['webhooks.downtime_payment_events']]:
     HIDDEN_INTERNATIONAL_FEATURES_TAGS.DowntimePaymentEvents,

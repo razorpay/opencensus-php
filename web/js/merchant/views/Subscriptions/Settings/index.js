@@ -143,7 +143,7 @@ class SubscriptionsSettings extends React.Component {
     const { settings, user, org, i18 } = this.props;
     const { isConfigTagEnabled } = i18;
 
-    const refConfigTagEnabled = !isConfigTagEnabled('subscription.emandate');
+    const refConfigTagEnabled = !isConfigTagEnabled('subscriptions.emandate');
 
     const orgCode = org?.custom_code || 'rzp';
     const cardDescriptionText = cardDescription[orgCode] || cardDescription.rzp;

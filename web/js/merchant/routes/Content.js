@@ -1175,7 +1175,7 @@ class Content extends Component {
                   additionalCondition={(user) =>
                     user.isAllowedView('subscription_buttons') &&
                     user.isSubscriptionButtonEnabled &&
-                    !isConfigTagEnabled('subscription.subscription_payment_button')
+                    !isConfigTagEnabled('subscriptions.subscription_payment_button')
                   }
                 >
                   <PaymentButton>
@@ -1204,7 +1204,7 @@ class Content extends Component {
               <RouteGuard
                 additionalCondition={(user) =>
                   user.isAllowedView('subscriptions') &&
-                  !isConfigTagEnabled('subscription.subscription')
+                  !isConfigTagEnabled('subscriptions.subscription')
                 }
               >
                 <Subscriptions />
@@ -1401,7 +1401,7 @@ class Content extends Component {
           <Route
             path="customers/*"
             element={
-              <RouteGuard additionalCondition={() => !isConfigTagEnabled('customers.customer')}>
+              <RouteGuard additionalCondition={() => !isConfigTagEnabled('customers.customers')}>
                 <tabbed-container>
                   <header id="invoicing-header">
                     <NavLink to="/customers">Customers</NavLink>

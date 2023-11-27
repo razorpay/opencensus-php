@@ -82,7 +82,7 @@ class UpdateSubscriptionLink extends React.Component {
         items: [],
         loading:
           this.props.user.isSubscriptionOffersEnabled &&
-          !this.props.i18.isConfigTagEnabled('subscription.subcription_offers'),
+          !this.props.i18.isConfigTagEnabled('subscriptions.subscription_offers'),
       },
     };
     this.cloneOptions = {
@@ -120,7 +120,7 @@ class UpdateSubscriptionLink extends React.Component {
 
     if (
       this.props.user.isSubscriptionOffersEnabled &&
-      !this.props.i18.isConfigTagEnabled('subscription.subcription_offers')
+      !this.props.i18.isConfigTagEnabled('subscriptions.subscription_offers')
     ) {
       fetchSubscriptionOfferAPI([subscription.payment_method]).then((resp) => {
         this.setState({
@@ -448,7 +448,7 @@ class UpdateSubscriptionLink extends React.Component {
             offers={this.state.subscriptionOffers}
             showOffers={
               this.props.user.isSubscriptionOffersEnabled &&
-              !this.props.i18.isConfigTagEnabled('subscription.subcription_offers')
+              !this.props.i18.isConfigTagEnabled('subscriptions.subscription_offers')
             }
             onChangeInOffer={this.handleChangeInOffer}
             cloneOptions={this.cloneOptions}

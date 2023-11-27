@@ -94,7 +94,7 @@ class OfferIndex extends Component {
 
     const createOfferRoute =
       this.props.user.isSubscriptionOffersEnabled &&
-      !isConfigTagEnabled('subscription.subcription_offers')
+      !isConfigTagEnabled('subscriptions.subscription_offers')
         ? '/offers/new' // '/offers/new?offer_creation_modal_type=subscription'
         : '/offers/new?offer_creation_modal_type=basic';
 
