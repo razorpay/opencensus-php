@@ -1632,6 +1632,7 @@ class Entity
 
     public static $dualWriteConfigKey = [
         'payments' => Models\Admin\ConfigKey::PAYMENTS_DUAL_WRITE,
+        self::UPI => Models\Admin\ConfigKey::UPI_DUAL_WRITE_ENABLED,
     ];
 
     protected static array $customEagerLoadEntityMapping = [

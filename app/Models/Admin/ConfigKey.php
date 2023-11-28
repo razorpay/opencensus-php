@@ -54,6 +54,7 @@ class ConfigKey
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
     const PG_ROUTER_SERVICE_ENABLED             = self::PREFIX . 'pg_router_service_enabled';
     const PAYMENTS_DUAL_WRITE                   = self::PREFIX . 'payments_dual_write';
+    const UPI_DUAL_WRITE_ENABLED                = self::PREFIX . 'upi_dual_write_enabled';
     const CARD_ARCHIVAL_FALLBACK_ENABLED        = self::PREFIX . 'card_archival_fallback_enabled';
     const PAYMENT_ARCHIVAL_FALLBACK_ENABLED     = self::PREFIX . 'payment_archival_fallback_enabled';
     const PAYMENT_ARCHIVAL_EAGER_LOAD           = self::PREFIX . 'payment_archival_eager_load';
@@ -600,6 +601,7 @@ class ConfigKey
         self::DATA_WAREHOUSE_CONNECTION_FALLBACK,
         self::CARD_ARCHIVAL_FALLBACK_ENABLED,
         self::PAYMENTS_DUAL_WRITE,
+        self::UPI_DUAL_WRITE_ENABLED,
         self::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS,
         self::SHIFT_BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT_SMS_TEMPLATE,
         self::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH,

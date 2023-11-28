@@ -89,6 +89,7 @@ class Validator extends Base\Validator
         ConfigKey::PAYMENT_ARCHIVAL_EAGER_LOAD          => 'filled|boolean',
         ConfigKey::PAYMENT_ARCHIVAL_FALLBACK_ENABLED    => 'filled|boolean',
         ConfigKey::PAYMENTS_DUAL_WRITE                  => 'filled|boolean',
+        ConfigKey::UPI_DUAL_WRITE_ENABLED               => 'filled|boolean',
         ConfigKey::DATA_WAREHOUSE_CONNECTION_FALLBACK   => 'filled|string',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS           => 'filled|array',
         ConfigKey::RX_SLA_FOR_IMPS_PAYOUT               => 'filled|integer',
