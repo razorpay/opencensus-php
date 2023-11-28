@@ -8,6 +8,7 @@ use Mail;
 use Crypt;
 use Config;
 use RZP\Models\Admin;
+use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
@@ -117,6 +118,8 @@ class Service extends Base\Service
     const RRN_TTL = 259200;
 
     const GET_PAYMENTS_QUERY = "select p.id, a.rrn, p.created_at from hive.realtime_hudi_api.payments as p INNER JOIN hive.realtime_pgpayments_card_live.authorization AS a ON p.id = a.payment_id WHERE a.status in ('authorized', 'captured') AND p.method = 'card' and p.gateway = 'hdfc' and p.cps_route = 2 and p.created_at < %s and p.id > '%s' order by p.id asc limit %s";
+
+    const PG_ROUTER_URL ="https://pg-router-int.razorpay.com";
 
     public function __construct()
     {
@@ -6419,7 +6422,32 @@ class Service extends Base\Service
             if ((empty($response['status']) === false) and
                 ($response['status'] !== Payment\Status::FAILED))
             {
-                $paymentRecon->handleVerifyAuthorized();
+                $success = $paymentRecon->handleVerifyAuthorized();
+
+                try
+                {
+                    $payment = $payment->reload();
+
+                    $this->setAutoRefundReminderForForceAuthPaymentIfApplicable($payment);
+
+                    $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+
+                    if (($success === true) && ($payment->isExternal() === true))
+                    {
+                        if ($payment->hasBeenCaptured() === true and
+                            $payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false) {
+                            (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $payment);
+                        }
+                        else if ($payment->hasBeenCaptured() === false) {
+                            (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $payment);
+                        }
+                    }
+                }
+                catch(\Throwable $e)
+                {
+                    $this->trace->traceException($e, null, TraceCode::ART_PAYMENT_CPS_TRANSACTION_DISPATCH_FAILED);
+                }
+
             }
             else
             {
@@ -6446,6 +6474,65 @@ class Service extends Base\Service
         ];
     }
 
+
+    protected function setAutoRefundReminderForForceAuthPaymentIfApplicable($payment)
+    {
+
+       // Disable Auto Refunds Merchants' payments must not have the auto refund timestamp set
+        $payment->reload();
+
+        if( $payment->isExternal() === false || $payment->isMethodCardOrEmi() === false || $payment->isAuthorized() === false or  $payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_AUTO_REFUNDS) === true)
+         {
+            return ;
+         }
+
+
+         if ((empty($payment->getRefundAt()) === false) and $payment->getRefundAt() <= Carbon::now()->getTimestamp())
+            {
+            // 10 mins after authorization
+                $payment->setRefundAt(Carbon::now()->getTimestamp() + 600);
+            }
+
+        $reminderData = [
+                'refund_at' => $payment->getRefundAt(),
+            ];
+        $namespace  = $payment->getMethod().'_'.$payment->getGateway().'_refund';
+        $paymentId  = $payment->getId();
+        $merchantId = Merchant\Account::SHARED_ACCOUNT;
+        $callbackUrl = self::PG_ROUTER_URL.'/v1/scheduler/'.$payment->getId().'/callback/refund';
+
+        $request = [
+            'namespace'     => $namespace,
+            'entity_id'     => $paymentId,
+            'entity_type'   => 'payment',
+            'reminder_data' => $reminderData,
+            'callback_url'  => $callbackUrl,
+            "configurable_keyword"=> "refund_payments",
+        ];
+
+        $response = [];
+
+        try
+        {
+
+             $response = $this->app['reminders']->createReminder($request, $merchantId);
+
+        }
+        catch (\Throwable $e)
+        {
+            // We will have fallback for reminder failures, thus no need to throw exception
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REMINDERS_RESPONSE,
+                [
+                    'request'           => $request,
+                    'merchant_id'       => $merchantId,
+                ]);
+        }
+
+        return array_get($response, Entity::ID);
+    }
 
     /**
      * Force authorize failed payment

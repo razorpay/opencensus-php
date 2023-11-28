@@ -924,7 +924,7 @@ class Service extends Base\Service
 
         try
         {
-           $payment->reload()->transaction->reload();
+           $payment->reload();
 
             $this->repo->transaction(function () use ($paymentId, $input, $payment)
             {
@@ -1231,6 +1231,11 @@ class Service extends Base\Service
      */
     protected function updateTransactionData(array $input, Payment\Entity $payment)
     {
+        if ($payment->isExternal() === true)
+        {
+            $payment->transaction = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
+        }
+
         $transaction = $payment->transaction;
 
         if (empty($transaction) === true)
