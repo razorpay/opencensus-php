@@ -67,6 +67,7 @@ class Constants
 
     const REMINDER_BASE_URL     = 'reminders/send';
     const REMINDER_NAMESPACE    = 'qr_code';
+    const REMINDER_CONTROL_URL  = 'reminders/control/';
 
     const REMINDER_NAMESPACE_FOR_STATUS_CHECK = ReminderProcessor::QR_CODE_PAYMENT_STATUS;
     const REMINDER_ENTITY_NAME  = 'qr_code';

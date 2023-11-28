@@ -16,6 +16,11 @@ class Reminders extends BaseReminders
         return ['success' => true];
     }
 
+    public function disableReminderUsingEntityIdAndNamespace(string $entityId, string $namespace, string $merchantId = null): array
+    {
+        return ['success' => true];
+    }
+
     public function getReminderSettings(array $input)
     {
         $response = [

@@ -39,6 +39,7 @@ class Reminders
         'delete_reminder'   => 'reminders',
         'next_run_at'       => 'reminders/next_run_at',
         'merchant_settings' => 'merchant_settings',
+        'control_reminder'  => 'reminders/control',
     ];
 
     public function __construct($app)
@@ -76,6 +77,19 @@ class Reminders
     {
         $url = self::REMINDERS_URL['delete_reminder'] . '/' . $id;
         $response = $this->sendRequest($url, 'DELETE', null, $merchantId);
+        return $response;
+    }
+
+    public function disableReminderUsingEntityIdAndNamespace(string $entityId, string $namespace, string $merchantId = null): array
+    {
+        $input = [
+            'active' => false,
+        ];
+
+        $url = self::REMINDERS_URL['control_reminder'] . '/' . $entityId . '/' . $namespace;
+
+        $response = $this->sendRequest($url, 'POST', $input, $merchantId);
+
         return $response;
     }
 

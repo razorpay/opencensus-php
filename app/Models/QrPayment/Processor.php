@@ -125,6 +125,14 @@ class Processor extends Base\Core
 
         $this->trace->info(TraceCode::QR_CODE_V2_PAYMENT_SUCCESSFUL, $qrPayment->toArrayTrace());
 
+        // Deleting the reminder for qr status check
+        // We are only making status check reminders for single use QRs whose QR payment is marked as expected
+        if (($this->qrCode->getUsageType() === NonVirtualAccountQrCode\UsageType::SINGLE_USE) and
+            ($qrPayment->isExpected() === true))
+        {
+            (new NonVirtualAccountQrCode\Service())->deleteActiveReminderForStatusCheck($this->qrCode->getId());
+        }
+
         return $qrPayment;
     }
 

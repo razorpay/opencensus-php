@@ -651,7 +651,8 @@ class QrCodeStatusCheckTest extends TestCase
         );
 
         $remindersCallCount = 0;
-        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
 
         $this->mockSplitzTreatmentForStatusCheck();
 
@@ -702,6 +703,8 @@ class QrCodeStatusCheckTest extends TestCase
         $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [],'live')));
         $this->assertEquals($qrPaymentReqCount, count($this->getDbEntities('qr_payment_request', [],'live')));
 
+        $this->assertEquals(0, $reminderDeleteCallCount);
+
         // To unset the env key variable
         putenv("IS_WORKER_POD");
 
@@ -721,7 +724,8 @@ class QrCodeStatusCheckTest extends TestCase
         );
 
         $remindersCallCount = 0;
-        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
 
         $this->mockSplitzTreatmentForStatusCheck();
 
@@ -765,6 +769,8 @@ class QrCodeStatusCheckTest extends TestCase
         $this->startTest();
 
         $this->runQrPaymentAssertions(str_after($qrCodeId, 'qr_'), $requestData, 'live');
+
+        $this->assertEquals(1, $reminderDeleteCallCount);
 
         // To unset the env key variable
         putenv("IS_WORKER_POD");
@@ -863,7 +869,8 @@ class QrCodeStatusCheckTest extends TestCase
         );
 
         $remindersCallCount = 0;
-        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
 
         $this->mockSplitzTreatmentForStatusCheck();
 
@@ -912,6 +919,8 @@ class QrCodeStatusCheckTest extends TestCase
         $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [],'live')));
         $this->assertEquals($qrPaymentReqCount, count($this->getDbEntities('qr_payment_request', [],'live')));
 
+        $this->assertEquals(0, $reminderDeleteCallCount);
+
         // To unset the env key variable
         putenv("IS_WORKER_POD");
     }
@@ -924,7 +933,8 @@ class QrCodeStatusCheckTest extends TestCase
         $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal', ['vpa' => 'randomvpa@yesbank']);
 
         $remindersCallCount = 0;
-        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
 
         $this->mockSplitzTreatmentForStatusCheck();
 
@@ -981,6 +991,8 @@ class QrCodeStatusCheckTest extends TestCase
         $this->assertEquals($qrPaymentCount, count($this->getDbEntities('qr_payment', [])));
         $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [])));
         $this->assertEquals($qrPaymentReqCount, count($this->getDbEntities('qr_payment_request', [])));
+
+        $this->assertEquals(0, $reminderDeleteCallCount);
 
         // To unset the env key variable
         putenv("IS_WORKER_POD");

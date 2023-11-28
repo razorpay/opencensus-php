@@ -723,7 +723,7 @@ trait NonVirtualAccountQrCodeTrait
             ->andReturn($output);
     }
 
-    public function mockRemindersRequestForStatusCheck(&$count = 0, $fail = false)
+    public function mockRemindersRequestForStatusCheck(&$count = 0, $fail = false, &$disableCount = 0)
     {
         $remindersMock = \Mockery::mock(Reminders::class)->makePartial();
 
@@ -732,12 +732,21 @@ trait NonVirtualAccountQrCodeTrait
         if ($fail === true) {
             $remindersMock->shouldReceive('createReminder')
                           ->andThrow(new ServerErrorException('Test error', ErrorCode::SERVER_ERROR));
+
+            $remindersMock->shouldReceive('disableReminderUsingEntityIdAndNamespace')
+                          ->andThrow(new ServerErrorException('Test error', ErrorCode::SERVER_ERROR));
         }
         else {
             $remindersMock->shouldReceive('createReminder')
                           ->andReturnUsing(function ($input, $merchantId) use (&$count) {
                               $count++;
                               return ['id' => 'DErKK3a9tEGlph'];
+                          });
+
+            $remindersMock->shouldReceive('disableReminderUsingEntityIdAndNamespace')
+                          ->andReturnUsing(function ($entityId, $namespace, $merchantId) use (&$disableCount) {
+                              $disableCount++;
+                              return ['success' => true];
                           });
         }
     }

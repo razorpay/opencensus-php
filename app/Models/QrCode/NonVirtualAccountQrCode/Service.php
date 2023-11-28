@@ -547,6 +547,51 @@ class Service extends QrCode\Service
         }
     }
 
+    /**
+     * This method is used to actively delete the reminder for a QR code after a payment against it has been created.
+     * This method does not check if a reminder was actually created for that QR or not.
+     * What this means is that we will be getting 404 for quite a few delete reminders requests.
+     * It should be fine for now.
+     *
+     * @param string $qrCodeId The ID of the QR code whose status check reminder needs to be deleted
+     *
+     * @return void
+     */
+    public function deleteActiveReminderForStatusCheck(string $qrCodeId)
+    {
+        try
+        {
+            if ($qrCodeId === Entity::SHARED_ID)
+            {
+                return;
+            }
+
+            $this->trace->info(
+                TraceCode::QR_CODE_STATUS_CHECK_REMINDER_DELETE,
+                [
+                    'id' => $qrCodeId,
+                ]
+            );
+
+            Entity::silentlyStripSign($qrCodeId);
+
+            $this->app['reminders']
+                ->disableReminderUsingEntityIdAndNamespace(
+                    $qrCodeId,
+                    Constants::REMINDER_NAMESPACE_FOR_STATUS_CHECK,
+                    Account::SHARED_ACCOUNT
+                );
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::QR_CODE_STATUS_CHECK_REMINDER_DELETION_FAILED,
+            );
+        }
+    }
+
     public function evaluateQrCodeEligibilityViaSplitzForStatusCheck(Entity $qrCode): bool
     {
         try
