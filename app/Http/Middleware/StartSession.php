@@ -3,7 +3,6 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
-use Exception;
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
@@ -16,7 +15,6 @@ use Predis\PredisException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Route;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Services\SplitzService;
 use RZP\Trace\TraceCode;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,32 +38,34 @@ class StartSession extends BaseStartSession
     protected bool $isSessionPersistent = true;
 
     /**
-     * ToDo: Uncomment 1CC routes once we start customer session decomp. ramp-up on 1CC
+     * List of public routes called by checkout FE, using session for global customers.
      *
      * @var string[]
      */
     protected array $checkoutSessionRoutes = [
-        // '1cc_apply_gift_card' => true,
-        // '1cc_customer_truecaller_verify' => true,
-        // '1cc_remove_gift_card' => true,
-        // '1cc_shopify_checkout' => true,
-        // '1cc_shopify_order' => true,
+        '1cc_apply_gift_card' => true,
+        '1cc_customer_truecaller_verify' => true,
+        '1cc_remove_gift_card' => true,
+        '1cc_shopify_checkout' => true,
+        '1cc_shopify_order' => true,
         'checkout_personalisation' => true,
-        // 'customer_create_global_address' => true,
-        // 'customer_edit_global_address' => true,
-        // 'customer_record_1cc_address_consent' => true,
-        // 'customer_record_1cc_address_consent_view' => true,
-        // 'customer_update_global' => true,
-        // 'merchant_coupon_validity' => true,
-        // 'offers_fetch_for_order' => true,
-        // 'order_update_customer_details_1cc' => true,
+        'customer_create_global_address' => true,
+        'customer_edit_global_address' => true,
+        'customer_get_saved_status' => true,
+        'customer_record_1cc_address_consent' => true,
+        'customer_record_1cc_address_consent_view' => true,
+        'customer_update_global' => true,
+        'merchant_coupon_validity' => true,
+        'offers_fetch_for_order' => true,
+        'order_update_customer_details_1cc' => true,
         'payment_calculate_fees' => true,
         'payment_create' => true,
         'payment_create_ajax' => true,
         'payment_create_checkout' => true,
         'payment_create_fees' => true,
         'payment_create_jsonp' => true,
-        // 'record_1cc_customer_consent' => true,
+        'record_1cc_customer_consent' => true,
+        'shipping_info' => true,
     ];
 
     /**
@@ -186,17 +186,15 @@ class StartSession extends BaseStartSession
             return true;
         }
 
-        // @ToDo: Remove after customer session decomposition 100% ramp-up
+        // @ToDo: Remove after removing these routes from Route::$session
         $sessionAllowedInternalRoutes = [
-            'customer_fetch_internal_for_checkout' => $this->config->get('app.stop_session_redis_usage_on_customer_fetch_internal_experiment_id'),
-            'global_customer_find_or_create_for_checkout' => $this->config->get('app.stop_session_redis_usage_on_global_customer_find_or_create_experiment_id'),
+            'customer_fetch_internal_for_checkout' => true,
+            'global_customer_find_or_create_for_checkout' => true,
         ];
 
         if (!empty($sessionAllowedInternalRoutes[$routeName])) {
-            $variant = $this->getSplitzExperimentResult($sessionAllowedInternalRoutes[$routeName], $request);
-
-            // If variant is on then we do not save the session on API Monolith
-            return $variant !== 'variant_on';
+            // Do not save customer session on internal routes.
+            return false;
         }
 
         /** @var string $csMode The mode checkout-service is running in. */
@@ -217,43 +215,10 @@ class StartSession extends BaseStartSession
         $isCheckoutSessionRoute = $this->checkoutSessionRoutes[$routeName] ?? false;
 
         if ($isCheckoutSessionRoute || $request->cookies->has('razorpay_api_session_v2')) {
-            // Skip Saving to Redis if v2 session cookie is present in the
-            // request as v2 sessions are now managed by checkout-service
-            $variant = $this->getSplitzExperimentResult(
-                $this->config->get('app.stop_session_redis_usage_on_all_other_routes_experiment_id'),
-                $request,
-            );
-
-            // If variant is on then we do not save the session on API Monolith
-            return $variant !== 'variant_on';
+            // Do not save customer session for public routes called by checkout FE
+            return false;
         }
 
         return true;
-    }
-
-    protected function getSplitzExperimentResult(string $experimentId, Request $request): string
-    {
-        try {
-            $properties = [
-                'id' => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $experimentId,
-                'request_data' => json_encode([
-                    'key_id' => $request->input('key_id'),
-                    'merchant_id' => $this->ba->getMerchantId(),
-                ], JSON_THROW_ON_ERROR),
-            ];
-
-            $response = $this->splitz->evaluateRequest($properties);
-        } catch (Exception $e) {
-            $this->trace->traceException(
-                $e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
-                    'experiment_id' => $experimentId,
-                ]
-            );
-
-            return '';
-        }
-
-        return $response['response']['variant']['name'] ?? '';
     }
 }
