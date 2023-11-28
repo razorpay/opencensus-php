@@ -1741,7 +1741,8 @@ class PaymentCreateController extends Controller
             $threeDS2  = [
                 'network' => $data['network'],
                 'message_version' => $data['3ds_protocol_version'],
-                'directory_server_id' => $data['threeDSServerTransID']
+                'directory_server_id' => $data['threeDSServerTransID'],
+                'directory_server_public_key' => $data['directory_server_public_key']
             ];
 
             $next = [

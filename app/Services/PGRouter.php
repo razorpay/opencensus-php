@@ -75,6 +75,8 @@ class PGRouter
 
     const PGRouterPaymentAuthenticate = '/v1/payments/%s/authenticate';
 
+    const PGRouterPaymentCallback = '/v1/payments/%s/callback/%s';
+
     const PGRouterCreateOrder = 'v1/orders';
 
     const PGRouterFetchOrder = 'v1/orders/%s';
@@ -338,6 +340,21 @@ class PGRouter
 
         return $output['body'];
     }
+
+
+    public function paymentCallback(string $id, string $hash, array $input, bool $throwExceptionOnFailure = false): array
+    {
+        $this->updateIpandUserAgent($input, true);
+
+        $url = sprintf(self::PGRouterPaymentCallback, $id, $hash);
+
+        $this->currentEndPoint = self::PGRouterPaymentCallback;
+
+        $output = $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
+
+        return $output['body'];
+    }
+
 
     /**
      * @param array $input

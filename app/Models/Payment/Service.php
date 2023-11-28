@@ -2281,13 +2281,19 @@ class Service extends Base\Service
 
         //For 3ds2 sdk we have to initiate callback during fetch payment call
         if(isset($entity['authentication']['authentication_channel']) &&
-            $entity['authentication']['authentication_channel'] == "app")
+            $entity['authentication']['authentication_channel'] == "app" && $payment['status'] === 'created')
         {
             if($this->app['basicauth']->isPrivateAuth())
             {
                 $secret = $this->app->config->get('app.key');
                 $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
-                $this->callback($payment->getPublicId(), $hash, ["gateway" => $payment['gateway']]);
+                if(isset($payment['cps_route']) && $payment['cps_route'] === 5)
+                {
+                    $this->app['pg_router']->paymentCallback($payment->getPublicId(), $hash, [], true);
+                }
+                else {
+                    $this->callback($payment->getPublicId(), $hash, ["gateway" => $payment['gateway']]);
+                }
             }
         }
         return $entity;
