@@ -253,6 +253,8 @@ class Constants
 
     const SkipApprovalForCreator = 'skip_approval_if_creator_is_checker';
 
+    const DisableWfConfigDimensionsForS2p = 'disable_wf_config_dimensions_for_s2p';
+
     public static $validDcsKeys = [];
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -481,7 +483,8 @@ class Constants
         self::BulkPayoutWorkflow => 'rzp/x/merchant/dashboard_experience/bulk_payouts/Workflows',
         self::RtbWidgetEnabled => 'rzp/pg/merchant/checkout/Rtb',
         self::ShowSingleDCCCurrency => 'rzp/pg/merchant/payments/in_international/DCCFeatures',
-        self::SkipApprovalForCreator => 'rzp/x/merchant/workflows/Workflows'
+        self::SkipApprovalForCreator => 'rzp/x/merchant/workflows/Workflows',
+        self::DisableWfConfigDimensionsForS2p => 'rzp/x/merchant/workflows/Workflows',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -722,7 +725,8 @@ class Constants
         APIFeaturesConstants::REMOVE_RAZORPAY_BRANDING                      => self::RemoveRazorpayBranding,
         APIFeaturesConstants::BULK_PAYOUT_WORKFLOW                          => self::BulkPayoutWorkflow,
         self::ShowSingleDCCCurrency                                         => self::ShowSingleDCCCurrency,
-        APIFeaturesConstants::SKIP_APPROVAL_FOR_CREATOR                     => self::SkipApprovalForCreator
+        APIFeaturesConstants::SKIP_APPROVAL_FOR_CREATOR                     => self::SkipApprovalForCreator,
+        APIFeaturesConstants::DISABLE_WF_CONF_DIMENSIONS_S2P                => self::DisableWfConfigDimensionsForS2p,
     ];
 
     /**

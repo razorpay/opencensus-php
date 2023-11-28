@@ -553,6 +553,12 @@ class Constants
     const BULK_PAYOUT_WORKFLOW        = 'bulk_payout_workflow';
 
     /**
+     * Disables support for additional dimensions in workflow config for Source To Pay entities
+     * such as Purchase Order, Invoice, etc.
+     */
+    const DISABLE_WF_CONF_DIMENSIONS_S2P        = 'disable_wf_conf_dimensions_s2p';
+
+    /**
      * new banking error response is enabled by the merchant.
      */
     const NEW_BANKING_ERROR             = 'new_banking_error';
@@ -2713,6 +2719,7 @@ class Constants
         self::CustomMessageForCFB             => true,
         self::SKIP_APPROVAL_FOR_CREATOR       => true,
         self::WIDGET_ELIGIBILITY_ENABLED      => true,
+        self::DISABLE_WF_CONF_DIMENSIONS_S2P  => true,
     ];
 
     // Entity type constants
@@ -3763,6 +3770,11 @@ class Constants
             'display_name'  => 'Razorpay X - Bulk Payout Workflows',
             'documentation' => '',
         ],
+        self::DISABLE_WF_CONF_DIMENSIONS_S2P => [
+            'feature'       => self::DISABLE_WF_CONF_DIMENSIONS_S2P,
+            'display_name'  => 'Razorpay X - Disable WF Config Dimensions for S2P entities',
+            'documentation' => '',
+        ],
         DcsConstants::ShowSingleDCCCurrency => [
             'feature'       => DcsConstants::ShowSingleDCCCurrency,
             'display_name'  => 'Show only Single Currency on DCC Selection Screen',
@@ -3872,6 +3884,7 @@ class Constants
         self::BULK_PAYOUT_WORKFLOW,
         self::ENABLE_SMART_ROUTING,
         self::SKIP_APPROVAL_FOR_CREATOR,
+        self::DISABLE_WF_CONF_DIMENSIONS_S2P,
     ];
 
     /*

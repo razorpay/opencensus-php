@@ -155,7 +155,7 @@ class XperienceController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function updateCostCenter(string $costCenterId, array $input)
+    public function updateCostCenter(string $costCenterId)
     {
         $input = Request::all();
 
