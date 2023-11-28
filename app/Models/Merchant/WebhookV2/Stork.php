@@ -155,7 +155,6 @@ class Stork
     {
         $input['service'] = $this->service->service;
         $input['owner_id'] = $ownerId;
-        $input['owner_type'] = self::MERCHANT;
 
         // Adding pagination params of stork
         $input['limit'] = $input['limit'] ?? $input['count'] ?? 10;
@@ -182,7 +181,6 @@ class Stork
     {
         $input['service'] = $this->service->service;
         $input['owner_id'] = $ownerId;
-        $input['owner_type'] = self::MERCHANT;
 
         $res = $this->service->request(self::WK_LIST_WITH_SECRET_ROUTE, $input);
         $res = json_decode($res->body, true);
