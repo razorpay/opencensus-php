@@ -10,6 +10,7 @@ const StorageStatePath = {
   MOBILE_TEST_LOGIN_STATE: `${BASE_PATH}/mobile-test-mode-login.json`,
   MOBILE_LIVE_LOGIN_STATE: `${BASE_PATH}/mobile-live-mode-login.json`,
   ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
+  MAGIC_CHECKOUT_STATE: `${BASE_PATH}/magic-checkout.json`,
   RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
   OPTIMIZER_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-login.json`,
 };
@@ -42,6 +43,7 @@ const routes = {
   BATCH_REFUNDS_UPLOAD: 'app/refunds/batchupload',
   SUCCESS_RATE: 'app/success-rate',
   PAYMENT_PAGES: 'app/paymentpages',
+  MAGIC_CHECKOUT: 'app/magic/settings',
   FIRS: 'app/international-settings/firs',
   PARTNER_DASHBOARD: '/app/partners',
   AFFILIATE_ACCOUNTS: '/app/partners/submerchants',
@@ -120,10 +122,20 @@ const ActivatedNotIECredentials = [
   },
 ];
 
+const MagicCheckoutCredentials = [
+  {
+    type: 'magic-checkout.json',
+    username: ENV.MAGIC_CHECKOUT_USERNAME,
+    password: ENV.MAGIC_CHECKOUT_PASSWORD,
+    storagePath: StorageStatePath.MAGIC_CHECKOUT_STATE,
+  },
+];
+
 module.exports = {
   routes,
   EmailCredentials,
   MobileCredentials,
   ActivatedNotIECredentials,
+  MagicCheckoutCredentials,
   StorageStatePath,
 };

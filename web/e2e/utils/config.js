@@ -1,5 +1,10 @@
 const { devices } = require('@playwright/test');
-const { EmailCredentials, MobileCredentials, ActivatedNotIECredentials } = require('./constants');
+const {
+  EmailCredentials,
+  MobileCredentials,
+  ActivatedNotIECredentials,
+  MagicCheckoutCredentials,
+} = require('./constants');
 
 // use report portal for CI, and html for development
 function getReporter() {
@@ -50,6 +55,7 @@ function getCredentials() {
     emailCred: EmailCredentials,
     mobileCred: MobileCredentials,
     activatedNotIe: ActivatedNotIECredentials,
+    magicCheckout: MagicCheckoutCredentials,
   };
 }
 
