@@ -504,6 +504,7 @@ return array(
     'partnership_consent_switch_template_id'                => env('PARTNERSHIP_CONSENT_SWITCH_TEMPLATE_ID'),
     'partnership_oauth_consent_read_only_template_id'       => env('PARTNERSHIP_OAUTH_CONSENT_READ_ONLY_TEMPLATE_ID'),
     'partnership_oauth_consent_read_write_template_id'      => env('PARTNERSHIP_OAUTH_CONSENT_READ_WRITE_TEMPLATE_ID'),
+    'partnership_aggregator_consent_template_id'            => env('PARTNERSHIP_AGGREGATOR_CONSENT_TEMPLATE_ID'),
 
     'partner_invoice_auto_approval_exp_id'                  => env('PARTNER_INVOICE_AUTO_APPROVAL_EXP_ID'),
     'cmma_post_onboarding_foh_removal_splitz_experiment_id' => env('CMMA_POST_ONBOARDING_FOH_REMOVAL_SPLITZ_EXPERIMENT_ID'),

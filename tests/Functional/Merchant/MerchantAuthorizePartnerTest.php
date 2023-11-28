@@ -2,6 +2,7 @@
 
 namespace Functional\Merchant;
 
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -10,6 +11,7 @@ use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 
 class MerchantAuthorizePartnerTest extends TestCase
 {
+    use MocksSplitz;
     use PartnerTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -163,7 +165,7 @@ class MerchantAuthorizePartnerTest extends TestCase
         $this->fixtures->create('merchant_consents',
                                 [
                                     'merchant_id' => '10000000000111',
-                                    'consent_for' => 'PartnerAuth_Terms & Conditions',
+                                    'consent_for' => 'PartnerAuth_App Policy_Terms & Conditions',
                                     'status'      => 'initiated',
                                     'entity_id'   => $partner->getId(),
                                     'entity_type' => 'partner'
@@ -187,7 +189,7 @@ class MerchantAuthorizePartnerTest extends TestCase
         $this->fixtures->create('merchant_consents',
                                 [
                                     'merchant_id' => '10000000000111',
-                                    'consent_for' => 'PartnerAuth_Terms & Conditions',
+                                    'consent_for' => 'PartnerAuth_App Policy_Terms & Conditions',
                                     'status'      => 'initiated',
                                     'entity_id'   => $secondPartner->getId(),
                                     'entity_type' => 'partner'
@@ -200,5 +202,67 @@ class MerchantAuthorizePartnerTest extends TestCase
         $bvsMock->expects($this->once())->method('createLegalDocument')->withAnyParameters();
 
         $this->startTest();
+    }
+
+    public function testSaveMerchantAuthorizationWhenMerchantConsentIsAlreadyPresentAndConsentExpEnabled()
+    {
+        $testData = &$this->testData['testSaveMerchantAuthorizationWhenMerchantConsentIsAlreadyPresent'];
+
+        $this->mockAllSplitzTreatment();
+
+        list($partner, $app) = $this->createPartnerAndApplication();
+
+        $this->fixtures->edit('merchant_detail', $partner->getId(), ['business_name' => 'Amazon Inc']);
+
+        $this->fixtures->merchant->createAccount('10000000000111');
+
+        $this->fixtures->create('merchant_consents',
+            [
+                'merchant_id' => '10000000000111',
+                'consent_for' => 'PartnerAuth_App Policy_Terms & Conditions',
+                'status'      => 'initiated',
+                'entity_id'   => $partner->getId(),
+                'entity_type' => 'partner'
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $bvsMock = $this->mockCreateLegalDocument();
+
+        $bvsMock->expects($this->never())->method('createLegalDocumentV2')->withAnyParameters();
+
+        $this->startTest($testData);
+    }
+
+    public function testSaveMerchantAuthorizationWhenMerchantConsentIsPresentForAnotherPartnerAndConsentExpEnabled()
+    {
+        $testData = &$this->testData['testSaveMerchantAuthorizationWhenMerchantConsentIsPresentForAnotherPartner'];
+
+        list($partner, $app) = $this->createPartnerAndApplication();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->fixtures->edit('merchant_detail', $partner->getId(), ['business_name' => 'Amazon Inc']);
+
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => '10000000000000', 'promoter_pan_name' => 'Test']);
+
+        list($secondPartner, $secondApp) = $this->createPartnerAndApplication(['id' => '10000000000001'], ['id' => '8ckeirnw84fdkf']);
+
+        $this->fixtures->create('merchant_consents',
+            [
+                'merchant_id' => '10000000000111',
+                'consent_for' => 'PartnerAuth_App Policy_Terms & Conditions',
+                'status'      => 'initiated',
+                'entity_id'   => $secondPartner->getId(),
+                'entity_type' => 'partner'
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $bvsMock = $this->mockCreateLegalDocument();
+
+        $bvsMock->expects($this->once())->method('createLegalDocumentV2')->withAnyParameters();
+
+        $this->startTest($testData);
     }
 }

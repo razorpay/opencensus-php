@@ -61,7 +61,7 @@ trait CreateLegalDocumentsTrait
         $response->setDocumentsDetail([$documentDetail1, $documentDetail2]);
 
         $mock = $this->getMockBuilder(BvsLegalDocumentManagerClient::class)
-            ->onlyMethods(['createLegalDocument', 'getLegalDocumentsByOwnerId', 'getLegalDocumentsByRequestId', 'getLegalDocumentsByRequestIdV2'])
+            ->onlyMethods(['createLegalDocument', 'getLegalDocumentsByOwnerId', 'getLegalDocumentsByRequestId', 'getLegalDocumentsByRequestIdV2', 'createLegalDocumentV2'])
             ->getMock();
 
         $mock->method('createLegalDocument')

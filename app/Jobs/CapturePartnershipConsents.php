@@ -205,7 +205,7 @@ class CapturePartnershipConsents extends Job
             {
                 $type = $activationFormMilestone . '_' . $documentDetailInput['type'];
 
-                $merchantConsentDetail = $this->repoManager->merchant_consents->fetchMerchantConsentDetails($merchantId, $type);
+                $merchantConsentDetail = $this->repoManager->merchant_consents->fetchMerchantConsentDetailsWithEntityIdAndEntityType($merchantId, $type, $input[Consent\Entity::ENTITY_ID], $input[Consent\Entity::ENTITY_TYPE]);
 
                 $updateInput = [
                     'status'     => Consent\Constants::INITIATED,
@@ -232,9 +232,16 @@ class CapturePartnershipConsents extends Job
 
         $validDocTypes = [$milestone.'_'.Constants::TERMS];
 
-        if ($milestone === Constants::OAUTH)
+        if (in_array($milestone, ConsentConstant::PARTNERSHIP_MILESTONES_WITH_APP_POLICIES) === true)
         {
-            $validDocTypes = ConsentConstant::VALID_LEGAL_DOC_OAUTH;
+            switch ($milestone)
+            {
+                case ConsentConstant::OAUTH:
+                    $validDocTypes = ConsentConstant::VALID_LEGAL_DOC_OAUTH;
+                    break;
+                case ConsentConstant::PARTNER_AUTH:
+                    $validDocTypes = [ConsentConstant::PARTNER_AUTH_TERMS];
+            }
 
             $consentDetails = $this->repoManager->merchant_consents->getConsentDetailsForMerchantIdAndEntityId($merchantId, $validDocTypes, $input[Consent\Entity::ENTITY_ID], $input[Consent\Entity::ENTITY_TYPE]);
 

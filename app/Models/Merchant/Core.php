@@ -10457,30 +10457,36 @@ class Core extends Base\Core
 
     private function updateMerchantConsentForPartner(Entity $merchant, Entity $partner)
     {
-        $partnerConfig = (new PartnerConfig\Core())->fetchPartnersManagedApplicationConfig($partner);
-
-        $merchantDetail = $merchant->merchantDetail;
+        $partnerDetail = $partner->merchantDetail;
 
         $consentDetails = [
             DEConstants::DOCUMENTS_DETAIL => [
                 [
-                    DEConstants::TYPE    => MerchantConsentConstants::PARTNER_AUTH_TERMS,
+                    DEConstants::TYPE    => 'App Policy_' . Constants::TERMS,
                     DEConstants::URL     => Constants::RAZORPAY_PARTNER_AUTH_TERMS,
-                    DEConstants::CONTENT => str_replace('{partnerName}', $partnerConfig->getBrandName(), DEConstants::PARTNER_AUTH_CONSENT_TEMPLATE),
                 ]
             ],
             DEConstants::IP_ADDRESS       => $this->app['request']->ip(),
             Consent\Entity::ENTITY_ID     => $partner->getId(),
             Consent\Entity::ENTITY_TYPE   => DEConstants::PARTNER,
+            DEConstants::CONSENT          => true,
+            ConsentConstant::PARTNER_ID   => $partner->getId(),
+            ConsentConstant::PARTNER_NAME => $partnerDetail->getBusinessName() ?? $partner->getName(),
+            ConsentConstant::EMAIL_PARAMS      => [
+                "partner_business_name" => $partnerDetail->getBusinessName() ?? $partner->getName(),
+                "acceptance_timestamp"  => Carbon::now()->getTimestamp(),
+            ]
         ];
 
-        $legalDocumentsInput = [
-            DEConstants::IP_ADDRESS      => $this->app['request']->ip(),
-            DEConstants::OWNER_NAME      => $merchantDetail->getBusinessName() ?? 'NA',
-            DEConstants::SIGNATORY_NAME  => $merchantDetail->getPromoterPanName() ?? 'NA'
-        ];
+        $this->trace->info(
+            TraceCode::AGGREGATOR_PARTNER_CONSENT_GENERATE_INPUT,
+            [
+                "merchant_id"   => $merchant->getId(),
+                "input"         => $consentDetails
+            ]
+        );
 
-        (new Merchant\Detail\Service())->createMerchantConsent($merchant->getId(), $consentDetails, $legalDocumentsInput, [MerchantConsentConstants::PARTNER_AUTH_TERMS]);
+        CapturePartnershipConsents::dispatch($this->mode, $consentDetails, $merchant->getId(), ConsentConstant::PARTNER_AUTH);
     }
 
     public function isPaymentsEnabledForNoDocMerchants()

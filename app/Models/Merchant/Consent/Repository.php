@@ -117,30 +117,21 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getConsentDetailsForMerchantIdAndConsentForPartner(string $merchantId, array $validLegalDocs, string $partnerId, string $connectionType = null)
+    public function fetchMerchantConsentDetailsWithEntityIdAndEntityType(string $merchantId, string $type, string $entityId = null, string $entityType = null)
     {
-        if ($connectionType === null)
-        {
-            $connectionType = ConnectionType::REPLICA;
-        }
-
-        return $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
-                    ->where(Entity::ENTITY_ID, $partnerId)
-                    ->where(Entity::ENTITY_TYPE, DEConstants::PARTNER)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->first();
-    }
-
-    public function fetchMerchantConsentDetailsForPartner(string $merchantId, string $type, string $partnerId)
-    {
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::CONSENT_FOR, '=', $type)
-                    ->where(Entity::ENTITY_ID, '=', $partnerId)
-                    ->where(Entity::STATUS, '<>', Constants::SUCCESS)
-                    ->first();
+                    ->where(Entity::STATUS, '<>', Constants::SUCCESS);
+
+
+        if($entityId != null && $entityType != null)
+        {
+            $query->where(Entity::ENTITY_ID, '=', $entityId)
+                  ->where(Entity::ENTITY_TYPE, '=', $entityType);
+        }
+
+        return $query->first();
     }
 
     public function getConsentDetailsForMerchantIdAndEntityId(string $merchantId, array $validLegalDocs, string $entityId, string $entityType, string $connectionType = null)

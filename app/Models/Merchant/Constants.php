@@ -243,7 +243,7 @@ final class Constants
     const RAZORPAY_PARTNERSHIP_TERMS             = 'https://razorpay.com/s/terms/partners/';
     const RAZORPAY_PARTNERSHIP_OAUTH_TERMS       = 'https://razorpay.com/terms/razorpayx/partnership/';
 
-    const RAZORPAY_PARTNER_AUTH_TERMS            = 'https://razorpay.com/terms/razorpayx/partnership/';
+    const RAZORPAY_PARTNER_AUTH_TERMS            = 'https://razorpay.com/s/terms/partners/payments/aggregator-partner/';
 
     const RAZORPAY_GENERAL_TERMS                 = 'https://razorpay.com/terms/';
 

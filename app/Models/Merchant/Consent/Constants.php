@@ -80,7 +80,8 @@ class Constants
     ];
 
     const PARTNERSHIP_MILESTONES_WITH_APP_POLICIES = [
-        MeConstants::OAUTH
+        self::OAUTH,
+        self::PARTNER_AUTH
     ];
 
     //TODO:: Change it back to 30 after data fix
@@ -195,6 +196,7 @@ class Constants
             self::PLATFORM  => self::RX
         ],
         self::PARTNER_AUTH_TERMS                       => [
+            self::DOC_NAME  => 'App Policy',
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
@@ -258,13 +260,16 @@ class Constants
         'https://razorpay.com/s/terms/partners/aggregator-and-platform' => 'partnership_consent_switch_template_id',
         "https://razorpay.com/s/terms/partners/payments-oauth/read-only"       => 'partnership_oauth_consent_read_only_template_id',
         "https://razorpay.com/s/terms/partners/payments-oauth/read-and-write/" => 'partnership_oauth_consent_read_write_template_id',
+        "https://razorpay.com/s/terms/partners/payments/aggregator-partner/"   => 'partnership_aggregator_consent_template_id',
     ];
 
     const TEMPLATE_ID          = 'template_id';
 
     const METADATA             = 'metadata';
 
-    const PARTNER_AUTH_TERMS   = 'PartnerAuth_Terms & Conditions';
+    const PARTNER_AUTH         = 'PartnerAuth';
+
+    const PARTNER_AUTH_TERMS   = self::PARTNER_AUTH .'_App Policy_Terms & Conditions';
 
     const SERVICE_AGREEMENT = 'Service Agreement';
 
@@ -302,6 +307,11 @@ class Constants
             ],
             self::OAUTH               => [
                 'template_name'      => 'email.partnerships.consent.tnc_app_policy_oauth',
+                'template_namespace' => 'partnerships',
+                'subject'            => 'Razorpay: App Policy'
+            ],
+            self::PARTNER_AUTH        => [
+                'template_name'      => 'email.partnerships.consent.tnc_app_policy_aggregator_partner',
                 'template_namespace' => 'partnerships',
                 'subject'            => 'Razorpay: App Policy'
             ],

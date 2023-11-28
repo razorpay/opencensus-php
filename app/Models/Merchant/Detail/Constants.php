@@ -707,8 +707,6 @@ class Constants
     const OWNER_NAME                    = 'owner_name';
     const SIGNATORY_NAME                = 'signatory_name';
     const CONTENT                       = 'content';
-    const PARTNER_AUTH_CONSENT_TEMPLATE = "<html lang=\"en\">\n<head>\n<title>Document</title>\n</head>\n<body>\n<div>\n<h4>Allow {partnerName} to access your merchant account on Razorpay?</h4>\n<p>This will allow {partnerName} to take the following actions by using APIs &amp; dashboard</p>\n<div>\n<ul>\n<li>\n<h6>To create payment links and QR - codes</h6>\n</li>\n<li>\n<h6>To create Payment Via payment gateway</h6>\n</li>\n<li>\n<h6>Initiate Refunds</h6>\n</li>\n<li>\n<h6>Gain read only access to transaction, refund history, dispute flow</h6>\n</li>\n<li>\n<h6>Manage account end to end</h6>\n</li>\n</ul>\n</div>\n</div>\n</body>\n</html>";
-
     const FURTHER_QUERY_TEXT_DATA = [
         'MY' => [
             'type' => 'email',
