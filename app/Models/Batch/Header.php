@@ -1639,6 +1639,13 @@ class Header
     const CONSENT_COLLECTION_ERROR_CODE        = "Error Code";
     const CONSENT_COLLECTION_ERROR_DESCRIPTION = "Error description";
 
+    //headers for tokenisation terminals onboarding
+    const TERMINAL_BATCH_CREATION_TYPE = "terminal_type";
+    const TERMINAL_BATCH_CREATION_GATEWAY = "terminal_gateway";
+    const TERMINAL_BATCH_CREATION_GATEWAY_TERMINAL_ID = "gateway_terminal_id";
+    const TERMINAL_BATCH_CREATION_PROVIDER_NAME = "provider_name";
+    const TERMINAL_BATCH_CREATION_PROVIDER_TYPE = "provider_type";
+
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
         Header::WALLET_ACCOUNTS_NAME,
@@ -1922,7 +1929,12 @@ class Header
             self::INPUT => [
                 self::MERCHANT_ID,
                 self::TERMINAL_CREATION_GATEWAY,
-                self::TERMINAL_CREATION_CATEGORY
+                self::TERMINAL_CREATION_CATEGORY,
+                self::TERMINAL_BATCH_CREATION_TYPE,
+                self::TERMINAL_BATCH_CREATION_GATEWAY,
+                self::TERMINAL_BATCH_CREATION_GATEWAY_TERMINAL_ID,
+                self::TERMINAL_BATCH_CREATION_PROVIDER_NAME,
+                self::TERMINAL_BATCH_CREATION_PROVIDER_TYPE,
             ],
         ],
 
