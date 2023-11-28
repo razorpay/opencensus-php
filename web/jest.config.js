@@ -54,7 +54,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/common/services/test/setupTests.js'],
 
   // Use this configuration option to add custom reporters to Jest
-  reporters: ['default', 'jest-sonar'],
+  reporters: [['jest-silent-reporter', { useDots: true }], 'jest-sonar'],
 
   // Indicates whether the coverage information should be collected while executing the test
   collectCoverage: true,
