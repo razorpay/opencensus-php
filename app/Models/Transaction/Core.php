@@ -383,6 +383,15 @@ class Core extends Base\Core
 
             $merchantBalance = null;
 
+            if($payment->isHdfcNonDSSurcharge())
+            {
+                $txn->setTax(0);
+
+                $txn->setFee(0);
+
+                $txn->setMdr(0);
+            }
+
             if ($payment->isLateBalanceUpdate() === true)
             {
                 $merchantId = $txn->getMerchantId();

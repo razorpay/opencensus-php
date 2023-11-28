@@ -1512,6 +1512,47 @@ class TransactionTest extends TestCase
         $this->startTest();
     }
 
+    public function testHDFCSurchargeNonDsPaymentCaptureTransactionsCreateInternal()
+    {
+        $this->ba->appAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $terminal =   $this->fixtures->create('terminal', [ 'merchant_id' => '10000000000000', 'gateway' => 'hdfc']);
+
+        $merchant = $this->fixtures->merchant->edit('10000000000000',
+            [
+                'fee_bearer'  => 'customer',
+            ]
+        );
+
+        $this->fixtures->merchant->addFeatures(['vas_merchant']);
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
+
+        $attributes = [
+            'name'        => 'hdfc_vas_cards_surcharge',
+            'entity_id'   => $merchant->getOrgId(),
+            'entity_type' => 'org'
+        ];
+
+        $this->fixtures->create('feature', $attributes);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payment']['terminal_id'] = $terminal->getId();
+
+        $this->startTest();
+    }
+
     protected function setAdminPermission($permissionName)
     {
         $admin = $this->ba->getAdmin();
