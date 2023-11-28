@@ -1228,7 +1228,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $partnerSubmerchantReferralInviteConfigRules = [
-        Header::REFERRAL_PRODUCT   => 'required|string|in:primary',
+        Header::REFERRAL_PRODUCT   => 'required|string|in:primary,pos',
+        Header::INVITER_USER_ID    => 'sometimes|alpha_num|size:14',
+        Header::INVITER_EMAIL      => 'required_with:inviter_user_id|email|max:255',
         Header::REQUEST_KYC_ACCESS => 'sometimes|boolean|required_without:metadata',
         Header::METADATA           => 'sometimes|array|required_without:request_kyc_access|custom',
     ];

@@ -195,6 +195,8 @@ class Header
     const REFERRAL_ID        = 'referral_id';
     const REF_CODE           = 'ref_code';
     const REFERRAL_PRODUCT   = 'product';
+    const INVITER_USER_ID    = 'inviter_user_id';
+    const INVITER_EMAIL      = 'inviter_email';
     const REQUEST_KYC_ACCESS = 'request_kyc_access';
     const METADATA           = 'metadata';
     const CLIENT_ID          = 'client_id';
