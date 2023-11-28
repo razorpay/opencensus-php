@@ -1623,6 +1623,13 @@ class Header
     const WALLET_CONTAINER_REVERSAL_DESCRIPTION = 'Description (Optional)';
     const WALLET_CONTAINER_REVERSAL_NOTES = 'Notes (Optional)';
 
+    // Create bulk gift cards batch headers
+    const CREATE_BULK_GIFT_CARD_PROGRAM_ID = "Program ID";
+    const CREATE_BULK_GIFT_CARD_AMOUNT = 'Amount (In Paise)';
+    const CREATE_BULK_GIFT_CARD_REQUEST_ID = "Request ID (Optional)";
+    const CREATE_BULK_GIFT_CARD_CONTACT = 'Contact (Optional)';
+    const CREATE_BULK_GIFT_CARD_BUYER_USER_ID = 'Buyer User ID (Optional)';
+
     // consent collection for creation of local tokens
     //input
     const CONSENT_COLLECTION_MERCHANT_ID = 'merchantId';
@@ -1669,6 +1676,11 @@ class Header
         Header::WALLET_CONTAINER_REVERSAL_AMOUNT
     ];
 
+    // mandatory headers for create gift card batch
+    const MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS = [
+        Header::CREATE_BULK_GIFT_CARD_PROGRAM_ID,
+        Header::CREATE_BULK_GIFT_CARD_AMOUNT
+    ];
 
     // Following is a list of columns that are mandatory headers in the fund account (contact) batch file
     const MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_FUND_ACCOUNTS = [
@@ -5496,6 +5508,17 @@ class Header
             self::OUTPUT => []
         ],
 
+        TYPE::CREATE_BULK_GIFT_CARDS => [
+            self::INPUT => [
+                self::CREATE_BULK_GIFT_CARD_PROGRAM_ID,
+                self::CREATE_BULK_GIFT_CARD_AMOUNT,
+                self::CREATE_BULK_GIFT_CARD_REQUEST_ID,
+                self::CREATE_BULK_GIFT_CARD_CONTACT,
+                self::CREATE_BULK_GIFT_CARD_BUYER_USER_ID
+            ],
+            self::OUTPUT => []
+        ],
+
 
         Type::PARTNER_SUBMERCHANT_REFERRAL_INVITE => [
             self::INPUT => [
@@ -5729,6 +5752,11 @@ class Header
         if ($type === Type::CREATE_WALLET_CONTAINER_REVERSALS)
         {
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_CONTAINER_REVERSALS);
+        }
+
+        if ($type === Type::CREATE_BULK_GIFT_CARDS )
+        {
+            self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS);
         }
 
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
