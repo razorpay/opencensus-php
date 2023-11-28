@@ -349,6 +349,12 @@ const PaymentTransferNew = lazy(() =>
   ),
 );
 
+const PartnerPricingPlans = lazy(() =>
+  import(
+    /* webpackChunkName: "PartnerPricingPlans" */ 'merchant/views/PartnerDashboard/PartnerPricingPlans'
+  ),
+);
+
 const entityDetailsMap = {
   '/payments/:id(pay_.+)/v2/transfers/new': {
     component: PaymentTransferNew,
@@ -735,6 +741,9 @@ const fullPageViewsMap = {
   '/partners/onboarding': {
     component: PartnerActivationFormMweb,
     additionalCondition: (user) => user.isIndependentPartnerKYCEnabled,
+  },
+  '/partner-pricing-plans': {
+    component: PartnerPricingPlans,
   },
   '/partners/submerchants/onboarding/:submerchantId(acc_.+)/steps': {
     component: ActivationSteps,

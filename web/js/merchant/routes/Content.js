@@ -483,7 +483,6 @@ const TransactionV2RefundsContainer = lazy(() =>
     /* webpackChunkName: "RefundsContainer" */ 'merchant/views/Transactions/v2/Refunds/components/RefundsContainer'
   ),
 );
-
 @withI18Service
 @connect(
   (state) => ({

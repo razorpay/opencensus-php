@@ -120,6 +120,8 @@ export const RoutesConfig = {
   '/partners/subventions': Teams.PARTNERSHIP,
   '/partners/subventions/daily': Teams.PARTNERSHIP,
   '/partners/subventions/transactional': Teams.PARTNERSHIP,
+  // Merchant pages under partnerships team
+  '/partner-pricing-plans': Teams.PARTNERSHIP,
 
   '/payment-methods': Teams.TERMINAL,
   '/payment-methods/cards': Teams.TERMINAL,

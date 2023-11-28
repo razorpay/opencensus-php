@@ -46,6 +46,7 @@ const routes = {
   MAGIC_CHECKOUT: 'app/magic/settings',
   FIRS: 'app/international-settings/firs',
   PARTNER_DASHBOARD: '/app/partners',
+  PARTNER_PRICING_PLANS: '/app/partner-pricing-plans',
   AFFILIATE_ACCOUNTS: '/app/partners/submerchants',
   AFFILIATE_ACCOUNTS_CAPITAL: '/app/partners/submerchants/capital',
   OPTIMIZER: 'app/optimizer/rules',
