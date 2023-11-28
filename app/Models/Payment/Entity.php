@@ -302,7 +302,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const UPI_PAYMENT_SERVICE               = 4;
     const NB_PLUS_SERVICE_PAYMENTS          = 6;
     const REARCH_UPI_PAYMENT_SERVICE        = 7;
-
+    const EMANDATE_PAYMENT_SERVICE          = 9;
+    
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
     const HOSTED_TIME_FORMAT                = 'j M Y';

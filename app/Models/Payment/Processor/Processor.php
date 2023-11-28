@@ -601,6 +601,27 @@ class Processor
         'payment_create_private_old'
     ];
 
+
+    protected static $emandateRearchRoutes = [
+        'payment_create_recurring',
+    ];
+    
+    protected static $emandateGatewayMapping = [
+        "netbanking_icici"              => "netbanking_icici",
+        "netbanking_hdfc"               => "netbanking_hdfc",
+        "netbanking_sbi"                => "netbanking_sbi",
+        "netbanking_axis"               => "netbanking_axis",
+        "enach_rbl"                     => "npci_rbl",
+        "nach_citi"                     => "npci_citi",
+        "nach_icici"                    => "npci_icici",
+    ];
+    
+    protected static $emandateGatewayAcquirerMapping = [
+        "enach_npci_netbanking_citi"          => "npci_citi",
+        "enach_npci_netbanking_yesb"          => "npci_yesb",
+        "enach_npci_netbanking_icici"         => "npci_icici",
+    ];
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -2212,7 +2233,206 @@ class Processor
             return false;
         }
     }
-
+    
+    private function canRouteEmandateThroughRearchFlow(& $input): bool
+    {
+        // Re-arch Criteria
+        // 1. Method should be emandate or nach payments
+        // 2. Only allow recurring payments via recurring route (payments/create/recurring)
+        // 3. Won't allow test payments in production environment
+        // 4. Won't allow transfer order payments
+        // 5. Won't allow subscriptions
+        // 6. Merchant should be fee bearer
+        // 7. Not enabling for raas merchants
+        
+        // emandate rearch changes: Need to remove live condition before going to production
+        if ((app()->isEnvironmentProduction() === true) and
+            ($this->mode === Mode::LIVE or $this->mode === Mode::TEST))
+        {
+            return false;
+        }
+        
+        if($input[Payment\Entity::METHOD] !== Payment\METHOD::EMANDATE &&
+            $input[Payment\Entity::METHOD] !== Payment\METHOD::NACH)
+        {
+            return false;
+        }
+        
+        if(empty($input[Constants::TOKEN_ENTITY]) === false)
+        {
+            $token = $input[Constants::TOKEN_ENTITY];
+        
+            unset($input[Constants::TOKEN_ENTITY]);
+        }
+        else
+        {
+            return false;
+        }
+    
+        $currentRouteName = $this->route->getCurrentRouteName();
+        
+        $merchant = $this->app['basicauth']->getMerchant();
+        
+    
+        try
+        {
+            $customCheckResults = $this->performEmandateRearchFlowChecks($input, $merchant, $currentRouteName);
+    
+            $this->trace->info(TraceCode::EMANDATE_SERVICE_ROUTING_CRITERIA,
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'dimensions' => $customCheckResults['dimensions'],
+                    'route' => $currentRouteName,
+                    'route_via_emandate_service' => $customCheckResults['route_via_emandate_service'],
+                ]);
+    
+            $razorxKey = null;
+    
+            if ($customCheckResults['route_via_emandate_service'] === true) {
+                // Need to do terminal fetch from token to get gateway
+                // add it to razorx, and do ramp up accordingly
+        
+                $terminal = $token->getTerminalAttribute();
+        
+                $gateway = $terminal["gateway"] ?? null;
+        
+                $gatewayAcquirer = $terminal["gateway_acquirer"] ?? null;
+        
+                $razorxKey = self::$emandateGatewayMapping[$gateway];
+        
+                $this->trace->info(TraceCode::EMANDATE_SERVICE_RAZORX_KEY,
+                    [
+                        'gateway' => $gateway,
+                        'acquirer' => $gatewayAcquirer,
+                        'razorxKey' => $razorxKey,
+                    ]);
+        
+                if ($razorxKey === null and $gatewayAcquirer !== null) {
+                    $npciGateway = $gateway . '_' . $gatewayAcquirer;
+            
+                    $razorxKey = self::$emandateGatewayAcquirerMapping[$npciGateway];
+            
+                    $this->trace->info(TraceCode::EMANDATE_SERVICE_RAZORX_NPCI_KEY,
+                        [
+                            'gateway' => $gateway,
+                            'acquirer' => $gatewayAcquirer,
+                            'npci_gateway' => $npciGateway,
+                            'razorxKey' => $razorxKey,
+                        ]);
+                }
+            }
+    
+            if ($razorxKey === null)
+            {
+                return false;
+            }
+    
+            //TODO: Uncomment this before going to prod
+//            $rearchRazorxExperiment = "emandate_rearch_razorx_for_" . $razorxKey;
+//
+//            $result = $this->app->razorx->getTreatment($merchant->getId(), $rearchRazorxExperiment, $this->mode);
+//
+//            $this->trace->info(TraceCode::EMANDATE_SERVICE_REARCH_RAZORX,
+//                [
+//                    'razorx_selected' => $rearchRazorxExperiment,
+//                    'result' => $result,
+//                ]);
+//
+//            if ($result === 'on')
+//            {
+//                return true;
+//            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::EMANDATE_SERVICE_REARCH_ERROR, [
+                "merchant_id" => $merchant->getId(),
+                "token_id"    => $token->getId()
+            ]);
+        }
+        
+        return false;
+    }
+    
+    private function performEmandateRearchFlowChecks(array $input, Merchant\Entity $merchant, string $currentRouteName): array
+    {
+        $routeViaReArch = true;
+        
+        $dimensions = array_fill(0, 8, 0);
+        
+        $response = [
+            'route_via_emandate_service' => $routeViaReArch
+        ];
+        
+        if (empty($input[Payment\Entity::METHOD]) === true)
+        {
+            $routeViaReArch = false;
+            $dimensions[0] = 1;
+        }
+    
+        if ($this->isEmandateRearchRoute($currentRouteName) == false)
+        {
+            $routeViaReArch = false;
+            $dimensions[1] = 1;
+        }
+        
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        {
+            $routeViaReArch = false;
+            $dimensions[2] = 1;
+        }
+        
+        if ($merchant->isFeeBearerPlatform() === false)
+        {
+            $routeViaReArch = false;
+            $dimensions[3] = 1;
+        }
+        
+        if (empty($input[Payment\Entity::ORDER_ID]) === false)
+        {
+            $order = $this->fetchOrderFromInput($input);
+            
+            $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER, $order->getId(), $this->merchant);
+            
+            // Check if there are any order transfers
+            if ((empty($orderTransfers) === false) and
+                (count($orderTransfers) > 0))
+            {
+                $routeViaReArch = false;
+                $dimensions[4] = 1;
+            }
+        }
+        
+        // Check if currency is INR
+        if ((empty($input['currency']) === false) and
+            ($input['currency'] !== Currency\Currency::INR))
+        {
+            $routeViaReArch = false;
+            $dimensions[5] = 1;
+        }
+        
+        if ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::RAAS) === true)
+        {
+            $routeViaReArch = false;
+            $dimensions[6] = 1;
+        }
+        
+        $dimensions[7] = (string) strtolower($input['_']['library'] ?? 'unknown');
+        
+        $dimensions[8] = (string) $currentRouteName;
+        
+        $dimensionsString = implode(', ', $dimensions);
+        
+        // if none of the condition evaluated as true, the request can be routed via UPS
+        // after checking the razorx variant
+        $response['route_via_emandate_service'] = $routeViaReArch;
+        
+        $response['dimensions'] = $dimensionsString;
+        
+        return $response;
+    }
+    
+    
     private function canRouteWalletThroughRearchFlow($input): bool
     {
         // wallet mentioned in array => $supportedWalletsForRearch, always process through nbplus rearch except test mode in production
@@ -2321,6 +2541,8 @@ class Processor
                 return $this->app['pg_router']->validateAndCreatePaymentCheckout($input, true);
             case "payment_create_upi":
                 return $this->app['pg_router']->validateAndCreatePaymentUpi($input, true);
+            case "payment_create_recurring":
+                return $this->app['pg_router']->validateAndCreatePaymentRecurring($input, true);
         }
         return null;
     }
@@ -2569,7 +2791,8 @@ class Processor
                 ($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or
                 ($this->canRouteThroughUpsRearchFlow($input) === true) or
-                ($this->canRouteFpxThroughRearchFlow($input) === true)))
+                ($this->canRouteFpxThroughRearchFlow($input) === true) or
+                ($this->canRouteEmandateThroughRearchFlow($input) === true)))
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
 
@@ -4336,6 +4559,12 @@ class Processor
             if ($tokenMethod === Payment\Method::EMANDATE or $tokenMethod === Payment\Method::NACH)
             {
                 $this->validateEmandateTokenStatus($token, $merchant);
+                
+                  // emandate rearch changes: Need to uncomment before going to production, need token to determine gateway
+//                if($this->isEmandateRearchRoute($this->route->getCurrentRouteName()) === true)
+//                {
+//                    $input[Constants::TOKEN_ENTITY] = $token;
+//                }
             }
 
             if ($tokenMethod === Payment\Method::EMANDATE)
@@ -10446,6 +10675,17 @@ class Processor
     public static function isUpiRearchRoute(string $route): bool
     {
         return (in_array($route, self::$upiRearchRoutes, true) === true);
+    }
+    
+    /**
+     * returns if route is valid upi rearch route
+     *
+     * @param string $route
+     * @return boolean
+     */
+    public static function isEmandateRearchRoute(string $route): bool
+    {
+        return (in_array($route, self::$emandateRearchRoutes, true) === true);
     }
 
     private function checkIfTransferSyncProcessingViaApiIsWithinLimit()

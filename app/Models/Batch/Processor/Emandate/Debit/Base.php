@@ -66,10 +66,12 @@ class Base extends BaseProcessor
         // Can't put in a transaction because of webhooks and emails
         //
 
+        $payment = $this->getPayment($content);
+        
+        $this->canRouteThroughEmandateService($payment, $content);
+    
         // Update gateway payment
         $this->updateGatewayPayment($content);
-
-        $payment = $this->getPayment($content);
 
         $this->assertAmount($payment, $content);
 
@@ -77,6 +79,36 @@ class Base extends BaseProcessor
             // Update payment
             $this->updatePayment($payment, $content);
         });
+    }
+    
+    // emandate rearch changes: will go to emandate service, if this is external payment
+    protected function canRouteThroughEmandateService(Payment\Entity $payment, array $content)
+    {
+        try
+        {
+            if ($payment->isExternal() === true and
+                $payment->getCpsRoute() === Payment\Entity::EMANDATE_PAYMENT_SERVICE)
+            {
+                $this->fetchGatewayDetails($content);
+                
+                $this->trace->info(TraceCode::EMANDATE_SERVICE_CALLBACK_PAYLOAD,
+                    [
+                        "callback_payload" => $content
+                    ]);
+                
+                return $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($payment->getId(), $content);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::EMANDATE_SERVICE_REARCH_ERROR,
+                [
+                    "payment_id"     => $payment->getId(),
+                    "merchant_id"    => $payment->getMerchantId()
+                ]);
+        }
+        
+        return null;
     }
 
     protected function getPayment(array $content)

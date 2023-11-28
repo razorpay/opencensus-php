@@ -128,4 +128,14 @@ class Axis extends Base
         
         return "";
     }
+    
+    // emandate rearch changes: for axis changes
+    public function fetchGatewayDetails(& $content)
+    {
+        $content['type'] = 'emandate';
+        
+        $content['sub_type'] = 'debit';
+        
+        $content['gateway'] = 'axis';
+    }
 }

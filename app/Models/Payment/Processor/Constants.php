@@ -21,7 +21,9 @@ class Constants
     const CARD                          = 'card';
 
     const EMANDATE                      = 'emandate';
-
+    
+    const TOKEN_ENTITY                  = 'token_entity';
+    
     const CREATED                       = 'created';
 
     const SUBSCRIPTION                  = 'subscription';

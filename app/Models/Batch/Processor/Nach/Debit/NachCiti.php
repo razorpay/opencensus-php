@@ -236,4 +236,14 @@ class NachCiti extends Base
     {
         return true;
     }
+    
+    // emandate rearch changes: for citi changes
+    public function fetchGatewayDetails(& $content)
+    {
+        $content['type'] = 'nach';
+        
+        $content['sub_type'] = 'debit';
+        
+        $content['gateway'] = 'nach_citi';
+    }
 }

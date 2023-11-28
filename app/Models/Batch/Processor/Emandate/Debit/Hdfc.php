@@ -99,4 +99,14 @@ class Hdfc extends Base
 
         return $result;
     }
+    
+    // emandate rearch changes: for hdfc changes
+    public function fetchGatewayDetails(& $content)
+    {
+        $content['type'] = 'emandate';
+        
+        $content['sub_type'] = 'debit';
+        
+        $content['gateway'] = 'hdfc';
+    }
 }

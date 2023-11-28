@@ -109,4 +109,14 @@ class EnachRbl extends Base
     {
         return true;
     }
+    
+    // emandate rearch changes: for enach rbl changes
+    public function fetchGatewayDetails(& $content)
+    {
+        $content['type'] = 'emandate';
+        
+        $content['sub_type'] = 'debit';
+        
+        $content['gateway'] = 'enach_rbl';
+    }
 }

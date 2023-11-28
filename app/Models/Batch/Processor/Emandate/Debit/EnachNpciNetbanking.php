@@ -101,4 +101,14 @@ class EnachNpciNetbanking extends Base
     {
         return true;
     }
+    
+    // emandate rearch changes: for yesb changes
+    public function fetchGatewayDetails(& $content)
+    {
+        $content['type'] = 'emandate';
+        
+        $content['sub_type'] = 'debit';
+        
+        $content['gateway'] = 'yesb';
+    }
 }

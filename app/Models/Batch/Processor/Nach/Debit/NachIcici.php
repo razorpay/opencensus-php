@@ -224,4 +224,14 @@ class NachIcici extends Base
     {
         return Status::bankMappedStatus($status);
     }
+    
+    // emandate rearch changes: for citi changes
+    public function fetchGatewayDetails(& $content)
+    {
+        $content['type'] = 'nach';
+        
+        $content['sub_type'] = 'debit';
+        
+        $content['gateway'] = 'nach_icici';
+    }
 }

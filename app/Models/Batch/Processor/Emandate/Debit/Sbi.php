@@ -121,4 +121,14 @@ class Sbi extends Base
     {
         return Netbanking\Sbi\Emandate\Status::bankMappedStatus($status);
     }
+    
+    // emandate rearch changes: for sbi changes
+    public function fetchGatewayDetails(& $content)
+    {
+        $content['type'] = 'emandate';
+        
+        $content['sub_type'] = 'debit';
+        
+        $content['gateway'] = 'sbi';
+    }
 }

@@ -1415,6 +1415,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     
     const EMANDATE_ENACH_ENTITY_ERROR                           = 'EMANDATE_ENACH_ENTITY_ERROR';
     const EMANDATE_NR_TOKEN_UPDATE_ERROR                        = 'EMANDATE_NR_TOKEN_UPDATE_ERROR';
+    const EMANDATE_ENACH_UPDATE_ERROR                           = 'EMANDATE_ENACH_UPDATE_ERROR';
     const EMANDATE_DCS_CONFIG_FETCH_ERROR                       = 'EMANDATE_DCS_CONFIG_FETCH_ERROR';
     const EMANDATE_TOKEN_BLOCK_ERROR                            = 'EMANDATE_TOKEN_BLOCK_ERROR';
     const EMANDATE_PAYMENT_UPDATE_TOKEN                         = 'EMANDATE_PAYMENT_UPDATE_TOKEN';
@@ -1433,7 +1434,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_CONFIG_FETCH_ERROR                           = 'EMANDATE_CONFIG_FETCH_ERROR';
     const EMANDATE_RAZORX_NR_VARIANT                            = 'EMANDATE_RAZORX_NR_VARIANT';
     const EMANDATE_RAZORX_ACH_VARIANT                           = 'EMANDATE_RAZORX_ACH_VARIANT';
-
+    
+    const EMANDATE_SERVICE_ROUTING_CRITERIA                     = 'EMANDATE_SERVICE_ROUTING_CRITERIA';
+    const EMANDATE_SERVICE_RAZORX_KEY                           = 'EMANDATE_SERVICE_RAZORX_KEY';
+    const EMANDATE_SERVICE_RAZORX_NPCI_KEY                      = 'EMANDATE_SERVICE_RAZORX_NPCI_KEY';
+    const EMANDATE_SERVICE_REARCH_RAZORX                        = 'EMANDATE_SERVICE_REARCH_RAZORX';
+    const EMANDATE_SERVICE_CALLBACK_PAYLOAD                     = 'EMANDATE_SERVICE_CALLBACK_PAYLOAD';
+    const EMANDATE_SERVICE_REARCH_ERROR                         = 'EMANDATE_SERVICE_REARCH_ERROR';
+    const EMANDATE_SERVICE_CALLBACK_ERROR                       = 'EMANDATE_SERVICE_CALLBACK_ERROR';
+    
+    
     const EMANDATE_CONFIG_CREATE_REQUEST                        = 'EMANDATE_CONFIG_CREATE_REQUEST';
     const EMANDATE_CONFIG_CREATE_ERROR                          = 'EMANDATE_CONFIG_CREATE_ERROR';
 
