@@ -2463,7 +2463,12 @@ class Processor
         {
             $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($this->order->getId());
 
-            $input[Payment\Entity::ORDER] = $this->order;
+            $variantForFeature = $this->app->razorx->getTreatment($this->order->getMerchantId(),
+                RazorxTreatment::STOP_SENDING_ORDER_DATA_FROM_API, $this->mode);
+
+            if (strtolower($variantForFeature) !== RazorxTreatment::RAZORX_VARIANT_ON) {
+                $input[Payment\Entity::ORDER] = $this->order;
+            }
         }
 
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === true)

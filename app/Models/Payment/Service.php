@@ -8,6 +8,7 @@ use Mail;
 use Crypt;
 use Config;
 use RZP\Models\Admin;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
@@ -1493,9 +1494,13 @@ class Service extends Base\Service
             {
                 $order = $payment->order;
 
-                if (isset($order) === true)
-                {
-                    $input[Payment\Entity::ORDER] = $order;
+                if (isset($order) === true) {
+                    $variantForFeature = $this->app->razorx->getTreatment($order->getMerchantId(),
+                        RazorxTreatment::STOP_SENDING_ORDER_DATA_FROM_API, $this->mode);
+
+                    if (strtolower($variantForFeature) !== RazorxTreatment::RAZORX_VARIANT_ON) {
+                        $input[Payment\Entity::ORDER] = $order;
+                    }
                 }
                 # have to send conv_fee & gst to PG-router to validate order with payment amount
                 if($order->getFeeConfigId() !== null and
