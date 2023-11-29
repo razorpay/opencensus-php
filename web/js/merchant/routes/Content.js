@@ -2067,7 +2067,7 @@ class Content extends Component {
       <main
         class={classList(
           !fullPageView && !isWebView && 'main-content',
-          isMobileSearchEnabled && !fullPageView && 'search-header',
+          isMobileSearchEnabled && !fullPageView && !isWebView && 'search-header',
           mode === 'test' && isMobileDevice() ? 'test-mode' : '',
         )}
       >
