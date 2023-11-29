@@ -71,6 +71,22 @@ class DowntimeController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function adminFetchDowntimes($status)
+    {
+        $input = Request::all();
+
+        if($status === "ongoing")
+        {
+            return $this->fetchOngoingDowntimes();
+        }
+        else if ($status === "resolved")
+        {
+            return $this->fetchResolvedDowntimes();
+        }
+
+        return ApiResponse::json([]);
+    }
+
     public function getMethodDowntimeDataByID($id)
     {
         $input = Request::all();

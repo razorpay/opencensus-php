@@ -158,6 +158,12 @@ class CareProxyController extends Controller
 
     const SAV_FETCH_AGENT_ALERTS = 'twirp/rzp.care.sav.v1.AlertManagementService/FetchAgentAlerts';
 
+    const SAV_FETCH_SR_FOR_METHOD = 'twirp/rzp.care.sav.v1.SrAnalysisService/FetchSrForMethod';
+
+    const SAV_FETCH_SR_DETAILS_FOR_METHOD = 'twirp/rzp.care.sav.v1.SrAnalysisService/FetchSrDetailsForMethod';
+
+    const SAV_FETCH_SR_ANALYSIS_LOGS = 'twirp/rzp.care.sav.v1.SrAnalysisService/FetchSrAnalysisLogs';
+
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -212,7 +218,10 @@ class CareProxyController extends Controller
         self::SAV_LIST_ALERTS                         => Name::VIEW_SAV_ALERT,
         self::SAV_FETCH_ALERT                         => Name::VIEW_SAV_ALERT,
         self::SAV_FETCH_AGENT_ALERTS                  => Name::VIEW_SAV_AGENT_ALERT,
-        self::SAV_UNIVERSAL_SEARCH                    => Name::VIEW_ALL_ENTITY
+        self::SAV_UNIVERSAL_SEARCH                    => Name::VIEW_ALL_ENTITY,
+        self::SAV_FETCH_SR_FOR_METHOD                 => Name::VIEW_ALL_ENTITY,
+        self::SAV_FETCH_SR_DETAILS_FOR_METHOD         =>  Name::VIEW_ALL_ENTITY,
+        self::SAV_FETCH_SR_ANALYSIS_LOGS              =>  Name::VIEW_ALL_ENTITY,
     ];
 
     /**
@@ -322,6 +331,9 @@ class CareProxyController extends Controller
         self::SAV_FETCH_ALERT,
         self::SAV_FETCH_AGENT_ALERTS,
         self::SAV_UNIVERSAL_SEARCH,
+        self::SAV_FETCH_SR_FOR_METHOD,
+        self::SAV_FETCH_SR_DETAILS_FOR_METHOD,
+        self::SAV_FETCH_SR_ANALYSIS_LOGS,
     ];
 
     const CHAT_ROUTES = [
