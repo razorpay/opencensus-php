@@ -389,6 +389,7 @@ class RouteTeamMap
         'onboarding_payment_webhook'                      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_business_categories_v3'      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_business_categories_admin_v3'=> [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_business_categories_adminV3' => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_website_section_page_load_v2'           => [self::TEAM_PAYMENTS_GROWTH],
 
         // Risk team

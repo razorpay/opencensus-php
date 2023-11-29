@@ -52,6 +52,7 @@ class UserRolesScope
             'merchant_website_section_page_load_v2'                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_business_categories_v3'           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_business_categories_admin_v3'     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_activation_business_categories_adminV3'      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
 
             // batch routes
             'batch_create'         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP, Role::AUTH_LINK_SUPERVISOR], BankingRole::getAllRoles()),

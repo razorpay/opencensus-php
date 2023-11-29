@@ -163,6 +163,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_UPDATE_BY_ADMIN         => Name::VIEW_ALL_ENTITY,
         self::SAVE_MERCHANT_DOCUMENT_DETAILS   => Name::MERCHANT_DOCUMENT_SAVE,
         self::FETCH_MERCHANT_DOCUMENT_DETAILS  => Name::MERCHANT_DOCUMENT_FETCH,
+        self::MERCHANT_CATEGORIES_ADMIN_V3     => Name::VIEW_ALL_ENTITY,
     ];
 
     const ROUTES_URL_MAP = [
