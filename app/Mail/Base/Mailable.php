@@ -55,6 +55,8 @@ class Mailable extends BaseMailable
     const SES_EMAIL_DRIVER     = 'ses';
     const MAILGUN_EMAIL_DRIVER = 'mailgun';
 
+    protected bool $debug = false;
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -149,11 +151,14 @@ class Mailable extends BaseMailable
 
                 $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPTED, $eventProperties);
 
-//                $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, [
-//                    'email'    => $toEmailHash,
-//                    'mailable' => get_class($this),
-//                    'view'     => $this->view,
-//                    ]);
+                if($this->debug === true)
+                {
+                    $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, [
+                        'email'    => $toEmailHash,
+                        'mailable' => get_class($this),
+                        'view'     => $this->view,
+                    ]);
+                }
 
                 $shouldSendEmailViaStork = Tracer::inSpan(['name' => HyperTrace::MAILABLE_SHOULD_SEND_VIA_STORK], function () {
                     return $this->shouldSendEmailViaStork();
@@ -248,13 +253,17 @@ class Mailable extends BaseMailable
                     $app['diag']->trackEmailEvent(EventCode::EMAIL_REWARD_SENT, $rewardEventProperties);
                 }
 
-//                $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL,
-//                    [
-//                        'email' => $toEmailHash,
-//                        'message_id' => $msgID,
-//                        'mailable' => get_class($this)
-//                    ]
-//                );
+                if($this->debug === true)
+                {
+                    $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL,
+                        [
+                            'email' => $toEmailHash,
+                            'message_id' => $msgID,
+                            'mailable' => get_class($this)
+                        ]
+                    );
+                }
+
             }
             catch (\Throwable $e)
             {

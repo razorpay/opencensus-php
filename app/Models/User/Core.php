@@ -4732,6 +4732,45 @@ class Core extends Base\Core
         return array_only($otp, 'token');
     }
 
+    private function getSplitzResponse(string $merchantId, string $experimentName): string
+    {
+        $response = [];
+
+        try
+        {
+            $experimentId = $this->config->get('app.'.$experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId,
+                'result'        => $response
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->config->get($experimentName) ?? null
+            ]);
+        }
+
+        return array_get($response, 'response.variant.variables.0.value', '');
+    }
+
+    protected function isDirectSendMailEnabled(string $merchantId): bool
+    {
+        $experimentName = 'direct_send_mail_enabled';
+
+        $isDirectSendMailExperimentEnabled = $this->getSplitzResponse($merchantId, $experimentName);
+
+        return $isDirectSendMailExperimentEnabled === 'on';
+    }
+
     /**
      * Ref: `sendOtp()`
      * Sends OTP to user's email.
@@ -4749,9 +4788,23 @@ class Core extends Base\Core
 
         $payload = $input + $this->getExtraRavenSmsPayload($input, $merchant);
 
+        $directMailEnabled = $this->isDirectSendMailEnabled($merchant->getId());
+
+        if($directMailEnabled === true)
+        {
+            $payload['debug'] = true;
+        }
+
         $mailable = new OtpMail($payload, $user, $otp);
 
-        Mail::queue($mailable);
+        if($directMailEnabled === true)
+        {
+            Mail::send($mailable);
+        }
+        else
+        {
+            Mail::queue($mailable);
+        }
 
         return array_only($otp, 'token');
     }

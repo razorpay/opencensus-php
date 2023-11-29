@@ -38,6 +38,7 @@ class Otp extends Mailable
         $this->input = $input;
         $this->user  = $user->toArrayPublic();
         $this->otp   = $otp;
+        $this->debug = array_get($input, 'debug', false);
     }
 
     protected function addRecipients()

@@ -778,4 +778,6 @@ return array(
     'magic_complete_checkout_decomp_experiment_id' => env('MAGIC_COMPLETE_CHECKOUT_DECOMP_EXP_ID'),
 
     'magic_update_shipping_address_experiment_id' => env('MAGIC_UPDATE_SHIPPING_ADDRESS_EXP_ID'),
+
+    'direct_send_mail_enabled' => env('DIRECT_SEND_MAIL_ENABLED'),
 );

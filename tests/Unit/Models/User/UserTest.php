@@ -3442,4 +3442,85 @@ class UserTest extends TestCase
 
         $this->assertEquals($expectedContext, $response);
     }
+
+    public function testSendOtpViaEmailDirectMailEnabled()
+    {
+        $merchantId = 'MAOpBaETjL4Yj0';
+
+        Mail::fake();
+        Mail::shouldReceive('send')->once();
+
+        $this->coreMock->shouldReceive('generateOtpFromRaven')->andReturn(['token' => '45622']);
+        $this->coreMock->shouldReceive('getExtraRavenSmsPayload')->andReturn([]);
+        $this->coreMock->shouldReceive('isDirectSendMailEnabled')->with($merchantId)->andReturn(true);
+        $this->merchantEntityMock->shouldReceive("getId")->withAnyArgs()->andReturn($merchantId);
+
+        $this->userEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
+
+        $otpArray = ["otp"=>"123123", "token" => "asdadadad"];
+        $input = ['action' => 'user_auth', 'medium' => 'email'];
+
+        $response = $this->coreMock->sendOtpViaEmail(
+            $input,
+            $this->merchantEntityMock,
+            $this->userEntityMock,
+            $otpArray
+        );
+
+        $this->assertEquals($response['token'], 'asdadadad');
+    }
+
+    public function testsendOtpViaEmailDirectMailNotEnabled()
+    {
+        $merchantId = 'BU4wKuO2IisLWY';
+
+        Mail::fake();
+        Mail::shouldReceive('queue')->once();
+        $this->coreMock->shouldReceive('generateOtpFromRaven')->andReturn(['token' => '45622']);
+        $this->coreMock->shouldReceive('getExtraRavenSmsPayload')->andReturn([]);
+        $this->coreMock->shouldReceive('isDirectSendMailEnabled')->with($merchantId)->andReturn(false);
+        $this->merchantEntityMock->shouldReceive("getId")->withAnyArgs()->andReturn($merchantId);
+
+        $this->userEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
+
+        $otpArray = ["otp"=>"123123", "token" => "asdadadad"];
+        $input = ['action' => 'user_auth', 'medium' => 'email'];
+
+        $response = $this->coreMock->sendOtpViaEmail(
+            $input,
+            $this->merchantEntityMock,
+            $this->userEntityMock,
+            $otpArray
+        );
+
+        $this->assertEquals($response['token'], 'asdadadad');
+    }
+
+    public function testIsDirectSendMailEnabledPositive()
+    {
+        $experimentName = 'direct_send_mail_enabled';
+
+        $merchantId = 'MAOpBaETjL4Yj0';
+
+        $this->coreMock->shouldReceive('getSplitzResponse')->with($merchantId, $experimentName)->andReturn('on');
+
+        $response = $this->coreMock->isDirectSendMailEnabled($merchantId);
+
+        $this->assertEquals($response, true);
+    }
+
+    public function testIsDirectSendMailEnabledNegative()
+    {
+        $experimentName = 'direct_send_mail_enabled';
+
+        $merchantId = 'BU4wKuO2IisLWY';
+
+        $this->coreMock->shouldReceive('getSplitzResponse')->with($merchantId, $experimentName)->andReturn('');
+
+        $response = $this->coreMock->isDirectSendMailEnabled($merchantId);
+
+        $this->assertEquals($response, false);
+    }
 }
+
+
