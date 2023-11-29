@@ -3549,11 +3549,6 @@ class Entity extends Base\PublicEntity
     {
         $config = [];
 
-        if ($this->isEmailOptional() === true)
-        {
-            $config[] = 'email';
-        }
-
         if ($this->isPhoneOptional() === true)
         {
             $config[] = 'contact';
