@@ -4758,6 +4758,11 @@ class Core extends Base\Core
                     {
                         $clonedPayout->setStatus(Status::FAILED);
                     }
+                    else
+                    {
+                        $clonedPayout->setStatus(Status::REVERSED);
+                    }
+
                     try
                     {
                         $response = (new PayoutsLedgerProcessor($clonedPayout))->processPayoutAndCreateJournalEntry(

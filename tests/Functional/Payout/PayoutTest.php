@@ -38353,5 +38353,61 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(27, $feeSplit[1]->amount); // Tax amount in fee breakup
     }
 
+    public function testSubAccountPayoutReversalLedgerEvent()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->setUpForSubAccountPayout();
+
+        $this->setUpZeroPricing();
+
+        $testData = &$this->testData['testCreatePayout'];
+        $testData['response']['content']['fees'] = 0;
+        $testData['response']['content']['tax'] = 0;
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('ledger', $ledgerMock);
+
+        $ledgerMock->shouldReceive('createJournal')
+                   ->withArgs(function($payload, $headers, $throwExOnFailure) {
+                       $this->assertArraySelectiveEquals(
+                           [
+                               "amount"           => "2000000",
+                               "transactor_event" => "va_to_va_payout_failed"
+                           ],
+                           $payload);
+
+                       return true;
+                   })
+                   ->once();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'YB_NS_E10282323'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+                            'Payout failed. Contact support for help.');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        $reversal = $this->getLastEntity('reversal', true);
+        $this->assertEquals(2000000, $reversal['amount']);
+    }
 }
 
