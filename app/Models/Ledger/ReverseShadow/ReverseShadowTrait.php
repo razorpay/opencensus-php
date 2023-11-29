@@ -547,14 +547,11 @@ trait ReverseShadowTrait
             return $payload[Constants::API_TXN_ID];
         }
 
-        if ($payment->isDirectSettlement() === true)
-        {
-            $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
 
-            if (isset($txn) === true)
-            {
-                return $txn->getId();
-            }
+        if (isset($txn) === true)
+        {
+            return $txn->getId();
         }
 
         return null;

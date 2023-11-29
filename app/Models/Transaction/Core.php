@@ -203,7 +203,8 @@ class Core extends Base\Core
             //For rearch card payments, journals are created in payments-card microservice in reverse-shadow mode
             if(($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
                 ($payment->getCpsRoute() !== Payment\Entity::REARCH_CARD_PAYMENT_SERVICE) and
-                ($payment->getCpsRoute() !== Payment\Entity::REARCH_UPI_PAYMENT_SERVICE))
+                ($payment->getCpsRoute() !== Payment\Entity::REARCH_UPI_PAYMENT_SERVICE) and
+                ($payment->merchant->getCurrency() === "INR"))
             {
                 $this->createPaymentLedgerEntriesInReverseShadow($payment);
             }
