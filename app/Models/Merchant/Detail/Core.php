@@ -5200,13 +5200,15 @@ class Core extends Base\Core
         return $response;
     }
 
-    private function isMalaysianMerchant($merchant) {
+    public function isMalaysianMerchant($merchant)
+    {
         $countryCode = $merchant->getCountry();
 
         if ($countryCode === 'MY')
         {
             return true;
         }
+
         return false;
     }
 

@@ -674,6 +674,8 @@ return array(
 
     'pgos_migration_dual_writing_exp_id' => env('PGOS_MIGRATION_DUAL_WRITING_EXP_ID'),
 
+    'merchant_business_category_v3_revamp_exp_id' => env('MERCHANT_BUSINESS_CATEGORY_V3_REVAMP_EXP_ID'),
+
     'enable_payments_for_no_doc_merchants_experiment_id'  => env('ENABLE_PAYMENTS_FOR_NO_DOC_MERCHANTS_EXPERIMENT_ID'),
 
     'add_payment_acceptance_fields_to_account_v2_response' => env('ADD_PAYMENT_ACCEPTANCE_FIELDS_TO_ACCOUNT_V2_RESPONSE'),

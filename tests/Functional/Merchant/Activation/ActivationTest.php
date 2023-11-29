@@ -354,7 +354,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->assertEquals($merchant->getLegalEntityId(), $legalEntity->getId());
         $this->assertEquals(1, $legalEntity->getBusinessTypeValue());
-        $this->assertEquals($legalEntity->getMcc(), 5691);
+        $this->assertEquals($legalEntity->getMcc(), 5651);
         $this->assertEquals('ecommerce', $legalEntity->getBusinessCategory());
         $this->assertEquals('fashion_and_lifestyle', $legalEntity->getBusinessSubcategory());
 

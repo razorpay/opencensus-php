@@ -562,6 +562,8 @@ class Service extends Base\Service
 
         $isPhantomOnboardingFlow = Merchant\PhantomUtility::validatePhantomOnBoarding($partnerId);
 
+        $this->saveMerchantEligibilityForCategoriesV3Revamp($merchantId, $input, $merchant);
+
         // check if merchant is to be onboarded via PGOS
         $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
 
@@ -1797,7 +1799,7 @@ class Service extends Base\Service
      */
     public function getBusinessCategories(): array
     {
-        $businessCategoriesMap = BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategoriesMap = BusinessCategory::SUBCATEGORY_MAP_OLD;
         $businessCategories    = [];
 
         foreach ($businessCategoriesMap as $businessCategory => $subCategories)
@@ -3071,7 +3073,7 @@ class Service extends Base\Service
 
         return null;
     }
-    
+
     /**
      * Trigger BVS sync flow validation to verify whether the given GST number is valid or not.
      * Sync flow validation is done so that we can get the success/failure response of BVS at the time of execution.
@@ -3080,30 +3082,30 @@ class Service extends Base\Service
     private function triggerBvsValidationSyncFlowForGSTUpdateV2(bool $isAddAction, array $input): Merchant\BvsValidation\Entity
     {
         $payload = $this->getUpdateGstinSelfServeBvsPayload($input);
-    
+
         $input = array_merge($input, [
             Merchant\Entity::MERCHANT_ID               => $this->merchant->getId(),
             DEConstants::IS_ADD_GSTIN_OPERATION        => $isAddAction,
             DetailConstants::VERSION                   => 'v2',
         ]);
-        
+
         $this->storeGstinSelfServeInput($input);
-    
+
         $validation = (new BvsCore($this->merchant, $this->merchant->merchantDetail))->verify($this->merchant->getId(), $payload, true, true);
-    
+
         if ($validation === null)
         {
             throw new Exception\ServerErrorException('bvs validation create failed for gst update v2', ErrorCode::SERVER_ERROR);
         }
-    
+
         $this->trace->info(TraceCode::GSTIN_BVS_VALIDATION_TRIGGERED, [
             BvsConstant::VALIDATION_ID  => $validation->getValidationId(),
             BvsConstant::STATUS         => $validation->getValidationStatus(),
         ]);
-        
+
         return $validation;
     }
-    
+
     /**
      * @throws BadRequestException
      * @throws Exception\ServerErrorException
@@ -3111,9 +3113,9 @@ class Service extends Base\Service
     private function addMerchantGSTDetailV2(bool $isAddAction, array $input)
     {
         $this->validator->validateInput('gstin_self_serve_v2', $input);
-        
+
         $gstList = $this->core->getGSTDetailsList()[DetailConstants::RESULTS];
-        
+
         if (in_array($input[Entity::GSTIN], $gstList) === false)
         {
             throw new BadRequestException(
@@ -3122,41 +3124,41 @@ class Service extends Base\Service
                         null,
                         "The gstin is not verified.");
         }
-        
+
         $validation = $this->triggerBvsValidationSyncFlowForGSTUpdateV2($isAddAction, $input);
 
         $response = $input;
         $response[DetailConstants::VERSION] = 'v2';
         $response[Constants::WORKFLOW_CREATED] = false;
-        
+
         if ($validation->getValidationStatus() !== BvsValidationConstants::SUCCESS)
         {
             $response[Constants::SYNC_FLOW] = false;
-            
+
             return $response;
         }
-    
+
         $merchantDetails = $this->merchant->merchantDetail;
-        
+
         $this->handleGstinSelfServeCallback($merchantDetails, $validation);
-        
+
         $response[Constants::SYNC_FLOW] = $this->isGSTBvsSyncFlowSuccess;
-        
+
         return $response;
     }
-    
+
     public function updateGstinSelfServe($input)
     {
         $version = 'v1';
-        
+
         if ((isset($input[DetailConstants::VERSION]) === true) and
             ($input[DetailConstants::VERSION] === 'v2'))
         {
             $version = $input[DetailConstants::VERSION];
-        
+
             unset($input[DetailConstants::VERSION]);
         }
-        
+
         $isAddAction = $this->isAddGstinSelfServeAction($this->merchant->merchantDetail);
 
         $traceCode = ($isAddAction) ? TraceCode::GSTIN_ADD_SELF_SERVE_INITIATED : TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED;
@@ -3170,14 +3172,14 @@ class Service extends Base\Service
         {
             $this->merchant->getValidator()->validateIsActivated($this->merchant);
         }
-    
+
         if ($version === 'v2')
         {
             return $this->addMerchantGSTDetailV2($isAddAction, $input);
         }
-        
+
         $this->validator->validateInput('gstin_self_serve', $input);
-        
+
         $payload = $this->getUpdateGstinSelfServeBvsPayload($input);
 
         $fileId = $this->uploadGstInCertificateForGstinSelfServe(
@@ -3320,9 +3322,9 @@ class Service extends Base\Service
                 'Failed to get gstin data from cache',
                 ErrorCode::SERVER_ERROR);
         }
-    
+
         $version = 'v1';
-    
+
         if (((isset($input[DetailConstants::VERSION])) === true) and
             ($input[DetailConstants::VERSION] === 'v2'))
         {
@@ -3361,14 +3363,14 @@ class Service extends Base\Service
             if ($version ==='v2')
             {
                 $this->isGSTBvsSyncFlowSuccess = false;
-    
+
                 $this->trace->traceException($e,
                     Trace::INFO,
                     TraceCode::GSTIN_SELF_SERVE_SUCCESS_CALLBACK_UPDATE_FAILED_VERSION_V2, []);
-                
+
                 return;
             }
-            
+
             $this->trace->info(TraceCode::GSTIN_SELF_SERVE_WORKFLOW_RAISED_AFTER_BVS_SUCCESS, []);
 
             $this->handleGstinSelfServeCallbackFailure($detail);
@@ -3488,17 +3490,17 @@ class Service extends Base\Service
     protected function handleGstinSelfServeCallbackFailure(Entity $oldDetailEntity)
     {
         $input = $this->getGstinSelfServeInputFromCache($oldDetailEntity->getId());
-    
+
         if (((isset($input[DetailConstants::VERSION])) === true) and
             ($input[DetailConstants::VERSION] === 'v2'))
         {
             $this->isGSTBvsSyncFlowSuccess = false;
-            
+
             $this->trace->info(TraceCode::GSTIN_SELF_SERVE_FAILURE_CALLBACK_VERSION_V2, []);
-            
+
             return;
         }
-        
+
         if (isset($input[Entity::GSTIN]) === false)
         {
             throw new Exception\ServerErrorException(
@@ -4841,5 +4843,53 @@ class Service extends Base\Service
             'destination'           => $this->merchant->merchantDetail->getContactMobile(),
             "language"              => "english"
         ];
+    }
+    public function saveMerchantEligibilityForCategoriesV3Revamp(string $merchantId, array $input, Merchant\Entity $merchant)
+    {
+        if (isset($input[Entity::BUSINESS_CATEGORY]) === true or
+            (isset($input[Entity::BUSINESS_SUBCATEGORY]) === true))
+        {
+            if ($this->isCategoryV3RevampApplicable($merchant) === true)
+            {
+                (new MerchantOnboardingProxyController())->handlePGOSProxyRequests(MerchantOnboardingProxyController::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE, [], $merchant, true);
+            }
+        }
+    }
+
+    protected function isCategoryV3RevampApplicable(Merchant\Entity $merchant): bool
+    {
+        $experimentName = 'merchant_business_category_v3_revamp_exp_id';
+
+        $isMalaysianMerchant = (new Core())->isMalaysianMerchant($merchant);
+
+        if ($isMalaysianMerchant === true)
+        {
+            return false;
+        }
+
+        $isRegularMerchant = (new MerchantCore())->isRegularMerchant($merchant);
+
+        if ($isRegularMerchant === false)
+        {
+            return false;
+        }
+
+        $splitzForMilestone2CategoriesRevamp = (new Core())->getSplitzResponse($merchant->getId(), $experimentName);
+
+        if ($splitzForMilestone2CategoriesRevamp !== Constants::SPLITZ_TRUE)
+        {
+            return false;
+        }
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchant->getId());
+
+        $signupCampaign = $userDeviceDetail ? $userDeviceDetail->signup_campaign : null;
+
+        if (empty($signupCampaign) === false && $signupCampaign === DDConstants::EASY_ONBOARDING)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

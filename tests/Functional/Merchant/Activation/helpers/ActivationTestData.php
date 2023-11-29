@@ -69,7 +69,7 @@ return [
                             'international_activation' => 'greylist',
                         ],
                         'forex'             => [
-                            'category'                 => '6010',
+                            'category'                 => '6051',
                             'description'              => 'Forex',
                             'category2'                => 'forex',
                             'activation_flow'          => 'greylist',
@@ -104,7 +104,7 @@ return [
                             'international_activation' => 'greylist',
                         ],
                         'crowdfunding'      => [
-                            'category'                 => '6050',
+                            'category'                 => '6211',
                             'description'              => 'Crowdfunding Platform',
                             'category2'                => 'financial_services',
                             'activation_flow'          => 'greylist',
@@ -158,14 +158,14 @@ return [
                             'international_activation' => 'whitelist',
                         ],
                         'professional_courses' => [
-                            'category'                 => '8299',
+                            'category'                 => '8249',
                             'description'              => 'Professional Courses',
                             'category2'                => 'pvt_education',
                             'activation_flow'          => 'whitelist',
                             'international_activation' => 'whitelist',
                         ],
                         'distance_learning'    => [
-                            'category'                 => '8299',
+                            'category'                 => '8241',
                             'description'              => 'Distance Learning',
                             'category2'                => 'pvt_education',
                             'activation_flow'          => 'whitelist',
@@ -179,7 +179,7 @@ return [
                             'international_activation' => 'whitelist',
                         ],
                         'elearning'            => [
-                            'category'                 => '8299',
+                            'category'                 => '8241',
                             'description'              => 'E-Learning',
                             'category2'                => 'pvt_education',
                             'activation_flow'          => 'whitelist',
@@ -227,7 +227,7 @@ return [
                                 'international_activation' => 'greylist',
                             ],
                             'fitness'                => [
-                                'category'                 => '7298',
+                                'category'                 => '7941',
                                 'description'              => 'Gym and Fitness',
                                 'category2'                => 'services',
                                 'activation_flow'          => 'whitelist',
@@ -263,28 +263,28 @@ return [
                             'category'                 => '4900',
                             'description'              => 'Electricity',
                             'category2'                => 'utilities',
-                            'activation_flow'          => 'whitelist',
+                            'activation_flow'          => 'greylist',
                             'international_activation' => 'whitelist',
                         ],
                         'gas'                           => [
                             'category'                 => '4900',
                             'description'              => 'Gas',
                             'category2'                => 'utilities',
-                            'activation_flow'          => 'whitelist',
+                            'activation_flow'          => 'greylist',
                             'international_activation' => 'whitelist',
                         ],
                         'telecom'                       => [
                             'category'                 => '4814',
                             'description'              => 'Telecom Service Provider',
                             'category2'                => 'recharges',
-                            'activation_flow'          => 'whitelist',
+                            'activation_flow'          => 'greylist',
                             'international_activation' => 'whitelist',
                         ],
                         'water'                         => [
                             'category'                 => '4900',
                             'description'              => 'Water',
                             'category2'                => 'utilities',
-                            'activation_flow'          => 'whitelist',
+                            'activation_flow'          => 'greylist',
                             'international_activation' => 'whitelist',
                         ],
                         'cable'                         => [
@@ -319,7 +319,7 @@ return [
                             'category'                 => '4814',
                             'description'              => 'Bill Payment and Recharge Aggregators',
                             'category2'                => 'recharges',
-                            'activation_flow'          => 'whitelist',
+                            'activation_flow'          => 'greylist',
                             'international_activation' => 'greylist',
                         ],
                     ],
@@ -453,7 +453,7 @@ return [
                             'international_activation' => 'whitelist',
                         ],
                         'agriculture'               => [
-                            'category'                 => '5193',
+                            'category'                 => '5261',
                             'description'              => 'Agricultural products',
                             'category2'                => 'ecommerce',
                             'activation_flow'          => 'whitelist',
@@ -488,7 +488,7 @@ return [
                             'international_activation' => 'whitelist',
                         ],
                         'fashion_and_lifestyle'     => [
-                            'category'                 => '5691',
+                            'category'                 => '5651',
                             'description'              => 'Fashion and Lifestyle',
                             'category2'                => 'ecommerce',
                             'activation_flow'          => 'whitelist',
@@ -551,14 +551,14 @@ return [
                             'international_activation' => 'whitelist',
                         ],
                         'arts_and_collectibles'     => [
-                            'category'                 => '5971',
+                            'category'                 => '5970',
                             'description'              => 'Arts, crafts and collectibles',
                             'category2'                => 'ecommerce',
                             'activation_flow'          => 'whitelist',
                             'international_activation' => 'whitelist',
                         ],
                         'sexual_wellness_products'  => [
-                            'category'                 => '5999',
+                            'category'                 => '5912',
                             'description'              => 'Sexual Wellness Products',
                             'category2'                => 'ecommerce',
                             'activation_flow'          => 'greylist',
@@ -629,7 +629,7 @@ return [
                             'category'                 => '5813',
                             'description'              => 'Alcoholic Beverages',
                             'category2'                => 'food_and_beverage',
-                            'activation_flow'          => 'blacklist',
+                            'activation_flow'          => 'greylist',
                             'international_activation' => 'blacklist',
                         ],
                         'restaurant_search_and_booking' => [
@@ -680,7 +680,7 @@ return [
                             'international_activation' => 'greylist',
                         ],
                         'technical_support'          => [
-                            'category'                 => '7379',
+                            'category'                 => '7372',
                             'description'              => 'Technical Support',
                             'category2'                => 'it_and_software',
                             'activation_flow'          => 'blacklist',
@@ -753,11 +753,11 @@ return [
                             'international_activation' => 'whitelist',
                         ],
                         'content_and_publishing' => [
-                            'category'                 => '2741',
+                            'category'                 => '5942',
                             'description'              => 'Content and Publishing',
                             'category2'                => 'media_and_entertainment',
                             'activation_flow'          => 'whitelist',
-                            'international_activation' => 'whitelist',
+                            'international_activation' => 'greylist',
                         ],
                         'ticketing'              => [
                             'category'                 => '7832',
@@ -790,7 +790,7 @@ return [
                             'description'              => 'Interior Designing and Architect',
                             'category2'                => 'services',
                             'activation_flow'          => 'whitelist',
-                            'international_activation' => 'greylist',
+                            'international_activation' => 'whitelist',
                         ],
                         'movers_and_packers'            => [
                             'category'                 => '4214',
@@ -807,7 +807,7 @@ return [
                             'international_activation' => 'greylist',
                         ],
                         'event_planning'                => [
-                            'category'                 => '8999',
+                            'category'                 => '7392',
                             'description'              => 'Event planning services',
                             'category2'                => 'services',
                             'activation_flow'          => 'whitelist',
@@ -854,7 +854,7 @@ return [
                     'description'   => 'Housing and Real Estate',
                     'subcategories' => [
                         'developer'              => [
-                            'category'                 => '6513',
+                            'category'                 => '1520',
                             'description'              => 'Developer',
                             'category2'                => 'real_estate',
                             'activation_flow'          => 'whitelist',
@@ -868,7 +868,7 @@ return [
                             'international_activation' => 'greylist',
                         ],
                         'rwa'                    => [
-                            'category'                 => '7349',
+                            'category'                 => '8641',
                             'description'              => 'RWA',
                             'category2'                => 'housing',
                             'activation_flow'          => 'whitelist',
@@ -882,7 +882,7 @@ return [
                             'international_activation' => 'greylist',
                         ],
                         'realestate_classifieds' => [
-                            'category'                 => '6513',
+                            'category'                 => '7311',
                             'description'              => 'Real estate classifieds',
                             'category2'                => 'services',
                             'activation_flow'          => 'whitelist',
@@ -919,7 +919,7 @@ return [
                             'description'              => 'Religious',
                             'category2'                => 'not_for_profit',
                             'activation_flow'          => 'whitelist',
-                            'international_activation' => 'greylist',
+                            'international_activation' => 'blacklist',
                         ],
                         'personal'    => [
                             'category'                 => '8398',
@@ -941,7 +941,7 @@ return [
                             'international_activation' => 'blacklist',
                         ],
                         'social_network'        => [
-                            'category'                 => '8641',
+                            'category'                 => '5817',
                             'description'              => 'Social Network',
                             'category2'                => 'social',
                             'activation_flow'          => 'whitelist',
@@ -955,7 +955,7 @@ return [
                             'international_activation' => 'greylist',
                         ],
                         'professional_network'  => [
-                            'category'                 => '8699',
+                            'category'                 => '5817',
                             'description'              => 'Professional Network',
                             'category2'                => 'social',
                             'activation_flow'          => 'whitelist',

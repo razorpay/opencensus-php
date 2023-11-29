@@ -277,6 +277,34 @@ return [
             ],
         ],
     ],
+    'testSaveMerchantEligibleForCategoriesRevamp' => [
+        'request'  => [
+            'content' => [
+                'bank_account_name'   => 'Test',
+                'bank_account_number' => '111000',
+                'bank_branch_ifsc'    => 'SBIN0007105',
+                'bank_account_type'   => 'savings',
+                'business_name'       => 'Test',
+                'business_type'       => 1,
+                'submit'              => true,
+                'business_category'   => 'financial_services',
+                'business_subcategory'=> 'accounting',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'submitted'      => false,
+                'verification'   => [
+                    'status' => 'disabled'
+                ],
+                'can_submit'     => false,
+                'activated'      => 0,
+                'locked'         => false,
+            ],
+        ],
+    ],
 
     'testSubmitWithInvalidFields' => [
         'request' => [
@@ -4901,7 +4929,7 @@ return [
             ],
         ],
     ],
-  
+
     'testUpdateGstinSelfServeSuccessV2'      => [
         'request'   => [
             'url'       => '/merchant/gstin_self_serve',
@@ -4920,7 +4948,7 @@ return [
             ],
         ],
     ],
-  
+
     'testUpdateGstinSelfServeFailureV2'      => [
         'request'   => [
             'url'       => '/merchant/gstin_self_serve',

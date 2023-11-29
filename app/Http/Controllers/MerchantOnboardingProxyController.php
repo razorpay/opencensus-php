@@ -39,8 +39,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_INVOICE_LOGIC_SAVE    = 'merchant_invoice_logic_save';
 
     // Merchant Activation Business categories v3 mapping
-    const MERCHANT_CATEGORIES_V3         = 'fetch_merchant_categories';
-    const MERCHANT_CATEGORIES_ADMIN_V3   = 'fetch_merchant_categories_admin';
+    const MERCHANT_CATEGORIES_V3                    = 'fetch_merchant_categories';
+    const MERCHANT_CATEGORIES_ADMIN_V3              = 'fetch_merchant_categories_admin';
+    const MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE   = 'merchant_categories_v3_eligibility_save';
 
     const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
     const MERCHANT_DETAILS_PATCH         = 'merchant_details_patch';
@@ -181,24 +182,17 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SAVE_MERCHANT_DOCUMENT_DETAILS   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantDocumentMetadata',
         self::FETCH_MERCHANT_DOCUMENT_DETAILS  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantDocumentMetadata',
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/CheckMerchantDocumentDetailsValidity',
-
-
-
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetPolicyComplianceDetails',
         self::MERCHANT_SAVE_POLICY_COMPLIANCE_DETAILS   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantSavePolicyComplianceDetails',
         self::MERCHANT_POLICY_SECTION_PUBLISH_V2        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantPolicySectionPublish',
         self::GET_MERCHANT_ONBOARDING_DOCS_VERIFICATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDocVerification',
-
-
         self::MERCHANT_GATING_LOGIC_SAVE       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantGatingLogic',
         self::PAYMENT_ORDER_CREATE             => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderCreate',
         self::PAYMENT_ORDER_VERIFY             => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderVerify',
         self::MERCHANT_FETCH_GATING_LOGIC      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantGatingLogic',
         self::PAYMENT_ORDER_WEBHOOK            => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/PaymentOrderWebhook',
-
         self::GET_MERCHANT_ELIGIBILITY_FOR_AUTOMATION_ACTIVATION => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantEligibilityForAutomationActivation',
-
         self::MERCHANT_INVOICE_LOGIC_SAVE                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SaveMerchantInvoiceLogic',
         self::MERCHANT_CONSENTS_SAVE                       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantConsentsSave',
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GenerateMerchantIdentityVerificationUrl',
@@ -206,9 +200,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantWebsitePolicyPreview',
         self::MERCHANT_CATEGORIES_V3                       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesV3Map',
         self::MERCHANT_CATEGORIES_ADMIN_V3                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesAdminV3Map',
-
+        self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantCategoriesV3EligibilitySave',
         self::SEND_SMS_OTP      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendSMSOTP',
-        self::VERIFY_OTP        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/VerifyOTP'
+        self::VERIFY_OTP        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/VerifyOTP',
     ];
 
     // timeout in seconds
@@ -217,8 +211,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::SAVE_MERCHANT_DOCUMENT_DETAILS   => 15,
         self::FETCH_MERCHANT_DOCUMENT_DETAILS  => 15,
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK => 15,
-
-
         self::MERCHANT_ACTIVATION_SAVE                  => 15,
         self::MERCHANT_SIGN_UP                          => 20,
         self::MERCHANT_DOCUMENT_UPLOAD                  => 15,
@@ -256,7 +248,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
         self::MERCHANT_CATEGORIES_V3,
-        self::MERCHANT_CATEGORIES_ADMIN_V3
+        self::MERCHANT_CATEGORIES_ADMIN_V3,
+        self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE
     ];
 
     public function __construct()
@@ -277,6 +270,37 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     }
 
+    protected function pgosMockResponses(string $routeKey)
+    {
+        //mocking default response based on RouteKey
+        return match ($routeKey)
+        {
+            self::FETCH_MERCHANT_DOCUMENT_DETAILS => [
+                "ffmc_license" => [
+                    [
+                        "id"            => "MuiZWKXnd61h78",
+                        "file_store_id" => "1cXSLlUU8V9sXl",
+                        "merchant_id"   => "KqsQEszAud2PqZ",
+                        "created_at"    => "0",
+                        "metadata"      => [
+                            "expiry_applicable" => "true",
+                            "expiry_date"       => "1699615221",
+                            "expiry_mandatory"  => "true"
+                        ]
+                    ],
+                ],
+                // ... (and so on for the other document types)
+            ],
+            self::MERCHANT_DOCUMENT_UPLOAD => [
+                "activation_response" => [],
+            ],
+            self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE, self::MERCHANT_DOCUMENT_VALIDITY_CHECK => [
+                "success" => true
+            ],
+            default => null,
+        };
+    }
+
     public function handlePGOSProxyRequests($routeKey, $payload, $merchant, $ignoreRoutingConditions = false)
     {
         $merchantId = $merchant->getMerchantId();
@@ -293,36 +317,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         if ($mock === true)
         {
-            //mocking default response based on routekey
-            switch ($routeKey)
-            {
-                case self::FETCH_MERCHANT_DOCUMENT_DETAILS :
-                    return  [
-                        "ffmc_license" => [
-                            [
-                                "id" => "MuiZWKXnd61h78",
-                                "file_store_id" => "1cXSLlUU8V9sXl",
-                                "merchant_id" => "KqsQEszAud2PqZ",
-                                "created_at" => "0",
-                                "metadata" => [
-                                    "expiry_applicable" => "true",
-                                    "expiry_date"       => "1699615221",
-                                    "expiry_mandatory"  => "true"
-                                ]
-                            ],
-                        ],
-                        // ... (and so on for the other document types)
-                    ];
-                case self::MERCHANT_DOCUMENT_UPLOAD :
-                    return [
-                        "activation_response" => [],
-                    ];
-                case self::MERCHANT_DOCUMENT_VALIDITY_CHECK:
-                    return [
-                        "success" => true
-                    ];
-            }
-            return null;
+            return $this->pgosMockResponses($routeKey);
         }
 
         // check if for the merchant the experiment is enabled or not

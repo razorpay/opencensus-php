@@ -75,7 +75,6 @@ class BusinessCategory
         self::NOT_FOR_PROFIT             => 'Nonprofit',
         self::SOCIAL                     => 'Social group or platform',
         self::OTHERS                     => 'Other',
-
         self::COUPONS                              => 'Coupons, discounts, deals',
         self::REPAIR_AND_CLEANING                  => 'Automobile garage',
         self::ACCOUNTING                           => 'Accounting Services',

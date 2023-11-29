@@ -340,6 +340,56 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals('accounting', $legalEntity->getBusinessSubcategory());
     }
 
+    public function testSaveMerchantEligibleForCategoriesRevamp()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $experimentId = 'MrXx6br2Apd4vJ';
+
+        $input = [
+            'id'            => $merchantId,
+            'experiment_id' => $experimentId,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        $this->assertEquals('financial_services', $merchantDetail->getBusinessCategory());
+
+        $this->assertEquals('accounting', $merchantDetail->getBusinessSubcategory());
+    }
+
     public function testSubmitWithInvalidFields()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:invalid_fields');
@@ -7769,34 +7819,34 @@ Team Razorpay', '+911234567890');
             'request_under_validation' =>  true
         ]);
     }
-    
+
     public function testUpdateGstInSelfServeSuccessV2()
     {
         Config::set('services.bvs.response', Constant::SUCCESS);
-    
+
         $additionalInput = [
             'merchant_detail' => [
                 'promoter_pan'            => 'BRRPK8070K',
                 'poi_verification_status' => 'verified',
             ]
         ];
-        
+
         extract($this->setupMerchantForGstinSelfServeTest(true, $additionalInput));
-    
+
         $this->enableRazorXTreatmentForSyncGstinBvsValidation('on');
-    
+
         $this->setBvsValidationDetailForGstinUpdateSelfServe();
-        
+
         $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServeSuccessV2'];
-        
+
         $response = $this->startTest();
-    
+
         $this->assertEquals(true, $response['sync_flow']);
-    
+
         $this->assertEquals(false, $response['workflow_created']);
-    
+
         $merchantDetail = $this->getEntityById('merchant_detail', $merchant['id'], true);
-    
+
         $this->assertArraySelectiveEquals([
             'gstin'                       => '13AAACR5055K1ZG',
             'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
@@ -7805,81 +7855,81 @@ Team Razorpay', '+911234567890');
             'business_registered_state'   => 'MH'
         ], $merchantDetail);
     }
-    
+
     public function testUpdateGstInSelfServeSyncFlowAsFalseDueToBVSValidationDetailsForPrimaryAddressNotFoundV2()
     {
         Config::set('services.bvs.response', Constant::SUCCESS);
-        
+
         $additionalInput = [
             'merchant_detail' => [
                 'promoter_pan'            => 'BRRPK8070K',
                 'poi_verification_status' => 'verified',
             ]
         ];
-        
+
         extract($this->setupMerchantForGstinSelfServeTest(true, $additionalInput));
-        
+
         $this->enableRazorXTreatmentForSyncGstinBvsValidation('on');
-    
+
         $data = $this->testData['testUpdateGstinSelfServeSuccessV2'];
-    
+
         $data['response']['content'] = [
             'gstin'             => '13AAACR5055K1ZG',
             'sync_flow'         => false,
             'workflow_created'  => false,
             'version'           => 'v2',
         ];
-    
+
         $response = $this->startTest($data);
-        
-        $this->assertEquals(false, $response['sync_flow']);
-        
-        $this->assertEquals(false, $response['workflow_created']);
-    }
-    
-    public function testUpdateGstInSelfServeSyncFlowAsFalseDueToGSTBVSValidationStatusV2()
-    {
-        Config::set('services.bvs.response', Constant::SUCCESS);
-        
-        $additionalInput = [
-            'merchant_detail' => [
-                'promoter_pan'            => 'BRRPK8070K',
-                'poi_verification_status' => 'verified',
-            ]
-        ];
-        
-        extract($this->setupMerchantForGstinSelfServeTest(true, $additionalInput));
-    
-        $data = $this->testData['testUpdateGstinSelfServeSuccessV2'];
-    
-        $data['response']['content'] = [
-            'gstin'             => '13AAACR5055K1ZG',
-            'sync_flow'         => false,
-            'workflow_created'  => false,
-            'version'           => 'v2',
-        ];
-    
-        $response = $this->startTest($data);
-        
+
         $this->assertEquals(false, $response['sync_flow']);
 
         $this->assertEquals(false, $response['workflow_created']);
     }
-    
+
+    public function testUpdateGstInSelfServeSyncFlowAsFalseDueToGSTBVSValidationStatusV2()
+    {
+        Config::set('services.bvs.response', Constant::SUCCESS);
+
+        $additionalInput = [
+            'merchant_detail' => [
+                'promoter_pan'            => 'BRRPK8070K',
+                'poi_verification_status' => 'verified',
+            ]
+        ];
+
+        extract($this->setupMerchantForGstinSelfServeTest(true, $additionalInput));
+
+        $data = $this->testData['testUpdateGstinSelfServeSuccessV2'];
+
+        $data['response']['content'] = [
+            'gstin'             => '13AAACR5055K1ZG',
+            'sync_flow'         => false,
+            'workflow_created'  => false,
+            'version'           => 'v2',
+        ];
+
+        $response = $this->startTest($data);
+
+        $this->assertEquals(false, $response['sync_flow']);
+
+        $this->assertEquals(false, $response['workflow_created']);
+    }
+
     public function testUpdateGstinSelfServeFailureV2()
     {
         Config::set('services.bvs.response', Constant::SUCCESS);
-        
+
         $additionalInput = [
             'merchant_detail' => [
                 'poi_verification_status' => 'verified',
             ]
         ];
-        
+
         extract($this->setupMerchantForGstinSelfServeTest(true, $additionalInput));
-        
+
         $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServeFailureV2'];
-        
+
         $this->startTest();
     }
 
