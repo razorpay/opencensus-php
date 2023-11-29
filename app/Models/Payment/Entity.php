@@ -303,7 +303,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const NB_PLUS_SERVICE_PAYMENTS          = 6;
     const REARCH_UPI_PAYMENT_SERVICE        = 7;
     const EMANDATE_PAYMENT_SERVICE          = 9;
-    
+
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
     const HOSTED_TIME_FORMAT                = 'j M Y';
@@ -4490,7 +4490,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
        if (($this->isUpi() === true) and
             ($this->isExternal() === true) and
-            (($this->isCaptured() === false) and
+            ((($this->isCaptured() === false) and
+                    ($this->isFeeBearerPlatform() === true)) and
              ($this->isPartiallyOrFullyRefunded() === false)))
        {
             $array[self::FEE] =  null;
@@ -4500,9 +4501,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setPublicTaxAttribute(array & $array)
     {
        if (($this->isUpi() === true) and
-            ($this->isExternal() === true) and
-            (($this->isCaptured() === false) and
-             ($this->isPartiallyOrFullyRefunded() === false)))
+           ($this->isExternal() === true) and
+           ((($this->isCaptured() === false) and
+                   ($this->isFeeBearerPlatform() === true)) and
+               ($this->isPartiallyOrFullyRefunded() === false)))
        {
             $array[self::TAX] =  null;
        }
