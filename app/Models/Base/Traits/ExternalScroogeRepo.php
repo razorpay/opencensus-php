@@ -414,6 +414,54 @@ trait ExternalScroogeRepo
         return false;
     }
 
+    public function isScroogeReadMigration($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isScroogeReadMigrationEnabled($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function validateExternalFetchEnabledForScrooge($id = null)
     {
         $keyName = Entity::getExternalConfigKeyName($this->entityName);
@@ -562,6 +610,102 @@ trait ExternalScroogeRepo
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 
+    private function fetchRefundForPaymentIdAndAmount($paymentId, $amount, $input = [])
+    {
+        $class = Entity::getExternalRepoSingleton($this->entity);
+
+        try
+        {
+            // scrooge entity fetch input
+            $scrooge_fetch_query = [
+                'query' => [
+                    'refunds' => [
+                        'payment_id' => $paymentId,
+                        'amount' => $amount
+
+                    ]
+                ]
+            ];
+
+            $entity = $class->fetchRefunds($scrooge_fetch_query);
+
+            if (empty($entity) === false)
+            {
+                $relations = $this->getExpandsForQueryFromInput($input);
+
+                $entity->loadMissing($relations);
+
+                return $entity;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data'        => $e->getMessage(),
+                ]);
+        }
+
+        $data = [
+            'model'      => $this->entityName,
+            'attributes' => $paymentId,
+            'operation'  => 'find'
+        ];
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    private function fetchRefundByIds($refundIds, $input = [])
+    {
+        $class = Entity::getExternalRepoSingleton($this->entity);
+
+        try
+        {
+            // Construct the fetch query
+            $scrooge_fetch_query = [
+                'query' => [
+                    'refunds' => [
+                        'id' => $refundIds,
+                    ]
+                ]
+            ];
+
+            $entity = $class->fetchRefunds($scrooge_fetch_query);
+
+            if (empty($entity) === false)
+            {
+                $relations = $this->getExpandsForQueryFromInput($input);
+
+                $entity->loadMissing($relations);
+
+                return $entity;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data'        => $e->getMessage(),
+                ]);
+        }
+
+        $data = [
+            'model'      => $this->entityName,
+            'attributes' => $refundIds,
+            'operation'  => 'find'
+        ];
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
     /*
      * it will verify and enable to add some routes to skip fetching data
      * from scrooge microservice
@@ -571,5 +715,201 @@ trait ExternalScroogeRepo
         $routes = \RZP\Http\Route::$forceRefundsLoadFromApiRoutes;
 
         return (in_array($routeName, $routes, true) === true);
+    }
+
+    private function fetchRefundByReceiptAndMerchantId(string $receipt, string $merchantId, $input = [])
+    {
+        $class = Entity::getExternalRepoSingleton($this->entity);
+
+        try
+        {
+
+            $scrooge_fetch_query = [
+                'query' => [
+                    'refunds' => [
+                        'merchant_id'=> $merchantId,
+                        'receipt'=> $receipt,
+                    ]
+                ],
+            ];
+
+            $entity = $class->fetchRefunds($scrooge_fetch_query);
+
+            if (empty($entity) === false)
+            {
+                $relations = $this->getExpandsForQueryFromInput($input);
+
+                $entity->loadMissing($relations);
+
+                return $entity;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data'        => $e->getMessage(),
+                ]);
+        }
+
+        $data = [
+            'model'      => $this->entityName,
+            'receipt'    => $receipt,
+            'merchant_id'=> $merchantId,
+            'operation'  => 'find'
+        ];
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    private function fetchRefundByReversalIdAndMerchantId(string $reversalId, string $merchantId, $input = [])
+    {
+        $class = Entity::getExternalRepoSingleton($this->entity);
+
+        try
+        {
+
+            $scrooge_fetch_query = [
+                'query' => [
+                    'refunds' => [
+                        'reversal_id' => $reversalId,
+                        'merchant_id'=> $merchantId
+
+                    ]
+                ]
+            ];
+
+            $entity = $class->fetchRefunds($scrooge_fetch_query);
+
+            if (empty($entity) === false)
+            {
+                $relations = $this->getExpandsForQueryFromInput($input);
+
+                $entity->loadMissing($relations);
+
+                return $entity;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data'        => $e->getMessage(),
+                ]);
+        }
+
+        $data = [
+            'model'      => $this->entityName,
+            'reversal_id'    => $reversalId,
+            'merchant_id'=> $merchantId,
+            'operation'  => 'find'
+        ];
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    private function fetchRefundByPaymentAndBaseAmountFromScrooge(string $paymentId, $baseAmount, $input = [])
+    {
+        $class = Entity::getExternalRepoSingleton($this->entity);
+
+        try
+        {
+
+            $scrooge_fetch_query = [
+                'query' => [
+                    'refunds' => [
+                        'payment_id' => $paymentId,
+                        'base_amount'=> $baseAmount
+
+                    ]
+                ]
+            ];
+
+            $entity = $class->fetchRefunds($scrooge_fetch_query);
+
+            if (empty($entity) === false)
+            {
+                $relations = $this->getExpandsForQueryFromInput($input);
+
+                $entity->loadMissing($relations);
+
+                return $entity;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data'        => $e->getMessage(),
+                ]);
+        }
+
+        $data = [
+            'model'      => $this->entityName,
+            'payment_id'    => $paymentId,
+            'base_amount'=> $baseAmount,
+            'operation'  => 'find'
+        ];
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    private function fetchFirstRefundByPaymentFromScrooge(string $paymentId, $input = [])
+    {
+        $class = Entity::getExternalRepoSingleton($this->entity);
+
+        try
+        {
+
+            $scrooge_fetch_query = [
+                'query' => [
+                    'refunds' => [
+                        'payment_id' => $paymentId,
+                    ]
+                ],
+            ];
+
+            $entity = $class->fetchRefunds($scrooge_fetch_query);
+
+            if (empty($entity) === false)
+            {
+                $relations = $this->getExpandsForQueryFromInput($input);
+
+                $entity->loadMissing($relations);
+
+                return $entity[0];
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data'        => $e->getMessage(),
+                ]);
+        }
+
+        $data = [
+            'model'      => $this->entityName,
+            'payment_id'    => $paymentId,
+            'operation'  => 'find'
+        ];
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 }

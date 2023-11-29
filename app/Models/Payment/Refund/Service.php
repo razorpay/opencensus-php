@@ -554,12 +554,16 @@ class Service extends Base\Service
         }
         catch (\Throwable $e)
         {
-            $this->trace->info(
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
                 TraceCode::COMPARE_REFUNDS_ERROR,
                 [
                     'api' => $apiRefundsArray,
                     'scrooge' => $scroogeRefundsArray,
+
                 ]);
+
         }
     }
 
@@ -608,7 +612,7 @@ class Service extends Base\Service
             if (in_array($key, $timestampFields))
             {
                 $diff = $scroogeRefundArray[$key] - $value ;
-                if (abs($diff) <= 5)
+                if (abs($diff) <= 120)
                 {
                     continue;
                 }

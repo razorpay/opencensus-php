@@ -300,13 +300,22 @@ class Repository extends Base\Repository
 
     public function fetchFirstForPaymentId(string $paymentId)
     {
+
+        if ($this->isScroogeReadMigrationEnabled() === true) {
+            return $this->fetchFirstRefundByPayment($paymentId);
+        }
+        return $this->fetchFirstForPaymentIdFromApi($paymentId);
+    }
+
+    public function fetchFirstForPaymentIdFromApi(string $paymentId)
+    {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchFirstForPaymentId',
             'route'        => $this->route
         ]);
         return $this->newQuery()
-                    ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
-                    ->first();
+            ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
+            ->first();
     }
 
     public function findBetweenTimestamps($from, $to)
@@ -380,38 +389,68 @@ class Repository extends Base\Repository
                                             string $accountId,
                                             array $relations = []): Refund\Entity
     {
+        if ($this->isScroogeReadMigrationEnabled() === true) {
+            return $this->fetchRefundByReversalIdAndMerchant($reversalId, $accountId, $relations);
+        }
+        return $this->findByReversalIdAndMerchantFromApi($reversalId, $accountId,$relations);
+    }
+
+    public function findByReversalIdAndMerchantFromApi(
+        string $reversalId,
+        string $accountId,
+        array $relations = []): Refund\Entity
+    {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'findByReversalIdAndMerchant',
             'route'        => $this->route
         ]);
         return $this->newQuery()
-                    ->where(Entity::REVERSAL_ID, $reversalId)
-                    ->merchantId($accountId)
-                    ->with($relations)
-                    ->firstOrFailPublic();
-    }
-    public function findForPaymentAndAmount($paymentId, $amount)
-    {
-        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
-            'method'       => 'findForPaymentAndAmount',
-            'route'        => $this->route
-        ]);
-        return $this->newQuery()
-                    ->where(Refund\Entity::PAYMENT_ID, $paymentId)
-                    ->where(Refund\Entity::AMOUNT, $amount)
-                    ->get();
+            ->where(Entity::REVERSAL_ID, $reversalId)
+            ->merchantId($accountId)
+            ->with($relations)
+            ->firstOrFailPublic();
     }
 
-    public function findForPaymentAndBaseAmount($paymentId, $amount)
+    public function findForPaymentAndAmount($paymentId, $amount)
+    {
+        if ($this->isScroogeReadMigrationEnabled() === true) {
+            return $this->findForPaymentIdAndAmount($paymentId, $amount);
+        }
+        return $this->findForPaymentAndAmountFromApi($paymentId,$amount);
+    }
+
+    public function findForPaymentAndAmountFromApi($paymentId, $amount)
+    {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findForPaymentAndAmountFromApi',
+            'route'        => $this->route,
+            'payment_id'   => $paymentId,
+            'amount'   => $amount
+        ]);
+        return $this->newQuery()
+            ->where(Refund\Entity::PAYMENT_ID, $paymentId)
+            ->where(Refund\Entity::AMOUNT, $amount)
+            ->get();
+    }
+
+    public function findForPaymentAndBaseAmount($paymentId, $baseAmount)
+    {
+        if ($this->isScroogeReadMigrationEnabled() === true) {
+            return $this->fetchRefundByPaymentAndBaseAmount($paymentId,$baseAmount);
+        }
+        return $this->findForPaymentAndBaseAmountFromApi($paymentId,$baseAmount);
+    }
+
+    public function findForPaymentAndBaseAmountFromApi($paymentId, $amount)
     {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'findForPaymentAndBaseAmount',
             'route'        => $this->route
         ]);
         return $this->newQuery()
-                    ->where(Refund\Entity::PAYMENT_ID, $paymentId)
-                    ->where(Refund\Entity::BASE_AMOUNT, $amount)
-                    ->get();
+            ->where(Refund\Entity::PAYMENT_ID, $paymentId)
+            ->where(Refund\Entity::BASE_AMOUNT, $amount)
+            ->get();
     }
 
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
@@ -471,7 +510,7 @@ class Repository extends Base\Repository
      * @param $refundId
      * @return mixed
      */
-    public function fetchRefundByRefundIds($refundIds)
+    public function fetchRefundByRefundIdsFromApi($refundIds)
     {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchRefundByRefundIds',
@@ -483,6 +522,13 @@ class Repository extends Base\Repository
                              Table::REFUND. '.' . Refund\Entity::ID)
                     ->whereIn(Table::REFUND. '.' . Refund\Entity::ID, $refundIds)
                     ->get();
+    }
+    public function fetchRefundByRefundIds(array $refundIds)
+    {
+        if ($this->isScroogeReadMigrationEnabled() === true) {
+            return $this->findRefundByIds($refundIds);
+        }
+        return $this->fetchRefundByRefundIdsFromApi($refundIds);
     }
 
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
@@ -976,16 +1022,24 @@ class Repository extends Base\Repository
 
     public function findByReceiptAndMerchant(string $receipt, string $merchantId)
     {
+        if ($this->isScroogeReadMigrationEnabled() === true) {
+            return $this->findForPaymentByReceiptAndMerchant($receipt, $merchantId);
+        }
+        return $this->findByReceiptAndMerchantFromApi($receipt, $merchantId);
+    }
+
+    public function findByReceiptAndMerchantFromApi(string $receipt, string $merchantId)
+    {
+
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'findByReceiptAndMerchant',
             'route'        => $this->route
         ]);
         return $this->newQuery()
-                    ->where(Refund\Entity::RECEIPT, '=', $receipt)
-                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->first();
+            ->where(Refund\Entity::RECEIPT, '=', $receipt)
+            ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
+            ->first();
     }
-
     public function getAliasesForRefundsDbColumns($params): array
     {
         $dbColumns = [];

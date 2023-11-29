@@ -564,6 +564,10 @@ final class RazorxTreatment
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE = 'entity_relational_load_from_scrooge';
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_NON_SHADOW = 'entity_relational_load_from_scrooge_non_shadow';
 
+    const SCROOGE_MISC_QUERIES_MIGRATION = 'SCROOGE_MISC_QUERIES_MIGRATION';
+
+    const SCROOGE_MISC_QUERIES_MIGRATION_ENABLED = 'SCROOGE_MISC_QUERIES_MIGRATION_ENABLED';
+
     // experiment to fetch transaction from central ledger service
     const RX_TRANSACTION_LOAD_FROM_LEDGER = 'rx_transaction_load_from_ledger';
 
