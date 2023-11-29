@@ -14,6 +14,7 @@ use RZP\Models\Transaction;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode as TraceCode;
+use RZP\Models\Partner\Metric as PartnerMetric;
 
 /**
  * @property Transaction\Entity $transaction
@@ -1110,6 +1111,8 @@ class PublicEntity extends UniqueIdEntity
                     $allFields = $fields;
 
                     $fields = $this->maskSensitiveFields($allFields, $this->sensitiveFields);
+
+                    $app['trace']->count(PartnerMetric::MASK_PII_FIELDS_SUCCESS_TOTAL, ['entity' => $this->getEntityName()]);
                 }
             }
         }
@@ -1125,6 +1128,8 @@ class PublicEntity extends UniqueIdEntity
                     'merchant_id'       => $app['basicauth']->getMerchantId() ?? null
                 ]
             );
+
+            $app['trace']->count(PartnerMetric::MASK_PII_FIELDS_FAILED_TOTAL, ['entity' => $this->getEntityName()]);
 
             // if the masking fails, API should fail too as we can't reveal PII data to partners
             throw $e;

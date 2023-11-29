@@ -4,7 +4,7 @@ namespace RZP\Models\Partner;
 
 final class Metric
 {
-    //commission metrics
+    // commission metrics
     const COMMISSION_CREATE_ATTEMPT_TOTAL        = 'commission_create_attempt_total';
     const COMMISSION_CREATED_TOTAL               = 'commission_created_total';
     const COMMISSION_CAPTURE_TOTAL               = 'commission_capture_total';
@@ -107,4 +107,7 @@ final class Metric
     const TRANSACTION_ISOLATION_SPLITZ_FAILURE = 'transaction_isolation_splitz_failure';
     const REVERSE_SHADOW_COMMISSION_CREATE_LAG   = 'reverse_shadow_commission_create_lag';
     const REVERSE_SHADOW_COMMISSION_INVOICE_CREATE_LAG = 'reverse_shadow_commission_INVOICE_create_lag';
+
+    const MASK_PII_FIELDS_FAILED_TOTAL  = 'mask_pii_fields_failed_total';
+    const MASK_PII_FIELDS_SUCCESS_TOTAL = 'mask_pii_fields_success_total';
 }
