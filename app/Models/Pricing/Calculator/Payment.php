@@ -583,8 +583,8 @@ class Payment extends Base
 
         if ($payment->isCreditCardOnUpi()=== true)
         {
-
-            if ($payment->checkIfCCOnUPIPricingSplitzExperimentEnabled() === true)
+            if (($payment->isFeeBearerCustomer() === false) and
+                ($payment->checkIfCCOnUPIPricingSplitzExperimentEnabled() === true))
             {
                 $receiverType = PaymentsUpi\PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_CREDIT;
             }
@@ -592,7 +592,8 @@ class Payment extends Base
 
         if ($payment->isPPIOnUpi()=== true)
         {
-            if ($payment->checkIfPPIOnUPIPricingSplitzExperimentEnabled() === true)
+            if (($payment->isFeeBearerCustomer() === false) and
+                ($payment->checkIfPPIOnUPIPricingSplitzExperimentEnabled() === true))
             {
                 $receiverType = PaymentsUpi\PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_WALLET;
             }

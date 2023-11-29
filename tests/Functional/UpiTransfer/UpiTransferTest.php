@@ -314,6 +314,90 @@ class UpiTransferTest extends TestCase
         );
     }
 
+    public function testProcessIciciUpiTransferWithPayerAccountTypeForCustomerFeeBearer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel('10000000000000');
+
+        $this->fixtures->pricing->editDefaultPlan(
+            [
+                'fee_bearer'    => 'customer',
+                'percent_rate'  => '0',
+                'fixed_rate'    => '100',
+            ]
+        );
+
+        $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $response = $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
+
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertNotNull($payment['fee']);
+        $this->assertEquals('credit_card', $payment['reference2']);
+        $this->assertEquals(118, $payment['mdr']);
+        $this->assertEquals(118, $payment['fee']);
+        $this->assertEquals(18, $payment['tax']);
+
+
+        $this->assertNull($response['message']);
+
+        $this->runUpiTransferRequestAssertions(
+            Gateway::UPI_ICICI,
+            true,
+            null,
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
+        );
+    }
+
+    public function testProcessIciciUpiTransferWithWalletForCustomerFeeBearer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel('10000000000000');
+
+        $this->fixtures->pricing->editDefaultPlan(
+            [
+                'fee_bearer'    => 'customer',
+                'percent_rate'  => '0',
+                'fixed_rate'    => '100',
+            ]
+        );
+
+        $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $response = $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
+
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertNotNull($payment['fee']);
+        $this->assertEquals('wallet', $payment['reference2']);
+        $this->assertEquals(118, $payment['mdr']);
+        $this->assertEquals(118, $payment['fee']);
+        $this->assertEquals(18, $payment['tax']);
+
+
+        $this->assertNull($response['message']);
+
+        $this->runUpiTransferRequestAssertions(
+            Gateway::UPI_ICICI,
+            true,
+            null,
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
+        );
+    }
+
     public function testProcessIciciUpiTransferWithPayerAccountTypeNonCredit()
     {
         $vpa = $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
