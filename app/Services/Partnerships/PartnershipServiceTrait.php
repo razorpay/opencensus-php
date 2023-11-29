@@ -1,6 +1,7 @@
 <?php
 
-use Response;
+namespace  RZP\Services\Partnerships;
+
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
@@ -8,8 +9,12 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Services\Partnerships\PartnershipsService;
 use RZP\Trace\TraceCode;
 
-trait PartnershipServiceAPITrait
+trait PartnershipServiceTrait
 {
+    static array $PartnershipServicePathMap = array(
+        'commissions_invoice_fetch_all' => '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/List',
+        'commissions_invoice_fetch' =>  '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/Get',
+    );
     public function proxyToPartnershipService(array $parameters, string $partnerId)
     {
         $currentRoute = app('request.ctx')->getRoute();
@@ -17,7 +22,7 @@ trait PartnershipServiceAPITrait
         $variant = $this->getReadApiExperimentVariant($partnerId, $currentRoute, $mode);
         if ($this->isReadApiCutOffEnabled($variant) || $this->isReadApiShadowEnabled($variant))
         {
-            $prtsPath = PartnershipsService::PartnershipServicePathMap[$currentRoute];
+            $prtsPath = static::$PartnershipServicePathMap[$currentRoute];
             $this->trace->info(TraceCode::PRTS_READ_API_PROXY_REUEST, [
                 'route'      => $currentRoute,
                 'prts_path'  => $prtsPath,
@@ -33,8 +38,10 @@ trait PartnershipServiceAPITrait
                     'response'   => $result
                 ]);
             }
-            return ['response'=> Response::make((string) $result['response'], $result['status_code']), 'isCutOffEnabled' => $this->isApiCutOffEnabled($variant) ];
+            return ['response'=>  $result['response']?? [], 'status_code' => $result['status_code'], 'isCutOffEnabled' => $this->isReadApiCutOffEnabled($variant) ];
         }
+        return ['response'=> []];
+
     }
 
     private function getReadApiExperimentVariant(string $partnerId, string $routeName, string $mode)
@@ -72,9 +79,8 @@ trait PartnershipServiceAPITrait
 
     public function checkParity($prtsResult, $apiResult)
     {
-        // TODO: check if this needs to be updated incase of expected parity fields between api and prts
-        $isIdentical =  array_diff($prtsResult, $apiResult) == null;
-        if ($isIdentical == false )
+        $isIdentical = $this->isResultIdentical($prtsResult, $apiResult);
+        if ($isIdentical === false)
         {
             $currentRoute = app('request.ctx')->getRoute();
             $this->trace->info(TraceCode::PRTS_API_PARITY_CHECK_FAILED, [
@@ -84,5 +90,32 @@ trait PartnershipServiceAPITrait
             ]);
             $this->trace->count('prts_api_parity_failed', ['route'=> $currentRoute]);
         }
+    }
+
+    private function isResultIdentical(array $prtsResult, array $apiResult) : bool
+    {
+        // check if all the keys in prts is present in api and values are same
+        // some keys might be present in api which are not there in api we can ignore those values
+        foreach ($prtsResult as $key => $value)
+        {
+            // if key is not present in api result then return false
+            if (array_key_exists($key, $apiResult) == false)
+            {
+                return false;
+            }
+            // if value is array then recursively call the function
+            if (is_array($value))
+            {
+                return $this->isResultIdentical($prtsResult[$key], $apiResult[$key]);
+            }
+            else
+            {
+                if ($value != $apiResult[$key])
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

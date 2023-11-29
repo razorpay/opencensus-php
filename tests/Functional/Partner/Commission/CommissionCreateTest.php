@@ -1483,6 +1483,34 @@ class CommissionCreateTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
+        $this->mockSplitzExperiment(['response'=>['variant'=>['name'=>'shadow']]]);
+        $this->mockPartnershipsServiceTreatment([], ['response'=>["can_approve"=> true],'status_code'=> 200], 'sendRequestWithRetry');
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testInvoiceFetchWithPrtsParityFailure()
+    {
+        $this->createInvoiceDataForLessSubM();
+
+        $testData = $this->testData['testInvoiceFetchWithLessSubMTestDataExpDisabled'];
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->mockSplitzExperiment(['response'=>['variant'=>['name'=>'shadow']]]);
+        $this->mockPartnershipsServiceTreatment([], ['response'=>["error"=> ["msg"=>"unauthenticated"]],'status_code'=> 401], 'sendRequestWithRetry');
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testInvoiceFetchWithPrtsCutOffEnabled()
+    {
+        $this->createInvoiceDataForLessSubM();
+
+        $testData = $this->testData['testInvoiceFetchWithLessSubMTestDataExpDisabled'];
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->mockSplitzExperiment(['response'=>['variant'=>['name'=>'cutoff']]]);
+        $this->mockPartnershipsServiceTreatment([], ['response'=>["can_approve"=> true],'status_code'=> 200], 'sendRequestWithRetry');
         $this->runRequestResponseFlow($testData);
     }
 

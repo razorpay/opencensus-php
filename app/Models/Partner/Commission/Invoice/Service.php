@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner\Commission\Invoice;
 
+use Response;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
@@ -10,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Exception\LogicException;
+use RZP\Services\Partnerships;
 use RZP\Models\Partner\Activation;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
@@ -18,6 +20,8 @@ use RZP\Jobs\CommissionInvoiceReminderAction;
 
 class Service extends Base\Service
 {
+    use Partnerships\PartnershipServiceTrait;
+
     public function createInvoiceEntities(array $input)
     {
         return (new Core)->queueCreateInvoiceEntities($input);
@@ -82,23 +86,42 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
+        $result = $this->proxyToPartnershipService(['id'=> $id], $this->merchant->getId());
+        // if cutoff is enabled then return the response from prts
+        if($result['isCutOffEnabled'] === true)
+        {
+            return  Response::make((string) $result['response'], $result['status_code']);
+        }
+
         $params = [
             'expand' => ['line_items', 'line_items.taxes'],
         ];
 
         $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant, $params);
 
+        // check parity of prts and api response
+        $this->checkParity($result['response'], $invoice->toArrayPublic());
         return $invoice->toArrayPublic();
     }
 
     public function fetchBulk(array $input)
     {
+        $input['merchantId'] = $this->merchant->getId();
+        $result = $this->proxyToPartnershipService($input, $this->merchant->getId());
+        unset($input['merchantId']);
+        // if cutoff is enabled then return the response from prts
+        if($result['isCutOffEnabled'] === true)
+        {
+            return  Response::make((string) $result['response'], $result['status_code']);
+        }
+
         $invoices = $this->repo->commission_invoice->fetch($input, $this->merchant->getId());
 
         $this->trace->count(Metric::COMMISSION_INVOICE_BULK_FETCH_SUCCESS_TOTAL, $input);
 
         $canApprove = (new Core)->canPartnerApproveInvoice();
-
+        // check parity of prts and api response
+        $this->checkParity($result['response'],array_merge($canApprove, $invoices->toArrayPublic()));
         return array_merge($canApprove, $invoices->toArrayPublic());
     }
 
