@@ -301,6 +301,31 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Query: SELECT trf.id FROM transfers trf
+     * WHERE trf.status IN (‘processed’, ‘reversed’, ‘partially_reversed’)
+     * AND trf.transaction_id IS NULL
+     * AND created_at <= current_time() - 3600s
+     * LIMIT 500
+     */
+    public function fetchTransfersToRetryCreatingTransaction(int $count, int $minutes)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select(Entity::ID)
+                    ->whereIn(Entity::STATUS, Constant::FETCH_STATUS)
+                    ->whereNull(Entity::TRANSACTION_ID)
+                    ->where(
+                        Entity::CREATED_AT,
+                        '<=',
+                        Carbon::now(Timezone::IST)->subMinutes($minutes)->getTimestamp()
+                    )
+                    ->limit($count)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::ID)
+                    ->toArray();
+    }
+
+    /**
      * Query: UPDATE `transfers` SET `status` = $status WHERE `source_type` = $sourceType AND `source_id` = $sourceId
      *
      * @param string $sourceType

@@ -788,6 +788,24 @@ class Service extends Base\Service
         return $this->processOrderTransfers($orderIds, $syncProcessing);
     }
 
+    public function createMissingTransactionForTransfers(array $input)
+    {
+        $limit = (int) ($input['limit'] ?? 500);
+
+        $minutes = (int) ($input['time'] ?? 60);
+
+        $transferIds = $this->repo->transfer->fetchTransfersToRetryCreatingTransaction($limit, $minutes);
+
+        $this->trace->info(
+            TraceCode::FAILED_TRANSACTION_FOR_TRANSFERS,
+            [
+                'transfer_Ids'      => $transferIds,
+            ]
+        );
+
+        return $this->core->createTransactionForTransferViaCron($transferIds);
+    }
+
     public function processOrderTransfersForRearch(array $input)
     {
         $paymentId = $input['payment_id'];

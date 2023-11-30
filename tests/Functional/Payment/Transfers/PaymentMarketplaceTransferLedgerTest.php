@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Services\KafkaMessageProcessor;
@@ -12,6 +14,7 @@ use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Services\Ledger;
 
 class PaymentMarketplaceTransferLedgerTest extends TestCase
 {
@@ -1276,6 +1279,154 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         ];
     }
 
+    private function getDebitJournalForTransfer($transferId, $debitJournalId, $creditJournalId, $sourceMID, $destnMID, $amountVal = 0)
+    {
+        $amount = sprintf('%d', $amountVal);
+
+        return [
+            "journals" => [
+                "id"               => $debitJournalId,
+                "created_at"       => 1686490069,
+                "updated_at"       => 1686490069,
+                "amount"           => $amount,
+                "base_amount"      => $amount,
+                "currency"         => "INR",
+                "tenant"           => "PG",
+                "transactor_id"    => $transferId,
+                "transactor_event" => 'transfer_processed',
+                "transaction_date" => 1686490069,
+                "ledger_entry"     => [
+                    [
+                        "id"               => "M0dgdvV4wWeXaO",
+                        "created_at"       => 1686490069,
+                        "updated_at"       => 1686490069,
+                        "merchant_id"      => $sourceMID,
+                        "journal_id"       => $debitJournalId,
+                        "account_id"       => "JjpZUBB7rH14Is",
+                        "amount"           => "0",
+                        "base_amount"      => "0",
+                        "type"             => "credit",
+                        "currency"         => "INR",
+                        "balance"          => "115976.000000",
+                        "balance_updated"  => true,
+                        "account_entities" => [
+                            "account_type"      => [
+                                "payable"
+                            ],
+                            "fund_account_type" => [
+                                "rzp_gst"
+                            ]
+                        ]
+                    ],
+                    [
+                        "id"               => "M0dgdvV4wWeXaO",
+                        "created_at"       => 1686490069,
+                        "updated_at"       => 1686490069,
+                        "merchant_id"      => $sourceMID,
+                        "journal_id"       => $debitJournalId,
+                        "account_id"       => "JjpZUBB7rH14Is",
+                        "amount"           => "0",
+                        "base_amount"      => "0",
+                        "type"             => "credit",
+                        "currency"         => "INR",
+                        "balance"          => "115976.000000",
+                        "balance_updated"  => true,
+                        "account_entities" => [
+                            "account_type"      => [
+                                "cash"
+                            ],
+                            "fund_account_type" => [
+                                "rzp_transfer_fee"
+                            ]
+                        ]
+                    ],
+                    [
+                        "id"               => "M0dgdvV5sSk8f9",
+                        "created_at"       => 1686490069,
+                        "updated_at"       => 1686490069,
+                        "merchant_id"      => $sourceMID,
+                        "journal_id"       => $debitJournalId,
+                        "account_id"       => "LycvlyvdXjtmUL",
+                        "amount"           => $amount,
+                        "base_amount"      => $amount,
+                        "type"             => "debit",
+                        "currency"         => "INR",
+                        "account_entities" => [
+                            "account_type"      => [
+                                "payable"
+                            ],
+                            "fund_account_type" => [
+                                "merchant_balance"
+                            ]
+                        ]
+                    ]
+                ]
+            ]];
+    }
+
+    private function getCreditJournalForTransfer($transferId, $debitJournalId, $creditJournalId, $sourceMID, $destnMID, $amountVal = 0)
+    {
+        $amount = sprintf('%d', $amountVal);
+
+        return [
+            "journals" => [
+                "id"               => $creditJournalId,
+                "created_at"       => 1686490069,
+                "updated_at"       => 1686490069,
+                "amount"           => $amount,
+                "base_amount"      => $amount,
+                "currency"         => "INR",
+                "tenant"           => "PG",
+                "transactor_id"    => $transferId,
+                "transactor_event" => 'transfer_processed',
+                "transaction_date" => 1686490069,
+                "ledger_entry"     => [
+                    [
+                        "id"               => "M0dgdv6bfXnKyD",
+                        "created_at"       => 1686490069,
+                        "updated_at"       => 1686490069,
+                        "merchant_id"      => $destnMID,
+                        "journal_id"       => $creditJournalId,
+                        "account_id"       => "JjpZUD9PmJeNPk",
+                        "amount"           => $amount,
+                        "base_amount"      => $amount,
+                        "type"             => "credit",
+                        "currency"         => "INR",
+                        "balance"          => "1697591272.000000",
+                        "balance_updated"  => true,
+                        "account_entities" => [
+                            "account_type"      => [
+                                "payable"
+                            ],
+                            "fund_account_type" => [
+                                "merchant_balance"
+                            ]
+                        ]
+                    ],
+                    [
+                        "id"               => "M0dgdv6cUeToBw",
+                        "created_at"       => 1686490069,
+                        "updated_at"       => 1686490069,
+                        "merchant_id"      => $destnMID,
+                        "journal_id"       => $creditJournalId,
+                        "account_id"       => "LycvlyvdXjtmUL",
+                        "amount"           => $amount,
+                        "base_amount"      => $amount,
+                        "type"             => "debit",
+                        "currency"         => "INR",
+                        "account_entities" => [
+                            "account_type"      => [
+                                "payable"
+                            ],
+                            "fund_account_type" => [
+                                "merchant_va_merchant"
+                            ]
+                        ]
+                    ]
+                ]
+            ]];
+    }
+
     private function getKafkaEventPayload($journal, $request = null, $msg = "")
     {
         $kafkaPayload = [
@@ -2352,7 +2503,81 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
     }
 
+    public function testCronCreateMissingTransactionForTransfers()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
 
+        $order = $this->fixtures->order->create(['receipt' => 'check123', 'bank' => 'ICICI', 'account_number' => '0040304030403040', 'amount' => '50000', 'status' => 'paid']);
 
+        $this->fixtures->edit('payment', $this->payment['id'], ['order_id' => $order['id']]);
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => $order['id'],
+            'source_type'        => "order",
+            'status'             => "processed",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp(),
+            'processed_at'       => Carbon::now()->addHours(-4)->getTimestamp(),
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $this->fixtures->payment->create(
+            [
+                'id'          => 'dummyN3uSlFkHT',
+                'merchant_id' => '10000000000001',
+                'transfer_id' => 'AnyRandomID123',
+                'amount'      => 50000,
+                'currency'    => 'INR',
+                'method'      => 'transfer',
+                'status'      => 'captured',
+                'captured_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+                'fee'         => 0,
+                'tax'         => 0,
+            ]
+        );
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('processed', $transfer['status']);
+        $this->assertNull($transfer['transaction_id']);
+
+        $data = $this->testData[__FUNCTION__];
+        $this->ba->cronAuth();
+        $mockLedger = \Mockery::mock(Ledger::class)->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $sourceMID = '10000000000000';
+        $debitJID = 'LsqR14zUg9dbDB' ;
+        $creditJID = 'LsqR157oYgCrCR';
+        $debitJournal = $this->getDebitJournalForTransfer($dummyTransferData['id'], $debitJID, $creditJID, $sourceMID, $dummyTransferData['to_id'], $dummyTransferData['amount']);
+        $creditJournal = $this->getCreditJournalForTransfer($dummyTransferData['id'], $debitJID, $creditJID, $sourceMID, $dummyTransferData['to_id'], $dummyTransferData['amount']);
+
+        $mockLedger->expects('fetchByTransactor')
+                   ->times(1)
+                   ->andReturns($debitJournal);
+
+        $mockLedger->expects('fetchByTransactor')
+                   ->times(1)
+                   ->andReturns($creditJournal);
+
+        $transferIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+        $dummyPayment = $this->getLastEntity('payment', true);
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($transfer['transaction_id'], 'txn_'.$debitJID);
+        $this->assertEquals($dummyTransferData['id'], $transferIds[0]);
+        $this->assertEquals($dummyPayment['transaction_id'], $creditJID);
+        $this->assertEquals($transaction['id'], 'txn_'.$dummyPayment['transaction_id']);
+    }
 
 }

@@ -388,15 +388,16 @@ class Base extends Core
      * @throws \RZP\Exception\GatewayTimeoutException
      * @throws \Throwable
      */
-    public function fetchJournalByTransactor(array $payload)
+    public function fetchJournalByTransactor(array $payload, $headers = [])
     {
         $this->trace->info(TraceCode::LEDGER_FETCH_BY_TRANSACTOR_REQUEST, $payload);
         try
         {
             $ledgerService = $this->app['ledger'];
-            $requestHeaders = [
-                self::LEDGER_TENANT_HEADER => self::X
-            ];
+            $requestHeaders = (!empty($headers))
+                ? $headers
+                : [self::LEDGER_TENANT_HEADER => self::X];
+
             $response = $ledgerService->fetchByTransactor($payload, $requestHeaders, true);
         }
         catch (\WpOrg\Requests\Exception $re)

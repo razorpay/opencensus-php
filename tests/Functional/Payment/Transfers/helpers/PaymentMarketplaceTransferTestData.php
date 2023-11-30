@@ -892,4 +892,15 @@ return [
             ],
         ],
     ],
+
+    'testCronCreateMissingTransactionForTransfers' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/transfers/transactions/create',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ]
 ];

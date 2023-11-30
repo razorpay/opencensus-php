@@ -237,4 +237,13 @@ class TransferController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createMissingTransactionForTransfers()
+    {
+        $input = Request::all();
+
+        $transferIds = $this->service()->createMissingTransactionForTransfers($input);
+
+        return ApiResponse::json($transferIds);
+    }
 }

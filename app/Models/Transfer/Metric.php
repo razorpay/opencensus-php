@@ -44,6 +44,7 @@ class Metric extends Base\Core
     const PENDING_PAYMENT_TRANSFERS_COUNT               = 'pending_payment_transfers_count';
     const PENDING_ORDER_TRANSFERS_COUNT                 = 'pending_order_transfers_count';
     const TRANSFER_WEBHOOK_DISPATCH_FAILURE             = 'transfer_webhook_dispatch_failure';
+    const TRANSFER_TRANSACTION_CREATE_FAILED            = 'transfer_transaction_create_failed';
 
     public function pushCreateSuccessMetrics(array $input = [])
     {
@@ -239,5 +240,10 @@ class Metric extends Base\Core
         $dimensions = $this->getCreateDefaultDimensions();
 
         $this->trace->count(self::TRANSFER_WEBHOOK_DISPATCH_FAILURE, $dimensions);
+    }
+
+    public function pushMetricForTransferTransactionsCreate(\Throwable $e)
+    {
+        $this->pushExceptionMetrics($e, self::TRANSFER_TRANSACTION_CREATE_FAILED, $this->getCreateDefaultDimensions());
     }
 }

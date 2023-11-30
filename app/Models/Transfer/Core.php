@@ -18,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
+use RZP\Models\LedgerOutbox;
 use RZP\Models\Reversal as Reversal;
 use RZP\Models\Payment\Refund as Refund;
 use RZP\Trace\TraceCode;
@@ -35,6 +36,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\TransferProcessCapitalFloat;
 use RZP\Jobs\TransferProcessKeyMerchants;
 use RZP\Models\Ledger\RouteJournalEvents;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Partner\Service as PartnerService;
 use RZP\Exception\SettlementStatusUpdateException;
 use RZP\Models\Ledger\Constants as LedgerConstants;
@@ -1883,6 +1885,72 @@ class Core extends Base\Core
         $this->createTransferTransactionsInReverseShadow(null, $input);
 
         return true;
+    }
+
+    public function fetchJournalIdFromLedgerForTransfer(Transfer\Entity $transfer, string $merchant)
+    {
+        $requestHeaders = [
+            Ledger\Base::LEDGER_TENANT_HEADER => 'PG',
+        ];
+
+        $ledgerInput = [
+            Ledger\Base::TRANSACTOR_ID    => $transfer->getPublicId(),
+            Ledger\Base::MERCHANT_ID      => $merchant,
+            Ledger\Base::TRANSACTOR_EVENT => LedgerConstants::TRANSFER,
+        ];
+
+        $response = $this->app['ledger']->fetchByTransactor($ledgerInput, $requestHeaders, true);
+
+        return (new LedgerOutbox\Core)->determineJournalIdForAPITransaction($response, "merchant_balance", "merchant_balance");
+    }
+
+    public function createTransactionForTransferViaCron($transferIds)
+    {
+        $transfersProcessed = [];
+
+        foreach ($transferIds as $transferId)
+        {
+            try
+            {
+                $transfer = $this->repo->transfer->findOrFailPublic($transferId);
+
+                $merchantId = $transfer['merchant_id'];
+
+                $merchant = (new Merchant\Repository)->findOrFailPublic($merchantId);
+
+                if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+                {
+                    continue;
+                }
+
+                [, $debitJournalId] = $this->fetchJournalIdFromLedgerForTransfer($transfer, $transfer->getMerchantId());
+
+                [$creditJournalId,] = $this->fetchJournalIdFromLedgerForTransfer($transfer, $transfer->getToId());
+
+                $input = [
+                    LedgerConstants::DEBIT_TRANSACTION_ID  => $debitJournalId,
+                    LedgerConstants::CREDIT_TRANSACTION_ID => $creditJournalId,
+                    LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
+                ];
+
+                $this->createTransferTransactionsInReverseShadow(null, $input);
+
+                $transfersProcessed[] = $transferId;
+            }
+            catch (\Exception $ex)
+            {
+                (new Metric())->pushMetricForTransferTransactionsCreate($ex);
+
+                $this->trace->info(TraceCode::FAILED_TRANSACTION_FOR_TRANSFERS_VIA_CRON,
+                                   [
+                                       'id'             => $transferId,
+                                       'failure_reason' => $ex,
+                                   ]
+                );
+            }
+        }
+
+        return $transfersProcessed;
     }
 
     public function createTransferReversalTransactions(array $input)
