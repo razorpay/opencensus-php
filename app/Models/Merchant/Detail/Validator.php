@@ -547,7 +547,7 @@ class Validator extends Base\Validator
         'gstin_self_serve_not_in_progress',
     ];
 
-    protected static $rmDetailsUpsert = [
+    protected static $rmDetailsUpsertRules = [
         'name'   => 'filled|string',
         'emails' => 'filled|array'
     ];

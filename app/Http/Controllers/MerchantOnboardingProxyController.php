@@ -250,7 +250,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
         self::MERCHANT_CATEGORIES_V3,
         self::MERCHANT_CATEGORIES_ADMIN_V3,
-        self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE
+        self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE,
+        self::MERCHANT_RM_FETCH,
+        self::MERCHANT_RM_CREATE,
+        self::MERCHANT_RM_UPDATE
     ];
 
     public function __construct()
