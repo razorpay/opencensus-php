@@ -300,6 +300,10 @@ class Entity extends QrCode\Entity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getRawAmount()
+    {
+        return $this->getAttributeFromArray(self::AMOUNT);
+    }
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

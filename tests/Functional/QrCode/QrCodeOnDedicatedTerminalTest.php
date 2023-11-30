@@ -1838,4 +1838,33 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->closeQrCode($qrCode['id']);
     }
+
+    public function testCreateQrCodeWithPaiseInAmountForDedicatedTerminal()
+    {
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::QR_AMOUNT_MISMATCH_FIX => RazorxTreatment::RAZORX_VARIANT_ON]);
+
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'payment_amount' => 27071,
+                'fixed_amount'   => true,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertStringContainsString('am=270.71', $qrCode->getQrString());
+
+        // Should I use getAmount() or getRawAmount() here?
+        $this->assertEquals(27071, $qrCode->getAmount());
+    }
 }

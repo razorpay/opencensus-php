@@ -846,9 +846,7 @@ class Gateway extends Base\Gateway
 
         if ((new Generator())->checkIfExperimentEnabledforAmountMismatchFix($this->input['merchant']->getId()) === true)
         {
-            $amount = $input[Fields::AMOUNT];
-
-            $input[Fields::AMOUNT] = (new Generator())->formatAmountToRupees($this->input['qr_code']['amount']);
+            $input[Fields::AMOUNT] = (new Generator())->formatAmountToRupees($this->input[Fields::AMOUNT]);
         }
 
         if (isset($qrCode[QrEntity::CLOSE_BY]) === true)

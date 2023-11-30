@@ -281,6 +281,7 @@ class Generator extends QrCode\Generator
             'qr_code'  => $qrCode->toArray(),
             'terminal' => $terminal->toArray(),
             'merchant' => $qrCode->merchant,
+            'amount'   => $qrCode->getRawAmount(),
         ];
 
         $gatewayClass = $this->app['gateway']->gateway($terminal->getGateway());
@@ -328,6 +329,10 @@ class Generator extends QrCode\Generator
         return $refId;
     }
 
+    /**
+     * @param $vpa    string
+     * @param $qrCode \RZP\Models\QrCode\NonVirtualAccountQrCode\Entity
+     */
     private function generateUpiQrIntentUrl($vpa, $qrCode)
     {
         $content = [
@@ -348,11 +353,20 @@ class Generator extends QrCode\Generator
 
         if ($qrCode->hasFixedAmount())
         {
-            $amount = $qrCode->getAmount() / 100;
+            $amount    = $qrCode->getAmount() / 100;
+            $rawAmount = $qrCode->getRawAmount();
+
+            $this->trace->info(TraceCode::QR_CODE_FIXED_AMOUNT_DETAILS, [
+                'id'                      => $qrCode->getId(),
+                'qr_code_amount'          => $qrCode->getAmount(),
+                'qr_code_amount(Rs.)'     => $amount,
+                'qr_code_raw_amount'      => $rawAmount,
+                'qr_code_raw_amount(Rs.)' => $this->formatAmountToRupees($qrCode->getRawAmount()),
+            ]);
 
             if ($this->checkIfExperimentEnabledforAmountMismatchFix($qrCode->getMerchantId()) === true)
             {
-                $content[Base\IntentParams::TXN_AMOUNT] = $this->formatAmountToRupees($qrCode->getAmount());
+                $content[Base\IntentParams::TXN_AMOUNT] = $this->formatAmountToRupees($qrCode->getRawAmount());
             }
             else
             {
@@ -845,10 +859,10 @@ class Generator extends QrCode\Generator
     /**
      * Function formatAmount() is giving incorrect result for amount=27071 (270.7)
      * Formats amount to 2 decimal places
-     * @param  int $amount amount in paise (27071)
+     * @param  string $amount amount in paise (27071)
      * @return string amount formatted to 2 decimal places in INR (270.71)
      */
-    public function formatAmountToRupees(int $amount): string
+    public function formatAmountToRupees($amount): string
     {
         return substr_replace((string) $amount, '.', -2, 0);
     }
