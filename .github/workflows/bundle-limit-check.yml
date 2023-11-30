@@ -17,7 +17,7 @@ env:
 jobs:
   asset-checker:
     name: Bundle Asset Checker
-    runs-on: [self-hosted]
+    runs-on: [cache-3]
     continue-on-error: true
     steps:
       - name: Checkout Codebase
@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies with caching
         uses: ./.github/actions
-        with: 
+        with:
           npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 

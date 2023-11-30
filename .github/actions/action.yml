@@ -1,14 +1,19 @@
 name: Package installer with caching
 
 inputs:
-  npm_razorpay_token:  
+  npm_razorpay_token:
     required: true
   github_access_token:
     required: true
 
-runs: 
+runs:
   using: composite
   steps:
+    - name: Use Node v18.12.1
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.12.1
+
     - name: Package installer cache setup
       uses: actions/cache@v3
       id: cache
@@ -17,8 +22,8 @@ runs:
           ~/.yarn
           ./node_modules
           ./web/node_modules
-        key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('**/web/yarn.lock') }}
-      
+        key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('**/web/yarn.lock') }}-cache
+
     - name: Install Dependencies
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
@@ -28,4 +33,4 @@ runs:
       env:
         NPM_RAZORPAY_TOKEN: ${{ inputs.npm_razorpay_token }}
         GITHUB_ACCESS_TOKEN: ${{ inputs.github_access_token }}
-      
+
