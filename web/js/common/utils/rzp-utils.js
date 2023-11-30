@@ -445,7 +445,7 @@ export const stringifyQueryParams = (params) => {
 
   for (let key in params) {
     if (params.hasOwnProperty(key) && params[key] != null && params[key] !== '') {
-      queryElements.push(key + '=' + params[key]);
+      queryElements.push(key + '=' + encodeURIComponent(params[key]));
     }
   }
 
@@ -467,7 +467,7 @@ export const getURLQueryParams = (url = document.location.hash) => {
     and get the key value pairs for query params. */
     params = search.split('&').reduce((prev, curr) => {
       const [key, value] = curr.split('=');
-      prev[key] = value;
+      prev[key] = decodeURIComponent(value);
       return prev;
     }, {});
   }
