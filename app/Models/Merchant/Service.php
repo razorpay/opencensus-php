@@ -5738,17 +5738,21 @@ class Service extends Base\Service
 
         $product = $this->auth->getRequestOriginProduct();
 
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant = $this->merchant;
 
-        $roleEntity = $this->repo->roles->fetchRole($roleId);
+        $roleName = null;
 
-        if(empty($roleEntity) === true)
+        if($product === Product::BANKING)
         {
-            throw new Exception\BadRequestValidationFailureException("Invalid Role Id" ,
-                ['roleId' => $roleId]);
-        }
+            $roleEntity = $this->repo->roles->fetchRole($roleId);
 
-        $roleName = $roleEntity->getName();
+            if (empty($roleEntity) === true) {
+                throw new Exception\BadRequestValidationFailureException("Invalid Role Id",
+                    ['roleId' => $roleId]);
+            }
+
+            $roleName = $roleEntity->getName();
+        }
 
         $users =  $this->core()->getUsersByRole($merchant, $roleId, $product);
 

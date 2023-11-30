@@ -433,6 +433,20 @@ return [
         ],
     ],
 
+    'testGetMerchantUsersWithPartnerAgentRole' => [
+        'request' => [
+            'url' => '/merchants-users?role=partner_agent',
+            'method' => 'GET',
+            'server'     => [
+                'HTTP_X-Request-Origin'         => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetMerchantUsersWithInvalidRole' => [
         'request' => [
             'url' => '/merchants-users?role=owner',

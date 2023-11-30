@@ -499,7 +499,7 @@ class UserRolesScope
             'merchant_instrument_status_get_by_merchant_id' => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'merchant_international_enablement_preview'     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
             'merchant_international_visibility_info'        => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
-            'merchant_partner_configs_fetch'                => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::RBL_SUPERVISOR, Role::PARTNER],
+            'merchant_partner_configs_fetch'                => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::RBL_SUPERVISOR, Role::PARTNER, Role::PARTNER_AGENT],
             'merchant_razorx_bulk_evaluate'                 => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
             'merchant_razorx_evaluate'                      => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
             'splitz_evaluate_bulk_proxy'                    => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),

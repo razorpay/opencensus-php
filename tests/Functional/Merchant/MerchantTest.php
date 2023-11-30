@@ -644,6 +644,28 @@ class MerchantTest extends TestCase
         $this->assertEquals($response['users'][0]['role'], '1000customRole');
     }
 
+
+    public function testGetMerchantUsersWithPartnerAgentRole()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user1 = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'partner_agent', 'test');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user1->getId());
+
+        $testData = & $this->testData['testGetMerchantUsersWithPartnerAgentRole'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(count($response['users']), 1);
+
+        $this->assertEquals($response['users'][0]['role'], 'partner_agent');
+
+        $this->assertEquals($response['users'][0]['id'], $user1->getId());
+    }
+
     public function testGetMerchantUsersWithInvalidRole()
     {
         $merchant = $this->fixtures->create('merchant');
