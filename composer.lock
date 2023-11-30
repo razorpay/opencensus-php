@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cb381baf9d0b88ae0fa21f989d8eef71",
+    "content-hash": "428678ca225a5812bb0a8a7e94e4be66",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -10970,12 +10970,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "e8753de585291925183eff04d2c47081aa7fe0ec"
+                "reference": "5bd8fd11402b364ea7f9e105ae2f7ab7d12597ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/e8753de585291925183eff04d2c47081aa7fe0ec",
-                "reference": "e8753de585291925183eff04d2c47081aa7fe0ec",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/5bd8fd11402b364ea7f9e105ae2f7ab7d12597ae",
+                "reference": "5bd8fd11402b364ea7f9e105ae2f7ab7d12597ae",
                 "shasum": ""
             },
             "require": {
@@ -11001,7 +11001,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-11-24T16:46:21+00:00"
+            "time": "2023-11-28T10:10:07+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",

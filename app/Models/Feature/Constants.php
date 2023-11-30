@@ -1639,6 +1639,8 @@ class Constants
     const DYNAMIC_PL_OFFSET = 'dynamic_pl_offset';
 
     const ENABLE_PAYMENT_LINK_SIGN = 'enable_payment_link_sign';
+    
+    const NOTIFY_VIA_WHATSAPP_PLINK = 'notify_via_whatsapp_plink';
 
     // form builder
 
@@ -2551,6 +2553,7 @@ class Constants
         self::ENABLE_MERCHANT_EXPIRY_PP       => true,
         self::DYNAMIC_PL_OFFSET               => true,
         self::ENABLE_PAYMENT_LINK_SIGN        => true,
+        self::NOTIFY_VIA_WHATSAPP_PLINK       => true,
         self::ENABLE_CREATE_OWN_TEMPLATE      => true,
         self::ENABLE_CUSTOMER_AMOUNT          => true,
         self::FILE_UPLOAD_PP                  => true,
@@ -3830,6 +3833,11 @@ class Constants
             'display_name'  => 'Recurring tpv flow for the merchant',
             'documentation' => '',
         ],
+        self::NOTIFY_VIA_WHATSAPP_PLINK => [
+            'feature'       => self::NOTIFY_VIA_WHATSAPP_PLINK,
+            'display_name'  => 'Feature to enable the merchant for notifying payment link via whatsapp ',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -3884,6 +3892,7 @@ class Constants
         self::BULK_PAYOUT_WORKFLOW,
         self::ENABLE_SMART_ROUTING,
         self::SKIP_APPROVAL_FOR_CREATOR,
+        self::NOTIFY_VIA_WHATSAPP_PLINK,
         self::DISABLE_WF_CONF_DIMENSIONS_S2P,
     ];
 
