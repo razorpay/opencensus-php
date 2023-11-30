@@ -360,7 +360,7 @@ class Core extends Base\Core
         $task->saveOrFail();
     }
 
-    // ref time will be the current nextRunAt - end time of the current interval
+    // refTime will be the current nextRunAt - end time of the current interval
     public function getNextInterval(Carbon $refTime)
     {
         $refTime = $refTime->copy();
@@ -370,16 +370,6 @@ class Core extends Base\Core
         $startTime = $refTime->copy()->addSeconds(1);
 
         $endTime = $startTime->copy()->endOfDay();
-
-        while ($endTime->day % 3 != 0)
-        {
-            $endTime = $endTime->addDay();
-        }
-
-        if ($endTime->month != $startTime->month)
-        {
-            $endTime = $startTime->copy()->endOfMonth()->endOfDay();
-        }
 
         return [$startTime, $endTime];
     }

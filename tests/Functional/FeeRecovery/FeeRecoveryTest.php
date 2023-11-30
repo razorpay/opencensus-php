@@ -766,7 +766,7 @@ class FeeRecoveryTest extends TestCase
 
         $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
 
-        $newTime = Carbon::create(2020, 1, 7, 7, 0, null);
+        $newTime = Carbon::create(2020, 1, 5, 7, 0, null);
 
         $task = $this->getDbLastEntity('schedule_task');
 
@@ -800,6 +800,8 @@ class FeeRecoveryTest extends TestCase
         $currentTime = Carbon::now(Timezone::IST);
 
         [$start, $nextRunTime] = (new FeeRecovery\Core)->getNextInterval($currentTime);
+
+        $task->reload();
 
         // Assert that last run and next run is updated when job is run
         $this->assertEquals($nextRunAt, $task['last_run_at']);
@@ -840,7 +842,7 @@ class FeeRecoveryTest extends TestCase
         $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
 
         // Recovering fees for the payout
-        $newTime = Carbon::create(2020, 1, 7, 7, 0, null);
+        $newTime = Carbon::create(2020, 1, 5, 7, 0, null);
 
         Carbon::setTestNow($newTime);
 
@@ -874,7 +876,7 @@ class FeeRecoveryTest extends TestCase
         $task = $this->getDbLastEntity('schedule_task')->toArray();
 
         // Recovering fees for this balance in next cycle
-        $newTime = Carbon::create(2020, 1, 10, 7, 0, null);
+        $newTime = Carbon::create(2020, 1, 6, 7, 0, null);
 
         Carbon::setTestNow($newTime);
 
@@ -896,7 +898,7 @@ class FeeRecoveryTest extends TestCase
 
         $this->setupScheduleAndScheduleTaskForMerchant();
 
-        $newTime = Carbon::create(2020, 1, 7, 7, 0, null, Timezone::IST);
+        $newTime = Carbon::create(2020, 1, 5, 7, 0, null, Timezone::IST);
 
         $task = $this->getDbLastEntity('schedule_task');
 
@@ -3098,7 +3100,7 @@ class FeeRecoveryTest extends TestCase
         [$startTime, $endTime] = $core->getNextInterval($refTime);
 
         $expectedStartTime  = Carbon::create(2023, 1, 1, 0, 0, 0, Timezone::IST);
-        $expectedEndTime    = Carbon::create(2023, 1, 3, 23, 59, 59, Timezone::IST);
+        $expectedEndTime    = Carbon::create(2023, 1, 1, 23, 59, 59, Timezone::IST);
 
         $this->assertEquals($expectedStartTime->timestamp, $startTime->timestamp);
         $this->assertEquals($expectedEndTime->timestamp, $endTime->timestamp);
@@ -3108,7 +3110,7 @@ class FeeRecoveryTest extends TestCase
         [$startTime, $endTime] = $core->getNextInterval($refTime);
 
         $expectedStartTime  = Carbon::create(2023, 8, 17, 14, 36, 35, Timezone::IST);
-        $expectedEndTime    = Carbon::create(2023, 8, 18, 23, 59, 59, Timezone::IST);
+        $expectedEndTime    = Carbon::create(2023, 8, 17, 23, 59, 59, Timezone::IST);
 
         $this->assertEquals($expectedStartTime->timestamp, $startTime->timestamp);
         $this->assertEquals($expectedEndTime->timestamp, $endTime->timestamp);

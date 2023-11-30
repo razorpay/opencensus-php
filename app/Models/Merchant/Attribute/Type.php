@@ -82,4 +82,7 @@ class Type
 
     // Activation 
     const DEACTIVATED_AT = 'deactivated_at';
+
+    // X Account Statement Types
+    const ACC_STMT_SFTP_REQUEST_STATUS    = 'acc_stmt_sftp_request_status';
 }
