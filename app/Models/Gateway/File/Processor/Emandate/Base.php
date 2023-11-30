@@ -73,13 +73,13 @@ abstract class Base extends Processor\Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "OTHER_BANKS");
         }
         catch (\Throwable $e)
         {
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
@@ -108,10 +108,12 @@ abstract class Base extends Processor\Base
             $this->gatewayFile->setFileSentAt(time());
 
             $this->gatewayFile->setStatus(Status::FILE_SENT);
+            
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
         }
         catch (\Throwable $e)
         {
-            $this->generateMetric(Metric::EMANDATE_FILE_SENT_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,

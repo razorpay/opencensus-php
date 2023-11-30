@@ -43,7 +43,7 @@ class EnachNpciNetbankingEarlyDebit extends EnachNpciNetbanking
         }
         catch (ServerErrorException $e)
         {
-            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
 
             $this->trace->traceException($e);
 

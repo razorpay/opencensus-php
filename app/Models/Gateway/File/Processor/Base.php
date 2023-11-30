@@ -342,6 +342,8 @@ abstract class Base extends Core
             ($beamResponse['success'] === null) or
             ($beamResponse['failed'] !== null))
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
+            
             $this->trace->info(
                 TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
@@ -468,14 +470,45 @@ abstract class Base extends Core
                                 ]);
         }
     }
-
-    public function generateMetric(string $metricName, array $metricDimensions=[])
+    
+    /**
+     * This metrics were pushed during emandate file generation, presently for every metric we push 5 times as default
+     * @param string $metricName
+     * @param array $metricDimensions
+     * @param int $hits
+     * @return void
+     */
+    public function generateMetricForEmandate(string $metricName, array $metricDimensions=[], int $hits=5): void
     {
-        try {
-            $this->trace->count($metricName, $this->getMetricDimensions($metricDimensions));
+        for($i = 1; $i <= $hits; $i++)
+        {
+            $this->generateMetric($metricName, $metricDimensions);
         }
-        catch (\Exception $ex) {
-            $this->trace->info(TraceCode::COI_EXPERIMENT, ["metric error" => $ex]);
+    }
+    
+    /**
+     * General Metric which use some default dimensions and push it vajra
+     * @param string $metricName
+     * @param array $metricDimensions
+     * @return void
+     */
+    public function generateMetric(string $metricName, array $metricDimensions=[]): void
+    {
+        $metricDimensions = $this->getMetricDimensions($metricDimensions);
+        
+        try
+        {
+            $this->trace->count($metricName, $metricDimensions);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, null,
+                TraceCode::EMANDATE_FILE_GENERATION_METRIC_ERROR,
+                [
+                    'metric_name' => $metricName,
+                    'metric_dimensions' => $metricDimensions,
+                ]
+            );
         }
     }
 

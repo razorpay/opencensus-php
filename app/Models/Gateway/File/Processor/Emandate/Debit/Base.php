@@ -46,7 +46,7 @@ abstract class Base extends EMandate\Base
         }
         catch (ServerErrorException $e)
         {
-            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
 
             $this->trace->traceException($e);
 
@@ -58,7 +58,9 @@ abstract class Base extends EMandate\Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
         }
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
@@ -109,7 +111,7 @@ abstract class Base extends EMandate\Base
         }
         catch (\Throwable $e)
         {
-            $this->generateMetric(Metric::EMANDATE_DATA_ENTITY_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_DATA_ENTITY_ERROR);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,

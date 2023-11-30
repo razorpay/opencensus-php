@@ -97,14 +97,14 @@ class EnachRbl extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_RBL");
 
         }
         catch (\Throwable $e)
         {
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
 
             $this->trace->traceException($e);
 
@@ -156,7 +156,7 @@ class EnachRbl extends Base
             'subject'   => 'Enach RBL Debit File Beam Send failure',
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
         ];
-
+        
         $this->sendBeamRequest($data, $timelines, $mailInfo, true);
 
         $mailData = $this->formatDataForMail($files);
@@ -166,6 +166,8 @@ class EnachRbl extends Base
         $mailable = new EMandateMail($mailData, $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
     }
 
     protected function formatDataForFile($tokens): array

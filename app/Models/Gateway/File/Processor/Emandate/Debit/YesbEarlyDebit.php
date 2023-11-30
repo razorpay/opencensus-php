@@ -39,7 +39,7 @@ class YesbEarlyDebit extends Yesb
         }
         catch (ServerErrorException $e)
         {
-            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
 
             $this->trace->traceException($e);
 
@@ -51,7 +51,9 @@ class YesbEarlyDebit extends Yesb
                     'type'   => $this->gatewayFile->getType()
                 ]);
         }
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         foreach ($tokens as $key => $token)

@@ -1412,6 +1412,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_DEBIT_ENTITY_CREATE                          = 'EMANDATE_DEBIT_ENTITY_CREATE';
     const EMANDATE_FILE_DATA                                    = 'EMANDATE_FILE_DATA';
     const EMANDATE_FILE_NAME                                    = 'EMANDATE_FILE_NAME';
+    
+    const EMANDATE_FILE_GENERATION_METRIC_ERROR                 = 'EMANDATE_FILE_GENERATION_METRIC_ERROR';
+    
 
     const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VALIDATION_ERROR';
 

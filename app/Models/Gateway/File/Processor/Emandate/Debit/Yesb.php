@@ -97,7 +97,7 @@ class Yesb extends Base
         }
         catch (ServerErrorException $e)
         {
-            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
 
             $this->trace->traceException($e);
 
@@ -109,7 +109,9 @@ class Yesb extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
         }
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         foreach ($tokens as $key => $token)
@@ -236,14 +238,14 @@ class Yesb extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             // Need to add once instrument changes are done
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_YES");
         }
         catch (\Throwable $e)
         {
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
@@ -747,6 +749,8 @@ class Yesb extends Base
             ->get();
 
         $this->sendFilesInBatches($files, 1);
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
     }
 
     /**
@@ -784,6 +788,10 @@ class Yesb extends Base
 
         if(count($sentFiles) !== count($fileInfo))
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
+            
+            $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
+            
             $this->trace->info(
                 TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
@@ -791,8 +799,6 @@ class Yesb extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
             
-            $this->generateMetric(Metric::EMANDATE_BEAM_ERROR);
-
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -862,6 +868,8 @@ class Yesb extends Base
                     }
                     else
                     {
+                        $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
+                        
                         $this->setFilesBeamStatus([$pendingFile], Constants::FILE_FAILED);
 
                         array_push($failedFiles, $pendingFileName);

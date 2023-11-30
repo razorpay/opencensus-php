@@ -163,14 +163,14 @@ class Sbi extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_SBI");
 
         }
         catch (\Throwable $e)
         {
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,

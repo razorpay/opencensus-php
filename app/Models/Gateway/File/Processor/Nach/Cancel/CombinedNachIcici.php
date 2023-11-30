@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Nach\Cancel;
 
 use RZP\Mail\Gateway\Nach\Base as NachMail;
 use Mail;
+use RZP\Models\Gateway\File\Metric;
 use Storage;
 use Carbon\Carbon;
 
@@ -73,11 +74,15 @@ class CombinedNachIcici extends Base
                 $this->mailData[$fileNameForMail]['count'] = $recordCount;
 
             }
-
+            
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
+            
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
         }
         catch (\Throwable $e)
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            
             throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
                 'id' => $this->gatewayFile->getId(),
             ], $e);
@@ -124,5 +129,7 @@ class CombinedNachIcici extends Base
         $mailable = new NachMail(['mailData' => $this->mailData], $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
     }
 }

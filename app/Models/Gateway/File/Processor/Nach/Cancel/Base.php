@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\Nach;
@@ -32,7 +33,9 @@ abstract class Base extends Nach\Base
 
         $tokens = $this->repo->token->fetchDeletedTokensForMethods(
             static::METHODS, static::GATEWAYS, static::ACQUIRER, $begin, $end);
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         $tokenIds = $tokens->pluck('id')->toArray();

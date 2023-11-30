@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Nach\Register;
 
 use Mail;
+use RZP\Models\Gateway\File\Metric;
 use Storage;
 use ZipArchive;
 use Carbon\Carbon;
@@ -60,6 +61,8 @@ class PaperNachCiti extends Base
         }
         catch (ServerErrorException $e)
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
+            
             $this->trace->traceException($e);
 
             throw new GatewayFileException(
@@ -70,7 +73,9 @@ class PaperNachCiti extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
         }
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
@@ -162,7 +167,9 @@ class PaperNachCiti extends Base
             $this->fileStore = $fileStoreIds;
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
-
+            
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
+            
             $this->trace->info(
                 TraceCode::NACH_REGISTER_FILE_GENERATED,
                 [
@@ -170,7 +177,10 @@ class PaperNachCiti extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
         }
-        catch (\Throwable $e) {
+        catch (\Throwable $e)
+        {
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
@@ -318,6 +328,8 @@ class PaperNachCiti extends Base
             ($beamResponse['success'] === null) or
             ($beamResponse['failed'] !== null))
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
+            
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -337,6 +349,8 @@ class PaperNachCiti extends Base
         $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
     }
 
     protected function getZipFileToWriteName($utilityCode, $withFullFilePath = true)

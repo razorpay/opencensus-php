@@ -60,7 +60,7 @@ class CombinedNachCitiEarlyDebitV2 extends PaperNachCitiV2
         }
         catch (ServerErrorException $e)
         {
-            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
 
             $this->trace->traceException($e);
 
@@ -70,7 +70,9 @@ class CombinedNachCitiEarlyDebitV2 extends PaperNachCitiV2
                     'id' => $this->gatewayFile->getId(),
                 ]);
         }
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         foreach ($tokens as $key => $token)

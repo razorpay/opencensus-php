@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emandate\Register;
 
 use Carbon\Carbon;
 
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -51,6 +52,8 @@ class Hdfc extends Base
         }
         catch (ServerErrorException $e)
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
+            
             $this->trace->traceException($e);
 
             throw new GatewayFileException(
@@ -61,7 +64,9 @@ class Hdfc extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
         }
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();

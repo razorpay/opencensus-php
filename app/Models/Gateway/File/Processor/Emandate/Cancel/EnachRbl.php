@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emandate\Cancel;
 
+use RZP\Models\Gateway\File\Metric;
 use Storage;
 use DOMDocument;
 use Carbon\Carbon;
@@ -64,11 +65,15 @@ class EnachRbl extends Base
 
                 $this->generateZipFile($dirName);
             }
-
+            
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
+            
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
         }
         catch (\Throwable $e)
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            
             throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
                 'id' => $this->gatewayFile->getId(),
             ], $e);
@@ -173,5 +178,8 @@ class EnachRbl extends Base
         ];
 
         $this->sendBeamRequest($data, $timelines, $mailInfo, true);
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
+        
     }
 }

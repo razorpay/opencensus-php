@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\Gateway\File\Status;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Base\Constants as MailConstants;
@@ -61,11 +62,15 @@ class CombinedNachCiti extends Base
 
                 $this->generateZipFile($dirName);
             }
-
+            
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
+            
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
         }
         catch (\Throwable $e)
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            
             throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
                 'id' => $this->gatewayFile->getId(),
             ], $e);
@@ -106,5 +111,7 @@ class CombinedNachCiti extends Base
         ];
 
         $this->sendBeamRequest($data, [], $mailInfo, true);
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
     }
 }

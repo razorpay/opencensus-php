@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Emandate\Register;
 
 use Mail;
+use RZP\Models\Gateway\File\Metric;
 use ZipArchive;
 use Carbon\Carbon;
 
@@ -85,6 +86,8 @@ class EnachRbl extends Base
         }
         catch (ServerErrorException $e)
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
+            
             $this->trace->traceException($e);
 
             throw new GatewayFileException(
@@ -97,7 +100,9 @@ class EnachRbl extends Base
         }
 
         $paymentIds = $payments->pluck(Payment\Entity::ID)->toArray();
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(
             TraceCode::EMANDATE_REGISTER_REQUEST,
             [
@@ -172,7 +177,9 @@ class EnachRbl extends Base
             $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
-
+            
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
+            
             $this->trace->info(
                 TraceCode::EMANDATE_REGISTER_FILE_GENERATED,
                 [
@@ -184,6 +191,8 @@ class EnachRbl extends Base
         }
         catch (\Throwable $e)
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            
             $this->trace->traceException($e);
 
             throw new GatewayFileException(
@@ -241,6 +250,9 @@ class EnachRbl extends Base
         $mailable = new EMandateMail($mailData, $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
+        
     }
 
     protected function formatDataForFile($payments)

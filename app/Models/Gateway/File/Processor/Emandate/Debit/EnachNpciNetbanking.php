@@ -168,7 +168,7 @@ class EnachNpciNetbanking extends Base
             ($beamResponse['success'] === null) or
             ($beamResponse['failed'] !== null))
         {
-            $this->generateMetric(Metric::EMANDATE_BEAM_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
 
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
@@ -182,6 +182,9 @@ class EnachNpciNetbanking extends Base
                 ]
             );
         }
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
+        
     }
 
     /**
@@ -263,13 +266,13 @@ class EnachNpciNetbanking extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_YES");
         }
         catch (\Throwable $e)
         {
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
@@ -309,7 +312,7 @@ class EnachNpciNetbanking extends Base
         }
         catch (ServerErrorException $e)
         {
-            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
 
             $this->trace->traceException($e);
 
@@ -333,7 +336,9 @@ class EnachNpciNetbanking extends Base
         }
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(
             TraceCode::EMANDATE_DEBIT_REQUEST,
             [

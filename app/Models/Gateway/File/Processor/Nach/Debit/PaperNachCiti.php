@@ -220,13 +220,13 @@ class PaperNachCiti extends Debit\Base
                     'target' => $this->gatewayFile->getTarget(),
                 ]);
 
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_CITI");
         }
         catch (\Throwable $e)
         {
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
@@ -339,7 +339,9 @@ class PaperNachCiti extends Debit\Base
         {
             $this->sendFilesBulk($files);
         }
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
+        
         $mailData = $this->formatDataForMail($files);
 
         $type = static::GATEWAY . '_' . static::STEP;
@@ -371,8 +373,11 @@ class PaperNachCiti extends Debit\Base
             ($beamResponse['success'] === null) or
             ($beamResponse['failed'] !== null))
         {
-            $this->generateMetric(Metric::EMANDATE_BEAM_ERROR);
-
+            $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
+            
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
+            
+            
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -422,7 +427,7 @@ class PaperNachCiti extends Debit\Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
-            $this->generateMetric(Metric::EMANDATE_BEAM_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
 
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
@@ -500,12 +505,16 @@ class PaperNachCiti extends Debit\Base
                     $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
 
                     $this->setFilesBeamStatus($pendingFiles, Constants::FILE_TIMEOUT);
+                    
+                    $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
                 }
                 else
                 {
                     $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
 
                     $this->setFilesBeamStatus($pendingFiles, Constants::FILE_UNKNOWN);
+                    
+                    $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
                 }
             }
         }
@@ -835,7 +844,7 @@ class PaperNachCiti extends Debit\Base
         }
         catch (ServerErrorException $e)
         {
-            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
 
             $this->trace->traceException($e);
 
@@ -847,7 +856,9 @@ class PaperNachCiti extends Debit\Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
         }
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         foreach ($tokens as $key => $token)
@@ -891,7 +902,7 @@ class PaperNachCiti extends Debit\Base
 
         // $metricDimension = [ "total_records" => count($paymentIds)];
 
-        // $this->generateMetric(Metric::EMANDATE_DB_COUNT, $metricDimension);
+        // $this->generateMetricForEmandate(Metric::EMANDATE_DB_COUNT, $metricDimension);
 
         return $tokens;
     }

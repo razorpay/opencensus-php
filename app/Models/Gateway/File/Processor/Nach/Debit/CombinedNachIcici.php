@@ -125,14 +125,14 @@ class CombinedNachIcici extends Debit\Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_ICICI");
 
         }
         catch (\Throwable $e)
         {
-            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
 
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
@@ -233,6 +233,8 @@ class CombinedNachIcici extends Debit\Base
             ($beamResponse['success'] === null) or
             ($beamResponse['failed'] !== null))
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
+            
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -245,7 +247,9 @@ class CombinedNachIcici extends Debit\Base
                 ]
             );
         }
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
+        
         $type = Constants::COMBINED_NACH_ICICI . '_' . self::STEP;
 
         $mailable = new NachMail(['mailData' => $this->mailData], $type, $this->gatewayFile->getRecipients());
@@ -452,7 +456,7 @@ class CombinedNachIcici extends Debit\Base
         }
         catch (ServerErrorException $e)
         {
-            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
 
             $this->trace->traceException($e);
 
@@ -526,6 +530,8 @@ class CombinedNachIcici extends Debit\Base
         }
         catch (\Throwable $e)
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_DATA_ENTITY_ERROR);
+            
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
                 [

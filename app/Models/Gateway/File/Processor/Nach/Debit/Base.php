@@ -41,7 +41,7 @@ abstract class Base extends Nach\Base
         }
         catch (ServerErrorException $e)
         {
-            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+            $this->generateMetricForEmandate(Metric::EMANDATE_DB_ERROR);
 
             $this->trace->traceException($e);
 
@@ -53,7 +53,9 @@ abstract class Base extends Nach\Base
         }
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(
             TraceCode::NACH_DEBIT_REQUEST,
             [

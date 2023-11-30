@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emandate\Cancel;
 
+use RZP\Models\Gateway\File\Metric;
 use Storage;
 use DOMDocument;
 use Carbon\Carbon;
@@ -66,9 +67,14 @@ class EnachNpciNetbanking extends Base
             }
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+            
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
+            
         }
         catch (\Throwable $e)
         {
+            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
+            
             throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
                     'id' => $this->gatewayFile->getId(),
                 ], $e);
@@ -170,5 +176,7 @@ class EnachNpciNetbanking extends Base
         ];
 
         $this->sendBeamRequest($data, [], $mailInfo, true);
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
     }
 }

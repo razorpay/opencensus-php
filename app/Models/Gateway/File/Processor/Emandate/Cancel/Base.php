@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emandate\Cancel;
 
+use RZP\Models\Gateway\File\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Base\PublicCollection;
@@ -19,7 +20,9 @@ abstract class Base extends EMandate\Base
 
         $tokens = $this->repo->token->fetchDeletedTokensForMethods(
             static::METHODS, static::GATEWAYS, static::ACQUIRER, $begin, $end);
-
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         $tokenIds = $tokens->pluck('id')->toArray();
