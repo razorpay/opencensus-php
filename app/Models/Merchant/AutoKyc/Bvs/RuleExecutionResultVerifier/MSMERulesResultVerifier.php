@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\RuleExecutionResultVerifier;
 
 use App;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification\Constants;
 
@@ -20,6 +21,12 @@ class MSMERulesResultVerifier extends BaseRuleResultVerifier
         $this->app = App::getFacadeRoot();
 
         $isArtefactsSignatoryVerificationEnabled = $this->isArtefactsSignatoryVerificationExperimentEnabled($merchant->getId());
+
+        $this->app['trace']->info(TraceCode::BASE_STATUS_UPDATER_DOCUMENT_VALIDATION_STATUS, [
+            'verifier'                                  => "MSMERulesResultVerifier",
+            'isArtefactsSignatoryVerificationEnabled'   => $isArtefactsSignatoryVerificationEnabled,
+            'validationStatus'                          => $validation->getValidationStatus()
+        ]);
 
         if ($isArtefactsSignatoryVerificationEnabled === false)
         {

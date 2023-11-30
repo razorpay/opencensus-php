@@ -206,6 +206,11 @@ abstract class BaseStatusUpdater implements StatusUpdater
     {
         $ruleExecutionResult = $this->ruleResultVerifier->verifyAndReturnRuleResult($this->merchant, $validation);
 
+        $this->trace->info(TraceCode::BASE_STATUS_UPDATER_DOCUMENT_VALIDATION_STATUS, [
+            'rule_execution_result'     => $ruleExecutionResult,
+            'validation_id'             => empty($validation) === false ? $validation->getValidationId() : null,
+        ]);
+
         if ($ruleExecutionResult[NCConstants::IS_ARTEFACT_VALIDATED] === true)
         {
             return $this->getVerifiedStatus();

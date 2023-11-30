@@ -39,7 +39,21 @@ class POA extends BaseStatusUpdater
 
         if (empty($validation) === false)
         {
+            $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_STATUS_DEBUG, [
+                'merchant_id'                       => $this->merchantDetails->getId(),
+                'validation__validation_id'         => $validation->getValidationId(),
+                'validation__artefact_type'         => $validation->getArtefactType(),
+                'validation__validation_unit'       => $validation->getValidationUnit(),
+                'validation__validation_status'     => $validation->getValidationStatus()
+            ]);
             $documentValidationStatus = $this->getDocumentValidationStatus($validation);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_STATUS_DEBUG, [
+                'merchant_id'        => $this->merchantDetails->getId(),
+                'validation'         => null,
+            ]);
         }
 
         if(empty($documentValidationStatus) === true){
@@ -53,6 +67,11 @@ class POA extends BaseStatusUpdater
 
             return;
         }
+
+        $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_STATUS_DEBUG, [
+            'document_validation_status' => $documentValidationStatus,
+        ]);
+
 
         $this->merchantDetails->setPoaVerificationStatus($documentValidationStatus);
         $this->updateStakeholderStatusIfApplicable($documentValidationStatus);
