@@ -1,5 +1,5 @@
 # Stage - Build & Test
-FROM c.rzp.io/proxy_dockerhub/library/golang:1.16.3-alpine3.12
+FROM c.rzp.io/razorpay/onggi-multi-arch:rzp-golden-image-base-golang-1.21
 ARG GIT_USERNAME
 ENV CGO_ENABLED 0
 

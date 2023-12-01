@@ -1,5 +1,5 @@
 # Stage - Build & Test
-FROM --platform=linux/amd64 golang:1.17
+FROM --platform=linux/amd64 golang:1.21
 ARG GIT_USERNAME
 ENV CGO_ENABLED 0
 

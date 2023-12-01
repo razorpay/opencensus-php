@@ -1,6 +1,6 @@
 module github.com/razorpay/api/e2e
 
-go 1.16
+go 1.21
 
 require (
 	github.com/razorpay/goutils/itf v0.2.0
