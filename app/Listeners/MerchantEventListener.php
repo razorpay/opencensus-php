@@ -19,6 +19,7 @@ class MerchantEventListener
 
     protected function consumeOnSaveEvent(Merchant\Entity $entity)
     {
-        (new Terminal\Service())->consumeInstrumentRulesEvent($entity->getId());
+        //Removing terminal service events about merchant event
+//        (new Terminal\Service())->consumeInstrumentRulesEvent($entity->getId());
     }
 }

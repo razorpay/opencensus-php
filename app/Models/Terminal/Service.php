@@ -1795,6 +1795,7 @@ class Service extends Base\Service
         return $data;
     }
 
+   //Rule events are not required anymore as the feature is not needed anymore.
     public function consumeInstrumentRulesEvent(string $merchantId, bool $forceTrigger = false): array
     {
         $start = millitime();
