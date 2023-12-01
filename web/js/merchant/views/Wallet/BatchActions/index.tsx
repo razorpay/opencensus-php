@@ -114,5 +114,5 @@ const mapStateToProps = (state) => ({
 export default connect(mapStateToProps, (dispatch) => ({
   fetchAll: (params, isCreateGiftCardBatchEnabled) =>
     dispatch(fetchAll(params, isCreateGiftCardBatchEnabled)),
-  batchDownload,
+  batchDownload: (id) => dispatch(batchDownload(id)),
 }))(List);
