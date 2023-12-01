@@ -294,7 +294,7 @@ class MagicCheckoutProvider extends Base\Core
         $customerDetails = $orderMeta['customer_details'];
         return [
             'email' => $customerDetails['email'],
-            'phone' => $customerDetails['phone'],
+            'phone' => $customerDetails['contact'],
             'ip'    => $this->app['request']->ip(),
         ];
     }
