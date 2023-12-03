@@ -22,7 +22,7 @@ class OrderController extends Controller
     {
         $orderRequest = Request::all();
 
-        if (isset($orderRequest["payment"]) === true || isset($orderRequest["payment_config"]) === true)
+        if (isset($orderRequest["payment"]["method"]) === true || isset($orderRequest["payment_config"]) === true)
         {
             $paymentRequest = $this->getPaymentRequest($orderRequest);
         }
@@ -40,7 +40,7 @@ class OrderController extends Controller
         $response = $orderResponse;
 
         //If payment request is not empty then create the payment after removing capture config
-        if (empty($paymentRequest) === false)
+        if (isset($paymentRequest["method"]) === true)
         {
             $paymentRequest["order_id"] = $orderResponse["id"];
 
