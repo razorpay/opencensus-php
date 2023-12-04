@@ -120,7 +120,7 @@ class webhookForm extends Component {
             }
             if (
               eventGroupKey === 'payment' &&
-              !isConfigTagEnabled('webhooks.downtime_payment_events')
+              isConfigTagEnabled('webhooks.downtime_payment_events')
             ) {
               this.removePaymentDowntimeEvents(events);
             }
