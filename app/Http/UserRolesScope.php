@@ -919,6 +919,7 @@ class UserRolesScope
             'default_partner_config_fetch_guest'                   => Role::READER_ROLES,
             'default_config_for_oauth_authorize'                   => Role::READER_ROLES,
             'get_app_name_from_payment'                            => Role::READER_ROLES,
+            'fetch_partner_earnings_status'                        => Role::READER_ROLES,
             'partner_request_migration'                            => [Role::OWNER, Role::ADMIN],
             'partner_activation_save'                              => [Role::OWNER, Role::ADMIN],
             'partner_referral_fetch'                               => [Role::OWNER, Role::ADMIN],

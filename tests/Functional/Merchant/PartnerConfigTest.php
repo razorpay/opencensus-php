@@ -498,6 +498,23 @@ class PartnerConfigTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchEarningsStatusForPartner()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+
+        $this->createConfigForPartnerApp($app->getId());
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['id'] = $partner->getId();
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId(), $merchantUser['id']);
+
+        $this->startTest();
+    }
+
     public function testGettingConfigForAppUsingSubMerchant()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);

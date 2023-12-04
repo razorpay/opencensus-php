@@ -973,6 +973,21 @@ return [
         ],
     ],
 
+    'testFetchEarningsStatusForPartner' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/partner/earnings/section',
+            'content' => [
+                'id' => '10000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'earnings_enabled' => true,
+                ],
+            ],
+        ],
+
     'testSubmerchantPricingplanUpsertViaBatch' => [
         'request'  => [
             'url'     => '/partner_configs/bulk',

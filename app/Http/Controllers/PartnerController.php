@@ -169,4 +169,14 @@ class PartnerController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchEarningsSectionStatusForPartner()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchEarningsSectionStatusForPartner($input);
+
+        return ApiResponse::json($response);
+    }
+
 }

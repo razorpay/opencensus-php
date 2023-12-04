@@ -3313,6 +3313,8 @@ class Route
 
         'get_app_name_from_payment'                => ['get',      'partner/subm_payment/app_details',                          'PartnerController@getOauthApplicationDetails'                      ],
 
+        'fetch_partner_earnings_status'            => ['get',      'partner/earnings/status',                          'PartnerController@fetchEarningsSectionStatusForPartner'],
+
         //route for sending events to partner with pending commission and Incomplete KYC
         'partner_commission_pending'               => ['post',     'partner/commissions_pending',                    'PartnerController@sendEventsOfPartnersWithCommissionPending'],
 
@@ -6954,6 +6956,8 @@ class Route
         'entity_origin_create',
 
         'get_app_name_from_payment',
+
+        'fetch_partner_earnings_status',
 
         'merchant_product_switch',
         'merchant_instant_activation_post',
@@ -11778,6 +11782,7 @@ class Route
             'partner_sales_poc',
             'default_partner_config_fetch_guest',
             'get_app_name_from_payment',
+            'fetch_partner_earnings_status',
             'partner_request_migration',
             'partner_activation_save',
             'partner_kyc_access_request',

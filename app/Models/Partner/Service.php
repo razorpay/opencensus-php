@@ -634,4 +634,15 @@ class Service extends Base\Service
 
         return ['application' => $appDetails];
     }
+
+    public function fetchEarningsSectionStatusForPartner(array $input)
+    {
+        $partner = $this->repo->merchant->findOrFailPublic($input['id']);
+
+        $commissionEnabledConfigs = (new Config\Core())->fetchAllEnabledConfigGroupsByPartner($partner);
+
+        $isEarningsEnabled = (empty($commissionEnabledConfigs) === false) ;
+
+        return ['enable_earnings' => $isEarningsEnabled];
+    }
 }
