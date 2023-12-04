@@ -20,7 +20,7 @@ class FeeRecovery extends Job
     const DELAY = 300;
 
     // Overriding timeout with 300 for the time being, since we don't know how much time the process will take.
-    public $timeout = 300;
+    public $timeout = 600;
 
     protected $trace;
 
