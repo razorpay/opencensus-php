@@ -20,16 +20,15 @@ const PromotionalCouponBanner: React.FC<PromotionalCouponBannerProps> = ({
 }) => {
   const calloutElement = (
     <>
-      <p className="caption">Benefits of the widget</p>
+      <p className="caption">Key Benefits</p>
       <FeaturesTile />
     </>
   );
 
   const desc = (
     <p className="title-desc">
-      Unleash the power of our new Coupon feature! From order and product discounts to bulk and
-      shipping offers, our dashboard opens the door to incredible savings that elevate your
-      business.
+      Power your customers' shopping experience with Coupons 360 - the most powerful Coupon Creation
+      and Management System.
     </p>
   );
 
@@ -38,7 +37,7 @@ const PromotionalCouponBanner: React.FC<PromotionalCouponBannerProps> = ({
       <div className="Slider">
         <Landing
           className=""
-          title="Coupons"
+          title="Coupons 360"
           imageUrl={IMG_URL}
           desc={desc}
           callout={calloutElement}

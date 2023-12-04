@@ -134,3 +134,11 @@ export const autoApplyStatus = {
     return <span> {status === '-' ? '-' : coupon.display ? 'Yes' : 'No'}</span>;
   },
 };
+
+export const couponSource = {
+  title: 'Source',
+  value: (coupon: any) => {
+    const source = coupon?.source ?? 'Coupon Engine';
+    return <span> {source}</span>;
+  },
+};

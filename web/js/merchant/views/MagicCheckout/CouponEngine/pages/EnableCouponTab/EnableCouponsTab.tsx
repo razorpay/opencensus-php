@@ -42,14 +42,21 @@ interface EnableCouponsTabProps {
   openModal: (options: { size: string; className: string; component: JSX.Element }) => void;
 }
 
+const initialSyncDates = {
+  end_date: '',
+  start_date: '',
+};
+
 const EnableCouponsTab: React.FC<EnableCouponsTabProps> = ({ openModal }) => {
-  const [syncStatus, setSyncStatus] = useState<string>('not-started');
+  const [syncStatus, setSyncStatus] = useState<string>('');
+  const [lastSyncDates, setLastSyncDates] = useState(initialSyncDates);
 
   useEffect(() => {
     const fetchShopifySyncStatus = async () => {
       try {
         const { data } = await getSyncShopifyCouponsStatus();
         setSyncStatus(data?.status || 'not-started');
+        setLastSyncDates(data?.last_sync_dates || initialSyncDates);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -58,8 +65,20 @@ const EnableCouponsTab: React.FC<EnableCouponsTabProps> = ({ openModal }) => {
     fetchShopifySyncStatus();
   }, []);
 
-  const updateSyncStatus = (status: string) => {
+  const updateSyncStatus = ({
+    status,
+    start_date,
+    end_date,
+  }: {
+    status: string;
+    start_date: string;
+    end_date: string;
+  }) => {
     setSyncStatus(status);
+    setLastSyncDates({
+      start_date,
+      end_date,
+    });
   };
 
   const openShopifySyncModal = () => {
@@ -106,13 +125,12 @@ const EnableCouponsTab: React.FC<EnableCouponsTabProps> = ({ openModal }) => {
               <CardHeaderWrapper>
                 <LogoImage src={shopifyLogo} alt="shopify" className="rzp-logo" />
                 <CardTitle>
-                  Coupons from Shopify
-                  {syncStatus === 'in-progress' ||
-                    (syncStatus === 'completed' && (
-                      <SyncStatus variant={(syncStatus as 'completed') || 'in-progress'}>
-                        {syncStatus === 'completed' ? 'Sync Completed' : 'Sync in progress'}
-                      </SyncStatus>
-                    ))}
+                  Coupons from Shopify{' '}
+                  {syncStatus === 'in-progress' || syncStatus === 'completed' ? (
+                    <SyncStatus variant={(syncStatus as 'completed') || 'in-progress'}>
+                      {syncStatus === 'completed' ? 'Sync Completed' : 'Sync in progress'}
+                    </SyncStatus>
+                  ) : null}
                 </CardTitle>
               </CardHeaderWrapper>
               {syncStatus === 'not-started' && (
@@ -122,9 +140,18 @@ const EnableCouponsTab: React.FC<EnableCouponsTabProps> = ({ openModal }) => {
               )}
             </CardHeader>
             <CardContent className="display-flex settings-card-widget-content">
-              <div>
-                Sync your coupons from Shopify to view and manage them from your Razorpay dashboard
-              </div>
+              {syncStatus === 'not-started' || syncStatus === '' ? (
+                <div>
+                  Sync your coupons from Shopify to view and manage them from your Razorpay
+                  dashboard
+                </div>
+              ) : (
+                <div>
+                  Your coupons have been successfully synced from{' '}
+                  <strong>{lastSyncDates.start_date}</strong> to{' '}
+                  <strong>{lastSyncDates.end_date}</strong>. You can view them <strong>here</strong>
+                </div>
+              )}
             </CardContent>
           </CardWidgetWrapper>
         </CardWidget>

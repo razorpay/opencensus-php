@@ -11,6 +11,7 @@ export function createBuyXGetYPayload({
   discountOffered,
   status,
   id,
+  source,
 }) {
   let customer_whitelist = {};
   const condition = {};
@@ -232,9 +233,10 @@ export function createBuyXGetYPayload({
     auto_apply: couponDetails.autoapply,
     currency: 'INR',
     active: activeDate,
-    expiry: couponValidity.isLimitedUseage ? expiryDate : null,
+    expiry: couponValidity.isLimitedUsage ? expiryDate : null,
     budget: Number(couponValidity.maxBudget) * 100,
     status,
+    source,
     id,
     discover_rules: isEmpty(condition) ? null : [condition],
     evaluate_rules: [

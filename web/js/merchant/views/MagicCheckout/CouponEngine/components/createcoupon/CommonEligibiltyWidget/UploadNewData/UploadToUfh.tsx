@@ -11,10 +11,7 @@ import { FormGroup } from 'merchant/views/MagicCheckout/CouponEngine/components/
 import { uploadCustomerDetailsToUfh } from 'merchant/views/MagicCheckout/CouponEngine/api';
 
 // constants imports
-import {
-  DISPLAY_MESSAGES_FOR_UFH_MODAL,
-  SAMPLE_FILE_URL,
-} from 'merchant/views/MagicCheckout/CouponEngine/constants';
+import { DISPLAY_MESSAGES_FOR_UFH_MODAL } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 
 interface UploadToUfhProps {
   handleSelectedData: (data: any) => void;
@@ -55,12 +52,12 @@ const UploadToUfh: React.FC<UploadToUfhProps> = ({
     <div>
       <BatchUpload
         accept={['csv']}
-        title="Add selected customers"
+        title="Add specific customers"
         batchType="add_customers_data"
         validateBatch={uploadToUfh}
         processFile
         displayMsgs={DISPLAY_MESSAGES_FOR_UFH_MODAL}
-        validateModalInfo={<ValidateModalInfo sampleUrl={SAMPLE_FILE_URL} />}
+        validateModalInfo={<ValidateModalInfo />}
         maxFileSize={52428800} // 50MB
         batchListClass="rto-history-upload"
         component={

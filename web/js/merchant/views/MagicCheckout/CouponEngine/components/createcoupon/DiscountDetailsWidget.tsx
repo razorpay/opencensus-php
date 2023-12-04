@@ -44,6 +44,14 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ couponName }) => {
           discountValue: null,
         },
       }));
+      setWidgetsData((prevState) => ({
+        ...prevState,
+        discountDetails: {
+          ...prevState.discountDetails,
+          discountValue: 0,
+          maxDiscountValue: '',
+        },
+      }));
     }
   };
 
@@ -129,7 +137,7 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ couponName }) => {
           </div>
           {widgetsData.discountDetails.discountType === 'percentageDiscount' && (
             <div className="mt-4">
-              <label className="discount-amount-label">Max Discount</label>
+              <label className="discount-amount-label">Upto (Max Discount)</label>
               <Input
                 name="maxDiscount"
                 type="number"

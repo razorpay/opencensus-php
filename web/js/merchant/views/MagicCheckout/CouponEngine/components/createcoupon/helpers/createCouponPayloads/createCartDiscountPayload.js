@@ -10,6 +10,7 @@ export function createCartDiscountPayload({
   couponEligibility,
   usageRestriction,
   status,
+  source,
   id,
 }) {
   const condition = {};
@@ -37,7 +38,6 @@ export function createCartDiscountPayload({
       },
     };
   }
-
   const activeDate = moment(
     `${couponValidity.startDate} ${couponValidity.startTime}`,
   ).toISOString();
@@ -52,9 +52,10 @@ export function createCartDiscountPayload({
     auto_apply: couponDetails.autoapply,
     currency: 'INR',
     active: activeDate,
-    expiry: couponValidity.isLimitedUseage ? expiryDate : null,
+    expiry: couponValidity.isLimitedUsage ? expiryDate : null,
     budget: Number(couponValidity.maxBudget) * 100,
     status,
+    source,
     id,
     discover_rules: isEmpty(condition) ? null : [condition],
     evaluate_rules: [
@@ -89,6 +90,7 @@ export function createCartDiscountPayload({
         usageRestriction.isLimitedUsage && usageRestriction.limitBy === 'phone'
           ? Number(usageRestriction.maxUsage)
           : null,
+      total: usageRestriction.isRestrictedTotalUsage ? Number(usageRestriction.total) : null,
     },
     meta_data: {
       display_information: {

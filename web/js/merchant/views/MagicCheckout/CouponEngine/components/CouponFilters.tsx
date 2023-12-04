@@ -10,6 +10,8 @@ import {
   COUPON_STATUS,
   SORT_BY,
   COUPON_DISPLAY,
+  COUPON_SOURCES,
+  COUNT,
 } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 
 // Define the shape of the form data
@@ -21,6 +23,7 @@ interface FormData {
   skip: number;
   count: number;
   display: string;
+  source: string;
 }
 
 // Props for the CouponFilters component
@@ -39,6 +42,7 @@ const initialFiltersState: FormData = {
   skip: 0,
   count: 10,
   display: 'all',
+  source: 'all',
 };
 
 const CouponFilters: React.FC<CouponFiltersProps> = ({
@@ -126,13 +130,11 @@ const CouponFilters: React.FC<CouponFiltersProps> = ({
 
       {/* Input for Coupon Count */}
       <div className="form-group list-filter-item" style={{ flexBasis: '70px' }}>
-        <label htmlFor="couponCount">Count</label>
-        <input
-          type="number"
-          min="0"
-          max="50"
+        <label htmlFor="count">Count</label>
+        <Input.Select
+          id="couponCount"
           name="count"
-          className="form-control input-sm"
+          options={COUNT}
           value={formData.count}
           onChange={setField}
         />
@@ -140,11 +142,21 @@ const CouponFilters: React.FC<CouponFiltersProps> = ({
 
       {/* Select for Coupon Display */}
       <div className="form-group list-filter-item">
-        <label htmlFor="couponDisplay">Display</label>
+        <label htmlFor="couponDisplay">Display on Checkout</label>
         <Input.Select
           name="display"
           options={COUPON_DISPLAY}
           value={formData.display}
+          onChange={setField}
+        />
+      </div>
+
+      <div className="form-group list-filter-item">
+        <label htmlFor="source">Source</label>
+        <Input.Select
+          name="source"
+          options={COUPON_SOURCES}
+          value={formData.source}
           onChange={setField}
         />
       </div>

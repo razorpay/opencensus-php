@@ -36,8 +36,9 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
       setErrorStates,
       startDateTime: moment(`${startDate} ${startTime}`).toISOString(),
       endDateTime: moment(`${endDate} ${endTime}`).toISOString(),
-      isEndDateRequired: widgetsData.couponValidity.isLimitedUseage,
+      isEndDateRequired: widgetsData.couponValidity.isLimitedUsage,
       flowName: flow,
+      couponStatus: widgetsData.status,
     });
   };
 
@@ -123,15 +124,15 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
 
             <div style={{ display: 'flex', margin: '16px 0' }}>
               <Input.Check
-                checked={widgetsData.couponValidity.isLimitedUseage}
+                checked={widgetsData.couponValidity.isLimitedUsage}
                 type="checkbox"
-                name="isLimitedUseage"
+                name="isLimitedUsage"
                 onChange={(e) => {
                   setWidgetsData(() => ({
                     ...widgetsData,
                     couponValidity: {
                       ...widgetsData.couponValidity,
-                      isLimitedUseage: e.target.checked,
+                      isLimitedUsage: e.target.checked,
                     },
                   }));
 
@@ -148,7 +149,7 @@ const AccordionBody: React.FC<AccordionBodyProps> = ({ flow }) => {
               <CheckboxLabel>Set an end date</CheckboxLabel>
             </div>
 
-            {widgetsData.couponValidity.isLimitedUseage ? (
+            {widgetsData.couponValidity.isLimitedUsage ? (
               <DateTimeContainer>
                 <div className="date">
                   <Label>End date</Label>

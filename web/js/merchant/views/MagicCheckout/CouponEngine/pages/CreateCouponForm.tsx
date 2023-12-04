@@ -70,6 +70,7 @@ const CreateCouponForm: React.FC<{
             ...prev,
             ...prefillData,
             status: couponData.status,
+            source: couponData?.source || null,
             id: couponData.id,
           }));
         }
@@ -90,9 +91,10 @@ const CreateCouponForm: React.FC<{
               startTime: moment().add(2, 'hours').format('h:mm a'),
               endDate: moment().add(1, 'days').format('YYYY-MM-DD'),
               endTime: moment().add(1, 'days').endOf('day').format('h:mm a'),
-              isLimitedUseage: false,
+              isLimitedUsage: false,
             },
             status: 'published',
+            source: null,
           }));
         }
       };
@@ -157,6 +159,7 @@ const CreateCouponForm: React.FC<{
       discountOffered:
         couponName === 'bulk_order' ? widgetsData.bulkDiscountDetails : widgetsData.discountOffered,
       status: updatedCouponStatus || widgetsData.status,
+      source: widgetsData.source,
       id: widgetsData.id,
     });
 

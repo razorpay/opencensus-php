@@ -25,6 +25,47 @@ const AccordionBody: React.FC = () => {
         <div className="form-input max-width-100">
           <div className="display-flex">
             <Input.Check
+              checked={widgetsData.usageRestriction.isRestrictedTotalUsage}
+              type="checkbox"
+              name="isUnlimitedUsage"
+              onChange={(e) => {
+                setWidgetsData((prev) => ({
+                  ...prev,
+                  usageRestriction: {
+                    ...prev.usageRestriction,
+                    isRestrictedTotalUsage: e.target.checked,
+                  },
+                }));
+              }}
+              autoRender
+            />
+            <Label>Number of times this discount can be used in total</Label>
+          </div>
+          {widgetsData.usageRestriction.isRestrictedTotalUsage ? (
+            <div>
+              <MoreDetailsContainer>
+                <Input
+                  name="maxUsage"
+                  type="number"
+                  required
+                  value={widgetsData.usageRestriction.total}
+                  className="w-350"
+                  onChange={(e) => {
+                    setWidgetsData((prev) => ({
+                      ...prev,
+                      usageRestriction: {
+                        ...prev.usageRestriction,
+                        total: e.target.value,
+                      },
+                    }));
+                  }}
+                  onWheel={onWheelPreventChange}
+                />
+              </MoreDetailsContainer>
+            </div>
+          ) : null}
+          <div className="display-flex mt-16">
+            <Input.Check
               checked={widgetsData.usageRestriction.isLimitedUsage}
               type="checkbox"
               name="isUnlimitedUsage"

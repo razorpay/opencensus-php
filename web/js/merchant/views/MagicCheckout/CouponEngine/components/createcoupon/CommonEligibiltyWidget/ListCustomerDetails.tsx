@@ -98,7 +98,7 @@ const ListCustomerDetails: React.FC<ListCustomerDetailsProps> = ({
     <div>
       <AddItemContainer>
         <ModalHeader>
-          <div className="title">Add selected customers</div>
+          <div className="title">Add specific customers</div>
           <div className="exit-cta" onClick={closeModal}>
             <i className="i i-close" />
           </div>

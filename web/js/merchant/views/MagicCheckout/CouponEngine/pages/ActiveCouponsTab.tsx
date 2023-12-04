@@ -12,7 +12,9 @@ import {
   couponStatus,
   actions,
   couponDescription,
+  couponSource,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/CellItems';
+import { DataTableWrapper } from 'merchant/views/MagicCheckout/CouponEngine/styles/DataTableElements';
 import OrderFilters from 'merchant/views/MagicCheckout/CouponEngine/components/CouponFilters';
 import EmptyComponent from 'merchant/views/MagicCheckout/CouponEngine/components/EmptyComponent';
 import MultiSelectHeader from 'merchant/views/MagicCheckout/CouponEngine/components/MultiSelectHeader/MultiSelectHeader';
@@ -43,6 +45,7 @@ const initialFiltersState = {
   skip: 0,
   count: 10,
   display: 'all',
+  source: 'all',
 };
 
 const AllCoupons: React.FC<AllCouponsProps> = ({ showNotification }) => {
@@ -129,25 +132,28 @@ const AllCoupons: React.FC<AllCouponsProps> = ({ showNotification }) => {
         setCheckedIds={setCheckedIds}
         updateCouponsCb={updateCouponsCb}
       />
-      <DataTable
-        title="coupons"
-        columns={[
-          couponCode(onChecked, checkedIds),
-          couponDescription,
-          couponStatus,
-          couponType,
-          checkoutDisplayStatus,
-          couponUseageCount,
-          actions(updateCouponsCb),
-        ]}
-        items={allCouponsList}
-        customClass="magic-coupons-table"
-        loading={isLoading}
-        skip={filters.skip}
-        count={filters.count}
-        paginate={paginate}
-        EmptyComponent={EmptyComponent}
-      />
+      <DataTableWrapper>
+        <DataTable
+          title="coupons"
+          columns={[
+            couponCode(onChecked, checkedIds),
+            couponDescription,
+            couponStatus,
+            couponType,
+            couponSource,
+            checkoutDisplayStatus,
+            couponUseageCount,
+            actions(updateCouponsCb),
+          ]}
+          items={allCouponsList}
+          customClass="magic-coupons-table"
+          loading={isLoading}
+          skip={filters.skip}
+          count={filters.count}
+          paginate={paginate}
+          EmptyComponent={EmptyComponent}
+        />
+      </DataTableWrapper>
     </div>
   );
 };

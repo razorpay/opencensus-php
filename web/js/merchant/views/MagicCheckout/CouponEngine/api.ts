@@ -61,16 +61,18 @@ export const listCoupons = (payload: any = {}): any => {
     skip = 0,
     count = 10,
     display,
+    source = '',
   } = payload;
 
   const data = {
-    desc_order: sort_by === 'date-desc',
+    desc_order: sort_by === 'date-desc' ? 'true' : 'false',
     count,
     skip,
     coupon_display: display === 'all' ? '' : display === 'yes' ? 'true' : 'false',
     status: status === 'all' ? '' : status,
     type: type === 'all' ? '' : type,
-    code,
+    source: source === 'all' ? '' : source,
+    code_search_term: code,
   };
   return merchantFetch({
     url: `1cc/dashboard/ce/coupons`,

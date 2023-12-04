@@ -10,6 +10,7 @@ export function createProductDiscountPayload({
   couponEligibility,
   usageRestriction,
   status,
+  source,
   id,
 }) {
   let customer_whitelist = {};
@@ -129,9 +130,10 @@ export function createProductDiscountPayload({
     auto_apply: couponDetails.autoapply,
     currency: 'INR',
     active: activeDate,
-    expiry: couponValidity.isLimitedUseage ? expiryDate : null,
+    expiry: couponValidity.isLimitedUsage ? expiryDate : null,
     budget: Number(couponValidity.maxBudget) * 100,
     status,
+    source,
     id,
     discover_rules: isEmpty(condition) ? null : [condition],
     evaluate_rules: [
@@ -149,6 +151,7 @@ export function createProductDiscountPayload({
         usageRestriction.isLimitedUsage && usageRestriction.limitBy === 'phone'
           ? Number(usageRestriction.maxUsage)
           : null,
+      total: usageRestriction.isRestrictedTotalUsage ? Number(usageRestriction.total) : null,
     },
     meta_data: {
       display_information: {

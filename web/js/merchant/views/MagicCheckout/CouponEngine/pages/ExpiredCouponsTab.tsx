@@ -11,6 +11,7 @@ import {
   couponUseageCount,
   couponStatus,
   actions,
+  couponSource,
   couponDescription,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/CellItems';
 import OrderFilters from 'merchant/views/MagicCheckout/CouponEngine/components/CouponFilters';
@@ -84,6 +85,7 @@ const ExpiredCouponsTab: React.FC<ExpiredCoupons> = ({ showNotification }) => {
           couponDescription,
           couponStatus,
           couponType,
+          couponSource,
           checkoutDisplayStatus,
           couponUseageCount,
           actions(),

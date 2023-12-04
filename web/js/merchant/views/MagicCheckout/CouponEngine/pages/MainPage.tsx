@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 
 // helper imports
 import { getItem, setItem } from 'common/utils/localStorage';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { useSplitzService } from 'common/splitz';
 
 // ui components
@@ -30,14 +29,12 @@ interface MainPageProps {
   merchantId: string;
   initialCouponEngineEnabled: boolean;
   updatedCouponEngineEnabled: boolean | null | undefined;
-  showNotification: (notification: any) => void;
 }
 
 const MainPage: React.FC<MainPageProps> = ({
   merchantId,
   initialCouponEngineEnabled,
   updatedCouponEngineEnabled,
-  showNotification,
 }) => {
   const { abExperiments } = useSplitzService();
 
@@ -46,31 +43,10 @@ const MainPage: React.FC<MainPageProps> = ({
 
   const NAV_ITEMS = getNavItems(isShopifyCouponSyncEnabled);
   const [activeNav, setActiveNav] = useState<string>(NAV_ITEMS[0].id);
-  const [tabs, setTabs] = useState(NAV_ITEMS);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [shouldShowPromotionalBanner, setShouldShowPromotionalBanner] = useState<boolean>(
     getItem(`showCouponBanner-${merchantId}`) !== 'false',
   );
-
-  const fetchInitialDataWithoutSync = async () => {
-    setIsLoading(true);
-    try {
-      const { data: couponsResponse } = await listCoupons({
-        count: 1,
-      });
-
-      if (couponsResponse.coupons.length === 0) {
-        setTabs([NAV_ITEMS[0]]);
-      }
-    } catch (errors) {
-      showNotification({
-        type: 'error',
-        message: 'Something went wrong in fetching collections. Please try again later',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const fetchInitialDataWithSync = async () => {
     setIsLoading(true);
@@ -107,8 +83,6 @@ const MainPage: React.FC<MainPageProps> = ({
   useEffect(() => {
     if (isShopifyCouponSyncEnabled) {
       fetchInitialDataWithSync();
-    } else {
-      fetchInitialDataWithoutSync();
     }
   }, []);
 
@@ -149,7 +123,11 @@ const MainPage: React.FC<MainPageProps> = ({
               </div>
             ) : (
               <SuspenseWithLoader type="center">
-                <SideNav tabs={tabs} onTabClick={(id) => setActiveNav(id)} activeNav={activeNav} />
+                <SideNav
+                  tabs={NAV_ITEMS}
+                  onTabClick={(id) => setActiveNav(id)}
+                  activeNav={activeNav}
+                />
                 <MainContent activeNav={activeNav} render={setContent} />
               </SuspenseWithLoader>
             )}
@@ -164,12 +142,10 @@ const mapStateToProps = (state: {
   magicCheckout: any;
   magic_settings: any;
   config: { config: { id: string } };
-  showNotification;
 }) => ({
   merchantId: state.config?.config?.id || '',
   initialCouponEngineEnabled: state.magicCheckout.one_cc_coupon_engine,
   updatedCouponEngineEnabled: state.magic_settings.one_cc_coupon_engine,
-  showNotification,
 });
 
 export default connect(mapStateToProps, null)(MainPage);

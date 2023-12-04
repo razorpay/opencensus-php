@@ -75,6 +75,12 @@ export const COUPON_DISPLAY = [
   { label: 'No', name: 'no' },
 ];
 
+export const COUPON_SOURCES = [
+  { label: 'All', name: 'all' },
+  { label: 'Coupon Engine', name: 'ce' },
+  { label: 'Shopify', name: 'shopify' },
+];
+
 export const SORT_BY = [
   { label: 'Date (From Newest)', name: 'date-desc' },
   { label: 'Date (From Oldest)', name: 'date-asc' },
@@ -114,5 +120,16 @@ export const DISPLAY_MESSAGES_FOR_UFH_MODAL = {
   exceed: 'The file size exceeds the maximum size limit. Please upload a smaller file.',
 };
 
-export const SAMPLE_FILE_URL =
+export const SAMPLE_FILE_URL_FOR_EMAIL =
   'https://cdn.razorpay.com/static/assets/magic-checkout/sample_customer_details_file.csv';
+
+export const SAMPLE_FILE_URL_FOR_MOBILE =
+  'https://cdn.razorpay.com/static/assets/magic-checkout/sample_customer_mobile_details_file.csv';
+
+export const COUNT = [
+  { label: '25', name: 25 },
+  { label: '20', name: 20 },
+  { label: '15', name: 15 },
+  { label: '10', name: 10 },
+  { label: '5', name: 5 },
+];

@@ -84,11 +84,11 @@ const EligibilityAccordionBody = ({ openModal, showNotification, flow }) => {
           name="couponEligibilityFor"
           options={[
             {
-              label: 'All',
+              label: 'All customers',
               value: 'allCustomers',
             },
             {
-              label: 'Chosen Customers',
+              label: 'Specific customers',
               value: 'specificCustomers',
             },
           ]}

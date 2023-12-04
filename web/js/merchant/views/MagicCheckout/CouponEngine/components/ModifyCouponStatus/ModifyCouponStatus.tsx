@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import moment from 'moment';
 
 // ui imports
 import { ShopifySyncModalWrapper } from 'merchant/views/MagicCheckout/CouponEngine/pages/EnableCouponTab/EnableCouponTabStyles';
@@ -29,7 +30,7 @@ const ModifyCouponStatus = ({ closeModal, coupon, showNotification, status, upda
   const handleSubmit = async () => {
     setLoading(true);
     if (status === 'publish') {
-      if (coupon.active < new Date().toISOString() || coupon.expiry < new Date().toISOString()) {
+      if (moment(coupon.active).isBefore(moment()) || moment(coupon.expiry).isBefore(moment())) {
         showNotification({
           type: 'info',
           message:

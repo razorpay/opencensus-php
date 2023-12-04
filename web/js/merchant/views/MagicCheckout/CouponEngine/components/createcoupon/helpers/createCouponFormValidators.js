@@ -307,7 +307,7 @@ export const globalValidator = async ({
           startDateTime: moment(
             `${widgetsData.couponValidity.startDate} ${widgetsData.couponValidity.startTime}`,
           ).toISOString(),
-          isEndDateRequired: widgetsData.couponValidity.isLimitedUseage,
+          isEndDateRequired: widgetsData.couponValidity.isLimitedUsage,
           endDateTime: moment(
             `${widgetsData.couponValidity.endDate} ${widgetsData.couponValidity.endTime}`,
           ).toISOString(),

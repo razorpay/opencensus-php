@@ -52,7 +52,7 @@ test('should render coupon engine tab', async () => {
   render(<CouponEngineTab />);
 
   await waitFor(() => {
-    expect(screen.getByText('Coupons')).toBeInTheDocument();
+    expect(screen.getByText('Coupons 360')).toBeInTheDocument();
   });
 
   await userEvent.click(screen.getByText('Continue'));

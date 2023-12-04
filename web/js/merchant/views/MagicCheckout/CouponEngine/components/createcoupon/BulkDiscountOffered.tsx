@@ -205,7 +205,7 @@ const BulkDiscountOffered: React.FC<AccordionBodyProps> = ({ couponName }) => {
         open={isOpen}
         header={<div>Discount Offered</div>}
         body={<AccordionBody couponName={couponName} />}
-        footer={<MaxQuantityWidget />}
+        footer={<MaxQuantityWidget dataKey="bulkDiscountDetails" />}
       />
     </div>
   );

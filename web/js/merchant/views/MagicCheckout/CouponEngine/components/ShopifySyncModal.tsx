@@ -32,7 +32,11 @@ const ShopifySyncModal = ({ closeModal, merchantId, showNotification, updateSync
         type: 'success',
         message: 'Coupons synced successfully',
       });
-      updateSyncStatus('completed');
+      updateSyncStatus({
+        status: 'completed',
+        start_date: moment(apiPayload.start_date).format('YYYY-MM-DD'),
+        end_date: moment(apiPayload.end_date).format('YYYY-MM-DD'),
+      });
       closeModal();
     } catch (error: any) {
       showNotification({

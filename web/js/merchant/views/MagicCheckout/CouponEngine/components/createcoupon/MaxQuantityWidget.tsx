@@ -14,22 +14,27 @@ import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context'
 // helpers imports
 import { onWheelPreventChange } from 'merchant/views/MagicCheckout/helper';
 
-const MaxQuantityWidget: React.FC = () => {
+interface MaxQuantityWidgetProps {
+  dataKey: string;
+}
+
+const MaxQuantityWidget: React.FC<MaxQuantityWidgetProps> = ({ dataKey }) => {
   const { widgetsData, setWidgetsData } = useContext(ModalContext);
+
   return (
     <FormGroup>
       <div className="form-label">Usage Limit</div>
       <div className="form-input">
         <div className="display-flex">
           <Input.Check
-            checked={widgetsData.discountOffered.hasLimitedUseagePerOrder}
+            checked={widgetsData[dataKey].hasLimitedUseagePerOrder}
             type="checkbox"
             name="isUnlimitedUsage"
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setWidgetsData({
                 ...widgetsData,
-                discountOffered: {
-                  ...widgetsData.discountOffered,
+                [dataKey]: {
+                  ...widgetsData[dataKey],
                   hasLimitedUseagePerOrder: e.target.checked,
                 },
               });
@@ -38,20 +43,20 @@ const MaxQuantityWidget: React.FC = () => {
           />
           <SubTitle>Maximum uses per order</SubTitle>
         </div>
-        {widgetsData.discountOffered.hasLimitedUseagePerOrder ? (
+        {widgetsData[dataKey].hasLimitedUseagePerOrder ? (
           <DottedButtonWrapper>
             <Input
               name="maxUsage"
               type="number"
               required
-              defaultValue={widgetsData.discountOffered.maxUsagePerOrder}
-              value={widgetsData.discountOffered.maxUsagePerOrder}
+              defaultValue={widgetsData[dataKey].maxUsagePerOrder}
+              value={widgetsData[dataKey].maxUsagePerOrder}
               className="w-350"
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 setWidgetsData({
                   ...widgetsData,
-                  discountOffered: {
-                    ...widgetsData.discountOffered,
+                  [dataKey]: {
+                    ...widgetsData[dataKey],
                     maxUsagePerOrder: e.target.value,
                   },
                 });

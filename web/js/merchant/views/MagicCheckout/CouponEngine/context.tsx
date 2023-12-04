@@ -18,8 +18,8 @@ const initialWidgetsData: ModalContextValue['widgetsData'] = {
     endDate: moment().add(1, 'days').format('YYYY-MM-DD'),
     startTime: moment().add(2, 'hours').format('h:mm a'),
     endTime: moment().add(1, 'days').endOf('day').format('h:mm a'),
-    maxBudget: 0,
-    isLimitedUseage: false,
+    maxBudget: '',
+    isLimitedUsage: false,
   },
   discountDetails: {
     discountType: 'fixedAmount',
@@ -29,12 +29,14 @@ const initialWidgetsData: ModalContextValue['widgetsData'] = {
     discountApplicableTo: 'products',
     discountedItemsList: [],
     discountedItemsDisplayList: [],
-    maxDiscountValue: 0,
+    maxDiscountValue: '',
   },
   usageRestriction: {
     isLimitedUsage: false,
+    isRestrictedTotalUsage: false,
     maxUsage: 1,
     limitBy: 'phone',
+    total: 1,
   },
   productsPurchased: {
     minimumType: 'min_qty',
@@ -64,8 +66,11 @@ const initialWidgetsData: ModalContextValue['widgetsData'] = {
     discountSubType: 'fixedAmount',
     discountValue: 0,
     discountType: 'discountOnAll',
+    maxUsagePerOrder: 1,
+    hasLimitedUseagePerOrder: false,
   },
   status: 'published',
+  source: null,
 };
 
 const initialErrorStates: ErrorStates = {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
+import moment from 'moment';
 
 // asset imports
 import moreActions from 'assets/three-dots.svg';
@@ -60,11 +61,10 @@ const MultiSelectHeader: React.FC<MultiSelectHeaderProps> = ({
     let couponsToProcess = couponIds.filter((coupon) => coupon.status === desiredStatus);
 
     if (actionName === 'publish') {
-      const currentDate = new Date().toISOString();
       // filtering out coupons which cant be publised
       couponsToProcess = couponsToProcess.filter((coupon) => {
-        if (coupon.active > currentDate) {
-          if (!coupon.expiry || coupon.expiry > currentDate) {
+        if (moment(coupon.active).isAfter(moment())) {
+          if (!coupon.expiry || moment(coupon.expiry).isAfter(moment())) {
             return true;
           }
         }

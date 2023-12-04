@@ -1,5 +1,11 @@
 import styled from 'styled-components';
 
+export const DataTableWrapper = styled.div`
+  .data-table > .table-responsive {
+    overflow: visible;
+  }
+`;
+
 export const CouponName = styled.div`
   font-size: 14px;
   font-weight: 700;

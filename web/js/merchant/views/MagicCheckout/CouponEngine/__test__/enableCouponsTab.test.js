@@ -37,7 +37,9 @@ describe('sync to shopify card', () => {
 
     expect(screen.getByText('Coupons from Shopify')).toBeInTheDocument();
 
-    expect(screen.getByText('Sync now')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Sync now')).toBeInTheDocument();
+    });
 
     const syncToShopifyButton = screen.getByTestId('sync-to-shopify-cta');
 

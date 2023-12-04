@@ -196,7 +196,7 @@ const DiscountOfferedWidget: React.FC = () => {
         open={isOpen}
         header={<div>Discount Offered</div>}
         body={<AccordionBody />}
-        footer={<MaxQuantityWidget />}
+        footer={<MaxQuantityWidget dataKey="discountOffered" />}
       />
     </div>
   );

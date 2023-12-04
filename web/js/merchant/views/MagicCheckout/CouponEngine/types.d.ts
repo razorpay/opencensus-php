@@ -29,8 +29,8 @@ interface CouponValidity {
   endDate: string;
   startTime: string;
   endTime: string;
-  maxBudget: number;
-  isLimitedUseage: boolean;
+  maxBudget: number | string;
+  isLimitedUsage: boolean;
 }
 
 interface DiscountDetails {
@@ -41,13 +41,15 @@ interface DiscountDetails {
   discountApplicableTo: string;
   discountedItemsList: string[];
   discountedItemsDisplayList: DiscountedItemsList[];
-  maxDiscountValue: number;
+  maxDiscountValue: number | string;
 }
 
 interface UsageRestriction {
   isLimitedUsage: boolean;
+  isRestrictedTotalUsage: boolean;
   maxUsage: number;
   limitBy: string;
+  total: number;
 }
 
 interface ProductsPurchased {
@@ -74,6 +76,8 @@ interface BulkDiscountDetails {
   discountSubType: string;
   discountValue: number;
   discountType: string;
+  maxUsagePerOrder: string | number;
+  hasLimitedUseagePerOrder: boolean;
 }
 
 interface CouponDetails {
@@ -119,6 +123,7 @@ export interface ModalContextValue {
     bulkDiscountDetails: BulkDiscountDetails;
     status: string;
     id?: string;
+    source: string | null;
   };
   setWidgetsData: Dispatch<SetStateAction<ModalContextValue['widgetsData']>>;
   errorStates: ErrorStates;
