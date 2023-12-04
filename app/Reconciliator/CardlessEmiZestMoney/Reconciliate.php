@@ -12,7 +12,7 @@ class Reconciliate extends Base\Reconciliate
     const PAYMENT_AMOUNT             = 'basket_amount';
     const REFUND_AMOUNT              = 'refund_amount';
     const BANK_CHARGES               = 'mdr_wo_gst_amount';
-    const GST_ON_BANK_CHARGES        = 'mdr_gst_amount';
+    const GST_ON_BANK_CHARGES        = 'mdr_wo_gst_amount1';
     const REFUND_ID                  = 'refund_id';
 
     public function getFileType(string $mimeType): string

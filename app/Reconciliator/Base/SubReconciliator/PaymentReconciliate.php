@@ -517,7 +517,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         // we keep it after payment amount and currency match check.
         //
         $validPaymentStatus = $this->validatePaymentStatus($row);
-
         return ($validPaymentStatus === true);
     }
 
@@ -2761,7 +2760,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             return false;
         }
-
         return true;
     }
 

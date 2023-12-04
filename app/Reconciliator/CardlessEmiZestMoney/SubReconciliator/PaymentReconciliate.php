@@ -15,17 +15,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getGatewayFee($row)
     {
-        return $row[Reconciliate::BANK_CHARGES] ?? null;
+        return Helper::getIntegerFormattedAmount($row[Reconciliate::BANK_CHARGES]) ?? null;
     }
 
     protected function getGatewayServiceTax($row)
     {
-        return $row[Reconciliate::GST_ON_BANK_CHARGES] ?? null;
+        return Helper::getIntegerFormattedAmount($row[Reconciliate::GST_ON_BANK_CHARGES]) ?? null;
     }
 
     protected function getReconPaymentAmount(array $row)
     {
-        if (isset($row[Reconciliate::PAYMENT_AMOUNT]) == false)
+        if (!isset($row[Reconciliate::PAYMENT_AMOUNT]))
         {
             return 0;
         }
