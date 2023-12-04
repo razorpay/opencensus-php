@@ -256,6 +256,14 @@ class Constants
 
     const DisableWfConfigDimensionsForS2p = 'disable_wf_config_dimensions_for_s2p';
 
+    const BankingPlusCore = 'banking_plus_core';
+
+    const BankingPlusPro = 'banking_plus_pro';
+
+    const SourceToPayCore = 'source_to_pay_core';
+
+    const SourceToPayPro = 'source_to_pay_pro';
+
     public static $validDcsKeys = [];
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -487,6 +495,10 @@ class Constants
         self::ShowSingleDCCCurrency => 'rzp/pg/merchant/payments/in_international/DCCFeatures',
         self::SkipApprovalForCreator => 'rzp/x/merchant/workflows/Workflows',
         self::DisableWfConfigDimensionsForS2p => 'rzp/x/merchant/workflows/Workflows',
+        self::BankingPlusCore   => 'rzp/x/merchant/onboarding/PricingTiers',
+        self::BankingPlusPro    => 'rzp/x/merchant/onboarding/PricingTiers',
+        self::SourceToPayCore   => 'rzp/x/merchant/onboarding/PricingTiers',
+        self::SourceToPayPro    => 'rzp/x/merchant/onboarding/PricingTiers',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -730,6 +742,10 @@ class Constants
         self::ShowSingleDCCCurrency                                         => self::ShowSingleDCCCurrency,
         APIFeaturesConstants::SKIP_APPROVAL_FOR_CREATOR                     => self::SkipApprovalForCreator,
         APIFeaturesConstants::DISABLE_WF_CONF_DIMENSIONS_S2P                => self::DisableWfConfigDimensionsForS2p,
+        APIFeaturesConstants::BANKING_PLUS_CORE                             => self::BankingPlusCore,
+        APIFeaturesConstants::BANKING_PLUS_PRO                              => self::BankingPlusPro,
+        APIFeaturesConstants::SOURCE_TO_PAY_CORE                            => self::SourceToPayCore,
+        APIFeaturesConstants::SOURCE_TO_PAY_PRO                             => self::SourceToPayPro
     ];
 
     /**

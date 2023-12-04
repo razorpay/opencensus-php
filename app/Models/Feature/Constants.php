@@ -1639,7 +1639,7 @@ class Constants
     const DYNAMIC_PL_OFFSET = 'dynamic_pl_offset';
 
     const ENABLE_PAYMENT_LINK_SIGN = 'enable_payment_link_sign';
-    
+
     const NOTIFY_VIA_WHATSAPP_PLINK = 'notify_via_whatsapp_plink';
 
     // form builder
@@ -1958,6 +1958,17 @@ class Constants
      * Feature flag to enable merchants for LRS travel transactions
      */
     const LRSTravelFlow = 'lrs_travel_flow';
+
+    /**
+     * The 4 feature flags below correspond to the subscription tier on RazorpayX dashboard
+     */
+    const BANKING_PLUS_CORE = 'banking_plus_core';
+
+    const BANKING_PLUS_PRO = 'banking_plus_pro';
+
+    const SOURCE_TO_PAY_CORE = 'source_to_pay_core';
+
+    const SOURCE_TO_PAY_PRO = 'source_to_pay_pro';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -2723,6 +2734,10 @@ class Constants
         self::SKIP_APPROVAL_FOR_CREATOR       => true,
         self::WIDGET_ELIGIBILITY_ENABLED      => true,
         self::DISABLE_WF_CONF_DIMENSIONS_S2P  => true,
+        self::BANKING_PLUS_CORE               => true,
+        self::BANKING_PLUS_PRO                => true,
+        self::SOURCE_TO_PAY_CORE              => true,
+        self::SOURCE_TO_PAY_PRO               => true,
     ];
 
     // Entity type constants
@@ -3838,6 +3853,26 @@ class Constants
             'display_name'  => 'Feature to enable the merchant for notifying payment link via whatsapp ',
             'documentation' => '',
         ],
+        self::BANKING_PLUS_CORE => [
+            'feature'       => self::BANKING_PLUS_CORE,
+            'display_name'  => 'Banking Plus Core',
+            'documentation' => 'To determine subscription tier for merchant on X dashboard',
+        ],
+        self::BANKING_PLUS_PRO  => [
+            'feature'       => self::BANKING_PLUS_PRO,
+            'display_name'  => 'Banking Plus Pro',
+            'documentation' => 'To determine subscription tier for merchant on X dashboard',
+        ],
+        self::SOURCE_TO_PAY_CORE => [
+            'feature'       => self::SOURCE_TO_PAY_CORE,
+            'display_name'  => 'Source to Pay Core',
+            'documentation' => 'To determine subscription tier for merchant on X dashboard'
+        ],
+        self::SOURCE_TO_PAY_PRO => [
+            'feature'       => self::SOURCE_TO_PAY_PRO,
+            'display_name'  => 'Source to Pay Pro',
+            'documentation' => 'To determine subscription tier for merchant on X dashboard'
+        ]
     ];
 
     /**
