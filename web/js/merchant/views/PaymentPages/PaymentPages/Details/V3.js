@@ -284,6 +284,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       isBatchPaymentPages,
       hasPendingPayments,
       pendingPayments,
+      user,
     } = this.props;
     const { isExportInProgress } = this.state;
 
@@ -293,6 +294,7 @@ export default class PaymentPagesV3Entity extends React.Component {
 
     const status = paymentPageEntity.status;
     const statusReason = paymentPageEntity.status_reason;
+    const countryCode = user.merchant.country_code;
 
     const isActive = status === 'active';
     const isExpired = !isActive && statusReason?.toLowerCase() === 'expired';
@@ -500,6 +502,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                       paymentPageEntity.settings.goal_tracker.meta_data.goal_end_timestamp,
                     )}
                     currency={paymentPageEntity.currency}
+                    countryCode={countryCode}
                   />
                 ) : null}
                 {!isBatchPaymentPages ? (

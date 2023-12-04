@@ -293,6 +293,7 @@ export default class DonationGoalTracker extends React.PureComponent {
     const { isEditable, meta_data, endDate, is_active, tracker_type, isBottomSheetOpen } =
       this.state;
     const { currency, user } = this.props;
+    const countryCode = user.merchant.country_code;
 
     const isMobile = isMobileDevice();
 
@@ -341,6 +342,7 @@ export default class DonationGoalTracker extends React.PureComponent {
             editGoal={this.editGoal}
             removeGoal={this.removeGoal}
             currency={currency}
+            countryCode={countryCode}
           />
         )}
         {isEditable && (
@@ -353,6 +355,7 @@ export default class DonationGoalTracker extends React.PureComponent {
                   tracker_type={tracker_type}
                   endDate={endDate}
                   currency={currency}
+                  countryCode={countryCode}
                 />
               </ModalContent>
             </Modal>

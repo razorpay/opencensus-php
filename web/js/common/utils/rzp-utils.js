@@ -1692,3 +1692,18 @@ export function isConfigTagAPISupported(merchantCountryCode) {
 
   return SUPPORTED_COUNTRIES.find((countryCode) => countryCode === merchantCountryCode);
 }
+
+export function convertToLocale(amount, countryCode) {
+  const SUPPORTED_LOCALE = {
+    IN: 'en-IN',
+    MY: 'en-MY',
+  };
+
+  const locale = SUPPORTED_LOCALE[countryCode] || SUPPORTED_LOCALE.IN;
+  const hasIntlFormatSupport = typeof window.Intl?.NumberFormat === 'function';
+  if (hasIntlFormatSupport) {
+    return new Intl.NumberFormat(locale).format(amount);
+  }
+
+  return Number.toLocaleString ? Number(amount).toLocaleString(locale) : amount;
+}

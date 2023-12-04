@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import store from 'merchant/store';
+import { fireEvent } from '@testing-library/react';
 import {
   render,
   screen,
@@ -10,15 +10,16 @@ import {
   waitForLoadingToFinish,
   within,
 } from 'test-utils';
-import PaymentPagesDetails from 'merchant/views/PaymentPages/PaymentPages/Details';
+
 import { getURLQueryParams } from 'common/utils/rzp-utils';
+import store from 'merchant/store';
+import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
+import PaymentPagesDetails from 'merchant/views/PaymentPages/PaymentPages/Details';
 
 // import * as analytics from 'common/utils/analytics';
 import 'jest-location-mock';
 import { transformedStore } from './mocks/fixtures/storefront';
-import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
 import { paymentPagesErrorHandlers } from './mocks/handlers';
-import { fireEvent } from '@testing-library/react';
 
 const globalState = store.getState();
 
@@ -40,6 +41,9 @@ const renderApp = (isStorefrontPage = true, isRazorx = true) =>
           isNoExpiryMandatoryPP: true,
           isPaymentPageStorefrontEnabled: isRazorx,
           isAllowedEdit: jest.fn(() => true),
+          merchant: {
+            country_code: 'IN',
+          },
         },
       },
     },
@@ -323,6 +327,9 @@ describe('Batch Payment Pages -> Details page', () => {
             ...globalState,
             isNoExpiryMandatoryPP: true,
             isAllowedEdit: jest.fn(() => true),
+            merchant: {
+              country_code: 'IN',
+            },
           },
         },
       },

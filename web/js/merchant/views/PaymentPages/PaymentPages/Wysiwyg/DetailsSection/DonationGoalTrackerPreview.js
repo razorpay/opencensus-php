@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import RangeSlider from 'common/new-ui/RangeSlider';
 import Button from 'common/new-ui/Button';
 import { getCurrency } from 'common/ui/Amount';
+import { convertToLocale } from 'common/utils/rzp-utils';
 
 const DonationGoalTrackerPreview = ({ tracker_type, is_active, meta_data, ...remainingProps }) => {
   if (is_active === '0') return null;
@@ -135,6 +136,7 @@ const AmountBasedGoalTrackerPreview = ({
   editGoal = () => {},
   removeGoal = () => {},
   currency,
+  countryCode,
 }) => {
   const [daysLeft, setDaysLeft] = useState(0);
   useEffect(() => {
@@ -151,14 +153,9 @@ const AmountBasedGoalTrackerPreview = ({
       <div className={`goal-tracker--amount-based ${isMain ? 'goal-tracker--main' : ''}`}>
         <div className="goal-tracker--amount-based-top">
           <span className="goal-tracker--collected">
-            {currencySymbol}{' '}
-            {Number.toLocaleString
-              ? Number(collected_amount).toLocaleString('en-IN')
-              : collected_amount}
+            {currencySymbol} {convertToLocale(collected_amount, countryCode)}
           </span>{' '}
-          of {currencySymbol}{' '}
-          {Number.toLocaleString ? Number(goal_amount).toLocaleString('en-IN') : goal_amount}{' '}
-          collected
+          of {currencySymbol} {convertToLocale(goal_amount, countryCode)} collected
         </div>
         <div className="goal-tracker--amount-based-slider">
           <RangeSlider min={0} max={goal_amount} value={collected_amount} step={1} readOnly />

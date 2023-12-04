@@ -10,6 +10,7 @@ import {
   mergeCurrencyFormatting,
   exportFileAsExcel,
   openTicketModal,
+  convertToLocale,
 } from 'common/utils/rzp-utils';
 import FileSaver from 'file-saver';
 import xlsx from 'xlsx';
@@ -239,4 +240,27 @@ describe('Tests for unit conversion', () => {
   test('i18CurrencyConversionFromMinorUnitToCommonUnit should return correct conversion for 2 decimal when currency passed does not exist', () => {
     expect(i18CurrencyConversionFromMinorUnitToCommonUnit(10012, 'ABC')).toBe(100.12);
   });
+});
+
+const INPUT_LIST = [
+  { amount: '1000', countryCode: 'MY', formattedAmount: '1,000' },
+  { amount: '10000', countryCode: 'MY', formattedAmount: '10,000' },
+  { amount: '100000', countryCode: 'MY', formattedAmount: '100,000' },
+  { amount: '1000000', countryCode: 'MY', formattedAmount: '1,000,000' },
+  { amount: '10000000', countryCode: 'MY', formattedAmount: '10,000,000' },
+  { amount: '1000', countryCode: 'IN', formattedAmount: '1,000' },
+  { amount: '10000', countryCode: 'IN', formattedAmount: '10,000' },
+  { amount: '100000', countryCode: 'IN', formattedAmount: '1,00,000' },
+  { amount: '1000000', countryCode: 'IN', formattedAmount: '10,00,000' },
+  { amount: '10000000', countryCode: 'IN', formattedAmount: '1,00,00,000' },
+  { amount: '10000000', countryCode: null, formattedAmount: '1,00,00,000' },
+];
+describe('Test for convertToLocale function', () => {
+  for (const input of INPUT_LIST) {
+    const { amount, countryCode, formattedAmount } = input;
+    test(`When the amount is ${amount} with the country code ${countryCode}, the corresponding formatted amount is ${formattedAmount}`, () => {
+      const result = convertToLocale(amount, countryCode);
+      expect(result).toBe(formattedAmount);
+    });
+  }
 });
