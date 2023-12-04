@@ -190,6 +190,10 @@ class ApiRequestAny
         if (empty(Request::header('ledger-tenant')) === false) {
             $headers['ledger-tenant'] = Request::header('ledger-tenant'); // only add the header if it exists
         }
+        
+        if (empty(Request::header(Headers::X_SPLITZ_PROJECT)) === false) {
+            $headers[Headers::X_SPLITZ_PROJECT] = Request::header(Headers::X_SPLITZ_PROJECT);
+        }
 
         // === Request options
 
