@@ -16,6 +16,7 @@ interface Window {
   cdnBaseUrl: string;
   bankingServiceUrl: string;
   rzp_user: any;
+  rzp_org: any;
   BANK_DETAILS_URL: string;
   PP_ECOMMERCE_URL: string;
   EASY_ONBOARDING_URL: string;

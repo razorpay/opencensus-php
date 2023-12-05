@@ -1,16 +1,17 @@
-import React, { useEffect, createContext } from 'react';
-import { getVariant, getVariants, initABService } from 'common/splitz/services';
+import React, { useEffect, createContext, FC } from 'react';
+
 import { withRouter } from 'common/deprecated/withRouter';
-import {
-  ActiveDashboardType,
-  SpiltzContextState,
-  SpiltzServiceProviderProps,
-  VariantConfigArgs,
-} from 'common/splitz/types';
 import { splitzConfig } from 'common/splitz/configs';
 import { API_BASE_URL, REF_MID } from 'common/splitz/constants';
 import { useSplitzReducer } from 'common/splitz/hooks/useSplitzReducer';
-import type { WithRouterProps } from 'common/deprecated/RouteComponentProps';
+import { getVariant, getVariants, initABService } from 'common/splitz/services';
+import {
+  ActiveDashboardType,
+  SpiltzContextState,
+  SpiltzServiceProviderComponentPropsType,
+  VariantConfigArgs,
+} from 'common/splitz/types';
+import { getSplitzRequestData } from 'common/splitz/utils';
 
 export const SpiltzContext = createContext({} as SpiltzContextState);
 
@@ -19,16 +20,18 @@ const SpiltzServiceProviderComponent = ({
   dashboardType,
   customLoader,
   history,
-}: SpiltzServiceProviderProps & WithRouterProps): JSX.Element => {
+}: SpiltzServiceProviderComponentPropsType): JSX.Element => {
   const { abExperiments, isInitialized, setABExperiments, setInitialized } = useSplitzReducer();
-
   const isExperimentEvaluated = (experimentHashKey: string) => {
     return Boolean(abExperiments[experimentHashKey]);
   };
 
   const evaluateExperiment = async (experimentToEvaluate: VariantConfigArgs) => {
     try {
-      const evaluatedExperiment = await getVariant(experimentToEvaluate);
+      const evaluatedExperiment = await getVariant({
+        ...experimentToEvaluate,
+        requestData: getSplitzRequestData(experimentToEvaluate),
+      });
       setABExperiments({
         [experimentToEvaluate.uniqueHashKey]: evaluatedExperiment,
       });
@@ -39,7 +42,12 @@ const SpiltzServiceProviderComponent = ({
 
   const bulkEvaluateExperiments = async (experimentsToEvaluate: VariantConfigArgs[]) => {
     try {
-      const evaluatedExp = await getVariants(experimentsToEvaluate);
+      const evaluatedExp = await getVariants(
+        experimentsToEvaluate.map((experiment) => ({
+          ...experiment,
+          requestData: getSplitzRequestData(experiment),
+        })),
+      );
       setABExperiments(evaluatedExp);
     } catch {
       // TODO: eventTracking, etc
@@ -81,7 +89,12 @@ const SpiltzServiceProviderComponent = ({
     const refDashboardExperimentsToEval = experimentMapToEvalOnInit[dashboardType];
 
     if (defaultExperimentsToEval.length || refDashboardExperimentsToEval.length) {
-      const experimentsToEval = [...defaultExperimentsToEval, ...refDashboardExperimentsToEval];
+      const experimentsToEval = [...defaultExperimentsToEval, ...refDashboardExperimentsToEval].map(
+        (experiment) => ({
+          ...experiment,
+          requestData: getSplitzRequestData(experiment),
+        }),
+      );
 
       getVariants(experimentsToEval).then((initialyEvaluatedExperiments) => {
         setABExperiments(initialyEvaluatedExperiments);
@@ -115,4 +128,6 @@ const SpiltzServiceProviderComponent = ({
  *
  * You can consume your evaluated experiment via `useSplitzService` hook or `withSplitzService` HOC.
  */
-export const SpiltzServiceProvider = withRouter(SpiltzServiceProviderComponent);
+export const SpiltzServiceProvider: FC<
+  Pick<SpiltzServiceProviderComponentPropsType, 'children' | 'customLoader' | 'dashboardType'>
+> = withRouter(SpiltzServiceProviderComponent);

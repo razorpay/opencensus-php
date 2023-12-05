@@ -1,6 +1,7 @@
-import { ABVariable, ABVariant as DefaultABVariant } from '@razorpay/universe-cli/ab';
-import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { ABVariable, ABVariant as DefaultABVariant, RequestData } from '@razorpay/universe-cli/ab';
+import type { RouteComponentProps, WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import type { PathPattern } from 'react-router-dom';
+import { requestDataArgs } from './configs/requestDataConfig';
 
 export enum MandatoryEnvEnum {
   'beta' = 'beta',
@@ -35,11 +36,22 @@ export type EnvironmentType = keyof typeof EnvironmentEnum;
 
 export type MandatoryEnvironmentType = keyof typeof MandatoryEnvEnum;
 
+export type RequestDataType = RequestData;
+
+export type RequestDataFnArgs = typeof requestDataArgs;
+
+export type SpiltzServiceProviderComponentPropsType = SpiltzServiceProviderProps & WithRouterProps;
+
 export type VariantConfigArgs = {
   uniqueHashKey: string;
   experimentId: Partial<Record<EnvironmentType, string>> & Record<MandatoryEnvironmentType, string>;
   defaultVariant: DefaultVariantType;
+  requestData?: (args: RequestDataFnArgs) => RequestDataType;
 };
+
+export type VariantAPICallArgs = {
+  requestData?: RequestDataType;
+} & Omit<VariantConfigArgs, 'requestData'>;
 
 export type DefaultVariantType = {
   name: string;

@@ -1,6 +1,13 @@
 import { matchPath } from 'react-router';
 
-import { ABVariant, ExperimentType, RouteMatchConfig, RouteObject } from 'common/splitz/types';
+import {
+  ABVariant,
+  ExperimentType,
+  RouteMatchConfig,
+  RouteObject,
+  VariantConfigArgs,
+} from 'common/splitz/types';
+import { defaultRequestData, requestDataArgs } from './configs/requestDataConfig';
 
 export const evaluatedExperimentParser = (
   evaluatedExperiment: Pick<ABVariant, 'experiment_id' | 'variables'>,
@@ -53,4 +60,13 @@ export const getBaseUrl = (urlString: string): string => {
 
 export const isExperimentEnabled = (experiment: ExperimentType): boolean => {
   return experiment?.variables?.result === 'on';
+};
+
+export const getSplitzRequestData = (experiment: VariantConfigArgs) => {
+  return experiment.requestData
+    ? {
+        ...experiment.requestData(requestDataArgs),
+        ...defaultRequestData,
+      }
+    : defaultRequestData;
 };

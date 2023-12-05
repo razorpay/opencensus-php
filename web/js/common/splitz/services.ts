@@ -1,17 +1,19 @@
 import abService from '@razorpay/universe-cli/ab';
 import { evaluatedExperimentParser, evaluatedBulkExperimentsParser } from './utils';
-import { ExperimentType, InitABServiceConfig, VariantConfigArgs } from './types';
+import { ExperimentType, InitABServiceConfig, VariantAPICallArgs } from './types';
 import { APP_ENV } from './constants';
 
 // for bulk calls, response modified as per our usecase
 export const getVariant = async ({
   defaultVariant,
   experimentId,
-}: VariantConfigArgs): Promise<ExperimentType> => {
+  requestData,
+}: VariantAPICallArgs): Promise<ExperimentType> => {
   return await abService
     .getVariant(
       {
         experimentId: (experimentId[APP_ENV] as string) ?? experimentId.beta,
+        variables: requestData,
       },
       defaultVariant,
     )
@@ -25,18 +27,19 @@ export const getVariant = async ({
 
 // for bulk calls, response modified as per our usecase
 export const getVariants = async (
-  experiments: VariantConfigArgs[],
+  experiments: VariantAPICallArgs[],
 ): Promise<Record<string, ExperimentType>> => {
   const tempMap = {};
 
   const parsedExperiments = experiments.map(
-    ({ defaultVariant: { name, variables }, experimentId, uniqueHashKey }) => {
+    ({ defaultVariant: { name, variables }, experimentId, uniqueHashKey, requestData }) => {
       const refEnvExperimentId = (experimentId[APP_ENV] as string) ?? experimentId.beta;
       tempMap[refEnvExperimentId] = uniqueHashKey;
 
       return {
         experiment: {
           experimentId: refEnvExperimentId as string,
+          variables: requestData,
         },
         defaultVariant: {
           experiment_id: refEnvExperimentId as string,
