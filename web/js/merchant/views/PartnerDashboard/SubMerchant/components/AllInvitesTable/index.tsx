@@ -1,7 +1,7 @@
 import React, { ComponentType, useState } from 'react';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { withRouter } from 'common/deprecated/withRouter';
 import { Spinner } from '@razorpay/blade/components';
 import { History, Location } from 'history';
@@ -64,9 +64,9 @@ const AllInvitesTable = ({
 
   const [items, setItems] = useState<Array<SubmerchantInviteItem>>([]);
 
-  const { isLoading, isFetching, refetch } = useQuery(
-    ['filter-submerchant-invites', paginationState],
-    () =>
+  const { isLoading, isFetching, refetch } = useQuery({
+    queryKey: ['filter-submerchant-invites', paginationState],
+    queryFn: () =>
       fetchInvites(
         user.id as string,
         {
@@ -75,19 +75,17 @@ const AllInvitesTable = ({
           ...getDecodedParams(),
         } as FetchInvitesParams,
       ),
-    {
-      refetchOnWindowFocus: false,
-      onSuccess: (data) => {
-        setItems(data.data?.items || []);
-      },
-      onError: (_err) => {
-        showNotification?.({
-          type: 'error',
-          message: 'There was an error',
-        });
-      },
+    refetchOnWindowFocus: false,
+    onSuccess: (data) => {
+      setItems(data.data?.items || []);
     },
-  );
+    onError: (_err) => {
+      showNotification?.({
+        type: 'error',
+        message: 'There was an error',
+      });
+    },
+  });
 
   return (
     <div>

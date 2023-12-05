@@ -94,24 +94,29 @@ const WhitelistedSteps: React.FC<
       },
       activationType: 'act',
     });
-    postData({ activation_form_milestone: 'L1' }).then((res) => {
-      if (res && res.activation_form_milestone === 'L1') {
-        const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
-        if (dedupeStatus === 'blocked') {
-          setModalType('dedupe');
-        } else if (
-          isUnregisteredBusiness(res.business_type) &&
-          res.poi_verification_status === 'initiated' &&
-          experiments.canSkipPoiValidation &&
-          !experiments.isL2AllowedForPoiInitiated
-        ) {
-          setModalType('poi_initiated');
-        } else {
-          showL1Modal(res);
-        }
-        setIsModalOpen(true);
-      }
-    });
+    postData(
+      { activation_form_milestone: 'L1' },
+      {
+        onSuccess: (res) => {
+          if (res && res.activation_form_milestone === 'L1') {
+            const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
+            if (dedupeStatus === 'blocked') {
+              setModalType('dedupe');
+            } else if (
+              isUnregisteredBusiness(res.business_type) &&
+              res.poi_verification_status === 'initiated' &&
+              experiments.canSkipPoiValidation &&
+              !experiments.isL2AllowedForPoiInitiated
+            ) {
+              setModalType('poi_initiated');
+            } else {
+              showL1Modal(res);
+            }
+            setIsModalOpen(true);
+          }
+        },
+      },
+    );
   };
 
   const onCTAClick = () => {

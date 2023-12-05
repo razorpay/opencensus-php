@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import React, { useContext, useEffect, useState } from 'react';
 
 import DataTable from 'common/ui/Table/DataTable';

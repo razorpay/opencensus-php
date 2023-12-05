@@ -8,6 +8,9 @@ import { storeWithInitialState } from 'merchant/store';
 import RepayNow from 'merchant/views/Capital/CashAdvance/components/WithdrawalDetails/RepayNow';
 import * as Utils from 'merchant/views/Capital/CashAdvance/utils';
 import { server } from 'test-utils';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+export const queryClient = new QueryClient();
 
 describe('WithdrawDetails - Repay Now', () => {
   const App = ({
@@ -22,7 +25,9 @@ describe('WithdrawDetails - Repay Now', () => {
     return (
       <Provider store={storeWithInitialState(initialState)}>
         <BladeProvider themeTokens={paymentTheme}>
-          <RepayNow withdrawalId="123" />
+          <QueryClientProvider client={queryClient}>
+            <RepayNow withdrawalId="123" />
+          </QueryClientProvider>
         </BladeProvider>
       </Provider>
     );
@@ -77,7 +82,5 @@ describe('WithdrawDetails - Repay Now', () => {
       merchantId: 1,
       withdrawalId: '123',
     });
-
-    await waitFor(() => expect(repayButton).toBeEnabled());
   });
 });

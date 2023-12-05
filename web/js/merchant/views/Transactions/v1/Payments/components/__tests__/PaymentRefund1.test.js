@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { analyticsTrack } from 'common/utils/analytics';
 import {
@@ -12,14 +12,19 @@ import { REFUND_STATUSES } from 'merchant/views/Transactions/v1/Payments/constan
 import { refund } from 'merchant/views/Transactions/v1/Refunds/__test__/mocks/fixtures';
 import { render, screen, getByText, fireEvent, checkIfComponentIsEmpty } from 'test-utils';
 
-jest.mock('react-query', () => ({
-  useQuery: jest.fn().mockReturnValue({
-    refetch: jest.fn(),
-    data: { appKey: 'test' },
-    isLoading: false,
-    error: {},
-  }),
-}));
+jest.mock('@tanstack/react-query', () => {
+  const original = jest.requireActual('@tanstack/react-query');
+
+  return {
+    ...original,
+    useQuery: jest.fn().mockReturnValue({
+      refetch: jest.fn(),
+      data: { appKey: 'test' },
+      isLoading: false,
+      error: {},
+    }),
+  };
+});
 
 describe('PaymentRefund', () => {
   test('should not render payment refund details when there is no payment status', () => {

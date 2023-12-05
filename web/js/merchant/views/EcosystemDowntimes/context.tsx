@@ -1,11 +1,19 @@
 import React, { createContext, useReducer } from 'react';
-import { useQuery, useQueryCache } from 'react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import moment from 'moment';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+
+import { merge } from 'common/utils/immutable';
 import { ACTIONS, SR_QUERY_CACHE_KEY } from 'merchant/views/EcosystemDowntimes/constants';
 import {
   fetchOngoingDowntimes,
   fetchResolvedDowntimes,
 } from 'merchant/views/EcosystemDowntimes/services';
-import moment from 'moment';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { processOnGoingDowntimes, processPreviousDowntimes } from './helpers';
+
 import type {
   EcosystemDowntimesContextType,
   EcosystemDowntimesActionType,
@@ -13,11 +21,6 @@ import type {
   DowntimeMetaDataType,
   EcosystemDowntimesProviderType,
 } from 'merchant/views/EcosystemDowntimes/types';
-import { merge } from 'common/utils/immutable';
-import { processOnGoingDowntimes, processPreviousDowntimes } from './helpers';
-import { compose } from 'redux';
-import { connect } from 'react-redux';
-import { showNotification } from 'merchant_common/reducers/notifications';
 
 const initialState: EcosystemDowntimesInitialState = {
   activeDowntimes: {},
@@ -57,7 +60,7 @@ const ContextProvider = ({
   showNotification,
 }: EcosystemDowntimesProviderType): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const queryCache = useQueryCache();
+  const queryCache = useQueryClient();
 
   const handleOnError = (): void => {
     showNotification({
@@ -90,7 +93,9 @@ const ContextProvider = ({
     isLoading: isOngoingDowntimeLoading,
     isFetching: isOngoingDowntimeFetching,
     refetch: refetchOngoingDowntimes,
-  } = useQuery('ongoing-ecosystemdowntime', fetchOngoingDowntimes, {
+  } = useQuery({
+    queryKey: ['ongoing-ecosystemdowntime'],
+    queryFn: fetchOngoingDowntimes,
     retry: 2,
     retryDelay: 800,
     cacheTime: 1000 * 60 * 1,
@@ -106,25 +111,25 @@ const ContextProvider = ({
     isLoading: isPreviousDowntimesLoading,
     isFetching: isPreviousDowntimesFetching,
     refetch: refetchPreviousDowntimes,
-  } = useQuery(
-    'previous-ecosystemdowntime',
-    () => {
+  } = useQuery({
+    queryKey: ['previous-ecosystemdowntime'],
+    queryFn: () => {
       return fetchResolvedDowntimes();
     },
-    {
-      retry: 2,
-      retryDelay: 800,
-      cacheTime: 1000 * 60 * 1,
-      staleTime: Infinity,
-      refetchOnWindowFocus: false,
-      refetchOnMount: 'always',
-      onError: handleOnError,
-      onSuccess: onResolvedApiSuccess,
-    },
-  );
+    retry: 2,
+    retryDelay: 800,
+    cacheTime: 1000 * 60 * 1,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: 'always',
+    onError: handleOnError,
+    onSuccess: onResolvedApiSuccess,
+  });
 
   const refreshData = () => {
-    queryCache.invalidateQueries(SR_QUERY_CACHE_KEY);
+    queryCache.invalidateQueries({
+      queryKey: [SR_QUERY_CACHE_KEY],
+    });
 
     refetchOngoingDowntimes();
 

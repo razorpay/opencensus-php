@@ -11,7 +11,7 @@ import {
   CloseIcon,
 } from '@razorpay/blade/components';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import MultiFileUpload from './MultiFileUpload';
 import { ShowNotificationType } from 'common/typings';
 import {
@@ -66,9 +66,9 @@ export const UploadBankStatement = ({
   const { appId, partnerId, merchantId } = uploadData;
 
   // submit all uploaded files
-  const { isLoading, refetch: submitStatements } = useQuery(
-    ['submit-bank-statements'],
-    () => {
+  const { isFetching, refetch: submitStatements } = useQuery({
+    queryKey: ['submit-bank-statements'],
+    queryFn: () => {
       const submitData = {
         partner_id: partnerId,
         merchant_id: merchantId,
@@ -85,28 +85,26 @@ export const UploadBankStatement = ({
       };
       return submitBankStatements(submitData);
     },
-    {
-      refetchOnWindowFocus: false,
-      enabled: false,
-      onSuccess: () => {
-        isUploadSuccess();
-        showNotification?.({
-          type: 'success',
-          message: [
-            'Bank statement uploaded',
-            'The bank statements have been successfully uploaded. Our team will take the client further ahead from here.',
-          ],
-        });
-        closeModal();
-      },
-      onError: (err: { errors: Array<string> }) => {
-        showNotification?.({
-          type: 'error',
-          message: err.errors,
-        });
-      },
+    refetchOnWindowFocus: false,
+    enabled: false,
+    onSuccess: () => {
+      isUploadSuccess();
+      showNotification?.({
+        type: 'success',
+        message: [
+          'Bank statement uploaded',
+          'The bank statements have been successfully uploaded. Our team will take the client further ahead from here.',
+        ],
+      });
+      closeModal();
     },
-  );
+    onError: (err: { errors: Array<string> }) => {
+      showNotification?.({
+        type: 'error',
+        message: err.errors,
+      });
+    },
+  });
 
   // upload file
   const handleFileUpload = async (docType: string, file, progressTracker): Promise<any> => {
@@ -223,7 +221,7 @@ export const UploadBankStatement = ({
           <Button
             isDisabled={uploadedFiles.length === 0}
             onClick={() => submitStatements()}
-            isLoading={isLoading}
+            isLoading={isFetching}
           >
             Submit statements
           </Button>

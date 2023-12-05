@@ -1,23 +1,22 @@
 import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { NavLink, Route, Routes, Navigate } from 'react-router-dom';
 
-import Funds from 'merchant/views/Wallet/Funds';
-import Accounts from 'merchant/views/Wallet/Accounts';
-import Transactions from 'merchant/views/Wallet/Transactions';
-import Payments from 'merchant/views/Wallet/Payments';
-import Loads from 'merchant/views/Wallet/Loads';
-
-import { SessionContext, WalletSession } from 'merchant/views/Wallet/context';
-import BatchActions from 'merchant/views/Wallet/BatchActions';
 import PopoverComponent, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
+import Accounts from 'merchant/views/Wallet/Accounts';
+import BatchActions from 'merchant/views/Wallet/BatchActions';
+import Funds from 'merchant/views/Wallet/Funds';
+import Loads from 'merchant/views/Wallet/Loads';
+import Payments from 'merchant/views/Wallet/Payments';
+import Transactions from 'merchant/views/Wallet/Transactions';
+import { SessionContext, WalletSession } from 'merchant/views/Wallet/context';
 import BatchOptions from 'merchant/views/Wallet/BatchActions/BatchOptions';
 import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
 import { walletPaths } from './constants';
-import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 
-const queryCache = new QueryCache({
-  defaultConfig: {
+const queryClient = new QueryClient({
+  defaultOptions: {
     queries: {
       retry: false,
       staleTime: 1000 * 60 * 60, // Consider data stale if older than an hour
@@ -26,7 +25,7 @@ const queryCache = new QueryCache({
 });
 
 const WalletContainer = (session: WalletSession): JSX.Element => (
-  <ReactQueryCacheProvider queryCache={queryCache}>
+  <QueryClientProvider client={queryClient}>
     <SessionContext.Provider value={session}>
       <div className="tabbed-container">
         <header>
@@ -135,7 +134,7 @@ const WalletContainer = (session: WalletSession): JSX.Element => (
         </div>
       </div>
     </SessionContext.Provider>
-  </ReactQueryCacheProvider>
+  </QueryClientProvider>
 );
 
 export default connect((state) => ({

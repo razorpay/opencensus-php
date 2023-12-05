@@ -43,7 +43,6 @@ test('should show bank verification status error for reg type', async () => {
     bank_details_verification_status: 'not_matched',
   });
   render(<App />, {});
-  await waitForLoadingToFinish();
   await waitFor(() => {
     expect(screen.getByText(REG_BANK_ERROR)).toBeInTheDocument();
   });
@@ -55,7 +54,7 @@ test('should show bank verification status error for unreg type', async () => {
     bank_details_verification_status: 'not_matched',
   });
   render(<App />, {});
-  await waitForLoadingToFinish();
+
   await waitFor(() => {
     expect(screen.getByText(UNREG_BANK_ERROR)).toBeInTheDocument();
   });

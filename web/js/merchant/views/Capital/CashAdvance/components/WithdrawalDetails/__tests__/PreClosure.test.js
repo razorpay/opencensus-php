@@ -8,6 +8,7 @@ import { storeWithInitialState } from 'merchant/store';
 import PreClosure from 'merchant/views/Capital/CashAdvance/components/WithdrawalDetails/PreClosure';
 import * as Utils from 'merchant/views/Capital/CashAdvance/utils';
 import { server } from 'test-utils';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const variantOn = { variables: { result: 'on' } };
 const variantOff = { variables: { result: 'off' } };
@@ -20,6 +21,8 @@ let mockAbExperiments = defaultAbExperiments;
 jest.mock('common/splitz', () => ({
   useSplitzService: () => ({ abExperiments: mockAbExperiments }),
 }));
+
+export const queryClient = new QueryClient();
 
 describe('WithdrawDetails - PreClosure', () => {
   beforeEach(() => {
@@ -37,7 +40,9 @@ describe('WithdrawDetails - PreClosure', () => {
     return (
       <Provider store={storeWithInitialState(initialState)}>
         <BladeProvider themeTokens={paymentTheme}>
-          <PreClosure withdrawalId="123" dueDate="2023-11-28T18:29:59Z" />
+          <QueryClientProvider client={queryClient}>
+            <PreClosure withdrawalId="123" dueDate="2023-11-28T18:29:59Z" />
+          </QueryClientProvider>
         </BladeProvider>
       </Provider>
     );

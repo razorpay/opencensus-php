@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { useSnackbar, SnackContextTypes } from 'common/components/SnackBar/SnackbarContext';
 
@@ -10,9 +10,9 @@ interface BusinessType {
 
 export default function useBusinessTypes(): any {
   const snackbar: SnackContextTypes = useSnackbar();
-  const { status, data } = useQuery(
-    `businessTypes`,
-    async () => {
+  const { status, data } = useQuery({
+    queryKey: [`businessTypes`],
+    queryFn: async () => {
       const businessTypes: {
         registered: BusinessType[];
         unregistered: BusinessType[];
@@ -25,13 +25,11 @@ export default function useBusinessTypes(): any {
       combineBusinessTypes.push(...businessTypes?.unregistered);
       return combineBusinessTypes;
     },
-    {
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      onError: (err: any) => {
-        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
-      },
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+    onError: (err: any) => {
+      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
     },
-  );
+  });
   return { status, data };
 }

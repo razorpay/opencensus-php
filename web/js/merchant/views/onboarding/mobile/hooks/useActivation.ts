@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useQuery, useQueryCache, useMutation } from 'react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
 import { useApp } from 'common/context/App';
@@ -69,9 +69,9 @@ export default function useActivation() {
   const { experiments, submerchantId: accountId } = useApp();
   // passing account id in headers to load submerchant's activation form in partner's dashboard account
   const cacheKey = accountId ? `activation_${accountId}` : `activation`;
-  const { status, data, refetch } = useQuery(
-    cacheKey,
-    async () => {
+  const { status, data, refetch } = useQuery({
+    queryKey: [cacheKey],
+    queryFn: async () => {
       const response = await fetch<any>({
         url: 'merchant/activation',
         mode: 'live',
@@ -82,58 +82,52 @@ export default function useActivation() {
       const formattedData = activationFormatter(response, experiments);
       return formattedData;
     },
-    {
-      refetchOnMount: 'always',
-      staleTime: Infinity,
-      onError: (err: any) => {
-        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
-      },
+    refetchOnMount: 'always',
+    staleTime: Infinity,
+    onError: (err: any) => {
+      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
     },
-  );
+  });
 
-  const queryCache = useQueryCache();
-  const [postData] = useMutation(
-    (formData: any) => {
+  const queryCache = useQueryClient();
+  const { mutate: postData } = useMutation({
+    mutationFn: (formData: any) => {
       return postActivation(formData, accountId);
     },
-    {
-      onSuccess: (result) => {
-        const formattedData = activationFormatter(result, experiments);
-        queryCache.setQueryData(cacheKey, formattedData);
-      },
-      onError: (err: any) => {
-        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
-      },
+    onSuccess: (result) => {
+      const formattedData = activationFormatter(result, experiments);
+      queryCache.setQueryData([cacheKey], formattedData);
     },
-  );
+    onError: (err: any) => {
+      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+    },
+  });
 
-  const [documentUpload] = useMutation(
-    ({ formData, progressTracker }: any) => {
+  const { mutate: documentUpload } = useMutation({
+    mutationFn: ({ formData, progressTracker }: any) => {
       return saveFile({
         formData,
         progressTracker,
         accountId,
       });
     },
-    {
-      onSuccess: (result) => {
-        const formattedData = activationFormatter(result, experiments);
-        queryCache.setQueryData(cacheKey, formattedData);
-      },
-      onError: (err: any) => {
-        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
-      },
+    onSuccess: (result) => {
+      const formattedData = activationFormatter(result, experiments);
+      queryCache.setQueryData([cacheKey], formattedData);
     },
-  );
+    onError: (err: any) => {
+      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+    },
+  });
 
-  const [documentDelete] = useMutation(
+  const { mutate: documentDelete } = useMutation(
     (curDoc: any) => {
       return deleteFile(curDoc, accountId);
     },
     {
       onSuccess: (result) => {
         const formattedData = activationFormatter(result, experiments);
-        queryCache.setQueryData(cacheKey, formattedData);
+        queryCache.setQueryData([cacheKey], formattedData);
       },
       onError: (err: any) => {
         if (err?.response?.errors) snackbar.error(err.response.errors[0]);

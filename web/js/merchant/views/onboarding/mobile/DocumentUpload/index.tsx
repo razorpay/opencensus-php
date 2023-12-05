@@ -112,7 +112,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
     (state) => state.setDocumentUploadCompleted,
   );
 
-  const onChange = async (e: any, docType: string, formikProps) => {
+  const onChange = (e: any, docType: string, formikProps) => {
     const documentType = docType.split('_').join(' '); // segment breaks if actionName has underscore
     analyticsTrack({
       objectName: 'SignUp',
@@ -132,47 +132,50 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
       setProgress(Math.round((100 * progressEvent.loaded) / progressEvent.total));
     };
 
-    const response = await documentUpload({ formData, progressTracker: onUploadProgress });
-
-    if (!response) {
-      formikProps.setFieldError(docType, 'something went wrong');
-      analyticsTrack({
-        objectName: 'SignUp',
-        actionName: 'document upload',
-        screen: 'home page',
-        user,
-        eventAction: 'failure',
-        properties: {
-          document_type: documentType,
-        },
-      });
-    } else {
-      analyticsTrack({
-        objectName: 'SignUp',
-        actionName: 'document upload',
-        screen: 'home page',
-        user,
-        eventAction: 'success',
-        properties: {
-          document_type: documentType,
-        },
-      });
-    }
-
-    const isComplete = isDocumentTabComplete(
+    documentUpload(
+      { formData, progressTracker: onUploadProgress },
       {
-        ...data,
-        documents: { ...documents, ...response?.documents },
-        addressDoc,
-        businessDoc,
-        bankDoc,
-        additionalDoc,
-        hasNonMandatoryEmail,
+        onSuccess: (response) => {
+          analyticsTrack({
+            objectName: 'SignUp',
+            actionName: 'document upload',
+            screen: 'home page',
+            user,
+            eventAction: 'success',
+            properties: {
+              document_type: documentType,
+            },
+          });
+          const isComplete = isDocumentTabComplete(
+            {
+              ...data,
+              documents: { ...documents, ...response?.documents },
+              addressDoc,
+              businessDoc,
+              bankDoc,
+              additionalDoc,
+              hasNonMandatoryEmail,
+            },
+            isGstinMandatory,
+            isUpdatedLiteOnboarding,
+          );
+          setDocumentUploadCompleted(isComplete);
+        },
+        onError: () => {
+          formikProps.setFieldError(docType, 'something went wrong');
+          analyticsTrack({
+            objectName: 'SignUp',
+            actionName: 'document upload',
+            screen: 'home page',
+            user,
+            eventAction: 'failure',
+            properties: {
+              document_type: documentType,
+            },
+          });
+        },
       },
-      isGstinMandatory,
-      isUpdatedLiteOnboarding,
     );
-    setDocumentUploadCompleted(isComplete);
 
     if (data.stakeholder?.aadhaar_linked === 1) {
       postData({
@@ -183,35 +186,38 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
     }
   };
 
-  const onDeleteFile = async (fileName: string) => {
+  const onDeleteFile = (fileName: string) => {
     const file = documents[fileName].value;
 
     if (file && file.length) {
       const curDoc = file[file.length - 1];
-      const response = await documentDelete(curDoc);
-      setProgress(0);
-      const isComplete = isDocumentTabComplete(
-        {
-          ...data,
-          documents: { ...documents, ...response?.documents },
-          addressDoc,
-          businessDoc,
-          bankDoc,
-          additionalDoc,
-          hasNonMandatoryEmail,
-        },
-        isGstinMandatory,
-        isUpdatedLiteOnboarding,
-      );
-      setDocumentUploadCompleted(isComplete);
-      analyticsTrack({
-        objectName: 'SignUp',
-        actionName: `${file} delete`,
-        screen: 'home page',
-        user,
-        eventAction: 'success',
-        properties: {
-          document_type: file,
+      documentDelete(curDoc, {
+        onSuccess: (documentDeleteResponse) => {
+          setProgress(0);
+          const isComplete = isDocumentTabComplete(
+            {
+              ...data,
+              documents: { ...documents, ...documentDeleteResponse?.documents },
+              addressDoc,
+              businessDoc,
+              bankDoc,
+              additionalDoc,
+              hasNonMandatoryEmail,
+            },
+            isGstinMandatory,
+            isUpdatedLiteOnboarding,
+          );
+          setDocumentUploadCompleted(isComplete);
+          analyticsTrack({
+            objectName: 'SignUp',
+            actionName: `${file} delete`,
+            screen: 'home page',
+            user,
+            eventAction: 'success',
+            properties: {
+              document_type: file,
+            },
+          });
         },
       });
     }

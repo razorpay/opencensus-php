@@ -49,7 +49,7 @@ export type PaymentDataHookParams = {
 
 export type PaymentDataHookResponse = {
   paymentsData: PaymentResponse;
-  fetchPaymentData: (duration: Duration) => Promise<PaymentAnalyticsAPIResponse | undefined>;
+  fetchPaymentData: (duration: Duration) => void;
   loading: boolean;
   failed: boolean;
 };
@@ -75,7 +75,7 @@ export type RefundDataHookParams = {
 
 export type RefundDataHookResponse = {
   refundsData: RefundResponse;
-  fetchRefundData: (duration: Duration) => Promise<RefundsAnalyticsAPIResponse | undefined>;
+  fetchRefundData: (duration: Duration) => void;
   loading: boolean;
   failed: boolean;
 };
@@ -83,16 +83,14 @@ export type RefundDataHookResponse = {
 export type FailedDataHookResponse = {
   failedPaymentsData: number;
   failureInfo: FailedOverviewResult;
-  fetchFailedPaymentsData: (
-    dateDuration: Duration,
-  ) => Promise<FailedPaymentsAPIResponse | undefined>;
+  fetchFailedPaymentsData: (dateDuration: Duration) => void;
   loading: boolean;
   failed: boolean;
 };
 
 export type SuccessRateDataHookResponse = {
   successRateData: number;
-  fetchSuccessRateData: (dateDuration: Duration) => Promise<SuccessRateAPIResponse | undefined>;
+  fetchSuccessRateData: (dateDuration: Duration) => void;
   loading: boolean;
   failed: boolean;
 };

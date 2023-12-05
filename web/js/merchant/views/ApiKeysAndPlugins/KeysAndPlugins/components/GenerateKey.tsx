@@ -288,7 +288,8 @@ const GenerateKey = ({
             {currentKeySecret ? (
               //* if key is generated in this session
               <button className="btn btn-primary btn-block" onClick={downloadKey}>
-                Download keys <i className="i i-download-blue" />
+                Download keys
+                <i className="i i-download-blue" />
               </button>
             ) : (
               ///* if key was generated previously

@@ -1,19 +1,19 @@
 import React from 'react';
 import { BladeProvider } from '@razorpay/blade/components';
 import { paymentTheme } from '@razorpay/blade/tokens';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render as rootRender, screen } from '@testing-library/react';
-import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import AccountDetail from 'merchant/views/Wallet/AccountDetail';
 import { waitForLoadingToFinish } from 'test-utils';
 
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
 describe('Wallet: AccountDetail component', () => {
   it('should render account details and limits graph', async () => {
     rootRender(
-      <ReactQueryCacheProvider
-        queryCache={new QueryCache({ defaultConfig: { queries: { retry: false } } })}
-      >
+      <QueryClientProvider client={queryClient}>
         <BladeProvider themeTokens={paymentTheme}>
           <MemoryRouter initialEntries={['/wallet/accounts/iacc_I9eCvXfHx7nzZs']}>
             <Routes>
@@ -21,7 +21,7 @@ describe('Wallet: AccountDetail component', () => {
             </Routes>
           </MemoryRouter>
         </BladeProvider>
-      </ReactQueryCacheProvider>,
+      </QueryClientProvider>,
     );
 
     await waitForLoadingToFinish();
@@ -36,9 +36,7 @@ describe('Wallet: AccountDetail component', () => {
 
   it('should not render limits graph when rendering container account', async () => {
     rootRender(
-      <ReactQueryCacheProvider
-        queryCache={new QueryCache({ defaultConfig: { queries: { retry: false } } })}
-      >
+      <QueryClientProvider client={queryClient}>
         <BladeProvider themeTokens={paymentTheme}>
           <MemoryRouter initialEntries={['/wallet/accounts/iacc_I9eCvXfHx7nzZt']}>
             <Routes>
@@ -46,7 +44,7 @@ describe('Wallet: AccountDetail component', () => {
             </Routes>
           </MemoryRouter>
         </BladeProvider>
-      </ReactQueryCacheProvider>,
+      </QueryClientProvider>,
     );
 
     await waitForLoadingToFinish();
@@ -62,9 +60,7 @@ describe('Wallet: AccountDetail component', () => {
 
   it('should render error message when api fails', async () => {
     rootRender(
-      <ReactQueryCacheProvider
-        queryCache={new QueryCache({ defaultConfig: { queries: { retry: false } } })}
-      >
+      <QueryClientProvider client={queryClient}>
         <BladeProvider themeTokens={paymentTheme}>
           <MemoryRouter initialEntries={['/wallet/accounts/iacc_I9eCvXfHx7nzZz']}>
             <Routes>
@@ -72,7 +68,7 @@ describe('Wallet: AccountDetail component', () => {
             </Routes>
           </MemoryRouter>
         </BladeProvider>
-      </ReactQueryCacheProvider>,
+      </QueryClientProvider>,
     );
 
     await waitForLoadingToFinish();

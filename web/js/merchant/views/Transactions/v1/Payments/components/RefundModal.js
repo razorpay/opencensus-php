@@ -1,7 +1,7 @@
 import { Component, Fragment } from 'react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { compose, bindActionCreators } from 'redux';
@@ -100,7 +100,9 @@ export const RefundType = ({ partial, isTitleCase = false }) => {
 };
 
 function Query(props) {
-  return props.children(useQuery(props.keyName, props.fn, props.options));
+  return props.children(
+    useQuery({ queryKey: [props.keyName], queryFn: props.fn, ...props.options }),
+  );
 }
 
 const selector = formValueSelector('refundModal');

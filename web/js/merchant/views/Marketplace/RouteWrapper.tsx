@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
-import { useQuery } from 'react-query';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -21,9 +21,12 @@ const fetchPlatformFeature = () => {
 };
 
 function Wrapper({ user, children }: WrapperProps): ReactElement {
-  const { data, isLoading, isError } = useQuery('platform-check', fetchPlatformFeature, {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['platform-check'],
+    queryFn: fetchPlatformFeature,
     refetchOnWindowFocus: false,
   });
+
   const isPlatformFeeTabEnabled =
     (user.isSubMerchant && !isLoading && !isError && data?.data?.feature_enabled) || false;
 

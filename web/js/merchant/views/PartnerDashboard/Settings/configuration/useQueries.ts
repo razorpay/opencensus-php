@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from 'react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare/index';
 import { PartnerConfig } from './configTypes';
@@ -24,19 +24,17 @@ export const useFetchConfig = (
     });
   };
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    'get-partner-config',
-    fetchPartnerConfigs,
-    {
-      refetchOnWindowFocus: false,
-      onError: ({ errors }: TODO_PD) => {
-        showNotification?.({
-          type: 'error',
-          message: errors,
-        });
-      },
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['get-partner-config'],
+    queryFn: fetchPartnerConfigs,
+    refetchOnWindowFocus: false,
+    onError: ({ errors }: TODO_PD) => {
+      showNotification?.({
+        type: 'error',
+        message: errors,
+      });
     },
-  );
+  });
   return { data, isLoading, isError, refetch };
 };
 
@@ -63,7 +61,8 @@ export const useSaveConfig = (
     });
   };
 
-  const [saveConfig] = useMutation(savePartnerConfig, {
+  const { mutate: saveConfig } = useMutation({
+    mutationFn: savePartnerConfig,
     onSuccess: () => {
       refetch();
       showNotification?.({

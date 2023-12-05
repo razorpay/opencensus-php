@@ -9,7 +9,7 @@ import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import AsyncButton from 'react-async-button';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import {
   ActivationStatusLabel,
@@ -105,42 +105,44 @@ const Details = (props) => {
   const handleBladeModalOpen = () => {
     setItem('isCapitalBladeModalOpened', true);
   };
-  const { isLoading: isBureauLinkLoading, refetch: fetchCreateBureauLink } = useQuery(
-    ['create-bureau-link'],
-    () => fetchBureauLink(user.id, submerchant.id.replace('acc_', '')),
-    {
-      refetchOnWindowFocus: false,
-      enabled: false,
-      onSuccess: (response) => {
-        const { data } = response;
-        const bureauLinkData = {
-          bureauLink: data?.bureau_link || '',
-          partnerId: user.id,
-          merchantId: submerchant.id.replace('acc_', ''),
-          smsCount: data.sms_count || 0,
-        };
-        setShowCountDownTimer(true);
-        startTimer();
-        handleBladeModalOpen();
-        openModal({
-          size: 'med-large',
-          component: (
-            <CreateBureauLink
-              closeModal={handleBladeModalClose}
-              bureauLinkData={bureauLinkData}
-              showNotification={showNotification}
-            />
-          ),
-        });
-      },
-      onError: (_err) => {
-        showNotification?.({
-          type: 'error',
-          message: _err.errors,
-        });
-      },
+  const {
+    isLoading: isBureauLinkLoading,
+    isFetching,
+    refetch: fetchCreateBureauLink,
+  } = useQuery({
+    queryKey: ['create-bureau-link'],
+    queryFn: () => fetchBureauLink(user.id, submerchant.id.replace('acc_', '')),
+    refetchOnWindowFocus: false,
+    enabled: false,
+    onSuccess: (response) => {
+      const { data } = response;
+      const bureauLinkData = {
+        bureauLink: data?.bureau_link || '',
+        partnerId: user.id,
+        merchantId: submerchant.id.replace('acc_', ''),
+        smsCount: data.sms_count || 0,
+      };
+      setShowCountDownTimer(true);
+      startTimer();
+      handleBladeModalOpen();
+      openModal({
+        size: 'med-large',
+        component: (
+          <CreateBureauLink
+            closeModal={handleBladeModalClose}
+            bureauLinkData={bureauLinkData}
+            showNotification={showNotification}
+          />
+        ),
+      });
     },
-  );
+    onError: (_err) => {
+      showNotification?.({
+        type: 'error',
+        message: _err.errors,
+      });
+    },
+  });
 
   const handleOpenBankStatementUploadModal = () => {
     handleBladeModalOpen();
@@ -457,7 +459,7 @@ const Details = (props) => {
                             capitalDetails?.stage?.toLowerCase() !==
                               CAPITAL_STATUS.bureau_submission
                           }
-                          isLoading={isBureauLinkLoading}
+                          isLoading={isBureauLinkLoading && isFetching}
                           testID="create-bureau-link-btn"
                         >
                           Create Bureau Link

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@razorpay/blade/components';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { resendInvite } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/api';
 import { ShowNotificationType } from 'common/typings';
 import { trackAllInvitesCta } from './analytics';
@@ -14,7 +14,8 @@ const InviteActionButton = ({
   invite: { id, name, email, contact_no },
   showNotification,
 }: InviteActionButtonProps): JSX.Element => {
-  const [handleResendInvite, { isLoading }] = useMutation(resendInvite, {
+  const { mutate: handleResendInvite, isLoading } = useMutation({
+    mutationFn: resendInvite,
     onError: (err: { errors: Array<string> }) => {
       showNotification?.({
         type: 'error',

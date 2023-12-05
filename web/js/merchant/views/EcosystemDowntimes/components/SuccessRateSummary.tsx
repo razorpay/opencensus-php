@@ -1,7 +1,7 @@
 import React from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetchSuccessRate } from 'merchant/views/EcosystemDowntimes/services';
 import DowntimeSummaryTile from './DowntimeSummaryTile';
 import { DowntimeTilesContainer } from 'merchant/views/EcosystemDowntimes/styles';
@@ -66,7 +66,9 @@ const SuccessRateSummary = ({
     data: srResponse,
     isLoading,
     error: isFetchFailed,
-  } = useQuery([SR_QUERY_CACHE_KEY, srKey], () => fetchSuccessRate({ srKey }), {
+  } = useQuery({
+    queryKey: [SR_QUERY_CACHE_KEY, srKey],
+    queryFn: () => fetchSuccessRate({ srKey }),
     retry: 2,
     retryDelay: 800,
     staleTime: Infinity,

@@ -1,23 +1,35 @@
 import React, { ReactNode } from 'react';
-import { Provider } from 'react-redux';
-import { ThemeProvider } from 'styled-components';
-import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
-import { QueryCache, ReactQueryCacheProvider } from 'react-query';
-import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
-import { AppProvider, AppContextTypes } from 'common/context/App';
-import { LayerProvider } from 'common/components/Layer/LayerContext';
-import { fetchGraphQL } from 'common/services/graphql/graphql-fetch';
-import store from 'merchant/store';
 import { BladeProvider } from '@razorpay/blade/components';
 import { paymentTheme } from '@razorpay/blade/tokens';
+import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
+import {
+  QueryClient,
+  QueryClientProvider as ReactQueryClientProvider,
+  MutationFunction,
+} from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Provider } from 'react-redux';
+import { ThemeProvider } from 'styled-components';
+import { LayerProvider } from 'common/components/Layer/LayerContext';
+import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
+import { AppProvider, AppContextTypes } from 'common/context/App';
+import {
+  graphqlRequestQuery,
+  graphqlRequestMutation,
+} from 'common/services/graphql/graphql-client';
+import store from 'merchant/store';
 
-export const queryCache = new QueryCache({
-  defaultConfig: {
+export const queryClient = new QueryClient({
+  defaultOptions: {
     queries: {
-      queryFn: fetchGraphQL,
+      queryFn: graphqlRequestQuery,
+    },
+    mutations: {
+      mutationFn: graphqlRequestMutation as MutationFunction<unknown, unknown>,
     },
   },
 });
+
 interface Props {
   context: AppContextTypes;
   children: ReactNode;
@@ -28,13 +40,16 @@ const Wrapper: React.FC<Props> = ({ context, children }) => {
     <Provider store={store}>
       <BladeProvider themeTokens={paymentTheme}>
         <ThemeProvider theme={theme}>
-          <ReactQueryCacheProvider queryCache={queryCache}>
+          <ReactQueryClientProvider client={queryClient}>
             <AppProvider context={context}>
               <LayerProvider>
                 <SnackbarProvider>{children}</SnackbarProvider>
               </LayerProvider>
+              {process.env.PUBLIC_ENV == 'development' ? (
+                <ReactQueryDevtools initialIsOpen={false} />
+              ) : null}
             </AppProvider>
-          </ReactQueryCacheProvider>
+          </ReactQueryClientProvider>
         </ThemeProvider>
       </BladeProvider>
     </Provider>

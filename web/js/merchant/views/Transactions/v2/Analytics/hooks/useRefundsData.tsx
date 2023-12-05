@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 
 import { fetch } from 'common/services/rest/rest-fetch';
 import {
@@ -44,113 +44,111 @@ export default function useRefundsData({
     });
     return response;
   };
-  const [fetchRefundData] = useMutation(
-    (dateDuration: Duration) => fetchRefundQuery(dateDuration),
-    {
-      onMutate: () => {
-        setLoading(true);
-        setFailed(false);
-      },
-      onSuccess: (data: RefundsAnalyticsAPIResponse) => {
-        const { refundcountnormal, refundcountinstant, refundsuminstant, refundsumnormal } = data;
-        const updatedRefundResponse: RefundResponse = {
-          refunded: {
-            count: 0,
-            amount: 0,
-          },
-          processing: {
-            count: 0,
-            amount: 0,
-          },
-          failed: {
-            count: 0,
-            amount: 0,
-          },
-        };
+  const { mutate: fetchRefundData } = useMutation({
+    mutationFn: (dateDuration: Duration) => fetchRefundQuery(dateDuration),
+    onMutate: () => {
+      setLoading(true);
+      setFailed(false);
+    },
+    onSuccess: (data: RefundsAnalyticsAPIResponse) => {
+      const { refundcountnormal, refundcountinstant, refundsuminstant, refundsumnormal } = data;
+      const updatedRefundResponse: RefundResponse = {
+        refunded: {
+          count: 0,
+          amount: 0,
+        },
+        processing: {
+          count: 0,
+          amount: 0,
+        },
+        failed: {
+          count: 0,
+          amount: 0,
+        },
+      };
 
-        if (isRefundPendingEnabled) {
-          const processedStatusRefunds = accumalateCountAmount({
-            countData: refundcountnormal.result,
-            sumData: refundsumnormal.result,
-            status: [TxnStatus.PROCESSED],
-          });
-          const processedStatusRefundsInstant = accumalateCountAmount({
-            countData: refundcountinstant.result,
-            sumData: refundsuminstant.result,
-            status: [TxnStatus.PROCESSED],
-          });
-          updatedRefundResponse.refunded.count =
-            processedStatusRefunds.count + processedStatusRefundsInstant.count;
+      if (isRefundPendingEnabled) {
+        const processedStatusRefunds = accumalateCountAmount({
+          countData: refundcountnormal.result,
+          sumData: refundsumnormal.result,
+          status: [TxnStatus.PROCESSED],
+        });
+        const processedStatusRefundsInstant = accumalateCountAmount({
+          countData: refundcountinstant.result,
+          sumData: refundsuminstant.result,
+          status: [TxnStatus.PROCESSED],
+        });
+        updatedRefundResponse.refunded.count =
+          processedStatusRefunds.count + processedStatusRefundsInstant.count;
 
-          updatedRefundResponse.refunded.amount =
-            processedStatusRefunds.amount + processedStatusRefundsInstant.amount;
+        updatedRefundResponse.refunded.amount =
+          processedStatusRefunds.amount + processedStatusRefundsInstant.amount;
 
-          const processingStatusRefunds = accumalateCountAmount({
-            countData: refundcountnormal.result,
-            sumData: refundsumnormal.result,
-            status: [TxnStatus.FAILED, TxnStatus.PROCESSED],
-            exclude: true,
-          });
-          const processingStatusRefundsInstant = accumalateCountAmount({
-            countData: refundcountinstant.result,
-            sumData: refundsuminstant.result,
-            status: [TxnStatus.FAILED, TxnStatus.PROCESSED],
-            exclude: true,
-          });
-          updatedRefundResponse.processing.count =
-            processingStatusRefunds.count + processingStatusRefundsInstant.count;
-          updatedRefundResponse.processing.amount =
-            processingStatusRefunds.amount + processingStatusRefundsInstant.amount;
-        } else {
-          const processedStatusRefunds = accumalateCountAmount({
-            countData: refundcountnormal.result,
-            sumData: refundsumnormal.result,
-            status: [TxnStatus.FAILED],
-            exclude: true,
-          });
-          const processedStatusRefundsInstant = accumalateCountAmount({
-            countData: refundcountinstant.result,
-            sumData: refundsuminstant.result,
-            status: [TxnStatus.PROCESSED],
-          });
-          updatedRefundResponse.refunded.count =
-            processedStatusRefunds.count + processedStatusRefundsInstant.count;
-
-          updatedRefundResponse.refunded.amount =
-            processedStatusRefunds.amount + processedStatusRefundsInstant.amount;
-
-          const processingStatusRefundsInstant = accumalateCountAmount({
-            countData: refundcountinstant.result,
-            sumData: refundsuminstant.result,
-            status: [TxnStatus.FAILED, TxnStatus.PROCESSED],
-            exclude: true,
-          });
-          updatedRefundResponse.processing.count = processingStatusRefundsInstant.count;
-          updatedRefundResponse.processing.amount = processingStatusRefundsInstant.amount;
-        }
-        const failedStatusRefunds = accumalateCountAmount({
+        const processingStatusRefunds = accumalateCountAmount({
+          countData: refundcountnormal.result,
+          sumData: refundsumnormal.result,
+          status: [TxnStatus.FAILED, TxnStatus.PROCESSED],
+          exclude: true,
+        });
+        const processingStatusRefundsInstant = accumalateCountAmount({
+          countData: refundcountinstant.result,
+          sumData: refundsuminstant.result,
+          status: [TxnStatus.FAILED, TxnStatus.PROCESSED],
+          exclude: true,
+        });
+        updatedRefundResponse.processing.count =
+          processingStatusRefunds.count + processingStatusRefundsInstant.count;
+        updatedRefundResponse.processing.amount =
+          processingStatusRefunds.amount + processingStatusRefundsInstant.amount;
+      } else {
+        const processedStatusRefunds = accumalateCountAmount({
           countData: refundcountnormal.result,
           sumData: refundsumnormal.result,
           status: [TxnStatus.FAILED],
+          exclude: true,
         });
-        const failedStatusRefundsInstant = accumalateCountAmount({
+        const processedStatusRefundsInstant = accumalateCountAmount({
           countData: refundcountinstant.result,
           sumData: refundsuminstant.result,
-          status: [TxnStatus.FAILED],
+          status: [TxnStatus.PROCESSED],
         });
-        updatedRefundResponse.failed.count =
-          failedStatusRefunds.count + failedStatusRefundsInstant.count;
-        updatedRefundResponse.failed.amount =
-          failedStatusRefunds.amount + failedStatusRefundsInstant.amount;
-        setRefundsData(updatedRefundResponse);
-        setLoading(false);
-      },
-      onError: () => {
-        setFailed(true);
-        setLoading(false);
-      },
+        updatedRefundResponse.refunded.count =
+          processedStatusRefunds.count + processedStatusRefundsInstant.count;
+
+        updatedRefundResponse.refunded.amount =
+          processedStatusRefunds.amount + processedStatusRefundsInstant.amount;
+
+        const processingStatusRefundsInstant = accumalateCountAmount({
+          countData: refundcountinstant.result,
+          sumData: refundsuminstant.result,
+          status: [TxnStatus.FAILED, TxnStatus.PROCESSED],
+          exclude: true,
+        });
+        updatedRefundResponse.processing.count = processingStatusRefundsInstant.count;
+        updatedRefundResponse.processing.amount = processingStatusRefundsInstant.amount;
+      }
+      const failedStatusRefunds = accumalateCountAmount({
+        countData: refundcountnormal.result,
+        sumData: refundsumnormal.result,
+        status: [TxnStatus.FAILED],
+      });
+      const failedStatusRefundsInstant = accumalateCountAmount({
+        countData: refundcountinstant.result,
+        sumData: refundsuminstant.result,
+        status: [TxnStatus.FAILED],
+      });
+      updatedRefundResponse.failed.count =
+        failedStatusRefunds.count + failedStatusRefundsInstant.count;
+      updatedRefundResponse.failed.amount =
+        failedStatusRefunds.amount + failedStatusRefundsInstant.amount;
+      setRefundsData(updatedRefundResponse);
+      setLoading(false);
     },
-  );
+    onError: () => {
+      setFailed(true);
+      setLoading(false);
+    },
+  });
 
   return { fetchRefundData, refundsData, loading: isLoading, failed: isFailed };
 }

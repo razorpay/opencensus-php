@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -25,9 +25,9 @@ export const AccountDetail = ({ match }: AccountDetailProps): JSX.Element => {
   const { mode } = useContext(SessionContext);
   const accountId = match.params.id;
 
-  const { data, isLoading, isError } = useQuery<Account>({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['wallet:accounts', mode, accountId],
-    queryFn: () => fetchAccountById({ id: accountId, mode }),
+    queryFn: (): Promise<Account> => fetchAccountById({ id: accountId, mode }),
   });
 
   return (

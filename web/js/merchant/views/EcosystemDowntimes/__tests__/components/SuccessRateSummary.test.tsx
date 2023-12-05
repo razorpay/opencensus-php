@@ -13,7 +13,8 @@ const initProps = {
 describe('<SuccessRateSummary/>', () => {
   test('Should render tiles with necessary sr info', async () => {
     server.use(successRateHandler({ isSuccess: true }));
-    render(<SuccessRateSummary {...initProps} />);
+    const props = { ...initProps, srKey: `card.issuer.SBIN_${1}` };
+    render(<SuccessRateSummary {...props} />);
 
     expect(screen.getByLabelText('sr-summary-loader')).toBeInTheDocument();
 
@@ -31,9 +32,12 @@ describe('<SuccessRateSummary/>', () => {
 
   test('Should render alert box if no payments made with correct content', async () => {
     server.use(successRateHandler({ isSuccess: true, isNoPayments: true }));
-    render(<SuccessRateSummary {...initProps} />);
+    const props = { ...initProps, srKey: `card.issuer.SBIN_${2}` };
+    render(<SuccessRateSummary {...props} />);
 
-    expect(screen.getByLabelText('sr-summary-loader')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByLabelText('sr-summary-loader')).toBeInTheDocument();
+    });
 
     await waitFor(() => {
       expect(screen.getByLabelText('no-payments-sr')).toHaveTextContent(
@@ -44,7 +48,8 @@ describe('<SuccessRateSummary/>', () => {
 
   test('Should render error box if endpoint fails', async () => {
     server.use(successRateHandler({ isSuccess: false }));
-    render(<SuccessRateSummary {...initProps} />);
+    const props = { ...initProps, srKey: `card.issuer.SBIN_${3}` };
+    render(<SuccessRateSummary {...props} />);
 
     expect(screen.getByLabelText('sr-summary-loader')).toBeInTheDocument();
 

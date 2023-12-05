@@ -14,7 +14,7 @@ import {
 } from 'merchant/reducers/capital/withdrawals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { handleRepayment } from 'merchant/views/Capital/CashAdvance/utils';
-import { useQueryCache } from 'react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { User } from 'common/typings';
 
 const TOOLTIP_DISABLE_MESSAGES = {
@@ -40,7 +40,8 @@ const PreClosure = ({
   fetchFunctionalWithdrawalConfigByMerchantID: (x: any) => void;
 }): JSX.Element | null => {
   const { isLoading, data } = usePreclosureAmount(withdrawalId);
-  const queryCache = useQueryCache();
+
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const { total = 0, error_response = '' } = data?.data || {};
 
@@ -93,8 +94,8 @@ const PreClosure = ({
           owner_id: user.current,
           owner_type: 'RZP_MERCHANT',
         }),
-        queryCache.invalidateQueries(['get-withdrawal-repayment-summary']),
-        queryCache.invalidateQueries(['get-preclosure-amount', withdrawalId]),
+        queryClient.invalidateQueries(['get-withdrawal-repayment-summary']),
+        queryClient.invalidateQueries(['get-preclosure-amount', withdrawalId]),
       ]);
     } catch (error) {
       showNotification({

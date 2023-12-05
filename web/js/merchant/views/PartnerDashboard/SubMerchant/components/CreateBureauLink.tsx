@@ -9,7 +9,7 @@ import {
   Alert,
   Text,
 } from '@razorpay/blade/components';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { sendMessage } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { ShowNotificationType } from 'common/typings';
@@ -39,35 +39,33 @@ export const CreateBureauLink = ({
   const [shouldShowSuccessAlert, setShouldShowSuccessAlert] = useState(false);
   const [isSendSmsDisabled, setIsSendSmsDisabled] = useState(false);
 
-  const { isLoading, refetch: sendSms } = useQuery(
-    ['send-bureau-link-sms'],
-    () => sendMessage(partnerId, merchantId, bureauLink),
-    {
-      refetchOnWindowFocus: false,
-      enabled: false,
-      onSuccess: (data) => {
-        setIsSendSmsDisabled(true);
-        setTimeout(() => {
-          setIsSendSmsDisabled(false);
-        }, CREATE_BUREAU_COUNTDOWN_TIME);
-        if (data.data?.status) {
-          setSendMessageCount(data.data?.sms_count || smsCount);
-          setShouldShowSuccessAlert(true);
-        } else {
-          showNotification?.({
-            type: 'error',
-            message: 'Sending Link via SMS Failed!',
-          });
-        }
-      },
-      onError: (err: { errors: Array<string> }) => {
+  const { isFetching, refetch: sendSms } = useQuery({
+    queryKey: ['send-bureau-link-sms'],
+    queryFn: () => sendMessage(partnerId, merchantId, bureauLink),
+    refetchOnWindowFocus: false,
+    enabled: false,
+    onSuccess: (data) => {
+      setIsSendSmsDisabled(true);
+      setTimeout(() => {
+        setIsSendSmsDisabled(false);
+      }, CREATE_BUREAU_COUNTDOWN_TIME);
+      if (data.data?.status) {
+        setSendMessageCount(data.data?.sms_count || smsCount);
+        setShouldShowSuccessAlert(true);
+      } else {
         showNotification?.({
           type: 'error',
-          message: err.errors,
+          message: 'Sending Link via SMS Failed!',
         });
-      },
+      }
     },
-  );
+    onError: (err: { errors: Array<string> }) => {
+      showNotification?.({
+        type: 'error',
+        message: err.errors,
+      });
+    },
+  });
 
   const handleCopyLink = () => {
     copyToClipboard(bureauLink);
@@ -111,7 +109,7 @@ export const CreateBureauLink = ({
           </Button>
           <Button
             onClick={handleSendSms}
-            isLoading={isLoading}
+            isLoading={isFetching}
             isDisabled={isSendSmsDisabled || sendMessageCount === SMS_COUNT_MAX_LIMIT}
           >
             {sendMessageCount === 0 ? 'Send Link as SMS' : 'Resend Link as SMS'}

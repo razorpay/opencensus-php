@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { useApp } from 'common/context/App';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
@@ -14,9 +14,9 @@ export default function usePartnerActivation(): any {
   const { data: merchantActivationData } = useActivation();
   const commonLockedFields = merchantActivationData?.lock_common_fields || [];
 
-  const { data }: any = useQuery(
-    `partnerActivationDetails`,
-    async () => {
+  const { data }: any = useQuery({
+    queryKey: [`partnerActivationDetails`],
+    queryFn: async () => {
       // submerchantId - present when reseller kyc form loaded
       // partner_type - to check if merchant is partner
       if (!isIndependentPartnerKYCEnabled || submerchantId || !partner_type) {
@@ -27,15 +27,13 @@ export default function usePartnerActivation(): any {
       });
       return fetchPartnerActivationDetails;
     },
-    {
-      retry: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      onError: (err: any) => {
-        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
-      },
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+    onError: (err: any) => {
+      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
     },
-  );
+  });
   if (data && data.partner_activation) {
     partnerActivationStatus = data.partner_activation.activation_status;
   }

@@ -27,7 +27,7 @@ const PublicOAuthLinks = ({
 }: PublicOAuthLinksProps): JSX.Element => {
   const inviteFlow = INVITE_TAB_TYPES.PUBLIC_LINK;
   const { data: referralData, isLoading } = useOAuthInviteLinks({ showNotification, selectedApp });
-  const referralUrl = referralData?.value;
+  const referralUrl = referralData?.value as string;
 
   if (isLoading)
     return (

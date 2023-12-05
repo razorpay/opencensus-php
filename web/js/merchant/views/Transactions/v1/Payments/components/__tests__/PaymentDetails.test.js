@@ -6,19 +6,24 @@ import {
   App,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import User from 'merchant/models/User';
 import store from 'merchant/store';
 import { isPlatformTransaction } from 'merchant/views/Transactions/v1/Payments/Utils/platformUtils';
 
-jest.mock('react-query', () => ({
-  useQuery: jest.fn().mockReturnValue({
-    refetch: jest.fn(),
-    data: { appKey: 'test' },
-    isLoading: false,
-    error: {},
-  }),
-}));
+jest.mock('@tanstack/react-query', () => {
+  const original = jest.requireActual('@tanstack/react-query');
+
+  return {
+    ...original,
+    useQuery: jest.fn().mockReturnValue({
+      refetch: jest.fn(),
+      data: { appKey: 'test' },
+      isLoading: false,
+      error: {},
+    }),
+  };
+});
 
 jest.mock('merchant/views/Transactions/v1/Payments/Utils/platformUtils', () => ({
   isPlatformTransaction: jest.fn(),
@@ -43,9 +48,9 @@ describe('PaymentDetails', () => {
     render(<App payment={{ ...defaultProps.payment, method: 'card', receiver_type: 'pos' }} />);
     await waitFor(() => {
       expect(useQuery).toHaveBeenCalledWith(
-        'ezetap_appkey',
-        expect.any(Function),
         expect.objectContaining({
+          queryKey: ['ezetap_appkey'],
+          queryFn: expect.any(Function),
           enabled: false,
           refetchOnWindowFocus: false,
           staleTime: Infinity,

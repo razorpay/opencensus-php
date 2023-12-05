@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 
 import { withRouter } from 'common/deprecated/withRouter';
@@ -107,18 +107,16 @@ function PaymentDetails(props) {
     : null;
 
   const paymentByCardOffline = payment.method === 'card' && payment.receiver_type === 'pos';
-  const { refetch: refetchEzetapAppKey, data: ezetapData } = useQuery(
-    FETCH_EZETAP_KEY_NAME,
-    async () => {
+  const { refetch: refetchEzetapAppKey, data: ezetapData } = useQuery({
+    queryKey: [FETCH_EZETAP_KEY_NAME],
+    queryFn: async () => {
       const dataPromise = await fetchEzetapKeys();
       return dataPromise?.data;
     },
-    {
-      enabled: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-    },
-  );
+    enabled: false,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+  });
 
   useEffect(() => {
     if (paymentByCardOffline) {

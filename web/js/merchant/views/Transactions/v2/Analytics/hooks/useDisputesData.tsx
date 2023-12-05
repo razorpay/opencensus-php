@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 
 import { fetch } from 'common/services/rest/rest-fetch';
 import { Environments } from 'common/typings';
@@ -37,32 +37,30 @@ export default function useDisputesData({ mode }: { mode: Environments }): Dispu
     });
     return response;
   };
-  const [fetchDisputes] = useMutation(
-    ({ params }: FetchDisputesData) => fetchDisputesQuery(params),
-    {
-      onMutate: ({ setState }) => {
-        setState((prevState) => ({
-          ...prevState,
-          loading: true,
-          failed: false,
-        }));
-      },
-      onSuccess: (data: DisputeAPIResponse, { setState, dataField }) => {
-        setState({
-          value: data[dataField] || 0,
-          loading: false,
-          failed: false,
-        });
-      },
-      onError: (_, { setState }) => {
-        setState((prevState) => ({
-          ...prevState,
-          loading: false,
-          failed: true,
-        }));
-      },
+  const { mutate: fetchDisputes } = useMutation({
+    mutationFn: ({ params }: FetchDisputesData) => fetchDisputesQuery(params),
+    onMutate: ({ setState }) => {
+      setState((prevState) => ({
+        ...prevState,
+        loading: true,
+        failed: false,
+      }));
     },
-  );
+    onSuccess: (data: DisputeAPIResponse, { setState, dataField }) => {
+      setState({
+        value: data[dataField] || 0,
+        loading: false,
+        failed: false,
+      });
+    },
+    onError: (_, { setState }) => {
+      setState((prevState) => ({
+        ...prevState,
+        loading: false,
+        failed: true,
+      }));
+    },
+  });
 
   const fetchDisputesData = (duration: Duration) => {
     fetchDisputes({

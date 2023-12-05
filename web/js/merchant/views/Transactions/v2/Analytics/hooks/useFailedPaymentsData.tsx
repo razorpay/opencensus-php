@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 
 import { fetch } from 'common/services/rest/rest-fetch';
 import {
@@ -49,27 +49,24 @@ export default function useFailedPaymentsData(): FailedDataHookResponse {
     });
     return response;
   };
-  const [fetchFailedPaymentsData] = useMutation(
-    (dateDuration: Duration) => fetchFailedPaymentsQuery(dateDuration),
-    {
-      onMutate: () => {
-        setLoading(true);
-        setFailed(false);
-      },
-      onSuccess: (data: FailedPaymentsAPIResponse) => {
-        const totalFailedPayments = accumulateFailedPaymentsTotal(data);
-        const transformedData = accumulateFailureData(data);
-        setFailureInfo(transformedData);
-        setFailedPaymentsData(totalFailedPayments);
-        setLoading(false);
-      },
-      onError: () => {
-        setFailed(true);
-        setLoading(false);
-      },
+  const { mutate: fetchFailedPaymentsData } = useMutation({
+    mutationFn: (dateDuration: Duration) => fetchFailedPaymentsQuery(dateDuration),
+    onMutate: () => {
+      setLoading(true);
+      setFailed(false);
     },
-  );
-
+    onSuccess: (data: FailedPaymentsAPIResponse) => {
+      const totalFailedPayments = accumulateFailedPaymentsTotal(data);
+      const transformedData = accumulateFailureData(data);
+      setFailureInfo(transformedData);
+      setFailedPaymentsData(totalFailedPayments);
+      setLoading(false);
+    },
+    onError: () => {
+      setFailed(true);
+      setLoading(false);
+    },
+  });
   return {
     failedPaymentsData,
     failureInfo,

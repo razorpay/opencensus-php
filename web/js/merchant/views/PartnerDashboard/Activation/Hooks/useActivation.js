@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
-import { useActivationFormState, isTabComplete } from './store';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { useQuery, useQueryCache, useMutation } from 'react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
+import { merchantFetch } from 'merchant/utils/ajax';
 import activationFormatter from 'merchant/views/PartnerDashboard/Activation/utils/ActivationFormatter';
+
+import { useActivationFormState, isTabComplete } from './store';
 
 export const fetchActivationData = async () => {
   const data = await merchantFetch({ url: 'partner/activation', mode: 'live' });
@@ -41,7 +43,9 @@ export const deleteFileData = (fileId) =>
 
 export default function useActivation() {
   const snackbar = useSnackbar();
-  const { status, data } = useQuery('partner_activation', fetchActivationData, {
+  const { status, data } = useQuery({
+    queryKey: ['partner_activation'],
+    queryFn: fetchActivationData,
     refetchOnMount: 'false',
     staleTime: Infinity,
     onError: (err) => {
@@ -49,12 +53,13 @@ export default function useActivation() {
     },
   });
 
-  const queryCache = useQueryCache();
-  const [postData] = useMutation(postActivation, {
+  const queryCache = useQueryClient();
+  const { mutate: postData } = useMutation({
+    mutationFn: postActivation,
     onSuccess: (result) => {
       if (result.data) {
         const formattedData = activationFormatter(result.data);
-        queryCache.setQueryData('partner_activation', formattedData);
+        queryCache.setQueryData(['partner_activation'], formattedData);
       }
     },
     onError: (err) => {

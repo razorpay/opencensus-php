@@ -18,9 +18,9 @@ import {
 const isVisible = (fieldName, context): boolean => {
   switch (fieldName) {
     case 'company_pan':
-      return !['11', '2', '1'].includes(context.business_overview.business_type.value);
+      return !['11', '2', '1'].includes(context.business_overview?.business_type.value);
     case 'business_name':
-      return !isUnregisteredBusiness(context.business_overview.business_type.value);
+      return !isUnregisteredBusiness(context.business_overview?.business_type.value);
     case 'business_website':
       return context.hasWebsite;
     case 'business_operation_address':
@@ -28,7 +28,7 @@ const isVisible = (fieldName, context): boolean => {
     case 'business_operation_city':
     case 'business_operation_pin':
       return (
-        !isUnregisteredBusiness(context.business_overview.business_type.value) &&
+        !isUnregisteredBusiness(context.business_overview?.business_type.value) &&
         !context.sameAddress
       );
     case 'gstin':

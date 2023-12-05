@@ -1,6 +1,6 @@
 import BaseModal from 'react-modal';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { withRouter } from 'common/deprecated/withRouter';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import React, { useContext, useEffect, useState } from 'react';

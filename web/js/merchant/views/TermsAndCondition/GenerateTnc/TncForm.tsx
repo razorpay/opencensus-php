@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import * as Yup from 'yup';
 import { Formik, Form } from 'formik';
 import View from '@razorpay/blade-old/src/atoms/View';
@@ -73,7 +73,8 @@ const tncValidattionSchema = Yup.object().shape({
 const TncForm: React.FC<FormScreenPropsT> = ({ setApiResponse }) => {
   const { user } = useApp();
 
-  const [postData] = useMutation(generateTnc, {
+  const { mutate: postData } = useMutation({
+    mutationFn: generateTnc,
     onSuccess: (response) => {
       setApiResponse(response);
       analyticsTrack({

@@ -29,7 +29,7 @@ const ChooseOAuthApp = ({
   const applicationModel = new Application();
 
   const handleApplicationSelect = (applicationId) => {
-    const selectedApplicationDetails = applications.find(
+    const selectedApplicationDetails = applications?.find(
       (application) => application.id === applicationId,
     );
 

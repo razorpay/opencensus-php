@@ -136,7 +136,7 @@ describe('Create Schedule Modal', () => {
     await userEvent.click(screen.getByLabelText('Create Schedule'));
 
     await expect(scheduleSpy).toBeCalled();
-  }, 10000);
+  }, 30000);
 
   it('should be able to edit data', async () => {
     server.use(

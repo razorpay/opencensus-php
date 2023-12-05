@@ -1,6 +1,6 @@
 version: v1beta10
 dev:
-#  Changing the probe period seconds for ensuring devspace brings up a new pod for syncing the code changes irrespective of number of pods running previously https://www.devspace.sh/docs/5.x/configuration/development/replace-pods#how-does-it-work
+  #  Changing the probe period seconds for ensuring devspace brings up a new pod for syncing the code changes irrespective of number of pods running previously https://www.devspace.sh/docs/5.x/configuration/development/replace-pods#how-does-it-work
   replacePods:
     - labelSelector:
         name: ${APP_NAME}-${DEVSTACK_LABEL}

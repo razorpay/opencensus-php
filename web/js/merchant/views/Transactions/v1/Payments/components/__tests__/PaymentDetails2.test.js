@@ -1,12 +1,15 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createMemoryHistory } from 'history';
 import { render, screen, fireEvent } from 'test-utils';
 import {
   defaultProps,
   App,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
-import { createMemoryHistory } from 'history';
+
+export const queryClient = new QueryClient();
 
 describe('PaymentDetails', () => {
   describe('Capture payment', () => {
@@ -38,7 +41,14 @@ describe('PaymentDetails', () => {
       const history = createMemoryHistory();
       const state = { fromHomePage: true };
       history.push('/', state);
-      render(<App />, { history });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>,
+        { history },
+      );
+
       fireEvent.click(screen.getByText('Capture Payment'));
       expect(analyticsTrack).toHaveBeenCalledWith({
         actionName: 'clicked',

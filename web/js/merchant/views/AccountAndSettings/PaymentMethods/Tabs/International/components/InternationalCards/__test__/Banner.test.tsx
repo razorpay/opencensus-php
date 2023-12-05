@@ -23,16 +23,20 @@ jest.mock(
   }),
 );
 
-jest.mock('@razorpay/blade/components', () => ({
-  __esModule: true,
-  Alert: ({ type, workflowEta, bannerMessage }) => (
-    <div>
-      type: {type}
-      workflowEta: {workflowEta}
-      bannerMessage: {bannerMessage}
-    </div>
-  ),
-}));
+jest.mock('@razorpay/blade/components', () => {
+  const bladeActual = jest.requireActual('@razorpay/blade/components');
+  return {
+    __esModule: true,
+    ...bladeActual,
+    Alert: ({ type, workflowEta, bannerMessage }) => (
+      <div>
+        type: {type}
+        workflowEta: {workflowEta}
+        bannerMessage: {bannerMessage}
+      </div>
+    ),
+  };
+});
 
 const defaultProps = {
   type: BannerType.APPROVED,

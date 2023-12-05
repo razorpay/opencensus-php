@@ -1,4 +1,4 @@
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { useState } from 'react';
 import { useApp } from 'common/context/App';
@@ -33,7 +33,8 @@ export default function usePaymentVolume(): any {
     });
     return response;
   };
-  const [fetchPayment] = useMutation(fetchPaymentVolume, {
+  const { mutate: fetchPayment } = useMutation({
+    mutationFn: fetchPaymentVolume,
     onSuccess: (res) => {
       if (res?.transactionVolume?.last_updated_at) {
         setLastUpdated(res.transactionVolume.last_updated_at);

@@ -1,30 +1,28 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { ShowNotificationType } from 'common/typings';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { OAuthAppDetailsType } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 
+interface SettingsData {
+  name: string;
+  product: string;
+  entity_id: string;
+  entity_type: string;
+  value: string;
+  created_at: string;
+  updated_at: string;
+}
 const useOAuthInviteLinks = ({
   selectedApp,
   showNotification,
 }: {
   selectedApp: OAuthAppDetailsType;
   showNotification: ShowNotificationType;
-}): {
-  isLoading: boolean;
-  data: {
-    name: string;
-    product: string;
-    entity_id: string;
-    entity_type: string;
-    value: string;
-    created_at: string;
-    updated_at: string;
-  };
-} & ReturnType<typeof useQuery> => {
-  return useQuery(
-    ['fetch-oauth-invite-links'],
-    async () => {
+}) => {
+  return useQuery({
+    queryKey: ['fetch-oauth-invite-links'],
+    queryFn: async (): Promise<SettingsData> => {
       const { client_id, application_id, redirect_uri } = selectedApp;
       const { data } = await merchantFetch({
         url: 'partnerships/twirp/rzp.commissions.settings.v1.SettingsAPI/Upsert',
@@ -45,21 +43,19 @@ const useOAuthInviteLinks = ({
       });
       return data?.settings;
     },
-    {
-      enabled: true,
-      retry: false,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      cacheTime: 1000 * 60 * 1,
-      staleTime: Infinity,
-      onError: (_err) => {
-        showNotification?.({
-          type: 'error',
-          message: 'There was an error fetching the invite link',
-        });
-      },
+    enabled: true,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    cacheTime: 1000 * 60 * 1,
+    staleTime: Infinity,
+    onError: (_err) => {
+      showNotification?.({
+        type: 'error',
+        message: 'There was an error fetching the invite link',
+      });
     },
-  );
+  });
 };
 
 export default useOAuthInviteLinks;

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Text from '@razorpay/blade-old/src/atoms/Text';
@@ -173,9 +173,13 @@ const getCardContent = ({
         if (isWebsiteInWorkflow) {
           return (
             <>
-              <Title content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website} />
+              <Title
+                content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website.title}
+              />
               <Description
-                content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website}
+                content={
+                  Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website.description
+                }
               />
             </>
           );
@@ -201,6 +205,7 @@ const getCardContent = ({
           </>
         );
       }
+
       if (isPGIntlApproved) {
         return (
           <>
@@ -256,28 +261,24 @@ const AcceptPaymentsCard: React.FC = () => {
   const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   const { status: activationQueryStatus, data: activationData } = useActivation();
-  const { data: internationalWorkflowData } = useQuery(
-    'internationalWorkflowStatus',
-    fetchInternationalProductStatus,
-    {
-      retry: false,
-      staleTime: Infinity,
-      onError: (err: any) => {
-        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
-      },
+  const { data: internationalWorkflowData } = useQuery({
+    queryKey: ['internationalWorkflowStatus'],
+    queryFn: fetchInternationalProductStatus,
+    retry: false,
+    staleTime: Infinity,
+    onError: (err: any) => {
+      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
     },
-  );
-  const { status: websiteWorkflowQueryStatus, data: isWebsiteInWorkflow } = useQuery(
-    'websiteWorkflowStatus',
-    fetchWebsiteWorkflowStatus,
-    {
-      retry: false,
-      staleTime: Infinity,
-      onError: (err: any) => {
-        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
-      },
+  });
+  const { status: websiteWorkflowQueryStatus, data: isWebsiteInWorkflow } = useQuery({
+    queryKey: ['websiteWorkflowStatus'],
+    queryFn: fetchWebsiteWorkflowStatus,
+    retry: false,
+    staleTime: Infinity,
+    onError: (err: any) => {
+      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
     },
-  );
+  });
   const { fetchPayment: fetchPaymentInfo, transactionAmount: transactionAmountInfo } =
     usePaymentVolume();
 

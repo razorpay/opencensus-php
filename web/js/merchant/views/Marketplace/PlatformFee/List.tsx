@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { compose, ActionCreator, bindActionCreators } from 'redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 import { Amount } from '@razorpay/blade/components';
@@ -93,26 +93,30 @@ const PlatformFee = ({
       return `?transfer_type=platform&skip=${paginationState.skip}&count=${paginationState.count}`;
     }
   };
-  const { isLoading, refetch } = useQuery(
-    ['get-transfer-details', handleParams()],
-    fetchTransfers,
-    {
-      refetchOnWindowFocus: false,
-      onSuccess: (data) => {
-        if (id) {
-          setItems([data.data]);
-        } else {
-          setItems(data.data.items);
-        }
-      },
-      onError: (err: { errors: Array<string> }) => {
-        showNotification?.({
-          type: 'error',
-          message: err.errors,
-        });
-      },
+
+  const queryParams = handleParams();
+  const queryKey = ['get-transfer-details', queryParams];
+  const { isLoading, refetch } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      const response = await fetchTransfers(queryParams);
+      return response;
     },
-  );
+    refetchOnWindowFocus: false,
+    onSuccess: (data) => {
+      if (id) {
+        setItems([data.data]);
+      } else {
+        setItems(data.data.items);
+      }
+    },
+    onError: (err: { errors: Array<string> }) => {
+      showNotification?.({
+        type: 'error',
+        message: err.errors,
+      });
+    },
+  });
 
   const search = (id: string, params: string) => {
     setSearchParams(params);

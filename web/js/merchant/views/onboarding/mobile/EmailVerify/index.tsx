@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import styled from 'styled-components';
@@ -65,7 +65,8 @@ const EmailVerify = ({ isFormLocked, contactName }: IEmailVerifyProps): React.Re
 
   const resendOTP = () => setIsOtpSend(false);
 
-  const [sendOTP] = useMutation(getOTP, {
+  const { mutate: sendOTP } = useMutation({
+    mutationFn: getOTP,
     onSuccess: (res: { token: string }) => {
       setIsApiCall(false);
       if (res.token) {

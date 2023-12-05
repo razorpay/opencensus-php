@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import Spinner from 'common/ui/Spinner';
 import { BtnGroup, Btn } from 'common/ui/BtnGroup/index';

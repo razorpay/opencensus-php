@@ -327,55 +327,59 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         submerchant_id: submerchantId,
       },
     });
-    postData({ activation_form_milestone: 'L1' })
-      .then((res) => {
-        setIsApiCalling(false);
-        if (res && res.activation_form_milestone === 'L1') {
+    postData(
+      { activation_form_milestone: 'L1' },
+      {
+        onSuccess: (res) => {
+          setIsApiCalling(false);
+          if (res && res.activation_form_milestone === 'L1') {
+            trackEvents({
+              objectName: 'L1 Form',
+              actionName: 'Result',
+              screen: 'home page',
+              properties: {
+                status: 'sucess',
+                submerchant_id: submerchantId,
+              },
+              toCleverTap: true,
+              toFacebook: true,
+            });
+
+            const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
+            if (dedupeStatus === 'blocked') {
+              setModalType('dedupe');
+            } else if (
+              isUnregisteredBusiness(res.business_type) &&
+              res.poi_verification_status === 'initiated' &&
+              experiments.canSkipPoiValidation &&
+              !experiments.isL2AllowedForPoiInitiated
+            ) {
+              setModalType('poi_initiated');
+            } else if (res.activated && res.activation_status === 'instantly_activated') {
+              setModalType('payment_enable');
+              switchMode(user.current, 'live');
+            } else {
+              setModalType('payment_disable');
+            }
+            setIsModalOpen(true);
+          }
+        },
+        onError: (e) => {
+          setIsApiCalling(false);
           trackEvents({
             objectName: 'L1 Form',
             actionName: 'Result',
             screen: 'home page',
             properties: {
-              status: 'sucess',
-              submerchant_id: submerchantId,
+              status: 'failure',
+              errorMessage: e,
             },
             toCleverTap: true,
             toFacebook: true,
           });
-
-          const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
-          if (dedupeStatus === 'blocked') {
-            setModalType('dedupe');
-          } else if (
-            isUnregisteredBusiness(res.business_type) &&
-            res.poi_verification_status === 'initiated' &&
-            experiments.canSkipPoiValidation &&
-            !experiments.isL2AllowedForPoiInitiated
-          ) {
-            setModalType('poi_initiated');
-          } else if (res.activated && res.activation_status === 'instantly_activated') {
-            setModalType('payment_enable');
-            switchMode(user.current, 'live');
-          } else {
-            setModalType('payment_disable');
-          }
-          setIsModalOpen(true);
-        }
-      })
-      .catch((e) => {
-        setIsApiCalling(false);
-        trackEvents({
-          objectName: 'L1 Form',
-          actionName: 'Result',
-          screen: 'home page',
-          properties: {
-            status: 'failure',
-            errorMessage: e,
-          },
-          toCleverTap: true,
-          toFacebook: true,
-        });
-      });
+        },
+      },
+    );
   };
 
   const submitL2 = () => {
@@ -396,8 +400,8 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       ...consentPayload,
     };
 
-    postData(payloadData)
-      .then((res) => {
+    postData(payloadData, {
+      onSuccess: (res) => {
         setIsApiCalling(false);
         if (res) {
           trackEvents({
@@ -425,8 +429,8 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           }
           setIsModalOpen(true);
         }
-      })
-      .catch((e) => {
+      },
+      onError: (e) => {
         setIsApiCalling(false);
         trackEvents({
           objectName: 'L2 Form',
@@ -439,7 +443,8 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           toCleverTap: true,
           toFacebook: true,
         });
-      });
+      },
+    });
   };
   const getNextText = (): NextTextT => {
     if (activeTabId === 'documents') {

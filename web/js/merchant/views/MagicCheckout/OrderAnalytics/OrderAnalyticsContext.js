@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetchAnalyticsData } from './api';
 // eslint-disable-next-line import/no-cycle
 import { formatAnalyticsResponse } from './utils';
@@ -17,21 +17,19 @@ function OrderAnalyticsProvider({ children }) {
   const [analyticsData, setAnalyticsData] = useState({});
   const [activeTab, setActiveTab] = useState(TABS.OVERVIEW);
   const [timeRange, setTimeRange] = useState({ start: null, end: null });
-  const { isFetching, refetch: refetchAnalyticsData } = useQuery(
+  const { isFetching, refetch: refetchAnalyticsData } = useQuery({
     /**
      * unique key is added to avoid edge case where subsequent api calls are being made.
      * As current version of react-query is not supporting susequent refetch with same query key.
      * This issue will be resolved in the new version of react query.
      */
-    [`get-magic-order-analytics-data${timeRange.end}`],
-    () => fetchAnalyticsData(timeRange),
-    {
-      ...QueryOptions,
-      onSuccess({ data }) {
-        setAnalyticsData(formatAnalyticsResponse(data));
-      },
+    queryKey: [`get-magic-order-analytics-data${timeRange.end}`],
+    queryFn: () => fetchAnalyticsData(timeRange),
+    ...QueryOptions,
+    onSuccess({ data }) {
+      setAnalyticsData(formatAnalyticsResponse(data));
     },
-  );
+  });
 
   useEffect(() => {
     refetchAnalyticsData();

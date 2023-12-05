@@ -7,12 +7,16 @@ import { platformFeeDetailsSuccess, reversalSuccess } from './mocks/handlers';
 import * as modals from 'merchant_common/reducers/modals';
 import * as analytics from 'common/utils/analytics';
 
-jest.mock('@razorpay/blade/components', () => ({
-  __esModule: true,
-  Amount: ({ value }) => <>{value}</>,
-  Spinner: ({ testID }) => <div data-testid={testID}>spinner</div>,
-  InfoIcon: () => <span>Icon</span>,
-}));
+jest.mock('@razorpay/blade/components', () => {
+  const bladeActual = jest.requireActual('@razorpay/blade/components');
+  return {
+    __esModule: true,
+    ...bladeActual,
+    Amount: ({ value }) => <>{value}</>,
+    Spinner: ({ testID }) => <div data-testid={testID}>spinner</div>,
+    InfoIcon: () => <span>Icon</span>,
+  };
+});
 
 jest.mock('merchant/views/Marketplace/Transfers/components/TransferReversal', () => ({
   __esModule: true,
@@ -61,13 +65,16 @@ describe('Platform Fee Details', () => {
       expect(screen.getByText(`Platform Fee ID:`)).toBeInTheDocument();
     });
     expect(screen.getByText(data.id)).toBeInTheDocument();
-
     expect(screen.getByText('Platform Fee Amount')).toBeInTheDocument();
+
     expect(screen.getByText(paiseToRupees(data.amount + data.fees + data.tax))).toBeInTheDocument();
-    expect(
-      screen.getByText(`Payment to ${data.recipient_details.name} = ${paiseToRupees(data.amount)}`),
-    );
+
     await waitFor(() => {
+      expect(
+        screen.getByText(
+          `Payment to ${data.recipient_details.name} = ${paiseToRupees(data.amount)}`,
+        ),
+      );
       expect(screen.getByText('No reversals created')).toBeInTheDocument();
     });
   });
@@ -87,10 +94,10 @@ describe('Platform Fee Details', () => {
     server.use(reversalSuccess(reversalsData));
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText(`Platform Fee ID:`)).toBeInTheDocument();
+      expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
+      expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
+      expect(screen.getByText('--')).toBeInTheDocument();
     });
-    expect(screen.getByText(`Platform Fee Amount`)).toBeInTheDocument();
-    expect(screen.getByText('--')).toBeInTheDocument();
   });
 
   test('should open modal if create reversal is clicked', async () => {

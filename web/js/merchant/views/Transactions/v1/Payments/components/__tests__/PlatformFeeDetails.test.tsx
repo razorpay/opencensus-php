@@ -8,10 +8,14 @@ jest.mock('common/ui/LoaderDots', () => () => <>loading</>);
 
 jest.mock('common/ui/Amount', () => ({ value }) => <>{value}</>);
 
-jest.mock('@razorpay/blade/components', () => ({
-  __esModule: true,
-  Amount: ({ value }) => <>{value}</>,
-}));
+jest.mock('@razorpay/blade/components', () => {
+  const bladeActual = jest.requireActual('@razorpay/blade/components');
+  return {
+    __esModule: true,
+    ...bladeActual,
+    Amount: ({ value }) => <>{value}</>,
+  };
+});
 
 const state = {
   session: {
@@ -20,27 +24,26 @@ const state = {
     },
   },
 };
+interface PlatformFeeProps {
+  payments: {
+    fee: number;
+    tax: number;
+    amount_transferred: number;
+  };
+  transfer: {
+    loading: boolean;
+    items: {
+      tax: number;
+      fees: number;
+      amount: number;
+      amount_reversed: number;
+      recipient_details: { name: string };
+      id: string;
+    }[];
+  };
+}
 
 describe('PlatformFeeDetails', () => {
-  interface PlatformFeeProps {
-    payments: {
-      fee: number;
-      tax: number;
-      amount_transferred: number;
-    };
-    transfer: {
-      loading: boolean;
-      items: {
-        tax: number;
-        fees: number;
-        amount: number;
-        amount_reversed: number;
-        recipient_details: { name: string };
-        id: string;
-      }[];
-    };
-  }
-
   const payment = {
     fee: 207,
     tax: 32,

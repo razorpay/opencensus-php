@@ -9,11 +9,16 @@ import {
 import { PAYMENT_STATUS } from 'merchant/views/Transactions/v1/Payments/constants';
 import { screen, userEvent } from 'test-utils';
 
-jest.mock('react-query', () => ({
-  useQuery: jest.fn().mockReturnValue({
-    data: { appKey: 'testAppKey', username: 'testUsername' },
-  }),
-}));
+jest.mock('@tanstack/react-query', () => {
+  const original = jest.requireActual('@tanstack/react-query');
+
+  return {
+    ...original,
+    useQuery: jest.fn().mockReturnValue({
+      data: { appKey: 'testAppKey', username: 'testUsername' },
+    }),
+  };
+});
 
 describe('RefundModal', () => {
   describe('Instant refund', () => {
@@ -23,7 +28,7 @@ describe('RefundModal', () => {
       );
     });
     describe('Instant refund checkbox', () => {
-      test('should not show instant refund checkbox when instant refund is disabled', () => {
+      test('should not show instant refund checkbox when instant refund is disabled', async () => {
         showWhenUtilSpy.mockImplementation(
           ({ featureEnabled }) => featureEnabled === 'disable_instant_refunds',
         );
@@ -35,7 +40,7 @@ describe('RefundModal', () => {
             },
           },
         });
-        const instantRefundInput = screen.queryAllByRole('checkbox')[1];
+        const instantRefundInput = await screen.queryAllByRole('checkbox')[1];
         expect(instantRefundInput).toBeFalsy();
       });
 

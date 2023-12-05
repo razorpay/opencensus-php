@@ -17,7 +17,7 @@ import {
 import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import { INPUT_FIELDS_PROPS } from './constants';
@@ -46,27 +46,29 @@ const Form = ({
 }: InputFormPropsInterface): JSX.Element => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [shouldShowBranch, setShouldShowBranch] = useState(false);
-  const { refetch: refetchIfscCode, data: bankData, isFetching: isFetchingBankBranch } = useQuery(
-    ['ifsc_code', state.inputData.ifsc_code],
-    async () => {
+  const {
+    refetch: refetchIfscCode,
+    data: bankData,
+    isFetching: isFetchingBankBranch,
+  } = useQuery({
+    queryKey: ['ifsc_code', state.inputData.ifsc_code],
+    queryFn: async () => {
       const bankDataPromise = await fetch(
         `${window.BANK_DETAILS_URL}/${state.inputData.ifsc_code}`,
       );
       const bankData = await bankDataPromise.json();
       return bankData;
     },
-    {
-      enabled: false,
-      retry: false,
-      refetchOnWindowFocus: false,
-      onSuccess: () => {
-        setShouldShowBranch(true);
-      },
-      onError: () => {
-        setShouldShowBranch(false);
-      },
+    enabled: false,
+    retry: false,
+    refetchOnWindowFocus: false,
+    onSuccess: () => {
+      setShouldShowBranch(true);
     },
-  );
+    onError: () => {
+      setShouldShowBranch(false);
+    },
+  });
 
   const validator = {
     account_number: (val) => validateBankDetails(val, 'accNo'),

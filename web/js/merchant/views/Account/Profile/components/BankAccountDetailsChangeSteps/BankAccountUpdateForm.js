@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
@@ -66,25 +66,27 @@ const BankAccountUpdateForm = (props) => {
   const [showBranch, setShowBranch] = useState(false);
   const isMounted = useRef(false);
 
-  const { refetch, data: bankData, isFetching } = useQuery(
-    ['ifsc_code', ifsc_code],
-    async () => {
+  const {
+    refetch,
+    data: bankData,
+    isFetching,
+  } = useQuery({
+    queryKey: ['ifsc_code', ifsc_code],
+    queryFn: async () => {
       const bankDataPromise = await fetch(`${window.BANK_DETAILS_URL}/${ifsc_code}`);
       const bankData = await bankDataPromise.json();
       return bankData;
     },
-    {
-      enabled: false,
-      retry: false,
-      refetchOnWindowFocus: false,
-      onSuccess: () => {
-        setShowBranch(true);
-      },
-      onError: () => {
-        setShowBranch(false);
-      },
+    enabled: false,
+    retry: false,
+    refetchOnWindowFocus: false,
+    onSuccess: () => {
+      setShowBranch(true);
     },
-  );
+    onError: () => {
+      setShowBranch(false);
+    },
+  });
 
   useEffect(() => {
     if (!isMounted.current) {

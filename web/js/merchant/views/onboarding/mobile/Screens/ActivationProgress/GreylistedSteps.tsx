@@ -102,21 +102,23 @@ const GreylistedSteps: React.FC<
       ...consentPayload,
     };
 
-    postData(payloadData).then((res) => {
-      if (res) {
-        const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
-        if (res.submitted && dedupeStatus === 'blocked') {
-          setModalType('dedupe');
-        } else if (!res.business_website && experiments.canGenerateTnCPage) {
-          setModalType('tnc');
-        } else {
-          setModalType('under_review');
-          if (isTestMode && res.activated) {
-            switchMode(user.current, 'live');
+    postData(payloadData, {
+      onSuccess: (res) => {
+        if (res) {
+          const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
+          if (res.submitted && dedupeStatus === 'blocked') {
+            setModalType('dedupe');
+          } else if (!res.business_website && experiments.canGenerateTnCPage) {
+            setModalType('tnc');
+          } else {
+            setModalType('under_review');
+            if (isTestMode && res.activated) {
+              switchMode(user.current, 'live');
+            }
           }
+          setIsModalOpen(true);
         }
-        setIsModalOpen(true);
-      }
+      },
     });
   };
 

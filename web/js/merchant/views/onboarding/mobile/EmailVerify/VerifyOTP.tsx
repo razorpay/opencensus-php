@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -67,7 +67,8 @@ const VerifyOTP = ({
     return result;
   };
 
-  const [verify] = useMutation(verifyOtp, {
+  const { mutate: verify } = useMutation({
+    mutationFn: verifyOtp,
     onSuccess: async (res: {
       user: {
         email_verified: boolean;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { compose, ActionCreator, bindActionCreators } from 'redux';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Amount, Spinner, InfoIcon } from '@razorpay/blade/components';
 import { paiseToRupees } from 'common/utils/rzp-utils';
@@ -90,7 +90,9 @@ const PlatformFeeDetailsContainer = ({
   const [transferData, setTransferData] = useState<transferTypes>();
   const [reversalsData, setReversalsData] = useState<reversalType>();
 
-  const { isLoading, refetch } = useQuery(['get-transfer-details'], () => fetchTransfersById(id), {
+  const { isLoading, refetch } = useQuery({
+    queryKey: ['get-transfer-details'],
+    queryFn: () => fetchTransfersById(id),
     refetchOnWindowFocus: false,
     onSuccess: (data) => {
       setTransferData(data.data);
@@ -103,22 +105,20 @@ const PlatformFeeDetailsContainer = ({
     },
   });
 
-  const { isLoading: isReversalLoading, refetch: refetchReversal } = useQuery(
-    ['get-reversal-details'],
-    () => fetchReversals(id),
-    {
-      refetchOnWindowFocus: false,
-      onSuccess: (data) => {
-        setReversalsData(data.data);
-      },
-      onError: (err: { errors: Array<string> }) => {
-        showNotification?.({
-          type: 'error',
-          message: err.errors,
-        });
-      },
+  const { isLoading: isReversalLoading, refetch: refetchReversal } = useQuery({
+    queryKey: ['get-reversal-details'],
+    queryFn: () => fetchReversals(id),
+    refetchOnWindowFocus: false,
+    onSuccess: (data) => {
+      setReversalsData(data.data);
     },
-  );
+    onError: (err: { errors: Array<string> }) => {
+      showNotification?.({
+        type: 'error',
+        message: err.errors,
+      });
+    },
+  });
 
   useEffect(() => {
     refetch();

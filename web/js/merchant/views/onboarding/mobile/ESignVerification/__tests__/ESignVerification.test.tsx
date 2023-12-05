@@ -162,10 +162,11 @@ describe('AadharSuccess', () => {
       stakeholder: { aadhaar_esign_status: 'verified' },
     });
     render(<App />, {});
-    await waitForLoadingToFinish();
-    expect(
-      screen.getByText('We have Received your Aadhaar details successfully'),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText('We have Received your Aadhaar details successfully'),
+      ).toBeInTheDocument();
+    });
   });
 });
 

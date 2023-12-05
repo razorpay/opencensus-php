@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import DataTable from 'common/ui/Table/DataTable';
 import AmountCard from 'merchant/views/Wallet/Funds/components/AmountCard';

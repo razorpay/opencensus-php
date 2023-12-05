@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
@@ -233,27 +233,25 @@ const BusinessDetails = ({
     postData(reqData);
   };
 
-  const { refetch } = useQuery(
-    ['pincode', pinCode],
-    async () => {
+  const { refetch } = useQuery({
+    queryKey: ['pincode', pinCode],
+    queryFn: async () => {
       const fetchData = await fetch<any>({
         url: `pincodes/${pinCode}`,
       });
       return fetchData;
     },
-    {
-      enabled: false,
-      retry: false,
-      refetchOnWindowFocus: false,
-      onSuccess: (res) => {
-        autoFillCityState(res);
-      },
-      onError: () => {
-        autoFillCityState({});
-        snackbar.error('invalid pin code');
-      },
+    enabled: false,
+    retry: false,
+    refetchOnWindowFocus: false,
+    onSuccess: (res) => {
+      autoFillCityState(res);
     },
-  );
+    onError: () => {
+      autoFillCityState({});
+      snackbar.error('invalid pin code');
+    },
+  });
 
   const hasPoiStatus = isVerificationValid(data?.poi_verification_status);
 
@@ -363,17 +361,19 @@ const BusinessDetails = ({
     }
     reqData = getRequestData(businessDetails, updatedDetails);
     if (Object.keys(reqData).length) {
-      postData(reqData).then((res) => {
-        if (isGstinSyncFlowEnabled || isLlpinSyncFlowEnabled || isCinSyncFlowEnabled) {
-          const { gstin_verification_status, cin_verification_status } = res ?? {};
-          //if anyone of these status got updated and status is initiated then start polling.
-          const canStartPolling =
-            [gstin_verification_status, cin_verification_status].indexOf('initiated') !== -1;
+      postData(reqData, {
+        onSuccess: (res) => {
+          if (isGstinSyncFlowEnabled || isLlpinSyncFlowEnabled || isCinSyncFlowEnabled) {
+            const { gstin_verification_status, cin_verification_status } = res ?? {};
+            //if anyone of these status got updated and status is initiated then start polling.
+            const canStartPolling =
+              [gstin_verification_status, cin_verification_status].indexOf('initiated') !== -1;
 
-          if (canStartPolling) {
-            startPolling();
+            if (canStartPolling) {
+              startPolling();
+            }
           }
-        }
+        },
       });
     }
   };

@@ -1,13 +1,6 @@
 import React from 'react';
 
-import {
-  render,
-  screen,
-  waitFor,
-  server,
-  userEvent,
-  waitForLoadingToFinish,
-} from 'common/services/test/test-utils';
+import { render, screen, waitFor, server, userEvent } from 'common/services/test/test-utils';
 import * as analytics from 'common/utils/analytics';
 import PlatformFee from 'merchant/views/Marketplace/PlatformFee/List';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
@@ -67,14 +60,14 @@ describe('Platform Fee List', () => {
     renderApp();
     await waitFor(() => {
       expect(screen.getByText('Platform Fee Id')).toBeInTheDocument();
-    });
-    expect(screen.getByText('Source Id')).toBeInTheDocument();
-    expect(screen.getByText('Recipient Id')).toBeInTheDocument();
-    expect(screen.getByText('Recipient Name')).toBeInTheDocument();
-    expect(screen.getByText('Platform Fee Amount')).toBeInTheDocument();
-    expect(screen.getAllByText('Status')).toHaveLength(2);
+      expect(screen.getByText('Source Id')).toBeInTheDocument();
+      expect(screen.getByText('Recipient Id')).toBeInTheDocument();
+      expect(screen.getByText('Recipient Name')).toBeInTheDocument();
+      expect(screen.getByText('Platform Fee Amount')).toBeInTheDocument();
+      expect(screen.getAllByText('Status')).toHaveLength(2);
 
-    expect(screen.getByText(platformFeeData.items[0].id)).toBeInTheDocument();
+      expect(screen.getByText(platformFeeData.items[0].id)).toBeInTheDocument();
+    });
   });
 
   test('should render empty table if items are empty', async () => {
@@ -89,13 +82,11 @@ describe('Platform Fee List', () => {
   test('should render filtered data after clicking search', async () => {
     server.use(platformFeeListSuccess());
     renderApp();
-    const spinner = screen.getByTestId('spinner');
-    expect(spinner).toBeInTheDocument();
-    await waitForLoadingToFinish();
+
     await waitFor(() => {
       expect(screen.getByText('Platform Fee Id')).toBeInTheDocument();
+      expect(screen.getByText(platformFeeData.items[0].recipient)).toBeInTheDocument();
     });
-    expect(screen.getByText(platformFeeData.items[0].recipient)).toBeInTheDocument();
 
     const countInput = screen.getByLabelText('Count');
     expect(countInput).toBeInTheDocument();

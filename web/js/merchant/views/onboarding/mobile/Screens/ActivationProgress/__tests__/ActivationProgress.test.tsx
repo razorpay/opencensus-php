@@ -1,74 +1,80 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import ActivationProgress from 'merchant/views/onboarding/mobile/Screens/ActivationProgress/index';
 import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
 import * as ActivationDataPieces from 'merchant/views/onboarding/mobile/services/data/pieces';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
-import { render, screen, waitForElementToBeRemoved, fireEvent, waitFor } from 'test-utils';
+import { render, screen, fireEvent, waitFor } from 'test-utils';
 
 afterEach(() => {
   ActivationDB.reset();
 });
 
-const waitForLoadingToFinish = () =>
-  waitForElementToBeRemoved(() => screen.queryByText('Loading...'));
-
-const App: React.FC = () => {
-  const { status } = useActivation();
-  if (status === 'loading') return <div>Loading...</div>;
-  return <ActivationProgress />;
-};
+jest.mock('merchant/views/onboarding/mobile/hooks/useActivation');
 
 test('should render whitelist flow', async () => {
-  ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowWG,
-    ...ActivationDataPieces.regBusinessOverview,
+  useActivation.mockReturnValue({
+    status: 'success',
+    data: ActivationDB.update({
+      ...ActivationDataPieces.ActivationFlowWG,
+      ...ActivationDataPieces.regBusinessOverview,
+    }),
   });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      'Submit these details to accept payments and receive settlements in your account',
-    ),
-  ).toBeInTheDocument();
-  expect(screen.getByText('Contact Details')).toBeInTheDocument();
-  expect(screen.getByText('Business Overview')).toBeInTheDocument();
-  expect(screen.getByText('Business Details')).toBeInTheDocument();
-  expect(() => screen.getByText('Bank and Business Details')).toThrow();
-  expect(() => screen.getByText('Documents Upload')).toThrow();
-  fireEvent.click(screen.getByText('Contact Details'));
-  fireEvent.click(screen.getByText('Submit KYC'));
+  render(<ActivationProgress />);
+  await waitFor(() => {
+    expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Submit these details to accept payments and receive settlements in your account',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Contact Details')).toBeInTheDocument();
+    expect(screen.getByText('Business Overview')).toBeInTheDocument();
+    expect(screen.getByText('Business Details')).toBeInTheDocument();
+    expect(() => screen.getByText('Bank and Business Details')).toThrow();
+    expect(() => screen.getByText('Documents Upload')).toThrow();
+    fireEvent.click(screen.getByText('Contact Details'));
+    fireEvent.click(screen.getByText('Submit KYC'));
+  });
 });
 
 test('should show error info if dedupe blocked and button should not be present', async () => {
-  ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowWG,
-    ...ActivationDataPieces.regBusinessOverview,
-    dedupe: {
-      isUnderReview: false,
-      isMatch: true,
-    },
+  useActivation.mockReturnValue({
+    status: 'success',
+    data: ActivationDB.update({
+      ...ActivationDataPieces.ActivationFlowWG,
+      ...ActivationDataPieces.regBusinessOverview,
+      dedupe: {
+        isUnderReview: false,
+        isMatch: true,
+      },
+    }),
   });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
-  expect(
-    screen.queryByText(
-      'We can’t support your business because it doesn’t meet our compliance requirements',
-    ),
-  ).toBeNull();
+  render(<ActivationProgress />);
+  await waitFor(() => {
+    expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        'We can’t support your business because it doesn’t meet our compliance requirements',
+      ),
+    ).toBeNull();
+  });
 });
 
 test('should render greylist flow and milestone = L1', async () => {
-  ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowWG,
-    ...ActivationDataPieces.regBusinessOverview,
-    ...ActivationDataPieces.OnboardingMileStoneL1,
-    ...ActivationDataPieces.PaymentEnable,
+  useActivation.mockReturnValue({
+    status: 'success',
+    data: ActivationDB.update({
+      ...ActivationDataPieces.ActivationFlowWG,
+      ...ActivationDataPieces.regBusinessOverview,
+      ...ActivationDataPieces.OnboardingMileStoneL1,
+      ...ActivationDataPieces.PaymentEnable,
+    }),
   });
-  render(<App />, {});
-  await waitForLoadingToFinish();
+  render(<ActivationProgress />);
+
   await waitFor(() => {
     expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
     expect(
@@ -87,15 +93,17 @@ test('should render greylist flow and milestone = L1', async () => {
 });
 
 test('should render nc flow', async () => {
-  ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowWG,
-    ...ActivationDataPieces.regBusinessOverview,
-    ...ActivationDataPieces.OnboardingMileStoneL2,
-    activation_form_milestone: 'L2',
-    activation_status: 'needs_clarification',
+  useActivation.mockReturnValue({
+    status: 'success',
+    data: ActivationDB.update({
+      ...ActivationDataPieces.ActivationFlowWG,
+      ...ActivationDataPieces.regBusinessOverview,
+      ...ActivationDataPieces.OnboardingMileStoneL2,
+      activation_form_milestone: 'L2',
+      activation_status: 'needs_clarification',
+    }),
   });
-  render(<App />, {});
-  await waitForLoadingToFinish();
+  render(<ActivationProgress />);
   await waitFor(() => {
     expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
     expect(
@@ -109,15 +117,18 @@ test('should render nc flow', async () => {
 });
 
 test('should render under review flow', async () => {
-  ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowWG,
-    ...ActivationDataPieces.regBusinessOverview,
-    ...ActivationDataPieces.OnboardingMileStoneL2,
-    activation_form_milestone: 'L2',
-    activation_status: 'under_review',
+  useActivation.mockReturnValue({
+    status: 'success',
+    data: ActivationDB.update({
+      ...ActivationDataPieces.ActivationFlowWG,
+      ...ActivationDataPieces.regBusinessOverview,
+      ...ActivationDataPieces.OnboardingMileStoneL2,
+      activation_form_milestone: 'L2',
+      activation_status: 'under_review',
+    }),
   });
-  render(<App />, {});
-  await waitForLoadingToFinish();
+  render(<ActivationProgress />);
+
   await waitFor(() => {
     expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
     expect(
@@ -129,15 +140,18 @@ test('should render under review flow', async () => {
 });
 
 test('should render activated_mcc_pending flow', async () => {
-  ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowWG,
-    ...ActivationDataPieces.regBusinessOverview,
-    ...ActivationDataPieces.OnboardingMileStoneL2,
-    activation_form_milestone: 'L2',
-    activation_status: 'activated_mcc_pending',
+  useActivation.mockReturnValue({
+    status: 'success',
+    data: ActivationDB.update({
+      ...ActivationDataPieces.ActivationFlowWG,
+      ...ActivationDataPieces.regBusinessOverview,
+      ...ActivationDataPieces.OnboardingMileStoneL2,
+      activation_form_milestone: 'L2',
+      activation_status: 'activated_mcc_pending',
+    }),
   });
-  render(<App />, {});
-  await waitForLoadingToFinish();
+  render(<ActivationProgress />);
+
   await waitFor(() => {
     expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
     expect(

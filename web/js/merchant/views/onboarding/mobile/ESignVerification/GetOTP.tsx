@@ -8,7 +8,7 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import CheckBox from '@razorpay/blade-old/src/atoms/Checkbox';
 import Button from '@razorpay/blade-old/src/atoms/Button';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
@@ -61,7 +61,8 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
   const [hasCaptchaVerified, setIsCaptchaVerified] = useState(false);
   const [otpContext, setotpContext] = useState<any>({});
   const [apiError, setApiError] = useState('');
-  const [fetchCaptcha] = useMutation(generateCaptcha, {
+  const { mutate: fetchCaptcha } = useMutation({
+    mutationFn: generateCaptcha,
     onSuccess: (response) => {
       setCaptcha(response.captcha_image);
       if (
@@ -102,7 +103,8 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
     return fetchData;
   };
 
-  const [fetchOTP] = useMutation(getOTPAPi, {
+  const { mutate: fetchOTP } = useMutation({
+    mutationFn: getOTPAPi,
     onSuccess: (response) => {
       if (response?.msg === 'invalid input details') {
         setApiError('INVALID_AADHAAR_NUMBER');

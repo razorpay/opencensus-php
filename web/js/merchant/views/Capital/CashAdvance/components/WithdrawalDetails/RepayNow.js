@@ -9,7 +9,7 @@ import {
   Text,
 } from '@razorpay/blade/components';
 import moment from 'moment';
-import { useQueryCache } from 'react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 
 import {
@@ -24,7 +24,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { useWithdrawalRepaymentSummary } from './useWithdrawalRepaymentSummary';
 
 const RepayNow = (props) => {
-  const queryCache = useQueryCache();
+  const queryClient = useQueryClient();
   const {
     withdrawalId,
     withdrawalDetails,
@@ -38,7 +38,7 @@ const RepayNow = (props) => {
   const [loading, setLoading] = useState(false);
 
   const status = withdrawalDetails?.data?.status;
-  const { isLoading, data, isError } = useWithdrawalRepaymentSummary(withdrawalId, status);
+  const { isFetching, data, isError } = useWithdrawalRepaymentSummary(withdrawalId, status);
   const {
     total_outstanding: totalOutstandingAmount = 0,
     dpd_amount: dpdAmount = 0,
@@ -87,7 +87,7 @@ const RepayNow = (props) => {
           owner_id: user.current,
           owner_type: 'RZP_MERCHANT',
         }),
-        queryCache.invalidateQueries(['get-withdrawal-repayment-summary']),
+        queryClient.invalidateQueries(['get-withdrawal-repayment-summary']),
       ]);
     } catch (error) {
       showNotification({
@@ -99,7 +99,7 @@ const RepayNow = (props) => {
     }
   };
 
-  if (isLoading) {
+  if (isFetching) {
     return (
       <Box width="100%" height="70px" display="flex" justifyContent="center" alignItems="center">
         <Spinner />

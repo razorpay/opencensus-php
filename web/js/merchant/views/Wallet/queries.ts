@@ -145,10 +145,10 @@ export const fetchLoads = async ({
 export const fetchAccountById = async ({
   id,
   mode = 'test',
-}: types.DetailApiParams): Promise<types.Account | undefined> => {
+}: types.DetailApiParams): Promise<types.Account> => {
   try {
     if (!id) {
-      return undefined;
+      throw new Error('No account id');
     }
     const res = await fetch<types.ListApiResponse<types.Account>>({
       url: `${WALLET_BASE_PATH}/accounts?issuing_account_id=${id}`,

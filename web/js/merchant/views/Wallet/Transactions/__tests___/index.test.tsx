@@ -1,6 +1,5 @@
 import React from 'react';
-
-import { render, waitForLoadingToFinish, screen } from 'common/services/test/test-utils';
+import { render, waitForLoadingToFinish, screen, waitFor } from 'common/services/test/test-utils';
 
 import Transactions from 'merchant/views/Wallet/Transactions';
 
@@ -8,9 +7,9 @@ describe('Wallet > Transactions > List Table', () => {
   test('Should render table with expected number of rows', async () => {
     render(<Transactions />);
 
-    await waitForLoadingToFinish();
-
-    expect(screen.getAllByRole('rowgroup')?.[0]?.children.length).toBe(1);
+    await waitFor(() => {
+      expect(screen.getAllByRole('rowgroup')?.[0]?.children.length).toBe(1);
+    });
   });
 
   test('Should render table with expected columns and data', async () => {

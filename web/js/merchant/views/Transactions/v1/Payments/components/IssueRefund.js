@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import {
   FETCH_EZETAP_KEY_NAME,
@@ -16,18 +16,16 @@ const IssueRefund = ({
 }) => {
   const paymentByCardOffline = payment.method === 'card' && payment.receiver_type === 'pos';
 
-  const { refetch: fetchEzetapKey, data: ezetapData } = useQuery(
-    FETCH_EZETAP_KEY_NAME,
-    async () => {
+  const { refetch: fetchEzetapKey, data: ezetapData } = useQuery({
+    queryKey: [FETCH_EZETAP_KEY_NAME],
+    queryFn: async () => {
       const dataPromise = await fetchEzetapKeys();
       return dataPromise?.data || {};
     },
-    {
-      enabled: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-    },
-  );
+    enabled: false,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+  });
 
   useEffect(() => {
     // fetch ezetap credentials if transaction is done by cards via ezetap devices

@@ -12,7 +12,7 @@ import { MODAL_MODES } from 'merchant/views/MagicCheckout/common/components/Sett
 
 import { Zone } from 'merchant/views/MagicCheckout/common/components/ZoneModal/types';
 import { ShippingEngineStore } from 'merchant/reducers/magicCheckout/shippingEngine/types';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 interface ModalProps {
   shippingEngine: ShippingEngineStore;
@@ -31,19 +31,18 @@ const Modal = ({
   createZone,
   updateZone,
 }: ModalProps) => {
-  const { isFetching, data: zone } = useQuery(
-    [`magic.shipping-zone.${zoneId}`],
-    (): Promise<Zone> => {
+  const queryKey = Boolean(zoneId) ? [`magic.shipping-zone.${zoneId}`] : [`magic.shipping-zone`]; //queryKey should have only known properties, hence this check else it will throw ts error
+  const { isFetching, data: zone } = useQuery({
+    queryKey,
+    queryFn: (): Promise<Zone> => {
       return merchantFetch({
         url: `1cc/shipping/zones/${zoneId}`,
         method: 'get',
       }).then(({ data }) => data);
     },
-    {
-      refetchOnWindowFocus: false,
-      enabled: zoneId,
-    },
-  );
+    refetchOnWindowFocus: false,
+    enabled: Boolean(zoneId),
+  });
   const categoryId = shippingEngine.selected_profile
     ? shippingEngine.shipping_profiles[shippingEngine.selected_profile].id
     : undefined;

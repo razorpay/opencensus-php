@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import * as Yup from 'yup';
 import { Formik, Form, useFormikContext } from 'formik';
 import Text from '@razorpay/blade-old/src/atoms/Text';
@@ -66,7 +66,8 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
     return fetchData;
   };
 
-  const [fetchOTP] = useMutation(verifyAadhar, {
+  const { mutate: fetchOTP } = useMutation({
+    mutationFn: verifyAadhar,
     onSuccess: (response) => {
       if (response?.meta?.internal_error_code === 'invalid_input_to_karza') {
         setApiError('INCORRECT_OTP');

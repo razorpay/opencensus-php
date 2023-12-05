@@ -120,7 +120,7 @@ const ActivationProgress: React.FC<RouteComponentProps> = () => {
   let Steps = WhitelistedSteps;
   if (
     (!isDedupe &&
-      (!isUnregisteredBusiness(data.business_type) ||
+      (!isUnregisteredBusiness(data?.business_type) ||
         data.poi_verification_status !== 'initiated' ||
         experiments.isL2AllowedForPoiInitiated) &&
       data.activation_form_milestone === 'L1') ||

@@ -1,12 +1,12 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
 
 export default function useBusinessName(query: string): any {
   const snackbar = useSnackbar();
-  const { status, data } = useQuery(
-    `businessName_${query}`,
-    async () => {
+  const { status, data } = useQuery({
+    queryKey: [`businessName_${query}`],
+    queryFn: async () => {
       if (!query || query.length < 3) {
         return {
           results: [],
@@ -18,14 +18,12 @@ export default function useBusinessName(query: string): any {
         return businessNames;
       }
     },
-    {
-      retry: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      onError: (err: any) => {
-        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
-      },
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+    onError: (err: any) => {
+      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
     },
-  );
+  });
   return [status, data];
 }

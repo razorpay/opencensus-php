@@ -30,7 +30,8 @@
     "js/newAuth/signin/types.d.ts",
     "js/newAuth/**/*",
     "js/merchant",
-    "js/common"
+    "js/common",
+    "js/merchant_common/"
   ],
   "exclude": ["node_modules"],
   "types": ["resize-observer-browser"]

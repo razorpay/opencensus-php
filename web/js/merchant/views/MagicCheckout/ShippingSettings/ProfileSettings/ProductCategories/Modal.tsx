@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -30,19 +30,20 @@ const Modal = ({
   createCategory,
   updateCategory,
 }: ModalProps) => {
-  const { isFetching, data: category } = useQuery(
-    [`magic.shipping-category.${categoryId}`],
-    (): Promise<ItemsCategory> => {
+  const queryKey = Boolean(categoryId)
+    ? [`magic.shipping-category.${categoryId}`]
+    : [`magic.shipping-category`]; //queryKey should have only known properties, hence this check else it will throw ts error
+  const { isFetching, data: category } = useQuery({
+    queryKey,
+    queryFn: (): Promise<ItemsCategory> => {
       return merchantFetch({
         url: `1cc/shipping/item/category/${categoryId}`,
         method: 'get',
       }).then(({ data }) => data);
     },
-    {
-      refetchOnWindowFocus: false,
-      enabled: categoryId,
-    },
-  );
+    refetchOnWindowFocus: false,
+    enabled: Boolean(categoryId),
+  });
   return (
     <ProductsModal
       isOpen={isOpen}

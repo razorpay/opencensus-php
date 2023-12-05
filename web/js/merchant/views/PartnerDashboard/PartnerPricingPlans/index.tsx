@@ -19,8 +19,8 @@ type PartnerPricingPlansProps = {
 const PartnerPricingPlans = ({ showNotification }: PartnerPricingPlansProps): JSX.Element => {
   const [searchParams] = useSearchParams();
   const partnerId = searchParams.get('partner_id');
-  const { data, isLoading } = usePartnerDefaultPricingPlan(partnerId, showNotification);
-  if (isLoading) {
+  const { data, isFetching } = usePartnerDefaultPricingPlan(partnerId, showNotification);
+  if (isFetching) {
     return (
       <Box minHeight="500px" display="flex" justifyContent="center" alignItems="center">
         <Spinner

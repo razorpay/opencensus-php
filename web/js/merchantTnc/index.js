@@ -1,15 +1,16 @@
-__webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`;
-import 'regenerator-runtime/runtime.js';
+import 'regenerator-runtime/runtime';
 import 'core-js/es/map';
 import 'core-js/es/set';
 import React from 'react';
+import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import { render } from 'react-dom';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
-import { useQuery } from 'react-query';
-import axios from 'axios';
-import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
+
 import TncPages from 'merchant/views/TermsAndCondition/Pages';
 import { states } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+__webpack_public_path__ = `${window.cdnDashboardUrl || ''}/dist/`;
 
 const GloblatStyle = createGlobalStyle`
 @font-face {
@@ -121,27 +122,25 @@ const App = () => {
   let address = 'H-23, first block, koramangala Banglore, Karnataka Pin-560047';
   let state = 'Karnataka';
 
-  const { status, refetch } = useQuery(
-    ['tncPage', tncId],
-    async () => {
+  const { status, refetch } = useQuery({
+    queryKey: ['tncPage', tncId],
+    queryFn: async () => {
       const fetchData = await axios({
         url: `${window.api_host}merchant/tnc/${tncId}`,
       });
       return fetchData;
     },
-    {
-      retry: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      onSuccess: (res) => {
-        setData(res.data);
-        removeSplashLoader();
-      },
-      onError: () => {
-        removeSplashLoader();
-      },
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+    onSuccess: (res) => {
+      setData(res.data);
+      removeSplashLoader();
     },
-  );
+    onError: () => {
+      removeSplashLoader();
+    },
+  });
 
   React.useEffect(() => {
     if (!!window.api_host) {

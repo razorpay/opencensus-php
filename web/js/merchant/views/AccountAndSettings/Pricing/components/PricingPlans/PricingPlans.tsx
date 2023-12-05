@@ -16,7 +16,7 @@ import {
   CardBody,
   CardHeader,
 } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/components';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { Spinner, Text } from '@razorpay/blade/components';
 import { getStatusData } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/util';
@@ -30,9 +30,14 @@ const PricingPlans = ({
 }: PricingPlansProps): JSX.Element | null => {
   const { trackEvent } = useTracking({ page: 'PricingPlans' });
 
-  const { data, isLoading, status } = useQuery<SubscriptionPlanDataT | undefined>(
-    `pricing-plans-${user?.current}`,
-    async (): Promise<SubscriptionPlanDataT | undefined> => {
+  /**
+   * Replaced isLoading, with isInitialLoading
+   * https://github.com/TanStack/query/issues/3584
+   * */
+
+  const { data, status, isInitialLoading } = useQuery<SubscriptionPlanDataT | undefined>({
+    queryKey: [`pricing-plans-${user?.current}`],
+    queryFn: async (): Promise<SubscriptionPlanDataT | undefined> => {
       const response = await fetch<any>({
         url: `pricing/merchant/subscriptions`,
       });
@@ -41,12 +46,10 @@ const PricingPlans = ({
 
       return response?.response?.subscription as SubscriptionPlanDataT | undefined;
     },
-    {
-      retry: false,
-      staleTime: Infinity,
-      enabled: !enrollmentStatus.loading && !enrollmentStatus.hasEnrolled === false,
-    },
-  );
+    retry: false,
+    staleTime: Infinity,
+    enabled: !enrollmentStatus.loading && !enrollmentStatus.hasEnrolled === false,
+  });
 
   useEffect(() => {
     fetchEnrollmentStatus();
@@ -59,7 +62,7 @@ const PricingPlans = ({
     );
   }, [trackEvent]);
 
-  if (enrollmentStatus.loading || isLoading)
+  if (enrollmentStatus.loading || isInitialLoading)
     return (
       <StyledPricingPlans>
         <LoaderContainer data-testid="LoaderContainer">

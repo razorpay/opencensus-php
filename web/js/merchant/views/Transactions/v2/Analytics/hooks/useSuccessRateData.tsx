@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 
 import { fetch } from 'common/services/rest/rest-fetch';
 import {
@@ -16,7 +16,7 @@ export default function useSuccessRateData(): SuccessRateDataHookResponse {
   const [isLoading, setLoading] = useState(false);
   const [isFailed, setFailed] = useState(false);
 
-  const fetchSuccessRateQuery = async ({ from, to }) => {
+  const fetchSuccessRateQuery = async ({ from, to }: Duration): Promise<SuccessRateAPIResponse> => {
     const response = await fetch<SuccessRateAPIResponse>({
       url: 'success-rate/merchant/sr',
       method: 'POST',
@@ -26,25 +26,23 @@ export default function useSuccessRateData(): SuccessRateDataHookResponse {
     });
     return response;
   };
-  const [fetchSuccessRateData] = useMutation(
-    (dateDuration: Duration) => fetchSuccessRateQuery(dateDuration),
-    {
-      onMutate: () => {
-        setLoading(true);
-        setFailed(false);
-      },
-      onSuccess: (data: SuccessRateAPIResponse) => {
-        if (data.sr) {
-          setSuccessRateData(data.sr);
-        }
-        setLoading(false);
-      },
-      onError: () => {
-        setFailed(true);
-        setLoading(false);
-      },
+  const { mutate: fetchSuccessRateData } = useMutation({
+    mutationFn: (dateDuration: Duration) => fetchSuccessRateQuery(dateDuration),
+    onMutate: () => {
+      setLoading(true);
+      setFailed(false);
     },
-  );
+    onSuccess: (data: SuccessRateAPIResponse) => {
+      if (data.sr) {
+        setSuccessRateData(data.sr);
+      }
+      setLoading(false);
+    },
+    onError: () => {
+      setFailed(true);
+      setLoading(false);
+    },
+  });
 
   return { successRateData, fetchSuccessRateData, loading: isLoading, failed: isFailed };
 }
