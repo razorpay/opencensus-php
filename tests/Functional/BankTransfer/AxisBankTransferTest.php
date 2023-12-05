@@ -261,6 +261,35 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals('Success', $response['message']);
     }
 
+    public function testAxisBankTransferValidateCustomerFeeMerchant()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel('10000000000000');
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
+
+        $testData = $this->testData['testValidateBankTransferAxis'];
+
+        $testData['request']['content']['Bene_acc_no'] = $this->getAxisVaBankAccount();
+
+        $this->fixtures->edit('virtual_account', $this->virtualAccountId, ['amount_expected' => '200']);
+
+        $testData['request']['content']['Txn_amnt'] = '2.02';
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/ecollect/validate/axis/test',
+            'method' => 'post',
+            'server' => $testData['request']['server'],
+            'content' => $testData['request']['content']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('S', $response['Stts_flg']);
+        $this->assertEquals('000', $response['Err_cd']);
+        $this->assertEquals('Success', $response['message']);
+    }
+
     public function testValidateBankTransferAxisForImps()
     {
         /*

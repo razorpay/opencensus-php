@@ -26,6 +26,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use \WpOrg\Requests\Exception as RequestsException;
+use RZP\Models\BankTransfer\Core as BankTransferCore;
 use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
 use RZP\Models\Payment\Processor\VirtualAccountUnexpectedPaymentRefundHandler;
 use RZP\Models\BankTransfer\Entity as BankTransferEntity;
@@ -105,13 +106,20 @@ abstract class Processor extends Base\Core
         {
             return false;
         }
-
+        
         if ($this->virtualAccount->hasAmountExpected() === true)
         {
             $expectedAmount = $this->virtualAccount->getAmountExpected();
             $amountReceived = $entity->getAmount();
+            $merchant = $this->virtualAccount->merchant;
+            if($merchant->isFeeBearerCustomerOrDynamic() === true)
+            {
+                $fee = (new BankTransferCore)->getFeesForBankTransfer($entity, $merchant);
+                $amountReceived -= $fee;
+            }
             $amountPaid     = $this->virtualAccount->getAmountPaid();
             $amountTotal    = $amountPaid + $amountReceived;
+
             if ($amountTotal > $expectedAmount)
             {
                 return false;
