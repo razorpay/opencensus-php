@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink;
 use RZP\Models\Merchant\RazorxTreatment;
 
