@@ -1,27 +1,30 @@
-import Amount from 'common/ui/Amount';
-import Time from 'common/ui/Time';
-import Spinner from 'common/ui/Spinner';
 import { Component } from 'react';
-import Alert from 'common/ui/Forms/Alert';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { Link } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
-import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
-import RefundStatusTimeline from 'merchant/views/Transactions/v1/Refunds/components/RefundTimeline';
-import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import { connect } from 'react-redux';
-import * as PaymentActions from 'merchant/reducers/payments/details';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import Definition from 'common/ui/Definition';
+import { Link } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
+
+import { SelfServeActionPages } from 'common/constant/enums';
+import { withRouter } from 'common/deprecated/withRouter';
+import Amount from 'common/ui/Amount';
+import Definition from 'common/ui/Definition';
+import Alert from 'common/ui/Forms/Alert';
+import Spinner from 'common/ui/Spinner';
+import Time from 'common/ui/Time';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { OptimizerDetails } from 'merchant/views/Transactions/v1/Payments/components/OptimizerDetails';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { SelfServeActionPages } from 'common/constant/enums';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { RefundStatusLabel } from 'merchant/components/StatusLabel';
+import * as PaymentActions from 'merchant/reducers/payments/details';
+import { OptimizerDetails } from 'merchant/views/Transactions/v1/Payments/components/OptimizerDetails';
+import RefundStatusTimeline from 'merchant/views/Transactions/v1/Refunds/components/RefundTimeline';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
+import GatewayData from './GatewayData';
 
 class PaymentDetailsContainer extends Component {
   componentDidUpdate() {
@@ -63,7 +66,12 @@ class PaymentDetailsContainer extends Component {
     const { isLoading, statusMsg, viewRefundHistory, refund, user, terminalProviders, location } =
       this.props;
     const navigationState = location?.state;
-    const { arn, rrn, utr } = refund.acquirer_data ?? {};
+    const { arn, rrn, utr } = refund?.acquirer_data ?? {};
+    const { status, gateway_data } = refund;
+
+    const isOptimizerView =
+      user?.isSingleReconEnabled && user?.isOptimizerEnabled && refund?.optimizer_provider;
+
     return (
       <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
@@ -85,7 +93,7 @@ class PaymentDetailsContainer extends Component {
                 className={`panel-body${
                   user?.isSingleReconEnabled && user?.isOptimizerEnabled
                     ? ' optimizer-refund-panel-body'
-                    : ''
+                    : 'refund-panel-body'
                 }`}
               >
                 <Alert type={statusMsg?.type} message={statusMsg?.message} />
@@ -115,7 +123,8 @@ class PaymentDetailsContainer extends Component {
                     label="Status"
                     value={() => (
                       <>
-                        <RefundStatusLabel status={refund.status} />
+                        <RefundStatusLabel status={status} />
+                        {isOptimizerView && <GatewayData status={status} value={gateway_data} />}
                         <ContentToggler onToggleClick={viewRefundHistory}>
                           <span>View History</span>
                           <RefundStatusTimeline refund={refund} />
@@ -183,16 +192,14 @@ class PaymentDetailsContainer extends Component {
 
                   <NestedEntityDetailRow label="Notes" value={refund.notes} />
                 </div>
-                {user?.isSingleReconEnabled &&
-                  user?.isOptimizerEnabled &&
-                  refund?.optimizer_provider && (
-                    <OptimizerDetails
-                      payment={refund}
-                      terminalProviders={terminalProviders}
-                      scrolledToBottom={true}
-                      page="Refund Detail"
-                    />
-                  )}
+                {isOptimizerView && (
+                  <OptimizerDetails
+                    payment={refund}
+                    terminalProviders={terminalProviders}
+                    scrolledToBottom={true}
+                    page="Refund Detail"
+                  />
+                )}
               </div>
             </div>
           </div>

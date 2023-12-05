@@ -1,45 +1,80 @@
 .provider-name
   .gateway-logo
-    max-height: 20px;
-    margin-right: 6px;
+    max-height 20px
+    margin-right 6px
 
 .provider-external-link
-  margin-top: 8px;
+  margin-top 8px
 
 .provider-table-view
-  max-width: 100px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width 100px
+  white-space nowrap
+  overflow hidden
+  text-overflow ellipsis
+
+.refund-panel-body,
+.optimizer-refund-panel-body
+  .pair-value span.status-label
+    margin-bottom 4px
+
+  .refund-gateway-data
+    margin-bottom 4px
+
+    &--label,
+    &--message
+      color #8895A8
+
+    &--label,
+    &--code
+      font-weight 600
+
+    &--code
+      font-size 12px
+
+    &--code.text-light
+      color #58666E
 
 .txn-details
   .opt-remove-margin
-    margin-bottom: 0;
+    margin-bottom 0
+
     .SliderPanel__Body
       .optimizer-panel-body
-        padding-bottom: 0;
-        height: 100vh;
-        overflow-y: scroll;
+        padding-bottom 0
+        height 100vh
+        overflow-y scroll
+
       .optimizer-refund-panel-body
-        padding-bottom: 0;
-        height: 86vh;
+        padding-bottom 0
+        height 86vh
 
 .optimizer-payment-details
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
-  margin: 0 -15px;
-  background-color: #f9fafb;
-  padding: 12px 15px 200px;
-  margin-top: 15px;
+  position sticky
+  bottom 0
+  z-index 1
+  margin 0 -15px
+  background-color #F9FAFB
+  padding 12px 15px 200px
+  margin-top 15px
+
   .heading
-    font-weight: 600;
-    padding: 8px;
-    color: #333333;
-    border-bottom: 1px solid #DFE5E7;
-    margin-bottom: 7px;
+    font-weight 600
+    padding 8px
+    color #333
+    border-bottom 1px solid #DFE5E7
+    margin-bottom 7px
+
     .i.i-routing
-      margin-right: 7px;
+      margin-right 7px
 
 .optimizer-payment-details-shadow
-  box-shadow: 0px -2px 5px 0px rgb(138 150 181);
+  box-shadow 0 -2px 5px 0 rgb(138 150 181)
+
+.refunds-table,
+.refunds-v1-table
+  .refund-status--label
+    display flex
+    align-items center
+
+    i.i-info-tooltip
+      margin-left 4px

@@ -263,6 +263,9 @@ function PaymentDetails(props) {
     isCardOfflineTransaction;
   const isStorefront = location.hash === '#storefront';
 
+  const isOptimizerView =
+    user?.isSingleReconEnabled && user?.isOptimizerEnabled && !!payment?.optimizer_provider;
+
   return (
     <div
       className="content-wrapper content-sm txn-details"
@@ -413,6 +416,7 @@ function PaymentDetails(props) {
                       <PaymentRefund
                         payment={payment}
                         refunds={refunds}
+                        isOptimizerView={isOptimizerView}
                         openRefundModal={openRefundModal}
                         onToggleClick={onRefundDetailsToggleClick}
                         collectEzetapKeys={collectEzetapKeys}
@@ -647,16 +651,14 @@ function PaymentDetails(props) {
                   </EntityDetailRow>
                 ) : null}
               </div>
-              {user.isSingleReconEnabled &&
-                user.isOptimizerEnabled &&
-                payment.optimizer_provider && (
-                  <OptimizerDetails
-                    payment={payment}
-                    terminalProviders={terminalProviders}
-                    scrolledToBottom={scrolledToBottom}
-                    page="Payment Detail"
-                  />
-                )}
+              {isOptimizerView && (
+                <OptimizerDetails
+                  payment={payment}
+                  terminalProviders={terminalProviders}
+                  scrolledToBottom={scrolledToBottom}
+                  page="Payment Detail"
+                />
+              )}
 
               <ShowWhen additionalCondition={() => user.isLRSEducationFlow}>
                 <EntityDetailRow label="Documents">

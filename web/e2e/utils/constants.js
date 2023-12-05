@@ -13,6 +13,7 @@ const StorageStatePath = {
   MAGIC_CHECKOUT_STATE: `${BASE_PATH}/magic-checkout.json`,
   RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/reseller-partner-desktop-test-mode-login.json`,
   OPTIMIZER_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-login.json`,
+  OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
 };
 
 const routes = {
@@ -94,6 +95,12 @@ const EmailCredentials = [
     username: ENV.EMAIL_OPTIMIZER_USERNAME,
     password: ENV.EMAIL_OPTIMIZER_PASSWORD,
     storagePath: StorageStatePath.OPTIMIZER_LOGIN_STATE,
+  },
+  {
+    type: 'desktop-optimizer-v1-login.json',
+    username: ENV.EMAIL_OPTIMIZER_V1_USERNAME,
+    password: ENV.EMAIL_OPTIMIZER_V1_PASSWORD,
+    storagePath: StorageStatePath.OPTIMIZER_V1_LOGIN_STATE,
   },
 ];
 

@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { getAmount, getTime } from 'common/ui/item';
 import { makeIdLink } from 'common/ui/item/id';
 import { getIntervalCycle, subString, titleCase } from 'common/utils/rzp-utils';
+import GatewayDataInfo from 'merchant/components/GatewayDataInfo';
 import MaskedContact from 'merchant/components/Mask/Contact';
 import MaskedEmail from 'merchant/components/Mask/Email';
 import { RefundStatusLabel, OfferStatusLabel } from 'merchant/components/StatusLabel';
@@ -98,6 +99,21 @@ export const refundStatus = {
   title: 'Status',
   value: (item) => <RefundStatusLabel status={item.status} />,
 };
+
+export const enchancedRefundStatus = (isOptimizerView) => {
+  return {
+    title: 'Status',
+    value: ({ status, gateway_data }) => {
+      return (
+        <div className="refund-status--label">
+          <RefundStatusLabel status={status} />
+          {isOptimizerView && <GatewayDataInfo gatewayData={gateway_data} />}
+        </div>
+      );
+    },
+  };
+};
+
 export const customerRefundId = {
   title: 'Refund Id',
   value: (item) => item.customer_refund_id,

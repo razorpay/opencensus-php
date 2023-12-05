@@ -1,10 +1,10 @@
-import RefundDetails from 'merchant/views/Transactions/v1/Refunds/components/RefundDetails';
-import { render, screen, fireEvent } from 'test-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 import {
   refund,
   refundTransaction,
 } from 'merchant/views/Transactions/v1/Refunds/__test__/mocks/fixtures';
-import { analyticsTrack } from 'common/utils/analytics';
+import RefundDetails from 'merchant/views/Transactions/v1/Refunds/components/RefundDetails';
+import { render, screen, fireEvent } from 'test-utils';
 
 jest.mock('merchant/views/Transactions/v1/Payments/components/OptimizerDetails', () => ({
   ...jest.requireActual('merchant/views/Transactions/v1/Payments/components/OptimizerDetails'),
@@ -96,6 +96,11 @@ describe('Refunds - RefundDetails Component', () => {
     expect(mockViewRefundHistory).toHaveBeenCalled();
   });
 
+  test('should not render gateway refund details for rzp', () => {
+    renderApp();
+    expect(screen.queryByTestId('refund-gateway-data')).not.toBeInTheDocument();
+  });
+
   describe('When optimizer experiments are enabled for user', () => {
     const drivingState = {
       session: {
@@ -123,6 +128,48 @@ describe('Refunds - RefundDetails Component', () => {
         drivingState,
       );
       expect(screen.queryByText(/Settlement Details/i)).not.toBeInTheDocument();
+    });
+
+    // Custom matcher definition
+    expect.extend({
+      toRenderGatewayRefundDetails(gatewayResponseElement) {
+        const errorElement = screen.getByText('Error code: ERROR_CODE');
+        const errorMessageElement = screen.getByText('Sample message');
+
+        const pass = !!(gatewayResponseElement && errorElement && errorMessageElement);
+
+        return { pass };
+      },
+    });
+
+    test('should render gateway data in refund details', () => {
+      const mockProps = {
+        refund: {
+          ...refund,
+          gateway_data: {
+            refund_code: 'ERROR_CODE',
+            refund_message: 'Sample message',
+          },
+        },
+      };
+      renderApp(mockProps, drivingState);
+
+      const gatewayContainer = screen.getByTestId('refund-gateway-data');
+      expect(gatewayContainer).toBeInTheDocument();
+      expect(gatewayContainer).toHaveTextContent(/Gateway response/i);
+      expect(gatewayContainer).toHaveTextContent('Error code: ERROR_CODE');
+      expect(gatewayContainer).toHaveTextContent('Sample message');
+    });
+
+    test('should not render gateway data in refund details', () => {
+      const mockProps = {
+        refund: {
+          ...refund,
+          gateway_data: [],
+        },
+      };
+      renderApp(mockProps, drivingState);
+      expect(screen.queryByTestId('refund-gateway-data')).not.toBeInTheDocument();
     });
   });
 });

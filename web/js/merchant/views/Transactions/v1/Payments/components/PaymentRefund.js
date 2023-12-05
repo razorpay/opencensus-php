@@ -7,12 +7,7 @@ import Definition from 'common/ui/Definition';
 import LoaderDots from 'common/ui/LoaderDots';
 import DataTable from 'common/ui/Table/DataTable';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
-import {
-  amount,
-  refundId,
-  refundSpeed,
-  refundStatus as refundStatusPair,
-} from 'common/ui/item/pair';
+import { amount, refundId, refundSpeed, enchancedRefundStatus } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
@@ -64,11 +59,11 @@ const _refundId = (initiatePage = SelfServeActionPages.TransactionsPayments) => 
   };
 };
 
-const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
+const RefundsList = ({ refunds, isOptimizerView = false, onToggleClick = () => {} }) => {
   const { initiatePage } = getInitiatePointAndPageAndScreenName();
   const columns = [_refundId(initiatePage), amount];
   columns.splice(1, 0, refundSpeed);
-  columns.push(refundStatusPair);
+  columns.push(enchancedRefundStatus(isOptimizerView));
 
   return refunds && refunds?.items?.length > 0 ? (
     <ContentToggler
@@ -157,6 +152,7 @@ const RefundDefinition = ({ refundStatus, payment, refunds, gatewayRefundNotSupp
 const PaymentRefund = ({
   payment,
   refunds,
+  isOptimizerView,
   openRefundModal,
   collectEzetapKeys,
   onToggleClick = () => {},
@@ -253,6 +249,7 @@ const PaymentRefund = ({
         {refundStatus === 'partial' && (
           <RefundsList
             refunds={refunds}
+            isOptimizerView={isOptimizerView}
             onToggleClick={() => {
               onToggleClick(payment);
             }}
@@ -302,14 +299,13 @@ const PaymentRefund = ({
             <RefundDetails items={refunds.items} />
           </ShowWhen>
           <div className="m-t" />
-          {
-            <RefundsList
-              refunds={refunds}
-              onToggleClick={(speedRequested) => {
-                onToggleClick(payment, speedRequested);
-              }}
-            />
-          }
+          <RefundsList
+            refunds={refunds}
+            isOptimizerView={isOptimizerView}
+            onToggleClick={(speedRequested) => {
+              onToggleClick(payment, speedRequested);
+            }}
+          />
         </div>
       );
     }

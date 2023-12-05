@@ -1,22 +1,23 @@
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import { SelfServeActionPages } from 'common/constant/enums';
+import { withRouter } from 'common/deprecated/withRouter';
+import { refundId, paymentId, amount, createdAt, enchancedRefundStatus } from 'common/ui/item/pair';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import EntityTable from 'merchant/components/EntityTable';
 import ListContainer from 'merchant/containers/ListContainer';
-import RefundsListFilter from 'merchant/views/Transactions/v1/Refunds/components/RefundsListFilter';
 import { fetchRefunds as fetchAll } from 'merchant/reducers/collection';
-import { refundId, paymentId, amount, createdAt, status } from 'common/ui/item/pair';
-import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { withRouter } from 'common/deprecated/withRouter';
-import { openModal } from 'merchant_common/reducers/modals';
-import { analyticsTrack } from 'common/utils/analytics';
-import { bindActionCreators } from 'redux';
-import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
 import {
   selfServerTrack,
   selfServeTrackResult,
 } from 'merchant/views/Transactions/v1/AnalyticsTrack';
 import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/v1/Payments/components/PaymentOptimizerProvider';
 import { makeIdLink as refundMakeIdLink } from 'merchant/views/Transactions/v1/Refunds/Utils';
-import { SelfServeActionPages } from 'common/constant/enums';
+import RefundsListFilter from 'merchant/views/Transactions/v1/Refunds/components/RefundsListFilter';
+import { openModal } from 'merchant_common/reducers/modals';
 
 class RefundsListContainer extends ListContainer {
   componentDidMount() {
@@ -78,12 +79,17 @@ class RefundsListContainer extends ListContainer {
   }
 
   render() {
-    const columns = [this._refundId, this._paymentId, amount, createdAt];
-    columns.push(status);
-
     const { user, terminalProviders } = this.props;
+    const isOptimizerView = user?.isSingleReconEnabled && user?.isOptimizerEnabled;
+    const columns = [
+      this._refundId,
+      this._paymentId,
+      amount,
+      createdAt,
+      enchancedRefundStatus(isOptimizerView),
+    ];
 
-    if (user?.isSingleReconEnabled && user?.isOptimizerEnabled) {
+    if (isOptimizerView) {
       columns.splice(1, 0, {
         title: 'Payment Provider',
         value: (item) => (
@@ -98,7 +104,7 @@ class RefundsListContainer extends ListContainer {
     }
 
     return (
-      <div class="content-wrapper" data-testid="refunds-list">
+      <div className="content-wrapper" data-testid="refunds-list">
         <RefundsListFilter
           form="refundListFilter"
           count={this.state.count}
@@ -163,6 +169,7 @@ class RefundsListContainer extends ListContainer {
           skip={this.state.skip}
           paginate={this.paginate}
           onCellClick={selfServerTrack}
+          customClass="refunds-v1-table"
           {...this.props}
         />
       </div>
