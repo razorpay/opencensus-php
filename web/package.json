@@ -13,7 +13,7 @@
     "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
     "@razorpay/blade-old-for-new-auth": "npm:@razorpay/blade-old@0.0.1",
     "@razorpay/commander-services": "1.0.38",
-    "@razorpay/commander-shield": "0.0.1510",
+    "@razorpay/commander-shield": "0.0.1511",
     "@razorpay/frontend-care": "0.5.121",
     "@razorpay/universe-cli": "15.3.0",
     "@razorpay/universe-doctor": "4.4.16",
