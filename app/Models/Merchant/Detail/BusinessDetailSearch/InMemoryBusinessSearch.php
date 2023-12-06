@@ -42,7 +42,7 @@ class InMemoryBusinessSearch extends Base
 
     private function fetchAllCategorySubCategory()
     {
-        foreach (BusinessCategory::SUBCATEGORY_MAP as $category => $subCategories)
+        foreach (BusinessCategory::SUBCATEGORY_MAP_OLD as $category => $subCategories)
         {
             foreach ($subCategories as $subCategory)
             {
@@ -58,7 +58,7 @@ class InMemoryBusinessSearch extends Base
      */
     private function findStringInSubCategoryScope()
     {
-        foreach (BusinessCategory::SUBCATEGORY_MAP as $category => $subCategories)
+        foreach (BusinessCategory::SUBCATEGORY_MAP_OLD as $category => $subCategories)
         {
             foreach ($subCategories as $subCategory)
             {
@@ -109,7 +109,7 @@ class InMemoryBusinessSearch extends Base
      */
     private function findStringInCategoryScope()
     {
-        foreach (BusinessCategory::SUBCATEGORY_MAP as $category => $subcategories)
+        foreach (BusinessCategory::SUBCATEGORY_MAP_OLD as $category => $subcategories)
         {
             if (in_array($category, $this->businessDetailsAdded[BusinessCategory::class], true) === false)
             {

@@ -10605,5 +10605,31 @@ class Core extends Base\Core
             'createOrder'        => $createOrder,
         ]);
     }
+
+    public function preProcessFetchCategoriesData(array &$body)
+    {
+        $isMerchantCategoryPresent = false;
+
+        $merchantId = optional($this->app['basicauth']->getMerchant())->getId() ?? '';
+
+        if (empty($merchantId) === true)
+        {
+            $body['category_present'] = false;
+
+            return;
+        }
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        // for milestone 1 merchants and also for those merchants who have already selected category in milestone 2
+        if (isset($merchantDetails) === true && empty($merchantDetails->getBusinessCategory()) === false)
+        {
+            $isMerchantCategoryPresent = true;
+        }
+
+        $body['category_present'] = $isMerchantCategoryPresent;
+    }
 }
 

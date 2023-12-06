@@ -4860,6 +4860,22 @@ class Service extends Base\Service
     {
         $experimentName = 'merchant_business_category_v3_revamp_exp_id';
 
+        $merchantDetails = $merchant->merchantDetail;
+
+        $businessDetails = optional($merchant->merchantBusinessDetail);
+
+        // for old v2 flow merchants with parent category screen shown
+        if (isset($businessDetails) === true && empty($businessDetails->getBusinessParentCategory()) === false)
+        {
+            return false;
+        }
+
+        // for milestone 1 merchants and also for those merchants who have already selected category in milestone 2
+        if (isset($merchantDetails) === true && empty($merchantDetails->getBusinessCategory()) === false)
+        {
+            return false;
+        }
+
         $isMalaysianMerchant = (new Core())->isMalaysianMerchant($merchant);
 
         if ($isMalaysianMerchant === true)

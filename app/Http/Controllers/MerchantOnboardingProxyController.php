@@ -517,6 +517,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
             case self::PAYMENT_ORDER_CREATE:
                 (new Merchant\Detail\Core())->preProcessCreateOrderRequest($body);
+
+            case self::MERCHANT_CATEGORIES_V3:
+                (new Merchant\Detail\Core())->preProcessFetchCategoriesData($body);
         }
     }
 
