@@ -12,7 +12,12 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { IconWrapper } from './styled';
 
-const ErrorScreen = ({ history, type, handleRefresh }: ErrorScreenPropsInterface): JSX.Element => {
+const ErrorScreen = ({
+  history,
+  type,
+  handleRefresh,
+  isDetailsRevampFlow,
+}: ErrorScreenPropsInterface): JSX.Element => {
   useEffect(() => {
     analyticsTrackWithUserInfo({
       objectName: 'Settlements Details Page Error Displayed',
@@ -23,6 +28,7 @@ const ErrorScreen = ({ history, type, handleRefresh }: ErrorScreenPropsInterface
         settlements_experiment_name: 'v2',
         sessionId: window?.session_id ? window.session_id : undefined,
         errorMessage: type,
+        isDetailsRevampFlow,
       },
     });
   }, []);

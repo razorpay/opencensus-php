@@ -18,6 +18,10 @@ import {
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { NavLink } from 'react-router-dom';
+import {
+  trackSettlmentDetailsContactSupport,
+  trackSettlmentDetailsUpdateBankAccount,
+} from 'merchant/views/Settlements/v3/utils/common';
 
 const getFailedSettlementInfo = (journeyPoint): JSX.Element | null => {
   const { failedType } = journeyPoint;
@@ -44,6 +48,7 @@ const getFailedSettlementInfo = (journeyPoint): JSX.Element | null => {
             iconPosition="right"
             variant="button"
             onClick={() => {
+              trackSettlmentDetailsContactSupport();
               CreateTicketEmitter.emit('create-ticket', 'tickets');
             }}
           >
@@ -51,7 +56,13 @@ const getFailedSettlementInfo = (journeyPoint): JSX.Element | null => {
           </Link>
         ) : failedType === SettlementFailedStatus.SOH_HOLD ? (
           <NavLink to={ROUTES_INFO.BANK_ACCOUNT_DETAILS}>
-            <Link size="small" icon={ChevronRightIcon} iconPosition="right" variant="button">
+            <Link
+              size="small"
+              icon={ChevronRightIcon}
+              iconPosition="right"
+              variant="button"
+              onClick={trackSettlmentDetailsUpdateBankAccount}
+            >
               Update Bank account
             </Link>
           </NavLink>

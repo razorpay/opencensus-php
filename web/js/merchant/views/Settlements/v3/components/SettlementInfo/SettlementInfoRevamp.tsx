@@ -23,6 +23,7 @@ import Tooltip from 'merchant/views/Settlements/v3/components/Tooltip';
 import { connect } from 'react-redux';
 import { SettlementPropsInterface } from 'merchant/views/Settlements/v3/typings';
 import { tooltipContent } from 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails/constants';
+import { trackSettlmentDetailsCopied } from 'merchant/views/Settlements/v3/utils/common';
 
 const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }) => {
   const [isOpen, setIsOpen] = useState<boolean>(true);
@@ -72,7 +73,14 @@ const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }
                   <Text type="subtle" variant="body" size="medium" weight="regular" contrast="low">
                     Settlement ID <Tooltip content={tooltipContent.settlementId} />
                   </Text>
-                  <CopyWrapper onClick={() => copyToClipboard(settlement.id)}>
+                  <CopyWrapper
+                    onClick={() => {
+                      trackSettlmentDetailsCopied({
+                        type: 'ID',
+                      });
+                      copyToClipboard(settlement.id);
+                    }}
+                  >
                     <Text type="normal" variant="body" size="medium" weight="bold" contrast="low">
                       {settlement.id}
                     </Text>
@@ -84,7 +92,14 @@ const SettlementInfo = ({ settlement }: { settlement: SettlementPropsInterface }
                     UTR number <Tooltip content={tooltipContent.bankRRN} />
                   </Text>
                   {settlement.utr ? (
-                    <CopyWrapper onClick={() => copyToClipboard(settlement.utr)}>
+                    <CopyWrapper
+                      onClick={() => {
+                        trackSettlmentDetailsCopied({
+                          type: 'UTR number',
+                        });
+                        copyToClipboard(settlement.utr);
+                      }}
+                    >
                       <Text variant="body">{settlement.utr}</Text>
                     </CopyWrapper>
                   ) : (

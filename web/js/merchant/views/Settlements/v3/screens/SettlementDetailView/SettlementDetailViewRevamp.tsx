@@ -42,6 +42,7 @@ const SettlementDetailView = ({
         settlementId: settlement.id,
         settlementStatus: settlement.status,
         sessionId: window?.session_id ? window.session_id : undefined,
+        isDetailsRevampFlow: true,
       },
     });
 

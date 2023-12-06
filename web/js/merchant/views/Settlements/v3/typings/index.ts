@@ -91,6 +91,7 @@ export interface SettlementInfoInterface {
 export interface ErrorScreenPropsInterface extends RouteComponentProps<MatchParams> {
   type: ERROR_TYPE;
   handleRefresh: () => void;
+  isDetailsRevampFlow?: boolean;
 }
 
 export interface AmountPropsInterface {

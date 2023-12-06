@@ -53,7 +53,7 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
                       size="large"
                       variant={getBaseVariant(status)}
                       icon={(props) => (
-                        <Tooltip content={BADGE_INFO[status.toUpperCase()]} {...props} />
+                        <Tooltip content={BADGE_INFO[status?.toUpperCase()]} {...props} />
                       )}
                     >
                       {titleCase(status)}
@@ -93,7 +93,7 @@ function SettlementDetailsOverview({ settlement, user }: ISettlementDetailsOverv
                       size="large"
                       variant={getBaseVariant(status)}
                       icon={(props) => (
-                        <Tooltip content={BADGE_INFO[status.toUpperCase()]} {...props} />
+                        <Tooltip content={BADGE_INFO[status?.toUpperCase()]} {...props} />
                       )}
                     >
                       {titleCase(status)}

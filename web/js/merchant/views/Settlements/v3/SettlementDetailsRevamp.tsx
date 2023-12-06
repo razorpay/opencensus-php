@@ -43,7 +43,7 @@ const SettlementDetails = ({
       {loading ? (
         <FullPageRevampShimmer />
       ) : error ? (
-        <ErrorScreen handleRefresh={handleRefresh} type={errorType} />
+        <ErrorScreen handleRefresh={handleRefresh} type={errorType} isDetailsRevampFlow={true} />
       ) : (
         <SettlementDetailRevampView settlementId={settlementId} />
       )}

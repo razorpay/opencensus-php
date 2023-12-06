@@ -29,6 +29,7 @@ const RenderTabs = ({
         settlementStatus: settlement.status,
         sessionId: window?.session_id ? window.session_id : undefined,
         component: `${titleCase(clickedTab)}s`,
+        isDetailsRevampFlow,
       },
     });
   };

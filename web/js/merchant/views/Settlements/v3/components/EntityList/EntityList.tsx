@@ -441,6 +441,7 @@ const EntityList = (props) => {
         sessionId: window?.session_id ? window.session_id : undefined,
         [`${entity}Id`]: entityId,
         component: `${titleCase(entity)}s`,
+        isDetailsRevampFlow,
       },
     });
   };
@@ -462,6 +463,7 @@ const EntityList = (props) => {
         sessionId: window?.session_id ? window.session_id : undefined,
         [`${entity}Id`]: entityId,
         component: `${titleCase(entity)}s`,
+        isDetailsRevampFlow,
       },
     });
   };
