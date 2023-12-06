@@ -298,6 +298,15 @@ class Core extends Base\Core
                 }
                 catch(\Throwable $e)
                 {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_ORIGIN_METHOD_FETCH_FAILED,
+                        [
+                            'transaction_id' => $txn->getId(),
+                            'source_id' => $txn->getEntityId()
+                        ]);
+
                     throw new Exception\LogicException('Either transfer not found or transfer source not found');
                 }
             }
@@ -530,7 +539,23 @@ class Core extends Base\Core
         }
         else if ($sourceType === TransferConstant::ORDER)
         {
-            $sourcePayment = $transfer->source->payments()->whereIn(Payment\Entity::STATUS, [Payment\Status::CAPTURED, Payment\Status::REFUNDED])->first();
+            $orderId = $transfer->getSourceId();
+
+            $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($orderId, $transfer->merchant->getId());
+
+            $rearchPayments = $this->app['pg_router']->fetchOrderPayments($orderId, $transfer->merchant->getId());
+
+            $allPayments = $apiPayments->merge($rearchPayments);
+
+            foreach ($allPayments as $payment)
+            {
+                if (($payment->getStatus() === Payment\Status::CAPTURED) || ($payment->getStatus() === Payment\Status::REFUNDED))
+                {
+                    $sourcePayment = $payment;
+
+                    break;
+                }
+            }
         }
         else
         {

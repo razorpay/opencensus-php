@@ -1312,15 +1312,40 @@ class Core extends Base\Core
 
         unset($input[Entity::LINKED_ACCOUNT_NOTES]);
 
+        $payment = null;
+
         if ($transfer->getSourceType() === E::ORDER)
         {
-            $payment = $transfer->source->payments()->where(Payment\Entity::STATUS, Payment\Status::CAPTURED)->first();
+            $orderId = $transfer->getSourceId();
 
-            if($payment === null)
+            $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($orderId, $transfer->merchant->getId());
+
+            $rearchPayments = $this->app['pg_router']->fetchOrderPayments($orderId, $this->merchant->getId());
+
+            $allPayments = $apiPayments->merge($rearchPayments);
+
+            foreach ($allPayments as $singlePayment)
             {
-                $payment = $transfer->source->payments()->where(Payment\Entity::STATUS, Payment\Status::REFUNDED)->first();
+                if (($singlePayment->getStatus() === Payment\Status::CAPTURED))
+                {
+                    $payment = $singlePayment;
+
+                    break;
+                }
             }
 
+            if ($payment === null)
+            {
+                foreach ($allPayments as $singlePayment)
+                {
+                    if (($singlePayment->getStatus() === Payment\Status::REFUNDED))
+                    {
+                        $payment = $singlePayment;
+
+                        break;
+                    }
+                }
+            }
         }
         else
         {
