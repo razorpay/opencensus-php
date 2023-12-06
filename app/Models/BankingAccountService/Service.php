@@ -1960,6 +1960,26 @@ class Service extends Base\Service
 
                 $additionalDetails = json_decode(optional($activationDetail)->getAdditionalDetails() ?? '{}', true);
 
+                // clean up additional_details
+                $additionalDetails['sales_pitch_completed'] = (int)$additionalDetails['sales_pitch_completed'] ?? 0;
+
+                $additionalDetails['calendly_slot_booking_completed'] = (int)$additionalDetails['calendly_slot_booking_completed'] ?? 0;
+
+                $additionalDetails['agree_to_allocated_bank_and_amb'] = (int)$additionalDetails['agree_to_allocated_bank_and_amb'] ?? 0;
+
+                if (isset($additionalDetails['rbl_new_onboarding_flow_declarations']))
+                {
+                    foreach ($additionalDetails['rbl_new_onboarding_flow_declarations'] as $key => $val)
+                    {
+                        $additionalDetails['rbl_new_onboarding_flow_declarations'][$key] = (int)$val ?? 0;
+                    }
+                }
+
+                if (isset($additionalDetails['dwt_response']))
+                {
+                    unset($additionalDetails['dwt_response']['at_least_one_signatory_in_given_location']);
+                }
+
                 $rblActivationDetails = json_decode(optional($activationDetail)->getRblActivationDetails() ?? '{}', true);
 
                 // add banking_account
@@ -2065,6 +2085,13 @@ class Service extends Base\Service
                     {
                         $bankingAccountApplication['metadata']['additional_details']['is_documents_walkthrough_complete'] = false;
                     }
+                }
+
+                // verification_date has to be converted to string
+                if (isset($bankingAccountApplication['metadata']) &&
+                    !empty($bankingAccountApplication['metadata']['verification_date']))
+                {
+                    $bankingAccountApplication['metadata']['verification_date'] = strval($bankingAccountApplication['metadata']['verification_date']);
                 }
 
                 // 4. generate banking_account for BAS
