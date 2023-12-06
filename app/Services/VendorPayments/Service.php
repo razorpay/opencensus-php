@@ -445,8 +445,10 @@ class Service
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    public function listVendorPayments(MerchantEntity $merchant, array $input)
+    public function listVendorPayments(MerchantEntity $merchant, Entity $user, string $userRole, array $input)
     {
+        $input[self::USER_DETAILS] = $this->getUserDetails($user, $userRole);
+
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::LIST_VENDOR_PAYMENTS);
 
         return $this->makeRequest($merchant, $url, $input);
@@ -499,8 +501,10 @@ class Service
         return $this->makeRequest($payout->merchant, $url, $input, [], 'POST', $mode);
     }
 
-    public function getVendorPaymentById(MerchantEntity $merchant, string $vendorPaymentId, array $input)
+    public function getVendorPaymentById(MerchantEntity $merchant, Entity $user, string $userRole, string $vendorPaymentId, array $input)
     {
+        $input[self::USER_DETAILS] = $this->getUserDetails($user, $userRole);
+
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_PAYMENT);
 
         $input[self::ID] = $vendorPaymentId;
@@ -1164,8 +1168,10 @@ class Service
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    public function getPurchaseOrder(MerchantEntity $merchant, string $poId, array $input)
+    public function getPurchaseOrder(MerchantEntity $merchant, Entity $user, string $userRole, string $poId, array $input)
     {
+        $input[self::USER_DETAILS] = $this->getUserDetails($user, $userRole);
+
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_PURCHASE_ORDER);
 
         $input[self::ID] = $poId;
@@ -1173,8 +1179,10 @@ class Service
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    public function listPurchaseOrder(MerchantEntity $merchant, array $input)
+    public function listPurchaseOrder(MerchantEntity $merchant, Entity $user, string $userRole, array $input)
     {
+        $input[self::USER_DETAILS] = $this->getUserDetails($user, $userRole);
+
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::LIST_PURCHASE_ORDER);
 
         return $this->makeRequest($merchant, $url, $input);

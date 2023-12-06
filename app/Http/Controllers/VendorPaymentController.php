@@ -19,7 +19,12 @@ class VendorPaymentController extends Controller
 
     public function list()
     {
-        return $this->service->listVendorPayments($this->ba->getMerchant(), $this->input);
+        return $this->service->listVendorPayments(
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole(),
+            $this->input
+        );
     }
 
     /**
@@ -200,7 +205,13 @@ class VendorPaymentController extends Controller
 
     public function get(string $vendorPaymentId)
     {
-        return $this->service->getVendorPaymentById($this->ba->getMerchant(), $vendorPaymentId, $this->input);
+        return $this->service->getVendorPaymentById(
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole(),
+            $vendorPaymentId,
+            $this->input
+        );
     }
 
     public function create()
@@ -466,12 +477,23 @@ class VendorPaymentController extends Controller
 
     public function getPurchaseOrder($poId)
     {
-        return $this->service->getPurchaseOrder($this->ba->getMerchant(), $poId, $this->input);
+        return $this->service->getPurchaseOrder(
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole(),
+            $poId,
+            $this->input
+        );
     }
 
     public function listPurchaseOrder()
     {
-        return $this->service->listPurchaseOrder($this->ba->getMerchant(), $this->input);
+        return $this->service->listPurchaseOrder(
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole(),
+            $this->input
+        );
     }
 
     public function editPurchaseOrder($poId)
