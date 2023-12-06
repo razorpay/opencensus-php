@@ -557,6 +557,24 @@ class Core extends Base\Core
         return $terminal;
     }
 
+    public function editValidateV3(Entity $path, array $input)
+    {
+        $path = str_replace("v1","v3", $path);
+
+        return $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
+    }
+
+    public function editV3($terminalId, $path,$input)
+    {
+        $this->app['workflow']
+            ->setEntityAndId($terminalId, 'terminal')
+            ->handle(["terminal_edit"=> []], ["terminal_edit" => $this->redactSecretsOnWorkflow($input)]);
+
+        $path = str_replace("v1","v3", $path);
+
+        return $this->app['terminals_service']->proxyTerminalService($input, "PATCH", $path);
+    }
+
     public function getSyncInstrumentsFlagFromWorkflow($terminal, $permission)
     {
         if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)

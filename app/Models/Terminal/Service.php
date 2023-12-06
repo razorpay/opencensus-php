@@ -414,6 +414,20 @@ class Service extends Base\Service
         return $terminal->toArrayAdmin();
     }
 
+    public function editTerminalValidateV3($path, $input)
+    {
+        $terminal = (new Terminal\Core)->editValidateV3($path, $input);
+
+        return $terminal->toArrayAdmin();
+    }
+
+    public function editTerminalV3($terminalId, $path, $input)
+    {
+        $terminal = (new Terminal\Core)->editV3($terminalId, $path, $input);
+
+        return $terminal->toArrayAdmin();
+    }
+
     public function getEditableFields()
     {
         $response = [];

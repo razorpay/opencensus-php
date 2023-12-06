@@ -25,6 +25,28 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateTerminalValidatev3()
+    {
+        $input = Request::all();
+
+        $path = Request::path();
+
+        $data = $this->service()->editTerminalValidateV3($path, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateTerminalv3(string $id)
+    {
+        $input = Request::all();
+
+        $path = Request::path();
+
+        $data = $this->service()->editTerminalV3($id, $path, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getEditableFields()
     {
         $input = Request::all();
