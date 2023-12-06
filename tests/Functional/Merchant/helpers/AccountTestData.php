@@ -271,6 +271,42 @@ return [
         ],
     ],
 
+    'testCreateLinkedAccountBetaFailureIfReverseShadowEnabledForParent' => [
+        'request' => [
+            'url' => '/beta/accounts',
+            'method' => 'post',
+            'content' => [
+                'name' => 'Linked Account 1',
+                'code' => 'linked_account-1',
+                'email' => 'linked1@account.com',
+                'tnc_accepted' => true,
+                'account_details' => [
+                    'business_name' => 'Business',
+                    'business_type' => 'individual',
+                ],
+                'bank_account' => [
+                    'ifsc_code' => 'SBIN0000002',
+                    'beneficiary_name' => 'Beneficiary',
+                    'account_type' => 'current',
+                    'account_number' => '9876543210',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The code format is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateLinkedAccountWithInvalidCode' => [
         'request' => [
             'url' => '/beta/accounts',

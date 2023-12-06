@@ -190,6 +190,7 @@ class Metric
     const REFUND_API_TXN_KAFKA_PUSH_FAILURE                     = 'refund_api_txn_kafka_push_failure';
     const PG_LEDGER_ACK_WORKER_FAILURE                          = 'pg_ledger_ack_worker_failure';
     const DB_TRANSACTION                                        = 'db_transaction';
+    const PG_LEDGER_REVERSE_SHADOW_ONBOARD_FAILURE              = 'pg_ledger_reverse_shadow_onboard_failure';
 
     const PROXYSQL_OR_DB_CONNECTION                             = 'proxysql_or_db_connection';
 

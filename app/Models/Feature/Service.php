@@ -1754,7 +1754,7 @@ class Service extends Base\Service
      *
      * @param array $input
      */
-    public function onboardMerchantOnPGReverseShadow(array $input)
+    public function onboardMerchantOnPGReverseShadow(array $input, $throwException = false)
     {
         $response = new Base\PublicCollection;
 
@@ -1875,6 +1875,13 @@ class Service extends Base\Service
 
                 $result[Constants::STATUS] = Constants::FAILURE;
                 $result[Constants::MESSAGE] = $e->getMessage();
+
+                if($throwException)
+                {
+                    $this->trace->count(\RZP\Constants\Metric::PG_LEDGER_REVERSE_SHADOW_ONBOARD_FAILURE);
+
+                    throw $e;
+                }
             }
             $response->add($result);
         }

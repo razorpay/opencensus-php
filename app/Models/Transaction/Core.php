@@ -1217,9 +1217,9 @@ class Core extends Base\Core
         }
     }
 
-    public function createFromSettlementTransfer(Settlement\Transfer\Entity $transfer)
+    public function createFromSettlementTransfer(Settlement\Transfer\Entity $transfer, $txnId = null)
     {
-        list($txn, $feeSplit) = $this->createTransactionForSource($transfer);
+        list($txn, $feeSplit) = $this->createTransactionForSource($transfer, $txnId);
 
         return $txn;
     }

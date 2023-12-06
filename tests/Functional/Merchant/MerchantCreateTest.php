@@ -102,6 +102,20 @@ class MerchantCreateTest extends TestCase
                      ->willReturn(null);
     }
 
+    public function mockDCS()
+    {
+        $dcsMock = $this->getMockBuilder(\RZP\Services\Dcs\Features\Service::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['editFeature'])
+            ->getMock();
+
+        $this->app->instance('dcs', $dcsMock);
+
+        $dcsMock->expects($this->any())->method('editFeature')->willReturn(null);
+
+        return $dcsMock;
+    }
+
     public function testCreateMerchantWithDuplicateEmail()
     {
         $this->ba->adminAuth(Mode::TEST);
@@ -3688,5 +3702,158 @@ class MerchantCreateTest extends TestCase
         $paymentConfig = $this->getDbEntity('config', ['merchant_id' => $merchantId]);
 
         $this->assertNotNull($paymentConfig);
+    }
+
+    public function testCreateMarketplaceLinkedAccountIfReverseShadowEnabledForParent()
+    {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andReturn([
+                'body' => [
+                    "accounts" => [
+                        "pg_merchant_onboarding" => null
+                    ]
+                ],
+                'code' => 200
+            ]);
+
+        $this->mockDCS();
+
+        $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
+            ->times(5)
+            ->andReturn([
+                'body' => [
+                    "balance" => 12000
+                ],
+                'code' => 200
+            ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ]);
+
+        $response = $this->startTest();
+
+        $merchantId = $response['id'];
+
+        $linkedAccount = $this->getDbEntity('merchant', ['id' => $merchantId]);
+
+        $this->assertNotNull($linkedAccount->getParentId());
+
+        $this->assertEquals('10000000000000', $linkedAccount->getParentId());
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => $merchantId,
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertContains(FeatureConstants::PG_LEDGER_REVERSE_SHADOW, $featuresArray);
+    }
+
+    public function testCreateMarketplaceLinkedAccountIfReverseShadowDisabledForParent()
+    {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $response = $this->startTest();
+
+        $merchantId = $response['id'];
+
+        $linkedAccount = $this->getDbEntity('merchant', ['id' => $merchantId]);
+
+        $this->assertNotNull($linkedAccount->getParentId());
+
+        $this->assertEquals('10000000000000', $linkedAccount->getParentId());
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => $merchantId,
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertNotContains(FeatureConstants::PG_LEDGER_REVERSE_SHADOW, $featuresArray);
+    }
+
+    public function testCreateMarketplaceLinkedAccountFailureIfReverseShadowEnabledForParent()
+    {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->mockDCS();
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andThrow(new \RZP\Exception\RuntimeException(
+                'Unexpected response code received from Ledger service.',
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'not found',
+                    ],
+                ]
+            ));
+
+        $linkedAccountsBefore = $this->getDbEntities('merchant', ['parent_id' => '10000000000000']);
+
+        try
+        {
+            $this->startTest();
+        }
+        catch(\Exception $e)
+        {
+            $this->assertNotNull($e);
+
+            $linkedAccountsAfter = $this->getDbEntities('merchant', ['parent_id' => '10000000000000']);
+
+            $this->assertEquals(count($linkedAccountsBefore), count($linkedAccountsAfter));
+        }
     }
 }

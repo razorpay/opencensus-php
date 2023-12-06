@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HyperTrace;
@@ -80,6 +81,22 @@ class Core extends Merchant\Core
             {
                 (new Detail\Core)->saveMerchantDetails($merchantDetailsInput, $account);
             });
+
+            if(($parentMerchant !== null)
+                and ($account->getParentId() === $parentMerchant->getId())
+                and ($parentMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW)) )
+            {
+
+                // If a parent merchant is onboarded on pg_ledger_reverse_shadow feature flag,
+                // we need to ensure all of its linked account merchants are also onboarded on pg_ledger_reverse_shadow feature flag,
+                // So every time a new linked account is created for a parent merchant,
+                // enable pg_ledger_reverse_shadow feature for the sub merchant and create accounts in CLS
+                $input = [
+                    "merchant_ids" => [$account->getId()],
+                ];
+
+                (new Feature\Service)->onboardMerchantOnPGReverseShadow($input, true);
+            }
 
             return $account;
 

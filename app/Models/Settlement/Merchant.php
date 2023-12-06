@@ -729,12 +729,21 @@ class Merchant
 
         $destinationMerchantId = null;
 
-        $journalID = null;
+        $defaultSettlementJournalID = null;
+        $aggregateSettlementJournalID = null;
+        $settlementTransferJournalID = null;
+        $settlementTransferEntityID = null;
 
-        if (!empty($params['journal_id']))
+        if (!empty($params['journals_data']))
         {
-            $journalID = $params['journal_id'];
+            $journalsData = $params['journals_data'];
+            $defaultSettlementJournalID = $journalsData['settlement_journal_id'];
+            $aggregateSettlementJournalID = $journalsData["aggregate_settlement_journal_id"];
+            $settlementTransferJournalID = $journalsData["settlement_transfer_journal_id"];
+            $settlementTransferEntityID = $journalsData["settlement_transfer_id"];
         }
+
+        $settlementJournalID = $defaultSettlementJournalID;
 
         if(($params['type'] === Feature\Constants::AGGREGATE_SETTLEMENT) and isset($params['destination_merchant_id']) === true)
         {
@@ -745,9 +754,11 @@ class Merchant
                 throw new \Exception('empty destination MID sent for aggregate settlement type');
             }
 
+            $settlementJournalID = $aggregateSettlementJournalID;
         }
 
-        $settlementTransfer = $this->repo->transaction(function() use ($merchantSettleToPartner, $balance, $input, $destinationMerchantId, $journalID)
+        $settlementTransfer = $this->repo->transaction(function() use ($merchantSettleToPartner, $balance, $input,
+            $destinationMerchantId, $settlementJournalID, $settlementTransferJournalID, $settlementTransferEntityID)
         {
             //create new settlement entity
             $this->newSettlementEntity($merchantSettleToPartner, $balance, $input);
@@ -762,7 +773,7 @@ class Merchant
             $this->repo->saveOrFailCollection($this->setlDetails);
 
             //create transaction corresponding to settlement
-            $this->createTransaction($this->setl, $journalID);
+            $this->createTransaction($this->setl, $settlementJournalID);
 
             $settlementTransfer = null;
 
@@ -771,7 +782,9 @@ class Merchant
                 $settlementTransfer = (new Transfer\Core)->transfer(
                     $this->setl,
                     $destinationMerchantId,
-                    $balance->getType());
+                    $balance->getType(),
+                    $settlementTransferEntityID,
+                    $settlementTransferJournalID);
             }
 
             return $settlementTransfer;

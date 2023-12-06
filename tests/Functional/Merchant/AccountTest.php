@@ -8,9 +8,11 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
+use RZP\Services\Dcs\Features\Service;
 use RZP\Services\Mock\ApachePinotClient;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
@@ -48,6 +50,20 @@ class AccountTest extends TestCase
                      ->willReturn(null);
     }
 
+    public function mockDCS()
+    {
+        $dcsMock = $this->getMockBuilder(\RZP\Services\Dcs\Features\Service::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['editFeature'])
+            ->getMock();
+
+        $this->app->instance('dcs', $dcsMock);
+
+        $dcsMock->expects($this->any())->method('editFeature')->willReturn(null);
+
+        return $dcsMock;
+    }
+
     public function testCreateLinkedAccountForInactiveMerchantInTestMode()
     {
         $this->createLinkedAccount(Mode::TEST, false);
@@ -78,6 +94,127 @@ class AccountTest extends TestCase
         $this->fixtures->merchant->addFeatures(['route_code_support']);
 
         $this->startTest();
+    }
+
+    public function testCreateLinkedAccountBetaSuccessIfReverseShadowEnabledForParent()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andReturn([
+                'body' => [
+                    "accounts" => [
+                        "pg_merchant_onboarding" => null
+                    ]
+                ],
+                'code' => 200
+            ]);
+
+        $this->mockDCS();
+
+        $mockLedger->shouldReceive('updateAccountByEntitiesAndMerchantID')
+            ->times(5)
+            ->andReturn([
+                'body' => [
+                    "balance" => 12000
+                ],
+                'code' => 200
+            ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ],
+                [
+                    'body' => [
+                        "balance" => 0
+                    ],
+                    'code' => 200
+                ]);
+
+        $this->createLinkedAccount(Mode::TEST, true);
+
+        $lastAccount = $this->getDbLastEntityPublic('merchant');
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => $lastAccount['id'],
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertContains(FeatureConstants::PG_LEDGER_REVERSE_SHADOW, $featuresArray);
+    }
+
+    public function testCreateLinkedAccountBetaSuccessIfReverseShadowNotEnabledForParent()
+    {
+        $this->ba->privateAuth();
+
+        $this->createLinkedAccount(Mode::TEST, true);
+
+        $lastAccount = $this->getDbLastEntityPublic('merchant');
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => $lastAccount['id'],
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertNotContains(FeatureConstants::PG_LEDGER_REVERSE_SHADOW, $featuresArray);
+    }
+
+    public function testCreateLinkedAccountBetaFailureIfReverseShadowEnabledForParent()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->mockDCS();
+
+        $mockLedger->shouldReceive('createAccountsOnEvent')
+            ->times(1)
+            ->andThrow(new \RZP\Exception\RuntimeException(
+                'Unexpected response code received from Ledger service.',
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'not found',
+                    ],
+                ]
+            ));
+
+        try
+        {
+            $this->createLinkedAccount(Mode::TEST, true);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertNotNull($e);
+        }
     }
 
     public function testCreateLinkedAccountWithInvalidCode()

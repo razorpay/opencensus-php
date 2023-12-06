@@ -48,9 +48,23 @@ class DimensionsProcessor implements Processor
 
         foreach ($dimensions as $label => $value)
         {
+            // Remove prefix underscores from $label
+            $cleanLabel = preg_replace('/^_+/', '', $label);
+
             if ($value === '')
             {
-                $dimensions[$label] = Metric::LABEL_NONE_VALUE;
+                $dimensions[$cleanLabel] = Metric::LABEL_NONE_VALUE;
+            }
+            else
+            {
+                // Update the dimensions array with the cleaned label
+                $dimensions[$cleanLabel] = $value;
+            }
+
+            // Remove the original label if it has been changed
+            if ($cleanLabel !== $label)
+            {
+                unset($dimensions[$label]);
             }
         }
 

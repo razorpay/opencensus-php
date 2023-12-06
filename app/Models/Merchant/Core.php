@@ -411,7 +411,9 @@ class Core extends Base\Core
         bool $linkedAccount = true,
         bool $accountEntity = false,
         bool $v2CreateFlow = false,
-        bool $optimise = false)
+        bool $optimise = false,
+        bool $onboardOnReverseShadow = true,
+    )
     {
         $this->validateCodeIfPresent($input, $aggregatorMerchant, $linkedAccount);
 
@@ -563,7 +565,7 @@ class Core extends Base\Core
 
             Tracer::inspan(['name' => HyperTrace::ADD_MERCHANT_SUPPORTING_ENTITIES], function() use ($subMerchant, $aggregatorMerchant, $subMerchantDetailInput, $v2CreateFlow) {
 
-                $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $v2CreateFlow, $subMerchantDetailInput);
+                $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $v2CreateFlow, $subMerchantDetailInput, $onboardOnReverseShadow);
 
             });
 
@@ -1847,7 +1849,7 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subMerchant);
     }
 
-    public function addMerchantSupportingEntitiesAsync(Entity $merchant, Entity $aggregatorMerchant = null)
+    public function addMerchantSupportingEntitiesAsync(Entity $merchant, Entity $aggregatorMerchant = null, $onboardOnReverseShadow = true)
     {
         $isExpEnabled = $this->isExpEnabledForProductConfigIssue($aggregatorMerchant);
 
@@ -1876,6 +1878,21 @@ class Core extends Base\Core
         }
 
         $this->addPartnerAddedFeaturesToSubmerchant($merchant, $aggregatorMerchant);
+
+        if(($onboardOnReverseShadow === true) and ($aggregatorMerchant !== null)
+            and ($merchant->getParentId() === $aggregatorMerchant->getId())
+            and ($aggregatorMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW)) )
+        {
+            // If a parent merchant is onboarded on pg_ledger_reverse_shadow feature flag,
+            // we need to ensure all of its linked account merchants are also onboarded on pg_ledger_reverse_shadow feature flag,
+            // So every time a new linked account is created for a parent merchant,
+            // enable pg_ledger_reverse_shadow feature for the sub merchant and create accounts in CLS
+            $input = [
+                "merchant_ids" => [$merchant->getId()],
+            ];
+
+            (new Feature\Service)->onboardMerchantOnPGReverseShadow($input, true);
+        }
     }
 
     private function addDefaultFeatures(Entity $merchant)
@@ -1984,7 +2001,7 @@ class Core extends Base\Core
     }
 
     public function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null,
-                                                  bool $v2CreateFlow = false, array $input = [])
+                                                  bool $v2CreateFlow = false, array $input = [], $onboardOnReverseShadow = true)
     {
         Tracer::inspan(['name' => HyperTrace::CREATE_MERCHANT_DETAILS_CORE], function () use ($merchant, $input) {
 
@@ -1997,7 +2014,7 @@ class Core extends Base\Core
         }
         else
         {
-            $this->addMerchantSupportingEntitiesAsync($merchant, $aggregatorMerchant);
+            $this->addMerchantSupportingEntitiesAsync($merchant, $aggregatorMerchant, $onboardOnReverseShadow);
         }
     }
 

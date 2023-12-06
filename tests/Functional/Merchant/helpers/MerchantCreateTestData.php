@@ -2443,5 +2443,73 @@ return [
                 'message'  => 'Request processing'
             ]
         ]
-    ]
+    ],
+
+    'testCreateMarketplaceLinkedAccountIfReverseShadowEnabledForParent' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => '7gcKngYfqyDMjN',
+                'name'            => 'Linked Account 2',
+                'email'           => 'linkedaccount@razorpay.com',
+                'pricing_plan_id' => '1In3Yh5Mluj605',
+            ],
+        ],
+    ],
+
+    'testCreateMarketplaceLinkedAccountIfReverseShadowDisabledForParent' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => '7gcKngYfqyDMjN',
+                'name'            => 'Linked Account 2',
+                'email'           => 'linkedaccount@razorpay.com',
+                'pricing_plan_id' => '1In3Yh5Mluj605',
+            ],
+        ],
+    ],
+
+    'testCreateMarketplaceLinkedAccountFailureIfReverseShadowEnabledForParent' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The code format is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
