@@ -12,7 +12,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\MocksSplitz;
 
-class SplitPayment extends TestCase
+class SplitPaymentNew extends TestCase
 {
     use PaymentTrait;
     use EntityFetchTrait;
@@ -35,20 +35,13 @@ class SplitPayment extends TestCase
         $this->fixtures->merchant->addFeatures([Constants::RAZORPAY_WALLET]);
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-    }
-
-    protected function mockSplitPaymentExperiment() {
-        $this->mockSplitzTreatment([
-            'id'            => '10000000000000',
-            'experiment_id' => 'MXtLueI1S2I383',
-        ], [
-                'response' => [
-                    'variant' => [
-                        'name' => 'enabled'
-                    ]
+        $this->mockAllSplitzTreatment([
+            "response" => [
+                "variant" => [
+                    "name" => 'enabled',
                 ]
             ]
-        );
+        ]);
     }
 
     protected function getDefaultSplitPaymentArray(array $orderOverrides = [])
@@ -75,8 +68,6 @@ class SplitPayment extends TestCase
 
     public function testSplitPayment()
     {
-        $this->mockSplitPaymentExperiment();
-
         $this->payment = $this->getDefaultSplitPaymentArray();
         $this->startTest();
 
@@ -93,8 +84,6 @@ class SplitPayment extends TestCase
 
     public function testSplitPaymentWithAutoCapture()
     {
-        $this->mockSplitPaymentExperiment();
-
         $this->payment = $this->getDefaultSplitPaymentArray([
             'payment_capture' => true
         ]);
@@ -134,7 +123,7 @@ class SplitPayment extends TestCase
             'payment',
             [
                 'created_at' => time() - 10 * 60,
-                'status' => 'authorized',
+                'status' => 'created',
                 'method' => 'wallet',
                 'wallet' => 'razorpaywallet',
                 'amount' => 100,
@@ -162,14 +151,7 @@ class SplitPayment extends TestCase
         self::assertEquals(2, $response['count']);
         foreach ($response['items'] as $payment)
         {
-            if ($payment['wallet'] === 'razorpaywallet')
-            {
-                self::assertEquals('refunded', $payment['status']);
-            }
-            else
-            {
-                self::assertEquals('failed', $payment['status']);
-            }
+            self::assertEquals('failed', $payment['status']);
         }
     }
 
@@ -192,7 +174,7 @@ class SplitPayment extends TestCase
             'payment',
             [
                 'created_at' => time() - 10 * 60,
-                'status' => 'authorized',
+                'status' => 'created',
                 'method' => 'wallet',
                 'wallet' => 'razorpaywallet',
                 'amount' => 100,
@@ -219,14 +201,7 @@ class SplitPayment extends TestCase
         self::assertEquals(2, $response['count']);
         foreach ($response['items'] as $payment)
         {
-            if ($payment['wallet'] === 'razorpaywallet')
-            {
-                self::assertEquals('refunded', $payment['status'], );
-            }
-            else
-            {
-                self::assertEquals('failed', $payment['status']);
-            }
+            self::assertEquals('failed', $payment['status']);
         }
     }
 
@@ -240,7 +215,7 @@ class SplitPayment extends TestCase
             'payment',
             [
                 'created_at' => Carbon::now()->subMinutes(15)->getTimestamp(),
-                'status' => 'created',
+                'status' => 'authorized',
                 'method' => 'upi',
                 'amount' => 900,
                 'order_id'  => $order['id']
@@ -249,7 +224,7 @@ class SplitPayment extends TestCase
             'payment',
             [
                 'created_at' => time() - 10 * 60,
-                'status' => 'refunded',
+                'status' => 'failed',
                 'method' => 'wallet',
                 'wallet' => 'razorpaywallet',
                 'amount' => 100,
@@ -283,7 +258,7 @@ class SplitPayment extends TestCase
             {
                 if ($item['id'] === 'pay_'.$walletPayment['id'])
                 {
-                    self::assertEquals('refunded', $item['status']);
+                    self::assertEquals('failed', $item['status']);
                 }
                 else
                 {
@@ -292,14 +267,7 @@ class SplitPayment extends TestCase
             }
             else
             {
-                if ($item['id'] === 'pay_'.$payment['id'])
-                {
-                    self::assertEquals('created', $item['status'], );
-                }
-                else
-                {
-                    self::assertEquals('authorized', $item['status']);
-                }
+                self::assertEquals('authorized', $item['status']);
             }
         }
     }

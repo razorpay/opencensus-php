@@ -10681,6 +10681,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SPLIT_PAYMENT_FEATURE_DISABLED                           = 'SPLIT_PAYMENT_FEATURE_DISABLED';
     const SPLIT_PAYMENT_META_FETCH_PAYMENT                         = 'SPLIT_PAYMENT_META_FETCH_PAYMENT';
     const SPLIT_PAYMENT_META_NOT_FOUND                             = 'SPLIT_PAYMENT_META_NOT_FOUND';
+    const SPLIT_PAYMENT_INVALID_PAYMENT                     = 'SPLIT_PAYMENT_INVALID_PAYMENT';
+    const FAIL_SPLIT_PAYMENT_INITIATED                           = 'FAIL_SPLIT_PAYMENT_INITIATED';
+    const SPLIT_PAYMENT_FAILED                                     = 'SPLIT_PAYMENT_FAILED';
     const REFUND_SPLIT_PAYMENT_INVALID_PAYMENT                     = 'REFUND_SPLIT_PAYMENT_INVALID_PAYMENT';
     const REFUND_SPLIT_PAYMENT_INITIATED                           = 'REFUND_SPLIT_PAYMENT_INITIATED';
     const REFUND_SPLIT_PAYMENT_PROCESSED                           = 'REFUND_SPLIT_PAYMENT_PROCESSED';

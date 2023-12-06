@@ -4,6 +4,8 @@ namespace RZP\Models\Payment\Processor;
 
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -144,7 +146,17 @@ trait SplitPayment
 
             // creates wallet payment input and calls processor
             $input = $this->buildWalletSplitPaymentInput($input);
-            $walletPaymentData = $this->process($input);
+
+            $gatewayInput = [];
+
+            if ($this->payment->isNewSplitPaymentFlow() === true)
+            {
+                $gatewayInput = [
+                    'skip_gateway_call' => true
+                ];
+            }
+
+            $walletPaymentData = $this->process($input, $gatewayInput);
 
             $paymentId = $paymentData['payment_id'] ?? $paymentData['razorpay_payment_id'] ?? '';
             $paymentId = Payment\Entity::stripSignWithoutValidation($paymentId);
@@ -186,6 +198,56 @@ trait SplitPayment
                 ]
             );
             throw $e;
+        }
+    }
+
+    public function splitPaymentAuthorizeProcessing(Payment\Entity $payment)
+    {
+        if ($payment->isSplitPayment() === false)
+        {
+            return;
+        }
+
+        if ($payment->isNewSplitPaymentFlow() === false)
+        {
+            return;
+        }
+
+        if (($payment->isSplitPayment() === true) and
+            ($payment->isRazorpaywalletPayment() === true))
+        {
+            // terminating condition to gracefully exit recursive call of this method.
+            return;
+        }
+
+        try
+        {
+            $walletPayment = $this->fetchSplitPaymentFromOrderMeta($payment);
+
+            if ($walletPayment->isCreated() === true)
+            {
+                $this->setPayment($walletPayment);
+                return $this->authorize($walletPayment, []);
+            }
+            else
+            {
+                throw new ServerErrorException(
+                    ErrorCode::SERVER_ERROR,
+                    null,
+                    null,
+                    PublicErrorDescription::GATEWAY_ERROR_SPLIT_PAYMENT_NOT_AUTHORIZED
+                );
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $payment->setError(ErrorCode::SERVER_ERROR,PublicErrorDescription::GATEWAY_ERROR_SPLIT_PAYMENT_NOT_AUTHORIZED,ErrorCode::GATEWAY_ERROR_SPLIT_PAYMENT_NOT_AUTHORIZED);
+            $payment->saveOrFail();
+
+            throw new ServerErrorException(
+                PublicErrorDescription::GATEWAY_ERROR_SPLIT_PAYMENT_NOT_AUTHORIZED,
+                ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_FAILED,
+            );
         }
     }
 
@@ -247,8 +309,73 @@ trait SplitPayment
         return $this->repo->payment->findOrFail($walletPaymentId);
     }
 
+    public function markSplitPaymentFailed(Payment\Entity $payment)
+    {
+        if ($payment->isNewSplitPaymentFlow() === false)
+        {
+            return;
+        }
+
+        if ($payment->isSplitPayment() === false)
+        {
+            $this->trace->info(TraceCode::SPLIT_PAYMENT_INVALID_PAYMENT, [
+                'payment_id' => $payment->getId()
+            ]);
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_FAILED,
+                null,
+                null,
+                'This order doesnt have any associated split payments.'
+            );
+        }
+
+        // Terminating condition to avoid recursive calls.
+        if ($payment->isRazorpaywalletPayment() === true)
+        {
+            return;
+        }
+
+        $traceCode = TraceCode::SPLIT_PAYMENT_FAILED;
+
+        $errorCode = ErrorCode::GATEWAY_ERROR_SPLIT_PAYMENT_NOT_AUTHORIZED;
+
+        $exception = new BadRequestException($errorCode);
+
+        $walletPayment = $this->fetchSplitPaymentFromOrderMeta($payment);
+
+        if ($walletPayment === null)
+        {
+            $this->trace->info(TraceCode::SPLIT_PAYMENT_META_RELATION_NOT_FOUND, [
+                'order_id' => $this->order->getId()
+            ]);
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SPLIT_PAYMENT_FAILED,
+                null,
+                null,
+                'Wallet payment failed. Please try again later.'
+            );
+        }
+
+        $this->setPayment($walletPayment);
+
+        $this->updatePaymentFailed($exception, $traceCode);
+
+        $this->trace->info($traceCode, [
+            'payment_id' => $payment->getId()
+        ]);
+
+        $this->trace->count(Payment\Metric::SPLIT_PAYMENT_FAILED_COUNT);
+    }
+
     public function refundSplitPayments(Payment\Entity $payment)
     {
+        if ($payment->isNewSplitPaymentFlow() === true)
+        {
+            return;
+        }
+
         if ($payment->isFailed() === false)
         {
             $this->trace->info(TraceCode::REFUND_SPLIT_PAYMENT_INVALID_PAYMENT, [
@@ -326,6 +453,11 @@ trait SplitPayment
 
     public function processAutoCaptureForSplitPayment(Payment\Entity $payment)
     {
+        if ($payment->isNewSplitPaymentFlow() === true)
+        {
+            return;
+        }
+
         // return if payment isn't a split payment
         if ($payment->isSplitPayment() === false)
         {

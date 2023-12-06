@@ -648,6 +648,7 @@
         </testsuite>
         <testsuite name="Split_Payments_Test_Suite">
             <file>./tests/Functional/Payment/SplitPayment.php</file>
+            <file>./tests/Functional/Payment/SplitPaymentNew.php</file>
         </testsuite>
         <testsuite name="Dependencies_of_Checkout_Service_Test_Suite">
             <file>./tests/Functional/Contact/ContactsGetForCheckoutTest.php</file>

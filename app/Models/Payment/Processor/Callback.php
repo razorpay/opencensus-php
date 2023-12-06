@@ -429,6 +429,12 @@ trait Callback
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BY_AVS);
             }
 
+            if($payment->getInternalErrorCode() === ErrorCode::GATEWAY_ERROR_SPLIT_PAYMENT_NOT_AUTHORIZED)
+            {
+                throw new Exception\ServerErrorException(
+                    Error\PublicErrorDescription::GATEWAY_ERROR_SPLIT_PAYMENT_NOT_AUTHORIZED, ErrorCode::GATEWAY_ERROR_SPLIT_PAYMENT_NOT_AUTHORIZED, null, null);
+            }
+
             return $this->processAuthorizeResponse($payment);
         }
 

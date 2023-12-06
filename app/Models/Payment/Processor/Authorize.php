@@ -8223,6 +8223,9 @@ trait Authorize
         //
         $this->postPaymentAuthorizeOfferProcessing($payment);
 
+        // Does process of authorizing wallet payment after confirmation of card/upi/other payment.
+        $this->splitPaymentAuthorizeProcessing($payment);
+
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 

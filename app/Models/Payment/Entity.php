@@ -7100,6 +7100,36 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return min($expiryWindow, self::PAYMENT_UPI_COLLECT_MAX_EXPIRY_WINDOW);
     }
 
+    public function isNewSplitPaymentFlow()
+    {
+        $app = \App::getFacadeRoot();
+        try
+        {
+            $merchantId = $this->getMerchantId();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get('app.split_payment_flow_new'),
+            ];
+            $response   = $app['splitzService']->evaluateRequest($properties);
+
+            $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties'    => $properties,
+                'merchant_id'   => $merchantId,
+                'response'      => $response
+            ]);
+
+            if ($response['response']['variant']['name'] === 'enabled')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+
+        return false;
+    }
     public function isSplitPayment()
     {
         if ($this->order === null)

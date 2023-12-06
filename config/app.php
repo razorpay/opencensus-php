@@ -782,4 +782,6 @@ return array(
     'magic_update_shipping_address_experiment_id' => env('MAGIC_UPDATE_SHIPPING_ADDRESS_EXP_ID'),
 
     'direct_send_mail_enabled' => env('DIRECT_SEND_MAIL_ENABLED'),
+
+    'split_payment_flow_new' => env('SPLIT_PAYMENT_FLOW_NEW_EXPERIMENT_ID')
 );

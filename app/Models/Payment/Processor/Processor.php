@@ -2867,7 +2867,8 @@ class Processor
 
             $isReArchPayment = false;
 
-            if (($this->isLRSEducationMerchant() === false) and
+            if (($isSplitPaymentRequest === false) and
+                ($this->isLRSEducationMerchant() === false) and
                 ($this->isOpgspImportMerchant() === false) and
                 ($this->isJPMCImportFlowMerchant() === false) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
@@ -8750,7 +8751,8 @@ class Processor
 
         if (
             ($payment->isRazorpaywalletPayment() === true) and
-            ($payment->isSplitPayment() === true)
+            ($payment->isSplitPayment() === true) and
+            ($payment->isNewSplitPaymentFlow() === false)
         )
         {
             $response['should_auto_capture'] = false;
