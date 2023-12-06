@@ -415,6 +415,13 @@ class AccountV2Test extends TestCase
         $this->startTest($testData);
     }
 
+    public function testUpdateAccountV2InvalidAccId()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $this->startTest();
+    }
+
     public function testEditAccountWithEmptyCustomerFacingBusinessName()
     {
         $this->setUpPartnerWithKycHandled();

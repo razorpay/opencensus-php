@@ -304,7 +304,14 @@ class Core extends Merchant\Core
         });
     }
 
-    public function checkIfRouteAccount(string $accountId=null,string $accountType=null)
+    /**
+     * @param string|null $accountId
+     * @param string|null $accountType
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function checkIfRouteAccount(string $accountId = null, string $accountType = null): bool
     {
         if ($accountType === Type::ROUTE)
         {
@@ -315,7 +322,7 @@ class Core extends Merchant\Core
         {
             Entity::verifyIdAndSilentlyStripSign($accountId);
 
-            $account = $this->repo->merchant->findOrFail($accountId);
+            $account = $this->repo->merchant->findOrFailPublic($accountId);
 
             return ($account->isLinkedAccount() === true);
         }

@@ -792,6 +792,35 @@ return [
         ],
     ],
 
+    'testUpdateAccountV2InvalidAccId' => [
+        'request' => [
+            'url'    => '/v2/accounts/acc_Mk5x3fAOuOoRk4',
+            'method' => 'PATCH',
+            'content' => [
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand' => [
+                    'color' => 'FFFAAA',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
     'testEditSubmerchantAccountNoDocFeature' => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}',
