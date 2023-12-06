@@ -1439,9 +1439,9 @@ class Core extends Base\Core
         //    is that the credit amount is same as txn amount (as fee is 0).
         //
         assertTrue($txn->isGratis() === true);
-        assertTrue($txn->getFee() === 0);
+        assertTrue(($txn->getFee() === 0) or ($txn->merchant->isFeeBearerDynamic()));
         assertTrue(
-            (($txn->isTypePayment() === true) and ($txn->getCredit() === $txn->getAmount())) or
+            (($txn->isTypePayment() === true) and (($txn->getCredit()) === ($txn->getAmount() - $txn->getCustomerFee() - $txn->getCustomerTax()))) or
             (($txn->isTypeTransfer() === true) and ($txn->getDebit() === $txn->getAmount())));
 
         $amount = $txn->getAmount();

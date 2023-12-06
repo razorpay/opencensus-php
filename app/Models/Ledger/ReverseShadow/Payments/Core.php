@@ -242,7 +242,7 @@ class Core extends Base\Core
         }
         else if($this->isPostPaidDynamicFeeBearerFlag($payment,$payment->merchant))
         {
-            $customerFeeAndGstArray = $this->getCustomerFeeAndCustomerFeeGst($payment, $commission, $tax);
+            $customerFeeAndGstArray = $payment->getCustomerFeeAndCustomerFeeGst();
 
             $customerFee = $customerFeeAndGstArray[0];
             $customerTax = $customerFeeAndGstArray[1];
@@ -252,6 +252,53 @@ class Core extends Base\Core
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($commission));
             $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $commission - ($customerFee + $customerTax));
+        }
+        else if($this->isPrepaidDynamicFeeBearerFlag($payment))
+        {
+            $customerFeeAndGstArray = $payment->getCustomerFeeAndCustomerFeeGst();
+
+            $customerFee = $customerFeeAndGstArray[0];
+            $customerTax = $customerFeeAndGstArray[1];
+            $merchantFee = $fee - $customerFee - $customerTax;
+
+            $moneyParams[Constants::GMV_AMOUNT] = strval($amount);
+
+            if ($this->isGratis($amountCredits, $amount) and ($this->shouldDisableAmountCredits($payment) === false))
+            {
+                // In case of amount credits, only customer fee and tax is deducted
+                // Merchant side fee and tax is waived off.
+
+                $merchantAmount = $amount - $customerFee - $customerTax;
+
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($merchantAmount);
+                $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($amount);
+                $moneyParams[Constants::AMOUNT_CREDITS]             = strval($amount);
+                $moneyParams[Constants::TAX] = strval(abs($customerTax));
+                $moneyParams[Constants::COMMISSION] = strval(abs($customerFee));
+            }
+            else if ($this->isFeeCredits($feeCredits, $merchantFee) === true)
+            {
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($amount - ($customerFee + $customerTax));
+                $moneyParams[Constants::TAX] = strval(abs($tax));
+                $moneyParams[Constants::COMMISSION] = strval(abs($commission));
+                $moneyParams[Constants::FEE_CREDITS] = strval($commission + $tax - ($customerFee + $customerTax));
+            }
+            else
+            {
+                // Simplifying the expression -
+                // the payment amount is summation of amount and the customer fee.
+                // We initially obtain the customer fee and tax and subtract it from the total fee and tax to get merchantFee and tax.
+                // $merchantFeeAndTax = $fee + $tax - ($customerFee + $customerTax);
+
+                // the merchant balance amount will be equivalent to
+                // (total payment amount) - (customer side fee and tax) - (merchant fee and tax)
+                //  => $amount - (customerFee + customerTax) - ($merchantFeeAndTax)
+                //  => $amount - (customerFee + customerTax) - ($fee + $tax - ($customerFee + $customerTax))
+                //  => $amount - $fee - $tax
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($amount - $commission - $tax);
+                $moneyParams[Constants::TAX] = strval(abs($tax));
+                $moneyParams[Constants::COMMISSION] = strval(abs($commission));
+            }
         }
         else if($this->isPostpaid($payment) === true)
         {
@@ -328,6 +375,10 @@ class Core extends Base\Core
         if($this->isPostpaid($payment) === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
+        }
+        else if($this->isPrepaidDynamicFeeBearerFlag($payment) and $this->isGratis($amountCredits, $amount) and ($this->shouldDisableAmountCredits($payment) === false))
+        {
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::DFB_AMOUNT_CREDITS;
         }
         else if ($this->isGratisWithoutCustomerFeeBearer($amountCredits, $amount, $payment) and ($this->shouldDisableAmountCredits($payment) === false))
         {

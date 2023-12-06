@@ -117,7 +117,13 @@ class CaptureJournalEvents
             return $rule;
         }
 
-        if($transaction->isFeeCredits() === true)
+        $transactionProcessor = (new Transaction\Processor\payment($transaction));
+
+        if(($transaction->isTypePayment() === true) and ($transactionProcessor->isMerchantPrepaidDFB($transaction->merchant)) and ($transaction->isGratis() === true))
+        {
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::DFB_AMOUNT_CREDITS;
+        }
+        else if($transaction->isFeeCredits() === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::FEE_CREDITS;
         }
@@ -205,6 +211,63 @@ class CaptureJournalEvents
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
         }
+        else if($transaction->isTypePayment() === true and $transaction->merchant !== null  and
+            $transactionProcessor->isMerchantPostpaidDFB($transaction->merchant))
+        {
+            $customerFee = $transaction->getCustomerFee();
+            $customerGst = $transaction->getCustomerTax();
+
+            $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $customerFee - $customerGst);
+            $moneyParams[Constants::TAX]                        = strval(abs($tax));
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
+            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee - $customerFee -$customerGst);
+        }
+        else if($transaction->isTypePayment() === true and $transaction->merchant !== null  and
+            $transactionProcessor->isMerchantPrepaidDFB($transaction->merchant))
+        {
+            $customerFee = $transaction->getCustomerFee();
+            $customerTax = $transaction->getCustomerTax();
+
+            $moneyParams[Constants::GMV_AMOUNT] = strval($amount);
+
+            if ($transaction->isGratis())
+            {
+                // In case of amount credits, only customer fee and tax is deducted
+                // Merchant side fee and tax is waived off.
+
+                $merchantAmount = $amount - $customerFee - $customerTax;
+
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($merchantAmount);
+                $moneyParams[Constants::RAZORPAY_REWARDS]           = strval($merchantAmount);
+                $moneyParams[Constants::AMOUNT_CREDITS]             = strval($merchantAmount);
+                $moneyParams[Constants::TAX] = strval(abs($customerTax));
+                $moneyParams[Constants::COMMISSION] = strval(abs($customerFee));
+            }
+            else if ($transaction->isFeeCredits() === true)
+            {
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($amount - ($customerFee + $customerTax));
+                $moneyParams[Constants::TAX] = strval(abs($tax));
+                $moneyParams[Constants::COMMISSION] = strval(abs($fee));
+                $moneyParams[Constants::FEE_CREDITS] = strval($fee + $tax - ($customerFee + $customerTax));
+            }
+            else
+            {
+                // Simplifying the expression -
+                // the payment amount is summation of amount and the customer fee.
+                // We initially obtain the customer fee and tax and subtract it from the total fee and tax to get merchantFee and tax.
+                // $merchantFeeAndTax = $fee + $tax - ($customerFee + $customerTax);
+
+                // the merchant balance amount will be equivalent to
+                // (total payment amount) - (customer side fee and tax) - (merchant fee and tax)
+                //  => $amount - (customerFee + customerTax) - ($merchantFeeAndTax)
+                //  => $amount - (customerFee + customerTax) - ($fee + $tax - ($customerFee + $customerTax))
+                //  => $amount - $fee - $tax
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($amount - $fee - $tax);
+                $moneyParams[Constants::TAX] = strval(abs($tax));
+                $moneyParams[Constants::COMMISSION] = strval(abs($fee));
+            }
+        }
         else if($transaction->isFeeCredits() === true)
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
@@ -212,18 +275,6 @@ class CaptureJournalEvents
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
             $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $fee);
-        }
-        else if($transaction->isTypePayment() === true and $transaction->merchant !== null  and
-            $transactionProcessor->featureFlagCheckForMerchantPostPaidCustomerFeeNotSettled($transaction->merchant))
-        {
-            $customerFee = $transaction->getCustomerFee();
-            $customerGst = $transaction->getCustomerTax();
-
-            $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
-            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $customerFee - $customerGst);
-            $moneyParams[Constants::TAX]                        = strval(abs($tax) + $customerGst);
-            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee) + $customerFee);
-            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
         }
         else if($transaction->isPostpaid() === true)
         {

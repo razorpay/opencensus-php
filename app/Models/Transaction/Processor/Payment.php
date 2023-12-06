@@ -54,9 +54,9 @@ class Payment extends Base
         if ($payment->hasOrder() === true and
             $payment->order->getFeeConfigId() !== null)
         {
-            $fee = $this->txn->getFee();
+            $fee = $this->fees;
 
-            $tax = $this->txn->getTax();
+            $tax = $this->tax;
 
             $rzpFee = $fee - $tax;
 
@@ -67,9 +67,6 @@ class Payment extends Base
             return [
                 Transaction\Entity::CUSTOMER_FEE => $customerFee,
                 Transaction\Entity::CUSTOMER_TAX => $customerFeeGst,
-                Transaction\Entity::FEE => $fee - ($customerFee + $customerFeeGst),
-                Transaction\Entity::TAX => $tax - $customerFeeGst,
-                Transaction\Entity::DEBIT => $customerFee + $customerFeeGst,
             ];
         }
         return [];
@@ -315,7 +312,8 @@ class Payment extends Base
                 $this->calculateFeeForAmountCredit();
                 break;
 
-            case (($this->feeCredits > 0) and ($this->feeCredits >= $this->fees)):
+            case (($this->feeCredits > 0) and ($this->feeCredits >= ($this->fees - $this->txn->getCustomerFee() - $this->txn->getCustomerTax()))
+                and ($this->txn->isPostpaid() === false)):
                 $this->calculateFeeForFeeCredit();
                 break;
 
@@ -433,6 +431,12 @@ class Payment extends Base
 
         $netAmount = 0;
 
+        // Incase of Dynamic fee bearer, we need to remove customer part of fee that is already paid, from the amount.
+        $customerFeeAndTax = $this->txn->getCustomerFee() + $this->txn->getCustomerTax();
+
+        $amount = $amount - $customerFeeAndTax;
+
+
         switch (true)
         {
             case ($this->source->isHdfcVasDSCustomerFeeBearerSurcharge()):
@@ -446,7 +450,9 @@ class Payment extends Base
                 break;
 
             default:
-                $netAmount = $amount - $this->fees;
+                // Fees has total fees( inclusive of both customer and platform fee)
+                // Hence removing customer fee part, as it has already been extracted above
+                $netAmount = $amount - ($this->fees - $customerFeeAndTax);
         }
         // READ THIS TO UNDERSTAND THE CRED DISCOUNT LOGIC
         // Transaction for cred case is created after payment is captured.

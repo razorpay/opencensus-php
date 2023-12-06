@@ -3740,7 +3740,8 @@ EOT;
         }
 
         $query = $this->newQueryWithConnection($connectionType)
-                      ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                      ->selectRaw('SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee,'.
+                                  'SUM(' . Entity::CONVENIENCE_FEE .') AS customer_fee, SUM(' . Entity::CONVENIENCE_FEE_GST . ') AS customer_tax')
                       ->whereBetween(Entity::CAPTURED_AT, [$start, $end])
                       ->whereNotNull(Entity::TRANSACTION_ID);
 

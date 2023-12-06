@@ -383,12 +383,12 @@ class Entity extends Base\PublicEntity
 
     public function getCustomerFee()
     {
-        return $this->getAttribute(self::CUSTOMER_FEE);
+        return $this->getAttribute(self::CUSTOMER_FEE) ?? 0;
     }
 
     public function getCustomerTax()
     {
-        return $this->getAttribute(self::CUSTOMER_TAX);
+        return $this->getAttribute(self::CUSTOMER_TAX) ?? 0;
     }
 
 /* ----------------------------- Accessors -----------------------------------*/

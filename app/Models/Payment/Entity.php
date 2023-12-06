@@ -6828,6 +6828,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::CONVENIENCE_FEE_GST);
     }
 
+    // For payment in case of and dynamic fee bearer, where customer fee is not settled
+    // We have to make sure that customer fee and customer fee gst is removed from merchant balance and
+    // merchant receivable amount, hence this function.
+    public function getCustomerFeeAndCustomerFeeGst()
+    {
+        if( $this->hasOrder() === true and
+            $this->order->getFeeConfigId() !== null )
+        {
+
+            $customerFee = $this->getConvenienceFee();
+
+            $customerTax = $this->getConvenienceFeeGst();
+
+            return [$customerFee, $customerTax];
+        }
+
+        return [0,0];
+    }
+
     public function getAmountWithoutConvenienceFeeIfApplicable(int $amount, Order\Entity $order)
     {
         if($order->getFeeConfigId() !== null and

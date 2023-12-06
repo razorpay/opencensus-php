@@ -1026,6 +1026,15 @@ class Processor extends Base\Core
 
         $tax = $details['tax'];
 
+        $customerFees = $details['customer_fee'] ?? 0;
+
+        $customerTax = $details['customer_tax'] ?? 0;
+
+        // In dfb payments customer fee is exclusive of customer tax
+        $fees = $fees - ($customerFees + $customerTax);
+
+        $tax = $tax - ($customerTax);
+
         return [
             Entity::TAX    => $tax,
             Entity::AMOUNT => $fees - $tax,
@@ -1070,7 +1079,7 @@ class Processor extends Base\Core
         // charge from the Merchant
 
         $amount = ($bankingPayoutsFees - $bankingPayoutsTax) + ($bankingFAVsFees - $bankingFAVsTax);
-        // We are temporarily reverting back to calculating 18% of the fees(amount) 
+        // We are temporarily reverting back to calculating 18% of the fees(amount)
         // rather than showing what we have actually deducted - $bankingPayoutsTax + $bankingFAVsTax;
         $tax = (int) round($amount * Constants::GST_PERCENTAGE);
 
@@ -1107,7 +1116,7 @@ class Processor extends Base\Core
 
         $amount = ($reversalFees - $reversalTax) + ($bankingFailedPayoutsFees - $bankingFailedPayoutsTax);
 
-        // We are temporarily reverting back to calculating 18% of the fees(amount) 
+        // We are temporarily reverting back to calculating 18% of the fees(amount)
         // rather than showing what we have actually deducted - $reversalTax + $bankingFailedPayoutsTax;
         $tax = (int) round($amount * Constants::GST_PERCENTAGE);
 
