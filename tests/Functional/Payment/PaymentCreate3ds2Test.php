@@ -197,25 +197,6 @@ class PaymentCreate3ds2Test extends TestCase
         self::assertEquals('otp_resend', $data['next'][1]);
     }
 
-    public function testPaymentCreateWithAjax3ds2PaymentWithoutMerchantFeature()
-    {
-        $payment = $this->getDefaultPaymentArray();
-        $request = [
-            'content' => $payment,
-            'url'     => '/payments/create/ajax',
-            'method'  => 'post'
-        ];
-
-        $this->ba->publicAuth();
-        $infoResponse = $this->makeRequestParent($request);
-        $content = $infoResponse->getContent();
-        $data = json_decode($content, TRUE);
-
-        $this->assertEquals("first", $data['type']);
-        self::assertArrayHasKey('url', $data['request']);
-        self::assertArrayHasKey('callback_url', $data['request']['content']);
-    }
-
     public function testPaymentCreateWithCheckout3ds2Payment()
     {
         $payment = $this->payment;

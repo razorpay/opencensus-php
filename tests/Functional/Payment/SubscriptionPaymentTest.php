@@ -404,7 +404,6 @@ class SubscriptionPaymentTest extends TestCase
             ['amount' => $this->cardPayment['amount'],
                 'currency' => 'USD'])->getPublicId();
 
-        $this->fixtures->merchant->addFeatures(['address_required']);
         $this->fixtures->merchant->addFeatures(['avs']);
 
         $this->ba->publicAuth();

@@ -998,16 +998,12 @@ class CardPaymentService
     //Migrate it as part of rearch to send 3ds2 details as part of AREQ
     protected function addThreeDSDetailsIfApplicable(array & $data)
     {
-        if( $data['input'][Entity::MERCHANT]->Is3dsDetailsRequiredEnabled())
+        $network =  strtolower($data['input']['iin']['network']);
+
+        if(in_array($network,Merchant\Constants::listOfNetworksSupportedOn3ds2))
         {
-            $network =  strtolower($data['input']['iin']['network']);
-
-            if(in_array($network,Merchant\Constants::listOfNetworksSupportedOn3ds2))
-            {
-                $data['input']['card']['authentication_out_of_band'] = $this->get3ds2DetailsForNetwork($network, $data['input'][Entity::MERCHANT], Product::PRIMARY);
-            }
+            $data['input']['card']['authentication_out_of_band'] = $this->get3ds2DetailsForNetwork($network, $data['input'][Entity::MERCHANT], Product::PRIMARY);
         }
-
     }
 
     protected function addShieldActionResponseIfApplicable(array & $data)

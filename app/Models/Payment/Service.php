@@ -2264,8 +2264,8 @@ class Service extends Base\Service
         }
 
         if (isset($entity['card']) and
-           ($payment->isRoutedThroughCardPayments() === true || ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)) and
-           ($this->merchant->Is3dsDetailsRequiredEnabled() === true))
+           ($payment->isRoutedThroughCardPayments() === true || ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))
+        )
           {
             $authenticationData = (new Payment\Service)->getAuthenticationEntity3ds2($payment->getPublicId());
             if ((isset($authenticationData['success']) === true) and ($authenticationData['success'] === true))

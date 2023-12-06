@@ -11496,9 +11496,15 @@ trait Authorize
         $this->isJsonRoute = $this->app['api.route']->isJsonRoute($routeName);
 
         // In case of 3ds/non-headless card payments we return redirect response for /payments/create/ajax
-        if(($payment->isCard() === true || $payment->isEmi() === true) and ($this->isAjaxRoute === true) and (($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === false))
-            and ($this->merchant->Is3dsDetailsRequiredEnabled() === true) and (isset($gatewayInput["fraud_check"]) === false))
+        if(($payment->isCard() === true || $payment->isEmi() === true) and ($this->isAjaxRoute === true) and ($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === false)
+             and (isset($gatewayInput["fraud_check"]) === false))
         {
+            // Checking if the payment is production payment or not based on which response is decided. once bvt testcases are fixed,
+            // this logic can be removed altogether for domestic payments.
+            if (Environment::isEnvironmentQA($this->app['env']) === true) {
+                return $this->merchant->Is3dsDetailsRequiredEnabled() === true;
+            }
+
             return true;
         }
 

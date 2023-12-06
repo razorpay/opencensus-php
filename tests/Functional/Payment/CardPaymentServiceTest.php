@@ -5739,6 +5739,9 @@ class CardPaymentServiceTest extends TestCase
 
         $this->app->instance('card.payments', $cardService);
 
+        $cardService->shouldReceive('fetchEntity')
+            ->andReturn([]);
+
         $cardService->shouldReceive('sendRequest')
             ->with('POST', Mockery::type('string'), Mockery::type('array'))
             ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal)
