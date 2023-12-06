@@ -14,13 +14,13 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
-use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Mail\Payment\Failed as PaymentFailedMail;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Mail\Payment\FailedToAuthorized as FailedToAuthorizedMail;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -2153,8 +2153,8 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
-    /*Temporary
-     * public function testUpiAxisOlivePayerCallBack()
+
+    /* public function testUpiAxisOlivePayerCallBack()
     {
         $methods = [
             'upi'           => 1,
@@ -2209,10 +2209,13 @@ class AuthorizeTest extends TestCase
         $this->setMockGatewayTrue();
 
         $callbackResponse = $this->makeS2sCallbackAndGetContent($callbackRequest, 'payer/upi_axisolive');
-
+        $trace = debug_backtrace($callbackRequest, 2);
         $this->assertEquals(['success' => true], $callbackResponse);
 
         $payment->reload();
+
+        $actualReference17 = json_decode($payment->getReference17(), true);
+        $this->assertNotNull($actualReference17['payer']['created_at']);
 
         $expectedRef17 = [
             'payer' => [
@@ -2224,5 +2227,74 @@ class AuthorizeTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedRef17, json_decode($payment->getReference17(), true));
-    }*/
+    }
+
+    public function testUpiAxisOliveStorePayerCallBack()
+    {
+        $methods = [
+            'upi'           => 1,
+            'addon_methods' => [
+                'upi' => [
+                    'in_app' => 1
+                ]
+            ]
+        ];
+
+        $this->fixtures->edit('methods', '10000000000000', $methods);
+
+        $payment = $this->getDefaultUpiBlockIntentPaymentArray();
+        $payment['upi']['flow'] = 'in_app';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $payment->setGateway('upi_axisolive');
+        $payment->save();
+
+        $this->assertEquals('in_app', $response['type']);
+
+        $callbackRequest = [
+            'request' => [
+                'method' => 'POST',
+                'url' => '/callback/payer/upi_axisolive',
+                'content' => 'random PGP Message'
+            ]
+        ];
+
+        $this->ba->directAuth();
+
+        $gatewayMock = Mockery::mock('overload:RZP\Gateway\Mozart\Mock\Gateway')
+            ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $gatewayMock->shouldReceive('preProcessServerCallback')
+                    ->andReturn([
+                                    'data' => [
+                                        'upi' => [
+                                            'status_code' => '00',
+                                            'npci_txn_id' => $payment->getReference1(),
+                                        ]
+                                    ]
+                                ]);
+
+        $gatewayMock->shouldReceive('setMock')->andReturn([]);
+
+        $this->setMockGatewayTrue();
+
+        $callbackResponse = $this->makeS2sCallbackAndGetContent($callbackRequest, 'payer/upi_axisolive');
+
+        $this->assertEquals(['success' => true], $callbackResponse);
+
+        $payment->reload();
+        $actualReference17 = json_decode($payment->getReference17(), true);
+
+        $this->assertNotNull($actualReference17['payer']['created_at']);
+        $this->assertArrayNotHasKey('public_error_code', $actualReference17['payer']);
+        $this->assertArrayNotHasKey('error_description', $actualReference17['payer']);
+        $this->assertArrayNotHasKey('error_reason', $actualReference17['payer']);
+        $this->assertArrayNotHasKey('primary', $actualReference17['payer']);
+    } */
+
 }

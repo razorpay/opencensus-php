@@ -7751,11 +7751,6 @@ class Service extends Base\Service
         $axisTxnId  = $upiData[\RZP\Gateway\Upi\Base\Entity::NPCI_TXN_ID];
         $statusCode = $upiData[\RZP\Gateway\Upi\Base\Entity::STATUS_CODE];
 
-        if ($statusCode === '00')
-        {
-            return $successResponse;
-        }
-
         [$payment, $mode] = $this->fetchPaymentByGatewayTransactionId(Gateway::UPI_AXISOLIVE, $axisTxnId);
 
         if ($payment === null)
@@ -7767,16 +7762,14 @@ class Service extends Base\Service
 
             return $failureResponse;
         }
-        else
-        {
-            $this->trace->info(TraceCode::TURBO_PAYMENT_FETCH_SUCCESSFUL,
-                               [
-                                   'id'          => $payment->getId(),
-                                   'merchant_id' => $payment->getMerchantId(),
-                                   'status'      => $payment->getStatus(),
-                                   'mode'        => $mode
-                               ]);
-        }
+        $this->trace->info(TraceCode::TURBO_PAYMENT_FETCH_SUCCESSFUL,
+            [
+                'id'          => $payment->getId(),
+                'merchant_id' => $payment->getMerchantId(),
+                'status'      => $payment->getStatus(),
+                'mode'        => $mode
+            ]
+        );
 
         try
         {

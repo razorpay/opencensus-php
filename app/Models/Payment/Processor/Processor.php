@@ -10894,11 +10894,6 @@ class Processor
     {
         $errorDetails = Utils::getErrorDetailsFromGatewayStatusCode(Payment\Gateway::UPI_AXISOLIVE, $statusCode);
 
-        if (empty($errorDetails) === true)
-        {
-            return;
-        }
-
         $this->setPayment($payment);
 
         $this->mutex->acquireAndRelease(
@@ -10909,20 +10904,21 @@ class Processor
                     $this->lockForUpdateAndReload($payment);
 
                     $reference17 = json_decode($payment->getReference17(), true) ?? [];
-
-                    $reference17['payer'] = $errorDetails;
-
-                    $reference17['payer']['primary'] = ($payment->getStatus() === Payment\Status::CREATED);
-
+                    if (empty($errorDetails) === false)
+                    {
+                        $reference17['payer'] = $errorDetails;
+                        $reference17['payer']['primary'] = ($payment->getStatus() === Payment\Status::CREATED);
+                    }
+                    $reference17['payer']['created_at'] = time();
                     $payment->setReference17(json_encode($reference17));
-
                     $this->repo->saveOrFail($payment);
 
                     $this->trace->info(TraceCode::TURBO_PAYMENT_REFERENCE17_UPDATE_SUCCESSFUL,
-                                       [
-                                           'action'      => 'payer_callback',
-                                           'reference17' => $reference17,
-                                       ]);
+                        [
+                            'action'      => 'payer_callback',
+                            'reference17' => $reference17,
+                        ]);
+
                 });
             },
             60,
