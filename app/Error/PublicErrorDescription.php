@@ -747,6 +747,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_RECONCILIATION                                            = 'Error occurred during reconciliation';
     const BAD_REQUEST_INVALID_COUNTRY                                           = 'Invalid country code/name passed';
+    const BAD_REQUEST_INVALID_COUNTRY_PIN                                       = 'Invalid country pin passed';
 
     const BAD_REQUEST_GATEWAY_CANNOT_TOPUP                                      = 'Payment processing failed because topup cannot be done';
     const BAD_REQUEST_INVALID_XML_SCHEMA                                        = 'Payment failed because of invalid data';

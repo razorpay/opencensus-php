@@ -15,9 +15,9 @@ use RZP\Models\Merchant\Store;
 use RZP\Models\Coupon\Constants;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\Detail\Core;
-use RZP\Models\Merchant\Detail\Entity;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Services\KafkaProducerClient;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Services\Mock\ApachePinotClient;
 use RZP\Models\ClarificationDetail\Service;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -2643,7 +2643,6 @@ class CoreTest extends TestCase
 
         $this->assertEquals($merchantDetail->getBusinessRegisteredState(), 'MLK');
     }
-
     public function testMalaysiaBusinessRegisteredStateCodeValidation()
     {
         $this->expectException(BadRequestValidationFailureException::class);
@@ -2651,6 +2650,29 @@ class CoreTest extends TestCase
 
         $input = [
             DetailEntity::BUSINESS_REGISTERED_STATE => 'Malacca'
+        ];
+
+        (new DetailEntity)->build($input);
+    }
+
+    public function testIndiaValidBusinessRegisteredPin()
+    {
+        $input = [
+            DetailEntity::BUSINESS_REGISTERED_PIN => '560048',     // India pin code
+        ];
+
+        $merchantDetail = (new DetailEntity)->build($input);
+
+        $this->assertEquals($merchantDetail->getBusinessRegisteredPin(), '560048');
+    }
+
+    public function testIndiaInvalidBusinessRegisteredPin()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_INVALID_COUNTRY_PIN);
+
+        $input = [
+            DetailEntity::BUSINESS_REGISTERED_PIN => '123',     // India pin code
         ];
 
         (new DetailEntity)->build($input);

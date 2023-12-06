@@ -2532,6 +2532,11 @@ class Core extends Base\Core
                     'response' => $pgosResponse
                 ]);
 
+                if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                }
+
                 $merchantDetails = $this->getMerchantDetails($merchant);
                 return $merchantDetails;
             }
