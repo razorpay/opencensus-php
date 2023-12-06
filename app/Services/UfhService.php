@@ -306,6 +306,13 @@ class UfhService
             $storageFileName = "opgsp_invoice/" . implode('/', $fileNameArray) . '/' . $entity->getId() . '/' . $fileNameFromPath;
         }
 
+        if($type === GenericDocumentConstants::JPMC_INVOICE)
+        {
+            $fileNameArray= (explode("/",$storageFileName));
+            $fileNameFromPath = array_pop($fileNameArray);
+            $storageFileName = "jpmc_invoice/" . implode('/', $fileNameArray) . '/' . $entity->getId() . '/' . $fileNameFromPath;
+        }
+
         $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
 
         $requestData = $this->getRequestData($file, $movedFile, $storageFileName, $type, $entity, $metadata);

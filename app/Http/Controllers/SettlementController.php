@@ -990,6 +990,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function triggerFileGeneration()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->triggerFileGeneration($input);
+
+        return ApiResponse::json($data);
+    }
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('1024M');

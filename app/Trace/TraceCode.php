@@ -10780,6 +10780,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const JPMC_INVOICE_SAVE_SUCCESS                            = 'JPMC_INVOICE_SAVE_SUCCESS';
     const JPMC_INVOICE_SAVE_FAILED                             = 'JPMC_INVOICE_SAVE_FAILED';
     const INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW                 = 'INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW';
+    const JPMC_TRANSACTION_META                                = 'JPMC_TRANSACTION_META';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

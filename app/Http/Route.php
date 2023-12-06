@@ -1084,6 +1084,7 @@ class Route
         'setl_insert_new_transaction_records'      => ['post',     'settlements/optimizer/insert_external_transactions','SettlementController@insertExternalTransactionRecord'           ],
         'setl_update_execution_transaction_count'  => ['put',      'settlements/optimizer/update_transaction_count', 'SettlementController@updateTransactionCountOfExecution'            ],
         'setl_update_optimiser_execution_status'   => ['put',      'settlements/optimizer/update_status_of_execution','SettlementController@updateStatusofOptimiserExecution'            ],
+        'setl_trigger_file_generation'             => ['post',     'settlements/file_generation',                    'SettlementController@triggerFileGeneration'                                ],
 
 
 
@@ -5664,6 +5665,7 @@ class Route
         'setl_service_migration',
         'setl_service_blocked_migration',
         'setl_entity_alerts',
+        'setl_trigger_file_generation',
         'settlement_ondemand_feature_enable',
         'early_settlement_feature_period_create',
         'settlement_ondemand_partial_scheduled',
@@ -15965,6 +15967,7 @@ class Route
             'setl_service_migration',
             'setl_service_blocked_migration',
             'setl_entity_alerts',
+            'setl_trigger_file_generation',
             'vendor_payment_upcoming_mail_cron',
             'vendor_payment_gst_input_credit_sync_cron',
             'payout_links_expire_cron',

@@ -7170,10 +7170,18 @@ class Service extends Base\Service
                         Error\ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID);
                 }
 
-                if(!$payment->merchant->isOpgspImportEnabled())
+                if((!$payment->merchant->isOpgspImportEnabled()) and
+                   ($payment->merchant->isJpmcImportFlowEnabled() === false))
                 {
                     throw new Exception\BadRequestException(
                         Error\ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID);
+                }
+
+                if (in_array($payment->getStatus(), 
+                        [Payment\Status::FAILED, Payment\Status::REFUNDED], true) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        Error\ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS);
                 }
 
                 $paymentDocument = (new InvoiceService())->findByPaymentIdDocumentType($id, $documentType);
@@ -7248,6 +7256,13 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
+        if((!$merchant->isOpgspImportEnabled()) and
+           ($merchant->isJpmcImportFlowEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_INVALID_ACTION);
+        }
+
         $mutexKey = InvoiceConstants::MUTEX_MERCHANT_PAYMENT_DOCUMENT_UPLOAD_PREFIX
             . $merchant->getId() . "_" . $input['purpose'] . "_" . $documentNumber;
 
@@ -7282,6 +7297,15 @@ class Service extends Base\Service
 
                     throw new Exception\BadRequestValidationFailureException(
                         'Duplicate request for invoice', 'invoice number');
+                }
+
+                $payment = $this->repo->payment->findByIdAndMerchant($paymentDocument[InvoiceEntity::ENTITY_ID], $merchant);
+
+                if (in_array($payment->getStatus(), 
+                        [Payment\Status::FAILED, Payment\Status::REFUNDED], true) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        Error\ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS);
                 }
 
                 $uploadResponse = (new DocumentService())->uploadDocument($input);

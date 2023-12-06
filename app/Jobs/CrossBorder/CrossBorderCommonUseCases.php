@@ -455,7 +455,8 @@ class CrossBorderCommonUseCases extends Job
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if($merchant->isOpgspImportSettlementEnabled() === false)
+        if(($merchant->isOpgspImportSettlementEnabled() === false) and 
+           ($merchant->isJpmcImportFlowEnabled() === false))
         {
             $this->trace->info(TraceCode::IMPORT_FLOW_MISSING_RISK_VALIDATION, [
                 'input'      => $input,
@@ -495,6 +496,12 @@ class CrossBorderCommonUseCases extends Job
         foreach($paymentSupportingDocuments as $document)
         {
             if ($document[InvoiceEntity::TYPE] === InvoiceType::OPGSP_INVOICE and
+                isset($document[InvoiceEntity::REF_NUM]))
+            {
+                $isInvoiceUploaded = true;
+            }
+
+            if ($document[InvoiceEntity::TYPE] === InvoiceType::JPMC_INVOICE and
                 isset($document[InvoiceEntity::REF_NUM]))
             {
                 $isInvoiceUploaded = true;

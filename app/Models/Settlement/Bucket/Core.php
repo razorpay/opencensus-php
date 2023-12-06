@@ -26,10 +26,15 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Jobs\Settlement\TransactionMigrationPublish;
 use RZP\Models\Transfer\Constant as TransferConstant;
 use RZP\Constants\Country;
+use RZP\Models\Merchant\InternationalIntegration\Service as MIIService;
 
 class Core extends Base\Core
 {
     const SETTLEMENT_TRANSACTION = 'settlement_transaction';
+
+    const JPMC_IMPORT_FLOW_TRANSACTION_TYPES = [
+        'payment',
+    ];
 
     protected $preference;
 
@@ -412,6 +417,16 @@ class Core extends Base\Core
             $meta = $this->getMetaForSource($txn);
         }
 
+        if($txn->merchant->isJpmcImportFlowEnabled() === true)
+        {
+            if(empty($meta) === true || isset($meta) === false)
+            {
+                $meta = [];
+            }
+
+            $meta = $this->getMetaforJpmcImportFlow($txn, $meta); 
+        }
+
         $onHoldReason = ($txn->getOnHold() === true) ? 'created with transaction on hold' : '';
 
         $payload = [
@@ -457,6 +472,80 @@ class Core extends Base\Core
 
             throw $e;
         }
+    }
+
+    private function getMetaforJpmcImportFlow(Transaction\Entity $txn, array $meta)
+    {
+        if (in_array($txn->getType(), self::JPMC_IMPORT_FLOW_TRANSACTION_TYPES) === false)
+        {
+            return $meta;
+        }
+
+        $paymentEntity = null;
+        $orderEntity = null;
+        $refundEntity = null;
+        $merchantEntity = null;
+        $notes = [];
+        $cartInfo = [];
+        $hsCodeData = (new MIIService())->getMerchantHsCode($txn->getMerchantId());
+
+        if ($txn->isTypePayment() === true)
+        {
+            $paymentEntity = $txn->source;
+            $orderEntity = $paymentEntity->order;
+            $merchantEntity = $paymentEntity->merchant;
+            $cartInfo = $paymentEntity->order->getCartInfoOrderMeta();
+            $notes = $paymentEntity->getNotes()->toArray();
+        }
+
+        $paymentDetails = [
+            'id'                => $paymentEntity->getId(),
+            'invoice_number'    => $notes['invoice_number'] ?? '',
+            'goods_description' => $notes['goods_description'] ?? '',
+            'created_at'        => $paymentEntity->getCreatedAt(),
+            'amount'            => $paymentEntity->getAmount(),
+            'currency'          => $paymentEntity->getCurrency(),
+            'base_amount'       => $paymentEntity->getBaseAmount(),
+            'customer_id'       => $paymentEntity->customer->getId(),
+        ];
+
+        $orderDetails = [
+            'id'                => $orderEntity->getId(),
+            'amount'            => $orderEntity->getAmount(),
+            'currency'          => $orderEntity->getCurrency(),
+            'customer_id'       => $orderEntity->getCustomerId(),
+            'shipping_details'  => $cartInfo['shipping_details'] ?? '',
+        ];
+
+        $merchantDetails = [
+            'id'                => $merchantEntity->getId(),
+            'purpose_code'      => $merchantEntity->getPurposeCode(),
+            'hs_code'           => $hsCodeData['hs_code'] ?? '',
+        ];
+
+        $combinedDetails = [
+            'payment_details'   => $paymentDetails,
+            'order_details'     => $orderDetails,
+            'merchant_details'  => $merchantDetails,
+        ];
+
+        $jpmcDetails = [
+            'jpmc_details'      => $combinedDetails,
+        ];
+
+        $meta += $jpmcDetails;
+
+        $this->trace->info(
+                TraceCode::JPMC_TRANSACTION_META,
+                [
+                    'transaction_id' => $txn->getId(),
+                    'merchant_id'    => $txn->getMerchantId(),
+                    'source_id'      => $txn->getEntityId(),
+                    'source_type'    => $txn->getType(),
+                    'meta'           => $meta,
+                ]);
+
+        return $meta;
     }
 
     private function getRemitterName(Payment\Entity $payment) {

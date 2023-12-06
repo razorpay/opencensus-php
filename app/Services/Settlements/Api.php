@@ -347,4 +347,16 @@ class Api extends Base
     {
         return $this->makeRequest(self::SETTLEMENT_UPDATE_EXECUTION_STATUS, $input, self::SERVICE_API);
     }
+
+    /**
+     * trigger file generation for cross border import flow settlements
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function triggerFileGeneration(array $input) : array
+    {
+        return $this->makeRequest(self::FILE_GENERATION_TRIGGER, $input, self::SERVICE_API);
+    }
 }

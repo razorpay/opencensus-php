@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\International;
 
+use Queue;
 use Mockery;
 use Illuminate\Support\Facades\App;
 use Illuminate\Database\Eloquent\Factory;
@@ -20,6 +21,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\InternationalIntegration;
+use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -1693,6 +1695,7 @@ class CBPaymentCreateTest extends TestCase
             ],
         ]);
 
+        // create order
         $order = $this->fixtures->create('order', 
             [
                 'amount' => 1000,
@@ -1707,6 +1710,7 @@ class CBPaymentCreateTest extends TestCase
                 'type'     => 'cart_info',
             ]);
 
+        // create payment
         $payment = $this->getDefaultPaymentArray();
 
         $payment['amount'] = '1000';
@@ -1727,6 +1731,7 @@ class CBPaymentCreateTest extends TestCase
         $this->assertArrayHasKey('razorpay_signature', $response);
         $this->assertEquals($order->getPublicId(), $response['razorpay_order_id']);
 
+        // validate payment authorized and details saved
         $paymentEntity = $this->getDbLastPayment();
 
         $this->assertEquals('authorized', $paymentEntity['status']);
@@ -1734,8 +1739,18 @@ class CBPaymentCreateTest extends TestCase
         $this->assertEquals($payment['notes']['invoice_number'], $paymentEntity['notes']['invoice_number']);
         $this->assertEquals($payment['notes']['goods_description'], $paymentEntity['notes']['goods_description']);
 
+        // validate payment invoice updated
+        $paymentInvoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($paymentEntity['id'], $paymentInvoice['entity_id']);
+        $this->assertEquals('jpmc_invoice', $paymentInvoice['type']);
+        $this->assertEquals($paymentEntity['notes']['invoice_number'], $paymentInvoice['receipt']);
+        $this->assertNull($paymentInvoice['ref_num']);
+
+        // capture payment
         $this->capturePayment($response['razorpay_payment_id'], $paymentEntity['amount'], $paymentEntity['currency'], $paymentEntity['amount']);
 
+        // validate payment captured and txn on_hold
         $paymentEntity = $this->getDbLastPayment();
         $transactionEntity = $paymentEntity->transaction;
 
@@ -1743,7 +1758,33 @@ class CBPaymentCreateTest extends TestCase
         $this->assertTrue($paymentEntity['captured']);
 
         $this->assertEquals($paymentEntity['amount'], $transactionEntity['amount']);
-        $this->assertTrue( $transactionEntity['on_hold']);
+        $this->assertTrue($transactionEntity['on_hold']);
+
+        // upload invoice flow
+        Queue::fake();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId , $merchantUser['id']);
+
+        $request = [
+            'url'       => '/payment/' . $paymentEntity['id'] . '/update_merchant_doc',
+            'method'    => 'patch',
+            'content'   => [
+                'document_id'   => "doc_1234567890",
+                'document_type' => "jpmc_invoice"
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['document_updated']);
+
+        $paymentInvoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($request['content']['document_id'], $paymentInvoice['ref_num']);
+
+        Queue::assertPushed(CrossBorderCommonUseCases::class, 1);
     }
 
     public function testJPMCImportFlowPaymentWithInvalidIntlCardMethod()
@@ -1920,6 +1961,7 @@ class CBPaymentCreateTest extends TestCase
             ],
         ]);
 
+        // create order
         $order = $this->fixtures->create('order', 
             [
                 'amount' => 1000,
@@ -1934,6 +1976,7 @@ class CBPaymentCreateTest extends TestCase
                 'type'     => 'cart_info',
             ]);
 
+        // create payment
         $payment = $this->getDefaultNetbankingPaymentArray();
 
         $payment['amount'] = '1000';
@@ -1954,6 +1997,7 @@ class CBPaymentCreateTest extends TestCase
         $this->assertArrayHasKey('razorpay_signature', $response);
         $this->assertEquals($order->getPublicId(), $response['razorpay_order_id']);
 
+        // validate payment authorized and details saved
         $paymentEntity = $this->getDbLastPayment();
 
         $this->assertEquals('authorized', $paymentEntity['status']);
@@ -1961,8 +2005,18 @@ class CBPaymentCreateTest extends TestCase
         $this->assertEquals($payment['notes']['invoice_number'], $paymentEntity['notes']['invoice_number']);
         $this->assertEquals($payment['notes']['goods_description'], $paymentEntity['notes']['goods_description']);
 
+        // validate payment invoice updated
+        $paymentInvoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($paymentEntity['id'], $paymentInvoice['entity_id']);
+        $this->assertEquals('jpmc_invoice', $paymentInvoice['type']);
+        $this->assertEquals($paymentEntity['notes']['invoice_number'], $paymentInvoice['receipt']);
+        $this->assertNull($paymentInvoice['ref_num']);
+
+        // capture payment
         $this->capturePayment($response['razorpay_payment_id'], $paymentEntity['amount'], $paymentEntity['currency'], $paymentEntity['amount']);
 
+        // validate payment captured and txn on_hold
         $paymentEntity = $this->getDbLastPayment();
         $transactionEntity = $paymentEntity->transaction;
 
@@ -1970,7 +2024,33 @@ class CBPaymentCreateTest extends TestCase
         $this->assertTrue($paymentEntity['captured']);
 
         $this->assertEquals($paymentEntity['amount'], $transactionEntity['amount']);
-        $this->assertTrue( $transactionEntity['on_hold']);
+        $this->assertTrue($transactionEntity['on_hold']);
+
+        // upload invoice flow
+        Queue::fake();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId , $merchantUser['id']);
+
+        $request = [
+            'url'       => '/payment/' . $paymentEntity['id'] . '/update_merchant_doc',
+            'method'    => 'patch',
+            'content'   => [
+                'document_id'   => "doc_1234567890",
+                'document_type' => "jpmc_invoice"
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['document_updated']);
+
+        $paymentInvoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($request['content']['document_id'], $paymentInvoice['ref_num']);
+
+        Queue::assertPushed(CrossBorderCommonUseCases::class, 1);
     }
 
     public function testJPMCImportFlowPaymentUPIMethodSuccess()
@@ -2003,6 +2083,7 @@ class CBPaymentCreateTest extends TestCase
             ],
         ]);
 
+        // create order
         $order = $this->fixtures->create('order', 
             [
                 'amount' => 1000,
@@ -2017,6 +2098,7 @@ class CBPaymentCreateTest extends TestCase
                 'type'     => 'cart_info',
             ]);
 
+        // create payment
         $payment = $this->getDefaultUpiPaymentArray();
 
         $payment['amount'] = '1000';
@@ -2034,6 +2116,7 @@ class CBPaymentCreateTest extends TestCase
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
+        // validate payment authorized and details saved
         $paymentEntity = $this->getDbLastPayment();
 
         $this->assertEquals('authorized', $paymentEntity['status']);
@@ -2041,8 +2124,18 @@ class CBPaymentCreateTest extends TestCase
         $this->assertEquals($payment['notes']['invoice_number'], $paymentEntity['notes']['invoice_number']);
         $this->assertEquals($payment['notes']['goods_description'], $paymentEntity['notes']['goods_description']);
 
+        // validate payment invoice updated
+        $paymentInvoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($paymentEntity['id'], $paymentInvoice['entity_id']);
+        $this->assertEquals('jpmc_invoice', $paymentInvoice['type']);
+        $this->assertEquals($paymentEntity['notes']['invoice_number'], $paymentInvoice['receipt']);
+        $this->assertNull($paymentInvoice['ref_num']);
+
+        // capture payment
         $this->capturePayment($response['razorpay_payment_id'], $paymentEntity['amount'], $paymentEntity['currency'], $paymentEntity['amount']);
 
+        // validate payment captured and txn on_hold
         $paymentEntity = $this->getDbLastPayment();
         $transactionEntity = $paymentEntity->transaction;
 
@@ -2050,7 +2143,33 @@ class CBPaymentCreateTest extends TestCase
         $this->assertTrue($paymentEntity['captured']);
 
         $this->assertEquals($paymentEntity['amount'], $transactionEntity['amount']);
-        $this->assertTrue( $transactionEntity['on_hold']);
+        $this->assertTrue($transactionEntity['on_hold']);
+
+        // upload invoice flow
+        Queue::fake();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId , $merchantUser['id']);
+
+        $request = [
+            'url'       => '/payment/' . $paymentEntity['id'] . '/update_merchant_doc',
+            'method'    => 'patch',
+            'content'   => [
+                'document_id'   => "doc_1234567890",
+                'document_type' => "jpmc_invoice"
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['document_updated']);
+
+        $paymentInvoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($request['content']['document_id'], $paymentInvoice['ref_num']);
+
+        Queue::assertPushed(CrossBorderCommonUseCases::class, 1);
     }
 
     public function testJPMCImportFlowPaymentWithNoOrderShippingAddress()
