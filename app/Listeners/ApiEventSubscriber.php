@@ -580,7 +580,7 @@ class ApiEventSubscriber extends Base\Core
                         'merchant_id'         => $payment->getMerchantId(),
                         'type'                => 'create_order',
                         'dispatch_time'       => millitime() - $start,
-                    ])->delay(now()->addMinutes(5));
+                    ])->delay(now()->addSeconds(45));
 
                     // To debug payloads not being handled properly in sqs
                     $this->trace->info(

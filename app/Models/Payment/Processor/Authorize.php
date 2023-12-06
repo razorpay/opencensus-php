@@ -13495,7 +13495,7 @@ trait Authorize
                         'merchant_id'         => $this->merchant->getId(),
                         'type'                => 'create_order',
                         'dispatch_time'       => millitime() - $start,
-                    ])->delay(now()->addMinutes(5));
+                    ])->delay(now()->addSeconds(45));
 
                     // To debug payloads not being handled properly in sqs
                     $this->trace->info(
