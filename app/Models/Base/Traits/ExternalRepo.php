@@ -6,6 +6,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\Admin\ConfigKey;
@@ -13,6 +14,8 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 
 trait ExternalRepo
 {
@@ -24,20 +27,43 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        try
-        {
-            return parent::findByPublicId($id, $connectionType);
-        }
-        catch (\Throwable $e) {}
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
 
-        try
+        if ($experimentResult === 'on')
         {
-            if (Entity::validateExternalRepoEntity($this->entityName) === true and $this->validateExternalFetchEnabled() === true )
+            try
             {
-                return $this->fetchExternalEntity($id);
+                if (Entity::validateExternalRepoEntity($this->entityName) === true and $this->validateExternalFetchEnabled() === true )
+                {
+                    return $this->fetchExternalEntity($id);
+                }
             }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                return parent::findByPublicId($id, $connectionType);
+            }
+            catch (\Throwable $e) {}
+
         }
-        catch (\Throwable $e) {}
+        else
+        {
+            try
+            {
+                return parent::findByPublicId($id, $connectionType);
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if (Entity::validateExternalRepoEntity($this->entityName) === true and $this->validateExternalFetchEnabled() === true )
+                {
+                    return $this->fetchExternalEntity($id);
+                }
+            }
+            catch (\Throwable $e) {}
+        }
 
         return $this->findByPublicIdArchived($id);
     }
@@ -50,26 +76,54 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        try
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
+
+        if ($experimentResult === 'on')
         {
-            $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
-
-            $class = Entity::getExternalRepoSingleton($this->entity);
-
-            $this->handleOrderExpands($params,$this->entity, $entity, $id, $class, $merchant->getId());
-
-            return $entity;
-        }
-        catch (\Throwable $e) {}
-
-        try
-        {
-            if ($this->validateExternalFetchEnabled() === true)
+            try
             {
-                return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                }
             }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
+
+                $class = Entity::getExternalRepoSingleton($this->entity);
+
+                $this->handleOrderExpands($params,$this->entity, $entity, $id, $class, $merchant->getId());
+
+                return $entity;
+            }
+            catch (\Throwable $e) {}
         }
-        catch (\Throwable $e) {}
+        else
+        {
+            try
+            {
+                $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
+
+                $class = Entity::getExternalRepoSingleton($this->entity);
+
+                $this->handleOrderExpands($params,$this->entity, $entity, $id, $class, $merchant->getId());
+
+                return $entity;
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                }
+            }
+            catch (\Throwable $e) {}
+        }
 
         $entity =  $this->findByPublicIdAndMerchantArchived($id, $merchant, $params);
 
@@ -88,20 +142,42 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        try
-        {
-            return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
-        }
-        catch (\Throwable $e) {}
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
 
-        try
+        if ($experimentResult === 'on')
         {
-            if ($this->validateExternalFetchEnabled() === true)
+            try
             {
-                return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                }
             }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
+            }
+            catch (\Throwable $e) {}
         }
-        catch (\Throwable $e) {}
+        else
+        {
+            try
+            {
+                return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                }
+            }
+            catch (\Throwable $e) {}
+        }
 
         return $this->findByIdAndMerchantArchived($id, $merchant, $params);
     }
@@ -110,20 +186,42 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        try
-        {
-            return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
-        }
-        catch (\Throwable $e) {}
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
 
-        try
+        if ($experimentResult === 'on')
         {
-            if ($this->validateExternalFetchEnabled() === true)
+            try
             {
-                return $this->fetchExternalEntity($id, $merchantId);
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, $merchantId);
+                }
             }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+            }
+            catch (\Throwable $e) {}
         }
-        catch (\Throwable $e) {}
+        else
+        {
+            try
+            {
+                return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, $merchantId);
+                }
+            }
+            catch (\Throwable $e) {}
+        }
 
         return $this->findByIdAndMerchantIdArchived($id, $merchantId);
     }
@@ -132,20 +230,42 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        try
-        {
-            return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
-        }
-        catch (\Throwable $e) {}
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
 
-        try
+        if ($experimentResult === 'on')
         {
-            if ($this->validateExternalFetchEnabled() === true)
+            try
             {
-                return $this->fetchExternalEntity($id, "", $params);
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, "", $params);
+                }
             }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+            }
+            catch (\Throwable $e) {}
         }
-        catch (\Throwable $e) {}
+        else
+        {
+            try
+            {
+                return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, "", $params);
+                }
+            }
+            catch (\Throwable $e) {}
+        }
 
         return $this->findOrFailByPublicIdWithParamsArchived($id, $params);
     }
@@ -154,20 +274,43 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        try
-        {
-            return parent::findOrFailPublic($id, $columns, $connectionType);
-        }
-        catch (\Throwable $e) {}
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
 
-        try
+        if ($experimentResult === 'on')
         {
-            if ($this->validateExternalFetchEnabled() === true)
+            try
             {
-                return $this->fetchExternalEntity($id, "");
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, "");
+                }
             }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                return parent::findOrFailPublic($id, $columns, $connectionType);
+            }
+            catch (\Throwable $e) {}
         }
-        catch (\Throwable $e) {}
+        else
+        {
+            try
+            {
+                return parent::findOrFailPublic($id, $columns, $connectionType);
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, "");
+                }
+            }
+            catch (\Throwable $e) {}
+        }
+
 
         return $this->findOrFailPublicArchived($id, $columns);
     }
@@ -176,20 +319,42 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        try
-        {
-            return parent::findOrFail($id, $columns, $connectionType);
-        }
-        catch (\Throwable $e) {}
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::FLIP_PAYMENT_READS, Mode::LIVE);
 
-        try
+        if ($experimentResult === 'on')
         {
-            if ($this->validateExternalFetchEnabled() === true)
+            try
             {
-                return $this->fetchExternalEntity($id, "");
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, "");
+                }
             }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                return parent::findOrFail($id, $columns, $connectionType);
+            }
+            catch (\Throwable $e) {}
         }
-        catch (\Throwable $e) {}
+        else
+        {
+            try
+            {
+                return parent::findOrFail($id, $columns, $connectionType);
+            }
+            catch (\Throwable $e) {}
+
+            try
+            {
+                if ($this->validateExternalFetchEnabled() === true)
+                {
+                    return $this->fetchExternalEntity($id, "");
+                }
+            }
+            catch (\Throwable $e) {}
+        }
 
         return $this->findOrFailOnlyArchived($id, $columns);
     }

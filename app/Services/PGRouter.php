@@ -104,9 +104,8 @@ class PGRouter
     const PG_ROUTER_FAILURE_STATUS_CODE = "pg_router_failure_status_code";
 
     const PGRouterValidateAndCreatePaymentUpi = 'v1/payments/create/upi';
-    
     const PGRouterValidateAndCreatePaymentRecurring = 'v1/payments/create/recurring';
-    
+
     const PG_ROUTER_REQUEST_FAILURE = "pg_router_request_failure";
 
     // Headers
@@ -221,15 +220,15 @@ class PGRouter
 
         return $output['body'];
     }
-    
+
     public function validateAndCreatePaymentRecurring(array $input, bool $throwExceptionOnFailure = false): array
     {
         $this->updateIpandUserAgent($input, true);
-        
+
         $this->currentEndPoint = self::PGRouterValidateAndCreatePaymentRecurring;
-        
+
         $output = $this->sendRequest(self::PGRouterValidateAndCreatePaymentRecurring, Requests::POST, $input, $throwExceptionOnFailure, 90);
-        
+
         return $output['body'];
     }
 
@@ -1271,7 +1270,8 @@ class PGRouter
 
         $headers['PHP_AUTH_USER'] = $this->auth->getPublicKey();
 
-        if (in_array($this->app['api.route']->getCurrentRouteName(), self::MERCHANT_BASED_ROUTES) === true)
+        if ((in_array($this->app['api.route']->getCurrentRouteName(), self::MERCHANT_BASED_ROUTES) === true) or
+            ($this->currentEndPoint === self::PGRouterFetchPayment))
         {
             $headers['MERCHANT_BASED_ROUTE'] = true;
         }
