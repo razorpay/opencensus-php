@@ -1312,6 +1312,7 @@ return [
                     'merchant_id'   => 'Lx9w1GwyFQLTsl',
                     'name'          => 'ABC Pvt Ltd',
                     'va_enabled'    => true,
+                    'multi_account_routing_enabled' => true,
                     'banking_account_applications'  => [
                         'id'            => 'Lx9w1GwyFQLTsb',
                         'partner_bank'  => 'RBL',

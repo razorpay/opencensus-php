@@ -192,6 +192,8 @@ class Constants
 
     const VA_ENABLED = 'va_enabled';
 
+    const MULTI_ACCOUNT_ROUTING_ENABLED = 'multi_account_routing_enabled';
+
     const BAS_BUSINESS_ID = 'bas_business_id';
 
     const IS_CA_TRANSFER = 'is_ca_transfer';

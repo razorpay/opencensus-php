@@ -1919,13 +1919,17 @@ class Service extends Base\Service
             return [];
         }
 
-        $vaEnabledMerchantIds = $this->repo->banking_account->fetchMerchantIdsWithActivatedNodalAccount(
-            array_pluck($basResponse, Constants::MERCHANT_ID)
-        );
+        $merchantIds = array_pluck($basResponse, Constants::MERCHANT_ID);
+
+        $vaEnabledMerchantIds = $this->repo->banking_account->fetchMerchantIdsWithActivatedNodalAccount($merchantIds);
+
+        $multiAccountRoutingEnabledIds = $this->repo->feature->getMerchantIdsHavingFeature(\RZP\Models\Feature\Constants::ENABLE_SMART_ROUTING, $merchantIds);
 
         foreach ($basResponse as $index => $application)
         {
             $basResponse[$index][Constants::VA_ENABLED] = in_array($application[Constants::MERCHANT_ID], $vaEnabledMerchantIds, true);
+
+            $basResponse[$index][Constants::MULTI_ACCOUNT_ROUTING_ENABLED] = in_array($application[Constants::MERCHANT_ID], $multiAccountRoutingEnabledIds, true);
         }
 
         return $basResponse;

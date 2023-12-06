@@ -2155,6 +2155,12 @@ class BankingAccountServiceTest extends TestCase
             'status'        => 'activated'
         ]);
 
+        $this->fixtures->create('feature', [
+            'name'          => \RZP\Models\Feature\Constants::ENABLE_SMART_ROUTING,
+            'entity_id'     => 'Lx9w1GwyFQLTsl',
+            'entity_type'   => 'merchant',
+        ]);
+
         $this->ba->adminAuth();
 
         $this->startTest();
