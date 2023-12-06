@@ -10,6 +10,7 @@ use RZP\Exception;
 use Lib\PhoneBook;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\IndianStates;
 use RZP\Error\PublicErrorDescription;
@@ -538,7 +539,7 @@ class Validator extends Base\Validator
         Entity::GSTIN                           => 'filled|string|size:15',
         Constants::GSTIN_SELF_SERVE_CERTIFICATE => 'required|file|mimes:pdf,jpeg,jpg,png,jfif,heic,heif'
     ];
-    
+
     protected static $gstinSelfServeV2Rules = [
         Entity::GSTIN                           => 'required|string|size:15',
     ];
@@ -1132,6 +1133,12 @@ class Validator extends Base\Validator
 
     public function validateBusinessSubcategoryForCategory(array $input)
     {
+        $this->app['trace']->info(TraceCode::MERCHANT_CATEGORY_SUBCATEGORY_VALIDATION, [
+            'input'           => $input,
+            'is_entity_set'   => (empty($this->entity) === false),
+            'signup_campaign' => optional($this->entity->merchant)->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS)
+        ]);
+
         if (
             (empty($this->entity) === false) and
             optional($this->entity->merchant)->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS)
@@ -1148,7 +1155,7 @@ class Validator extends Base\Validator
         }
 
         $subcategory = array_key_exists(Entity::BUSINESS_SUBCATEGORY, $input) ?
-                        $input[Entity::BUSINESS_SUBCATEGORY] : $this->entity->getBusinessSubcategory();
+            $input[Entity::BUSINESS_SUBCATEGORY] : $this->entity->getBusinessSubcategory();
 
         $category = $this->extractBusinessCategory($input, $subcategory);
 
@@ -1163,11 +1170,16 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        $subcategoryMap     = BusinessCategory::SUBCATEGORY_MAP;
+        $subcategoryMap = BusinessCategory::SUBCATEGORY_MAP;
 
         $validSubcategories = $subcategoryMap[$category] ?? [];
 
-        $isError            = false;
+        $isError = false;
+
+        $this->app['trace']->info(TraceCode::MERCHANT_CATEGORY_SUBCATEGORY_VALIDATION, [
+            'category'    => $category,
+            'subcategory' => $subcategory
+        ]);
 
         // If category is `others` and subcategory is not `null` and not equal to `others`
         if (($category === BusinessCategory::OTHERS) and
@@ -1176,6 +1188,10 @@ class Validator extends Base\Validator
         {
             $isError = true;
         }
+
+        $this->app['trace']->info(TraceCode::MERCHANT_CATEGORY_SUBCATEGORY_VALIDATION, [
+            'ErrorValue' => $isError,
+        ]);
 
         // If category is not `others` and subcategory is not valid
         if (($category !== BusinessCategory::OTHERS) and
