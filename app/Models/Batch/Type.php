@@ -100,6 +100,7 @@ class Type
 
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
+    const CREATE_TERMINAL                  = 'create_terminal';
 
     const LINKED_ACCOUNT_REVERSAL   = 'linked_account_reversal';
 
@@ -305,6 +306,7 @@ class Type
         self::ENTITY_MAPPING,
         self::TERMINAL,
         self::TERMINAL_CREATION,
+        self::CREATE_TERMINAL,
         self::MERCHANT_ONBOARDING,
         self::SUB_MERCHANT,
         self::SUBMERCHANT_ASSIGN,
@@ -644,6 +646,7 @@ class Type
         self::BANK_TRANSFER_EDIT,
         self::CREDIT,
         self::TERMINAL_CREATION,
+        self::CREATE_TERMINAL,
         self::MERCHANT_STATUS_ACTION,
         self::NACH_MIGRATION,
         self::MPAN,
@@ -723,6 +726,7 @@ class Type
         self::BUY_PRICING_RULE                   => Name::PAYMENTS_CREATE_BUY_PRICING_PLAN,
         self::BUY_PRICING_ASSIGN                 => Name::EDIT_TERMINAL,
         self::TERMINAL_CREATION                  => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
+        self::CREATE_TERMINAL                    => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::TERMINAL                           => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::UPI_TERMINAL_ONBOARDING            => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::UPI_ONBOARDED_TERMINAL_EDIT        => Name::EDIT_TERMINAL,
