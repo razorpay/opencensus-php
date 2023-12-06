@@ -453,6 +453,11 @@ class Service extends Base\Service
 
         $payment->forceFill($input['payment']);
 
+        if ($payment->isFeeBearerCustomer() === false)
+        {
+            $payment->setFee(0);
+        }
+
         if ($payment->isCard() === true)
         {
             $payment->card()->associate($card);
