@@ -70,6 +70,9 @@ class Metric
     const MERCHANT_RELATED_ENTITIES_WRITE_TRAFFIC_TOTAL = 'merchant_related_entities_write_traffic_total';
     const RAVEN_REQUEST_FAILED                  = 'raven_request_failed';
 
+    //Payment error tracking
+    const PAYMENTS_ERROR = 'payments_error';
+
     //Merchant level metric
     const MERCHANT_HTTP_REQUESTS_TOTAL                   = 'merchant_http_requests_total';
     const MERCHANT_HTTP_REQUEST_LATENCY_MILLISECONDS     = 'merchant_http_request_latency_milliseconds.histogram';
@@ -134,6 +137,7 @@ class Metric
     const LABEL_ROUTE_NAME                      = 'route_name';
     const LABEL_BANK_CODE                       = 'bank_code';
     const LABEL_MERCHANT_ID                     = 'merchant_id';
+    const LABEL_INTERNAL_ERROR_CODE             = 'internal_error_code';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';

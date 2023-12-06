@@ -174,6 +174,17 @@ final class RequestContext
     protected $paymentMethod;
 
     /**
+     * payment method, eg: upi, cards, nb
+     * This is generated at start of request and for all payment routes
+     * should be generated. $paymentMethod is generated only for
+     * gatewayExceptions and for bad request or server exception isn't generated
+     * This is used to throw error metrics with method as dimension
+     * Initialising with empty string as gives null error when it is not set
+     * @var string
+     */
+    protected string $paymentMethodV2 = "";
+
+    /**
      * To check if request context is already initialized or not.
      * @var null|string
      */
@@ -829,5 +840,35 @@ final class RequestContext
     protected function getPassportKey(string $param = 'username')
     {
         return $this->reqCtxV2->shouldAuthenticateUsingPassport ? $this->reqCtxV2->passport->credential->{$param} : null;
+    }
+
+    public function getPaymentMethodV2(): string
+    {
+        return $this->paymentMethodV2;
+    }
+
+    public function isPaymentCreateRoute(): bool
+    {
+        $currentRoute = $this->app['router']->currentRouteName();
+        return str_starts_with($currentRoute, 'payment_create');
+    }
+
+    /**
+     * Setting payment method in the RequestContext by extracting it from the request body
+     * for payment create routes only
+     * @param $data array Data holds current request
+     * @return void
+     */
+    public function setPaymentMethodV2InRequestContext(array $data): void
+    {
+        if (!$this->isPaymentCreateRoute())
+        {
+            return;
+        }
+
+        if (!empty($data['method']))
+        {
+            $this->paymentMethodV2 = $data['method'];
+        }
     }
 }

@@ -4,10 +4,13 @@ namespace RZP\Error;
 
 use App;
 use ArrayObject;
+use Razorpay\Trace\Facades\Trace;
+use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use Illuminate\Support;
 use RZP\Diag\EventCode;
+use RZP\Http\RequestContext;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
@@ -755,6 +758,8 @@ class Error extends Support\Fluent
             ]
         );
 
+        $this->pushPaymentsErrorMetric();
+
         $error = $this->checkAndAddDataToErrorResp($error);
 
         $action = $this->getAttribute(self::ACTION);
@@ -1041,5 +1046,31 @@ class Error extends Support\Fluent
         }
 
         return false;
+    }
+
+    /**
+     * This is Payments error metric, it tracks errors in payments
+     * with method and error
+     */
+    protected function pushPaymentsErrorMetric(): void
+    {
+        /** @var RequestContext $requestCtx */
+        $requestCtx = app('request.ctx');
+
+        // only tracking errors for payment create routes
+        if (!$requestCtx->isPaymentCreateRoute())
+        {
+            return;
+        }
+
+        $dimensions = [
+            Metric::LABEL_STATUS_CODE           => $this->getHttpStatusCode(),
+            Metric::LABEL_INTERNAL_ERROR_CODE   => $this->getInternalErrorCode(),
+            Metric::LABEL_RZP_PAYMENT_METHOD    => $requestCtx->getPaymentMethodV2(),
+            Metric::LABEL_ROUTE_NAME            => optional($this->app['router'])->currentRouteName(),
+            Metric::LABEL_RZP_MODE              => $requestCtx->getMode() ?: Metric::LABEL_NONE_VALUE,
+        ];
+
+        app('trace')->count(Metric::PAYMENTS_ERROR, $dimensions);
     }
 }

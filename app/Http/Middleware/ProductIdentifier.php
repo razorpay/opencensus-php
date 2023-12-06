@@ -9,6 +9,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Foundation\Application;
 
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestContext;
 use RZP\Http\Route;
 use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -89,6 +90,9 @@ class ProductIdentifier
         // logs and exceptions with product info
         // Refer ApiTraceProcessor::addProduct()
         $this->deriveAndSetProductFromRequest($request);
+
+        /** @var RequestContext $requestCtx */
+        app('request.ctx')->setPaymentMethodV2InRequestContext($request->all());
 
         $response = $next($request);
 
