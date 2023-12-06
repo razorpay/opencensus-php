@@ -3,24 +3,14 @@
 namespace RZP\Models\LedgerOutbox;
 
 use App;
-use Carbon\Carbon;
 use Exception;
+use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Metric;
 use RZP\Diag\EventCode;
-use RZP\Models\Adjustment\Status;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
-use RZP\Models\Ledger\ReverseShadow;
-use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
-use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
-use RZP\Models\Merchant\Balance\Type;
-use RZP\Models\Reversal\Entity as ReversalEntity;
-use RZP\Models\Transfer\OrderTransfer;
-use RZP\Models\Transfer\PaymentTransfer;
-use RZP\Services\Ledger as LedgerService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;
@@ -29,9 +19,24 @@ use RZP\Models\Feature;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant;
-use RZP\Models\Payment\Processor\Capture as CaptureTrait;
-use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Trace\Tracer;
+use RZP\Services\Ledger as LedgerService;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Ledger\ReverseShadow;
+use RZP\Models\Adjustment\Status;
+use RZP\Models\Merchant\Balance\Type;
+use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\Settlement\Ondemand\Repository;
+use RZP\Models\Settlement\Ondemand\Service as Service;
+use RZP\Models\Transfer\OrderTransfer;
+use RZP\Models\Transfer\PaymentTransfer;
+use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Settlement\OndemandPayout;
+use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
+use RZP\Models\Payment\Processor\Capture as CaptureTrait;
+use RZP\Models\Settlement\Ondemand\Status as OndemandStatus;
+use \RZP\Models\Settlement\Ondemand\Core as OndemandCore;
 
 class Core extends Base\Core
 {
@@ -88,6 +93,8 @@ class Core extends Base\Core
 
         $errorResponse = $payload[Constants::ERROR_RESPONSE];
 
+        $accountAlreadyExistsForCapitalInNewLedger = false;
+
         if((isset($payload[Constants::ERROR_RESPONSE]) === true) and
             ($errorResponse !== null) and
             ($errorResponse[Constants::MSG] !== ""))
@@ -100,6 +107,7 @@ class Core extends Base\Core
                 ]
             );
 
+
             $journalData = $this->handleLedgerJournalCreateWorkerFailures($transactorId, $transactorEvent, $errorResponse);
 
             if ($journalData === null)
@@ -111,10 +119,20 @@ class Core extends Base\Core
                 $payload[Constants::RESPONSE] = $journalData;
 
                 $response =  $payload[Constants::RESPONSE];
+
+                $accountAlreadyExistsForCapitalInNewLedger = true;
             }
         }
 
         $journal = $payload[Constants::RESPONSE];
+
+        if(isset($journal[LedgerConstants::TRANSACTOR_EVENT]) &&
+            ($journal[LedgerConstants::TRANSACTOR_EVENT] === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED
+            || $journal[LedgerConstants::TRANSACTOR_EVENT] === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED))
+        {
+            $this->handleOndemandSettlementEventsOnAcknowledgment($response, $journal, $accountAlreadyExistsForCapitalInNewLedger);
+            return;
+        }
 
         if(isset($response[LedgerConstants::JOURNALS]) and is_array($response[LedgerConstants::JOURNALS]))
         {
@@ -168,6 +186,60 @@ class Core extends Base\Core
                 [
                     LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
                     LedgerConstants::TRANSACTOR_ID          => $transactorId,
+                    Constants::SOURCE                       => Constants::ACK_WORKER
+                ]);
+        }
+    }
+
+    private function handleOndemandSettlementEventsOnAcknowledgment($response, $journal, bool $accountAlreadyExistsForCapitalInNewLedger) {
+        $transactorIdVal = $response[LedgerConstants::TRANSACTOR_ID];
+        $event = $response[LedgerConstants::TRANSACTOR_EVENT];
+        try
+        {
+            $entityId = $this->determineEntityIDFromTransactorID($transactorIdVal);
+            $txn = (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorIdVal, $event, $entityId, $accountAlreadyExistsForCapitalInNewLedger);
+            if($txn === null)
+            {
+                $this->trace->info(TraceCode::CAPITAL_PG_LEDGER_TRANSACTION_NOT_CREATED,
+                    [
+                        LedgerConstants::TRANSACTOR_EVENT       => $event,
+                        LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
+                        Constants::SOURCE                       => Constants::ACK_WORKER
+                    ]
+                );
+            }
+            else
+            {
+                $txnId = $txn->getId();
+
+                $this->trace->info(TraceCode::CAPITAL_PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
+                    [
+                        LedgerConstants::API_TRANSACTION_ID     => $txnId,
+                        LedgerConstants::TRANSACTOR_EVENT       => $event,
+                        LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
+                        Constants::SOURCE                       => Constants::ACK_WORKER
+                    ]
+                );
+
+                $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
+                    LedgerConstants::TRANSACTOR_EVENT   => $event,
+                    Constants::SOURCE                   => Constants::ACK_WORKER
+                ]);
+            }
+            $this->softDelete($response[LedgerConstants::TRANSACTOR_ID], $response[LedgerConstants::TRANSACTOR_EVENT]);
+        }
+        catch (Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::PG_LEDGER_ACK_WORKER_FAILURE,
+            );
+
+            $this->trace->count(Metric::PG_LEDGER_ACK_WORKER_FAILURE,
+                [
+                    LedgerConstants::TRANSACTOR_EVENT       => $event,
+                    LedgerConstants::TRANSACTOR_ID          => $transactorIdVal,
                     Constants::SOURCE                       => Constants::ACK_WORKER
                 ]);
         }
@@ -295,7 +367,16 @@ class Core extends Base\Core
         return false;
     }
 
-    private function determineTransactionType(string $transactorId)
+    /**
+     * @throws BadRequestException
+     */
+    private function determineEntityIDFromTransactorID(string $transactorId): string
+    {
+        $transactorIdArr = $this->getTransactorIDArray($transactorId);
+        return $transactorIdArr[1];
+    }
+
+    private function getTransactorIDArray(string $transactorId): array
     {
         $transactorIdArr = explode('_', $transactorId);
 
@@ -310,6 +391,13 @@ class Core extends Base\Core
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_TRANSACTOR_ID);
         }
+
+        return $transactorIdArr;
+    }
+
+    private function determineTransactionType(string $transactorId)
+    {
+        $transactorIdArr = $this->getTransactorIDArray($transactorId);
 
         $publicIdPrefix = $transactorIdArr[0];
 
@@ -482,6 +570,12 @@ class Core extends Base\Core
                     }
                 }
 
+                if ($transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED ||
+                    $transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED)
+                {
+                    $this->handleOndemandSettlementEventsOnFailure($transactorEvent, $transactorId);
+                }
+
                 $this->trace->debug(TraceCode::NON_RECOVERABLE_ERROR_ACK_WORKER, [
                     constants::ERROR_TYPE               => constants::NON_RECOVERABLE_ERROR,
                     constants::ERROR_MESSAGE            => $errorMessage,
@@ -541,6 +635,22 @@ class Core extends Base\Core
         }
 
         return null;
+    }
+
+    private function handleOndemandSettlementEventsOnFailure(string $event, string $transactorId)
+    {
+        try {
+            $entityId = $this->determineEntityIDFromTransactorID($transactorId);
+
+            (new OndemandCore)->handleLedgerEventsOnFailure($event, $entityId);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::ONDEMAND_LEDGER_FAILED_EVENT_HANDLING_FAILURE);
+        }
     }
 
     public function createTransactionFromJournal(array $journal, $source, $isBulkJournal = false)
@@ -1006,6 +1116,11 @@ class Core extends Base\Core
                             $this->updateRetryCountAndSoftDelete($entry, $retries);
                             $successful++;
                             array_push($successfulIds, $transactorId);
+                            if($transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED ||
+                                $transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED)
+                            {
+                                $this->handleOndemandSettlementEventsOnFailure($transactorEvent, $transactorId);
+                            }
                             continue;
                         }
                     }
@@ -1060,7 +1175,12 @@ class Core extends Base\Core
                     {
                         $txn = null;
 
-                        if($isBulkJournal === true)
+                        if($transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED || $transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED)
+                        {
+                            $entityId = $this->determineEntityIDFromTransactorID($transactorId);
+                            $txn = (new OndemandCore)->handleLedgerEventsOnAcknowledgment($journal, $transactorId, $transactorEvent, $entityId, false);
+                        }
+                        else if($isBulkJournal === true)
                         {
                             $txn = $this->createTransactionFromJournal($bulkJournals, Constants::CRON, true);
                         }
@@ -1162,6 +1282,11 @@ class Core extends Base\Core
 
                     if($canRetry === false)
                     {
+                        if($transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED ||
+                            $transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED)
+                        {
+                            $this->handleOndemandSettlementEventsOnFailure($transactorEvent, $transactorId);
+                        }
                         $this->updateRetryCountAndSoftDelete($entry, $retries);
                     }
                     else if ($retries === LedgerReverseShadowConstants::MAX_RETRY_COUNT_CRON)
@@ -1169,6 +1294,11 @@ class Core extends Base\Core
                         $this->trace->count(Metric::PG_LEDGER_OUTBOX_CRON_RETRIES_EXHAUSTED, [
                             LedgerReverseShadowConstants::RETRY_COUNT => $retries
                         ]);
+                        if($transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED ||
+                            $transactorEvent === Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED)
+                        {
+                            $this->handleOndemandSettlementEventsOnFailure($transactorEvent, $transactorId);
+                        }
                         $this->updateRetryCountAndSoftDelete($entry, $retries);
                     }
                     else

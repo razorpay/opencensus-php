@@ -132,6 +132,9 @@ class Constants
     const MERCHANT_BALANCE_LIMIT                            = "merchant_balance_limit";
     const MERCHANT_VAS_AMOUNT                               = "merchant_vas_amount";
     const TRANSACTION_ID                                    = "transaction_id";
+    const METADATA                                          = "metadata";
+    const SETTLEMENT_ONDEMAND_PAYOUT_ID                     = "settlement_ondemand_payout_id";
+    const REASON                                            = "reason";
 
     const MONEY_PARAMS                                      = 'money_params';
     const MERCHANT_ID                                       = 'merchant_id';
@@ -221,4 +224,14 @@ class Constants
     const AMOUNT_CREDITS_EXPIRY_EVENT   = "amount_credits_expiry";
 
     const RESPONSE   = "response";
+
+    const LEDGER_ONDEMAND_SETTLEMENT_AMOUNT = "ondemand_settlement_amount";
+    const LEDGER_ONDEMAND_SETTLEMENT_FEE = "ondemand_settlement_fee";
+    const LEDGER_ONDEMAND_SETTLEMENT_TAX = "ondemand_settlement_tax";
+
+    const LEDGER_ONDEMAND_SETTLEMENT_PROCESSED = "ondemand_settlement_processed";
+	const LEDGER_ONDEMAND_SETTLEMENT_REVERSED  = "ondemand_settlement_reversed";
+
+    const LEDGER_ONDEMAND_PROCESSED_TRANSACTOR_ID_PREFIX = "setlod_";
+    const LEDGER_ONDEMAND_REVERSED_TRANSACTOR_ID_PREFIX  = "setlodrvrsl_";
 }

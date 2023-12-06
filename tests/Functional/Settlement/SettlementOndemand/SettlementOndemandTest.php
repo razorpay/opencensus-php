@@ -4,13 +4,16 @@ namespace RZP\Tests\Functional\SettlementOndemand;
 
 use Hash;
 use Mail;
+use PhpParser\Node\Expr\AssignOp\Mod;
 use Queue;
 use Config;
 use Mockery;
 use DateTime;
 use Carbon\Carbon;
+use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutReversal;
 use RZP\Jobs\SettlementOndemand\UpdateOndemandTriggerJob;
 use RZP\Models\Settlement\Ondemand\Entity as OndemandEntity;
+use RZP\Services\KafkaMessageProcessor;
 use RZP\Services\Mock;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -225,7 +228,7 @@ class SettlementOndemandTest extends TestCase
         return $response;
     }
 
-    public function mockWebHook($settlementOndemandAttempt, $settlementOndemandTransfer)
+    public function mockWebHook($settlementOndemandAttempt, $settlementOndemandTransfer, bool $isSinglePayout = false)
     {
         $input = [
             'entity' => 'event',
@@ -236,7 +239,7 @@ class SettlementOndemandTest extends TestCase
                     'entity' => [
                         'id' => $settlementOndemandAttempt['payout_id'],
                         'entity' => 'payout',
-                        'fund_account_id' => Config::get('applications.razorpayx_client.live.ondemand_contact.fund_account_id'),
+                        'fund_account_id' => $isSinglePayout ? '': Config::get('applications.razorpayx_client.live.ondemand_contact.fund_account_id'),
                         'amount' => $settlementOndemandTransfer['amount'],
                         'currency' => 'INR',
                         'notes' => [],
@@ -4782,21 +4785,6 @@ class SettlementOndemandTest extends TestCase
 
         Carbon::setTestNow($bankingHour);
 
-        $capitalCollectionsClientMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');
-
-        $this->app->instance('capital_collections', $capitalCollectionsClientMock);
-
-        $capitalCollectionsClientMock->shouldReceive('pushInstantSettlementLedgerUpdate')
-            ->with(Mockery::type('RZP\Models\Settlement\Ondemand\Entity'), Mockery::type('bool'))
-            ->times(1)
-            ->andReturnUsing(function (OndemandEntity $OndemandSettlement)
-            {
-                self::assertEquals('1000000', $OndemandSettlement->getAmount());
-                self::assertEquals('0', $OndemandSettlement->getTotalTax());
-                self::assertEquals('0', $OndemandSettlement->getTotalFees());
-                return $this->sendCollectionsToLedgerCreateMockResponse();
-            });
-
         $this->startTest();
 
         $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
@@ -4950,7 +4938,7 @@ class SettlementOndemandTest extends TestCase
         ], $settlementOndemand);
     }
 
-    public function testLinkedOndemandSettlementWithCapitalIntegrationForLedgerSuccess()
+    public function testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess()
     {
         $this->ba->capitalEarlySettlementAuth();
 
@@ -4964,37 +4952,91 @@ class SettlementOndemandTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'ondemand_route']);
 
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
         $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
 
-        $capitalCollectionsClientMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
 
-        $this->app->instance('capital_collections', $capitalCollectionsClientMock);
-
-        $capitalCollectionsClientMock->shouldReceive('pushInstantSettlementLedgerUpdate')
-            ->with(Mockery::type('RZP\Models\Settlement\Ondemand\Entity'), Mockery::type('bool'))
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
             ->times(1)
-            ->andReturnUsing(function (OndemandEntity $OndemandSettlement)
-            {
-                self::assertEquals('1000000', $OndemandSettlement->getAmount());
-                self::assertEquals('0', $OndemandSettlement->getTotalTax());
-                self::assertEquals('0', $OndemandSettlement->getTotalFees());
-                return $this->sendCollectionsToLedgerCreateMockResponse();
-            });
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
 
         $this->startTest();
 
-        $txn = $this->getLastEntity('transaction',true);
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
 
-        $this->assertArraySelectiveEquals([
-            'type'                  => 'settlement.ondemand',
-            'merchant_id'           => '10000000000000',
-            'amount'                => 1000000,
-            'fee'                   => 0,
-            'tax'                   => 0,
-            'debit'                 => 1000000,
-            'credit'                => 0,
-            'currency'              => 'INR',
-        ], $txn);
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "ondemand_settlement_processed",
+            "money_params" => [
+                "ondemand_settlement_amount" => "1000000",
+                "ondemand_settlement_fee" => "20000",
+                "ondemand_settlement_tax" => "3600"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
 
         $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
 
@@ -5003,14 +5045,13 @@ class SettlementOndemandTest extends TestCase
             'user_id'                        => null,
             'amount'                         => 1000000,
             'total_amount_settled'           => 0,
-            'total_fees'                     => 0,
-            'total_tax'                      => 0,
+            'total_fees'                     => 23600,
+            'total_tax'                      => 3600,
             'total_amount_reversed'          => 0,
-            'total_amount_pending'           => 1000000,
+            'total_amount_pending'           => 976400,
             'max_balance'                    => false,
             'currency'                       => 'INR',
-            'status'                         => 'initiated',
-            'transaction_type'               => 'transaction',
+            'status'                         => 'created',
             'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
         ], $settlementOndemand);
     }
@@ -5031,15 +5072,6 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
 
-        $capitalCollectionsClientMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');
-
-        $this->app->instance('capital_collections', $capitalCollectionsClientMock);
-
-        $capitalCollectionsClientMock->shouldReceive('pushInstantSettlementLedgerUpdate')
-            ->with(Mockery::type('RZP\Models\Settlement\Ondemand\Entity'), Mockery::type('bool'))
-            ->times(1)
-            ->andThrowExceptions([new \Exception("test message")]);
-
         $this->startTest();
 
         $txn = $this->getLastEntity('transaction',true);
@@ -5072,17 +5104,6 @@ class SettlementOndemandTest extends TestCase
             'transaction_type'               => 'transaction',
             'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
         ], $settlementOndemand);
-    }
-
-    private function sendCollectionsToLedgerCreateMockResponse()
-    {
-        $response = new \WpOrg\Requests\Response();
-
-        $response->body = '{}';
-
-        $response->status_code = 200;
-
-        return $response;
     }
 
     public function testCreatePrepaidOndemandSettlementForLinkedAccountSuccess()
@@ -5248,7 +5269,633 @@ class SettlementOndemandTest extends TestCase
             'test');
 
         $this->assertEquals($balance['balance'], 575857);
+    }
+
+    public function testReverseOndemandSettlementPGReverseShadowOutboxEntries()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+            'id'                          => 'KQ8VzkjC27pS3v',
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'total_amount_settled'        => 0,
+            'total_fees'                  => 112,
+            'total_tax'                   => 17,
+            'total_amount_reversed'       => 0,
+            'total_amount_pending'        => 475857,
+            'status'                      => 'initiated'
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_payout',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'settlement_ondemand_id'      =>'KQ8VzkjC27pS3v',
+            'status'                      =>'created',
+            'fees'                        => 112,
+            'tax'                         => 17,
+        ]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 100000]);
+
+        $this->startTest();
 
 
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "ondemand_settlement_reversed",
+            "money_params" => [
+                "ondemand_settlement_amount" => "475857",
+                "ondemand_settlement_fee" => "95",
+                "ondemand_settlement_tax" => "17"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                    => '10000000000000',
+            'user_id'                        => null,
+            'amount'                         => 475857,
+            'total_amount_settled'           => 0,
+            'total_fees'                     => 112,
+            'total_tax'                      => 17,
+            'total_amount_reversed'          => 0,
+            'total_amount_pending'           => 475857,
+            'max_balance'                    => false,
+            'currency'                       => 'INR',
+            'status'                         => 'initiated',
+            'transaction_type'               => 'transaction',
+        ], $settlementOndemand);
+
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'           => $this->merchantDetail['merchant_id'],
+            'amount'                => 475857,
+            'entity_type'           => 'settlement.ondemand_payout',
+            'fee'                   => 0,
+            'tax'                   => 0,
+        ], $reversal);
+
+        $txn = $this->getLastEntity('settlement.ondemand_payout',true);
+
+        $this->assertArraySelectiveEquals([
+            'failure_reason'    => 'job failure',
+            'status'            => 'reversal_initiated',
+            'amount'            => 475857,
+        ], $txn);
+
+    }
+
+    public function testReverseOndemandSettlementInPGReverseShadow()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+            'id'                          => 'KQ8VzkjC27pS3v',
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'total_amount_settled'        => 0,
+            'total_fees'                  => 112,
+            'total_tax'                   => 17,
+            'total_amount_reversed'       => 0,
+            'total_amount_pending'        => 475857,
+            'status'                      => 'initiated'
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_payout',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'settlement_ondemand_id'      =>'KQ8VzkjC27pS3v',
+            'status'                      =>'created',
+            'fees'                        => 112,
+            'tax'                         => 17,
+        ]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 100000]);
+
+        $this->startTest();
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $journal = $this->getPaymentGatewayCapturedJournalResponsePayload('setlod'.$reversal['id'], 'ondemand_settlement_reversed');
+
+        $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => 'setlod'.$reversal['id'].'-ondemand_settlement_reversed']);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedOutboxEntry = [
+            "merchant_id"=> $this->merchantDetail['merchant_id'],
+            "currency"=> "INR",
+            "transactor_id"=> "setlod".$reversal['id'],
+            "transactor_event"=> "ondemand_settlement_reversed",
+            "money_params"=> [
+                "ondemand_settlement_amount"=> "475857",
+                "ondemand_settlement_fee"=> "95",
+                "ondemand_settlement_tax"=> "17"
+            ],
+            "ledger_integration_mode"=> "reverse-shadow",
+            "tenant"=> "PG"
+        ];
+
+        $this->assertArraySubset($expectedOutboxEntry, $actualLedgerOutboxEntry);
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                    => '10000000000000',
+            'user_id'                        => null,
+            'amount'                         => 475857,
+            'total_amount_settled'           => 0,
+            'total_fees'                     => 0,
+            'total_tax'                      => 0,
+            'total_amount_reversed'          => 475857,
+            'max_balance'                    => false,
+            'currency'                       => 'INR',
+            'status'                         => 'reversed',
+            'transaction_type'               => 'transaction',
+        ], $settlementOndemand);
+
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'           => $this->merchantDetail['merchant_id'],
+            'amount'                => 475857,
+            'entity_type'           => 'settlement.ondemand_payout',
+            'fee'                   => 0,
+            'tax'                   => 0,
+        ], $reversal);
+
+        $ondemandPayout = $this->getLastEntity('settlement.ondemand_payout',true);
+
+        $this->assertArraySelectiveEquals([
+            'failure_reason'    => 'job failure',
+            'status'            => 'reversed',
+            'amount'            => 475857,
+        ], $ondemandPayout);
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($txn);
+
+        $this->assertEquals($journal['id'], $txn->getId(), 'transaction id does not match with api_txn_id');
+
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+
+        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+    }
+
+
+    public function testOndemandLedgerKafkaOutboxJobSuccess(){
+
+        $this->createOndemandSettlement(false);
+
+        $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
+
+        $ondemandSettlementId = $payload["id"];
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $journal = $this->getPaymentGatewayCapturedJournalResponsePayload($ondemandSettlementId, 'ondemand_settlement_processed');
+
+        $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $ondemandSettlementId.'-'.'ondemand_settlement_processed']);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $this->assertNotNull($txn);
+
+        $this->assertEquals($journal['id'], $txn->getId(), 'transaction id does not match with api_txn_id');
+
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+
+        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+
+    }
+
+    public function testOndemandSettlementReversedJobEnqueued(){
+
+        Queue::fake();
+        $this->createOndemandSettlement(true);
+
+        $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
+
+        $ondemandSettlementId = $payload["id"];
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $journal = $this->getPaymentGatewayCapturedJournalResponsePayload($ondemandSettlementId,'ondemand_settlement_processed');
+
+        $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $this->mockWebHook(['payout_id' => 'pout_N76WDGIgvIvw4g', 'id' => 'N76WDBxgjuSuvH', 'settlement_ondemand_transfer_id' => 'N88gH0dXJepqQE'], ['amount' => 450000, 'mode' => 'NEFT'], true);
+
+        Queue::assertPushed(CreateSettlementOndemandPayoutReversal::class, 1);
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $ondemandSettlementId.'-'.'ondemand_settlement_processed']);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $this->assertNotNull($txn);
+
+        $this->assertEquals($journal['id'], $txn->getId(), 'transaction id does not match with api_txn_id');
+
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+
+        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+
+    }
+
+    public function testKafkaRetryableFailureForAccountDiscoveryNotFound()
+    {
+        $this->createOndemandSettlement(false);
+
+        $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
+
+        $ondemandSettlementId = $payload["id"];
+
+        $request = $this->getJournalRequestPayload($ondemandSettlementId, 'ondemand_settlement_processed');
+
+        $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow(null, $request, "account_discovery_failure: ACCOUNT_DISCOVERY_ACCOUNT_NOT_FOUND");
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $ondemandSettlementId.'-'.'ondemand_settlement_processed']);
+
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 0, 'outbox entry  soft deleted');
+        $this->assertNull($ledgerOutboxEntity['deleted_at'], 'outbox entry  soft deleted');
+    }
+
+    public function testKafkaRetryableFailureAccountDiscoveryNotFoundForReversal()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+            'id'                          => 'KQ8VzkjC27pS3v',
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'total_amount_settled'        => 0,
+            'total_fees'                  => 112,
+            'total_tax'                   => 17,
+            'total_amount_reversed'       => 0,
+            'total_amount_pending'        => 475857,
+            'status'                      => 'initiated'
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_payout',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'settlement_ondemand_id'      =>'KQ8VzkjC27pS3v',
+            'status'                      =>'created',
+            'fees'                        => 112,
+            'tax'                         => 17,
+        ]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 100000]);
+
+        $this->startTest();
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $request = $this->getJournalRequestPayload('setlod'.$reversal['id'], 'ondemand_settlement_reversed');
+
+        $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow(null, $request, "account_discovery_failure: ACCOUNT_DISCOVERY_ACCOUNT_NOT_FOUND");
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => 'setlod'.$reversal['id'].'-ondemand_settlement_reversed']);
+
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 0, 'outbox entry  soft deleted');
+        $this->assertNull($ledgerOutboxEntity['deleted_at'], 'outbox entry  soft deleted');
+    }
+
+    public function testKafkaRetryableFailureForResourceAlreadyAcquired()
+    {
+        $this->createOndemandSettlement(false);
+
+        $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
+
+        $ondemandSettlementId = $payload["id"];
+
+        $request = $this->getJournalRequestPayload($ondemandSettlementId, 'ondemand_settlement_processed');
+
+        $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow(null, $request, "mutex_failure: resource already acquired");
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $ondemandSettlementId.'-'.'ondemand_settlement_processed']);
+
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 0, 'outbox entry  soft deleted');
+        $this->assertNull($ledgerOutboxEntity['deleted_at'], 'outbox entry  soft deleted');
+    }
+
+    public function testOndemandLedgerKafkaOutboxJobFailureWithNonRetryableError(){
+
+        $this->createOndemandSettlement(false);
+
+        $payload = $this->makeRequestAndGetContent($this->testData['testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess']['request']);
+
+        $ondemandSettlementId = $payload["id"];
+
+        $request = $this->getJournalRequestPayload($ondemandSettlementId, 'ondemand_settlement_processed');
+
+        $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow(null, $request, "validation_failure: validation_failure: BAD_REQUEST_VALIDATION_FAILURE");
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $transactorIdArr = explode('_', $ondemandSettlementId);
+
+        $settlementOndemand = $this->getDbEntity('settlement.ondemand', ['id' => $transactorIdArr[1]]);
+
+        $this->assertEquals($settlementOndemand['status'], "failed", 'ondemand settlement failed');
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $ondemandSettlementId.'-'.'ondemand_settlement_processed']);
+
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry  soft deleted');
+
+    }
+
+    public function testOndemandReversalFailureWithNonRetryableError(){
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+            'id'                          => 'KQ8VzkjC27pS3v',
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'total_amount_settled'        => 0,
+            'total_fees'                  => 112,
+            'total_tax'                   => 17,
+            'total_amount_reversed'       => 0,
+            'total_amount_pending'        => 475857,
+            'status'                      => 'initiated'
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_payout',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'amount'                      => 475857,
+            'settlement_ondemand_id'      =>'KQ8VzkjC27pS3v',
+            'status'                      =>'created',
+            'fees'                        => 112,
+            'tax'                         => 17,
+        ]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 100000]);
+
+        $this->startTest();
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $request = $this->getJournalRequestPayload('setlod'.$reversal['id'], 'ondemand_settlement_reversed');
+
+        $kafkaEventPayload = $this->getKafkaEventPayloadForPGReverseShadow(null, $request, "validation_failure: validation_failure: BAD_REQUEST_VALIDATION_FAILURE");
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $settlementOndemandPayout = $this->getDbEntity('settlement.ondemand_payout', ['id' => $reversal['entity_id']]);
+
+        $this->assertEquals($settlementOndemandPayout['status'], "reversal_failed", 'settlement ondemand failed');
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => 'setlod'.$reversal['id'].'-ondemand_settlement_reversed']);
+
+
+
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry  soft deleted');
+
+    }
+
+    private function createOndemandSettlement(bool $mockWebhhok)
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'ondemand_linked']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'ondemand_route']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
+
+        $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', $mockWebhhok);
+
+        $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', $mockWebhhok);
+
+        $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.webhook_key', 'DUMMY_KEY');
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        if($mockWebhhok) {
+            $settlementOndemand = $this->fixtures->on('test')->create('settlement.ondemand',[
+                'amount'                    => 450000,
+                'created_at'                => Carbon::now(Timezone::IST)->getTimestamp(),
+                'updated_at'                => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]);
+
+            $settlementOndemand->save();
+
+            $settlementOndemandPayout = $this->fixtures->on('test')->create('settlement.ondemand_payout', [
+                'amount'                    => 450000,
+                'settlement_ondemand_id'    => $settlementOndemand->getId(),
+                'status'                    => 'initiated',
+                'payout_id'                 => 'pout_N76WDGIgvIvw4g',
+                'id' => 'N76WDBxgjuSuvH',
+                'created_at'                => Carbon::now(Timezone::IST)->getTimestamp(),
+                'updated_at'                => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]);
+
+            $settlementOndemandPayout->save();
+
+        }
+
+    }
+
+    private function  getJournalRequestPayload($transactorId, string $event): array
+    {
+        return [
+            "tenant"=> "PG",
+            "mode"=> "",
+            "idempotency_key"=> "2614f0fe-b798-11ed-a1aa-c24b7ef77506",
+            "merchant_id"=> "10000000000000",
+            "currency"=> "INR",
+            "amount"=> "2000",
+            "base_amount"=> "2000",
+            "commission"=> "",
+            "tax"=> "",
+            "transactor_id"=> $transactorId,
+            "transactor_event"=> $event,
+            "transaction_date"=> 1677609961,
+            "api_transaction_id"=> "",
+            "notes"=> null,
+            "additional_params"=> null,
+            "identifiers"=> [
+                "gateway"=> "sharp"
+            ],
+            "ledger_integration_mode"=> "reverse-shadow",
+            "money_params"=> []
+        ];
+    }
+
+    private function getPaymentGatewayCapturedJournalResponsePayload($transactorId, string $event)
+    {
+        return [
+            "id"=> "LLy5PLL9cCZhns",
+            "created_at"=> 1677609963,
+            "updated_at"=> 1677609963,
+            "amount"=> "2000",
+            "base_amount"=> "2000",
+            "currency"=> "INR",
+            "tenant"=> "PG",
+            "transactor_id"=> $transactorId,
+            "transactor_event"=> $event,
+            "transaction_date"=> 1677609961,
+            "ledger_entry"=> [
+                [
+                    "id"=> "LLy5PLSZjuPgtqa",
+                    "created_at"=> 1677609963,
+                    "updated_at"=> 1677609963,
+                    "merchant_id"=> "10000000000000",
+                    "journal_id"=> "LLy5PLL9cCZhnr",
+                    "account_id"=> "Jjpg2D3rgPjGWs",
+                    "amount"=> "2000",
+                    "base_amount"=> "2000",
+                    "type"=> "debit",
+                    "currency"=> "INR",
+                    "balance"=> "26700.000000",
+                    "balance_updated"=> true,
+                    "account_entities"=> [
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_ondemand_settlement"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    private function getKafkaEventPayloadForPGReverseShadow($journal, $request = null, $msg = "")
+    {
+        $kafkaPayload = [
+            "request"=> $request,
+            "response"=> $journal,
+            "error_response"=> [
+                "msg"=> $msg
+            ]
+        ];
+
+        $serializedPayload = base64_encode(json_encode($kafkaPayload));
+
+        return  [
+            "before"=> null,
+            "after"=> [
+                "id"=> "LLJMDzemcsroDp",
+                "payload_serialized"=> $serializedPayload,
+                "created_at"=> 1677466532,
+                "updated_at"=> 1677466532
+            ],
+            "source"=> [
+                "version"=> "2.1.1.Final",
+                "connector"=> "postgresql",
+                "name"=> "internal_db_stage_ledger_payments_test_outbox",
+                "ts_ms"=> 1677466532793,
+                "snapshot"=> "false",
+                "db"=> "stage_ledger_pg_test",
+                "sequence"=> "[\"60869735408\",\"60869737336\"]",
+                "schema"=> "public",
+                "table"=> "outbox_jobs_api_default",
+                "txId"=> 242246764,
+                "lsn"=> 60869737336,
+                "xmin"=> null
+            ],
+            "op"=> "c",
+            "ts_ms"=> 1677466533213,
+            "transaction"=> null,
+            "_record_source"=> "debezium_postgres"
+        ];
     }
 }

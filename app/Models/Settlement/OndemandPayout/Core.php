@@ -244,8 +244,9 @@ class Core extends Base\Core
             {
                 return (new Ondemand\Core)->createPartialReversal($settlementOndemandPayout, $response['failure_reason'] ?: 'failed');
             }
-
             $settlementOndemandPayout->setStatus(Status::INITIATED);
+
+
 
             $this->repo->saveOrFail($settlementOndemandPayout);
         }

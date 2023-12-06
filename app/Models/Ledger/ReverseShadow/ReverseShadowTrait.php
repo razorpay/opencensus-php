@@ -544,9 +544,9 @@ trait ReverseShadowTrait
         return null;
     }
 
-    protected function getTransactionMutexresource($payment)
+    protected function getTransactionMutexresource($baseEntity)
     {
-        return $payment->getId()."_transaction";
+        return $baseEntity->getId()."_transaction";
     }
 
     public function isNegativeBalanceEnabledForTxnTypeAndMerchant(string $txnType, string $balanceType = Balance\Type::PRIMARY) : bool

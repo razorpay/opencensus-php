@@ -44,7 +44,7 @@ dev:
           name: ${APP_NAME}-${DEVSTACK_LABEL}
 vars:
   - name: DEVSTACK_LABEL
-    value: "dcs"
+    value: "ritwik"
   - name: NAMESPACE
     value: "api"
   - name: APP_NAME

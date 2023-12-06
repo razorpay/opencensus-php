@@ -194,7 +194,6 @@ abstract class Base extends BaseCore
                     $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_INIT);
 
                     $lockStartTime = microtime(true);
-
                     // update merchant credits an balances
                     $this->setMerchantBalanceLockForUpdate();
 

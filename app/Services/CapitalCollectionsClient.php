@@ -83,22 +83,6 @@ class CapitalCollectionsClient implements ExternalService
         );
     }
 
-    public function pushInstantSettlementLedgerUpdate(OndemandEntity $OndemandSettlement, bool $reverse)
-    {
-        return $this->sendRequestAndParseResponse(self::LEDGER_IS_ENDPOINT,
-            $this->getCollectionsToLedgerUpdateData($OndemandSettlement,$reverse),
-            ['X-Auth-Type' => 'direct'], 'POST'
-        );
-    }
-
-    public function pushInstantSettlementLedgerUpdateForReversalScenario(bool $reverse,OndemandPayoutEntity $settlementOndemandPayout,$reversalId,$transactionId)
-    {
-        return $this->sendRequestAndParseResponse(self::LEDGER_IS_ENDPOINT,
-            $this->getCollectionsToLedgerUpdateDataForReversal($reverse,$settlementOndemandPayout,$reversalId,$transactionId),
-            ['X-Auth-Type' => 'direct'], 'POST'
-        );
-    }
-
     //TODO:have to check for settled_at value in future
     protected function getCollectionsToLedgerUpdateData(OndemandEntity $settlementOndemand,bool $reverse) : array
     {

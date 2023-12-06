@@ -583,6 +583,7 @@ class ErrorCode
 
 
     const BAD_REQUEST_INVALID_TRANSACTOR_ID                                         = "BAD_REQUEST_INVALID_TRANSACTOR_ID";
+    const BAD_REQUEST_MERCHANT_ID_NOT_FOUND                                         = "BAD_REQUEST_MERCHANT_ID_NOT_FOUND";
 
     // Scheduled Payouts
     const BAD_REQUEST_SCHEDULED_PAYOUT_AUTH_NOT_SUPPORTED                           = 'BAD_REQUEST_SCHEDULED_PAYOUT_AUTH_NOT_SUPPORTED';

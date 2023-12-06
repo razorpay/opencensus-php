@@ -451,4 +451,11 @@ class Repository extends Base\Repository
                     ->whereBetween($trxnCreatedAtCol, [$beginTimestamp, $endTimestamp])
                     ->first();
     }
+
+    public function findById($id): Entity
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, $id)
+            ->first();
+    }
 }

@@ -75,4 +75,7 @@ class Constants
         LedgerConstants::TRANSFER,
         LedgerConstants::TRANSFER_REVERSAL_PROCESSED
     ];
+
+    const LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED = "ondemand_settlement_processed";
+    const LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED = "ondemand_settlement_reversed";
 }

@@ -1095,7 +1095,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromOndemandPartialReversal(Reversal\Entity $reversal): Entity
+    public function createFromOndemandPartialReversal(Reversal\Entity $reversal, string $transactionId = null): Entity
     {
         $txn = new Transaction\Entity;
 
@@ -1119,6 +1119,10 @@ class Core extends Base\Core
         ];
 
         $txn->fillAndGenerateId($data);
+
+        if(isset($transactionId) === true) {
+            $txn->setId($transactionId);
+        }
 
         $txn->merchant()->associate($reversal->merchant);
 

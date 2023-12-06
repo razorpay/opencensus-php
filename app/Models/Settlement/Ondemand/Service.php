@@ -153,11 +153,22 @@ class Service extends Base\Service
 
                 $input[Entity::AMOUNT] = $amount;
 
-                [$settlementOndemand, $settlementOndemandPayouts, $txn] = $this->core()->createSettlementOndemand(
-                                                                                            $input,
-                                                                                            $this->merchant,
-                                                                                            $this->user,
-                                                                                            $requestDetails);
+                if(($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+                {
+                    [$settlementOndemand, $settlementOndemandPayouts] = $this->core()->createSettlementOndemandWithReverseShadowOnLedger(
+                        $input,
+                        $this->merchant,
+                        $this->user,
+                        $requestDetails);
+                }
+                else
+                {
+                    [$settlementOndemand, $settlementOndemandPayouts] = $this->core()->createSettlementOndemand(
+                        $input,
+                        $this->merchant,
+                        $this->user,
+                        $requestDetails);
+                }
 
                 if($this->mode === 'live')
                 {
@@ -174,60 +185,9 @@ class Service extends Base\Service
 
                     (new Adjustment\Service)->addAdjustment($adjInput);
                 }
-
-                if ($this->isMerchantWithXSettlementAccount($this->merchant->getId()) === true)
-                {
-                    $merchantAdjInput = [
-                        Adjustment\Entity::MERCHANT_ID  => $this->merchant->getId(),
-                        Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
-                        Adjustment\Entity::DESCRIPTION  => 'ondemand settlement - ' .
-                            $settlementOndemand->getPublicId(),
-                        Adjustment\Entity::CURRENCY     => 'INR',
-                        Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
-                    ];
-
-                    $settlementOndemand->setStatus(Status::INITIATED);
-
-                    $adj = (new Adjustment\Service)->addAdjustment($merchantAdjInput);
-
-                    (new OndemandPayout\Core)->setAdjustmentId($settlementOndemandPayouts, $adj['id']);
-
-                    foreach ($settlementOndemandPayouts as $settlementOndemandPayout)
-                    {
-                        $this->core()->handleOndemandPayoutProcessed($settlementOndemand, $settlementOndemandPayout);
-                    }
-
-
-                    if ((new OndemandPayout\Core)->isOutsideBankingHoursWithBufferTime())
-                    {
-                        (new Transfer\Service)->processXSettlementTransfer($settlementOndemand);
-                    }
-                    else
-                    {
-                        (new Bulk\Core)->createSettlementOndemandBulk($settlementOndemand, $settlementOndemand->getAmountToBeSettled());
-                    }
+                if(($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)){
+                    $this->handleJobPushPostTransactionCreation($settlementOndemand,$settlementOndemandPayouts,$this->mode,$this->merchant->getId());
                 }
-                else
-                {
-                    CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
-                        $settlementOndemand->getMerchantId())->delay(10);
-
-                    $settlementOndemand->setStatus(Status::INITIATED);
-
-                    $this->repo->saveOrFail($settlementOndemand);
-
-                    $mockRazorpayX = Config::get('applications.razorpayx_client.' . $this->mode . '.mock_webhook');
-
-                    if ($mockRazorpayX === true)
-                    {
-                        foreach ($settlementOndemandPayouts as $settlementOndemandPayout)
-                        {
-                            MockPayoutOndemandWebhook::dispatch($this->mode, $settlementOndemandPayout)->delay(20);
-                        }
-                    }
-                }
-                // Call to collections for updating new ledger system
-                $this->updateLedgerEntryToCollections($settlementOndemand,false);
 
                 if (isset($input['expand']) === true && boolval($input['expand']) === true)
                 {
@@ -244,18 +204,58 @@ class Service extends Base\Service
 
     }
 
-    public function updateLedgerEntryToCollections($settlementOndemand, bool $reverse)
+    public function handleJobPushPostTransactionCreation($settlementOndemand, $settlementOndemandPayouts, $mode, $merchantId)
     {
-        try
+        if ($this->isMerchantWithXSettlementAccount($merchantId) === true)
         {
-            $collectionsService = $this->app['capital_collections'];
-            $collectionsService->pushInstantSettlementLedgerUpdate($settlementOndemand, $reverse);
+            $merchantAdjInput = [
+                Adjustment\Entity::MERCHANT_ID  => $merchantId,
+                Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
+                Adjustment\Entity::DESCRIPTION  => 'ondemand settlement - ' .
+                    $settlementOndemand->getPublicId(),
+                Adjustment\Entity::CURRENCY     => 'INR',
+                Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
+            ];
+
+            $settlementOndemand->setStatus(Status::INITIATED);
+
+            $adj = (new Adjustment\Service)->addAdjustment($merchantAdjInput);
+
+            (new OndemandPayout\Core)->setAdjustmentId($settlementOndemandPayouts, $adj['id']);
+
+            foreach ($settlementOndemandPayouts as $settlementOndemandPayout)
+            {
+                $this->core()->handleOndemandPayoutProcessed($settlementOndemand, $settlementOndemandPayout);
+            }
+
+
+            if ((new OndemandPayout\Core)->isOutsideBankingHoursWithBufferTime())
+            {
+                (new Transfer\Service)->processXSettlementTransfer($settlementOndemand);
+            }
+            else
+            {
+                (new Bulk\Core)->createSettlementOndemandBulk($settlementOndemand, $settlementOndemand->getAmountToBeSettled());
+            }
         }
-        catch (\Exception $e)
+        else
         {
-            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PUSH_TO_LEDGER_FAILURE, [
-                'ledger_push_exception'       => $e->getMessage(),
-            ]);
+            CreateSettlementOndemandPayoutJobs::dispatch($mode, $settlementOndemand->getId(),
+                $settlementOndemand->getMerchantId())->delay(10);
+
+            $settlementOndemand->setStatus(Status::INITIATED);
+
+            $this->repo->saveOrFail($settlementOndemand);
+
+            $mockRazorpayX = Config::get('applications.razorpayx_client.' . $mode . '.mock_webhook');
+
+            if ($mockRazorpayX === true)
+            {
+                foreach ($settlementOndemandPayouts as $settlementOndemandPayout)
+                {
+                    MockPayoutOndemandWebhook::dispatch($mode, $settlementOndemandPayout)->delay(20);
+                }
+            }
         }
     }
 

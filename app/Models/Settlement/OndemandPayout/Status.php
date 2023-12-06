@@ -11,10 +11,13 @@ class Status
     const INITIATED             = 'initiated';
     const PROCESSED             = 'processed';
     const REVERSED              = 'reversed';
+    const REVERSAL_INITIATED    = 'reversal_initiated';
+    const REVERSAL_FAILED       = 'reversal_failed';
 
     public static $finalStates = [
         self::PROCESSED,
         self::REVERSED,
+        self::REVERSAL_FAILED,
     ];
 
     /**
@@ -31,18 +34,27 @@ class Status
         self::CREATED => [
             self::INITIATED,
             self::PROCESSED,
+            self::REVERSAL_INITIATED,
             self::REVERSED,
         ],
         self::INITIATED => [
             self::INITIATED,
             self::PROCESSED,
+            self::REVERSAL_INITIATED,
             self::REVERSED,
         ],
         self::REVERSED => [
         ],
         self::PROCESSED => [
+            self::REVERSAL_INITIATED,
             self::REVERSED,
         ],
+        self::REVERSAL_INITIATED => [
+            self::REVERSAL_FAILED,
+            self::REVERSED,
+        ],
+        self::REVERSAL_FAILED => [
+        ]
     ];
 
     public static function validateStatusUpdate(string $currentStatus, string $previousStatus = null)

@@ -12,12 +12,13 @@ class Status
     const PROCESSED             = 'processed';
     const PARTIALLY_PROCESSED   = 'partially_processed';
     const REVERSED              = 'reversed';
-
+    const FAILED                = 'failed';
 
     public static $finalStates = [
         self::PROCESSED,
         self::PARTIALLY_PROCESSED,
-        self::REVERSED
+        self::REVERSED,
+        self::FAILED
     ];
 
     /**
@@ -34,19 +35,21 @@ class Status
         self::CREATED => [
             self::INITIATED,
             self::REVERSED,
+            self::FAILED
         ],
         self::INITIATED => [
             self::PROCESSED,
             self::PARTIALLY_PROCESSED,
             self::REVERSED,
             self::INITIATED,
+            self::FAILED
         ],
         self::PARTIALLY_PROCESSED => [
             self::PARTIALLY_PROCESSED,
             self::PROCESSED,
             self::REVERSED,
             self::INITIATED,
-        ],     
+        ],
         self::PROCESSED => [
             self::PARTIALLY_PROCESSED,
             self::REVERSED,

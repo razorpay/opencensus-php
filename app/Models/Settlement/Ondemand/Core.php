@@ -6,7 +6,10 @@ use App;
 use Config;
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Metric;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
@@ -15,6 +18,7 @@ use RZP\Models\Feature;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Models\Admin\Org;
@@ -29,9 +33,12 @@ use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Settlement\Ondemand\Bulk;
 use RZP\Models\Settlement\OndemandPayout;
+use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Settlement\Ondemand\Service as Service;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Jobs\SettlementOndemand\UpdateOndemandTriggerJob;
+use RZP\Models\Ledger\ReverseShadow\Capital\Core as ReverseShadowCapitalCore;
 
 class Core extends Base\Core
 {
@@ -99,6 +106,92 @@ class Core extends Base\Core
         $this->repo->saveOrFail($settlementOndemand);
 
         return [$settlementOndemand, $settlementOndemandPayouts, $txn];
+    }
+
+    public function createSettlementOndemandWithReverseShadowOnLedger(array $input, Merchant\Entity $merchant, User\Entity $user = null, array $requestDetails = [])
+    {
+
+        $reverseShadowCapital = new ReverseShadowCapitalCore();
+
+        $isAmountValid = $reverseShadowCapital->validateBalance($input,$merchant);
+
+        if(!$isAmountValid){
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,
+                null,
+                [
+                    'amount'  => $input[Entity::AMOUNT],
+                    'merchant_id' => $merchant->getMerchantId(),
+                ]);
+        }
+
+        $this->checkMerchantFundsOnHold();
+
+        $input = $input + [
+                Entity::TOTAL_AMOUNT_SETTLED           => 0,
+                Entity::TOTAL_AMOUNT_REVERSED          => 0,
+                Entity::STATUS                         => Status::CREATED,
+                Entity::CURRENCY                       => $input[Entity::CURRENCY] ?? Currency::INR,
+                Entity::MAX_BALANCE                    => $input['settle_full_balance'] ?? 0,
+                Entity::NOTES                          => $input[Entity::NOTES] ?? null,
+                Entity::NARRATION                      => $input['description'] ?? null,
+                Entity::SCHEDULED                      => isset($requestDetails['scheduled'])?$requestDetails['scheduled']: false,
+                Entity::SETTLEMENT_ONDEMAND_TRIGGER_ID => isset($requestDetails['settlement_ondemand_trigger_id'])?$requestDetails['settlement_ondemand_trigger_id']: null
+            ];
+
+
+        $data = $input;
+
+        unset($data['expand']);
+        unset($data['settle_full_balance']);
+        unset($data['description']);
+
+        /** @var Entity $settlementOndemand */
+        $settlementOndemand = (new Entity)->build($data);
+
+        $settlementOndemand->generateId();
+
+        $settlementOndemand->merchant()->associate($merchant);
+
+        if (isset($user) === true)
+        {
+            $settlementOndemand->user()->associate($user);
+        }
+
+        $settlementOndemandPayouts = (new OndemandPayout\Service)
+            ->createSettlementOndemandPayout($settlementOndemand, $requestDetails);
+
+        [$totalFees , $totalTax] = $this->calculateFees($settlementOndemandPayouts);
+
+        $settlementOndemand->setFees($totalFees);
+
+        $settlementOndemand->setTax($totalTax);
+
+        $settlementOndemand->setTotalAmountPending($settlementOndemand->getAmountToBeSettled());
+
+        $this->repo->saveOrFail($settlementOndemand);
+
+        $reverseShadowCapital -> createLedgerEntryForSettlementOndemandProcessedInReverseShadow($settlementOndemand);
+
+        return [$settlementOndemand, $settlementOndemandPayouts];
+    }
+
+    public function calculateFees($settlementOndemandPayouts)
+    {
+        $totalFees = 0;
+
+        $totalTax = 0;
+
+        foreach ($settlementOndemandPayouts as $settlementOndemandPayout) {
+
+            [$fees, $tax] = (new Pricing\Fee)->calculateMerchantFees($settlementOndemandPayout);
+
+            $totalFees += $fees;
+
+            $totalTax += $tax;
+        }
+
+        return [$totalFees, $totalTax];
     }
 
     public function isMerchantWithXSettlementAccount($merchantId) : bool
@@ -178,12 +271,23 @@ class Core extends Base\Core
                                             $settlementOndemandPayout->getOndemandId(),
                                             $settlementOndemandPayout->getMerchantId());
 
-                (new Reversal\Core)->partialReversalForSettlementOndemand($settlementOndemand, $settlementOndemandPayout);
+                $merchant = $this->repo->merchant->findOrFail($settlementOndemand->getMerchantId());
 
-                $settlementOndemandPayout = $this->updateOndemandPayoutOnPayoutReversal($settlementOndemandPayout, $reversalReason);
+                (new Reversal\Core)->partialReversalForSettlementOndemand($settlementOndemand, $settlementOndemandPayout, $merchant);
 
-                $this->updateOndemandOnPayoutReversal($settlementOndemand, $settlementOndemandPayout);
+                if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) {
+                    $this->updateOndemandPayoutOnPayoutReversal($settlementOndemandPayout, OndemandPayout\Status::REVERSAL_INITIATED, $reversalReason);
+                }
+                else {
+                    $this->handleReversalTransactionCreated($settlementOndemand, $settlementOndemandPayout, OndemandPayout\Status::REVERSED, $reversalReason);
+                }
             });
+    }
+
+    public function handleReversalTransactionCreated(Entity $settlementOndemand, OndemandPayout\Entity $settlementOndemandPayout, string $ondemandPayoutStatus, $reversalReason = null) {
+        $settlementOndemandPayout = $this->updateOndemandPayoutOnPayoutReversal($settlementOndemandPayout, $ondemandPayoutStatus, $reversalReason);
+
+        $this->updateOndemandOnPayoutReversal($settlementOndemand, $settlementOndemandPayout);
     }
 
     public function handleOndemandPayoutProcessed($settlementOndemand, $settlementOndemandPayout)
@@ -261,11 +365,13 @@ class Core extends Base\Core
         return $settlementOndemand;
     }
 
-    public function updateOndemandPayoutOnPayoutReversal($settlementOndemandPayout, $reversalReason)
+    public function updateOndemandPayoutOnPayoutReversal(OndemandPayout\Entity $settlementOndemandPayout, $status, $reversalReason = null)
     {
-        $settlementOndemandPayout->setFailureReason($reversalReason);
+        if(isset($reversalReason)) {
+            $settlementOndemandPayout->setFailureReason($reversalReason);
+        }
 
-        $settlementOndemandPayout->setStatus(Status::REVERSED);
+        $settlementOndemandPayout->setStatus($status);
 
         $settlementOndemandPayout->setReversedAt(Carbon::now(Timezone::IST)->getTimestamp());
 
@@ -494,4 +600,130 @@ class Core extends Base\Core
         return false;
     }
 
+    protected function getTransactionMutexresource(Base\Entity $baseEntity)
+    {
+        return $baseEntity->getId()."_transaction";
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function handleLedgerEventsOnAcknowledgment($journal, string $transactorId, string $event, string $entityId, bool $accountAlreadyExistsForCapitalInNewLedger) {
+        $ledgerEntries = $journal["ledger_entry"];
+        $merchantId = (count($ledgerEntries) > 0) ? $ledgerEntries[0]["merchant_id"] : "";
+
+        if (isset($merchantId)) {
+            if ($event === \RZP\Models\LedgerOutbox\Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED) {
+                $txn = $this->handleOndemandSettlementProcessedEventOnAcknowledgment($journal, $transactorId, $entityId, $merchantId, $accountAlreadyExistsForCapitalInNewLedger);
+            } else {
+                $txn = $this->handleOndemandSettlementReversedEventOnAcknowledgment($journal, $transactorId, $entityId, $merchantId);
+            }
+            return $txn;
+        }
+        else {
+            $this->trace->debug(
+                TraceCode::MERCHANT_ID_NOT_FOUND,
+                [
+                    LedgerConstants::MESSAGE => "merchant id not found for this ledger",
+                    LedgerConstants::TRANSACTOR_ID => $transactorId
+                ]);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_FOUND);
+        }
+    }
+
+    private function handleOndemandSettlementProcessedEventOnAcknowledgment($journal, string $transactorId, string $settlementOndemandId, string $merchantId, bool $accountAlreadyExistsForCapitalInNewLedger){
+        $journalId = $journal['id'];
+
+        return $this->repo->transaction(function () use ($settlementOndemandId, $merchantId, $journalId, $accountAlreadyExistsForCapitalInNewLedger) {
+
+            $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandId, $merchantId);
+
+            $resource = $this->getTransactionMutexresource($settlementOndemand);
+
+            list($txn, $feeSplit) = $this->app['api.mutex']->acquireAndRelease(
+                $resource,
+                function () use ($settlementOndemand, $journalId)
+                {
+                    list($txn, $feeSplit) = (new Transaction\Processor\SettlementOndemand($settlementOndemand))
+                        ->createTransaction($journalId);
+
+                    $this->repo->saveOrFail($txn);
+                });
+
+            $settlementOndemandPayouts = (new OndemandPayout\Repository)
+                ->fetchByOndemandIdAndMerchantId($settlementOndemand->getId(),
+                    $settlementOndemand->getMerchantId())->all();
+
+            if($accountAlreadyExistsForCapitalInNewLedger === false)
+            {
+                (new Service)->handleJobPushPostTransactionCreation($settlementOndemand, $settlementOndemandPayouts, $this->mode, $merchantId);
+            }
+
+            return $txn;
+        });
+    }
+
+    private function handleOndemandSettlementReversedEventOnAcknowledgment($journal, string $transactorId, string $reversalId, string $merchantId): Transaction\Entity {
+        $journalId = $journal['id'];
+
+        return $this->repo->transaction(function () use ($reversalId, $merchantId, $journalId) {
+
+            $reversal = $this->repo->reversal->findById($reversalId);
+
+            $resource = $this->getTransactionMutexresource($reversal);
+
+            $txn = $this->app['api.mutex']->acquireAndRelease(
+                $resource,
+                function () use ($reversal, $journalId)
+                {
+                    $txn = (new Transaction\Core)->createFromOndemandPartialReversal($reversal, $journalId);
+
+                    $this->repo->saveOrFail($txn);
+
+                    // update txn id in reversal entity
+                    $this->repo->saveOrFail($reversal);
+
+                    return $txn;
+                });
+
+            $settlementOndemandPayout = (new OndemandPayout\Repository)->findByIdAndMerchantIdWithLock($reversal->getEntityId(), $merchantId);
+
+            $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock($settlementOndemandPayout->getOndemandId(), $merchantId);
+
+            $this->handleReversalTransactionCreated($settlementOndemand, $settlementOndemandPayout, OndemandPayout\Status::REVERSED);
+
+            return $txn;
+        });
+    }
+
+    public function handleLedgerEventsOnFailure(string $event, string $entityId)
+    {
+        if ($event === \RZP\Models\LedgerOutbox\Constants::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED) {
+            $this->handleOndemandSettlementProcessedEventOnFailure($entityId);
+        } else {
+            $this->handleOndemandSettlementReversedEventOnFailure($entityId);
+        }
+    }
+
+    private function handleOndemandSettlementProcessedEventOnFailure(string $settlementOndemandId)
+    {
+        $settlementOndemand = (new Repository)->findById($settlementOndemandId);
+
+        $settlementOndemand->setStatus(Status::FAILED);
+
+        $this->repo->saveOrFail($settlementOndemand);
+
+    }
+
+    private function handleOndemandSettlementReversedEventOnFailure(string $reversalId)
+    {
+        $reversal = $this->repo->reversal->findById($reversalId);
+
+        $settlementOndemandPayout = (new OndemandPayout\Repository)->findByIdAndMerchantId($reversal->getEntityId(), $reversal->getMerchantId());
+
+        $settlementOndemandPayout->setStatus(OndemandPayout\Status::REVERSAL_FAILED);
+
+        $this->repo->saveOrFail($settlementOndemandPayout);
+    }
 }

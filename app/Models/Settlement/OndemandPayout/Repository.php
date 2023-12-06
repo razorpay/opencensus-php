@@ -45,4 +45,15 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->get();
     }
+
+    public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
+    {
+        $query = (empty($connectionType) === true) ?
+            $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
+
+        return $query
+            ->where(Entity::ID, $id)
+            ->merchantId($merchantId)
+            ->first();
+    }
 }

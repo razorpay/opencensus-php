@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\Feature;
+use RZP\Models\Ledger\ReverseShadow\Capital\Core as ReverseShadowCapitalCore;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Mail\Merchant\FullES;
@@ -228,6 +229,15 @@ class Service extends Base\Service
     //which is fetched in this function
     public function getAllowedSettlementAmount($featureConfig)
     {
+        $merchantPrimaryBalance = $this->merchant->primaryBalance->getBalance();
+
+        if(($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)){
+
+            $reverseShadowCapital = new ReverseShadowCapitalCore();
+
+            $merchantPrimaryBalance = $reverseShadowCapital->fetchBalance($this->merchant);
+        }
+
         $amountSettledToday = (new Ondemand\Repository)->findAmountSettledTodayByMerchantId($this->merchant->getId());
 
         $maxAmountLimitPerDay = $featureConfig->getMaxAmountLimit();
@@ -238,7 +248,7 @@ class Service extends Base\Service
 
         if($amountLeftForToday > 0)
         {
-            $amountLimitPerSettlement = ceil(($this->merchant->primaryBalance->getBalance() * $featureConfig->getPercentageOfBalanceLimit())/100);
+            $amountLimitPerSettlement = ceil((round($merchantPrimaryBalance) * $featureConfig->getPercentageOfBalanceLimit())/100);
         }
 
         $settlableAmount = min($amountLeftForToday, $amountLimitPerSettlement);

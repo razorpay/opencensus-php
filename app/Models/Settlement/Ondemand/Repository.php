@@ -64,4 +64,12 @@ class Repository extends Base\Repository
                     })
                     ->sum(Entity::AMOUNT);
     }
+
+    public function findById($settlementOndemandId)
+    {
+        return Entity::lockForUpdate()
+            ->newQuery()
+            ->where(Entity::ID, $settlementOndemandId)
+            ->first();
+    }
 }

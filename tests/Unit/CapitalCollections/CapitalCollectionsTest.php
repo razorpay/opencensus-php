@@ -24,46 +24,6 @@ class CapitalCollectionsTest extends TestCase
         $this->setUpMerchantForBusinessBanking(true, 10000000);
     }
 
-    public function testPushInstantSettlementLedgerUpdateSuccessForReversal()
-    {
-        $collectionsMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');
-
-        $collectionsMock->shouldReceive('pushInstantSettlementLedgerUpdateForReversalScenario');
-
-        $this->app->instance('capital_collections', $collectionsMock);
-
-        $ondemandSettlementPayout = $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_payout',[
-            'merchant_id'                 => '10000000000000',
-            'amount'                      => 475857,
-            'settlement_ondemand_id'      =>'KQ8VzkjC27pS3v',
-            'status'                      =>'created'
-        ]);
-
-        (new Reversal) -> updateLedgerEntryToCollectionsForReversal( true,$ondemandSettlementPayout,'','');
-        // assert that the Payout Update Status was called when feature was enabled
-        $collectionsMock->shouldHaveReceived('pushInstantSettlementLedgerUpdateForReversalScenario');
-    }
-
-    public function testPushInstantSettlementLedgerUpdateSuccess()
-    {
-        $collectionsMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');
-
-        $collectionsMock->shouldReceive('pushInstantSettlementLedgerUpdate');
-
-        $this->app->instance('capital_collections', $collectionsMock);
-
-        $ondemandSettlement = $this->fixtures->create('settlement.ondemand', [
-            'amount'        => 10000,
-            'total_fees'    => 0,
-            'total_tax'     => 0,
-            'currency'      => "INR",
-        ]);
-
-        (new Service) -> updateLedgerEntryToCollections($ondemandSettlement, false);
-        // assert that the Payout Update Status was called when feature was enabled
-        $collectionsMock->shouldHaveReceived('pushInstantSettlementLedgerUpdate');
-    }
-
     public function testPayoutStatusPushForCapitalCollectionsAsSource()
     {
         $collectionsMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');

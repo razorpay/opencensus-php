@@ -2027,7 +2027,7 @@ return [
     ],
 
 
-    'testLinkedOndemandSettlementWithCapitalIntegrationForLedgerSuccess' => [
+    'testLinkedOndemandSettlementWithPgIntegrationForInitiatingSettlementSuccess' => [
         'request'  => [
             'url'     => '/settlements/ondemand/linked_account_settlements',
             'method'  => 'post',
@@ -2043,13 +2043,13 @@ return [
                 'entity'              => 'settlement.ondemand',
                 'amount_requested'    => 1000000,
                 'amount_settled'      => 0,
-                'amount_pending'      => 1000000,
+                'amount_pending'      => 976400,
                 'amount_reversed'     => 0,
-                'fees'                => 0,
-                'tax'                 => 0,
+                'fees'                => 23600,
+                'tax'                 => 3600,
                 'currency'            => 'INR',
                 'settle_full_balance' => false,
-                'status'              => 'initiated',
+                'status'              => 'created',
                 'description'         => null,
                 'notes'               => [],
                 'scheduled'           => false
@@ -2190,4 +2190,71 @@ return [
         ],
     ],
 
+    'testReverseOndemandSettlementPGReverseShadowOutboxEntries' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/reverse',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'                    => '10000000000000',
+                'settlement_ondemand_id'         => 'KQ8VzkjC27pS3v',
+                'reversal_reason'                => 'job failure'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testReverseOndemandSettlementInPGReverseShadow' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/reverse',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'                    => '10000000000000',
+                'settlement_ondemand_id'         => 'KQ8VzkjC27pS3v',
+                'reversal_reason'                => 'job failure'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testKafkaRetryableFailureAccountDiscoveryNotFoundForReversal' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/reverse',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'                    => '10000000000000',
+                'settlement_ondemand_id'         => 'KQ8VzkjC27pS3v',
+                'reversal_reason'                => 'job failure'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testOndemandReversalFailureWithNonRetryableError' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/reverse',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'                    => '10000000000000',
+                'settlement_ondemand_id'         => 'KQ8VzkjC27pS3v',
+                'reversal_reason'                => 'job failure'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
 ];

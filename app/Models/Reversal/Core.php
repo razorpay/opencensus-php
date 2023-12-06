@@ -1246,7 +1246,7 @@ class Core extends Base\Core
      * @param Ondemand\Entity $settlementOndemand
      * @param OndemandPayout\Entity $settlementOndemandPayout
      */
-    public function partialReversalForSettlementOndemand($settlementOndemand, $settlementOndemandPayout): Entity
+    public function partialReversalForSettlementOndemand(Ondemand\Entity $settlementOndemand, OndemandPayout\Entity $settlementOndemandPayout, Merchant\Entity $merchant): Entity
     {
         $amount = $settlementOndemandPayout->getAmount();
 
@@ -1259,6 +1259,18 @@ class Core extends Base\Core
 
         $reversal->merchant()->associate($settlementOndemand->merchant);
 
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) {
+            $reversal->setEntityId($settlementOndemandPayout->getId());
+
+            $reversal->setEntityType($settlementOndemandPayout->getEntity());
+
+            $this->repo->saveOrFail($reversal);
+
+            (new \RZP\Models\Ledger\ReverseShadow\Capital\Core)->createLedgerEntryForOndemandReversalInReverseShadow($settlementOndemandPayout, $reversal->getId());
+
+            return $reversal;
+        }
+
         $reversal->entity()->associate($settlementOndemand);
 
         $txn = (new Transaction\Core)->createFromOndemandPartialReversal($reversal);
@@ -1269,24 +1281,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($reversal);
 
-        $this->updateLedgerEntryToCollectionsForReversal( true,$settlementOndemandPayout,$reversal->getId(),$txn->getId());
-
         return $reversal;
-    }
-
-    public function updateLedgerEntryToCollectionsForReversal(bool $reverse,$settlementOndemandPayout,$reversalId,$transactionId)
-    {
-        try
-        {
-            $collectionsService = $this->app['capital_collections'];
-            $collectionsService->pushInstantSettlementLedgerUpdateForReversalScenario($reverse,$settlementOndemandPayout,$reversalId,$transactionId);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PUSH_TO_LEDGER_REVERSAL_FAILURE, [
-                'ledger_push_exception'       => $e->getMessage(),
-            ]);
-        }
     }
 
     /**
