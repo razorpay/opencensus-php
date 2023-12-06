@@ -373,6 +373,8 @@ class Processor
      */
     const SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_token_payments_via_pg_router';
 
+    const SAVED_CARD_ISSUER_AND_DUAL_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_issuer_and_dual_token_payments_via_pg_router';
+
     /**
      * Razorx flag to indicate if a payment with save option should go via PG Router and CPS or just via API service
      */
@@ -1094,6 +1096,41 @@ class Processor
                             }
                             if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
                             {
+                                // Adding this check to route issuer or dual token payments on rearch.
+                                // In this case we would fetch cryptogram on the CPS service & this is how it should be for all network tokenised payments
+                                $issuer_result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_ISSUER_AND_DUAL_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                                if ($issuer_result === 'on') {
+
+                                    $cardInput = [
+                                        Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
+                                        Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
+                                        Card\Entity::COUNTRY                => $card->getCountry(),
+                                        Card\Entity::ISSUER                 => $card->getIssuer(),
+                                        Card\Entity::TYPE                   => $card->getType(),
+                                        Card\Entity::NETWORK                => $card->getNetwork(),
+                                        Card\Entity::SUBTYPE                => $card->getSubType(),
+                                        Card\Entity::CATEGORY               => $card->getCategory(),
+                                        Card\Entity::INTERNATIONAL          => $card->isInternational(),
+                                        Card\Entity::EXPIRY_MONTH           => $card->getTokenExpiryMonth(),
+                                        Card\Entity::EXPIRY_YEAR            => $card->getTokenExpiryYear(),
+                                        Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
+                                        Card\Entity::VAULT_TOKEN            => $card->getVaultToken(),
+                                        Card\Entity::TOKEN_IIN              => $card->getTokenIin(),
+                                        Card\Entity::LAST4                  => $card->getLast4(),
+                                        Card\Entity::TOKENISED              => true,
+                                    ];
+                                    $input[Payment\Entity::CARD] = $cardInput;
+                                    $input[Payment\Entity::API_VAULT] = $card->getVault();   // We are passing API_VALUT key to CPS to send it to router so that it can provide us terminals acc.
+                                    $this->trace->info(
+                                        TraceCode::DUAL_TOKENISATION_REARCH,
+                                        [
+                                            'token_id' => $input[Payment\Entity::TOKEN],
+                                            'card_number' => $input[Payment\Entity::CARD],
+                                        ]);
+                                    return true;
+                                }
+
                                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                     'reason' => "vault_providers_or_axis",
                                     'merchant_id' => $merchant->getId(),
