@@ -4,6 +4,8 @@ import {
   tagStyles,
   defaultTagStyle,
   CHART_NAME_MAP,
+  METHOD_LEVEL_CR,
+  METHOD_LEVEL_TRANSACTIONS,
 } from 'merchant/views/PaymentMetrics/constants';
 import { getTimelineData } from './timelineData';
 import { LineData } from 'merchant/views/PaymentMetrics//types';
@@ -42,8 +44,15 @@ export const getUniqueMethodOrInstrumentList = (
   return filteredList.filter((value) => value !== 'null');
 };
 
-//  Method level split data for method level cr
-export const methodLevelSplit = ({ dataList, lte, gte, breakdown }) => {
+//  Method level split data for method level graphs
+export const methodLevelSplit = ({
+  dataList,
+  lte,
+  gte,
+  breakdown,
+  roundOff = true,
+  type = METHOD_LEVEL_CR,
+}) => {
   // product wants to show wallets instead of wallet , can't change in backend
   const updatedDatList = dataList.map((data) => {
     if (data.last_selected_method === 'wallet') {
@@ -72,6 +81,7 @@ export const methodLevelSplit = ({ dataList, lte, gte, breakdown }) => {
       startTime: gte,
       endTime: lte,
       breakdown,
+      roundOff,
     });
 
     datasets.push({
@@ -81,13 +91,69 @@ export const methodLevelSplit = ({ dataList, lte, gte, breakdown }) => {
       borderWidth: 2,
       borderColor: color,
       backgroundColor: color,
-      xAxisID: GRAPHS_DATA.METHOD_LEVEL_CR.xAxisID,
-      yAxisID: GRAPHS_DATA.METHOD_LEVEL_CR.yAxisID,
+      xAxisID: GRAPHS_DATA[type].xAxisID,
+      yAxisID: GRAPHS_DATA[type].yAxisID,
       tagName: method,
     });
   });
 
   return datasets;
+};
+
+export const transformMethodLevelGmvData = ({
+  dataList,
+  lte,
+  gte,
+  breakdown,
+  type = METHOD_LEVEL_TRANSACTIONS,
+}) => {
+  const dataInCrores = dataList.map((data) => {
+    // convert amount count in crores
+    data.value = (data.value / 10000000).toFixed(2);
+    return data;
+  });
+  return methodLevelSplit({
+    dataList: dataInCrores,
+    lte,
+    gte,
+    breakdown,
+    roundOff: false,
+    type,
+  });
+};
+
+export const transformMethodLevelTransactionsData = ({
+  dataList,
+  lte,
+  gte,
+  breakdown,
+  type = METHOD_LEVEL_TRANSACTIONS,
+}) => {
+  const dataInThousands = dataList.map((data) => {
+    // convert transactions count in thousands
+    data.value = data.value / 1000;
+    return data;
+  });
+  return methodLevelSplit({
+    dataList: dataInThousands,
+    lte,
+    gte,
+    breakdown,
+    roundOff: false,
+    type,
+  });
+};
+
+export const getAmountInCrores = (datasets) => {
+  try {
+    const updatedAmountData = datasets[0]?.data.map((val) => {
+      val.y = (val.y / 10000000).toFixed(2);
+      return val;
+    });
+    return [{ ...datasets[0], data: updatedAmountData }];
+  } catch {
+    return datasets;
+  }
 };
 
 export const processOverallCrData = (

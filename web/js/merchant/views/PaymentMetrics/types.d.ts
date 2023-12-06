@@ -83,6 +83,7 @@ export type GraphProps = Partial<GraphDataTokenTypes> &
     interval: string;
     data: GraphData;
     btnAction?: (arg0: Array<PointData>) => any;
+    customUnit?: string;
   };
 
 export type MethodLevelCrProps = {
@@ -105,4 +106,29 @@ export type ComparisonGraphs = {
   isFetching: boolean;
   error: string;
   industryData?: Record<string, number>;
+};
+
+export type TotalGmvProps = {
+  paymentMetrics: PaymentMetricsReducerProps;
+  getOverallGmv: (Filter) => void;
+  category: string;
+  selectedMetricsUpdateDateRange: (Filter) => void;
+  selectedMetricsUpdateInterval: (string) => void;
+  setSelectedMetric: (string) => void;
+};
+
+export type MethodLevelTransactionsProps = {
+  paymentMetrics: PaymentMetricsReducerProps;
+  getMethodLevelTransactions: (Filter) => void;
+  interval: string;
+  startDate: string;
+  endDate: string;
+};
+
+export type MethodLevelGmvProps = {
+  paymentMetrics: PaymentMetricsReducerProps;
+  getMethodLevelGmv: (Filter) => void;
+  interval: string;
+  startDate: string;
+  endDate: string;
 };

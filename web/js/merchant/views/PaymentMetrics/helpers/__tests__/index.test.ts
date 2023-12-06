@@ -8,7 +8,12 @@ import {
   methodLevelSplit,
   getOverallCRData,
   getMethodLevelCRData,
+  getIndustryOverallCRData,
+  getMethodLevelTransactionData,
+  getTotalGmv,
+  getTotalMethodLevelGmv,
   getTimeForSelectedGraphs,
+  transformMethodLevelTransactionsData,
 } from 'merchant/views/PaymentMetrics/helpers';
 import { getPaymentMetricsData } from 'merchant/views/PaymentMetrics/service';
 import { DEFAULT_PRESET, PRESETS } from 'merchant/views/PaymentMetrics/constants';
@@ -295,6 +300,66 @@ describe('Tests for #getMethodLevelCRData', () => {
   });
 });
 
+describe('Tests for #getIndustryOverallCRData', () => {
+  test('should call getPaymentMetricsData function', async () => {
+    const mockedError = {
+      code: undefined,
+      errors: [''],
+    };
+
+    (getPaymentMetricsData as jest.Mock).mockRejectedValue(mockedError);
+
+    await expect(
+      getIndustryOverallCRData({ lte: 12345678, gte: 123987654, category: 'others' }),
+    ).rejects.toEqual(mockedError);
+  });
+});
+
+describe('Tests for #getMethodLevelTransactionData', () => {
+  test('should call getPaymentMetricsData function', async () => {
+    const mockedError = {
+      code: undefined,
+      errors: [''],
+    };
+
+    (getPaymentMetricsData as jest.Mock).mockRejectedValue(mockedError);
+
+    await expect(
+      getMethodLevelTransactionData({ lte: 12345678, gte: 123987654, breakdown: 'daily' }),
+    ).rejects.toEqual(mockedError);
+  });
+});
+
+describe('Tests for #getTotalGmv', () => {
+  test('should call getTotalGmv function', async () => {
+    const mockedError = {
+      code: undefined,
+      errors: [''],
+    };
+
+    (getPaymentMetricsData as jest.Mock).mockRejectedValue(mockedError);
+
+    await expect(
+      getTotalGmv({ lte: 12345678, gte: 123987654, breakdown: 'daily' }),
+    ).rejects.toEqual(mockedError);
+  });
+});
+
+describe('Tests for #getTotalMethodLevelGmv', () => {
+  test('should call getTotalMethodLevelGmv function', async () => {
+    const mockedError = {
+      code: undefined,
+      errors: [''],
+    };
+
+    (getPaymentMetricsData as jest.Mock).mockRejectedValue(mockedError);
+
+    await expect(
+      getTotalMethodLevelGmv({ lte: 12345678, gte: 123987654, breakdown: 'daily' }),
+    ).rejects.toEqual(mockedError);
+  });
+});
+
 describe('Tests for #getTimeForSelectedGraphs', () => {
   test('should return custom preset with Jul 1 data and jul2 data 11am', () => {
     const time = 'Jul 1, 2023, 11:00:00 am';
@@ -327,5 +392,175 @@ describe('Tests for #getTimeForSelectedGraphs', () => {
       preset: PRESETS[PRESETS.length - 1],
       endDate: moment(time).add(7, 'days').endOf('day'),
     });
+  });
+});
+
+describe('Tests for #transformMethodLevelGmvData', () => {
+  test('should return all data for method level gmv graph to be consumed for 6 hours', () => {
+    const result = transformMethodLevelTransactionsData({
+      dataList: [
+        {
+          last_selected_method: 'upi',
+          timestamp: 1688394600,
+          value: 100700,
+        },
+        {
+          last_selected_method: 'wallet',
+          timestamp: 1688383800,
+          value: 10000,
+        },
+        {
+          last_selected_method: 'card',
+          timestamp: 1688383800,
+          value: 288400,
+        },
+        {
+          last_selected_method: 'null',
+          timestamp: 1688800,
+          value: 0,
+        },
+        {
+          last_selected_method: 'null',
+          timestamp: 1405400,
+          value: 0,
+        },
+        {
+          last_selected_method: 'upi',
+          timestamp: 1688398200,
+          value: 9073734,
+        },
+        {
+          last_selected_method: 'netbanking',
+          timestamp: 1688383800,
+          value: 952111,
+        },
+      ],
+      lte: 1688408999,
+      gte: 1688383800,
+      breakdown: 'hourly',
+    });
+    expect(result.length).toBe(4);
+  });
+
+  test('should return all data for method gmv chart to be consumed for daily for 7 days', () => {
+    const result = transformMethodLevelTransactionsData({
+      dataList: [
+        {
+          last_selected_method: 'card',
+          timestamp: 1687890600,
+          value: 85111,
+        },
+        {
+          last_selected_method: 'cod',
+          timestamp: 1688063400,
+          value: 10080,
+        },
+        {
+          last_selected_method: 'card',
+          timestamp: 1687804200,
+          value: 882678,
+        },
+        {
+          last_selected_method: 'paylater',
+          timestamp: 1688322600,
+          value: 66111,
+        },
+
+        {
+          last_selected_method: 'emi',
+          timestamp: 1687804200,
+          value: 10089,
+        },
+      ],
+      lte: 1688466599,
+      gte: 1687858200,
+      breakdown: 'daily',
+    });
+    expect(result.length).toBe(4);
+  });
+});
+
+describe('Tests for #transformMethodLevelTransactionsData', () => {
+  test('should return all data for method ctransaction to be consumed for 6 hours', () => {
+    const result = methodLevelSplit({
+      dataList: [
+        {
+          last_selected_method: 'upi',
+          timestamp: 1688394600,
+          value: 100,
+        },
+        {
+          last_selected_method: 'wallet',
+          timestamp: 1688383800,
+          value: 100,
+        },
+        {
+          last_selected_method: 'card',
+          timestamp: 1688383800,
+          value: 20,
+        },
+        {
+          last_selected_method: 'null',
+          timestamp: 1688401800,
+          value: 0,
+        },
+        {
+          last_selected_method: 'null',
+          timestamp: 1688405400,
+          value: 0,
+        },
+        {
+          last_selected_method: 'upi',
+          timestamp: 1688398200,
+          value: 90.56603773584905,
+        },
+        {
+          last_selected_method: 'netbanking',
+          timestamp: 1688383800,
+          value: 95.83333333333333,
+        },
+      ],
+      lte: 1688408999,
+      gte: 1688383800,
+      breakdown: 'hourly',
+    });
+    expect(result.length).toBe(4);
+  });
+
+  test('should return all data for method transaction chart to be consumed for daily for 7 days', () => {
+    const result = methodLevelSplit({
+      dataList: [
+        {
+          last_selected_method: 'card',
+          timestamp: 1687890600,
+          value: 85.87570621468926,
+        },
+        {
+          last_selected_method: 'cod',
+          timestamp: 1688063400,
+          value: 100,
+        },
+        {
+          last_selected_method: 'card',
+          timestamp: 1687804200,
+          value: 88.88888888888889,
+        },
+        {
+          last_selected_method: 'paylater',
+          timestamp: 1688322600,
+          value: 66.66666666666667,
+        },
+
+        {
+          last_selected_method: 'emi',
+          timestamp: 1687804200,
+          value: 100,
+        },
+      ],
+      lte: 1688466599,
+      gte: 1687858200,
+      breakdown: 'daily',
+    });
+    expect(result.length).toBe(4);
   });
 });

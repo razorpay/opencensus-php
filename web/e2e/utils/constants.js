@@ -51,6 +51,7 @@ const routes = {
   AFFILIATE_ACCOUNTS: '/app/partners/submerchants',
   AFFILIATE_ACCOUNTS_CAPITAL: '/app/partners/submerchants/capital',
   OPTIMIZER: 'app/optimizer/rules',
+  PAYMENT_METRICS: '/app/payment-metrics',
 };
 
 const EmailCredentials = [

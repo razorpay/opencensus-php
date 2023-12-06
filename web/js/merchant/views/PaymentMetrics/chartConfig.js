@@ -3,7 +3,15 @@ import { customTooltip, chartHover } from './customTooltip';
 import { formatIntervals, formatTime } from './helpers';
 import { timeAxisUnit, gridLineColor, chartFontColor } from './constants';
 
-export const getChartAreaConfig = ({ breakdown, xLabel, yLabel, xAxisID, yAxisID, btnAction }) => {
+export const getChartAreaConfig = ({
+  breakdown,
+  xLabel,
+  yLabel,
+  xAxisID,
+  yAxisID,
+  btnAction,
+  customUnit = '%',
+}) => {
   const now = moment();
 
   const chartOptions = {
@@ -87,7 +95,7 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel, xAxisID, yAxisID
           const { label } = datasets[datasetIndex];
           const labelText = label;
 
-          return `${labelText}: ${yLabel}%`;
+          return `${labelText}: ${yLabel}${customUnit}`;
         },
         labelColor: (item, chart) => {
           const color = chart?.config?.data?.datasets[item.datasetIndex]?.borderColor;

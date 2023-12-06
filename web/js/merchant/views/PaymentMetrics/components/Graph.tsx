@@ -17,6 +17,7 @@ const Graph = ({
   isLoading,
   noData,
   error,
+  customUnit = '%',
   btnAction = undefined,
 }: GraphProps): React.ReactElement => {
   return (
@@ -44,6 +45,7 @@ const Graph = ({
                 xAxisID={xAxisID}
                 yAxisID={yAxisID}
                 btnAction={btnAction}
+                customUnit={customUnit}
               />
             </ErrorBoundary>
           </LineChartArea>

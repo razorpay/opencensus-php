@@ -14,6 +14,7 @@ export const getTimelineData = ({
   endTime,
   valueKey = 'value',
   breakdown = GRAPH_INTERVALS_MAP.hourly,
+  roundOff = true,
 }) => {
   const timelineGroupMap = {};
   const datasets = [];
@@ -123,7 +124,7 @@ export const getTimelineData = ({
       x: timestamp,
       to: moment(timestamp)?.add(1, momentDurationMap[breakdown])?.toDate()?.getTime(),
       from: timestamp,
-      y: Math.round(yAxisVal),
+      y: roundOff ? Math.round(yAxisVal) : yAxisVal,
     });
   });
 

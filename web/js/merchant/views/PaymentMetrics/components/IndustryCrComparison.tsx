@@ -33,8 +33,7 @@ const IndustryCRComparison = ({
               Yesterday
             </div>
             <div>
-              <b> {crData.lwsd} % </b>Last
-              {WEEKS_MAP[dow - 1]}
+              <b> {crData.lwsd} % </b>Last {WEEKS_MAP[dow - 1]}
             </div>
           </CardFooter>
         </>

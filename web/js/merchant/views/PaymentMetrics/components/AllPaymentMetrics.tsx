@@ -15,6 +15,9 @@ import TopSection from './TopSection';
 import OverallCR from './OverallCrGraph';
 import MethodLevelCR from './MethodLevelCr';
 import IndustryLevelOverallCr from './IndustryLevelOverallCr';
+import MethodLevelTransactions from './MethodLevelTransactions';
+import TotalGmv from './TotalGmv';
+import MethodLevelGmv from './MethodLevelGmv';
 
 const AllPaymentMetrics = ({
   paymentMetrics,
@@ -54,6 +57,9 @@ const AllPaymentMetrics = ({
         <OverallCR />
         <MethodLevelCR startDate={startDate} endDate={endDate} interval={interval} />
         {category && <IndustryLevelOverallCr category={category} />}
+        <MethodLevelTransactions startDate={startDate} endDate={endDate} interval={interval} />
+        <TotalGmv />
+        <MethodLevelGmv startDate={startDate} endDate={endDate} interval={interval} />
       </ChartCardContainer>
     </MetricsPanelContainer>
   );

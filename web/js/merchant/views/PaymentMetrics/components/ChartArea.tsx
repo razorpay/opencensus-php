@@ -11,9 +11,19 @@ const ChartArea = ({
   xLabel,
   yLabel,
   btnAction,
+  customUnit,
 }: GraphProps): React.ReactElement => {
   const chartOptions = useMemo(
-    () => getChartAreaConfig({ breakdown: interval, xLabel, yLabel, xAxisID, yAxisID, btnAction }),
+    () =>
+      getChartAreaConfig({
+        breakdown: interval,
+        xLabel,
+        yLabel,
+        xAxisID,
+        yAxisID,
+        btnAction,
+        customUnit,
+      }),
     [interval],
   );
 

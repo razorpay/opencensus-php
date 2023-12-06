@@ -1,6 +1,10 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 
-import { METHOD_LEVEL_CR, GRAPHS_DATA } from 'merchant/views/PaymentMetrics/constants';
+import {
+  METHOD_LEVEL_CR,
+  GRAPHS_DATA,
+  CHECKOUT_METHOD_LEVEL_GMV,
+} from 'merchant/views/PaymentMetrics/constants';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -19,6 +23,7 @@ import {
   selectedMetricsUpdateInterval,
 } from 'merchant/reducers/paymentMetrics';
 import { SelectedMetricPanelProps } from 'merchant/views/PaymentMetrics/types';
+import MethodLevelGmv from './MethodLevelGmv';
 
 const MethodLevelCR = lazy(() => import(/* webpackChunkName: "MethodLevelCR" */ './MethodLevelCr'));
 
@@ -71,6 +76,13 @@ const SelectedMetricPanel = ({
       <Suspense fallback={null}>
         {selectedMetric === METHOD_LEVEL_CR && (
           <MethodLevelCR
+            startDate={startDate}
+            endDate={endDate}
+            interval={selectedMetricInterval}
+          />
+        )}
+        {selectedMetric === CHECKOUT_METHOD_LEVEL_GMV && (
+          <MethodLevelGmv
             startDate={startDate}
             endDate={endDate}
             interval={selectedMetricInterval}

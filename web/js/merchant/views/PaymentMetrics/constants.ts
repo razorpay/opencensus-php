@@ -55,12 +55,18 @@ export const CHART_NAME_MAP = {
   OVERALL_CR: 'checkout_overall_cr',
   METHOD_LEVEL_CR: 'checkout_method_level_overall_cr',
   INDUSTRY_OVERALL_CR: 'checkout_industry_level_overall_cr',
+  METHOD_LEVEL_TRANSACTIONS: 'method_level_transactions',
+  CHECKOUT_GMV: 'checkout_gmv',
+  CHECKOUT_METHOD_LEVEL_GMV: 'checkout_method_level_gmv',
 };
 
 export const CHART_INITIAL_DATA = {
   [CHART_NAME_MAP.OVERALL_CR]: { isLoading: false, error: '', datasets: [] },
   [CHART_NAME_MAP.METHOD_LEVEL_CR]: { isLoading: false, error: '', datasets: [] },
   [CHART_NAME_MAP.INDUSTRY_OVERALL_CR]: { isLoading: false, error: '', datasets: [] },
+  [CHART_NAME_MAP.METHOD_LEVEL_TRANSACTIONS]: { isLoading: false, error: '', datasets: [] },
+  [CHART_NAME_MAP.CHECKOUT_GMV]: { isLoading: false, error: '', datasets: [] },
+  [CHART_NAME_MAP.CHECKOUT_METHOD_LEVEL_GMV]: { isLoading: false, error: '', datasets: [] },
 };
 
 export const GRAPHS_DATA = {
@@ -78,7 +84,7 @@ export const GRAPHS_DATA = {
     name: 'Method Level CR',
     title: 'Method Level Conversion rate',
     description:
-      'The percentage of users who successfully complete a payment after initiating Razorpay Checkout for each individual payment method (e.g., credit cards, digital wallets, UPI etc)',
+      'The percentage of users who successfully complete a payment after initiating Razorpay Checkout for each individual payment method (e.g., cards, digital wallets, UPI etc)',
     xLabel: 'Time in',
     yLabel: 'Method Level CR',
     xAxisID: 'method_level_cr_x',
@@ -94,9 +100,41 @@ export const GRAPHS_DATA = {
     xAxisID: 'industry_overall_cr_x',
     yAxisID: 'industry_overall_cr_y',
   },
+  METHOD_LEVEL_TRANSACTIONS: {
+    name: 'Method Level Transaction Count',
+    title: 'Method Level Transaction Count',
+    description:
+      'The count of transactions which successfully completed after initiating Razorpay Checkout for each individual payment method (e.g., cards, digital wallets, UPI etc)',
+    xLabel: 'Time in',
+    yLabel: 'Method Level Transactions (in thousand)',
+    xAxisID: 'method_level_transactions_x',
+    yAxisID: 'method_level_transactions_y',
+  },
+  CHECKOUT_GMV: {
+    name: 'Total GMV',
+    title: 'Total GMV in Lakhs',
+    description:
+      'The sum of amount of transactions which successfully completed after initiating Razorpay Checkout as a trending line chart',
+    xLabel: 'Time in',
+    yLabel: 'Toal GMV (in lakhs)',
+    xAxisID: 'checkout_gmv_x',
+    yAxisID: 'checkout_gmv_y',
+  },
+  CHECKOUT_METHOD_LEVEL_GMV: {
+    name: 'Total GMV Methods Level',
+    title: 'Total GMV for All Methods in Lakh',
+    description:
+      'The sum of amount of transactions which successfully completed after initiating Razorpay Checkout for each individual payment method (e.g., cards, digital wallets, UPI etc)',
+    xLabel: 'Time in',
+    yLabel: 'Toal GMV (in lakhs)',
+    xAxisID: 'checkout_method_level_gmv_x',
+    yAxisID: 'checkout_method_level_gmv_y',
+  },
 };
 
 export const METHOD_LEVEL_CR = 'METHOD_LEVEL_CR';
+export const METHOD_LEVEL_TRANSACTIONS = 'METHOD_LEVEL_TRANSACTIONS';
+export const CHECKOUT_METHOD_LEVEL_GMV = 'CHECKOUT_METHOD_LEVEL_GMV';
 
 export const momentDurationFuncMap = {
   hourly: 'asHours',
