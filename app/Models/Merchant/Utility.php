@@ -7,6 +7,7 @@ use DOMXPath;
 use ZipArchive;
 use DOMDocument;
 use Response;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 
 class Utility
@@ -52,5 +53,11 @@ class Utility
 
         return Response::download($zipFileName)->deleteFileAfterSend(true);
 
+    }
+
+    public static function getPolicyContentUpdateLiveDate()
+    {
+    //please don't change, it's live date of policy v2
+        return  Carbon::create(2023, 12, 8,0,0,0);
     }
 }

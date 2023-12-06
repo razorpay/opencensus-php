@@ -12236,6 +12236,53 @@ We look forward to transacting with you!
         $this->assertNotNull($response);
     }
 
+    public function testGetMerchantWebsiteWithV2HtmlData()
+    {
+        $this->ba->proxyAuth();
+
+        $merchantId = '10000000000000';
+
+        $this->fixtures->edit('merchant', $merchantId, []);
+
+        $this->fixtures->create('merchant_detail',
+                                ["merchant_id"      => $merchantId,
+                                 'business_website' => "http://hello.com"
+                                ]);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "updatedAt"      => Carbon::create(2023, 12, 10),
+                    "publishedAt"    => Carbon::create(2023, 12, 10),
+                    "published_url"  => env(\RZP\Models\Merchant\Website\Constants::MERCHANT_POLICIES_SUBDOMAIN) . '/compliance/' . $merchantId . '/contact_us'
+                ]
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchantId,
+            'app_urls'    => [
+                'playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'appstore_url'  => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+            ]
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+    }
+
     // NC event - payments live and settlements not live
     public function testSMSForEasyOnboardingNCFlowWithExpEnabled()
     {

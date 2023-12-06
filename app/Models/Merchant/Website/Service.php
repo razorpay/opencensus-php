@@ -1593,7 +1593,8 @@ class Service extends Base\Service
                             Constants::PUBLISHED_URL  => $published_url,
                             Constants::STATUS         => Constants::SUBMITTED,
                             Constants::SECTION_STATUS => 3,
-                            Constants::UPDATED_AT     => Carbon::now()->getTimestamp()
+                            Constants::UPDATED_AT     => Carbon::now()->getTimestamp(),
+                            Constants::PUBLISHED_AT   =>  $websiteDetail->getSectionPublishedAt($sectionName) ?? Carbon::now()->getTimestamp(),
                         ]
                     ]
             ];
@@ -1690,20 +1691,36 @@ class Service extends Base\Service
         //generate files then send email and download
         $updatedAt = optional($websiteDetail)->getSectionUpdatedAt($sectionName) ?? Carbon::now()->getTimestamp();
 
-        $htmlContent = view('merchant.website.policy',
-                            [
-                                "data" => [
-                                    'merchant_legal_entity_name' => $merchant->getMerchantLegalEntityName(),
-                                    'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
-                                    'sectionName'                => $sectionName,
-                                    'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
-                                    'public'                     => false,
-                                    'address'                    => 'address',
-                                    'merchant'                   => $merchant->toArray(),
-                                    'merchant_details'           => $merchant->merchantDetail->toArray(),
-                                    'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchant->merchantDetail),
-                                ]
-                            ])->render();
+        $publishedAt = optional($websiteDetail)->getSectionPublishedAt($sectionName);
+        $publishedWebsite = $websiteDetail->getPublishedUrl($sectionName);
+
+        // Use version 2 (v2) content for policies published or updated after the specified date after this date (live of policy wizard)
+        $liveDate = Utility::getPolicyContentUpdateLiveDate();
+        $renderData = [
+            "data" => [
+                'merchant_legal_entity_name' => $merchant->getMerchantLegalEntityName(),
+                'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
+                'sectionName'                => $sectionName,
+                'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
+                'public'                     => false,
+                'address'                    => 'address',
+                'merchant'                   => $merchant->toArray(),
+                'merchant_details'           => $merchant->merchantDetail->toArray(),
+                'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchant->merchantDetail),
+            ]
+        ];
+
+        if ((empty($publishedWebsite) === true) or
+            (empty($publishedWebsite) === false and
+             empty($publishedAt) === false and
+             Carbon::createFromTimestamp($publishedAt)->gt($liveDate)))
+        {
+            $htmlContent = view('merchant.website.policy_v2', $renderData)->render();
+        }
+        else
+        {
+            $htmlContent = view('merchant.website.policy', $renderData)->render();
+        }
 
         $htmlFile = $this->getFileName($merchant, $sectionName, 'html');
 
@@ -2334,26 +2351,45 @@ class Service extends Base\Service
 
         $updatedAt = optional($websiteDetail)->getSectionUpdatedAt($sectionName) ?? Carbon::now()->getTimestamp();
 
+        $publishedAt = optional($websiteDetail)->getSectionPublishedAt($sectionName);
+        $publishedWebsite = $websiteDetail->getPublishedUrl($sectionName);
+
         $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, [
             'merchant'         => $this->merchant->toArray(),
             'merchant_details' => $this->merchant->merchantDetail->toArray(),
             'website_detail'   => $websiteDetailArray]);
 
-        return [
-            "html" => view('merchant.website.policy',
-                           [
-                               "data" => [
-                                   'merchant_legal_entity_name' => $this->merchant->getMerchantLegalEntityName(),
-                                   'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
-                                   'sectionName'                => $sectionName,
-                                   'logo_url'                   => $this->merchant->getFullLogoUrlWithSize(),
-                                   'merchant'                   => $this->merchant->toArray(),
-                                   'merchant_details'           => $this->merchant->merchantDetail->toArray(),
-                                   'website_detail'             => $this->createResponse($websiteDetailArray, $websiteDetail, $this->merchant->merchantDetail),
-                                   'public'                     => false
-                               ]
-                           ])->render()
+        // Use version 2 (v2) content for policies published or updated after the specified date after this date (live of policy wizard)
+        $liveDate = Utility::getPolicyContentUpdateLiveDate();
+
+        $renderData = [
+            "data" => [
+                'merchant_legal_entity_name' => $this->merchant->getMerchantLegalEntityName(),
+                'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
+                'sectionName'                => $sectionName,
+                'logo_url'                   => $this->merchant->getFullLogoUrlWithSize(),
+                'merchant'                   => $this->merchant->toArray(),
+                'merchant_details'           => $this->merchant->merchantDetail->toArray(),
+                'website_detail'             => $this->createResponse($websiteDetailArray, $websiteDetail, $this->merchant->merchantDetail),
+                'public'                     => false
+            ]
         ];
+
+        if ((empty($publishedWebsite) === true) or
+            (empty($publishedWebsite) === false and
+             empty($publishedAt) === false and
+             Carbon::createFromTimestamp($publishedAt)->gt($liveDate)))
+        {
+            return [
+                "html" => view('merchant.website.policy_v2', $renderData)->render()
+            ];
+        }
+        else
+        {
+            return [
+                "html" => view('merchant.website.policy', $renderData)->render()
+            ];
+        }
     }
 
     // send html page of the published page while viewing the page after checking if the section is published or not
@@ -2381,21 +2417,34 @@ class Service extends Base\Service
 
         $updatedAt = $websiteDetail->getSectionUpdatedAt($sectionName);
 
+        $publishedAt = $websiteDetail->getSectionPublishedAt($sectionName);
+
+        $renderData = [
+            "data" => [
+                'merchant_legal_entity_name' => $merchant->getMerchantLegalEntityName(),
+                'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
+                'sectionName'                => $sectionName,
+                'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
+                'merchant'                   => $merchant->toArray(),
+                'merchant_details'           => $merchant->merchantDetail->toArray(),
+                'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchant->merchantDetail),
+                'public'                     => true
+            ]
+        ];
+
         if ($sectionStatus === 3 and empty($publishedWebsite) === false)
         {
-            return ["html" => view('merchant.website.policy',
-                                   [
-                                       "data" => [
-                                           'merchant_legal_entity_name' => $merchant->getMerchantLegalEntityName(),
-                                           'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
-                                           'sectionName'                => $sectionName,
-                                           'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
-                                           'merchant'                   => $merchant->toArray(),
-                                           'merchant_details'           => $merchant->merchantDetail->toArray(),
-                                           'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchant->merchantDetail),
-                                           'public'                     => true
-                                       ]
-                                   ])->render()];
+            // Use version 2 (v2) content for policies published or updated after the specified date after this date (live of policy wizard)
+            $liveDate = Utility::getPolicyContentUpdateLiveDate();
+
+            if (empty($publishedAt) === false and Carbon::createFromTimestamp($publishedAt)->gt($liveDate))
+            {
+                return ["html" => view('merchant.website.policy_v2', $renderData)->render()];
+            }
+            else
+            {
+                return ["html" => view('merchant.website.policy', $renderData)->render()];
+            }
         }
         else
         {

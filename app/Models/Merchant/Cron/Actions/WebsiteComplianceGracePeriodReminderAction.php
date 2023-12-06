@@ -53,20 +53,38 @@ class WebsiteComplianceGracePeriodReminderAction extends BaseAction
                     $publishedWebsite = $websiteDetail->getPublishedUrl($sectionName);
 
                     $updatedAt = $websiteDetail->getSectionUpdatedAt($sectionName);
+                    $publishedAt = $websiteDetail->getSectionPublishedAt($sectionName);
 
-                    $htmlContent = view('merchant.website.policy',
-                                        [
-                                            "data" => [
-                                                'merchant_legal_entity_name' => $merchant->getMerchantLegalEntityName(),
-                                                'updated_at'                 => Carbon::createFromTimestamp($updatedAt)->isoFormat('MMM Do YYYY'),
-                                                'sectionName'                => $sectionName,
-                                                'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
-                                                'public'                     => false,
-                                                'merchant'                   => $merchant->toArray(),
-                                                'merchant_details'           => $merchant->merchantDetail->toArray(),
-                                                'website_detail'             => $websiteDetail->toArrayPublic(),
-                                            ]
-                                        ])->render();
+
+                    // Use version 2 (v2) content for policies published or updated after the specified date after this date (live of policy wizard)
+                    $liveDate = Utility::getPolicyContentUpdateLiveDate();
+
+                    $renderData = [
+                        "data" => [
+                            'merchant_legal_entity_name' => $merchant->getMerchantLegalEntityName(),
+                            'updated_at'                 => Carbon::createFromTimestamp($updatedAt)->isoFormat('MMM Do YYYY'),
+                            'sectionName'                => $sectionName,
+                            'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
+                            'public'                     => false,
+                            'merchant'                   => $merchant->toArray(),
+                            'merchant_details'           => $merchant->merchantDetail->toArray(),
+                            'website_detail'             => $websiteDetail->toArrayPublic(),
+                        ]
+                    ];
+
+                    if ((empty($publishedWebsite) === true) or
+                        (empty($publishedWebsite) === false and
+                         $sectionStatus === 3 and
+                         empty($publishedAt) === false and
+                         Carbon::createFromTimestamp($publishedAt)->gt($liveDate)))
+                    {
+                        $htmlContent = view('merchant.website.policy_v2', $renderData)->render();
+                    }
+                    else
+                    {
+
+                        $htmlContent = view('merchant.website.policy', $renderData)->render();
+                    }
 
                     $htmlFile = (new WebsiteService())->getFileName($merchant, $sectionName, 'html');
 

@@ -308,6 +308,13 @@ class Entity extends Base\PublicEntity
         return $merchantWebsiteDetail[$sectionName][Constants::UPDATED_AT] ?? null;
     }
 
+    public function getSectionPublishedAt($sectionName)
+    {
+        $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
+
+        return $merchantWebsiteDetail[$sectionName][Constants::PUBLISHED_AT] ?? null;
+    }
+
 
     /*
      "merchant_website_details": {

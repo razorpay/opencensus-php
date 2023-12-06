@@ -711,6 +711,18 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testGetMerchantWebsiteWithV2HtmlData' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchant/policy/contact_us',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
     'testAddClarificationReasonsNullFields' => [
         'request' => [

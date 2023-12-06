@@ -18,6 +18,7 @@ class Constants
     const STATUS         = 'status';
     const PUBLISHED_URL  = 'published_url';
     const UPDATED_AT     = 'updated_at';
+    const PUBLISHED_AT   = 'published_at';
     const SUBMITTED      = 'submitted';
     const SUBMIT         = 'submit';
     const SECTION_URL    = 'section_url';
