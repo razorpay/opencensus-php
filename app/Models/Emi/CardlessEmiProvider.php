@@ -45,6 +45,7 @@ class CardlessEmiProvider
         self::HCIN,
         self::FDRL,
         self::BARB,
+        self::ZESTMONEY,
     ];
 
     public static function checkProviderValidity($provider)
