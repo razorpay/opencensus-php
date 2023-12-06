@@ -3076,6 +3076,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_RULE_MISTMATCH                                = 'PRICING_RULE_MISTMATCH';
     const PRICING_RULE_DOES_NOT_EXISTS                          = 'PRICING_RULE_DOES_NOT_EXISTS';
     const ES_PRICING_SHOWN_TO_MERCHANT                          = 'ES_PRICING_SHOWN_TO_MERCHANT';
+    const PRICING_QUERY_CACHE_ERROR                             = 'PRICING_QUERY_CACHE_ERROR';
 
     const BATCH_CREATE_REQUEST                                  = 'BATCH_CREATE_REQUEST';
     const BATCH_FILE_VALIDATE_REQUEST                           = 'BATCH_FILE_VALIDATE_REQUEST';

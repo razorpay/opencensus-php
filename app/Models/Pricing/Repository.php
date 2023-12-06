@@ -494,16 +494,50 @@ class Repository extends Base\Repository
     {
         $orgId = $merchant->getOrgId();
 
-        return $this->newQuery()
-                    ->product(Product::BANKING)
-                    ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
-                    ->where(Pricing\Entity::FEATURE, '=', $feature)
-                    ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::SHARED)
-                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
-                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
-                    ->whereNull(Pricing\Entity::APP_NAME)
-                    ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Entity::FREE_PAYOUT)
-                    ->get();
+        $cacheTags = Entity::getCacheTagsForAccountType($this->entity, $orgId, Fee::DEFAULT_BANKING_PLAN_ID, $feature, AccountType::SHARED, Payout\Entity::FREE_PAYOUT);
+
+        try
+        {
+            $query = $this->newQuery()
+                          ->product(Product::BANKING)
+                          ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                          ->where(Pricing\Entity::FEATURE, '=', $feature)
+                          ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::SHARED)
+                          ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                          ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                          ->whereNull(Pricing\Entity::APP_NAME)
+                          ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Entity::FREE_PAYOUT)
+                          ->remember($this->getCacheTtl())
+                          ->cacheTags($cacheTags);
+
+            // see comment in config/pricing.php
+            if (self::shouldDistributeQueryCacheLoad($merchant) === true)
+            {
+                $prefix = self::getQueryCachePrefixForDistributingLoad();
+
+                $query = $query->prefix($prefix);
+            }
+
+            return $query->get();
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PRICING_QUERY_CACHE_ERROR);
+
+            return $this->newQuery()
+                        ->product(Product::BANKING)
+                        ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                        ->where(Pricing\Entity::FEATURE, '=', $feature)
+                        ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::SHARED)
+                        ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                        ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                        ->whereNull(Pricing\Entity::APP_NAME)
+                        ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Entity::FREE_PAYOUT)
+                        ->get();
+        }
     }
 
     /**
@@ -518,16 +552,49 @@ class Repository extends Base\Repository
     {
         $orgId = $merchant->getOrgId();
 
-        return $this->newQuery()
-                    ->product(Product::BANKING)
-                    ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
-                    ->where(Pricing\Entity::FEATURE, '=', $feature)
-                    ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::DIRECT)
-                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
-                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
-                    ->whereNull(Pricing\Entity::APP_NAME)
-                    ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Entity::FREE_PAYOUT)
-                    ->get();
+        $cacheTags = Entity::getCacheTagsForAccountType($this->entity, $orgId, Fee::DEFAULT_BANKING_PLAN_ID, $feature, AccountType::DIRECT, Payout\Entity::FREE_PAYOUT);
+
+        try
+        {
+            $query = $this->newQuery()
+                          ->product(Product::BANKING)
+                          ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                          ->where(Pricing\Entity::FEATURE, '=', $feature)
+                          ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::DIRECT)
+                          ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                          ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                          ->whereNull(Pricing\Entity::APP_NAME)
+                          ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Entity::FREE_PAYOUT)
+                          ->remember($this->getCacheTtl())
+                          ->cacheTags($cacheTags);
+
+            if (self::shouldDistributeQueryCacheLoad($merchant) === true)
+            {
+                $prefix = self::getQueryCachePrefixForDistributingLoad();
+
+                $query = $query->prefix($prefix);
+            }
+
+            return $query->get();
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PRICING_QUERY_CACHE_ERROR);
+
+            return $this->newQuery()
+                        ->product(Product::BANKING)
+                        ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                        ->where(Pricing\Entity::FEATURE, '=', $feature)
+                        ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::DIRECT)
+                        ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                        ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                        ->whereNull(Pricing\Entity::APP_NAME)
+                        ->where(Pricing\Entity::PAYOUTS_FILTER, '=', Payout\Entity::FREE_PAYOUT)
+                        ->get();
+        }
     }
 
     /**
@@ -682,7 +749,7 @@ class Repository extends Base\Repository
         $appName = null,
         $receiverType = null,
         $procurer = null,
-        $feeBearer = null,
+        $feeBearer = null
     )
     {
         $rule = $this->newQueryWithOrgIdParam($orgId)

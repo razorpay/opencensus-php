@@ -700,6 +700,13 @@ class Entity extends Base\PublicEntity
         return $cacheTags;
     }
 
+    public static function getCacheTagsForAccountType(string $entity, string $orgId , string $planId, string $feature, string $accountType = null, string $type = null): string
+    {
+        $cacheTags = implode('_', [$entity, $orgId, $planId, $feature, $accountType, $type]);
+
+        return $cacheTags;
+    }
+
     public function toArrayProxy()
     {
         $array = $this->attributesToArray();
