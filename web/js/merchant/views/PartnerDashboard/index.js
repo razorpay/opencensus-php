@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import store from 'merchant/store';
 import { Route, Routes } from 'react-router-dom';
 import SubMerchantList from './SubMerchant/List';
@@ -11,10 +11,21 @@ import Home from './Home';
 import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
 import usePartnerPageNPS from 'merchant/views/PartnerDashboard/SubMerchant/utils/usePartnerPageNPS';
 import useTrackPartnerExperiments from 'merchant/views/PartnerDashboard/SubMerchant/utils/useTrackPartnerExperiments';
+import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import Configuration, { AppConfiguration } from './Settings/configuration';
 import { RouteGuard } from 'merchant/components/ShowWhen';
+import lazy from 'merchant/routes/LazyLoader';
+import { Box, Spinner } from '@razorpay/blade/components';
+
+const PartnerPlaybook = lazy(() =>
+  import(
+    /* webpackChunkName: "PartnerPlaybook" */ 'merchant/views/PartnerDashboard/PartnerPlaybook'
+  ),
+);
 
 export default function PartnerDashboard() {
+  const { isPartnerPlaybookEnabled } = usePartnerDashboardExperiments();
+
   const user = store.getState().session.user;
   const isPartnershipFUX = user?.isPartnershipFUX || false;
 
@@ -124,6 +135,22 @@ export default function PartnerDashboard() {
             >
               <PartnerReports />
             </RouteGuard>
+          }
+        />
+        <Route
+          path="playbook/*"
+          element={
+            <Suspense
+              fallback={
+                <Box minHeight="800px" display="flex" justifyContent="center" alignItems="center">
+                  <Spinner accessibilityLabel="spinner" size="xlarge" />
+                </Box>
+              }
+            >
+              <RouteGuard additionalCondition={() => isPartnerPlaybookEnabled}>
+                <PartnerPlaybook />
+              </RouteGuard>
+            </Suspense>
           }
         />
 

@@ -13,6 +13,10 @@ const isPlatformPartnerInviteFlowEnabled = ({ variant, user }) => {
   return user.isPartner('pure_platform') && user.isOrgRZP && isExperimentEnabled(variant);
 };
 
+const isPartnerPlaybookEnabled = ({ variant, user }) => {
+  return user.isOrgRZP && isExperimentEnabled(variant);
+};
+
 const isPartnershipCapitalBureauLinkEnabled = ({ variant }) => {
   return isExperimentEnabled(variant);
 };
@@ -24,6 +28,7 @@ const isPartnershipCapitalBureauLinkEnabled = ({ variant }) => {
 const usePartnerDashboardExperiments = (): {
   isEasierAccessToSubmerchantKycEnabled: boolean;
   isPlatformPartnerInviteFlowEnabled: boolean;
+  isPartnerPlaybookEnabled: boolean;
   isPartnershipCapitalBureauLinkEnabled: boolean;
 } => {
   const user = getUser();
@@ -32,6 +37,7 @@ const usePartnerDashboardExperiments = (): {
       // List of partner dashboard specific experiment labels here:
       partnerships_easier_access_to_submerchant_kyc,
       partnerships_oauth_phantom,
+      partnerships_partner_playbook,
       partnership_capital_bureau_link,
     } = {},
   } = useSplitzService();
@@ -42,6 +48,10 @@ const usePartnerDashboardExperiments = (): {
     }),
     isPlatformPartnerInviteFlowEnabled: isPlatformPartnerInviteFlowEnabled({
       variant: partnerships_oauth_phantom,
+      user,
+    }),
+    isPartnerPlaybookEnabled: isPartnerPlaybookEnabled({
+      variant: partnerships_partner_playbook,
       user,
     }),
     isPartnershipCapitalBureauLinkEnabled: isPartnershipCapitalBureauLinkEnabled({

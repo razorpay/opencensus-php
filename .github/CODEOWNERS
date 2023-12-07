@@ -19,7 +19,7 @@ web/js/merchant/PartnerDashboard/Reports          @joel-jaimon @TanroopSing @asp
 web/js/merchantLA/containers/Reports              @joel-jaimon @TanroopSing @asp48
 web/js/merchant_common/views/Reports              @joel-jaimon @TanroopSing @asp48
 web/js/merchant_common/containers/ReportsAsync    @joel-jaimon @TanroopSing @asp48
-web/js/merchant/views/PartnerDashboard            @razorpay/partnerships-fe
+web/js/merchant/views/PartnerDashboard            @razorpay/partnerships-fe @razorpay/merchant-dashboard
 web/js/merchant/views/Settings/PaymentMethods     @amitabh-blade @NarasimhaSwamy
 web/js/merchant/views/Transactions/v1/SuccessRate @amitabh-blade @akash-sachan @NarasimhaSwamy
 web/js/merchant/views/Navigator                   @parth-p-ui @prem-io

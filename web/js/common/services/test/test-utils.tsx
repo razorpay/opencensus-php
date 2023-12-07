@@ -2,7 +2,7 @@
 import React, { ReactElement } from 'react';
 import { render, waitForElementToBeRemoved, screen, waitFor } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
-import { Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Router as DefaultRouter, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { server } from '../../../../mocks/node';
 import { errorHandlers } from '../../../../mocks/errorHandlers';
@@ -25,6 +25,7 @@ const createWrapper = ({
   path,
   renderViaRouteGuard = true,
   history,
+  renderWithBrowserRouter = false,
 }) => {
   const AllTheProviders: React.FC<{
     children: ReactElement<any, any> | null;
@@ -36,7 +37,7 @@ const createWrapper = ({
         return children;
       }
     };
-
+    const Router = renderWithBrowserRouter ? BrowserRouter : DefaultRouter;
     return (
       <Wrapper context={context}>
         <Provider store={reduxStore}>
@@ -72,6 +73,7 @@ const customRender = (
     initialEntries = ['/'],
     context = mockContext,
     renderViaRouteGuard,
+    renderWithBrowserRouter,
     history = createMemoryHistory({ initialEntries }),
     ...restOptions
   }: any = {},
@@ -83,6 +85,7 @@ const customRender = (
     path,
     renderViaRouteGuard,
     history,
+    renderWithBrowserRouter,
   });
   const renderObj = render(ui, { wrapper: AllTheProviders, ...restOptions });
   return {

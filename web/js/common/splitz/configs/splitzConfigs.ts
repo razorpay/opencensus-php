@@ -259,6 +259,25 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'partnerships_partner_playbook',
+          experimentId: {
+            beta: 'Mq6dCU0Pw9yWVc',
+            production: 'Mq6WyVwB9qAhWd',
+          },
+          requestData: (requestDataArgs) => ({
+            partner_type: requestDataArgs.partner_type,
+          }),
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

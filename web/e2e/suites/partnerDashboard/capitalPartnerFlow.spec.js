@@ -7,7 +7,7 @@ const { resolve } = require('path');
 test.describe
   .parallel('Test Reseller Partner capital @flow=partnership-capital @project=partner-dashboard', () => {
   test.use({
-    storageState: StorageStatePath.RESELLER_PARTNER_TEST_LOGIN_STATE,
+    storageState: StorageStatePath.CAPITAL_RESELLER_PARTNER_TEST_LOGIN_STATE,
   });
 
   test('should load the capital Reseller Partner Dashboard @priority=critical', async ({

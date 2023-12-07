@@ -57,3 +57,9 @@ export const switchMerchant = async ({ page, merchantToSwitch }) => {
   });
   await SelectAndRedirectAction.click();
 };
+
+export const waitForSelectorToBeVisible = async ({ page, selector }, options) => {
+  await page.waitForSelector(selector, options);
+  const locator = await page.locator(selector);
+  await expect(locator).toBeVisible();
+};
