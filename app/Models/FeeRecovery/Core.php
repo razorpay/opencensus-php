@@ -936,10 +936,7 @@ class Core extends Base\Core
      */
     protected function fetchOrCreateRzpFeesTypeContact(Merchant\Entity $merchant, Balance\Entity $balance)
     {
-        $rzpFeesContacts = $this->repo->contact->fetch([
-                                                           Contact\Entity::TYPE => Contact\Type::RZP_FEES
-                                                       ],
-                                                       $merchant->getId());
+        $rzpFeesContacts = $this->repo->contact->fetchContactFromTiDB($merchant->getId(), Contact\Type::RZP_FEES, 2);
 
         if ($rzpFeesContacts->count() > 1)
         {

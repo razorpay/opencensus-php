@@ -8,6 +8,7 @@ use DB;
 
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
+use RZP\Base\ConnectionType;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
@@ -227,6 +228,15 @@ class Repository extends Base\Repository
                         '>',
                         DB::raw('CHAR_LENGTH(trim(replace(' . Entity::TYPE . ',"\n"," ")))')
                     )
+                    ->limit($limit)
+                    ->get();
+    }
+
+    public function fetchContactFromTiDB($merchantId, $type, $limit = 10)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->merchantId($merchantId)
+                    ->where(Entity::TYPE, '=', $type)
                     ->limit($limit)
                     ->get();
     }
