@@ -615,4 +615,37 @@ class Repository extends Base\Repository
             ->limit($limit)
             ->get();
     }
+
+    /*
+    * SELECT *
+    * FROM bank_accounts
+    * WHERE ifsc_code = ?
+    * AND is_gateway_sync = ?
+    * AND type = ?
+    * AND deleted_at != NULL
+    * AND created_at > ?
+    * AND created_at < ?
+    * AND merchant_id IN (?)
+    * AND LIMIT ?
+    */
+
+    public function getDeactivationBankAccounts($fromTime, $toTime, $limit, $merchantIds, $ifscCode)
+    {
+        $query = $this->newQueryOnSlave();
+
+        $query
+            ->withTrashed()
+            ->where(Entity::IFSC_CODE, '=', $ifscCode)
+            ->where(Entity::GATEWAY_SYNC, '=', 1)
+            ->where(Entity::TYPE, '=', 'virtual_account')
+            ->whereNotNull(Entity::DELETED_AT)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->limit($limit);
+
+        if ($fromTime != null and $toTime != null) {
+            $query = $query->whereBetween(Entity::CREATED_AT, [$fromTime, $toTime]);
+        }
+
+        return $query->get();
+    }
 }

@@ -48,6 +48,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $createVirtualAccountObj, Action::CREATE_VIRTUAL_ACCOUNT);
     }
 
+    public function closeVirtualAccount($input)
+    {
+        $closeVirtualAccount = new CloseVirtualAccount();
+
+        return $this->processMockResponse($input, $closeVirtualAccount, Action::DEACTIVATE_VIRTUAL_ACCOUNT);
+    }
+
     public function createVirtualAccountForBanking($input)
     {
         $createVirtualAccountObj = new CreateVirtualAccountForBanking();

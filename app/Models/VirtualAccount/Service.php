@@ -1002,6 +1002,12 @@ class Service extends Base\Service
         return (new Core)->deactivateMigratedBA($input);
     }
 
+    /* Bulk close bank accounts on RBL end */
+    public function bulkDeactivateClosedRBLBankAccount(array $input)
+    {
+        return (new Core)->bulkDeactivateClosedRBLBankAccount($input);
+    }
+
     protected function getDeviceForQr(array $input)
     {
         if (isset($input['notifications']['device_id']) === false)

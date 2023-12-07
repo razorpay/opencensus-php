@@ -17,6 +17,7 @@ use RZP\Trace\TraceCode;
 use RZP\Jobs\AppsRiskCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Constants\HyperTrace;
+use RZP\Gateway\Mozart;
 use RZP\Gateway\Mozart\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
@@ -1253,7 +1254,91 @@ class Core extends Base\Core
             'Success' => true,
             'next_after_id' => $nextAfterId
         ];
+    }
 
+    public function bulkDeactivateClosedRBLBankAccount(array $input)
+    {
+        $this->trace->debug(TraceCode::BANK_ACCOUNT_BULK_DEACTIVATE_REQUEST, ['input' => $input]);
+
+        $ifscCode = null;
+        $gateway = $input['gateway'] ?? '';
+
+        if ($gateway == Gateway::BT_RBL)
+        {
+            $ifscCode = Provider::IFSC[Provider::RBL];
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Unsupported gateway for Bank Account deactivation: ' . $gateway);
+        }
+
+        $fromTime     = $input['from_time'];
+        $toTime       = $input['to_time'];
+        $limit        = $input['limit'] ?? 1000;
+        $merchantIds  = $input['merchant_ids'] ?? [];
+
+        if (empty($merchantIds) == true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "'merchantIds' field empty or missing from the Request");
+        }
+
+        $bankAccounts = $this->repo->bank_account->getDeactivationBankAccounts($fromTime, $toTime, $limit, $merchantIds, $ifscCode);
+        $startTime = millitime();
+        $failCount = 0;
+
+        $this->trace->info(TraceCode::BANK_ACCOUNT_DEACTIVATE_PROCESS_TRIGGERING, [
+            'total_count' => count($bankAccounts)
+        ]);
+
+        foreach ($bankAccounts as $bankAccount)
+        {
+            $request = ['bankAccount' => $bankAccount->toArray(), 'gateway' => Gateway::BT_RBL];
+
+            try
+            {
+                $response = $this->repo->transaction(function() use ($request, $bankAccount)
+                {
+                    $response = $this->app['gateway']->call(
+                        Gateway::BT_RBL,
+                        Action::DEACTIVATE_VIRTUAL_ACCOUNT,
+                        $request, $this->mode
+                    );
+
+                    $bankAccount->setConnection(Mode::LIVE);
+                    $bankAccount->setIsGatewaySync(BankAccountConstants::BANK_ACCOUNT_DEACTIVATE_SYNCED);
+                    $this->repo->saveOrFail($bankAccount);
+
+                    return $response;
+                });
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_DEACTIVATE_PROCESS_SUCCESS, [
+                    'mozart_response' => $response,
+                    'bank_account_id' => $bankAccount->getId(),
+                    'merchant_id'     => $bankAccount->getMerchantId(),
+                ]);
+
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e,
+                    code: TraceCode::BANK_ACCOUNT_DEACTIVATE_PROCESS_FAILED,
+                    extraData: [
+                    'bank_account_id' => $bankAccount->getId(),
+                    'merchant_id'     => $bankAccount->getMerchantId(),
+                ]);
+
+                $failCount += 1;
+            }
+        }
+
+        return [
+            'Success' => true,
+            'time_taken' => millitime() - $startTime,
+            'total_count' => count($bankAccounts),
+            'failed_count' => $failCount
+        ];
     }
 
     /**
