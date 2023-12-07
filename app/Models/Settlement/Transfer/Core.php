@@ -127,7 +127,7 @@ class Core extends Base\Core
             Entity::SETTLEMENT_TRANSACTION_ID => $settlement->getTransactionId(),
         ];
 
-        $entity = $entityID === null ? (new Entity)->generateId() : $entityID;
+        $entity = $entityID === null ? (new Entity)->generateId() : (new Entity)->setId($entityID);
 
         $entity->build($entityData);
 

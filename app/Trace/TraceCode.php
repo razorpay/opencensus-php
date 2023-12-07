@@ -1923,6 +1923,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LOCKED_FUND_TRANSFER_ATTEMPTS                         = 'LOCKED_FUND_TRANSFER_ATTEMPTS';
     const SETTLEMENT_DELAYED_MF_CHECK                           = 'SETTLEMENT_DELAYED_MF_CHECK';
     const SETTLEMENT_REVERSE_FILE_SKIPPED                       = 'SETTLEMENT_REVERSE_FILE_SKIPPED';
+    const SETTLEMENT_CREATE_INPUT                               = 'SETTLEMENT_CREATE_INPUT';
     const SETTLEMENT_INITIATING                                 = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_PROCESS_NOT_ALLOWED                        = 'SETTLEMENT_PROCESS_NOT_ALLOWED';
     const SETTLEMENT_CREATE_NOT_ALLOWED                         = 'SETTLEMENT_CREATE_NOT_ALLOWED';

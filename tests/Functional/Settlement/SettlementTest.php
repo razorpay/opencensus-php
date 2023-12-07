@@ -3385,4 +3385,56 @@ class SettlementTest extends TestCase
 
         $this->assertEquals("COMPANYPAN",$result["pan_details"]);
     }
+
+    public function testAggregateSettlementCreateFromNewServiceInReverseShadow()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        $balanceTypePrimary = $this->fixtures->create('balance', [
+            'type'           => 'primary',
+            'account_type'   => 'shared',
+            'account_number' => '2224440041626904',
+            'merchant_id'    => '10000000000001',
+            'balance'        => 400000
+        ]);
+
+        $settlementTransferId = "ZYXUHPMNHULR13";
+        $settlementTransferJournalId = "CREDTJOURNAL13";
+        $aggregateSettlementId = "ABXUHPMNHULR13";
+        $aggregateSettlementJournalId = "DEBITJOURNAL13";
+
+        $content = $this->testData['testAggregateSettlementCreateFromNewService'];
+
+        $result = $this->createSettlementEntry($content);
+
+        $settlement = $this->getLastEntity('settlement', true);
+        $this->assertEquals('setl_'. $aggregateSettlementId, $settlement['id']);
+
+        $settlementDetails = $this->getSettlementDetails($settlement['id']);
+
+        $transaction = $this->getDbEntityById('transaction', $aggregateSettlementJournalId );
+        $this->assertNotNull($transaction);
+        $this->assertEquals($settlement['transaction_id'], $transaction['id']);
+        $this->assertEquals($settlement['id'], 'setl_'. $transaction['entity_id']);
+
+        $this->assertArraySelectiveEquals($this->testData['testSettlementCreateFromNewServiceSettlementDetails'],
+            $settlementDetails['items']);
+
+        $this->assertEquals(1, $settlement['is_new_service']);
+
+        $this->assertEquals('setl_'. $content['settlement_id'], $settlement['id']);
+
+        //assertions for settlement transfer
+        $settlementTransfer = $this->getLastEntity('settlement_transfer', true);
+        $this->assertEquals($settlementTransferId, $settlementTransfer['id']);
+
+        $transaction = $this->getDbEntityById('transaction', $settlementTransferJournalId );
+        $this->assertNotNull($transaction);
+        $this->assertEquals($settlementTransfer['transaction_id'], $transaction['id']);
+        $this->assertEquals($settlementTransfer['id'], $transaction['entity_id']);
+        $this->assertEquals($settlementTransfer['merchant_id'], '10000000000001');
+        $this->assertEquals($settlementTransfer['source_merchant_id'], '10000000000000');
+        $this->assertEquals($settlementTransfer['settlement_transaction_id'], $aggregateSettlementJournalId);
+
+    }
 }

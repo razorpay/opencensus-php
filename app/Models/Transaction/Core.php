@@ -1178,7 +1178,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromSettlement(Settlement\Entity $settlement, $journalID)
+    public function createFromSettlement(Settlement\Entity $settlement, $journalID = null)
     {
         list($txn, $feeSplit) = $this->createTransactionForSource($settlement, $journalID);
 

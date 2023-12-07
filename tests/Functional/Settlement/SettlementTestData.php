@@ -257,4 +257,35 @@ return [
             ]
         ]
     ],
+
+    'testAggregateSettlementCreateFromNewService' => [
+        'merchant_id'               => '10000000000000',
+        'channel'                   => 'axis2',
+        'balance_type'              => 'primary',
+        'amount'                    => 1000,
+        'fees'                      => 12,
+        'tax'                       => 13,
+        'settlement_id'             => 'ABXUHPMNHULR13',
+        'status'                    => 'processed',
+        'type'                      => 'aggregate_settlement',
+        'details'                   => [
+            'payment' => [
+                'type' => 'credit',
+                'amount' => 1200,
+                'count'  => 34,
+            ],
+            'refund' => [
+                'type'  => 'debit',
+                'amount' => -200,
+                'count'  => 2,
+            ]
+        ],
+        'destination_merchant_id' =>  "10000000000001",
+        'journals_data' => [
+            'settlement_transfer_id' => "ZYXUHPMNHULR13",
+            'settlement_transfer_journal_id' => "CREDTJOURNAL13",
+            'settlement_id' => "ABXUHPMNHULR13",
+            'settlement_journal_id' => "DEBITJOURNAL13",
+        ],
+    ],
 ];

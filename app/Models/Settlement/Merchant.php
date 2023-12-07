@@ -729,21 +729,34 @@ class Merchant
 
         $destinationMerchantId = null;
 
-        $defaultSettlementJournalID = null;
-        $aggregateSettlementJournalID = null;
+        $settlementJournalID = null;
+
         $settlementTransferJournalID = null;
+
         $settlementTransferEntityID = null;
 
         if (!empty($params['journals_data']))
         {
-            $journalsData = $params['journals_data'];
-            $defaultSettlementJournalID = $journalsData['settlement_journal_id'];
-            $aggregateSettlementJournalID = $journalsData["aggregate_settlement_journal_id"];
-            $settlementTransferJournalID = $journalsData["settlement_transfer_journal_id"];
-            $settlementTransferEntityID = $journalsData["settlement_transfer_id"];
+            $settlementJournalID = $params['journal_id'];
         }
 
-        $settlementJournalID = $defaultSettlementJournalID;
+        if (empty($params['journals_data']) === false)
+        {
+            $journalsData = $params['journals_data'];
+
+            if($journalsData['settlement_journal_id'] !== ""){
+                $settlementJournalID = $journalsData['settlement_journal_id'];
+            }
+
+            if($journalsData['settlement_transfer_journal_id'] !== ""){
+                $settlementTransferJournalID = $journalsData["settlement_transfer_journal_id"];
+            }
+
+            if($journalsData['settlement_transfer_id'] !== ""){
+                $settlementTransferEntityID = $journalsData["settlement_transfer_id"];
+            }
+        }
+
 
         if(($params['type'] === Feature\Constants::AGGREGATE_SETTLEMENT) and isset($params['destination_merchant_id']) === true)
         {
@@ -753,8 +766,6 @@ class Merchant
             {
                 throw new \Exception('empty destination MID sent for aggregate settlement type');
             }
-
-            $settlementJournalID = $aggregateSettlementJournalID;
         }
 
         $settlementTransfer = $this->repo->transaction(function() use ($merchantSettleToPartner, $balance, $input,

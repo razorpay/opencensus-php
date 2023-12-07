@@ -117,6 +117,7 @@ class Validator extends Base\Validator
         'details'                   => 'required|array',
         'destination_merchant_id'   => 'sometimes|string|size:14',
         'journal_id'                => 'sometimes|string|size:14',
+        'journals_data'             => 'sometimes|array',
     ];
 
     protected static $settlementHolidayRules = [
