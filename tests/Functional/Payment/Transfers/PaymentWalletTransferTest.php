@@ -3,14 +3,17 @@
 namespace RZP\Tests\Functional\Payment\Transfers;
 
 use RZP\Constants\Entity;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
+use RZP\Tests\Traits\MocksRazorx;
 
 class PaymentWalletTransferTest extends TestCase
 {
     use PaymentTrait;
     use TransferTrait;
+    use MocksSplitz;
 
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
@@ -38,6 +41,14 @@ class PaymentWalletTransferTest extends TestCase
 
     public function testCreateWalletWithNonIndianContact()
     {
+        $this->mockSplitzExperiment([
+            "response" => [
+                "variant" => [
+                    "name" => 'sync',
+                ]
+            ]
+        ]);
+
         $customer = $this->fixtures->create('customer', ['contact' => '+9293003939']);
 
         $this->fixtures->merchant->addFeatures(['openwallet']);
@@ -156,6 +167,14 @@ class PaymentWalletTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['openwallet']);
 
+        $this->mockSplitzExperiment([
+            "response" => [
+                "variant" => [
+                    "name" => 'sync',
+                ]
+            ]
+        ]);
+
         $customerPublicId = $customerBalance->customer->getPublicId();
 
         $amount = $this->payment['amount'];
@@ -219,6 +238,38 @@ class PaymentWalletTransferTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expected, $customerBalance);
+    }
+
+    public function testTransferAsync()
+    {
+        $customerBalance = $this->fixtures->create('customer:customer_balance', ['balance' => 14000]);
+
+        $this->fixtures->merchant->addFeatures(['openwallet']);
+
+        $this->mockSplitzExperiment([
+            "response" => [
+                "variant" => [
+                    "name" => 'async',
+                ]
+            ]
+        ]);
+
+        $customerPublicId = $customerBalance->customer->getPublicId();
+
+        $amount = $this->payment['amount'];
+
+        $this->capturePayment($this->payment['id'], $amount);
+
+        $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, 50000);
+
+        $transfer = $this->startTest()['items'][0];
+
+        $expectedTransfer = [
+            'amount'      => 50000,
+            'status'      => 'created',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedTransfer, $transfer);
     }
 
     protected function getTransferTxn(string $entityId)

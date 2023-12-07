@@ -723,6 +723,11 @@ return [
         'live'       => env('AWS_TURBO_UPI_ERROR_MAPPING_UPDATER_LIVE_QUEUE'),
     ],
 
+    'customer_openwallet_transfer' =>[
+        'test'       => env('AWS_OPENWALLET_CUSTOMER_TRANSFER_TEST_QUEUE'),
+        'live'       => env('AWS_OPENWALLET_CUSTOMER_TRANSFER_LIVE_QUEUE'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

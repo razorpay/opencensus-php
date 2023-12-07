@@ -517,6 +517,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_TRANSFER_RAZORX_REQUEST_FAILED                = 'PAYMENT_TRANSFER_RAZORX_REQUEST_FAILED';
     const PAYMENT_TRANSFER_RAZORX_SQS_PUSH                      = 'PAYMENT_TRANSFER_RAZORX_SQS_PUSH';
     const PAYMENT_TRANSFER_TO_CUSTOMER                          = 'PAYMENT_TRANSFER_TO_CUSTOMER';
+    const PAYMENT_TRANSFER_TO_CUSTOMER_QUEUE_PUSH               = 'PAYMENT_TRANSFER_TO_CUSTOMER_QUEUE_PUSH';
+    const PAYMENT_TRANSFER_TO_CUSTOMER_QUEUE                    = 'PAYMENT_TRANSFER_TO_CUSTOMER_QUEUE';
+    const PAYMENT_TRANSFER_TO_CUSTOMER_QUEUE_COMPLETED          = 'PAYMENT_TRANSFER_TO_CUSTOMER_QUEUE_COMPLETED';
     const PAYMENT_TRANSFER_TO_WALLET                            = 'PAYMENT_TRANSFER_TO_WALLET';
     const TRANSFER_SETTLED_WEBHOOK_REQUEST                      = 'TRANSFER_SETTLED_WEBHOOK_REQUEST';
     const FIRING_TRANSFER_SETTLED_WEBHOOK                       = 'FIRING_TRANSFER_SETTLED_WEBHOOK';
@@ -1054,6 +1057,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_NETWORK_INVALID                                  = 'CARD_NETWORK_INVALID';
     const IIN_MESSAGE_TYPE_MISSING                              = 'IIN_MESSAGE_TYPE_MISSING';
 
+    const CUSTOMER_NOT_FOUND                                    = 'CUSTOMER_NOT_FOUND';
     const CUSTOMER_CREATE                                       = 'CUSTOMER_CREATE';
     const CUSTOMER_DELETE                                       = 'CUSTOMER_DELETE';
     const CUSTOMER_EDIT                                         = 'CUSTOMER_EDIT';
@@ -2707,6 +2711,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
     const MERCHANT_SUSPEND                                      = 'MERCHANT_SUSPEND';
     const MERCHANT_UNSUSPEND                                    = 'MERCHANT_UNSUSPEND';
+    const MERCHANT_NOT_FOUND                                    = 'MERCHANT_NOT_FOUND';
 
     const BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED               = 'BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED';
     const EXISTING_BANK_ACCOUNT_FOUND                           = 'EXISTING_BANK_ACCOUNT_FOUND';
@@ -3331,13 +3336,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_TRANSFER_PROCESS_INVALID_REQUEST              = 'PAYMENT_TRANSFER_PROCESS_INVALID_REQUEST';
     const UPDATE_SETTLEMENT_TRANSFER_FAILED                     = 'UPDATE_SETTLEMENT_TRANSFER_FAILED';
     const TRANSFER_RECON_JOB_RETRY_DISPATCH                     = 'TRANSFER_RECON_JOB_RETRY_DISPATCH';
+    const CUSTOMER_TRANSFER_JOB_RETRY_DISPATCH                  = 'CUSTOMER_TRANSFER_JOB_RETRY_DISPATCH';
     const TRANSFER_RECON_JOB_RETRY_EXHAUSTED                    = 'TRANSFER_RECON_JOB_RETRY_EXHAUSTED';
+    const CUSTOMER_TRANSFER_JOB_RETRY_EXHAUSTED                 = 'CUSTOMER_TRANSFER_JOB_RETRY_EXHAUSTED';
     const TRANSFER_RECON_JOB_FAILED_TXN_IDS_DISPATCH            = 'TRANSFER_RECON_JOB_FAILED_TXN_IDS_DISPATCH';
     const TRANSFER_SETTLEMENT_PROCESS_SQS_PUSH_INIT             = 'TRANSFER_SETTLEMENT_PROCESS_SQS_PUSH_INIT';
     const TRANSFER_SETTLEMENT_SQS_PUSH_COMPLETE                 = 'TRANSFER_SETTLEMENT_SQS_PUSH_COMPLETE';
     const PAYMENT_TRANSFER_PROCESSING                           = 'PAYMENT_TRANSFER_PROCESSING';
     const TRANSFER_PROCESS_QUEUE                                = 'TRANSFER_PROCESS_QUEUE';
     const TRANSFER_PROCESS_PAYMENT_ID_NOT_FOUND                 = 'TRANSFER_PROCESS_PAYMENT_ID_NOT_FOUND';
+    const CUSTOMER_TRANSFER_PAYMENT_ID_NOT_FOUND                 = 'CUSTOMER_TRANSFER_PAYMENT_ID_NOT_FOUND';
     const TRANSFER_FAILURE                                      = 'TRANSFER_FAILURE';
     const TRANSFER_FAILED_POST_ALL_RETRIES                      = 'TRANSFER_FAILED_POST_ALL_RETRIES';
     const TRANSFER_FAILURE_RETRY_DISPATCH                       = 'TRANSFER_FAILURE_RETRY_DISPATCH';

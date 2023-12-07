@@ -187,6 +187,32 @@ return [
         ],
     ],
 
+    'testTransferAsync' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'customer' => null,
+                        'amount'   => null,
+                        'currency' => 'INR',
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity' => 'transfer'
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testTransferCustomerUsageFirstTxn' => [
         'request' => [
             'content' => [

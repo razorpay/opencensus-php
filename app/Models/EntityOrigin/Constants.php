@@ -16,6 +16,7 @@ class Constants
     const APPLICATION_ID            = 'application_id';
 
     const ENTITY_ORIGIN_REDIS_KEY   = 'entity_origin_redis_key_';
+    const OPENWALLET                = 'openwallet';
 
     const ENTITY_ORIGIN_CACHE_TTL_IN_DAYS = 2;
 }

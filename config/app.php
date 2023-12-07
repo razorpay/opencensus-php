@@ -783,5 +783,7 @@ return array(
 
     'direct_send_mail_enabled' => env('DIRECT_SEND_MAIL_ENABLED'),
 
+    'customer_async_transfer_experiment_id' => env('CUSTOMER_ASYNC_TRANSFER_EXPERIMENT_ID'),
+  
     'split_payment_flow_new' => env('SPLIT_PAYMENT_FLOW_NEW_EXPERIMENT_ID')
 );

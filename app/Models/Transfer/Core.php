@@ -34,6 +34,7 @@ use RZP\Jobs\TransferProcessBatch;
 use RZP\Constants\Metric as Metrics;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\TransferProcessCapitalFloat;
+use RZP\Jobs\Transfers\CustomerTransfer;
 use RZP\Jobs\TransferProcessKeyMerchants;
 use RZP\Models\Ledger\RouteJournalEvents;
 use RZP\Models\Transaction\Processor\Ledger;
@@ -56,6 +57,9 @@ class Core extends Base\Core
     protected $razorx;
 
     protected $partner;
+
+    const ASYNC_CUSTOMER_TRANSFER_LIVE_MODE_EXPERIMENT_ID   = 'app.customer_async_transfer_experiment_id';
+    const FLAG_ASYNC_CUSTOMER_TRANSFER                      = 'async';
 
     protected $oauthApplicationId;
 
@@ -625,9 +629,13 @@ class Core extends Base\Core
         {
             $id = $input[ToType::CUSTOMER];
 
-            $asyncTransfer = false;
+            // $asyncTransfer === true is being sent when performing payment transfer
+            if ($asyncTransfer === true)
+            {
+                $asyncTransfer = $this->isAsyncCustomerTransferExperimentEnabledForMerchant($merchant->getId(), self::ASYNC_CUSTOMER_TRANSFER_LIVE_MODE_EXPERIMENT_ID, $this->mode);
+            }
 
-            return $this->customerTransfer($id, $source, $input, $merchant);
+            return $this->customerTransfer($id, $source, $input, $merchant, $asyncTransfer);
         }
         else if (isset($input[ToType::ACCOUNT]) === true)
         {
@@ -657,11 +665,15 @@ class Core extends Base\Core
         string $customerId,
         Base\Entity $source,
         array $input,
-        Merchant\Entity $merchant) : Entity
+        Merchant\Entity $merchant,
+        bool $asyncTransfer) : Entity
     {
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER,
-            ['transfer' => $input]);
+            [
+                'input'    => $input,
+                'is_async' => $asyncTransfer
+            ]);
 
         $this->verifyFeatureAllowed(Feature\Constants::OPENWALLET, $merchant);
 
@@ -669,21 +681,53 @@ class Core extends Base\Core
                    ->customer
                    ->findByPublicIdAndMerchant($customerId, $merchant);
 
-        // Create a transfer its corresponding txn - debits the merchant
-        $transfer = $this->createTransfer($source, $to, $input, $merchant);
+        if ($asyncTransfer === true)
+        {
+            $transfer = Tracer::inSpan(['name' => 'payment.transfer.create.make_transfer.customer_transfer.build'], function() use ($source, $to, $input, $merchant)
+            {
+                return $this->buildTransferEntity($source, $to, $input, $merchant);
+            });
 
-        // Create customer balance if it doesn't exist.
-        (new Customer\Balance\Core)->fetchOrCreate($to, $merchant);
+            $transfer->setStatus(Status::CREATED);
 
-        $txn = $transfer->transaction;
+            $this->repo->saveOrFail($transfer);
 
-        (new Customer\Transaction\Core)->createForCustomerCredit($transfer,
-                                                                 $txn->getAmount(),
-                                                                 $to->getId(),
-                                                                 $merchant);
+            $this->trace->info(
+                TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER_QUEUE_PUSH,
+                [
+                    'transfer_id' => $transfer->getId(),
+                    'customer_id' => $customerId,
+                    'merchant_id' => $merchant->getId()
+                ]);
 
-        $this->createLedgerEntriesForCustomerTransfer($transfer, $merchant);
-        return $transfer;
+            CustomerTransfer::dispatch($this->mode,
+                [
+                    'customer_id' => $customerId,
+                    'merchant_id' => $merchant->getId(),
+                    'transfer'    => $transfer
+                ]
+            );
+
+            return $transfer;
+        }
+        else
+        {
+            // Create a transfer its corresponding txn - debits the merchant
+            $transfer = $this->createTransfer($source, $to, $input, $merchant);
+
+            // Create customer balance if it doesn't exist.
+            (new Customer\Balance\Core)->fetchOrCreate($to, $merchant);
+
+            $txn = $transfer->transaction;
+
+            (new Customer\Transaction\Core)->createForCustomerCredit($transfer,
+                $txn->getAmount(),
+                $to->getId(),
+                $merchant);
+
+            $this->createLedgerEntriesForCustomerTransfer($transfer, $merchant);
+            return $transfer;
+        }
     }
 
     public function createLedgerEntriesForCustomerTransfer($transfer, Merchant\Entity $merchant)
@@ -2177,5 +2221,30 @@ class Core extends Base\Core
         ]);
 
         return $transfer;
+    }
+
+    public function isAsyncCustomerTransferExperimentEnabledForMerchant($merchantId, $experimentId, $mode): bool
+    {
+        $this->trace->info(TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER, [
+            'splitz_input_experiment_id' => $experimentId,
+            'splitz_input_merchant_id'   => $merchantId,
+            'experiment_id' => $this->app['config']->get($experimentId),
+            'mode' => $mode
+        ]);
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get($experimentId),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        $this->trace->info(TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER, [
+            'splitz_output' => $variant,
+        ]);
+
+        return $variant === self::FLAG_ASYNC_CUSTOMER_TRANSFER;
     }
 }
