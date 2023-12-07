@@ -496,15 +496,6 @@ class Entity extends Base\PublicEntity
     {
         $paidAmount = $bankTransfer->payment->getAdjustedAmountWrtCustFeeBearer();
 
-        if ($paidAmount < 0)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BANK_TRANSFER_FEE_CALCULATED_GREATER_THAN_PAYMENT_AMOUNT,
-                BankTransfer\Entity::AMOUNT,
-                $bankTransfer->getAmount()
-            );
-        }
-
         $this->incrementAmountPaid($paidAmount);
         $this->incrementAmountReceived($paidAmount);
     }

@@ -7758,6 +7758,8 @@ class Processor
 
         $this->setAxisTokenHQGatewayIfApplicable($payment, $input);
 
+        $this->validateBankTransferFeeWithAmountReceived($payment);
+
         // Please keep this function at the end of transaction block, as
         // we are updating orders which lies in PG Router service now.
         // This has been done to temporarily handle the distributed transaction failures.
@@ -10302,6 +10304,30 @@ class Processor
                 $payment->setGateway(Payment\Gateway::AXIS_TOKENHQ);
             }
         }
+    }
+
+    protected function validateBankTransferFeeWithAmountReceived(Payment\Entity $payment)
+    {
+        if ($payment->isBankTransfer() === false)
+        {
+            return;
+        }
+
+        $paidAmount = $payment->getAdjustedAmountWrtCustFeeBearer();
+
+        // Raise if fee greater than payment amount
+        // This payment would be refunded via cron
+        if (($paidAmount < 0) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BANK_TRANSFER_FEE_CALCULATED_GREATER_THAN_PAYMENT_AMOUNT,
+                Payment\Entity::AMOUNT,
+                [
+                    'amount_paid' => $payment->getAmount(),
+                    'fee_adjusted_amount' => $paidAmount
+                ]
+            );
+        }
+
     }
 
     protected function getCardCacheTtl($input)
