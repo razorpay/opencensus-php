@@ -207,7 +207,7 @@ const StyledRefundTimelineContainer = styled.div<{ marginTop: string }>`
   margin-left: -20px;
 `;
 
-const PaymentRefundContent = ({
+function PaymentRefundContent({
   enableBorderTopRadius,
   enableBorderBottomRadius,
   showFooter,
@@ -215,7 +215,7 @@ const PaymentRefundContent = ({
   acquirerData,
   currency,
   transactionIDActual,
-}: PaymentRefundContentType): JSX.Element => {
+}: PaymentRefundContentType): JSX.Element {
   const bankCode = acquirerData.rrn || acquirerData.arn;
 
   const { theme } = useTheme();
@@ -329,7 +329,7 @@ const PaymentRefundContent = ({
       )}
     </Box>
   );
-};
+}
 
 const mapStateToProps = (state) => {
   return {
