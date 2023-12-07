@@ -1,16 +1,16 @@
 import moment, { Moment } from 'moment';
 import qs from 'query-string';
-import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 import { Option } from 'common/components/Dropdown/types';
+import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { SpiltzContextState } from 'common/splitz/types';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import { getDateFormat } from 'common/utils/date-utils';
 import {
-  stringifyQueryParams,
-  encodeSensitiveFields,
   decodeSensitiveFields,
+  encodeSensitiveFields,
+  stringifyQueryParams,
 } from 'common/utils/rzp-utils';
 import { validateUnixTimestamp } from 'merchant/views/Settlements/v3/utils/common';
 import { SearchQueryParamType } from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/types';
@@ -139,12 +139,12 @@ export const getDefaultSearchByValueAndOption = ({
   defaultSearchByOption: Option;
   defaultSearchByValue: string;
 } => {
-  const { ID, EMAIL, CONTACT, ORDER_ID, PAYMENT_ID } = SearchQueryParam;
+  const { ID, EMAIL, CONTACT, ORDER_ID, PAYMENT_ID, NOTES } = SearchQueryParam;
   const search = decodeSensitiveFields(qs.parse(window.location.search)) as Record<
     SearchQueryParamType,
     string | null
   >;
-  const { id, email, contact, country_code, order_id, payment_id } = search;
+  const { id, email, contact, country_code, order_id, payment_id, notes } = search;
   let defaultSearchByParam = '';
   switch (true) {
     case !!id:
@@ -163,6 +163,9 @@ export const getDefaultSearchByValueAndOption = ({
       break;
     case !!payment_id:
       defaultSearchByParam = PAYMENT_ID;
+      break;
+    case !!notes:
+      defaultSearchByParam = NOTES;
       break;
   }
   const defaultSearchByOption = {

@@ -76,6 +76,7 @@ export const searchByOptionsMap = {
   contact: 'Mobile number',
   order_id: 'Order ID',
   id: 'Payment ID',
+  notes: 'Notes',
 };
 export const searchBySectionOptions = generateOptions(searchByOptionsMap);
 export const searchBySectionName = 'Search by';

@@ -1,6 +1,5 @@
-import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
-
 import { Option, Options } from 'common/components/Dropdown/types';
+import { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import { SearchQueryParam } from 'merchant/views/Transactions/v2/common/constants';
 import { Duration, DurationOption } from 'merchant/views/Transactions/v2/common/types';
 
@@ -16,6 +15,7 @@ const {
   FROM,
   TO,
   PUBLIC_STATUS,
+  NOTES,
 } = SearchQueryParam;
 
 export type SearchQueryParamType =
@@ -31,7 +31,8 @@ export type SearchQueryParamType =
   | typeof TO
   | typeof STATUS
   | typeof METHOD
-  | typeof PUBLIC_STATUS;
+  | typeof PUBLIC_STATUS
+  | typeof NOTES;
 
 interface SearchArgs {
   [STATUS]: string;

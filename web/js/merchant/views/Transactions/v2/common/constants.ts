@@ -72,6 +72,7 @@ export enum SearchQueryParam {
   TO = 'to',
   METHOD = 'method',
   PUBLIC_STATUS = 'public_status',
+  NOTES = 'notes',
 }
 
 export const MOBILE_CALENDAR_NUMBER_OF_MONTHS = 1;
