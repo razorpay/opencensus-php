@@ -467,6 +467,11 @@ class Processor
     const ROUTE_ORDER_TRANSFERS_PAYMENTS_TO_REARCH_CPS = 'route_order_transfers_payments_to_rearch_cps';
 
     /**
+     * Razorx flag to indicate if a ajax payment should go via PG Router and CPS or just via API service for payments with non-card offer
+     */
+    const ROUTE_NON_CARD_OFFER_PAYMENTS_TO_REARCH_CPS = 'route_non_card_offer_payments_to_rearch_cps';
+
+    /**
      * Razorx flag to block merchant on re-arch flow for payments card
      */
     const BLOCK_MERCHANTS_ON_REARCH_CPS = 'block_merchant_on_rearch_cps';
@@ -818,7 +823,6 @@ class Processor
                 (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) or
                 (empty($input[Payment\Entity::INVOICE_ID]) === false) or
                 (empty($input[Payment\Entity::TOKEN_ID]) === false) or
-                (empty($input[Payment\Entity::OFFER_ID]) === false) or
                 ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF'))
                 )
             {
@@ -848,13 +852,9 @@ class Processor
                     {
                         $inputField = Payment\Entity::TOKEN_ID;
                     }
-                    if ((empty($input[Payment\Entity::OFFER_ID]) === false))
+                    if ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF'))
                     {
-                        $inputField = Payment\Entity::OFFER_ID;
-                    }
-                    if ((empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false))
-                    {
-                        $inputField = Payment\Entity::CHARGE_ACCOUNT;
+                        $inputField = "rewards";
                     }
 
                     if ((empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false) and (empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true))
@@ -869,6 +869,45 @@ class Processor
 
                 }
                 return false;
+            }
+
+            if ((empty($input[Payment\Entity::OFFER_ID]) === false))
+            {
+                $offerId = $input[Payment\Entity::OFFER_ID];
+
+                Offer\Entity::verifyIdAndStripSign($offerId);
+
+                $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
+
+                if ($offer->shouldBlockPayment() === true)
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "offer_should_block_payment",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+                    return false;
+                }
+
+                $offerMethod = $offer->getPaymentMethod();
+
+                if ($offerMethod === Payment\Method::CARD)
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "card_offer_payment_blocked",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+                    return false;
+                }
+
+                $offerExpResult = $this->app->razorx->getTreatment($merchant->getId(), self::ROUTE_NON_CARD_OFFER_PAYMENTS_TO_REARCH_CPS, $this->mode);
+                if ($offerExpResult !== 'on')
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "non_card_offer_payment_blocked",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+                    return false;
+                }
             }
 
             if (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false)
