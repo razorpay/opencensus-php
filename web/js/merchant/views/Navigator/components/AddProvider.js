@@ -6,6 +6,7 @@ import { CSSTransition } from 'react-transition-group';
 import { compose, bindActionCreators } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
+import { withSplitzService } from 'common/splitz';
 import Spinner from 'common/ui/Spinner';
 import { deepClone } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -34,7 +35,10 @@ import { Step1, Step2, Step3 } from './AddProvider/index';
 import FullPageCover from './FullPageCover';
 import FullPageCoverHeader from './FullPageCoverHeader';
 import { HowToGetDetails } from './Provider/HowToGetDetails';
-import { getSelectedProviderWithAcquirer as getSelectedProvider } from './util';
+import {
+  filterProvidersByExperiment,
+  getSelectedProviderWithAcquirer as getSelectedProvider,
+} from './util';
 
 class AddProvider extends React.Component {
   state = {
@@ -65,6 +69,9 @@ class AddProvider extends React.Component {
   };
 
   componentDidMount() {
+    const { splitz } = this.props;
+    const { abExperiments } = splitz || { abExperiments: undefined };
+
     const params = {
       url: 'terminals/proxy/optimizer/supported_gateways',
       method: 'get',
@@ -73,7 +80,8 @@ class AddProvider extends React.Component {
     merchantFetch(params)
       .then((res) => {
         if (res?.success) {
-          this.setState({ providers: res.data });
+          const providers = filterProvidersByExperiment(res?.data, abExperiments);
+          this.setState({ providers });
         }
       })
       .finally(() => {
@@ -879,4 +887,7 @@ const mapDispatchToProps = (dispatch) => {
   return bindActionCreators({ openModal, closeModal, showNotification }, dispatch);
 };
 
-export default compose(withRouter, connect(mapStateToProps, mapDispatchToProps))(AddProvider);
+export default compose(
+  withSplitzService,
+  connect(mapStateToProps, mapDispatchToProps),
+)(withRouter(AddProvider));

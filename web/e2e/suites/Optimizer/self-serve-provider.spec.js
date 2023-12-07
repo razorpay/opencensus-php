@@ -155,4 +155,25 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
       await expect(submitButton).not.toBeDisabled();
     });
   });
+
+  test.describe.parallel('Optimizer Add Provider', () => {
+    test('Checkout.com should be hidden', async ({ page }) => {
+      await navigateToOptimizer(page);
+      const addProviderButton = page.getByRole('button', { name: 'Add Provider' });
+      await expect(addProviderButton).toBeVisible();
+      await addProviderButton.click();
+      await expect(page.getByText('Add Provider')).toBeVisible();
+      await page.waitForSelector('text=Select Gateway', { timeout: 1500 });
+
+      try {
+        const checkoutGateway = page.locator('h3', { hasText: 'Checkout.com' });
+        await expect(checkoutGateway).toBeHidden();
+      } catch (error) {
+        console.error(
+          'Checkout.com provider should be hidden but it is visible. Test failed.',
+          error.message,
+        );
+      }
+    });
+  });
 });

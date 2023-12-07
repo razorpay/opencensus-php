@@ -1,3 +1,4 @@
+import cloneDeep from 'lodash/cloneDeep';
 import isEmpty from 'lodash/isEmpty';
 
 import { Operand } from 'merchant/views/Navigator/models/Operand';
@@ -1553,4 +1554,19 @@ export const WalletLabels = {
   mobikwik: 'MobiKwik',
   freecharge: 'Freecharge',
   oxigen: 'Oxigen',
+};
+
+export const filterProvidersByExperiment = (providers = {}, abExperiments) => {
+  const result = {};
+
+  for (const [gatewayKey, gatewayDetails] of Object.entries(providers)) {
+    const experimentKey = `${gatewayKey}_gateway`;
+    const experimentResult = abExperiments?.[experimentKey]?.variables?.result;
+
+    if (experimentResult !== 'off') {
+      result[gatewayKey] = cloneDeep(gatewayDetails);
+    }
+  }
+
+  return result;
 };

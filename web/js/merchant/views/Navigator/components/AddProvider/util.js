@@ -10,23 +10,21 @@ export function getTPVOptions(options) {
   return options.map((option) => ({ label: TPV_OPTIONS[option] || '', value: option }));
 }
 
-export function categorizeGateways(providersList = {}) {
+export function categorizeGateways(providersList = {}, abExperiments) {
   const categories = {
     aggregators: {},
     international_gateways: {},
     bank_gateways: {},
   };
 
-  // filter gatewayKeys with empty payment methods
+  // filter gateways with empty payment methods and sort the gateway keys based on payment methods length
   const gatewayKeys = Object.keys(providersList)
     .filter(
-      // exclude incomplete gateway integration
       (key) =>
         !INCOMPLETE_GATEWAY.includes(key) &&
-        (providersList[key]?.['Payment Methods']?.data_value || []).length > 0, // include providers with non-empty payment methods.
+        (providersList[key]?.['Payment Methods']?.data_value || []).length > 0,
     )
     .sort((a, b) => {
-      // sort the gateway keys based on payment methods length
       const paymentMethodsA = providersList[a]?.['Payment Methods']?.data_value || [];
       const paymentMethodsB = providersList[b]?.['Payment Methods']?.data_value || [];
       return paymentMethodsB.length - paymentMethodsA.length;
@@ -45,7 +43,13 @@ export function categorizeGateways(providersList = {}) {
       ? 'international_gateways'
       : 'aggregators';
 
-    addToCategory(categories[category], categorizedMethods, gatewayKey);
+    // filter gateways based on splitz experiment
+    const experimentKey = `${gatewayKey}_gateway`;
+    const experimentResult = abExperiments?.[experimentKey]?.variables?.result;
+
+    if (experimentResult !== 'off') {
+      addToCategory(categories[category], categorizedMethods, gatewayKey);
+    }
   });
 
   // filter category with no gateway

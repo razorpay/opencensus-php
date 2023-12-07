@@ -24,9 +24,8 @@ export const GATEWAY_CATEGORIES = {
 };
 
 export const RAZORPAY_GATEWAY_KEY = 'optimizer_razorpay';
-
 export const RECOMMENDED_GATEWAYS = ['payu'];
-export const INCOMPLETE_GATEWAY = ['checkout_dot_com_optimizer', RAZORPAY_GATEWAY_KEY];
+export const INCOMPLETE_GATEWAY = [RAZORPAY_GATEWAY_KEY];
 
 export const METHODS = {
   CARD: 'card',

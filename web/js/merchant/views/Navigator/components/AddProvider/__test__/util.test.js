@@ -27,25 +27,42 @@ describe('Navigator > AddProvider > util', () => {
   });
 
   describe('categorizeGateways', () => {
+    const providersList = {
+      payu: {
+        'Payment Methods': { data_value: ['card', 'upi', 'netbanking'] },
+      },
+      checkout_dot_com_optimizer: {
+        'Payment Methods': { data_value: ['card'] },
+      },
+      upi_mindgate: {
+        'Payment Methods': { data_value: ['upi'] },
+      },
+    };
+
+    test('should handle missing or undefined experiments', () => {
+      // Expected result
+      const expectedResult = {
+        aggregators: { 'Card, Netbanking, and UPI': ['payu'] },
+        international_gateways: { 'Card only': ['checkout_dot_com_optimizer'] },
+        bank_gateways: { 'UPI only': ['upi_mindgate'] },
+      };
+
+      const categorizedProviders = categorizeGateways(providersList, undefined);
+
+      // Assert that all providers are included when experiments are missing or undefined
+      expect(categorizedProviders).toEqual(expectedResult);
+    });
+
     // Test to cover the `if (gatewayKeys.length === 0) return {};` branch.
-    test('should return empty object if `gatewayKeys` is empty', () => {
-      const expectedResult = {};
-      const result = categorizeGateways({});
-      expect(result).toEqual(expectedResult);
+    test('should return empty object if `providerList` is empty', () => {
+      const result = categorizeGateways(undefined, undefined);
+      expect(result).toEqual({});
     });
 
     // Test to cover the `for (const gatewayKey of gatewayKeys)` loop.
-    test('should return categorized gateways without international', () => {
-      const providersList = {
-        payu: {
-          'Payment Methods': { data_value: ['card', 'upi', 'netbanking'] },
-        },
-        checkout_dot_com_optimizer: {
-          'Payment Methods': { data_value: ['card'] },
-        },
-        upi_mindgate: {
-          'Payment Methods': { data_value: ['upi'] },
-        },
+    test('should return categorized gateways based on experiments', () => {
+      const SPLITZ_AB_EXPERIMENTS = {
+        checkout_dot_com_optimizer_gateway: { variables: { result: 'off' } },
       };
 
       // Expected result
@@ -54,7 +71,23 @@ describe('Navigator > AddProvider > util', () => {
         bank_gateways: { 'UPI only': ['upi_mindgate'] },
       };
 
-      const result = categorizeGateways(providersList);
+      const result = categorizeGateways(providersList, SPLITZ_AB_EXPERIMENTS);
+      expect(result).toEqual(expectedResult);
+    });
+
+    test('should handle "on" experiment result', () => {
+      const SPLITZ_AB_EXPERIMENTS = {
+        checkout_dot_com_optimizer_gateway: { variables: { result: 'on' } },
+      };
+
+      // Expected result
+      const expectedResult = {
+        aggregators: { 'Card, Netbanking, and UPI': ['payu'] },
+        international_gateways: { 'Card only': ['checkout_dot_com_optimizer'] },
+        bank_gateways: { 'UPI only': ['upi_mindgate'] },
+      };
+
+      const result = categorizeGateways(providersList, SPLITZ_AB_EXPERIMENTS);
       expect(result).toEqual(expectedResult);
     });
 

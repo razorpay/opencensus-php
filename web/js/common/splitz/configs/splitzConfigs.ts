@@ -467,6 +467,38 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'checkout_dot_com_optimizer_gateway',
+          experimentId: {
+            beta: 'N8fLuDIZyjWzdy',
+            production: 'N8xlNTXPTVMXWE',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
+          uniqueHashKey: 'phonepe_gateway',
+          experimentId: {
+            beta: 'N8xDoy1qS40xgl',
+            production: 'N8xmsufxvDqFKg',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

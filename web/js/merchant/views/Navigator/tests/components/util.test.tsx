@@ -1,4 +1,8 @@
-import { createMappedProviders, findProviderName } from 'merchant/views/Navigator/components/util';
+import {
+  createMappedProviders,
+  filterProvidersByExperiment,
+  findProviderName,
+} from 'merchant/views/Navigator/components/util';
 import { TERMINAL_PROVIDERS } from 'merchant/views/Navigator/tests/data/mockData';
 
 test('Map providers for dropdown', () => {
@@ -42,4 +46,61 @@ test('Find provider name from terminal id', () => {
 
   const CHECK_PROVIDER_NOT_EXIST = findProviderName(TERMINAL_PROVIDERS, 'IwhQmEjXH6qA5o');
   expect(CHECK_PROVIDER_NOT_EXIST).toStrictEqual('IwhQmEjXH6qA5o');
+});
+
+describe('filterProvidersByExperiment - util', () => {
+  // Mock data for testing
+  const mockGateways = {
+    atom: {
+      'Gateway Name': { data_type: 'string', data_value: 'Atom', terminals_key: '' },
+    },
+    paytm: {
+      'Gateway Name': { data_type: 'string', data_value: 'PayTm', terminals_key: '' },
+    },
+  };
+
+  test('should handle missing or undefined experiments', () => {
+    const filteredProviders = filterProvidersByExperiment(mockGateways, undefined);
+
+    // Assert that all providers are included when experiments are missing or undefined
+    expect(filteredProviders).toEqual(mockGateways);
+  });
+
+  test('should handle missing or undefined gateways', () => {
+    const filteredProviders = filterProvidersByExperiment(undefined, undefined);
+
+    // Assert that all providers are included when experiments are missing or undefined
+    expect(filteredProviders).toEqual({});
+  });
+
+  test('should handle missing experiment result', () => {
+    const SPLITZ_AB_EXPERIMENTS = { atom_gateway: { variables: {} } };
+
+    const filteredProviders = filterProvidersByExperiment(mockGateways, SPLITZ_AB_EXPERIMENTS);
+
+    // Assert that all providers are included when experiment result is missing
+    expect(filteredProviders).toEqual(mockGateways);
+  });
+
+  test('should filter providers based on experiments', () => {
+    const SPLITZ_AB_EXPERIMENTS = { atom_gateway: { variables: { result: 'off' } } };
+
+    const filteredProviders = filterProvidersByExperiment(mockGateways, SPLITZ_AB_EXPERIMENTS);
+
+    // Assert that "Atom" is filtered out because the experiment result is 'off'
+    expect(filteredProviders).toEqual({
+      paytm: {
+        'Gateway Name': { data_type: 'string', data_value: 'PayTm', terminals_key: '' },
+      },
+    });
+  });
+
+  test('should handle "on" experiment result', () => {
+    const SPLITZ_AB_EXPERIMENTS = { atom_gateway: { variables: { result: 'on' } } };
+
+    const filteredProviders = filterProvidersByExperiment(mockGateways, SPLITZ_AB_EXPERIMENTS);
+
+    // Assert that "Atom" gateway is included when experiment result is 'off'
+    expect(filteredProviders).toEqual(mockGateways);
+  });
 });

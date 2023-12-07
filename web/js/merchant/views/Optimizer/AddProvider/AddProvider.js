@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
+import { withSplitzService } from 'common/splitz';
 import { deepClone } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { categorizeGateways } from 'merchant/views/Navigator/components/AddProvider/util';
@@ -75,6 +76,8 @@ class AddProvider extends React.Component {
   };
 
   componentDidMount() {
+    const { splitz } = this.props;
+    const { abExperiments } = splitz || { abExperiments: undefined };
     const params = {
       url: 'terminals/proxy/optimizer/supported_gateways',
       method: 'get',
@@ -83,10 +86,8 @@ class AddProvider extends React.Component {
     merchantFetch(params)
       .then((res) => {
         if (res?.success) {
-          this.setState({
-            providers: res.data,
-            categorizedProviders: categorizeGateways(res.data) ?? {},
-          });
+          const categorizedProviders = categorizeGateways(res?.data, abExperiments);
+          this.setState({ providers: res?.data, categorizedProviders });
         }
       })
       .finally(() => {
@@ -141,7 +142,7 @@ class AddProvider extends React.Component {
               show: hasSeamlessOption,
             },
             3: {
-              edit: true,
+              edit: !hasSeamlessOption,
               show: true,
             },
             4: {
@@ -858,4 +859,7 @@ const mapDispatchToProps = (dispatch) => {
   return bindActionCreators({ openModal, closeModal, showNotification }, dispatch);
 };
 
-export default compose(withRouter, connect(mapStateToProps, mapDispatchToProps))(AddProvider);
+export default compose(
+  withSplitzService,
+  connect(mapStateToProps, mapDispatchToProps),
+)(withRouter(AddProvider));
