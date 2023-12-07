@@ -503,6 +503,11 @@ export default class AddItem extends Component {
                     </div>
                   </div>
                 </div>
+                <Alert
+                  type="warning"
+                  message="To change item's currency please change currency of invoice"
+                  showDismiss={false}
+                />
               </div>
               <div class={aligenedStyleClass}>
                 <div class="form-group">

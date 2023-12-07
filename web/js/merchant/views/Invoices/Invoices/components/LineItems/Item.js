@@ -11,16 +11,23 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { findBy, isTaxOfTypeCess, calculateTax } from 'common/utils/rzp-utils';
 import Item from 'merchant/models/Item';
 import { track } from 'merchant/views/Invoices/ga';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const selector = formValueSelector('newInvoice');
 
 // eslint-disable-next-line react/no-unsafe
-@connect((state) => {
-  return {
-    session: state.session,
-    invoice_line_items: selector(state, 'line_items'),
-  };
-}, ModalActions)
+@connect(
+  (state) => {
+    return {
+      session: state.session,
+      invoice_line_items: selector(state, 'line_items'),
+    };
+  },
+  {
+    ...ModalActions,
+    showNotification,
+  },
+)
 @reduxForm({
   form: 'newInvoice',
   destroyOnUnmount: false,
@@ -58,6 +65,7 @@ export default class InvoiceLineItem extends React.Component {
           isNew
           showTaxes={showTaxes}
           currency={this.props.invoiceCurrency}
+          disableCurrencySelect
         />
       ),
     });
@@ -111,6 +119,7 @@ export default class InvoiceLineItem extends React.Component {
           item={item}
           showTaxes={showTaxes}
           currency={selectedOption.currency || item.currency}
+          disableCurrencySelect
         />
       ),
     });
@@ -186,6 +195,13 @@ export default class InvoiceLineItem extends React.Component {
 
   updateLineItemRow = (item) => {
     if (!item) return;
+    if (item.currency !== this.props.invoiceCurrency) {
+      this.props.showNotification({
+        type: 'error',
+        message: "Item's currency should be same as invoice's currency",
+      });
+      return;
+    }
 
     // Determine whether or not taxes are shown.
     const showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
@@ -441,6 +457,7 @@ export default class InvoiceLineItem extends React.Component {
 
   render() {
     const { fieldName, index, disabled, items, invoiceCurrency } = this.props;
+    const itemsWithSameCurrency = items.filter((i) => i.currency === invoiceCurrency);
     const selectedOption = this.props.invoice_line_items[index];
     const isEmptyRow = !(
       (selectedOption.item_id && selectedOption.item_id !== 'NULL') ||
@@ -506,7 +523,7 @@ export default class InvoiceLineItem extends React.Component {
                   labelWhenSearchTermBlank="Create new Item"
                   labelWhenSearchTermValid="Add ':_searchTerm_:' as an Item"
                   maxSearchTermLength="12"
-                  options={items}
+                  options={itemsWithSameCurrency}
                   selected={selectedOption}
                   optionLabelPath="name"
                   placeholder="Select an item"
