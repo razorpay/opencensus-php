@@ -104,6 +104,7 @@ class PGRouter
     const PG_ROUTER_FAILURE_STATUS_CODE = "pg_router_failure_status_code";
 
     const PGRouterValidateAndCreatePaymentUpi = 'v1/payments/create/upi';
+
     const PGRouterValidateAndCreatePaymentRecurring = 'v1/payments/create/recurring';
 
     const PG_ROUTER_REQUEST_FAILURE = "pg_router_request_failure";
@@ -893,6 +894,11 @@ class PGRouter
         unset($traceData["response"]["data"]["payment"]["card"]);
 
         $logResponse = $this->shouldLogResponse($endpoint, $method);
+
+        //pci fix
+        if (isset($response->headers['content-type']) and str_contains($response->headers['content-type'], 'text/html')) {
+            $logResponse = false;
+        }
 
         if($logResponse === true)
         {
