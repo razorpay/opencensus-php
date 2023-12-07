@@ -16,6 +16,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Enach\Base\Entity as EnachEntity;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
 class Base extends BaseProcessor
@@ -221,6 +222,21 @@ class Base extends BaseProcessor
     protected function processAchReturnsOrNRFlow(Payment\Entity $payment, array $content)
     {
         $merchant = $payment->merchant;
+        
+        $removeCooloff = $merchant->isFeatureEnabled(Features::REMOVE_EMANDATE_COOLOFF);
+    
+        if($removeCooloff === true)
+        {
+            $this->trace->info(TraceCode::EMANDATE_REMOVE_COOLOFF_FLAG,
+                [
+                    "remove_cooloff_flag" => true,
+                    "step"                => "payment_processing",
+                    "payment_id"          => $payment->getId(),
+                    "merchant_id"         => $merchant->getId()
+                ]);
+            
+            return false;
+        }
         
         $processor = new Processor($merchant);
         

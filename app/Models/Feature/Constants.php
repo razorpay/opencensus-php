@@ -845,6 +845,11 @@ class Constants
     * This feature is enabled when the merchant wants emandate debit to have same day settlement.
     */
     const EARLY_MANDATE_PRESENTMENT = 'early_mandate_presentment';
+    
+    /*
+    * This feature is enabled for merchant who wants exception for emandate compliance on penalty.
+    */
+    const REMOVE_EMANDATE_COOLOFF = 'remove_emandate_cooloff';
 
     // For merchants who want to use the alias feature on Route.
     const ROUTE_CODE_SUPPORT                = 'route_code_support';
@@ -2739,6 +2744,7 @@ class Constants
         self::BANKING_PLUS_PRO                => true,
         self::SOURCE_TO_PAY_CORE              => true,
         self::SOURCE_TO_PAY_PRO               => true,
+        self::REMOVE_EMANDATE_COOLOFF         => true
     ];
 
     // Entity type constants

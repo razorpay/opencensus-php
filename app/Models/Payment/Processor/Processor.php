@@ -4681,13 +4681,7 @@ class Processor
 
             if ($tokenMethod === Payment\Method::EMANDATE or $tokenMethod === Payment\Method::NACH)
             {
-                $this->validateEmandateTokenStatus($token, $merchant);
-
-                  // emandate rearch changes: Need to uncomment before going to production, need token to determine gateway
-//                if($this->isEmandateRearchRoute($this->route->getCurrentRouteName()) === true)
-//                {
-//                    $input[Constants::TOKEN_ENTITY] = $token;
-//                }
+                $this->checkForCooloffAndTokenValidateStatus($token, $merchant);
             }
 
             if ($tokenMethod === Payment\Method::EMANDATE)
@@ -4704,7 +4698,47 @@ class Processor
             $input[Payment\Entity::METHOD] = Payment\Method::CARD;
         }
     }
+    
+    /**
+     * This function will check if merchant has remove_emandate_cooloff feature enabled or not
+     * Incase enabled, it will ignore token status check else will validate token
+     * @param Token\Entity $token
+     * @param Entity $merchant
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
+    protected function checkForCooloffAndTokenValidateStatus(Token\Entity $token, Merchant\Entity $merchant)
+    {
+        $removeCooloff = $merchant->isFeatureEnabled(Feature::REMOVE_EMANDATE_COOLOFF);
+        
+        if($removeCooloff !== true)
+        {
+            $this->validateEmandateTokenStatus($token, $merchant);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::EMANDATE_REMOVE_COOLOFF_FLAG,
+                [
+                    "remove_cooloff_flag" => true,
+                    "step"                => "payment_creation",
+                    "merchant"            => $merchant->getId()
+                ]);
+        }
 
+//                emandate rearch changes: Need to uncomment before going to production, need token to determine gateway
+//                if($this->isEmandateRearchRoute($this->route->getCurrentRouteName()) === true)
+//                {
+//                    $input[Constants::TOKEN_ENTITY] = $token;
+//                }
+    }
+    
+    /**
+     * This function will validate token status and will throw error incase token is blocked temporarily
+     * @param Token\Entity $token
+     * @param Entity $merchant
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
     protected function validateEmandateTokenStatus(Token\Entity $token, Merchant\Entity $merchant)
     {
         $response = $this->fetchEmandateConfigs($token, $merchant);

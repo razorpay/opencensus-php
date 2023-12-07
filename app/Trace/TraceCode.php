@@ -1440,6 +1440,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_RAZORX_NR_VARIANT                            = 'EMANDATE_RAZORX_NR_VARIANT';
     const EMANDATE_RAZORX_ACH_VARIANT                           = 'EMANDATE_RAZORX_ACH_VARIANT';
 
+    const EMANDATE_REMOVE_COOLOFF_FLAG                          = 'EMANDATE_REMOVE_COOLOFF_FLAG';
+    
     const EMANDATE_SERVICE_ROUTING_CRITERIA                     = 'EMANDATE_SERVICE_ROUTING_CRITERIA';
     const EMANDATE_SERVICE_RAZORX_KEY                           = 'EMANDATE_SERVICE_RAZORX_KEY';
     const EMANDATE_SERVICE_RAZORX_NPCI_KEY                      = 'EMANDATE_SERVICE_RAZORX_NPCI_KEY';

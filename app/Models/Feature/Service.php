@@ -59,7 +59,7 @@ class Service extends Base\Service
         $validator->validateForRouteLaPennyTestingFeature($input[Constants::NAMES]);
 
         $this->validateIfDisabledFeaturesArePresent($input, $entityType, $entityId);
-
+        
         $featureParams = $this->buildFeatureParams($input, $entityType, $entityId);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);

@@ -253,6 +253,8 @@ class Constants
     const ShowSingleDCCCurrency = 'show_single_dcc_currency';
 
     const SkipApprovalForCreator = 'skip_approval_if_creator_is_checker';
+    
+    const RemoveEmandateCooloff = 'remove_emandate_cooloff';
 
     const DisableWfConfigDimensionsForS2p = 'disable_wf_config_dimensions_for_s2p';
 
@@ -499,6 +501,7 @@ class Constants
         self::BankingPlusPro    => 'rzp/x/merchant/onboarding/PricingTiers',
         self::SourceToPayCore   => 'rzp/x/merchant/onboarding/PricingTiers',
         self::SourceToPayPro    => 'rzp/x/merchant/onboarding/PricingTiers',
+        self::RemoveEmandateCooloff => 'rzp/pg/merchant/recurring/Emandate'
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -745,7 +748,8 @@ class Constants
         APIFeaturesConstants::BANKING_PLUS_CORE                             => self::BankingPlusCore,
         APIFeaturesConstants::BANKING_PLUS_PRO                              => self::BankingPlusPro,
         APIFeaturesConstants::SOURCE_TO_PAY_CORE                            => self::SourceToPayCore,
-        APIFeaturesConstants::SOURCE_TO_PAY_PRO                             => self::SourceToPayPro
+        APIFeaturesConstants::SOURCE_TO_PAY_PRO                             => self::SourceToPayPro,
+        APIFeaturesConstants::REMOVE_EMANDATE_COOLOFF                       => self::RemoveEmandateCooloff
     ];
 
     /**
