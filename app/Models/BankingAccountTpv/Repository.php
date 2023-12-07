@@ -43,6 +43,21 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchApprovedAndActiveMerchantTpvs(string $merchantId)
+    {
+        $merchantIdColumn = $this->repo->banking_account_tpv->dbColumn(Entity::MERCHANT_ID);
+
+        $statusColumn = $this->repo->banking_account_tpv->dbColumn(Entity::STATUS);
+
+        $isActiveColumn = $this->repo->banking_account_tpv->dbColumn(Entity::IS_ACTIVE);
+
+        return $this->newQuery()
+                    ->where($merchantIdColumn, $merchantId)
+                    ->where($statusColumn, Status::APPROVED)
+                    ->where($isActiveColumn, 1)
+                    ->get();
+    }
+
     public function fetchTpvOnMerchantBalanceAccountNumberIfsc(array $input)
     {
         $ifsc = substr($input[Entity::PAYER_IFSC], 0, 4);

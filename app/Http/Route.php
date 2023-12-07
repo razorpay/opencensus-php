@@ -4214,6 +4214,7 @@ class Route
         'admin_tpv_create'                        => ['post',    'admin/tpv/create',                                        'BankingAccountTpvController@adminCreateTpv'                   ],
         'admin_tpv_edit'                          => ['patch',   'admin/tpv/{id}',                                          'BankingAccountTpvController@adminEditTpv'                     ],
         'merchant_fetch_tpvs'                     => ['get',     'merchant/tpvs',                                           'BankingAccountTpvController@fetchMerchantTpvs'                ],
+        'admin_migrate_tpvs'                      => ['post',    'admin/tpv/migrate',                                       'BankingAccountTpvController@adminMigrateMerchantTpvs'         ],
         'admin_fetch_tpvs'                        => ['get',     'admin/merchant/{id}/tpvs',                                'BankingAccountTpvController@fetchMerchantTpvsWithFav'         ],
         'admin_merchants_tpvs_create'             => ['post',    'admin/merchants/tpv_bulk_create',                         'BankingAccountTpvController@manualAutoApproveTpv'             ],
         'merchant_tpv_create'                     => ['post',    'merchant/tpv',                                            'BankingAccountTpvController@createTpvFromXDashboard'          ],
@@ -8801,6 +8802,7 @@ class Route
         'admin_tpv_create',
         'admin_tpv_edit',
         'admin_fetch_tpvs',
+        'admin_migrate_tpvs',
         'admin_merchants_tpvs_create',
 
         // Templating Routes
@@ -10353,6 +10355,7 @@ class Route
 
         'admin_tpv_create'                                    => Permission::CREATE_BANKING_ACCOUNT_TPV,
         'admin_tpv_edit'                                      => Permission::EDIT_BANKING_ACCOUNT_TPV,
+        'admin_migrate_tpvs'                                  => Permission::EDIT_BANKING_ACCOUNT_TPV,
         'admin_fetch_tpvs'                                    => Permission::VIEW_BANKING_ACCOUNT_TPV,
         'admin_merchants_tpvs_create'                         => Permission::CREATE_BANKING_ACCOUNT_TPV,
 
@@ -13298,6 +13301,7 @@ class Route
             'admin_fetch_entity_by_id_axis_paysecure',
             'admin_fetch_all_entities_axis',
             'admin_fetch_tpvs',
+            'admin_migrate_tpvs',
             'admin_fund_account_validate',
             'merchant_ip_config_opt_status_admin',
             'merchant_ip_config_fetch_admin',
@@ -18045,6 +18049,7 @@ class Route
         'admin_tpv_create',
         'admin_tpv_edit',
         'admin_fetch_tpvs',
+        'admin_migrate_tpvs',
         'merchant_fetch_tpvs',
         'merchant_tpv_create',
         'admin_merchants_tpvs_create',

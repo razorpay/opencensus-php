@@ -53,6 +53,12 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT_VALIDATION_ID => 'sometimes|string|between:14,18',
     ];
 
+    protected static $adminMigrateTpvRules = [
+        'tpv_migration_map'                               => 'required|array',
+        'tpv_migration_map' . '.*.' . Entity::MERCHANT_ID => 'required|unsigned_id',
+        'tpv_migration_map' . '.*.' . Entity::BALANCE_ID  => 'required|unsigned_id',
+    ];
+
     protected static $merchantDashboardCreateRules = [
         Entity::BALANCE_ID           => 'required|alpha_num|size:14',
         Entity::PAYER_NAME           => 'required|string|max:255',

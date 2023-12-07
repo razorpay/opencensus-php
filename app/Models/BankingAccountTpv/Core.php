@@ -13,6 +13,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\BankingAccount\Gateway;
+use RZP\Jobs\BankingAccountTpvMigration;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccount\Gateway\Yesbank;
@@ -64,7 +65,16 @@ class Core extends Base\Core
 
         if ($input[Entity::STATUS] === Status::APPROVED)
         {
-            $this->sourceAccountAdditionForRxWallet($tpv);
+            if (optional($tpv->balance)->getAccountType() === AccountType::RX_WALLET)
+            {
+                $this->mutex->acquireAndRelease(
+                    $tpv->getPublicId(),
+                    function() use ($tpv) {
+                        $this->sourceAccountAdditionForRxWallet($tpv);
+                    },
+                    120,
+                    ErrorCode::BAD_REQUEST_SOURCE_ACCOUNT_ADDITION_IN_PROGRESS);
+            }
 
             $tpv->setIsActive(true);
         }
@@ -95,7 +105,16 @@ class Core extends Base\Core
         {
             if ($input[Entity::STATUS] === Status::APPROVED)
             {
-                $this->sourceAccountAdditionForRxWallet($tpv);
+                if (optional($tpv->balance)->getAccountType() === AccountType::RX_WALLET)
+                {
+                    $this->mutex->acquireAndRelease(
+                        $tpv->getPublicId(),
+                        function() use ($tpv) {
+                            $this->sourceAccountAdditionForRxWallet($tpv);
+                        },
+                        120,
+                        ErrorCode::BAD_REQUEST_SOURCE_ACCOUNT_ADDITION_IN_PROGRESS);
+                }
 
                 $tpv->setIsActive(true);
             }
@@ -383,8 +402,10 @@ class Core extends Base\Core
      *
      * @var $bankingAccountTpv Entity
      * Before marking the banking account Tpv as active, we first add the source accounts to bank.
+     *
+     * Make sure to handle concurrent calls to this function by using mutex when calling it.
      */
-    public function sourceAccountAdditionForRxWallet(Entity $bankingAccountTpv)
+    public function sourceAccountAdditionForRxWallet(Entity $bankingAccountTpv): void
     {
         $balance = $bankingAccountTpv->balance;
 
@@ -423,6 +444,7 @@ class Core extends Base\Core
         catch (\Throwable $exception)
         {
             $exceptionTraceData = [
+                Entity::ID                        => $bankingAccountTpv->getId(),
                 Entity::MERCHANT_ID               => $merchantId,
                 Entity::BALANCE_ID                => $balance->getId(),
                 Constants::SOURCE_ACCOUNT_DETAILS => $sourceAccountDetails,
@@ -464,5 +486,93 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_SOURCE_ACCOUNT_ADDITION_FAILURE, null, $exceptionTraceData
             );
         }
+    }
+
+    public function adminMigrateMerchantTpvs($input)
+    {
+        $tpvMigrationDetails = $input[Constants::TPV_MIGRATION_MAP] ?? [];
+
+        $successfulMerchantIds = [];
+        $failedMerchantIds     = [];
+
+        foreach ($tpvMigrationDetails as $tpvMigrationDetail)
+        {
+            $balanceId  = $tpvMigrationDetail[Entity::BALANCE_ID];
+            $merchantId = $tpvMigrationDetail[Entity::MERCHANT_ID];
+
+            try
+            {
+                ///**@var BalanceEntity $rxWalletBalance */
+                $rxWalletBalance = $this->repo->balance->findOrFailById($balanceId);
+
+                if (($rxWalletBalance->getAccountType() !== AccountType::RX_WALLET) or
+                    ($rxWalletBalance->getMerchantId() !== $merchantId))
+                {
+                    throw new Exception\LogicException(Constants::TPV_MIGRATION_INVALID_INPUT);
+                }
+
+                $bankingAccountTpvs = $this->repo->banking_account_tpv->fetchApprovedAndActiveMerchantTpvs($merchantId);
+
+                $bankingAccountTpvIds = [];
+
+                // Filter Banking Account TPVs belonging to Shared balances and which have not been migrated
+                $bankingAccountTpvs->each(function($bankingAccountTpv, $key) use (&$bankingAccountTpvIds) {
+                    if ((optional($bankingAccountTpv->balance)->getAccountType() === AccountType::SHARED) and
+                        ($bankingAccountTpv->getRemarks() !== Constants::RX_WALLET_TPV_MIGRATION_SUCCESSFUL))
+                    {
+                        $bankingAccountTpvIds[] = $bankingAccountTpv->getId();
+                    }
+                });
+
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_TPVS_MIGRATION_INFO, [
+                    'non_migrated_tpvs' => $bankingAccountTpvIds,
+                ]);
+
+                $successfulDispatchTpvs = [];
+                $failedDispatchTpvs     = [];
+
+                foreach ($bankingAccountTpvIds as $bankingAccountTpvId)
+                {
+                    try
+                    {
+                        BankingAccountTpvMigration::dispatch($this->mode, $bankingAccountTpvId, $rxWalletBalance->getId());
+
+                        $this->trace->info(TraceCode::BANKING_ACCOUNT_TPV_MIGRATION_DISPATCHED, [
+                            'dispatched_tpv_id'               => $bankingAccountTpvId,
+                            'dispatched_migration_balance_id' => $rxWalletBalance->getId(),
+                        ]);
+
+                        $successfulDispatchTpvs[] = $bankingAccountTpvId;
+                    }
+                    catch (\Throwable $ex)
+                    {
+                        $this->trace->traceException($ex, Trace::ERROR, TraceCode::BANKING_ACCOUNT_TPV_MIGRATION_DISPATCH_FAILED, [
+                            'banking_account_tpv_id' => $bankingAccountTpvId,
+                            'migration_balance_id'   => $rxWalletBalance->getId(),
+                        ]);
+
+                        $failedDispatchTpvs[] = $bankingAccountTpvId;
+                    }
+                }
+
+                $successfulMerchantIds[$merchantId] = [
+                    'dispatch_successful' => $successfulDispatchTpvs,
+                    'dispatch_failure'    => $failedDispatchTpvs,
+                ];
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException($exception, Trace::ERROR, TraceCode::BANKING_ACCOUNT_TPV_MIGRATION_FAILED, [
+                    Entity::MERCHANT_ID => $merchantId,
+                ]);
+
+                $failedMerchantIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'success' => $successfulMerchantIds,
+            'failure' => $failedMerchantIds,
+        ];
     }
 }

@@ -841,4 +841,73 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_SOURCE_ACCOUNT_ADDITION_FAILURE,
         ],
     ],
+
+    'testBankingAccountTpvMigration_SuccessfullyPushedIntoQueue' => [
+        'request'  => [
+            'url'     => '/admin/tpv/migrate/',
+            'method'  => 'post',
+            'content' => [
+                'tpv_migration_map' => [
+                    [
+                        'merchant_id' => '10000000000000',
+                        'balance_id'  => 'rxbal000000000',
+                    ],
+                    [
+                        'merchant_id' => '10000000000001',
+                        'balance_id'  => 'rxbal000000001',
+                    ],
+                    [
+                        'merchant_id' => '10000000000002',
+                        'balance_id'  => 'bal00000000001',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => [
+                    '10000000000000' => [
+                        'dispatch_successful' => [
+                            'tpv00000000001',
+                            'tpv00000000002',
+                        ],
+                        'dispatch_failure' => [],
+                    ],
+                    '10000000000001' => [
+                        'dispatch_successful' => [],
+                        'dispatch_failure' => [],
+                    ],
+                ],
+                'failure' => [
+                    '10000000000002'
+                ],
+            ],
+        ],
+    ],
+
+    'testBankingAccountTpvMigration_QueueDispatchFailure' => [
+        'request'  => [
+            'url'     => '/admin/tpv/migrate/',
+            'method'  => 'post',
+            'content' => [
+                'tpv_migration_map' => [
+                    [
+                        'merchant_id' => '10000000000000',
+                        'balance_id'  => '',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => [
+                    '10000000000000' => [
+                        'dispatch_successful' => [],
+                        'dispatch_failure' => [],
+                    ],
+                ],
+                'failure' => [],
+            ],
+        ],
+    ],
 ];

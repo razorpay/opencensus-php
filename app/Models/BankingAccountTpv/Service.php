@@ -29,6 +29,13 @@ class Service extends Base\Service
         return $this->core()->edit($id, $input);
     }
 
+    public function adminMigrateMerchantTpvs($input)
+    {
+        $this->validator->validateInput('admin_migrate_tpv', $input);
+
+        return $this->core()->adminMigrateMerchantTpvs($input);
+    }
+
     public function fetchMerchantTpvs(): array
     {
         return $this->core()->fetchMerchantTpvs();

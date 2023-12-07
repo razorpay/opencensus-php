@@ -136,6 +136,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYER_ACCOUNT_NUMBER);
     }
 
+    public function getPayerName()
+    {
+        return $this->getAttribute(self::PAYER_NAME);
+    }
+
+    public function getFundAccountValidationId()
+    {
+        return $this->getAttribute(self::FUND_ACCOUNT_VALIDATION_ID);
+    }
+
     public function getPayerIfsc()
     {
         return $this->getAttribute(self::PAYER_IFSC);
@@ -144,6 +154,16 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getIsActive()
+    {
+        return $this->getAttribute(self::IS_ACTIVE);
+    }
+
+    public function getRemarks()
+    {
+        return $this->getAttribute(self::REMARKS);
     }
 
     public function getTrimmedPayerAccountNumber()
@@ -167,6 +187,11 @@ class Entity extends Base\PublicEntity
     public function setTrimmedPayerAccountNumber(string $trimmedPayerAccountNumber)
     {
         $this->setAttribute(self::TRIMMED_PAYER_ACCOUNT_NUMBER, $trimmedPayerAccountNumber);
+    }
+
+    public function setRemarks(string $remarks)
+    {
+        return $this->setAttribute(self::REMARKS, $remarks);
     }
 
     // -------------------- End Setters --------------------------

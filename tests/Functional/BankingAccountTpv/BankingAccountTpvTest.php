@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\BankingAccountTpv;
 
+use Queue;
 use Mockery;
 
 use RZP\Exception;
@@ -12,9 +13,11 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\BankingAccountTpv\Type;
+use RZP\Models\BankingAccountTpv\Core;
 use RZP\Models\BankingAccountTpv\Entity;
 use RZP\Models\BankingAccountTpv\Status;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Jobs\BankingAccountTpvMigration;
 use RZP\Models\BankingAccountTpv\Constants;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -1453,5 +1456,283 @@ class BankingAccountTpvTest extends TestCase
                                   ]);
 
         $this->assertNotNull($tpv);
+    }
+
+    // Source Account Migration to Rx Wallet flows for existing merchants
+    public function testBankingAccountTpvMigration_SuccessfullyPushedIntoQueue()
+    {
+        Queue::fake();
+
+        // Create Entities for merchant: 10000000000000
+
+        $this->fixtures->create('balance', [
+            'id'           => 'rxbal000000000',
+            'merchant_id'  => '10000000000000',
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+        ]);
+
+        $this->fixtures->create('banking_account_tpv', $this->getTpvInput(
+            [
+                Entity::ID => 'tpv00000000001',
+            ]
+        ));
+
+        $this->fixtures->create('banking_account_tpv', $this->getTpvInput(
+            [
+                Entity::ID      => 'tpv00000000002',
+                Entity::REMARKS => Constants::RX_WALLET_TPV_MIGRATION_FAILURE
+            ])
+        );
+
+        // Create Entities for merchant: 10000000000001
+
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        $this->fixtures->create('balance', [
+            'id'           => 'bal00000000001',
+            'merchant_id'  => '10000000000001',
+            'account_type' => AccountType::SHARED,
+            'channel'      => Channel::YESBANK,
+        ]);
+
+        $this->fixtures->create('balance', [
+            'id'           => 'rxbal000000001',
+            'merchant_id'  => '10000000000001',
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+        ]);
+
+        $this->fixtures->create('banking_account_tpv', $this->getTpvInput(
+            [
+                Entity::ID          => 'tpv00000000003',
+                Entity::BALANCE_ID  => 'bal00000000001',
+                Entity::MERCHANT_ID => '10000000000001',
+                Entity::REMARKS     => Constants::RX_WALLET_TPV_MIGRATION_SUCCESSFUL
+            ]
+        ));
+
+        $this->fixtures->create('banking_account_tpv', $this->getTpvInput(
+            [
+                Entity::ID          => 'tpv00000000004',
+                Entity::BALANCE_ID  => 'rxbal000000001',
+                Entity::MERCHANT_ID => '10000000000001',
+            ])
+        );
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, count($response['failure']));
+        $this->assertEquals(2, count($response['success']));
+        $this->assertEquals(2, count($response['success']['10000000000000']['dispatch_successful']));
+        $this->assertEquals(0, count($response['success']['10000000000000']['dispatch_failure']));
+
+        $this->assertEquals(0, count($response['success']['10000000000001']['dispatch_successful']));
+        $this->assertEquals(0, count($response['success']['10000000000001']['dispatch_failure']));
+
+        Queue::assertPushed(BankingAccountTpvMigration::class, 2);
+    }
+
+    public function testBankingAccountTpvMigrationJob_Success()
+    {
+        $expectedMozartInput = [
+            Constants::CLIENT_IDENTIFIER     => 'client_123',
+            Constants::SOURCE_ACCOUNT_NUMBER => $this->getTpvInput()[Entity::PAYER_ACCOUNT_NUMBER],
+            Constants::SOURCE_ACCOUNT_IFSC   => $this->getTpvInput()[Entity::PAYER_IFSC],
+        ];
+
+        $this->mockMozartResponseForSourceAccountAddition($expectedMozartInput);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $balance = $this->fixtures->create('balance', [
+            'id'           => 'bal00000000000',
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+            'type'         => 'banking',
+        ]);
+
+        $tpv = $this->fixtures->create('banking_account_tpv', $this->getTpvInput());
+
+        (new BankingAccountTpvMigration(Mode::TEST, $tpv->getId(), $balance->getId()))->handle();
+
+        $tpv->reload();
+
+        $migratedTpv = $this->getDbEntity('banking_account_tpv', [
+            'balance_id' => $balance->getId(),
+        ]);
+
+        $this->assertNotEquals($migratedTpv->getId(), $tpv->getId());
+        $this->assertEquals(Status::APPROVED, $migratedTpv->getStatus());
+        $this->assertEquals(true, $migratedTpv->getIsActive());
+        $this->assertEquals(Constants::RX_WALLET_TPV_MIGRATION_SUCCESSFUL, $tpv->getRemarks());
+    }
+
+    public function testBankingAccountTpvMigrationJob_AlreadyMigrated()
+    {
+        $tpv = $this->fixtures->create('banking_account_tpv', $this->getTpvInput(
+            [
+                Entity::REMARKS => Constants::RX_WALLET_TPV_MIGRATION_SUCCESSFUL,
+            ]
+        ));
+
+        $balance = $this->fixtures->create('balance', [
+            'id'           => 'bal00000000000',
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+            'type'         => 'banking',
+        ]);
+
+        (new BankingAccountTpvMigration(Mode::TEST, $tpv->getId(), $balance->getId()))->handle();
+
+        $tpv->reload();
+
+        $migratedTpv = $this->getDbEntity('banking_account_tpv', [
+            'balance_id' => $balance->getId(),
+        ]);
+
+        $this->assertNull($migratedTpv);
+        $this->assertEquals(Constants::RX_WALLET_TPV_MIGRATION_SUCCESSFUL, $tpv->getRemarks());
+    }
+
+    public function testBankingAccountTpvMigrationJob_BankingAccountTpvNotSuitableForMigration()
+    {
+        $tpv = $this->fixtures->create('banking_account_tpv', $this->getTpvInput(
+            [
+                Entity::STATUS     => Status::PENDING,
+                Entity::IS_ACTIVE  => false,
+            ]));
+
+        $balance = $this->fixtures->create('balance', [
+            'id'           => 'bal00000000000',
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+            'type'         => 'banking',
+        ]);
+
+        (new BankingAccountTpvMigration(Mode::TEST, $tpv->getId(), $balance->getId()))->handle();
+
+        $tpv->reload();
+
+        $migratedTpv = $this->getDbEntity('banking_account_tpv', [
+            'balance_id' => $balance->getId(),
+        ]);
+
+        $this->assertNull($migratedTpv);
+        $this->assertEquals(null, $tpv->getRemarks());
+    }
+
+    public function testBankingAccountTpvMigrationJob_SourceAccountMigrationFailedWithActionableErrorCode()
+    {
+        $expectedMozartInput = [
+            Constants::CLIENT_IDENTIFIER     => 'client_123',
+            Constants::SOURCE_ACCOUNT_NUMBER => $this->getTpvInput()[Entity::PAYER_ACCOUNT_NUMBER],
+            Constants::SOURCE_ACCOUNT_IFSC   => $this->getTpvInput()[Entity::PAYER_IFSC],
+        ];
+
+        $expectedErrorResponse = [
+            "success"           => false,
+            "error"             => [
+                "gateway_status_code"       => 200,
+                "internal_error_code"       => "GATEWAY_ERROR_UNKNOWN_ERROR",
+                "description"               => "",
+                "gateway_error_code"        => "DCA020",
+                "gateway_error_description" => "Unable to add source account, please try again later"
+            ],
+            "data"              => [
+                "request_id"        => "24020231264",
+                "status"            => "ERROR",
+                "response_code"     => "DCA020",
+                "response_message"  => "Unable to add source account, please try again later",
+                "client_identifier" => "client_123"
+            ],
+            "next"              => [],
+            "mozart_id"         => "cl7381c2b5po4din5q8g",
+            "external_trace_id" => "5a31015763304f49dd130b9e6d4f0363"
+        ];
+
+        $this->mockMozartResponseForSourceAccountAddition($expectedMozartInput, $expectedErrorResponse, true);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $balance = $this->fixtures->create('balance', [
+            'id'           => 'bal00000000000',
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+            'type'         => 'banking',
+        ]);
+
+        $tpv = $this->fixtures->create('banking_account_tpv', $this->getTpvInput());
+
+        (new BankingAccountTpvMigration(Mode::TEST, $tpv->getId(), $balance->getId()))->handle();
+
+        $tpv->reload();
+
+        $migratedTpv = $this->getDbEntity('banking_account_tpv', [
+            'balance_id' => $balance->getId(),
+        ]);
+
+        $this->assertNull($migratedTpv);
+        $this->assertEquals(Status::APPROVED, $tpv->getStatus());
+        $this->assertEquals(true, $tpv->getIsActive());
+        $this->assertEquals(Constants::RX_WALLET_TPV_MIGRATION_FAILURE, $tpv->getRemarks());
+    }
+
+    public function testBankingAccountTpvMigrationJob_SourceAccountMigrationFailedWithNonActionableErrorCode()
+    {
+        $expectedMozartInput = [
+            Constants::CLIENT_IDENTIFIER     => 'client_123',
+            Constants::SOURCE_ACCOUNT_NUMBER => $this->getTpvInput()[Entity::PAYER_ACCOUNT_NUMBER],
+            Constants::SOURCE_ACCOUNT_IFSC   => $this->getTpvInput()[Entity::PAYER_IFSC],
+        ];
+
+        $expectedErrorResponse = [
+            "success"           => false,
+            "error"             => [
+                "gateway_status_code"       => 200,
+                "internal_error_code"       => "GATEWAY_ERROR_UNKNOWN_ERROR",
+                "description"               => "",
+                "gateway_error_code"        => "DCA018",
+                "gateway_error_description" => "Source Account Number is already mapped to the client"
+            ],
+            "data"              => [
+                "request_id"        => "24020231264",
+                "status"            => "ERROR",
+                "response_code"     => "DCA018",
+                "response_message"  => "Source account has been added successfully.",
+                "client_identifier" => "client_123"
+            ],
+            "next"              => [],
+            "mozart_id"         => "cl7381c2b5po4din5q8g",
+            "external_trace_id" => "5a31015763304f49dd130b9e6d4f0363"
+        ];
+
+        $this->mockMozartResponseForSourceAccountAddition($expectedMozartInput, $expectedErrorResponse, true);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $balance = $this->fixtures->create('balance', [
+            'id'           => 'bal00000000000',
+            'account_type' => AccountType::RX_WALLET,
+            'channel'      => Channel::YESBANK,
+            'type'         => 'banking',
+        ]);
+
+        $tpv = $this->fixtures->create('banking_account_tpv', $this->getTpvInput());
+
+        (new BankingAccountTpvMigration(Mode::TEST, $tpv->getId(), $balance->getId()))->handle();
+
+        $tpv->reload();
+
+        $migratedTpv = $this->getDbEntity('banking_account_tpv', [
+            'balance_id' => $balance->getId(),
+        ]);
+
+        $this->assertNotEquals($migratedTpv->getId(), $tpv->getId());
+        $this->assertEquals(Status::APPROVED, $migratedTpv->getStatus());
+        $this->assertEquals(true, $migratedTpv->getIsActive());
+        $this->assertEquals(Constants::RX_WALLET_TPV_MIGRATION_SUCCESSFUL, $tpv->getRemarks());
     }
 }

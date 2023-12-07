@@ -36,6 +36,15 @@ class BankingAccountTpvController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function adminMigrateMerchantTpvs()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->adminMigrateMerchantTpvs($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchMerchantTpvsWithFav($mid)
     {
         $input = Request::all();
