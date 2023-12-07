@@ -408,7 +408,8 @@ class Entity extends Base\PublicEntity
         }
 
         /*
-         * As we are not supporting Yesbank and ICICI VA's
+         * As we are not supporting Yesbank, ICICI VA's
+         * and only supporting RBL receivers for regulated merchants
          * we need to remove them from the Existing Fetch API
          */
         if (($this->isBalanceTypeBanking() === false) and ($isRemoveBankAccount === true) and (sizeof($receivers) > 1))
@@ -416,7 +417,9 @@ class Entity extends Base\PublicEntity
             foreach ($receivers as $index => $receiverObject)
             {
                 if (array_key_exists(BankAccount\Entity::IFSC, $receiverObject) and
-                    (in_array($receiverObject[BankAccount\Entity::IFSC], Provider::getUnsuportedProviderByRazorpay())))
+                    (in_array($receiverObject[BankAccount\Entity::IFSC], Provider::getUnsuportedProviderByRazorpay())) or
+                    ($receiverObject[BankAccount\Entity::IFSC] === Provider::IFSC[PROVIDER::RBL] and
+                        $this->isBankAccountDeleted($receiverObject) === true))
                 {
                     unset($receivers[$index]);
                 }
@@ -425,6 +428,19 @@ class Entity extends Base\PublicEntity
         }
 
         return $receivers;
+    }
+
+    protected function isBankAccountDeleted($receiverObject): bool
+    {
+        $bankAccountId = substr($receiverObject['id'], 3, strlen($receiverObject['id']));
+        $bankAccount = $bankAccountId === $this->bankAccount->getId()? $this->bankAccount: $this->bankAccount2;
+
+        if ($bankAccount->isDeleted() === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getAllowedPayersAttribute()

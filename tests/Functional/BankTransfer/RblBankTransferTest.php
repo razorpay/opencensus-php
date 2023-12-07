@@ -877,6 +877,79 @@ class RblBankTransferTest extends TestCase
         $this->assertEquals('RblBtShrdTrmnl', $payment['terminal_id']);
     }
 
+    public function testRblDeletedReceiverDisallow()
+    {
+        $this->fixtures->merchant->on('live')->createAccount('TestMerchant00');
+        $this->fixtures->merchant->on('live')->enableMethod('TestMerchant00', 'bank_transfer');
+
+        $virtualAccount = $this->fixtures->on('live')->create(
+            'virtual_account',
+            [
+                'merchant_id' => 'TestMerchant00',
+                'status' => 'active',
+            ]
+        );
+
+        $bankAccount = $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'merchant_id' => 'TestMerchant00',
+                'entity_id' => $virtualAccount->getId(),
+                'type' => 'virtual_account',
+                'account_number' => '7878780085114245',
+                'ifsc_code' => 'RATN0VAAPIS',
+            ]
+        );
+
+        $this->fixtures->on('live')->edit(
+            'virtual_account',
+            $virtualAccount->getId(),
+            ['bank_account_id' => $bankAccount->getId()]
+        );
+
+        $bankAccount2 = $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'merchant_id' => 'TestMerchant00',
+                'entity_id' => $virtualAccount->getId(),
+                'type' => 'virtual_account',
+                'account_number' => '2223780085114246',
+                'ifsc_code' => 'UTIB000RAZP',
+            ]
+        );
+
+        $this->fixtures->on('live')->edit(
+            'virtual_account',
+            $virtualAccount->getId(),
+            ['bank_account_id_2' => $bankAccount2->getId()]
+        );
+
+        // Using reflection since VirtualAccount->getReceiversAttribute is protected.
+        $reflection = new \ReflectionClass($virtualAccount);
+        $method = $reflection->getMethod('getReceiversAttribute');
+        $method->setAccessible(true);
+
+        $virtualAccountUpdated = $this->getDbEntityById('virtual_account', $virtualAccount->getId(), 'live');
+
+        $receivers = $method->invoke($virtualAccountUpdated);
+        $this->assertCount(2, $receivers);
+
+        // Soft delete RBL bank Account
+        $this->fixtures->on('live')->edit(
+            'bank_account',
+            $bankAccount->getId(),
+            ['deleted_at' => time()]
+        );
+
+        $virtualAccountUpdated = $this->getDbEntityById('virtual_account', $virtualAccount->getId(), 'live');
+        $receivers = $method->invoke($virtualAccountUpdated);
+
+        // RBL receiver disabled if its soft deleted.
+        $this->assertCount(1, $receivers);
+        $this->assertEquals("UTIB000RAZP", $receivers[0]['ifsc']);
+
+    }
+
     protected function getRblVaBankAccount()
     {
         $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL, 'gateway_merchant_id' => '0001046' ];
