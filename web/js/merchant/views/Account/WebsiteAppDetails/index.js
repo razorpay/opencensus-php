@@ -52,7 +52,10 @@ function WebsiteAppDetails({
     activationData: activationData.data,
   });
 
-  const isPolicyV2Merchant = isExpEnabled && policyWizardV2Data.isEligible;
+  const isEligiblePolicyWizard =
+    policyWizardV2Data.isEligible || policyWizardV2Data.policyEligible === 'v2';
+
+  const isPolicyV2Merchant = isExpEnabled && isEligiblePolicyWizard;
 
   useEffect(() => {
     // send analytics on wizard entry load

@@ -74,6 +74,7 @@ const initialState = {
   policyWizardV2Data: {
     loading: false,
     isEligible: false,
+    policyEligible: 'not_eligible',
     isDataLoaded: false,
     error: false,
   },
@@ -116,6 +117,7 @@ export default function websiteComplianceReducer(state = initialState, action) {
         ...state.policyWizardV2Data,
         loading: false,
         isEligible: !!action?.payload?.data?.is_policy_wizard_v2_eligible,
+        policyEligible: action?.payload?.data?.policy_eligibility ?? 'not_eligible',
         isDataLoaded: true,
       });
     }
@@ -125,6 +127,7 @@ export default function websiteComplianceReducer(state = initialState, action) {
         ...state.policyWizardV2Data,
         loading: false,
         isEligible: false,
+        policyEligible: 'not_eligible',
         error: action.payload.errors.join(''),
       });
     }
