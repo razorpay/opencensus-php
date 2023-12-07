@@ -29,6 +29,12 @@ use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
+
+    const FUND_ADDITION_WEBHOOK_MUTEX_TTL = 60;
+    const FUND_ADDITION_WEBHOOK_MUTEX_RETRIES = 40;
+    const FUND_ADDITION_WEBHOOK_MUTEX_MIN_RETRY_DELAY = 500;
+    const FUND_ADDITION_WEBHOOK_MUTEX_MAX_RETRY_DELAY = 1000;
+
     // This map indicates credit point to money ratio for a product.
     // example for banking, only payouts will be consuming credits and
     // so not adding the concept of a sub product like payouts, FAV etc
@@ -109,7 +115,13 @@ class Core extends Base\Core
                 });
 
                 return $creditsLog;
-            });
+            },
+            self::FUND_ADDITION_WEBHOOK_MUTEX_TTL,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            self::FUND_ADDITION_WEBHOOK_MUTEX_RETRIES,
+            self::FUND_ADDITION_WEBHOOK_MUTEX_MIN_RETRY_DELAY,
+            self::FUND_ADDITION_WEBHOOK_MUTEX_MAX_RETRY_DELAY
+        );
     }
 
     public function updateCreditsInMerchantAccount($merchant, $credits, $type = Credits\Type::AMOUNT)
