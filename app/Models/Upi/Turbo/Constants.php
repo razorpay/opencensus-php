@@ -24,9 +24,13 @@ class Constants
         self::PUBLIC_ERROR_CODE,
         Error::ERROR_DESCRIPTION,
         Error::REASON,
+        Error::SOURCE,
+        Error::STEP
     ];
 
     const FALLBACK_PUBLIC_ERROR_CODE   = "UNKNOWN_ERROR";
     const FALLBACK_REASON              = "unknown_error";
     const FALLBACK_ERROR_DESCRIPTION   = "Something went wrong, please try again.";
+    const FALLBACK_SOURCE              = "unknown_source";
+    const FALLBACK_STEP                = "";
 }

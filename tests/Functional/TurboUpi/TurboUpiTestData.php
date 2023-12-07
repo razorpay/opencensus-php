@@ -55,33 +55,50 @@ return [
                             "public_error_code"   => "GATEWAY_ERROR",
                             "internal_error_code" => "GATEWAY_ERROR_PAYMENT_PIN_ATTEMPTS_EXCEEDED",
                             "error_description"   => "Payment was declined because PIN attempts have exceeded. Please try from another account.",
+                            "reason"              => "bad_request_payment_pin_attempts_exceeded",
+                            "source"              => "customer",
+                            "step"                =>   ""
                         ],
                         'YA' => [
                             "public_error_code"   => "GATEWAY_ERROR",
                             "internal_error_code" => "GATEWAY_ERROR_LOST_OR_STOLEN_CARD_REMITTER",
                             "error_description"   => "Card used while setting UPI PIN has been restricted by your bank, please reach out to your bank for more information or use another bank account for payment",
+                            "reason"              => "lost_or_stolen_card_remitter",
+                            "source"              => "issuer_bank",
+                            "step"                => ""
                         ],
                         'AM' => [
                             "public_error_code"   => "BAD_REQUEST_ERROR",
                             "internal_error_code" => "BAD_REQUEST_BAD_REQUEST_UPI_MPIN_NOT_SET",
                             "error_description"   => "Payment was unsuccessful as you have not set the UPI PIN on the app. Try using another method.",
+                            "reason"              => "bad_request_upi_mpin_not_set",
+                            "source"              => "customer",
+                            "step"                => ""
                         ],
                         'XM' => [
                             "public_error_code"   => "BAD_REQUEST_ERROR",
                             "internal_error_code" => "BAD_REQUEST_BAD_REQUEST_UPI_MPIN_NOT_SET",
                             "error_description"   => "Payment was unsuccessful as you have not set the UPI PIN on the app. Try using another method.",
+                            "reason"              => "registration_card_expired_beneficiary",
+                            "source"              => "beneficiary_bank",
+                            "step"                => ""
                         ],
                         'ZP' => [
                             "public_error_code"   => "GATEWAY_ERROR",
                             "internal_error_code" => "GATEWAY_ERROR_BANK_NOT_REGISTERED_FOR_UPI",
                             "error_description"   => "The selected bank does not support UPI. Please try with some other bank",
+                            "reason"              => "bank_not_registered_for upi",
+                            "source"              => "issuer_bank",
+                            "step"                => ""
                         ]
                     ],
                     'common'        => [],
                     'fallback'      => [
                         "public_error_code"   => "SYSTEM_ERROR",
                         "internal_error_code" => "FALLBACK_ERROR",
-                        "description"         => "Something went wrong, please try again later. Any amount deducted will be refunded within 5-7 working days."
+                        "description"         => "Something went wrong, please try again later. Any amount deducted will be refunded within 5-7 working days.",
+                        "reason"              => "unknown_error",
+                        "step"                => ""
                     ]
                 ]
             ]
