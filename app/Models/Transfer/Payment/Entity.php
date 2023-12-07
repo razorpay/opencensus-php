@@ -4,6 +4,7 @@ namespace RZP\Models\Transfer\Payment;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Exception\LogicException;
 use Illuminate\Database\Eloquent\Relations;
 
 class Entity extends Base\PublicEntity
@@ -74,7 +75,7 @@ class Entity extends Base\PublicEntity
 
         if ($amount > $amountUntransferred)
         {
-            throw new Exception\LogicException(
+            throw new LogicException(
                 'Transfer amount should be less than or equal to amount not transferred yet',
                 null,
                 [
