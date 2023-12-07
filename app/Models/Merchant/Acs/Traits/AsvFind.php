@@ -162,5 +162,21 @@ trait AsvFind
 
         return $this->findDatabase($id, $columns, $connectionType);
     }
+
+    public function findForWrite($id, $columns = array('*'), string $connectionType = null)
+    {
+        try
+        {
+            return $this->findOrFail($id, $columns, $connectionType);
+        } catch (\Exception $e)
+        {
+            if ($e->getCode() == ErrorCode::SERVER_ERROR_DB_QUERY_FAILED)
+            {
+                return null;
+            }
+            throw $e;
+        }
+    }
+
 }
 

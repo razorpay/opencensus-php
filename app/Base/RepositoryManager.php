@@ -542,7 +542,7 @@ class RepositoryManager extends Illuminate\Support\Manager
         $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Mode::LIVE);
         $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Mode::TEST);
 
-        $this->changeTransactionIsolationLevelForAccountServiceRoutes();
+        //$this->changeTransactionIsolationLevelForAccountServiceRoutes();
 
         $this->db->connection(Mode::TEST)->beginTransaction();
         $this->db->connection(Mode::LIVE)->beginTransaction();

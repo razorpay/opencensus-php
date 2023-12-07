@@ -5,6 +5,7 @@ use App;
 use Hash;
 use RZP\Models\Base;
 use RZP\Models\Admin;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
@@ -269,6 +270,50 @@ class Entity extends Base\PublicEntity
                     ->orderByRaw($sql, [$this->getEmail()]);
     }
 
+    public function getNonSuspendedMerchants($limit)
+    {
+        $merchantUsers  = (new MerchantUser\Repository)->returnMerchantUsersForUserIdOrderByRole($this->getAttribute(self::ID), $limit);
+        $merchantIds    = [];
+
+        foreach ($merchantUsers as $merchantUser) {
+            $merchantIds[] = $merchantUser[MerchantUser\Entity::MERCHANT_ID];
+        }
+
+        $uniqueMerchantIds = array_unique($merchantIds);
+
+        $merchants =  (new Merchant\Repository)->getNonSuspendedMerchantsFromIds($uniqueMerchantIds);
+        $merchantsWithPivot = [];;
+
+        foreach ($merchants as $merchant) {
+            $mergedMerchant = $merchant->getAttributes();
+            $mergedMerchant['pivot'] = [];
+
+            foreach ($merchantUsers as $merchantUser) {
+                if ($merchantUser['merchant_id'] === $merchant['id']) {
+                    $mergedMerchant['pivot'] = (object) $merchantUser;
+                }
+            }
+
+            $mE = new Merchant\Entity();
+            $mE->setRawAttributes($mergedMerchant, true);
+            $merchantsWithPivot[] = $mE;
+        }
+
+        usort($merchantsWithPivot, function ($a, $b) {
+            var_dump($a[self::PIVOT][self::ROLE]);
+            if ( !empty($a->getEmail()) && $a->getEmail() == $this->getAttribute(self::EMAIL) && $a->getAttribute(self::PIVOT)->role == self::OWNER) {
+                return -1;
+            } elseif ($a->getAttribute(self::PIVOT)->role == self::OWNER) {
+                return 0;
+            } else {
+                return 1;
+            }
+        });
+
+        return new Base\PublicCollection($merchantsWithPivot);;
+    }
+
+
     public function merchantsForOrg(string $orgId)
     {
         $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
@@ -492,12 +537,18 @@ class Entity extends Base\PublicEntity
                 ($this->isContactMobileVerified() === true));
     }
 
+    protected function getMerchants()
+    {
+        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1000);
+        return(new Merchant\Repository)->findMerchantsByIds($merchantIds);
+    }
+
     protected function getOrgEnforcedSecondFactorAuthAttribute(): bool
     {
-        $merchants = $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
-                          ->select(Table::MERCHANT . '.' . Merchant\Entity::ORG_ID)
-                          ->get();
-
+        $merchants = $this->getMerchants();
+//        $merchants = $merchants = $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+//            ->select(Table::MERCHANT . '.' . Merchant\Entity::ORG_ID)
+//            ->get();
         $orgIdList = [];
 
         foreach ($merchants as $merchant)
@@ -506,7 +557,6 @@ class Entity extends Base\PublicEntity
         }
 
         $orgIdList = array_unique($orgIdList);
-
         return (new Admin\Org\Repository)
                     ->hasAnyOrgEnforced2Fa($orgIdList);
     }
@@ -544,7 +594,7 @@ class Entity extends Base\PublicEntity
             return false;
         }
 
-        $merchant = (new Merchant\Repository)->find($merchantIds[0]);
+        $merchant = (new Merchant\Repository)->findForWrite($merchantIds[0]);
 
         return $merchant->getRestricted();
     }
@@ -559,7 +609,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return (new Merchant\Repository)->find($merchantIds[0]);
+        return (new Merchant\Repository)->findForWrite($merchantIds[0]);
     }
 
     public function setContactMobileNull()
@@ -617,7 +667,7 @@ class Entity extends Base\PublicEntity
     public function getFirstMerchantEntity()
     {
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1);
-        return (new Merchant\Repository)->find($merchantIds[0]);
+        return (new Merchant\Repository)->findForWrite($merchantIds[0]);
     }
 
     public function getFirstMerchantEntityForOrg($orgId)

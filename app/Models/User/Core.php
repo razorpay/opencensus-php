@@ -7,6 +7,7 @@ use Mail;
 use Hash;
 use Cache;
 use Config;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
 use RZP\Services\Dcs\Features\Type;
 use Throwable;
@@ -3836,7 +3837,13 @@ class Core extends Base\Core
             'limit'     => $limit,
         ]);
 
-        $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take($limit)->get();
+
+        if((new AsvRouter())->shouldRouteWriteRequestToAccountService($this::class, __function__, $user->getId()))
+        {
+            $merchantEntities = $user->getNonSuspendedMerchants($limit);
+        } else {
+            $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take($limit)->get();
+        }
 
         $merchantIdsWithCrossOrgFeature = $this->app['dcs']->fetchEntityIdsByFeatureName(DcsConstants::CrossOrgLogin, Type::MERCHANT, $this->mode);
 
@@ -3863,7 +3870,6 @@ class Core extends Base\Core
                 }
             }
         }
-
         $merchants = $filteredMerchants->callOnEveryItem('toArrayUser');
 
         $merchantsUnique = $this->getUnifiedMerchants($merchants);
@@ -6263,7 +6269,8 @@ class Core extends Base\Core
         LoginSignupRateLimit::resetKey($email, Constants::VERIFY_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
 
         $merchant = $this->merchant;
-        $merchant_detail = $merchant->merchantDetail()->first();
+        $merchant_detail = $merchant->merchantDetail;
+
 
         $this->repo->transactionOnLiveAndTest(function() use ($user, $merchant, $merchant_detail, $email)
         {

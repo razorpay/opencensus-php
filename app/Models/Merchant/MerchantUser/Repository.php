@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\MerchantUser;
 
+use Rzp\Accounts\Account\V1\ENTITY_NAME;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -41,6 +42,20 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
+    }
+
+    public function returnMerchantUsersForUserIdOrderByRole(string $userId, int $limit = 100)
+    {
+        $sql = "CASE WHEN role='owner' THEN 1
+                     else 2 END";
+
+        return $this->newQuery()
+            ->select(Entity::MERCHANT_ID, Entity::ROLE, Entity::PRODUCT, Entity::USER_ID)
+            ->where(Entity::USER_ID, $userId)
+            ->limit($limit)
+            ->orderByRaw($sql)
+            ->get()
+            ->toArray();
     }
 
     public function findByRolesAndMerchantId(array $roles, string $merchantId): Base\PublicCollection

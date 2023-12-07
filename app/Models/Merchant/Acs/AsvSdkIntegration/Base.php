@@ -417,8 +417,8 @@ class Base
          */
         foreach ($merchants as $merchant) {
             $merchantProtoConvertor = new MerchantProtoMapper($merchant);
-            $websiteEntity = $merchantProtoConvertor->ToEntity();
-            $merchantArray[] = $websiteEntity;
+            $merchantEntity = $merchantProtoConvertor->ToEntity();
+            $merchantArray[] = $merchantEntity;
         }
 
         return (new \RZP\Models\Merchant\Entity())->newCollection($merchantArray);
