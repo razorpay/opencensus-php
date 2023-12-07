@@ -73,6 +73,7 @@ class Service extends Base\Service
     const NAME = 'name';
 
     const BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com"];
+    const BLACKLISTED_GATEWAY_FOR_API_AUTO_RECON_VIA_MAILGUN = [RequestProcessor\Base::UPI_HDFC,RequestProcessor\Base::ISG];
 
     protected $core;
 
@@ -1435,7 +1436,8 @@ class Service extends Base\Service
 
         $recipient = $reconDetails[RequestProcessor\Base::INPUT_DETAILS]['to'] ?? [];
 
-        if($source === RequestProcessor\Base::MAILGUN && in_array($recipient, self::BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN))
+        if($source === RequestProcessor\Base::MAILGUN && (in_array($recipient, self::BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN)
+               || in_array($gateway, self::BLACKLISTED_GATEWAY_FOR_API_AUTO_RECON_VIA_MAILGUN)))
         {
             return;
         }
