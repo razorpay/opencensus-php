@@ -1697,7 +1697,6 @@ Secondary reference id should be unique, duplicate value for test123";
             'Primary reference id' => 1231231234,
             'Phone' => '1231231234',
             'DOB' => 'test123',
-            'Due date' => $formattedDate,
             'item1' => 100,
             'item2' => ''
         ]);
@@ -1734,6 +1733,149 @@ Secondary reference id should be unique, duplicate value for test123";
         $res = $this->makeRequestAndGetContent($orderCreateRequest);
 
         $this->assertEquals($res['order']['amount'], 100);
+    }
+
+    public function testAmountLessThanOneBatchPP()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $testData = $this->testData['testOptionalPriceFieldsForBatchPP'];
+
+        $res = $this->startTest($testData);
+
+        $id = $res["id"];
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'item1' => 100,
+            'item2' => '0'
+        ]);
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+
+        // verify item2 is getting stored
+        $this->assertEquals($paymentPageRecord['other_details'],'{"DOB": "test123", "item1": "100", "item2": "0", "sec__ref__id_1": "test123"}');
+
+        $paymentPageItems = \DB::connection('test')->select("select * from payment_page_items");
+
+        $orderCreateRequest = [
+            'method' => 'POST',
+            'url' => '/payment_pages/' . $id . '/order',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[0]->id,
+                        'amount' => 100
+                    ],
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[1]->id,
+                        'amount' => 0
+                    ]
+                ],
+                'notes' => [
+                    'pri__ref__id' => '1231231234',
+                    'email' => 'test@test.com',
+                    'phone' => '1231231234',
+                    'DOB' => 'test123'
+                ]
+            ]
+        ];
+
+
+        $this->ba->directAuth();
+
+        $res = $this->makeRequestAndGetContent($orderCreateRequest);
+
+        $this->assertEquals($res['order']['amount'], 100);
+    }
+
+
+    public function testAmountLessThanOneNormalPP()
+    {
+        $res = $this->startTest();
+
+        $id = $res["id"];
+
+        $paymentPageItems = \DB::connection('test')->select("select * from payment_page_items");
+
+        $orderCreateRequest = [
+            'method' => 'POST',
+            'url' => '/payment_pages/' . $id . '/order',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[0]->id,
+                        'amount' => 100
+                    ],
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[1]->id,
+                        'amount' => 0
+                    ]
+                ],
+                'notes' => [
+                    'pri__ref__id' => '1231231234',
+                    'email' => 'test@test.com',
+                    'phone' => '1231231234',
+                    'DOB' => 'test123'
+                ]
+            ]
+        ];
+
+
+        $this->ba->directAuth();
+
+        try 
+        {
+            $this->makeRequestAndGetContent($orderCreateRequest);
+
+            $this->assertTrue(false, 'should throw an exception for amount < 1.00 INR');
+        }
+        catch(\Exception $e)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, $e->getCode());
+
+            $this->assertEquals("The amount must be atleast INR 1.00", $e->getMessage());
+        }
+    }
+
+    public function testPaymentPageCreateForFileUploadBlankValuesForOptionalFields()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $res = $this->startTest();
+
+        $id = $res['id'];
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 12341234123,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'Address' => '',
+            'item1' => 100,
+            'item2' => ''
+        ]);
+        
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+
+        $this->assertEquals($paymentPageRecord["custom_field_schema"], '{"field_4": {"key": "DOB", "value": "test123", "dataType": "string"}, "field_5": {"key": "Address", "value": "", "dataType": "string"}, "field_6": {"key": "item1", "value": "100", "dataType": "string"}, "field_7": {"key": "item2", "value": "", "dataType": "string"}}');
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 12341234124,
+            'Phone' => '1231231234',
+            'Address' => 'testaddr',
+            'DOB' => 'test1234',
+            'item1' => 100,
+            'item2' => 120
+        ]);
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+
+        $this->assertEquals($paymentPageRecord["custom_field_schema"], '{"field_4": {"key": "DOB", "value": "test1234", "dataType": "string"}, "field_5": {"key": "Address", "value": "testaddr", "dataType": "string"}, "field_6": {"key": "item1", "value": "100", "dataType": "string"}, "field_7": {"key": "item2", "value": "120", "dataType": "string"}}');
     }
 
     // form builder late fee tests

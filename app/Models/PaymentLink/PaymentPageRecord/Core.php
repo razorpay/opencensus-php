@@ -146,7 +146,7 @@ class Core extends Base\Core
 
         $response[Entity::MERCHANT_ID] = $paymentPage->getMerchantId();
 
-        $response = $this->populateCustomFieldSchema($id, $response);
+        $response = $this->populateCustomFieldSchema($id, $paymentPage->getMerchantId(), $response);
 
         $response = $this->uniqueRefIdValidations($response, $errors);
 
@@ -498,7 +498,7 @@ class Core extends Base\Core
         return $nextTitle;
     }
 
-    public function populateCustomFieldSchema(string $id, array $response): array
+    public function populateCustomFieldSchema(string $id, string $merchantId, array $response): array
     {
         $allFields = (new Settings())->getSettings($id, 'payment_link', PaymentLink::ALL_FIELDS);
 
@@ -520,6 +520,29 @@ class Core extends Base\Core
 
                 $lastFieldTitle = $fieldTitle;
             }
+        }
+
+        // for all optional fields that were skipped, add blank values
+        $payment_page_items = $this->repo->payment_page_item->fetchByPaymentLinkIdAndMerchant($id, $merchantId);
+
+        foreach ($payment_page_items as $paymentPageItem)
+        {
+            $item = $paymentPageItem->item;
+
+            $title = $item[PaymentLink::NAME];
+
+            if (isset($otherDetails[$title]) === false)
+            {
+                if ($paymentPageItem->isLateFeePriceField() === false)
+                {
+                    $fieldTitle = $allFields[$title];
+
+                    $custom_field_schema[$fieldTitle] = ['key' => $title, 'value' => '', 'dataType' => Constants::STRING];
+
+                    $lastFieldTitle = $fieldTitle;
+                }
+            }
+
         }
 
         // if other_details has late_fee_config, then it should its value in custom_field_schema so that it appears in report

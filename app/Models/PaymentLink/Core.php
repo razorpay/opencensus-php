@@ -1368,9 +1368,13 @@ class Core extends Base\Core
             );
         });
 
-        Tracer::inSpan(['name' => 'payment_page.order.create.create_line_item'], function() use($order, $input)
+
+
+        $skipMinAmountValidation = $paymentLink->getViewType() === Entity::VIEW_TYPE_FILE_UPLOAD_PAGE;
+
+        Tracer::inSpan(['name' => 'payment_page.order.create.create_line_item'], function() use($order, $input, $skipMinAmountValidation)
         {
-            (new LineItem\Core)->createMany($input[Entity::LINE_ITEMS], $this->merchant, $order);
+            (new LineItem\Core)->createMany($input[Entity::LINE_ITEMS], $this->merchant, $order, $skipMinAmountValidation);
         });
 
         $lineItems = $order->lineItems()->get();

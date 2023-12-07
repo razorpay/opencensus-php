@@ -12,7 +12,8 @@ class Core extends Base\Core
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        Base\PublicEntity $morphEntity)
+        Base\PublicEntity $morphEntity,
+        bool $skipMinAmountValidation = false)
     {
         $this->trace->info(
             TraceCode::LINE_ITEM_CREATE_REQUEST,
@@ -39,13 +40,17 @@ class Core extends Base\Core
         {
             $input[Entity::CURRENCY] = $morphEntity->getCurrency();
         }
-
         //
         // Following associations should happen before build() as these
         // are getting used in validations.
         //
         $lineItem->merchant()->associate($merchant);
         $lineItem->entity()->associate($morphEntity);
+
+        if ($skipMinAmountValidation === false)
+        {
+            (new Validator)->validateInput('min_amount_check', [Entity::AMOUNT => $input[Entity::AMOUNT]]);
+        }
 
         $lineItem->build($input);
 
@@ -67,7 +72,8 @@ class Core extends Base\Core
     public function createMany(
         array $input,
         Merchant\Entity $merchant,
-        Base\PublicEntity $morphEntity)
+        Base\PublicEntity $morphEntity,
+        bool $skipMinAmountValidation = false)
     {
         $this->trace->info(
             TraceCode::LINE_ITEM_CREATE_BULK_REQUEST,
@@ -81,11 +87,11 @@ class Core extends Base\Core
                             [Entity::LINE_ITEMS => $input]);
 
         $this->repo->transaction(
-            function() use ($merchant, $morphEntity, $input)
+            function() use ($merchant, $morphEntity, $input, $skipMinAmountValidation)
             {
                 foreach ($input as $lineItemInput)
                 {
-                    $this->create($lineItemInput, $merchant, $morphEntity);
+                    $this->create($lineItemInput, $merchant, $morphEntity, $skipMinAmountValidation);
                 }
             });
     }
