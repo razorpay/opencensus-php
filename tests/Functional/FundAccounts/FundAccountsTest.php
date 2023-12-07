@@ -157,8 +157,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
-
         $response = $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -185,8 +183,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithOldIfsc()
@@ -194,8 +190,6 @@ class FundAccountsTest extends TestCase
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -223,8 +217,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     protected function createAndFetchMocks()
@@ -249,8 +241,6 @@ class FundAccountsTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -278,8 +268,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     /*
@@ -418,8 +406,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
-
         $response = $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -446,8 +432,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithEmptyArray()
@@ -693,8 +677,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
-
         $response = $this->startTest();
 
         $vpa = $this->getLastEntity('vpa', true);
@@ -720,8 +702,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateVpaWithNewRegex()
@@ -731,8 +711,6 @@ class FundAccountsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->mockRazorxTreatment();
-
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -759,8 +737,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateWalletAccountFundAccount()
@@ -768,8 +744,6 @@ class FundAccountsTest extends TestCase
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -794,8 +768,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertNull($uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateWalletAccountFundAccountWithIncorrectAccountType()
@@ -845,8 +817,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
-
         $this->startTest();
 
         $walletAccount = $this->getLastEntity('wallet_account', true);
@@ -862,8 +832,6 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedWalletAccountAttrs, $walletAccount);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateWalletAccountFundAccountPhoneFormat2()
@@ -872,8 +840,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
-
         $this->startTest();
 
         $walletAccount = $this->getLastEntity('wallet_account', true);
@@ -889,8 +855,6 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedWalletAccountAttrs, $walletAccount);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateWalletAccountFundAccountPhoneFormat3()
@@ -899,8 +863,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
-
         $this->startTest();
 
         $walletAccount = $this->getLastEntity('wallet_account', true);
@@ -916,8 +878,6 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedWalletAccountAttrs, $walletAccount);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateCard()
@@ -927,8 +887,6 @@ class FundAccountsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
 
         $response = $this->startTest();
 
@@ -949,8 +907,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertNull($uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateCardFundAccountWithNameAsAlphanumeric()
@@ -1412,8 +1368,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
-
         $this->startTest();
 
         $vpa = $this->getLastEntity('vpa', true);
@@ -1437,8 +1391,6 @@ class FundAccountsTest extends TestCase
         $this->assertEquals($expectedHash, $uniqueHash);
 
         $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testFundAccountsWithExpiredKey()
@@ -2411,7 +2363,7 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
-        $this->setMockRazorxTreatment(['payout_to_prepaid_cards' => 'on', RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment(['payout_to_prepaid_cards' => 'on']);
 
         $this->startTest();
 
@@ -2424,8 +2376,6 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     // check trimming in fund account creation.
@@ -2587,8 +2537,6 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
-
         $response = $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -2615,8 +2563,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateDuplicateBankAccountFundAccountWithExtraSpacesInName()
@@ -3442,7 +3388,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3491,15 +3437,13 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithInvalidIfscForNonGrameenBankWithCorrectBankCode()
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3551,8 +3495,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithInvalidIfscForNonGrameenBankWithGrameenBankCode()
@@ -3608,7 +3550,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3660,15 +3602,13 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithInvalidIfscForGrameenBankWithDifferentGrameenBankCode()
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3725,15 +3665,13 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithInvalidIfscForGrameenBankWithMainBankCode()
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3790,15 +3728,13 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForNonGrameenBank()
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3851,15 +3787,13 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForNonGrameenBankWithCorrectBankCode()
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -3917,8 +3851,6 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForNonGrameenBankWithGrameenBankCode()
@@ -3982,7 +3914,7 @@ class FundAccountsTest extends TestCase
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4036,15 +3968,13 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForGrameenBankWithDifferentGrameenBankCode()
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on',RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4107,15 +4037,13 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateFundAccountBankAccountWithOldIfscWithMappingToInvalidIfscForGrameenBankWithMainBankCode()
     {
         Queue::fake();
 
-        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on', RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION => 'on']);
+        $this->setMockRazorxTreatment([RazorxTreatment::ALLOW_DEFAULT_IFSC_CODE => 'on']);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -4178,7 +4106,5 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
-
-        Queue::assertPushed(CreateAccount::class);
     }
 }

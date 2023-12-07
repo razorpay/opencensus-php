@@ -214,17 +214,6 @@ class Core extends Base\Core
 
         DetailsPropagator::dispatchToQueue($mode, $fundAccount->getPublicId());
 
-        $variant = $this->app->razorx->getTreatment(
-                'fts_account_create_decommission',
-                RazorxTreatment::FTS_ACCOUNT_CREATE_DECOMMISSION,
-                $this->mode ?? Mode::LIVE
-            );
-
-        if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            $this->createFTSAccountForFundAccount($input, $fundAccount, $source);
-        }
-
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATED,
             [
                 E::FUND_ACCOUNT => $fundAccount->getId(),
