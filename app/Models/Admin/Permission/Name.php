@@ -942,6 +942,8 @@ class Name
     const CONFIGURE_SAV_ALERT                          = 'configure_sav_alert';
     const VIEW_SAV_ALERT                               = 'view_sav_alert';
     const VIEW_SAV_AGENT_ALERT                         = 'view_sav_agent_alert';
+    const CONFIGURE_SAV_ANALYSIS_GRAPH                 = 'configure_sav_analysis_graph';
+    const VIEW_SAV_ANALYSIS                            = 'view_sav_analysis';
     const CARE_SERVICE_DARK_PROXY                      = 'care_service_dark_proxy';
     const MANAGE_FRESHCHAT                             = 'manage_freshchat';
     const BULK_UPDATE_CHARGEBACK_POC                   = 'bulk_update_chargeback_poc';

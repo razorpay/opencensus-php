@@ -138,6 +138,12 @@ class CareProxyController extends Controller
 
     const ADMIN_CREATE_ENTITY = 'twirp/rzp.care.admin.v1.AdminService/CreateEntity';
 
+    const ADMIN_DELETE_BY_PARAMS = 'twirp/rzp.care.admin.v1.AdminService/DeleteByParams';
+
+    const ADMIN_GET_BY_ID = 'twirp/rzp.care.admin.v1.AdminService/GetById';
+
+    const ADMIN_FETCH_BY_PARAMS = 'twirp/rzp.care.admin.v1.AdminService/FetchByParams';
+
     const SAV_FETCH_RESPONSE_SUGGESTION = 'twirp/rzp.care.sav.v1.SavService/FetchResponseSuggestions';
 
     const SAV_FETCH_FD_TICKETS = 'twirp/rzp.care.sav.v1.SavService/FetchFdTickets';
@@ -163,6 +169,14 @@ class CareProxyController extends Controller
     const SAV_FETCH_SR_DETAILS_FOR_METHOD = 'twirp/rzp.care.sav.v1.SrAnalysisService/FetchSrDetailsForMethod';
 
     const SAV_FETCH_SR_ANALYSIS_LOGS = 'twirp/rzp.care.sav.v1.SrAnalysisService/FetchSrAnalysisLogs';
+
+    const SAV_FETCH_ANALYSIS = 'twirp/rzp.care.sav.v1.AutomationService/FetchAnalysis';
+
+    const SAV_CREATE_ANALYSIS_GRAPH =  'twirp/rzp.care.sav.v1.AutomationService/CreateAnalysisGraph';
+
+    const SAV_LIST_ANALYSIS_GRAPHS_BY_TYPE =  'twirp/rzp.care.sav.v1.AutomationService/ListAnalysisGraphs';
+
+    const SAV_FETCH_LATEST_ANALYSIS_GRAPH_BY_TYPE =  'twirp/rzp.care.sav.v1.AutomationService/FetchLatestAnalysisGraph';
 
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
@@ -211,6 +225,9 @@ class CareProxyController extends Controller
         self::SAV_FETCH_FD_GROUPS                     => Name::VIEW_ALL_ENTITY,
         self::SAV_FETCH_MERCHANT_STATS                => Name::VIEW_ALL_ENTITY,
         self::ADMIN_CREATE_ENTITY                     => Name::MANAGE_CARE_SERVICE_CALLBACK,
+        self::ADMIN_DELETE_BY_PARAMS                  => Name::MANAGE_CARE_SERVICE_CALLBACK,
+        self::ADMIN_GET_BY_ID                         => Name::VIEW_ALL_ENTITY,
+        self::ADMIN_FETCH_BY_PARAMS                   => Name::VIEW_ALL_ENTITY,
         self::SAV_FETCH_RESPONSE_SUGGESTION           => Name::VIEW_ALL_ENTITY,
         self::SAV_FETCH_FD_KB_ARTICLE                 => Name::VIEW_ALL_ENTITY,
         self::SAV_CREATE_ALERT                        => Name::CONFIGURE_SAV_ALERT,
@@ -220,8 +237,12 @@ class CareProxyController extends Controller
         self::SAV_FETCH_AGENT_ALERTS                  => Name::VIEW_SAV_AGENT_ALERT,
         self::SAV_UNIVERSAL_SEARCH                    => Name::VIEW_ALL_ENTITY,
         self::SAV_FETCH_SR_FOR_METHOD                 => Name::VIEW_ALL_ENTITY,
-        self::SAV_FETCH_SR_DETAILS_FOR_METHOD         =>  Name::VIEW_ALL_ENTITY,
-        self::SAV_FETCH_SR_ANALYSIS_LOGS              =>  Name::VIEW_ALL_ENTITY,
+        self::SAV_FETCH_SR_DETAILS_FOR_METHOD         => Name::VIEW_ALL_ENTITY,
+        self::SAV_FETCH_SR_ANALYSIS_LOGS              => Name::VIEW_ALL_ENTITY,
+        self::SAV_CREATE_ANALYSIS_GRAPH               => Name::CONFIGURE_SAV_ANALYSIS_GRAPH,
+        self::SAV_FETCH_ANALYSIS                      => Name::VIEW_SAV_ANALYSIS,
+        self::SAV_LIST_ANALYSIS_GRAPHS_BY_TYPE        => Name::VIEW_SAV_ANALYSIS,
+        self::SAV_FETCH_LATEST_ANALYSIS_GRAPH_BY_TYPE => Name::VIEW_SAV_ANALYSIS,
     ];
 
     /**
@@ -321,6 +342,9 @@ class CareProxyController extends Controller
         self::SAV_FETCH_MERCHANT_STATS,
         self::FRESHDESK_MERCHANT_GET_TICKETS,
         self::ADMIN_CREATE_ENTITY,
+        self::ADMIN_DELETE_BY_PARAMS,
+        self::ADMIN_GET_BY_ID,
+        self::ADMIN_FETCH_BY_PARAMS,
         self::SAV_FETCH_RESPONSE_SUGGESTION,
         self::SAV_FETCH_FD_TICKETS,
         self::SAV_FETCH_FD_GROUPS,
@@ -334,6 +358,10 @@ class CareProxyController extends Controller
         self::SAV_FETCH_SR_FOR_METHOD,
         self::SAV_FETCH_SR_DETAILS_FOR_METHOD,
         self::SAV_FETCH_SR_ANALYSIS_LOGS,
+        self::SAV_CREATE_ANALYSIS_GRAPH,
+        self::SAV_FETCH_ANALYSIS,
+        self::SAV_FETCH_LATEST_ANALYSIS_GRAPH_BY_TYPE,
+        self::SAV_LIST_ANALYSIS_GRAPHS_BY_TYPE,
     ];
 
     const CHAT_ROUTES = [

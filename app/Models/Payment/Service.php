@@ -2346,6 +2346,8 @@ class Service extends Base\Service
             Entity::AUTHORIZED_AT => $payment->getAuthorizeTimestamp(),
             Entity::CAPTURED_AT => $payment->getCapturedAt(),
             Entity::MERCHANT_ID => $paymentMerchantId,
+            Entity::TERMINAL_ID => $payment->getTerminalId(),
+            Entity::UPDATED_AT => $payment->getUpdatedAt(),
         ]);
 
         if ($entity['order_id'] != null)
@@ -7177,7 +7179,7 @@ class Service extends Base\Service
                         Error\ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID);
                 }
 
-                if (in_array($payment->getStatus(), 
+                if (in_array($payment->getStatus(),
                         [Payment\Status::FAILED, Payment\Status::REFUNDED], true) === true)
                 {
                     throw new Exception\BadRequestException(
@@ -7301,7 +7303,7 @@ class Service extends Base\Service
 
                 $payment = $this->repo->payment->findByIdAndMerchant($paymentDocument[InvoiceEntity::ENTITY_ID], $merchant);
 
-                if (in_array($payment->getStatus(), 
+                if (in_array($payment->getStatus(),
                         [Payment\Status::FAILED, Payment\Status::REFUNDED], true) === true)
                 {
                     throw new Exception\BadRequestException(

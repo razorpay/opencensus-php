@@ -16799,6 +16799,7 @@ class Route
             'payment_fetch_by_id_internal',
             'website_section_fetch_internal',
             'internal_enterprise_dashboard_login_otp_email',
+            'terminal_fetch_by_id_internal',
         ],
 
         'cmma' => [
