@@ -66,6 +66,11 @@ class SequenceNumber
         $currentDay = Carbon::now(Timezone::IST)->day;
         $endOfCycle = Carbon::now(Timezone::IST)->endOfMonth()->day;
 
+        if($recurVal == 31)
+        {
+            $recurVal = $endOfCycle;
+        }
+
         if($frequency === Frequency::WEEKLY)
         {
             $currentDay = Carbon::now(Timezone::IST)->dayOfWeek;
