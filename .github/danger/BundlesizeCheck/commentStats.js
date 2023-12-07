@@ -1,7 +1,8 @@
 const { setFailed, setOutput } = require('@actions/core');
 const { markdown } = require('@razorpay/universe-doctor/src/configs/danger/utils/constants');
-const tableHelper = require('./tableHelper');
 const printMessage = require('@razorpay/universe-doctor/src/configs/danger/utils/printMessage');
+
+const tableHelper = require('./tableHelper');
 const { logger, getStatus, showThreshold, bold } = require('./utils');
 
 const truncLabel = (text, limit = 50) =>

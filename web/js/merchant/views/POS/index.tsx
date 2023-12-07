@@ -31,7 +31,6 @@ const POS = (props: POS): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  // TODO: verify this changes @cseas
   return <Route path="/pos/catalog" element={Catalog} />;
 };
 

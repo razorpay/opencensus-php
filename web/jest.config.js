@@ -56,7 +56,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/common/services/test/setupTests.js'],
 
   // Use this configuration option to add custom reporters to Jest
-  reporters: [['jest-silent-reporter', { useDots: true }], 'jest-sonar'],
+  reporters: [['jest-silent-reporter', { useDots: true, showPaths: true }], 'jest-sonar'],
 
   // Indicates whether the coverage information should be collected while executing the test
   collectCoverage: true,
@@ -109,12 +109,7 @@ module.exports = {
   // coverageProvider: "babel",
 
   // A list of reporter names that Jest uses when writing coverage reports
-  // coverageReporters: [
-  //   "json",
-  //   "text",
-  //   "lcov",
-  //   "clover"
-  // ],
+  coverageReporters: ['clover', 'json', 'lcov', 'text-summary'],
 
   // A path to a custom dependency extractor
   // dependencyExtractor: undefined,
