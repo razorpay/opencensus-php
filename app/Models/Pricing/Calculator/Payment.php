@@ -307,6 +307,13 @@ class Payment extends Base
         {
             return $rules;
         }
+        // this is done to prevent null terminals entity check.
+        // ref : https://razorpay.slack.com/archives/C04BDR5TEGL/p1700459478960999
+        if (($payment->hasTerminal() === false) or
+            ($payment->terminal === null))
+        {
+            return $rules;
+        }
 
         $procurer = $payment->terminal->getProcurer();
 
@@ -1066,6 +1073,13 @@ class Payment extends Base
             ($payment->isCoD() === true) or ($payment->getMethod() === PaymentModel\Method::INTL_BANK_TRANSFER))
         {
             return false;
+        }
+        // this is done to prevent null terminals entity check.
+        // ref : https://razorpay.slack.com/archives/C04BDR5TEGL/p1700459478960999
+        if (($payment->hasTerminal() === false) or
+            ($payment->terminal === null))
+        {
+         return false;
         }
 
         $procurer = $payment->terminal->getProcurer();

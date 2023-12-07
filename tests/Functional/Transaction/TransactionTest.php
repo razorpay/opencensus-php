@@ -1628,6 +1628,15 @@ class TransactionTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentCaptureTransactionsCreateInternalWithPCPAuth()
+    {
+        $this->ba->pcpAppAuth();
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->startTest();
+    }
+
     public function testPaymentAuthorizedTransactionCreateAfterCaptureTransactionsCreateInternal()
     {
         $this->ba->appAuth();

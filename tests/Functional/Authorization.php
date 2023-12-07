@@ -1275,6 +1275,13 @@ class Authorization
         $this->basicAuth($key , $pwd);
     }
 
+    public function pcpAppAuth(string $mode = Mode::TEST): void
+    {
+        $pwd = app('config')->get('applications.pcp_service')['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
     public function reportingAppAuth($hostname = null, $mode = 'test'): void
     {
         $this->appAuth('rzp_' . $mode, \Config::get('applications.reporting')['secret'], $hostname);

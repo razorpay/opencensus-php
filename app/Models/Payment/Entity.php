@@ -303,6 +303,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const UPI_PAYMENT_SERVICE               = 4;
     const NB_PLUS_SERVICE_PAYMENTS          = 6;
     const REARCH_UPI_PAYMENT_SERVICE        = 7;
+    const REARCH_PCP_PAYMENT_SERVICE        = 8;
     const EMANDATE_PAYMENT_SERVICE          = 9;
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
@@ -1782,6 +1783,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function enableNbPlusService()
     {
         $this->setAttribute(self::CPS_ROUTE, 3);
+    }
+
+    public function enablePCPService()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 8);
     }
 
     public function enableUpiPaymentService()

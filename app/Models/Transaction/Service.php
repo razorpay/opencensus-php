@@ -461,6 +461,12 @@ class Service extends Base\Service
         if ($payment->isCard() === true)
         {
             $payment->card()->associate($card);
+
+            if ((isset($input['payment']['source_channel']) === true) and
+                ($input['payment']['source_channel'] === 'in_person'))
+            {
+                $payment->enablePCPService();
+            }
         }
 
         $payment->setExternal(true);

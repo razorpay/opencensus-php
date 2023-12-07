@@ -765,7 +765,58 @@ return [
             'method' => 'POST'
         ],
     ],
+    'testPaymentCaptureTransactionsCreateInternalWithPCPAuth' => [
+        'request' => [
+            'content' => [
+                "payment" => [
+                    'amount' =>  50000,
+                    'base_amount' => 50000,
+                    "card" => [
+                        "bin" => "549777",
+                        "card_brand" => "VISA",
+                        "last_four" => "0501",
+                        "name_on_card" => "raghav gupta",
+                    ],
+                    'created_at' =>  1614864014,
+                    "currency" => "INR",
+                    "email" => "SCRUBBED_PII(0)",
+                    "error_code" => "",
+                    "error_description" => "",
+                    "id" => "GiahjFtNg85OjA",
+                    "merchant_id" => "10000000000000",
+                    "method" => "card",
+                    "reference_id" => "",
+                    'captured_at' =>  1614874014,
+                    "source_channel" => "in_person",
+                    "status" => "captured",
+                    "updated_at" => 0,
+                ],
+                "transaction_id" => "MyIovLsV65izFA",
 
+            ],
+            'url'    => '/internal/transactions',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity_id' => 'pay_GiahjFtNg85OjA',
+                'type' => 'payment',
+                'debit' =>  0,
+                'credit' =>  49000,
+                'amount' =>  50000,
+                'currency' => "INR",
+                'fee' =>  1000,
+                'tax' =>  0,
+                'settled' =>  FALSE,
+                'credit_type' => "default",
+                'payment_id' => NULL,
+                'settlement_utr' => NULL,
+                'order_id' => NULL,
+                'order_receipt' => NULL,
+                'method' => "card",
+                ]
+            ]
+    ],
     'testPaymentCaptureTransactionsCreateInternal' => [
         'request' => [
             'content' => [

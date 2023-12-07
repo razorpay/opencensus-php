@@ -7847,6 +7847,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PG_ROUTER_REQUEST                                   = 'PG_ROUTER_REQUEST';
 
+    const PCP_INTERNAL_TRANSACTION                            = 'PCP_INTERNAL_TRANSACTION';
+
     const ORDER_ROUTING_TO_PG_ROUTER                          = 'ORDER_ROUTING_TO_PG_ROUTER';
 
     const PG_ROUTER_ERROR_LOGGING_RESPONSE_TIME_METRIC        = 'PG_ROUTER_ERROR_LOGGING_RESPONSE_TIME_METRIC';

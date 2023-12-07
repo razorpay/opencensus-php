@@ -184,9 +184,11 @@ class Core extends Base\Core
 
         $payment->merchant()->associate($merchant);
 
-        $terminal = $this->repo->terminal->findOrFail($payment->getTerminalId());
-
-        $payment->terminal()->associate($terminal);
+        if ($payment->getCpsRoute() !== Payment\Entity::REARCH_PCP_PAYMENT_SERVICE)
+        {
+            $terminal = $this->repo->terminal->findOrFail($payment->getTerminalId());
+            $payment->terminal()->associate($terminal);
+        }
 
         if ($payment->getStatus() == "captured")
         {
@@ -201,10 +203,12 @@ class Core extends Base\Core
             $txn =  $this->createTransactionForCapturedPayment($payment, $txnId);
 
             //For rearch card payments, journals are created in payments-card microservice in reverse-shadow mode
-            if(($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
-                ($payment->getCpsRoute() !== Payment\Entity::REARCH_CARD_PAYMENT_SERVICE) and
-                ($payment->getCpsRoute() !== Payment\Entity::REARCH_UPI_PAYMENT_SERVICE) and
+            if (($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
+                (in_array($payment->getCpsRoute(), [Payment\Entity::REARCH_CARD_PAYMENT_SERVICE,
+                                                    Payment\Entity::REARCH_UPI_PAYMENT_SERVICE,
+                                                    Payment\Entity::REARCH_PCP_PAYMENT_SERVICE]) === false) and
                 ($payment->merchant->getCurrency() === "INR"))
+
             {
                 $this->createPaymentLedgerEntriesInReverseShadow($payment);
             }
@@ -237,9 +241,10 @@ class Core extends Base\Core
 
         // Note: If pg_ledger_reverse_shadow flag is enabled for merchant and payment is a rearch card payment,
         // then we need not dispatch updated transaction to CPS as this is a sync call in payments-card microservice for reverse-shadow mode
-        if(($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
-            (($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE) or
-            ($payment->getCpsRoute() === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE)))
+        if (($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
+            (in_array($payment->getCpsRoute(), [Payment\Entity::REARCH_CARD_PAYMENT_SERVICE,
+                                               Payment\Entity::REARCH_UPI_PAYMENT_SERVICE,
+                                               Payment\Entity::REARCH_PCP_PAYMENT_SERVICE]) === true))
         {
             $this->trace->info(
                 TraceCode::TRANSACTION_NOT_DISPATCHED_FOR_REARCH_PAYMENT_IN_REVERSE_SHADOW,
