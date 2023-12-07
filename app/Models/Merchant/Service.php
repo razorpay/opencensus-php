@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant;
 use ApiResponse;
 use App;
 use DB;
+use Rzp\Models\Key;
 use EmailValidator\Validator as EmailValidator;
 use Lib\PhoneBook;
 use Illuminate\Http\JsonResponse;
@@ -12841,4 +12842,63 @@ class Service extends Base\Service
         return false;
     }
 
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function internalGetMerchantKeys(string $merchantId): array
+    {
+        $response = [
+            Constants::PUBLIC_KEY   => null,
+        ];
+
+        if ($merchantId === "")
+        {
+            return $response;
+        }
+
+        $keyEntity = $this->getLatestMerchantKeyByMerchantId($merchantId);
+
+        if (isset($keyEntity) === true)
+        {
+            $response[Constants::PUBLIC_KEY] = $keyEntity->getPublicKey();
+
+            return $response;
+        }
+
+        /**
+         * @var $merchant \RZP\Models\Merchant\Entity
+         */
+        $merchant = $this->getMerchantFromMid($merchantId);
+
+        /**
+         * @var $parentMerchant \RZP\Models\Merchant\Entity
+         */
+        $parentMerchant = $merchant->parent;
+
+        if (isset($parentMerchant) === true)
+        {
+            $parentKeyEntity = $this->getLatestMerchantKeyByMerchantId($parentMerchant->getId());
+
+            if (isset($parentKeyEntity) === true)
+            {
+                $response[Constants::PUBLIC_KEY] = $parentKeyEntity->getPublicKey();
+
+                return $response;
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return \Rzp\Models\Key\Entity|null
+     */
+    protected function getLatestMerchantKeyByMerchantId(string $merchantId): ?Key\Entity
+    {
+        return $this->repo->key->getLatestActiveKeyForMerchant($merchantId);
+    }
 }

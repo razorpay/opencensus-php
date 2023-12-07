@@ -515,6 +515,7 @@ class Route
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'internal_merchant_details_fetch'          => ['get',      'internal/merchants/{id}/details',                'MerchantController@internalGetMerchantDetails'                             ],
+        'internal_get_merchant_key'                => ['get',      'internal/merchants/{id}/keys',                   'MerchantController@internalGetMerchantKeys'                         ],
         'account_receivables_merchant_details_fetch' => ['get',    'account_receivables/merchants/details',          'MerchantController@fetchMerchantDetailsForAccountReceivables'                             ],
         'smart_dashboard_merchant_details_fetch'   => ['get',      'smart_dashboard/merchants/details',              'MerchantController@getSmartDashboardMerchantDetails'               ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
@@ -5370,6 +5371,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_get_merchant_key',
         'transfer_reversal_transactions_create',
         'irctc_settlement_batch_service',
         'internal_org_get',
@@ -16107,6 +16109,7 @@ class Route
         ],
 
         'payment_links' => [
+            'internal_get_merchant_key',
             'internal_feature_get_all',
             'merchant_fetch_config_internal',
             'send_email_for_pl_service',
@@ -16155,6 +16158,7 @@ class Route
         ],
 
         'no_code_apps' => [
+            'internal_get_merchant_key',
             'order_create',
             'merchant_fetch_config_internal',
             'payment_fetch_by_id_internal',

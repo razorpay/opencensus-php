@@ -4228,4 +4228,17 @@ class MerchantController extends Controller
         return ApiResponse::json([]);
     }
 
+    /**
+     * This API willbe used internally only.
+     *
+     * @param $merchantId
+     *
+     * @return mixed
+     */
+    public function internalGetMerchantKeys($merchantId)
+    {
+        $response = $this->service()->internalGetMerchantKeys($merchantId);
+
+        return ApiResponse::json($response);
+    }
 }

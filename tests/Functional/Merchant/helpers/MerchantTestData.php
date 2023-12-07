@@ -15108,5 +15108,46 @@ return [
         'response'  => [
             'content'   => [],
         ]
-    ]
+    ],
+
+    'testGetInternalMerchantKey'    => [
+        'request' => [
+            'url' => '/internal/merchants/1X4hRFHFx4UiXt/keys',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testGetInternalMerchantKeyNull'    => [
+        'request' => [
+            'url' => '/internal/merchants/1X4hRFHFx4UiXt/keys',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'public_key' => null
+            ],
+        ],
+    ],
+    'testGetInternalMerchantKeyParentKey' => [
+        'request' => [
+            'url' => '/internal/merchants/1X4hRFHFx4UiXt/keys',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testGetInternalMerchantKeyParentKeyNull'    => [
+        'request' => [
+            'url' => '/internal/merchants/1X4hRFHFx4UiXt/keys',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'public_key' => null
+            ],
+        ],
+    ],
 ];

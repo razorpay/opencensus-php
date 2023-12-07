@@ -20070,4 +20070,91 @@ The same has been enabled for the account.
             'Something went wrong, please try again after sometime.'
         );
     }
+
+    public function testGetInternalMerchantKey(): void
+    {
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $this->createMerchant(['id' => $merchantId]);
+
+        $keyEntity = $this->fixtures->create('key', ['merchant_id' => $merchantId]);
+
+        $keyId = $keyEntity->getPublicKey();
+
+        $this->ba->paymentLinksInternalAuth();
+
+        $response = $this->startTest([]);
+
+        $this->assertEquals($keyId, $response[Merchant\Constants::PUBLIC_KEY]);
+    }
+
+    public function testGetInternalMerchantKeyNull(): void
+    {
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $this->createMerchant(['id' => $merchantId]);
+
+        $this->ba->paymentLinksInternalAuth();
+
+        $this->startTest([]);
+    }
+
+    public function testGetInternalMerchantKeyParentKey(): void
+    {
+        $merchantId = '1X4hRFHFx4UiXt';
+        $merchantId1 = '1X4hRFHFx4UiXu';
+
+        $this->createMerchant(['id' => $merchantId1]);
+        $this->createMerchant([
+            'id' => $merchantId,
+            'name'  => 'Tester 21',
+            'email' => 'liveandtest1@localhost.com',
+        ]);
+
+        $svc = new Merchant\Service();
+
+        /**
+         * @var $child Merchant\Entity
+         */
+        $child = $svc->getMerchantFromMid($merchantId);
+        $child->parent_id = $merchantId1;
+        $child->save();
+
+        $keyEntity = $this->fixtures->create('key', ['merchant_id' => $merchantId1]);
+
+        $keyId = $keyEntity->getPublicKey();
+
+        $this->ba->paymentLinksInternalAuth();
+
+        $response = $this->startTest([]);
+
+        $this->assertEquals($keyId, $response[Merchant\Constants::PUBLIC_KEY]);
+    }
+
+    public function testGetInternalMerchantKeyParentKeyNull(): void
+    {
+        $merchantId = '1X4hRFHFx4UiXt';
+        $merchantId1 = '1X4hRFHFx4UiXu';
+
+        $this->createMerchant(['id' => $merchantId1]);
+        $this->createMerchant([
+            'id' => $merchantId,
+            'name'  => 'Tester 21',
+            'email' => 'liveandtest1@localhost.com',
+        ]);
+
+        $svc = new Merchant\Service();
+
+        /**
+         * @var $child Merchant\Entity
+         */
+        $child = $svc->getMerchantFromMid($merchantId);
+        $child->parent_id = $merchantId1;
+        $child->save();
+
+
+        $this->ba->paymentLinksInternalAuth();
+
+        $this->startTest([]);
+    }
 }

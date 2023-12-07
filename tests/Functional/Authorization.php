@@ -240,6 +240,13 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function paymentLinksInternalAuth(string $mode = 'test')
+    {
+        $this->appAuth('rzp_'. $mode, \Config::get('applications.payment_links')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function bankingAccountServiceAppAuth($user = 'rzp_test')
     {
         $this->appAuth($user, \Config::get('applications.banking_account_service')['secret']);
