@@ -3,6 +3,7 @@
 namespace RZP\Models\User;
 use App;
 use Hash;
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Base\PublicCollection;
@@ -279,10 +280,10 @@ class Entity extends Base\PublicEntity
             $merchantIds[] = $merchantUser[MerchantUser\Entity::MERCHANT_ID];
         }
 
-        $uniqueMerchantIds = array_unique($merchantIds);
-
+        $uniqueMerchantIds = array_values(array_unique($merchantIds));
         $merchants =  (new Merchant\Repository)->getNonSuspendedMerchantsFromIds($uniqueMerchantIds);
         $merchantsWithPivot = [];;
+
 
         foreach ($merchants as $merchant) {
             $mergedMerchant = $merchant->getAttributes();
@@ -300,7 +301,6 @@ class Entity extends Base\PublicEntity
         }
 
         usort($merchantsWithPivot, function ($a, $b) {
-            var_dump($a[self::PIVOT][self::ROLE]);
             if ( !empty($a->getEmail()) && $a->getEmail() == $this->getAttribute(self::EMAIL) && $a->getAttribute(self::PIVOT)->role == self::OWNER) {
                 return -1;
             } elseif ($a->getAttribute(self::PIVOT)->role == self::OWNER) {
@@ -676,7 +676,7 @@ class Entity extends Base\PublicEntity
 
         $dcs = app('dcs');
 
-        $merchantIdsWithCrossOrgFeature =  $dcs->fetchEntityIdsByFeatureName(DcsConstants::CrossOrgLogin, Type::MERCHANT, $this->mode);
+        $merchantIdsWithCrossOrgFeature =  $dcs->fetchEntityIdsByFeatureName(DcsConstants::CrossOrgLogin, Type::MERCHANT, $this->mode ?? Mode::LIVE);
 
         app('trace')->info(TraceCode::FETCH_ENTITY_IDS_BY_FEATURE_NAME, [
             "Mids fetched from DCS for cross org login feature" => $merchantIdsWithCrossOrgFeature,
@@ -688,7 +688,7 @@ class Entity extends Base\PublicEntity
 
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1000);
 
-        $merchants = (new Merchant\Repository)->findMany($merchantIds);
+        $merchants = (new Merchant\Repository)->findMerchantsByIds($merchantIds);
 
         $filteredMerchants = new Base\PublicCollection;
 

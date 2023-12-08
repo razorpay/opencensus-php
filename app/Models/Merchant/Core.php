@@ -2513,7 +2513,7 @@ class Core extends Base\Core
 
         if (empty($parentId) === false)
         {
-            $parent = $this->repo->merchant->find($parentId);
+            $parent = $this->repo->merchant->findForWrite($parentId);
 
             if ((empty($parent) === false) and (strtolower($merchant->getEmail()) === strtolower($parent->getEmail())))
             {

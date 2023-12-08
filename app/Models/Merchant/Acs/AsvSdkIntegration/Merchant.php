@@ -68,7 +68,7 @@ class Merchant extends Base
         return $this->getMerchantCollectionFromResponse($response)->pluck('id')->toArray();
     }
 
-    public function fetchMerchantsByIds(array $ids): array
+    public function fetchMerchantsByIds(array $ids)
     {
         $filterRequest =  new FilterRequest();
         $filterRequest->setQueryIdentifier(self::MERCHANT_FIND_BY_IDS);
@@ -78,7 +78,7 @@ class Merchant extends Base
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
 
-        return $this->getMerchantCollectionFromResponse($response)->toArray();
+        return $this->getMerchantCollectionFromResponse($response);
     }
 
     public function getNonSuspendedMerchantsFromIds(array $ids):  PublicCollection|\Illuminate\Database\Eloquent\Collection
