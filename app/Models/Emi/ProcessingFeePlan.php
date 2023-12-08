@@ -144,6 +144,14 @@ class ProcessingFeePlan
                 ]
             ]
         ],
+        CreditEmiProvider::HSBC => [
+            Type::CREDIT => [
+                self:: DEFAULT => [
+                    self::TYPE => self::FIXED,
+                    self::AMOUNT => 9900
+                ]
+            ]
+        ]
     ];
 
 
