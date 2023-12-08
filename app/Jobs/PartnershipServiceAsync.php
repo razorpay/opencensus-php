@@ -39,7 +39,10 @@ class PartnershipServiceAsync extends Job
                 TraceCode::PARTNERSHIP_SERVICE_ASYNC_JOB_REQUEST,
                 $traceInfo
             );
-            $this->app->partnerships->sendRequest($this->parameters,$this->path,Requests::POST);
+            $input = $this->parameters;
+            // adding this check to avoid using passport for async requests
+            $input['add_basic_auth_creds'] = true;
+            $this->app->partnerships->sendRequest($input,$this->path,Requests::POST);
 
             $this->delete();
         }

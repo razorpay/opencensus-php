@@ -90,7 +90,7 @@ class Service extends Base\Service
         // if cutoff is enabled then return the response from prts
         if($result['isCutOffEnabled'] === true)
         {
-            return  Response::make((string) $result['response'], $result['status_code']);
+            return  Response::make( $result['response'], $result['status_code']);
         }
 
         $params = [
@@ -106,13 +106,11 @@ class Service extends Base\Service
 
     public function fetchBulk(array $input)
     {
-        $input['merchantId'] = $this->merchant->getId();
         $result = $this->proxyToPartnershipService($input, $this->merchant->getId());
-        unset($input['merchantId']);
         // if cutoff is enabled then return the response from prts
         if($result['isCutOffEnabled'] === true)
         {
-            return  Response::make((string) $result['response'], $result['status_code']);
+            return  Response::make( $result['response'], $result['status_code']);
         }
 
         $invoices = $this->repo->commission_invoice->fetch($input, $this->merchant->getId());
