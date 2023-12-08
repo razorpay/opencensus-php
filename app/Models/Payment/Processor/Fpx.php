@@ -115,7 +115,7 @@ class Fpx
         self::BMMB_C    => 'BMMB0342',
         self::CIBB_C    => 'BCBB0235',
         self::CITI_C    => 'CIT0218',
-        self::DEUT_C    => 'DBB0219',
+        self::DEUT_C    => 'DBB0199',
         self::HSBC_C    => 'HSBC0223',
         self::HLBB_C    => 'HLB0224',
         self::KFHO_C    => 'KFH0346',
