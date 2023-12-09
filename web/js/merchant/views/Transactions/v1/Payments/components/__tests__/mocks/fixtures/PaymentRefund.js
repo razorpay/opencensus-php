@@ -1,8 +1,9 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import PaymentRefund from 'merchant/views/Transactions/v1/Payments/components/PaymentRefund';
-import store from 'merchant/store';
 import cloneDeep from 'lodash/cloneDeep';
+
+import store from 'merchant/store';
+import PaymentRefund from 'merchant/views/Transactions/v1/Payments/components/PaymentRefund';
 
 const storeData = store.getState();
 export const getStateSpy = jest.spyOn(store, 'getState');
@@ -16,6 +17,11 @@ getStateSpy.mockImplementation(() => {
   };
   return clonedStore;
 });
+
+export const mockAbExperiments = {};
+jest.mock('common/splitz', () => ({
+  useSplitzService: () => ({ abExperiments: mockAbExperiments }),
+}));
 
 export const disputes = {
   items: [
@@ -41,6 +47,7 @@ export const defaultProps = {
     disputes,
   },
   refunds: {},
+  isOptimizerView: false,
   openRefundModal: jest.fn(),
   onToggleClick: jest.fn(),
 };

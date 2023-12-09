@@ -149,6 +149,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: [`${PAYMENTS}/*`, `${REFUNDS}/*`],
+      abExperiments: [
+        {
+          uniqueHashKey: 'refund_gateway_data',
+          experimentId: {
+            beta: 'N9OMSAws8YoLFh',
+            production: 'N9NqlcqaRrtYdf',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: ['/smartcollect'],
       abExperiments: [
         {

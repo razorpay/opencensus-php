@@ -100,14 +100,14 @@ export const refundStatus = {
   value: (item) => <RefundStatusLabel status={item.status} />,
 };
 
-export const enchancedRefundStatus = (isOptimizerView) => {
+export const enchancedRefundStatus = (showStatusInfo) => {
   return {
     title: 'Status',
     value: ({ status, gateway_data }) => {
       return (
         <div className="refund-status--label">
           <RefundStatusLabel status={status} />
-          {isOptimizerView && <GatewayDataInfo gatewayData={gateway_data} />}
+          {showStatusInfo && <GatewayDataInfo gatewayData={gateway_data} />}
         </div>
       );
     },

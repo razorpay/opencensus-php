@@ -2,6 +2,7 @@ import React from 'react';
 import moment from 'moment';
 
 import { SelfServeActionPages } from 'common/constant/enums';
+import { useSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
 import Definition from 'common/ui/Definition';
 import LoaderDots from 'common/ui/LoaderDots';
@@ -59,11 +60,11 @@ const _refundId = (initiatePage = SelfServeActionPages.TransactionsPayments) => 
   };
 };
 
-const RefundsList = ({ refunds, isOptimizerView = false, onToggleClick = () => {} }) => {
+const RefundsList = ({ refunds, showStatusInfo = false, onToggleClick = () => {} }) => {
   const { initiatePage } = getInitiatePointAndPageAndScreenName();
   const columns = [_refundId(initiatePage), amount];
   columns.splice(1, 0, refundSpeed);
-  columns.push(enchancedRefundStatus(isOptimizerView));
+  columns.push(enchancedRefundStatus(showStatusInfo));
 
   return refunds && refunds?.items?.length > 0 ? (
     <ContentToggler
@@ -159,6 +160,10 @@ const PaymentRefund = ({
   isQrCode = false,
   fetchEzetapKeys,
 }) => {
+  const { abExperiments } = useSplitzService();
+  const { refund_gateway_data } = abExperiments || { refund_gateway_data: undefined };
+  const isRefundGatewayDataEnabled = refund_gateway_data?.variables?.result === 'on';
+  const showStatusInfo = isOptimizerView && isRefundGatewayDataEnabled;
   const { status: paymentStatus, refund_status: refundStatus, error_reason: errorReason } = payment;
 
   /****************************************************************************************************************
@@ -249,7 +254,7 @@ const PaymentRefund = ({
         {refundStatus === 'partial' && (
           <RefundsList
             refunds={refunds}
-            isOptimizerView={isOptimizerView}
+            showStatusInfo={showStatusInfo}
             onToggleClick={() => {
               onToggleClick(payment);
             }}
@@ -301,7 +306,7 @@ const PaymentRefund = ({
           <div className="m-t" />
           <RefundsList
             refunds={refunds}
-            isOptimizerView={isOptimizerView}
+            showStatusInfo={showStatusInfo}
             onToggleClick={(speedRequested) => {
               onToggleClick(payment, speedRequested);
             }}

@@ -1,14 +1,20 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, fireEvent } from 'test-utils';
-import { refund } from 'merchant/views/Transactions/v1/Refunds/__test__/mocks/fixtures';
 import {
   App,
   defaultProps,
   disputes,
+  mockAbExperiments,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentRefund';
+import { refund } from 'merchant/views/Transactions/v1/Refunds/__test__/mocks/fixtures';
+import { render, screen, fireEvent } from 'test-utils';
 
 describe('PaymentRefund', () => {
+  beforeEach(() => {
+    Object.assign(mockAbExperiments, {});
+  });
+
   const renderApp = (ui) => {
     render(ui, {
       initialState: {
@@ -91,6 +97,34 @@ describe('PaymentRefund', () => {
         { disputes: { items: [] }, refund_status: 'full', status: 'refunded' },
         'normal',
       );
+    });
+
+    describe('Optimizer - Refund gateway data info', () => {
+      const renderComponent = (experimentResult) => {
+        mockAbExperiments.refund_gateway_data = { variables: { result: experimentResult } };
+        render(<App isOptimizerView={true} payment={payment} refunds={{ items: [refund] }} />);
+        fireEvent.click(screen.getByText('Refund Details'));
+        expect(defaultProps.onToggleClick).toHaveBeenCalledWith(
+          { disputes: { items: [] }, refund_status: 'full', status: 'refunded' },
+          'normal',
+        );
+      };
+
+      test('should render refund list with gateway data info if exp is "on" and "gateway_data" is not empty', () => {
+        renderComponent('on');
+        expect(screen.getByTestId('info-icon')).toBeInTheDocument();
+      });
+
+      test('should render refund list without gateway data info if exp is "off" and "gateway_data" is not empty', () => {
+        renderComponent('off');
+        expect(screen.queryByTestId('info-icon')).toBeNull();
+      });
+
+      test('should render refund list without gateway data info if exp is "on" but "gateway_data" is empty', () => {
+        refund.gateway_data = [];
+        renderComponent('on');
+        expect(screen.queryByTestId('info-icon')).toBeNull();
+      });
     });
   });
 });

@@ -11,6 +11,17 @@ jest.mock('merchant/views/Transactions/v1/Payments/components/OptimizerDetails',
   OptimizerDetails: () => <div data-testid="optimizer-details">optimizer details</div>,
 }));
 
+const variantOn = { variables: { result: 'on' } };
+const variantOff = { variables: { result: 'off' } };
+const defaultAbExperiments = {};
+let mockAbExperiments = defaultAbExperiments;
+
+jest.mock('common/splitz', () => ({
+  withSplitzService: (Component) => (props) =>
+    <Component {...props} splitz={{ abExperiments: mockAbExperiments }} />,
+  useSplitzService: () => ({ abExperiments: mockAbExperiments }),
+}));
+
 const mockViewRefundHistory = jest.fn();
 
 const initProps = {
@@ -35,6 +46,10 @@ const renderApp = (props, state) => {
 };
 
 describe('Refunds - RefundDetails Component', () => {
+  beforeEach(() => {
+    mockAbExperiments = defaultAbExperiments;
+  });
+
   test('should show spinner when its loading', () => {
     renderApp({
       isLoading: true,
@@ -130,19 +145,9 @@ describe('Refunds - RefundDetails Component', () => {
       expect(screen.queryByText(/Settlement Details/i)).not.toBeInTheDocument();
     });
 
-    // Custom matcher definition
-    expect.extend({
-      toRenderGatewayRefundDetails(gatewayResponseElement) {
-        const errorElement = screen.getByText('Error code: ERROR_CODE');
-        const errorMessageElement = screen.getByText('Sample message');
+    test('should render gateway data if exp is "on" and "gateway_data" is not empty', () => {
+      mockAbExperiments = { refund_gateway_data: variantOn };
 
-        const pass = !!(gatewayResponseElement && errorElement && errorMessageElement);
-
-        return { pass };
-      },
-    });
-
-    test('should render gateway data in refund details', () => {
       const mockProps = {
         refund: {
           ...refund,
@@ -161,7 +166,24 @@ describe('Refunds - RefundDetails Component', () => {
       expect(gatewayContainer).toHaveTextContent('Sample message');
     });
 
-    test('should not render gateway data in refund details', () => {
+    test('should not render gateway data if exp is "off" and "gateway_data" is not empty', () => {
+      mockAbExperiments = { refund_gateway_data: variantOff };
+
+      const mockProps = {
+        refund: {
+          ...refund,
+          gateway_data: {
+            refund_code: 'ERROR_CODE',
+            refund_message: 'Sample message',
+          },
+        },
+      };
+      renderApp(mockProps, drivingState);
+      expect(screen.queryByTestId('refund-gateway-data')).not.toBeInTheDocument();
+    });
+
+    test('should not render gateway data if exp is "on" but "gateway_data" is empty', () => {
+      mockAbExperiments = { refund_gateway_data: variantOn };
       const mockProps = {
         refund: {
           ...refund,

@@ -16,7 +16,7 @@ const GatewayDataInfo = ({ gatewayData }) => {
   ) {
     return (
       <span>
-        <i className="i i-info-tooltip" />
+        <i className="i i-info-tooltip" data-testid="info-icon" />
         <PopoverComponent theme="dark" align="bottom">
           <PopoverBody>
             <div className="refund-status--error" data-testid="refund-gateway-data">

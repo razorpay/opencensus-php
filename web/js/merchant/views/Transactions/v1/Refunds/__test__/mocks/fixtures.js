@@ -42,6 +42,10 @@ export const refund = {
   processed_at: 1664740041,
   resourceUrl: 'refunds',
   amountInINR: '9318.60',
+  gateway_data: {
+    refund_code: 'ERROR_CODE',
+    refund_message: 'Sample message',
+  },
   analyticsPayload: () => {},
 };
 

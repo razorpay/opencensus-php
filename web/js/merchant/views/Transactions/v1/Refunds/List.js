@@ -1,8 +1,10 @@
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import { bindActionCreators, compose } from 'redux';
 
 import { SelfServeActionPages } from 'common/constant/enums';
 import { withRouter } from 'common/deprecated/withRouter';
+import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { refundId, paymentId, amount, createdAt, enchancedRefundStatus } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -78,15 +80,23 @@ class RefundsListContainer extends ListContainer {
     };
   }
 
+  refundGatewayData = (splitz) => {
+    const { abExperiments } = splitz || { abExperiments: { refund_gateway_data: undefined } };
+    if (!abExperiments?.refund_gateway_data) return false;
+    return isExperimentEnabled(abExperiments.refund_gateway_data);
+  };
+
   render() {
-    const { user, terminalProviders } = this.props;
+    const { user, terminalProviders, splitz } = this.props;
     const isOptimizerView = user?.isSingleReconEnabled && user?.isOptimizerEnabled;
+    const isRefundGatewayDataEnabled = this.refundGatewayData(splitz);
+    const showStatusInfo = isOptimizerView && isRefundGatewayDataEnabled;
     const columns = [
       this._refundId,
       this._paymentId,
       amount,
       createdAt,
-      enchancedRefundStatus(isOptimizerView),
+      enchancedRefundStatus(showStatusInfo),
     ];
 
     if (isOptimizerView) {
@@ -188,4 +198,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ fetchAll, openModal }, dispatch);
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(RefundsListContainer));
+export default compose(
+  withSplitzService,
+  connect(mapStateToProps, mapDispatchToProps),
+)(withRouter(RefundsListContainer));

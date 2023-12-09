@@ -1,10 +1,12 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { bindActionCreators } from 'redux';
+import { bindActionCreators, compose } from 'redux';
 
 import { SelfServeActionPages } from 'common/constant/enums';
 import { withRouter } from 'common/deprecated/withRouter';
+import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import Amount from 'common/ui/Amount';
 import Definition from 'common/ui/Definition';
 import Alert from 'common/ui/Forms/Alert';
@@ -62,15 +64,31 @@ class PaymentDetailsContainer extends Component {
     selfServeTrackInitiate(selfServeInitiateData);
   };
 
+  refundGatewayData = (splitz) => {
+    const { abExperiments } = splitz || { abExperiments: { refund_gateway_data: undefined } };
+    if (!abExperiments?.refund_gateway_data) return false;
+    return isExperimentEnabled(abExperiments.refund_gateway_data);
+  };
+
   render() {
-    const { isLoading, statusMsg, viewRefundHistory, refund, user, terminalProviders, location } =
-      this.props;
+    const {
+      isLoading,
+      statusMsg,
+      viewRefundHistory,
+      refund,
+      user,
+      terminalProviders,
+      location,
+      splitz,
+    } = this.props;
     const navigationState = location?.state;
     const { arn, rrn, utr } = refund?.acquirer_data ?? {};
     const { status, gateway_data } = refund;
-
-    const isOptimizerView =
-      user?.isSingleReconEnabled && user?.isOptimizerEnabled && refund?.optimizer_provider;
+    const isOptimizerView = Boolean(
+      user?.isSingleReconEnabled && user?.isOptimizerEnabled && refund?.optimizer_provider,
+    );
+    const isRefundGatewayDataEnabled = this.refundGatewayData(splitz);
+    const showStatusInfo = isOptimizerView && isRefundGatewayDataEnabled;
 
     return (
       <div className="content-wrapper content-sm txn-details">
@@ -124,7 +142,7 @@ class PaymentDetailsContainer extends Component {
                     value={() => (
                       <>
                         <RefundStatusLabel status={status} />
-                        {isOptimizerView && <GatewayData status={status} value={gateway_data} />}
+                        {showStatusInfo && <GatewayData status={status} value={gateway_data} />}
                         <ContentToggler onToggleClick={viewRefundHistory}>
                           <span>View History</span>
                           <RefundStatusTimeline refund={refund} />
@@ -231,4 +249,7 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PaymentDetailsContainer));
+export default compose(
+  withSplitzService,
+  connect(mapStateToProps, mapDispatchToProps),
+)(withRouter(PaymentDetailsContainer));
