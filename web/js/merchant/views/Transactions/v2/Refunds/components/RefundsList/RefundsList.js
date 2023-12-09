@@ -26,7 +26,7 @@ class RefundsList extends ListContainer {
       loading,
       history,
       navigate,
-      location: { pathname },
+      location: { pathname, search },
     } = this.props;
     const { count, skip } = this.state;
     return (
@@ -43,6 +43,7 @@ class RefundsList extends ListContainer {
               baseUrl: TransactionsEntityRoute.REFUNDS,
               initiatePage: TransactionsPagesMap[pathname],
               prevPath: pathname,
+              prevSearch: search,
             })
           }
           {...this.props}

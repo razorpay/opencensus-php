@@ -11,6 +11,7 @@ export interface HandleDetailsClickParams {
   baseUrl: string;
   initiatePage: string;
   prevPath: TransactionsEntityRoute;
+  prevSearch?: string;
   isButton?: boolean;
   isDisabled?: boolean;
 }

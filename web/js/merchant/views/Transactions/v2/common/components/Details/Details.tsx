@@ -18,6 +18,7 @@ export const handleDetailsClick = ({
   baseUrl,
   initiatePage,
   prevPath,
+  prevSearch,
   isButton,
 }: HandleDetailsClickParams & Pick<RouterParams, 'navigate'>): void => {
   const { hash, search } = window.location;
@@ -36,7 +37,7 @@ export const handleDetailsClick = ({
       section: initiatePage,
     },
   });
-  navigate(url, { state: { prevPath } });
+  navigate(url, { state: { prevPath, prevSearch } });
 };
 
 const Details = ({
@@ -45,6 +46,7 @@ const Details = ({
   baseUrl,
   initiatePage,
   prevPath,
+  prevSearch,
 }: DetailsProps): JSX.Element => {
   const navigate = useNavigate();
   const isMobile = useMobile([...mobileBreakoints, 'l']);
@@ -58,6 +60,7 @@ const Details = ({
       baseUrl,
       initiatePage,
       prevPath,
+      prevSearch,
       isButton: true,
     });
   };

@@ -92,6 +92,7 @@ const actions = {
         itemId={item.id}
         baseUrl={REFUNDS}
         prevPath={REFUNDS}
+        prevSearch={window.location.search}
         initiatePage={TransactionsPagesMap[REFUNDS]}
       />
     );

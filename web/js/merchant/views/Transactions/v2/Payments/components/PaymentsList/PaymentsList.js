@@ -20,7 +20,7 @@ class PaymentsList extends ListContainer {
     const {
       loading,
       history,
-      location: { pathname },
+      location: { pathname, search },
       navigate,
     } = this.props;
     return (
@@ -38,6 +38,7 @@ class PaymentsList extends ListContainer {
               baseUrl: TransactionsEntityRoute.PAYMENTS,
               initiatePage: TransactionsPagesMap[pathname],
               prevPath: pathname,
+              prevSearch: search,
             })
           }
           {...this.props}

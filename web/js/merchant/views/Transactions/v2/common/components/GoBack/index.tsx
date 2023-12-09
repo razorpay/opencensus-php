@@ -15,7 +15,7 @@ const { PAYMENTS } = TransactionsEntityRoute;
 const GoBack = ({ onClickCb }: GoBackProps) => {
   const navigate = useNavigate();
   const { pathname, state } = useLocation();
-  const { prevPath } = state ?? {};
+  const { prevPath, prevSearch } = state ?? {};
 
   const goBack = (): void => {
     const { init_page } = qs.parse(window.location.search);
@@ -32,7 +32,14 @@ const GoBack = ({ onClickCb }: GoBackProps) => {
     if (onClickCb) {
       onClickCb();
     } else if (prevPath) {
-      navigate(prevPath);
+      navigate(
+        prevSearch
+          ? {
+              pathname: prevPath,
+              search: prevSearch,
+            }
+          : prevPath,
+      );
     } else {
       navigate(PAYMENTS);
     }

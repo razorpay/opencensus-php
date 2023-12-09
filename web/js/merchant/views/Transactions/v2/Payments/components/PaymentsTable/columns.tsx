@@ -130,6 +130,7 @@ export const actions = {
         itemId={id}
         baseUrl={PAYMENTS}
         prevPath={currentPath}
+        prevSearch={window.location.search}
         initiatePage={initiatePage}
       />
     );
