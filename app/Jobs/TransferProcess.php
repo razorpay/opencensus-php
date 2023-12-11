@@ -17,6 +17,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Exception\BadRequestException;
+use Throwable;
 
 class TransferProcess extends Job
 {
@@ -141,6 +142,13 @@ class TransferProcess extends Job
 
             (new Metric())->pushTransferProcessFailedMetrics($ex);
 
+            if ($this->isReverseShadow === true)
+            {
+                $this->retryTransferTransactionCreation();
+
+                return;
+            }
+
             if ((new Utility)->isRetryableError($ex) === true)
             {
                 $retryTime = (new Utility)->getDelay($ex);
@@ -243,6 +251,44 @@ class TransferProcess extends Job
         {
             (new Core())->eventTransferFailed($transfer);
         }
+    }
+
+    public function retryTransferTransactionCreation(): void
+    {
+        for ($i = 0; $i < $this->attemptLimit; $i++)
+        {
+            try
+            {
+                $this->trace->info(
+                    TraceCode::RETRY_TRANSFER_TXN_IN_REVERSE_SHADOW,
+                    [
+                        'payment_id'    => $this->payment,
+                        'attempt_count' => $i,
+                    ]
+                );
+
+                (new Transfer\Core)->createTransferTransactionsInReverseShadow($this->payment, $this->transferInput);
+
+                $this->delete();
+
+                return;
+            }
+            catch (Throwable $ex)
+            {
+                (new Metric())->pushMetricForTransferTransactionsCreate($ex);
+
+                $this->trace->traceException($ex);
+            }
+        }
+
+        $this->trace->error(
+            TraceCode::RETRY_TRANSFER_TXN_FAILED_IN_REVERSE_SHADOW,
+            [
+                'payment_id' => $this->payment,
+            ]
+        );
+
+        $this->delete();
     }
 
 }
