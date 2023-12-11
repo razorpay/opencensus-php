@@ -1612,9 +1612,9 @@ class TerminalTest extends TestCase
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures
-                         ->create('merchant_fluid', ['id' => '10abcdefghsdfs'])
-                         ->addTerminal('atom', ['id' => 'testatomrandom'])
-                         ->get();
+            ->create('merchant_fluid', ['id' => '10abcdefghsdfs'])
+            ->addTerminal('atom', ['id' => 'testatomrandom'])
+            ->get();
 
         $this->ba->getAdmin()->merchants()->attach($merchant);
 
@@ -2110,7 +2110,7 @@ class TerminalTest extends TestCase
             'currency'            => ['INR'],
         );
 
-         $t1 = $this->fixtures->create('terminal', $attributes);
+        $t1 = $this->fixtures->create('terminal', $attributes);
 
         $attributes = array(
             'enabled'             => true,
@@ -2147,6 +2147,33 @@ class TerminalTest extends TestCase
                 'gateway' => 'cashfree',
                 'gateway_merchant_id' => '250000002',
                 'gateway_secure_secret' => "1231424",
+                'mode' => 3,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'mode' => "2",
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals( "2", $content['mode']);
+    }
+
+    public function testEditPhonepeTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'phonepe',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'gateway_access_code' => "1",
                 'mode' => 3,
                 'type'    => [
                     'direct_settlement_with_refund' => '1'
@@ -2464,6 +2491,38 @@ class TerminalTest extends TestCase
         $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
     }
 
+    public function testEditPhonepeUpiTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'phonepe',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'gateway_access_code' => "2",
+                'upi' => 1,
+                'card' => 0,
+                'mode' => 3,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'upi' => "1",
+            'type'    => [
+                'non_recurring' => '1'
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+        $this->assertEquals( "1", $content['upi']);
+        $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
+    }
+
     public function testEditCcavenueTerminal()
     {
         $terminal = $this->fixtures->create(
@@ -2743,11 +2802,11 @@ class TerminalTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $terminal = $this->fixtures->create(
-                        'terminal:shared_hdfc_terminal',
-                        [
-                            'id'          => '12HDFCTerminal',
-                            'merchant_id' => '10000000000000'
-                        ]);
+            'terminal:shared_hdfc_terminal',
+            [
+                'id'          => '12HDFCTerminal',
+                'merchant_id' => '10000000000000'
+            ]);
 
         $this->mockServerContentFunction(function(&$content, $action)
         {
@@ -3911,6 +3970,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePhonepeUpiTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testEditUpiYesbankTerminal()
     {
         $terminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal', ['vpa' => 'abc@ybl']);
@@ -4244,22 +4312,22 @@ class TerminalTest extends TestCase
         $this->app->instance('mpan.cardVault', $cardVault);
 
         $cardVault->shouldReceive('tokenize')
-                ->with(Mockery::type('array'))
-                ->andReturnUsing
-                (function ($input)
+            ->with(Mockery::type('array'))
+            ->andReturnUsing
+            (function ($input)
+            {
+                // fail tokenization for one mpan
+                if ($input['secret'] === '4334567890123456')
                 {
-                    // fail tokenization for one mpan
-                    if ($input['secret'] === '4334567890123456')
-                    {
-                        throw new Exception\ServerErrorException(
-                            'Request timedout at card vault service',
-                            ErrorCode::SERVER_ERROR);
-                    }
+                    throw new Exception\ServerErrorException(
+                        'Request timedout at card vault service',
+                        ErrorCode::SERVER_ERROR);
+                }
 
-                    $token = base64_encode($input['secret']);
+                $token = base64_encode($input['secret']);
 
-                    return $token;
-                });
+                return $token;
+            });
 
 
         $this->ba->cronAuth();
@@ -4307,24 +4375,24 @@ class TerminalTest extends TestCase
         $this->app->instance('mpan.cardVault', $cardVault);
 
         $cardVault->shouldReceive('tokenize')
-                ->with(Mockery::type('array'))
-                ->andReturnUsing
-                (function ($input)
+            ->with(Mockery::type('array'))
+            ->andReturnUsing
+            (function ($input)
+            {
+                // fail tokenization for one mpan
+                if ($input['secret'] === '4604901116743090')
                 {
-                    // fail tokenization for one mpan
-                    if ($input['secret'] === '4604901116743090')
-                    {
-                        throw new Exception\ServerErrorException(
-                            'Request timedout at card vault service',
-                            ErrorCode::SERVER_ERROR);
-                    }
+                    throw new Exception\ServerErrorException(
+                        'Request timedout at card vault service',
+                        ErrorCode::SERVER_ERROR);
+                }
 
-                    $token = base64_encode($input['secret']);
+                $token = base64_encode($input['secret']);
 
-                    return $token;
-                });
+                return $token;
+            });
 
-       $this->startTest();
+        $this->startTest();
     }
 
     public function testAdminFetchTerminalShouldNotHaveOriginalMpans()
@@ -4385,18 +4453,18 @@ class TerminalTest extends TestCase
     public function testTerminalEncryptionAxisOrg()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-        ->setConstructorArgs([$this->app])
-        ->setMethods(['getTreatment'])
-        ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-        ->will($this->returnCallback(
-            function ($actionId, $feature, $mode)
-            {
-                return 'on';
-            }) );
+            ->will($this->returnCallback(
+                function ($actionId, $feature, $mode)
+                {
+                    return 'on';
+                }) );
 
         $merchantId = '1cXSLlUU8V9sXl';
         $orgId      = MerchantEntity::AXIS_ORG_ID; // axis orgId

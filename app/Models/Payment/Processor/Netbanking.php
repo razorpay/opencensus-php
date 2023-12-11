@@ -634,6 +634,62 @@ class Netbanking
                 self::YESB_C,
             ]
         ],
+        Gateway::PHONEPE=>[
+            'retail'=>[
+                IFSC::AUBL,
+                self::BARB_C,
+                self::BARB_R,
+                IFSC::BDBL,
+                IFSC::BKID,
+                self::BKID_C,
+                IFSC::CBIN,
+                IFSC::CIUB,
+                IFSC::CNRB,
+                IFSC::CSBK,
+                IFSC::DBSS,
+                IFSC::DCBL,
+                IFSC::DEUT,
+                IFSC::DLXB,
+                self::DLXB_C,
+                IFSC::ESFB,
+                IFSC::FDRL,
+                IFSC::HDFC,
+                IFSC::HSBC,
+                IFSC::IBKL,
+                IFSC::ICIC,
+                self::ICIC_C,
+                IFSC::IDFB,
+                IFSC::IDIB,
+                IFSC::INDB,
+                IFSC::IOBA,
+                IFSC::JAKA,
+                IFSC::KARB,
+                IFSC::KKBK,
+                IFSC::KVBL,
+                self::LAVB_C,
+                self::LAVB_R,
+                IFSC::MAHB,
+                IFSC::PSIB,
+                self::PUNB_C,
+                self::PUNB_R,
+                IFSC::RATN,
+                self::RATN_C,
+                IFSC::SBIN,
+                IFSC::SCBL,
+                IFSC::SIBL,
+                IFSC::SRCB,
+                IFSC::SVCB,
+                self::SVCB_C,
+                IFSC::TMBL,
+                IFSC::TNSC,
+                IFSC::UBIN,
+                IFSC::UCBA,
+                IFSC::UTIB,
+                self::UTIB_C,
+                IFSC::YESB,
+                self::YESB_C,
+            ]
+        ],
         Gateway::ZAAKPAY => [
             'retail' => [
                 IFSC::AIRP,
@@ -1452,6 +1508,10 @@ class Netbanking
         return self::$gatewaySupportedBanks[Gateway::CASHFREE]['retail'];
     }
 
+    public static function getPhonepeSupportedBanks()
+    {
+        return self::$gatewaySupportedBanks[Gateway::PHONEPE]['retail'];
+    }
     public static function getCcavenueSupportedBanks()
     {
         return self::$gatewaySupportedBanks[Gateway::CCAVENUE]['retail'];
@@ -1581,6 +1641,10 @@ class Netbanking
         return in_array($bank, self::getCashfreeSupportedBanks(), true) === true;
     }
 
+    public static function isPhonepeSupportedBank($bank)
+    {
+        return in_array($bank, self::getPhonepeSupportedBanks(), true) === true;
+    }
     public static function isCcavenueSupportedBank($bank)
     {
         return in_array($bank, self::getCcavenueSupportedBanks(), true) === true;
@@ -1654,9 +1718,9 @@ class Netbanking
     }
 
     public static function getSupportedBanksForGateway(
-        string $gateway,
-        int $bankingType = BankingType::RETAIL_ONLY,
-        int $tpvType = TpvType::NON_TPV_ONLY
+        string     $gateway,
+        int|string $bankingType = BankingType::RETAIL_ONLY,
+        int        $tpvType = TpvType::NON_TPV_ONLY
     ): array
     {
         $banks = self::$gatewaySupportedBanks[$gateway]['retail'];
@@ -1699,9 +1763,9 @@ class Netbanking
     }
 
     public static function getDefaultDisabledBanksForGateway(
-        string $gateway,
-        int $bankingType = BankingType::RETAIL_ONLY,
-        int $tpvType = TpvType::NON_TPV_ONLY
+        string     $gateway,
+        int|string $bankingType = BankingType::RETAIL_ONLY,
+        int        $tpvType = TpvType::NON_TPV_ONLY
     ): array
     {
         $gatewayObject = self::$defaultGatewayDisabledBanks[$gateway] ?? [];

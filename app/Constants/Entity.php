@@ -308,6 +308,7 @@ class Entity
     const OPTIMIZER_RAZORPAY     = 'optimizer_razorpay';
     const BT_RBL                 = 'bt_rbl';
     const CASHFREE               = 'cashfree';
+    const PHONEPE                = 'phonepe';
     const ZAAKPAY                = 'zaakpay';
     const CCAVENUE               = 'ccavenue';
     const PINELABS               = 'pinelabs';

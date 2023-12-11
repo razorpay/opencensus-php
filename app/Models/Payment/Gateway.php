@@ -31,6 +31,7 @@ class Gateway
     const ATOM                   = 'atom';
     const PAYU                   = 'payu';
     const CASHFREE               = 'cashfree';
+    const PHONEPE                = 'phonepe';
     const ZAAKPAY                = 'zaakpay';
     const CCAVENUE               = 'ccavenue';
     const PINELABS               = 'pinelabs';
@@ -419,6 +420,7 @@ class Gateway
         self::PAYU                  => self::PAYU,
         self::ATOM                  => self::ATOM,
         self::CASHFREE              => self::CASHFREE,
+        self::PHONEPE               => self::PHONEPE,
         self::ZAAKPAY               => self::ZAAKPAY,
         self::NETBANKING_YESB       => self::YESB,
         self::CCAVENUE              => self::CCAVENUE,
@@ -1631,6 +1633,7 @@ class Gateway
             self::ISG,
             self::PAYU,
             self::CASHFREE,
+            self::PHONEPE,
             self::ZAAKPAY,
             self::CCAVENUE,
             self::PINELABS,
@@ -1651,6 +1654,7 @@ class Gateway
             self::ATOM,
             self::PAYU,
             self::CASHFREE,
+            self::PHONEPE,
             self::CCAVENUE,
             self::ZAAKPAY,
             self::NETBANKING_SIB,
@@ -1757,6 +1761,7 @@ class Gateway
             self::UPI_JUSPAY,
             self::UPI_AXISOLIVE,
             self::CASHFREE,
+            self::PHONEPE,
             self::PAYU,
             self::PAYTM,
             self::PINELABS,
@@ -2038,6 +2043,11 @@ class Gateway
             Network::VISA,
             Network::MC,
             Network::RUPAY,
+        ],
+        self::PHONEPE => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
         ]
     ];
 
@@ -2164,6 +2174,14 @@ class Gateway
             Network::RUPAY,
         ],
         self:: CASHFREE => [
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
+            Network::RUPAY,
+            Network::DICL,
+            Network::DISC,
+        ],
+        self:: PHONEPE => [
             Network::MC,
             Network::VISA,
             Network::AMEX,
@@ -3418,6 +3436,7 @@ class Gateway
         Gateway::ATOM,
         Gateway::PAYU,
         Gateway::CASHFREE,
+        Gateway::PHONEPE,
         Gateway::CCAVENUE,
         Gateway::ZAAKPAY,
         Gateway::INGENICO,
@@ -3634,6 +3653,7 @@ class Gateway
         Gateway::UPI_RZPRBL,
         Gateway::UPI_RZPAPB,
         Gateway::CASHFREE,
+        Gateway::PHONEPE,
         Gateway::PAYTM,
         Gateway::PAYU,
         Gateway::BILLDESK_OPTIMIZER,
