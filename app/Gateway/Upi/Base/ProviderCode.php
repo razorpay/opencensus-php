@@ -105,6 +105,7 @@ class ProviderCode
     const KMB                = 'kmb';
     const KMBL               = 'kmbl';
     const KOTAK              = 'kotak';
+    const KOTAK811            = 'kotak811';
     const KVB                = 'kvb';
     const KVBANK             = 'kvbank';
     const LIME               = 'lime';
@@ -293,6 +294,7 @@ class ProviderCode
         self::KMB                => IFSC::KKBK,
         self::KMBL               => IFSC::KKBK,
         self::KOTAK              => IFSC::KKBK,
+        self::KOTAK811              => 'NPCI',
         self::KVB                => IFSC::KVBL,
         self::KVBANK             => IFSC::KVBL,
         self::LIME               => 'NPCI',
@@ -496,6 +498,7 @@ class ProviderCode
         ProviderPsp::INDUSIND_BANK_APP,
         ProviderPsp::SAMSUNG_PAY,
         ProviderPsp::YESPAY_NEXT,
+        ProviderPsp::KOTAK_BANK_APP,
     ];
 
     /**
@@ -555,6 +558,8 @@ class ProviderCode
         self::INDIE         => ProviderPsp::INDUSIND_BANK_APP,
         self::PINGPAY       => ProviderPsp::SAMSUNG_PAY,
         self::YESPAY       => ProviderPsp::YESPAY_NEXT,
+        self::KOTAK        => ProviderPsp::KOTAK_BANK_APP,
+        self::KOTAK811     => ProviderPsp::KOTAK_BANK_APP,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,

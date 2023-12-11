@@ -47,6 +47,7 @@ class ProviderPsp
     const INDUSIND_BANK_APP = 'indusind_bank_app';
     const SAMSUNG_PAY       = 'samsung_pay';
     const YESPAY_NEXT       = 'yespay_next';
+    const KOTAK_BANK_APP    = 'kotak_bank_app';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';
