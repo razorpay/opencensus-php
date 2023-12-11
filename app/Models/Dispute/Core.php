@@ -2198,6 +2198,29 @@ class Core extends Base\Core
         return $result;
     }
 
+    public function refundedPaymentDetailsCron()
+    {
+        $this->trace->info(TraceCode::DISPUTE_REFUNDED_PAYMENT_AUTOMATION_CRON, [
+            'message' => 'started',
+        ]);
+
+        try
+        {
+            $response = $this->app['disputes']->forwardToDisputesService();
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException($exception);
+
+            $response = [
+                'success'   => false,
+                'exception' => $exception->getMessage(),
+            ];
+        }
+
+        return $response;
+    }
+
     private function doRiskAnalysisAndNotifyRas()
     {
         $yesterdayTimestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();

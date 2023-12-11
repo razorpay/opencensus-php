@@ -2925,13 +2925,14 @@ class Route
         'post_dispute_accept_by_id'                => ['post',     'disputes/{id}/accept',                           'DisputeController@postDisputeAcceptById'                           ],
         'dispute_bulk_create_internal'             => ['post',     'disputes/bulk-create/internal',                  'DisputeController@bulkCreate'                                      ],
         'payment_dispute_create_internal'          => ['post',     'payments/{paymentId}/disputes/internal',         'DisputeController@createForReverseShadow'                          ],
+        'dispute_cron_refunded_payments_details'   => ['post',     'disputes/cron/refunded_payments_details',        'DisputeController@refundedPaymentDetailsCron'],
+
 
         // disputes service proxy routes
         'dispute_ingestion'                        => ['post',     'disputes/dispute-ingestion/bank-files',           'DisputesProxyController@proxy'],
         'dispute_dcs_config_add'                   => ['post',     'disputes/dcs/add-config/{path?}',                 'EdgeProxyController@proxy'],
         'dispute_dcs_config_get'                   => ['get',      'disputes/dcs/get-config/{path?}',                 'EdgeProxyController@proxy'],
         'dispute_dcs_config_update'                => ['patch',    'disputes/dcs/update-config/{path?}',              'EdgeProxyController@proxy'],
-
 
         'debit_note_batch'                         => ['post',     'debit_note/batch',                               'DebitNoteController@postBatch',                                    ],
 
@@ -5968,6 +5969,7 @@ class Route
         'banking_accounts_auditor_daily_updates',
         'gateway_payment_upi_data_cron',
         'dispute_merchant_emails_initiate',
+        'dispute_cron_refunded_payments_details',
         'dispute_refund_initiate',
         'dispute_initiate_risk_assessment',
         'fd_customer_dispute',
@@ -15996,6 +15998,7 @@ class Route
             'banking_accounts_auditor_daily_updates',
             'gateway_payment_upi_data_cron',
             'dispute_merchant_emails_initiate',
+            'dispute_cron_refunded_payments_details',
             'dispute_refund_initiate',
             'dispute_initiate_risk_assessment',
             'reward_expire_cron',
@@ -16825,6 +16828,7 @@ class Route
             'payment_refund_internal',
             'dispute_bulk_create_internal',
             'payment_dispute_create_internal',
+            'dispute_bulk_edit',
         ],
 
         'banking_account_service' => [

@@ -350,6 +350,13 @@ class DisputeController extends Controller
          return ApiResponse::json($response);
      }
 
+    public function refundedPaymentDetailsCron()
+    {
+        $response = $this->service()->refundedPaymentDetailsCron();
+
+         return ApiResponse::json($response);
+     }
+
     public function postBatchChargebackAutomation($gateway)
     {
         $input = Request::all();

@@ -1026,6 +1026,11 @@ class Service extends Base\Service
         return $this->core()->deductionReversalCron();
     }
 
+    public function refundedPaymentDetailsCron()
+    {
+        return $this->core()->refundedPaymentDetailsCron();
+    }
+
     public function createDisputes(array $data)
     {
         $orderKeys = $data[0];
