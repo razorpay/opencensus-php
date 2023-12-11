@@ -5320,6 +5320,14 @@ class RblBankingAccountStatementTest extends TestCase
         $balance = $this->getDbLastEntity('balance');
 
         $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            Payout\Entity::PURPOSE => Payout\Purpose::RZP_FEES,
+            Payout\Entity::AMOUNT => 1000
+        ]);
 
         $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron(70);
 
@@ -5327,9 +5335,50 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals($balance['id'], $response['balance_id_list'][0]);
 
+        $payouts = $this->getDbEntities('payout');
+
+        $this->assertNotEquals('queued', $payouts[1]['status']);
+        $this->assertNotEquals('rzp_fee', $payouts[1]['purpose']);
+        $this->assertNotEquals('queued', $payouts[0]['status']);
+    }
+
+    public function testProcessingRblFeeRecoveryQueuedPayoutWhenBalanceFetchCronRunsAfterBankingAccountStatementCron()
+    {
+        $this->testData[__FUNCTION__] =
+            $this->testData['testProcessingRblQueuedPayoutWhenBalanceFetchCronRunsAfterBankingAccountStatementCron'];
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
+
+        $queuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  6000,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        sleep(1);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+
         $payout = $this->getDbLastEntity('payout');
 
-        $this->assertNotEquals('queued', $payout['status']);
+        $this->fixtures->edit('payout', $payout['id'], [
+            Payout\Entity::PURPOSE => Payout\Purpose::RZP_FEES
+        ]);
+
+        $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron(70);
+
+        $response = $this->dispatchQueuedPayouts();
+
+        $this->assertEquals($balance['id'], $response['balance_id_list'][0]);
+
+        $payouts = $this->getDbEntities('payout');
+
+        $this->assertNotEquals('queued', $payouts[1]['status']);
+        $this->assertNotEquals('rzp_fee', $payouts[1]['purpose']);
+        $this->assertEquals('queued', $payouts[0]['status']);
     }
 
     protected function getBasicNegativeBalanceResponse()

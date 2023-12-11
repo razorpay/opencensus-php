@@ -459,7 +459,8 @@ class Repository extends Base\Repository
 
     public function fetchQueuedPayouts(array $merchantIdsWhitelist = [],
                                        array $merchantIdsBlacklist = [],
-                                       string $balanceType = Balance\Type::BANKING)
+                                       string $balanceType = Balance\Type::BANKING,
+                                       string $purpose = null)
     {
         // select(payouts.*) because if we don't restrict to payouts table columns,
         // collection_item->balance will return the balance field from joined table
@@ -470,6 +471,7 @@ class Repository extends Base\Repository
                       ->status(Status::QUEUED);
 
         $merchantIdColumn = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+        $purposeColumn = $this->repo->payout->dbColumn(Entity::PURPOSE);
 
         if (empty ($merchantIdsWhitelist) === false)
         {
@@ -479,6 +481,11 @@ class Repository extends Base\Repository
         if (empty($merchantIdsBlacklist) === false)
         {
             $query->whereNotIn($merchantIdColumn, $merchantIdsBlacklist);
+        }
+
+        if ($purpose !== null)
+        {
+            $query->where($purposeColumn, '=', $purpose);
         }
 
         $this->joinQueryBalance($query);
@@ -842,15 +849,22 @@ class Repository extends Base\Repository
     }
 
     public function fetchQueuedPayoutsForBalanceId(string $balanceId,
-                                                   $offset = 0)
+                                                          $offset = 0,
+                                                   string $purpose = null)
     {
         $statusColumn = $this->dbColumn(Entity::STATUS);
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $purposeColumn = $this->dbColumn(Entity::PURPOSE);
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->with(['balance', 'merchant', 'merchant.org'])
                       ->where($statusColumn, '=', Status::QUEUED)
                       ->where($balanceIdColumn, '=', $balanceId);
+
+        if ($purpose != null)
+        {
+            $query->where($purposeColumn, '=', $purpose);
+        }
 
         if ($offset !== 0)
         {

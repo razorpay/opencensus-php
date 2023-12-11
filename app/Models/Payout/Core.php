@@ -1547,7 +1547,32 @@ class Core extends Base\Core
 
                 $offset = $queuedPayoutsPaginationData[$balanceId] ?? 0;
 
+                $feeRecoveryQueuedPayouts = $this->repo->payout->fetchQueuedPayoutsForBalanceId($balanceId, 0, Purpose::RZP_FEES);
+
+                $feeRecoveryQueuedPayoutIds = [];
+                $queuedPayoutsToProcess = new PublicCollection();
+
+                foreach ($feeRecoveryQueuedPayouts as $feeRecoveryQueuedPayout)
+                {
+                    $queuedPayoutsToProcess->add($feeRecoveryQueuedPayout);
+                    $feeRecoveryQueuedPayoutIds[] = $feeRecoveryQueuedPayout->getId();
+                }
+
                 $queuedPayouts = $this->repo->payout->fetchQueuedPayoutsForBalanceId($balanceId, $offset);
+
+                foreach ($queuedPayouts as $queuedPayout)
+                {
+
+                    if (count($queuedPayoutsToProcess) === Repository::QUEUED_PAYOUTS_FETCH_LIMIT)
+                    {
+                        break;
+                    }
+
+                    if (in_array($queuedPayout->getID(), $feeRecoveryQueuedPayoutIds) === false)
+                    {
+                        $queuedPayoutsToProcess->add($queuedPayout);
+                    }
+                }
 
                 $summary = [];
 
@@ -1573,7 +1598,7 @@ class Core extends Base\Core
 
                 $totalQueuedPayouts = $this->repo->payout->fetchCountOfQueuedPayoutsForBalance($balanceId);
 
-                $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayouts , $balanceEntity);
+                $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayoutsToProcess , $balanceEntity);
 
                 $dispatchedPayoutCount = $dispatchedData['dispatched_payout_count'];
 
@@ -1586,7 +1611,7 @@ class Core extends Base\Core
                 $summary[$balanceId] = [
                     'original_balance'         => $balanceAmount,
                     'balance_remaining'        => $dispatchedData['balance_remaining'],
-                    'total_payout_count'       => count($queuedPayouts),
+                    'total_payout_count'       => count($queuedPayoutsToProcess),
                     'dispatched_payout_count'  => $dispatchedPayoutCount,
                     'dispatched_payout_amount' => ($balanceAmount - $dispatchedData['balance_remaining']),
                 ];
