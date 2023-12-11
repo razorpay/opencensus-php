@@ -1321,7 +1321,7 @@ class Service extends Base\Service
     // getTaxDetailsAndIfProductIsDigital returns the tax associated with an address and a checkout.
     // It also checks if the cart contains any products which do not require shipping - digital products.
     // The calls are combined to reduce API latency.
-    public function getTaxDetailsAndIfProductIsDigital(string $checkoutId, array $address): array
+    public function getTaxDetailsAndIfProductIsDigitalFromCheckout(string $checkoutId, array $address): array
     {
         $response = (new Core)->updateShippingAddress($checkoutId, $address);
         // Based on logs the checkout response is still available if `errors` or `checkoutUserErrors` exists
@@ -1333,6 +1333,7 @@ class Service extends Base\Service
             'total_tax'      => $tax,
             'taxes_included' => $checkout['taxesIncluded'],
         ];
+
         if (empty($response['errors']) === false ||
             empty($response['data']['checkoutShippingAddressUpdateV2']['checkoutUserErrors']) === false)
         {
@@ -1364,6 +1365,54 @@ class Service extends Base\Service
             'tax_details'        => $taxDetails,
             'is_digital_product' => $isDigitalProduct,
         ];
+    }
+
+    public function getTaxDetailsAndIfProductIsDigitalFromDraftOrder($order, $orderMeta, $address)
+    {
+        $stateCode = (new StateMap)->getShopifyStateCode($address);
+
+        $orderMeta['customer_details'] =[
+            'shipping_address' => [
+                'country'    => $address['country'],
+                'state_code' => $stateCode ?? $address['state_code'],
+                'zipcode'    => $address['zipcode'],
+                'state'      => $address['state'],
+            ]
+        ];
+
+        $calculateDraftOrder = (new Shopify\Core())->calculateDraftOrder($order, $orderMeta);
+
+        $totalTax = null;
+
+        if(empty($calculateDraftOrder) === false && empty($calculateDraftOrder['total_tax']) === false)
+        {
+            $taxDetails = [
+                'total_tax'      => $calculateDraftOrder['total_tax'],
+                'taxes_included' => true,
+            ];
+
+            return [
+                'evaluate_rates'     => true,
+                'tax_details'        => $taxDetails,
+                'is_digital_product' => $calculateDraftOrder['is_digital_product_present'],
+            ];
+        }
+        else
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
+                [
+                    'type'        => 'CalculateDraftOrder',
+                    'response'    => $calculateDraftOrder,
+                    'order_id'    => $order->toArrayPublic()['id']
+                ]
+            );
+            return [
+                'evaluate_rates'     => false,
+                'tax_details'        => [],
+                'is_digital_product' => false,
+            ];
+        }
     }
 
     private function isDigitalProductPresentInCheckout($checkoutResponse)

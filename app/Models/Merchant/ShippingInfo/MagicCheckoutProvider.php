@@ -44,7 +44,19 @@ class MagicCheckoutProvider extends Base\Core
         if ($platform === 'shopify')
         {
             $checkoutId = $order->toArrayPublic()['notes']['storefront_id'];
-            $checkoutResponse = (new Shopify\Service)->getTaxDetailsAndIfProductIsDigital($checkoutId, $address);
+
+            // This fetaure flag is required to resolve the issue where Shopify storefront API is giving the
+            // tax information as exclusive, even though the merchant store is configured as tax inclusive.
+            // So using this flag we will be able to override tax_included field as inclusive and fetch the
+            // right tax amount from calculate draft order API.
+            if ($this->merchant->isFeatureEnabled(FeatureConstants::ONE_CC_TAX_INCLUSION) === true)
+            {
+                $checkoutResponse = (new Shopify\Service)->getTaxDetailsAndIfProductIsDigitalFromDraftOrder($order, $orderMetaArray, $address);
+            }
+            else
+            {
+                $checkoutResponse = (new Shopify\Service)->getTaxDetailsAndIfProductIsDigitalFromCheckout($checkoutId, $address);
+            }
             $isDigitalProduct = $checkoutResponse['is_digital_product'];
             $isTaxExpEnabled = (new CommonUtils())->isTaxesExpEnabled();
             if ($isTaxExpEnabled)
