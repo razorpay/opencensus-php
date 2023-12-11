@@ -1532,8 +1532,9 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         // fetch source_payment again to check if amount_transferred updated
         $sourcePayment = $this->getDbEntity('payment', ['id' => str_replace('pay_', '', $this->payment['id'])]);
+        $newTransferPaymentEntity = $this->getLastEntity('transfer_payment', true);
         $this->assertNotNull($sourcePayment, 'source payment not found');
-        $this->assertEquals($transfer['amount'], $sourcePayment['amount_transferred'], 'amount_transferred incorrect in source_payment ');
+        $this->assertEquals($transfer['amount'], $newTransferPaymentEntity['amount_transferred'], 'amount_transferred incorrect in source_payment ');
 
         // fetch transfer payment again to check if txn id associated
         $transferPayment = $this->getDbEntity('payment', ['id' => $transferPayment['id']]);
@@ -1638,8 +1639,10 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         // fetch source_payment again to check if amount_transferred updated
         $sourcePayment = $this->getDbEntity('payment', ['id' => str_replace('pay_', '', $this->payment['id'])]);
+        $newTransferPaymentEntity = $this->getLastEntity('transfer_payment', true);
+
         $this->assertNotNull($sourcePayment, 'source payment not found');
-        $this->assertEquals($transfer['amount'], $sourcePayment['amount_transferred'], 'amount_transferred incorrect in source_payment ');
+        $this->assertEquals($transfer['amount'], $newTransferPaymentEntity['amount_transferred'], 'amount_transferred incorrect in source_payment ');
 
         // fetch transfer payment again to check if txn id associated
         $transferPayment = $this->getDbEntity('payment', ['id' => $transferPayment['id']]);
@@ -1997,8 +2000,10 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         // fetch source_payment again to check if amount_transferred updated
         $sourcePayment = $this->getDbEntity('payment', ['id' => str_replace('pay_', '', $this->payment['id'])]);
+        $newTransferPaymentEntity = $this->getLastEntity('transfer_payment', true);
+
         $this->assertNotNull($sourcePayment, 'source payment not found');
-        $this->assertEquals($transfer['amount'], $sourcePayment['amount_transferred'], 'amount_transferred incorrect in source_payment ');
+        $this->assertEquals($transfer['amount'], $newTransferPaymentEntity['amount_transferred'], 'amount_transferred incorrect in source_payment ');
 
         // fetch transfer payment again to check if txn id associated
         $transferPayment = $this->getDbEntity('payment',['transfer_id' => $transferId ] );
@@ -2273,8 +2278,10 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         // fetch source_payment again to check if amount_transferred updated
         $sourcePayment = $this->getDbEntity('payment', ['id' => str_replace('pay_', '', $this->payment['id'])]);
+        $newTransferPaymentEntity = $this->getLastEntity('transfer_payment', true);
+
         $this->assertNotNull($sourcePayment, 'source payment not found');
-        $this->assertEquals($transfer['amount'], $sourcePayment['amount_transferred'], 'amount_transferred incorrect in source_payment ');
+        $this->assertEquals($transfer['amount'], $newTransferPaymentEntity['amount_transferred'], 'amount_transferred incorrect in source_payment ');
 
         // fetch transfer payment again to check if txn id associated
         $transferPayment = $this->getDbEntity('payment', ['transfer_id' => $transferId]);

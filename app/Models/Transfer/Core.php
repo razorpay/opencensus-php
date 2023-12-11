@@ -43,6 +43,7 @@ use RZP\Exception\SettlementStatusUpdateException;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
+use RZP\Models\Transfer\Payment\Core as TransferPaymentCore;
 use RZP\Models\Merchant\MerchantApplications as MerchantApp;
 use RZP\Models\LedgerOutbox\Constants as LedgerOutboxConstants;
 use RZP\Models\Ledger\ReverseShadow\Constants as LedgerReverseShadowConstants;
@@ -592,18 +593,38 @@ class Core extends Base\Core
      */
     public function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount)
     {
-        $this->repo->payment->lockForUpdateAndReload($payment);
+        if ($payment->isTransferredInOldFlow())
+        {
+            $this->repo->payment->lockForUpdateAndReload($payment);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'amount'        => $amount,
+                ]);
+
+            $payment->transferAmount($amount);
+
+            $this->repo->saveOrFail($payment);
+
+            return;
+        }
+
+        $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
+
+        $this->repo->transfer_payment->lockForUpdateAndReload($transferPayment);
 
         $this->trace->info(
-            TraceCode::PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
+            TraceCode::TRANSFER_PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
             [
                 'payment_id'    => $payment->getId(),
                 'amount'        => $amount,
             ]);
 
-        $payment->transferAmount($amount);
+        $transferPayment->transferAmount($amount);
 
-        $this->repo->saveOrFail($payment);
+        $this->repo->saveOrFail($transferPayment);
     }
 
     /**

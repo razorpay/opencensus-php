@@ -3291,6 +3291,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_TRANSFER_VALIDATION_FAILED                    = 'PAYMENT_TRANSFER_VALIDATION_FAILED';
     const TRANSFER_CREATE_REQUEST                               = 'TRANSFER_CREATE_REQUEST';
     const TRANSFER_PAYMENT_CREATE_REQUEST                       = 'TRANSFER_PAYMENT_CREATE_REQUEST';
+    const TRANSFER_PAYMENT_UPDATE_AMOUNT_TRANSFERRED            = 'TRANSFER_PAYMENT_UPDATE_AMOUNT_TRANSFERRED';
     const TRANSFER_CREATE_SUCCESS                               = 'TRANSFER_CREATE_SUCCESS';
     const TRANSFER_EDIT_REQUEST                                 = 'TRANSFER_EDIT_REQUEST';
     const TRANSFER_EDIT_SUCCESS                                 = 'TRANSFER_EDIT_SUCCESS';

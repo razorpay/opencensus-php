@@ -569,6 +569,13 @@ abstract class AbstractTransfer
 
         $this->repo->transfer_payment->lockForUpdateAndReload($transferPayment);
 
+        $this->trace->info(
+            TraceCode::TRANSFER_PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
+            [
+                'payment_id'    => $payment->getId(),
+                'amount'        => $amount,
+            ]);
+
         $transferPayment->transferAmount($amount);
 
         $this->repo->saveOrFail($transferPayment);
