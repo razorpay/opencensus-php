@@ -306,9 +306,9 @@ class Service extends Base\Service
         if ($toConsiderPartnerOnboardingTs)
         {
             $docType = Constants::PARTNERSHIP . '_' . Constants::TERMS;
-            $partnerConsent = $this->repo->merchant_consents->fetchAllConsentForMerchantIdAndConsentType(
-                $merchantId, [ $docType ]
-            )->first();
+
+            // fetching from live slave connection as consents are not stored in test db.
+            $partnerConsent = $this->repo->merchant_consents->getConsentForMerchantIdAndConsentTypeFromSlaveLive($merchantId, [ $docType ]);
 
             if (empty($partnerConsent))
             {

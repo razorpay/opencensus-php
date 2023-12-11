@@ -832,7 +832,7 @@ class Calculator extends Base\Core
 
         if($isValid === false)
         {
-            $this->traceContext(TraceCode::COMMISSION_IMPLICIT_VARIABLE_INVALID);
+            $this->traceContext(TraceCode::COMMISSION_EXPLICIT_INVALID);
 
             return;
         }

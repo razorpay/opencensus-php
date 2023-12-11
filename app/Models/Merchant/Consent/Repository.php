@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Consent;
 
 use Illuminate\Support\Facades\DB;
 use RZP\Base\ConnectionType;
+use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -23,6 +24,15 @@ class Repository extends Base\Repository
         }
 
         return $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
+    public function getConsentForMerchantIdAndConsentTypeFromSlaveLive(string $merchantId, array $validLegalDocs)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection(Mode::LIVE))
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
                     ->orderBy(Entity::CREATED_AT, 'desc')
