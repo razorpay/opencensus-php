@@ -55,6 +55,8 @@ class Core extends Base\Core
         $journal = $this->createJournalInLedger($journalPayload);
 
         $this->pushAdjustmentToKafkaForAPITransactionCreation($adjustment, $journal);
+
+        return $journal;
     }
 
     public function createLedgerEntryForForRazorpayDisputeReversalReverseShadow(Entity $adjustment, $disputePublicId)

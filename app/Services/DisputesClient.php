@@ -263,7 +263,11 @@ class DisputesClient
 
         if ($method === Requests::GET)
         {
-            $url = $url . '?' . http_build_query($payload);
+            $url = $url . '?' ;
+            if (empty($payload) === false)
+            {
+                $url = $url . http_build_query($payload);
+            }
         }
         else
         {

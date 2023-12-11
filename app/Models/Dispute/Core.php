@@ -31,6 +31,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Constants\Entity as EntityConstants;
+use \RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Constants\{Entity as E, Mode, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
@@ -135,14 +136,16 @@ class Core extends Base\Core
         array $input,
         array $reverseShadowResp = null): Entity
     {
+        $isShadowModeDualWrite = $this->app['disputes']->isShadowModeDualWrite($payment->isInternational());
+
         $this->trace->info(
             TraceCode::DISPUTE_CREATE_REQUEST,
             [
-                'input'      => $input,
-                'payment_id' => $payment->getId()
+                'input'                     => $input,
+                'payment_id'                => $payment->getId(),
+                'isShadowModeDualWrite'     => $isShadowModeDualWrite,
+                'reverseShadowResp'         => $reverseShadowResp,
             ]);
-
-        $isShadowModeDualWrite = $this->app['disputes']->isShadowModeDualWrite($payment->isInternational());
 
         return $this->mutex->acquireAndRelease(
             $payment->getId(),
@@ -397,7 +400,7 @@ class Core extends Base\Core
         if ($dispute->isClosed() === false)
         {
             $event = $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_PROCESSED, $dispute);
-            
+
             (new Shield($this->app))->enqueueShieldEvent($event);
         }
     }
@@ -754,6 +757,8 @@ class Core extends Base\Core
             Adjustment\Entity::DESCRIPTION => self::DEBIT_ADJUSTMENT_DESCRIPTION,
         ];
 
+        $newBalance = 0;
+
         if ($dispute->isBackfill() === false)
         {
             $adjustment = (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
@@ -780,13 +785,37 @@ class Core extends Base\Core
 
             $disputePublicId = $dispute->getPublicId();
 
-            if ($dispute->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            if (is_null($adjustment->transaction) === false)
             {
-                (new ReverseShadowAdjustmentsCore())->createLedgerEntryForRazorpayDisputeDeductReverseShadow($adjustment, $disputePublicId);
+                $newBalance = $adjustment->transaction->getBalance();
+            }
+
+            $pgReverseShadow = $dispute->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW);
+
+            $this->trace->info(TraceCode::DISPUTE_PG_REVERSE_SHADOW, [
+                "pgReverseShadow"     => $pgReverseShadow,
+            ]);
+
+            if ($pgReverseShadow === true)
+            {
+                $journal = (new ReverseShadowAdjustmentsCore())->createLedgerEntryForRazorpayDisputeDeductReverseShadow($adjustment, $disputePublicId);
 
                 $adjustment->setStatus(AdjustmentStatus::PROCESSED);
 
                 $this->repo->saveOrFail($adjustment);
+
+                try
+                {
+                    $newBalance = $this->filterByFundAccountTypeAndEntryTypeDebit($journal, LedgerConstants::MERCHANT_BALANCE);
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->error(
+                        TraceCode::ERROR_CALCULATING_UNRECOVERED_AMOUNT,
+                        [
+                            'journal' => $journal,
+                        ]);
+                }
             }
             else
             {
@@ -795,6 +824,8 @@ class Core extends Base\Core
         }
 
         $dispute->setAmountDeducted($amount);
+
+        $this->setRecoveryStatusAndUnRecoveredAmount($dispute->getBaseAmount(), $newBalance, $dispute);
     }
 
     protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0)
@@ -2538,5 +2569,79 @@ class Core extends Base\Core
         }
 
         return $response['response']['variant']['name'] ?? '';
+    }
+
+    public function filterByFundAccountTypeAndEntryTypeDebit($item, $fundAccountType)
+    {
+        $searchResults = [];
+
+        if (isset($item[LedgerConstants::LEDGER_ENTRY]))
+        {
+            foreach ($item[LedgerConstants::LEDGER_ENTRY] as $ledgerEntry)
+            {
+                if (($ledgerEntry[LedgerConstants::TYPE] === LedgerConstants::ENTRY_TYPE_DEBIT) and
+                    (isset($ledgerEntry[LedgerConstants::ACCOUNT_ENTITIES][LedgerConstants::FUND_ACCOUNT_TYPE])) and
+                    (in_array($fundAccountType, $ledgerEntry[LedgerConstants::ACCOUNT_ENTITIES][LedgerConstants::FUND_ACCOUNT_TYPE])))
+                {
+                    $searchResults[] = $ledgerEntry;
+                    break;
+                }
+            }
+        }
+
+        $this->trace->info(TraceCode::DISPUTE_CREATE_JOURNAL_RESPONSE, [
+            "searchResults"     => $searchResults,
+            "item"              => $item,
+            "fundAccountType"   => $fundAccountType
+        ]);
+
+        return $searchResults[0][LedgerConstants::BALANCE];
+    }
+
+    public function setRecoveryStatusAndUnRecoveredAmount($deductedAmount, $merchantBalance, Entity $dispute)
+    {
+        if ($dispute->getStatus() != Status::WON && $dispute->getStatus() != Status::CLOSED)
+        {
+            if (is_null($merchantBalance) === true)
+            {
+                $dispute->setUnRecoveredAmount($deductedAmount);
+
+                $dispute->setRecoveryStatus(RecoveryStatus::UNRECOVERED);
+            }
+            else if ($merchantBalance >= 0)
+            {
+                $dispute->setUnRecoveredAmount(0);
+
+                $dispute->setRecoveryStatus(RecoveryStatus::RECOVERED);
+            }
+            else if ($merchantBalance < 0)
+            {
+                $merchantBalance = 0 - $merchantBalance;
+
+                if ($merchantBalance >= $deductedAmount)
+                {
+                    $dispute->setUnRecoveredAmount($deductedAmount);
+
+                    $dispute->setRecoveryStatus(RecoveryStatus::UNRECOVERED);
+                }
+                else
+                {
+                    $dispute->setUnRecoveredAmount($merchantBalance);
+
+                    $dispute->setRecoveryStatus(RecoveryStatus::PARTIAL);
+                }
+
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::DISPUTE_UNRECOVERED_AMOUNT,
+            [
+                'deductedAmount'                => $deductedAmount,
+                'merchantBalance'               => $merchantBalance,
+                'disputeId'                     => $dispute->getId(),
+                'unrecoveredAmount'             => $dispute->getUnRecoveredAmount(),
+                'recoveryStatus'                => $dispute->getRecoveryStatus(),
+            ]);
     }
 }

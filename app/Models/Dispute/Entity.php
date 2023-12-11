@@ -76,6 +76,8 @@ class Entity extends Base\PublicEntity
     const DEDUCTION_REVERSAL_AT_SET     = 'deduction_reversal_at_set';
     const DEDUCTION_REVERSAL_AT_FROM    = 'deduction_reversal_at_from';
     const DEDUCTION_REVERSAL_AT_TO      = 'deduction_reversal_at_to';
+    const UNRECOVERED_AMOUNT            = 'unrecovered_amount';
+    const RECOVERY_STATUS               = 'recovery_status';
 
     // Bulk file constants
     const DEDUCTION_REVERSAL_DELAY_IN_DAYS = 'deduction_reversal_delay_in_days';
@@ -122,6 +124,10 @@ class Entity extends Base\PublicEntity
     const LIFECYCLE_OLD = 'old';
 
     private $backfill = false;
+
+    protected $unRecoveredAmount = 0;
+
+    protected $recoveryStatus = null;
 
     protected static $sign = 'disp';
 
@@ -378,7 +384,7 @@ class Entity extends Base\PublicEntity
         unset($array[self::EVIDENCE]);
         unset($array[self::REASON_DESCRIPTION]);
         unset($array[self::REASON_CODE]);
-
+        $array = array_merge($array,[self::UNRECOVERED_AMOUNT => $this->getUnRecoveredAmount(),self::RECOVERY_STATUS => $this->getRecoveryStatus()]);
         return $array;
     }
 
@@ -649,6 +655,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PARENT_ID);
     }
 
+    public function getUnRecoveredAmount()
+    {
+        return $this->unRecoveredAmount;
+    }
+
+    public function getRecoveryStatus()
+    {
+        return $this->recoveryStatus;
+    }
+
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
@@ -894,6 +910,16 @@ class Entity extends Base\PublicEntity
     public function setBackfill(bool $val)
     {
         $this->backfill = $val;
+    }
+
+    public function setUnRecoveredAmount(int $val)
+    {
+        $this->unRecoveredAmount = $val;
+    }
+
+    public function setRecoveryStatus(string $val)
+    {
+        $this->recoveryStatus = $val;
     }
 
     public function isBackfill(): bool
