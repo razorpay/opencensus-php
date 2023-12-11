@@ -2165,6 +2165,7 @@ class Core extends Base\Core
 
                 if ((isset($txn) === true) and ($isRearchRefund === false)) {
                     $refund->transaction()->associate($txn);
+                    $refund->exists = true;
                     $this->repo->saveOrFail($refund);
                 }
 
@@ -2203,6 +2204,7 @@ class Core extends Base\Core
 
                 if ((isset($txn) === true) and ($isRearchRefund === false)) {
                     $customerRefund->transaction()->associate($txn);
+                    $customerRefund->exists = true;
                     $this->repo->saveOrFail($customerRefund);
                 }
             }
