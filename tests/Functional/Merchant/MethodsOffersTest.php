@@ -9,6 +9,7 @@ use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Admin\ConfigKey as AdminConfigKey;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\InternationalIntegration\Entity as InternationalIntegrationEntity;
 use RZP\Models\Merchant\Methods\EmiType;
@@ -79,6 +80,43 @@ class MethodsOffersTest extends TestCase
         $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
         $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
         $this->assertEquals($offer3->getPublicId(), $response['offers'][2]['id']);
+    }
+
+    public function testGetPaymentMethodsForCheckoutUpiRecurring()
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+        $this->fixtures->merchant->enableupi();
+
+        $this->fixtures->terminal->create([
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_icici',
+            'upi'                       => 1,
+            'gateway_merchant_id'       => 'razorpay axis_genius',
+            'gateway_terminal_id'       => 'nodal account axis_genius',
+            'gateway_terminal_password' => 'razorpay_password',
+            'type'                      => [
+                'recurring_3ds'      => '1',
+                'recurring_non_3ds'  => '1',
+                'pay'                => '1',
+                'collect'            => '1',
+            ]]);
+
+        $request = [
+            'url'     => '/internal/methods_offers/checkout',
+            'method'  => 'POST',
+            'content' => [
+                'currency' => [
+                    'INR'
+                ],
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals(true, $response['methods']['recurring']['upi_autopay']['collect']);
+        $this->assertEquals(true, $response['methods']['recurring']['upi_autopay']['intent']);
     }
 
     public function testGetPaymentMethodsAndOffersForCheckoutForB2BExportForPaymentLinkWithOrder(): void
