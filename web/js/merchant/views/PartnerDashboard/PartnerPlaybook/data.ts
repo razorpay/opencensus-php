@@ -423,7 +423,7 @@ export const programItemsData: PlaybookItemsStore = [
         {
           header: {
             title: 'Dashboard/Report Queries',
-            description: '',
+            description: 'Show your clients how to navigate Razorpay dashboards with utmost ease',
             total: 1,
           },
           items: [
@@ -444,7 +444,7 @@ export const programItemsData: PlaybookItemsStore = [
         {
           header: {
             title: 'KYC Queries',
-            description: '',
+            description: 'Assist your clients with KYC to ensure smooth onboarding',
             total: 2,
           },
           items: [
@@ -476,7 +476,8 @@ export const programItemsData: PlaybookItemsStore = [
         {
           header: {
             title: 'Product Queries',
-            description: '',
+            description:
+              'Explain clients the eligibility criteria and process for getting any Razorpay product',
             total: 1,
           },
           items: [

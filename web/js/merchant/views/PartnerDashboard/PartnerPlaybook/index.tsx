@@ -37,7 +37,7 @@ const PartnerPlaybook = ({ showNotification }: PartnerPlaybookProps): JSX.Elemen
   let formik = {} as UseFormikReturnType;
   const {
     data: programItems,
-    isLoading,
+    isInitialLoading,
     isFetching,
     refetch: onSearch,
   } = useQuery(
@@ -106,7 +106,7 @@ const PartnerPlaybook = ({ showNotification }: PartnerPlaybookProps): JSX.Elemen
       <PosterAndSearchBar formik={formik} onWatchIntroClick={onWatchIntroClick} />
       <PlaybookSections
         programItems={programItems}
-        isLoading={isFetching || isLoading}
+        isLoading={isFetching || isInitialLoading}
         openPreview={openPreview}
       />
       <FeedbackLoop />
