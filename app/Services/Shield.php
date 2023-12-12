@@ -409,9 +409,23 @@ class Shield
         }
 
         $customerOrderData = array();
+        $shippingDetails = null;
+        $shippingDetails =  array_merge($cartInfo['customer_details']['shipping_address'], $cartInfo['shipping_details']);
+        unset($cartInfo['customer_details']['shipping_address']);
 
-        $customerOrderData[ShieldConstants::CUSTOMER] = $cartInfo['customer'] ?? null;
-        $customerOrderData[ShieldConstants::SHIPPING_DETAILS] = $cartInfo['shipping_details'] ?? null;
+        $customer = $cartInfo['customer_details'];
+        $customer['booking_channel'] = $customer['insights']['booking_channel'];
+        $customer['has_account'] = $customer['insights']['has_account'];
+        $customer['registered_at'] = $customer['insights']['registered_at'];
+        $customer['tier'] = $customer['insights']['tier'];
+        
+        unset($customer['insights']['registered_at']);
+        unset($customer['insights']['tier']);
+        unset($customer['insights']['has_account']);
+        unset($customer['insights']['booking_channel']);
+
+        $customerOrderData[ShieldConstants::CUSTOMER] =  $customer;
+        $customerOrderData[ShieldConstants::SHIPPING_DETAILS] =  $shippingDetails;
         $customerOrderData[ShieldConstants::LINE_ITEMS_TOTAL] = $cartInfo['line_items_total'] ?? null;
         $customerOrderData[ShieldConstants::LINE_ITEMS] = $cartInfo['line_items'] ?? null;
         $customerOrderData[ShieldConstants::REFUND_ALLOWED] = $cartInfo['refund_allowed'] ?? null;
