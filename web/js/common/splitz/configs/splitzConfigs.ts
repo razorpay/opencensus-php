@@ -583,5 +583,31 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      matchByDashboard: ['product'],
+      routesToMatch: [
+        /^\/paymentlinks(?:\/.*)?$/i,
+        '/account-settings',
+        /payments-and-refunds-settings.*/i,
+      ],
+      abExperiments: [
+        {
+          uniqueHashKey: 'whatsAppPLEnabled',
+          experimentId: {
+            beta: 'N2aMq4RRuGpcMd',
+            production: 'N2aJVBCooxc93k',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

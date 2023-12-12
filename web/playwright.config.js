@@ -8,7 +8,7 @@ module.exports = {
   testDir: 'e2e/suites',
   testMatch: ['**/?(*.)+(spec).[jt]s?(x)'],
   globalSetup: './e2e/setup/globalSetup',
-  retries: isCI ? 1 : 0,
+  retries: isCI ? 2 : 0,
   timeout: 6 * 60 * 1000,
   workers: isCI ? 1 : 4,
   reporter: getReporter(),

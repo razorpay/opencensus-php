@@ -54,6 +54,7 @@ import {
   shouldShowTeamInvitations,
   isApplicationEnabled,
   isEmailNotificationEnabled,
+  isWhatsAppAccountSetupEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 export const AccountNSettingsIcons = {
@@ -413,6 +414,15 @@ export const Sections: SectionCardInterface[] = [
           () =>
           (user: User): boolean =>
             isFailedPaymentRetryEnabled(user),
+      },
+      {
+        id: PaymentRefundsFields.WHATSAPP_ACCOUNT_SETUP,
+        title: PaymentRefundsTitles[PaymentRefundsFields.WHATSAPP_ACCOUNT_SETUP],
+        href: ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP,
+        additionalCondition:
+          ({ extraConfig }) =>
+          (user: User): boolean =>
+            isWhatsAppAccountSetupEnabled(user, extraConfig),
       },
     ],
   },

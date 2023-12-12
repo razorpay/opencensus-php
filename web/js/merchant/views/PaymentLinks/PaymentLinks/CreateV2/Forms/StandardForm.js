@@ -41,7 +41,15 @@ export default class StandardForm extends React.Component {
   }
   render() {
     const { props } = this;
-    const { formData, disableCurrencySelect, contactPlaceholder, dynamicFields, disabled } = props;
+    const {
+      formData,
+      disableCurrencySelect,
+      contactPlaceholder,
+      dynamicFields,
+      disabled,
+      user,
+      applications,
+    } = props;
 
     const content = (
       <FormWizard
@@ -93,6 +101,8 @@ export default class StandardForm extends React.Component {
           disabled={props.disabled}
           defaultContactValue={formData.sms_notify}
           defaultEmailValue={formData.email_notify}
+          user={user}
+          applications={applications}
         />
         <ReferenceId disabled={props.disabled} />
         <LinkExpiry

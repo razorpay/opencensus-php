@@ -9,6 +9,7 @@ export enum Modules {
   Settings = 'Settings',
   Config = 'Config',
   CaptureRefundSettings = 'Capture and refund settings',
+  WhatsappAccountSetup = 'whatsapp account setup',
 }
 
 export enum WorkflowStates {

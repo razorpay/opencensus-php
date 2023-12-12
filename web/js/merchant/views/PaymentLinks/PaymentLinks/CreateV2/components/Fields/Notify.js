@@ -4,6 +4,12 @@ import Input from 'common/new-ui/Input';
 import DocsLink from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
+import { Alert } from '@razorpay/blade/components';
+import { getWhatsPLNotificationStatus } from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/Utils/whatsAppUtils';
+import { withRouter } from 'common/deprecated/withRouter';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import { withSplitzService } from 'common/splitz';
+import { whatsappAccountSetupAnalyticsTrack } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/utils';
 
 class Notify extends React.Component {
   handleEmailNotify = (event) => {
@@ -26,44 +32,80 @@ class Notify extends React.Component {
     track.segment.fields.notifySms();
   };
 
+  handleNotifyClick = () => {
+    this.props.history.push(ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP);
+  };
+
   render() {
     const { props } = this;
+    const { user, applications, splitz } = props;
+    const { isApplicationsLoading, isNotificationShow, title, CtaText, businessProviderName } =
+      getWhatsPLNotificationStatus({
+        user,
+        applications,
+        splitz,
+      });
     return (
-      <Input.Group
-        class="InputGroup--inline InputGroup--near customer-notify hidden-xs"
-        disabled={props.disabled}
-      >
-        <div class="Input-content">
-          <Input.Check
-            autoRender
-            name="email_notify"
-            fieldLabel="Notify via Email"
-            onClick={this.handleEmailNotify}
-            defaultValue={props.defaultEmailValue}
-          />
-          <Input.Check
-            autoRender
-            name="sms_notify"
-            fieldLabel="Notify via SMS"
-            onClick={this.handleSmsNotify}
-            defaultValue={props.defaultContactValue}
-          />
-        </div>
-
-        <ShowWhen
-          additionalCondition={() =>
-            !this.props.i18.isConfigTagEnabled('app_store.app_store') &&
-            !this.props.i18.isConfigTagEnabled('documentation.documentation')
-          }
+      <>
+        <Input.Group
+          class="InputGroup--inline InputGroup--near customer-notify hidden-xs"
+          disabled={props.disabled}
         >
-          <DocsLink
-            title="More ways to notify"
-            url="https://razorpay.com/app-store/"
-            style={{ paddingLeft: '0' }}
+          <div class="Input-content">
+            <Input.Check
+              autoRender
+              name="email_notify"
+              fieldLabel="Notify via Email"
+              onClick={this.handleEmailNotify}
+              defaultValue={props.defaultEmailValue}
+            />
+            <Input.Check
+              autoRender
+              name="sms_notify"
+              fieldLabel="Notify via SMS"
+              onClick={this.handleSmsNotify}
+              defaultValue={props.defaultContactValue}
+            />
+          </div>
+          <ShowWhen
+            additionalCondition={() =>
+              !this.props.i18.isConfigTagEnabled('app_store.app_store') &&
+              !this.props.i18.isConfigTagEnabled('documentation.documentation')
+            }
+          >
+            <DocsLink
+              title="More ways to notify"
+              url="https://razorpay.com/app-store/"
+              style={{ paddingLeft: '0' }}
+            />
+          </ShowWhen>
+        </Input.Group>
+        {!isApplicationsLoading && isNotificationShow ? (
+          <Alert
+            title={title}
+            marginTop="spacing.4"
+            intent="information"
+            isDismissible={false}
+            actions={{
+              primary: {
+                onClick: () => {
+                  whatsappAccountSetupAnalyticsTrack({
+                    objectName: `WA Notification ${CtaText} PL Screen`,
+                    actionName: 'Clicked',
+                    screen: 'Create Payment link',
+                    properties: {
+                      selectedBusinessAccount: businessProviderName,
+                    },
+                  });
+                  this.handleNotifyClick();
+                },
+                text: CtaText,
+              },
+            }}
           />
-        </ShowWhen>
-      </Input.Group>
+        ) : null}
+      </>
     );
   }
 }
-export default withI18Service(Notify);
+export default withSplitzService(withRouter(withI18Service(Notify)));

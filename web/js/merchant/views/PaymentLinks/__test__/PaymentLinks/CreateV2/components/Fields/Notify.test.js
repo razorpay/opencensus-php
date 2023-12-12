@@ -8,6 +8,15 @@ jest.spyOn(track.segment.fields, 'notifySms').mockImplementation(() => {});
 jest.spyOn(track.lj.fields, 'notifyEmail').mockImplementation(() => {});
 jest.spyOn(track.segment.fields, 'notifyEmail').mockImplementation(() => {});
 
+const user = {
+  findTag: () => false,
+  isFeatureEnabled: () => false,
+  isOrgAllowedFunctionality: () => true,
+  merchant: {
+    product_international: '0000000000',
+  },
+};
+
 describe('Notify Component Unit test', () => {
   beforeAll(() => {
     window.rzp_user = {};
@@ -27,20 +36,14 @@ describe('Notify Component Unit test', () => {
     return render(<Notify {...props} />, {
       initialState: {
         session: {
-          user: {
-            findTag: () => false,
-            isOrgAllowedFunctionality: () => true,
-            merchant: {
-              product_international: '0000000000',
-            },
-          },
+          user,
         },
       },
     });
   };
 
   test('should render Notify Component with "Email", "SMS", "More ways" as different modes', () => {
-    renderApp({ i18: { isConfigTagEnabled: jest.fn() } });
+    renderApp({ i18: { isConfigTagEnabled: jest.fn() }, user });
     expect(screen.getByText('Notify via Email')).toBeInTheDocument();
     expect(screen.getByText('Notify via SMS')).toBeInTheDocument();
     expect(screen.getByText('More ways to notify')).toBeInTheDocument();

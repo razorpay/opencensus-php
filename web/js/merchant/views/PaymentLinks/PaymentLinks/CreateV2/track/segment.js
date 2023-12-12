@@ -61,6 +61,7 @@ function _segmentTrack() {
           expiryDate: resp.data.expire_by,
           duplicateLink: duplicate,
           status: 'Success',
+          isWhatsappPL: resp.data.order_id && resp.data.notify?.whatsapp,
         };
         selfServeTrackSuccess({
           selfServeAction: 'Create Payment Link',

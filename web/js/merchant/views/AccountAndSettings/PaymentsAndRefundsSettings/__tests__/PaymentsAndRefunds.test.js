@@ -41,6 +41,7 @@ jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isReminderEnabled: jest.fn(),
   isCreditsEnabled: jest.fn(),
   isBalancesEnabled: jest.fn(),
+  isWhatsAppAccountSetupEnabled: jest.fn(),
 }));
 
 jest.mock('merchant/views/Account/Balances', () => ({
@@ -63,6 +64,14 @@ jest.mock(
   () => ({
     __esModule: true,
     default: () => <>Transaction limits component</>,
+  }),
+);
+
+jest.mock(
+  'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup',
+  () => ({
+    __esModule: true,
+    default: () => <>Whatsapp Setup component</>,
   }),
 );
 
@@ -113,6 +122,7 @@ describe('Payments And Refunds', () => {
       'Fee bearer',
       'Capture and refund settings',
       'Failed payments recovery',
+      'Whatsapp Account Setup',
     ].forEach((linkLabel) => {
       expect(screen.queryByRole('link', { name: linkLabel })).not.toBeInTheDocument();
     });
@@ -125,11 +135,13 @@ describe('Payments And Refunds', () => {
       conditionalUtils.isReminderEnabled.mockReturnValue(true);
       conditionalUtils.isCreditsEnabled.mockReturnValue(true);
       conditionalUtils.isBalancesEnabled.mockReturnValue(true);
+      conditionalUtils.isWhatsAppAccountSetupEnabled.mockReturnValue(true);
     });
     afterAll(() => {
       conditionalUtils.isReminderEnabled.mockReturnValue(false);
       conditionalUtils.isCreditsEnabled.mockReturnValue(false);
       conditionalUtils.isBalancesEnabled.mockReturnValue(false);
+      conditionalUtils.isWhatsAppAccountSetupEnabled.mockReturnValue(true);
     });
     testConditionalLinks(
       renderApp,
@@ -137,6 +149,11 @@ describe('Payments And Refunds', () => {
         ['Balances', 'isBalancesEnabled', ROUTES_INFO.BALANCES],
         ['Credits', 'isCreditsEnabled', ROUTES_INFO.CREDITS],
         ['Reminders', 'isReminderEnabled', ROUTES_INFO.REMINDERS],
+        [
+          'Whatsapp Account Setup',
+          'isWhatsAppAccountSetupEnabled',
+          ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP,
+        ],
       ],
       false,
       true,

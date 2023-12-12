@@ -208,6 +208,11 @@ export default function applicationReducer(state = initialState, action) {
         hasConnectedApplications: action.payload.data.items.length > 0,
       });
 
+    case `${FETCH_CONNECTED_APPLICATIONS}::ERROR`:
+      return merge(state, {
+        connectedAppsloading: false,
+      });
+
     case `${FETCH_PARTNER_APPLICATION}::SUCCESS`:
       return merge(state, {
         loading: false,

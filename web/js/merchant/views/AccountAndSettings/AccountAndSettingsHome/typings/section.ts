@@ -49,6 +49,7 @@ export enum PaymentRefundsFields {
   FEE_BEARER = 'fee_bearer',
   CAPTURE_REFUND_SETTINGS = 'capture_refund_settings',
   FAILED_PAYMENTS_RETRY = 'failed_payments_retry',
+  WHATSAPP_ACCOUNT_SETUP = 'whatsapp_account_setup',
 }
 
 export enum NotificationSettingsFields {
@@ -117,6 +118,7 @@ export const PaymentRefundsTitles: Record<PaymentRefundsFields, string> = {
   [PaymentRefundsFields.FEE_BEARER]: 'Fee bearer',
   [PaymentRefundsFields.REMINDERS]: 'Reminders',
   [PaymentRefundsFields.TRANSACTION_LIMITS]: 'Transaction limits',
+  [PaymentRefundsFields.WHATSAPP_ACCOUNT_SETUP]: 'Whatsapp Account Setup',
 };
 
 export const BankAccountSettlementTitles: Record<BankAccountSettlementFields, string> = {

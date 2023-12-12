@@ -32,6 +32,7 @@ import {
   showNoExpiryPL,
   showDynamicFields,
 } from 'merchant/views/PaymentLinks/utils';
+import { fetchOauthConnectedApplications } from 'merchant/reducers/applications';
 
 import { CUSTOM_FIELDS } from './constants';
 import PaymentLinkTypeSelector from './components/PaymentLinkTypeSelector';
@@ -65,6 +66,7 @@ export const CONTACT_PLACEHOLDER = {
     reminders: state.reminders,
     isMobileResolution: state.app.isMobileResolution,
     paymentLinkRemindersConfig: state.reminders.product_configs.payment_link,
+    applications: state.applications,
   }),
   {
     luminateRow,
@@ -75,6 +77,7 @@ export const CONTACT_PLACEHOLDER = {
     updateUserFeatures,
     fetchReminders,
     fetchRemindersMerchantConfigs,
+    fetchOauthConnectedApplications,
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentLinkCreateV2'))
@@ -144,6 +147,7 @@ class PaymentLinkCreateV2 extends React.Component {
   }
 
   componentDidMount() {
+    fetchOauthConnectedApplications();
     this.prepareDataForPaymentLinkCreation()
       .then(() => {
         this.setState({ isLoading: false }, () => {
@@ -456,10 +460,10 @@ class PaymentLinkCreateV2 extends React.Component {
     const { linkType, dynamicFields } = state;
     const {
       user,
+      applications,
       i18: { isConfigTagEnabled },
     } = props;
     const { merchant } = user;
-
     // i18: Hide the payment link type selection for  based on the tag, currently we are only allowing the standard form.
     let showLinkTypeSelectionView = !linkType;
     if (isConfigTagEnabled('payment_links.upi_payment_link')) {
@@ -499,6 +503,8 @@ class PaymentLinkCreateV2 extends React.Component {
             history={props.history}
             contactPlaceholder={CONTACT_PLACEHOLDER[merchant.country_code]}
             dynamicFields={dynamicFields}
+            user={user}
+            applications={applications}
           />
         )}
       </div>

@@ -1,5 +1,8 @@
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
-import { PaymentMethodsTitles } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
+import {
+  PaymentMethodsTitles,
+  PaymentRefundsTitles,
+} from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 
 export const ROUTE_MAP = {
   [ROUTES_INFO.BRANDING]: 'Branding',
@@ -44,6 +47,7 @@ export const ROUTE_MAP = {
   [ROUTES_INFO.INTERNATIONAL_PAYMENTS]: PaymentMethodsTitles.international,
   [ROUTES_INFO.MEAL_CARD]: PaymentMethodsTitles['meal-card'],
   [ROUTES_INFO.TEAM_INVITATIONS]: 'Invitations',
+  [ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP]: PaymentRefundsTitles.whatsapp_account_setup,
 };
 
 export const accountAndSettingsLink = {

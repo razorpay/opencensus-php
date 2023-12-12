@@ -3,6 +3,8 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import User, { isOrgFeatureExist } from 'merchant/models/User';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import { AdditionalContextInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import { SpiltzContextState } from 'common/splitz/types';
 
 export const isConfigurationViewAllowed = (user: User): boolean =>
   user.isAllowedView('configuration');
@@ -129,3 +131,14 @@ export const accountAccessHoverDescription = (user: User): boolean => {
 
 export const shouldShowTeamInvitations = (user: User): boolean =>
   user.user?.invitations?.length > 0;
+
+export const isWhatsAppAccountSetupEnabled = (
+  user: User,
+  splitz: Pick<SpiltzContextState, 'abExperiments'>,
+): boolean => {
+  const { abExperiments } = splitz || {};
+
+  if (!abExperiments?.whatsAppPLEnabled) return false;
+
+  return isExperimentEnabled(abExperiments.whatsAppPLEnabled) && user.isOrgRZP;
+};

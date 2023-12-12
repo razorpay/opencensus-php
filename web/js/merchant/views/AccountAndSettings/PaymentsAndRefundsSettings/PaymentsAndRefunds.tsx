@@ -30,6 +30,7 @@ import {
   isReminderEnabled,
   isCreditsEnabled,
   isBalancesEnabled,
+  isWhatsAppAccountSetupEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import {
@@ -52,6 +53,10 @@ const CreditsSettings = lazy(
 
 const ReminderSettings = lazy(
   () => import(/* webpackChunkName: "ReminderSettings" */ 'merchant/views/Settings/Reminders'),
+);
+
+const WhatsAppSetup = lazy(
+  () => import(/* webpackChunkName: "WhatsAppSetup" */ './Tabs/WhatsappSetup'),
 );
 
 const PaymentCaptureAndRefund = (props) => (
@@ -123,6 +128,13 @@ const PaymentsAndRefundsSettings = ({
           </ShowWhen>
           <NavLink to={ROUTES_INFO.TRANSACTION_LIMITS}>Transaction limits</NavLink>
           <ShowWhen
+            additionalCondition={(user, { splitz }): boolean =>
+              isWhatsAppAccountSetupEnabled(user, splitz)
+            }
+          >
+            <NavLink to={ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP}>Whatsapp Account Setup</NavLink>
+          </ShowWhen>
+          <ShowWhen
             additionalCondition={(user): boolean =>
               shouldShowFeeBearerSelfServe({ user, allowCFBInternational: featureData[feature] })
             }
@@ -176,6 +188,18 @@ const PaymentsAndRefundsSettings = ({
                       element={
                         <RouteGuard>
                           <TransactionLimits />
+                        </RouteGuard>
+                      }
+                    />
+                    <Route
+                      path={getRefRoute(ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP)}
+                      element={
+                        <RouteGuard
+                          additionalCondition={(user, { splitz }): boolean =>
+                            isWhatsAppAccountSetupEnabled(user, splitz)
+                          }
+                        >
+                          <WhatsAppSetup />
                         </RouteGuard>
                       }
                     />

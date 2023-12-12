@@ -9,7 +9,7 @@
     "yarn": ">=1.22.10"
   },
   "dependencies": {
-    "@razorpay/blade": "10.15.2",
+    "@razorpay/blade": "10.18.0",
     "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
     "@razorpay/blade-old-for-new-auth": "npm:@razorpay/blade-old@0.0.1",
     "@razorpay/commander-services": "1.0.38",

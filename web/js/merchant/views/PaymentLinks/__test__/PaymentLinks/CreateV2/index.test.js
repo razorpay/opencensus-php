@@ -16,6 +16,7 @@ import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 import * as apiHelpers from 'merchant/views/PaymentLinks/PaymentLinks/model';
 import * as handlers from 'merchant/views/PaymentLinks/__test__/mocks/handlers';
 import { showDynamicFields } from 'merchant/views/PaymentLinks/utils';
+import { fetchOauthConnectedApplications } from 'merchant/reducers/applications';
 
 jest.mock('merchant/views/PaymentLinks/utils', () => ({
   ...jest.requireActual('merchant/views/PaymentLinks/utils'),
@@ -38,6 +39,11 @@ jest.mock('common/splitz', () => ({
   useSplitzService: () => ({
     abExperiments: {},
   }),
+}));
+
+jest.mock('merchant/reducers/applications', () => ({
+  ...jest.requireActual('merchant/reducers/applications'),
+  fetchOauthConnectedApplications: jest.fn(),
 }));
 
 const onCloseMock = jest.fn();
@@ -74,6 +80,7 @@ describe('Payment Link Create V2 Unit Test', () => {
         success: jest.fn(),
       }),
     };
+    fetchOauthConnectedApplications.mockReturnValue({});
   });
 
   afterEach(() => {
