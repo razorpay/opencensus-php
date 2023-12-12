@@ -3902,6 +3902,7 @@ EOT;
 
         return $this->newQueryWithConnection($connectionType)
                     ->where(Entity::INVOICE_ID, $invoiceId)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
 

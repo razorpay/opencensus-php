@@ -141,18 +141,9 @@ class Service extends Base\Service
                                             $this->userRole,
                                             $input);
 
-        $variant = $this->app->razorx->getTreatment(
-            $invoice->merchant->getId(),
-            Merchant\RazorxTreatment::INVOICE_PAYMENTS_EXPAND,
-            $this->mode ?? Mode::LIVE
-        );
-
         $invoice = $invoice->toArrayPublic();
 
-        if (strtolower($variant) === 'on')
-        {
-            $invoice = $this->handleInvoiceExpands($invoice, $input['expand'] ?? []);
-        }
+        $invoice = $this->handleInvoiceExpands($invoice, $input['expand'] ?? []);
 
         return $invoice;
     }
