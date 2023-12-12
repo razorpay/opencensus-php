@@ -5,8 +5,8 @@ const BusinessProvier = {
   AiSensy: {
     title: 'AISensy',
     providerPageTitle: 'AiSensy',
-    existingAccountUrl: 'https://www.app.aisensy.com/login',
-    newAccountUrl: 'https://www.app.aisensy.com/signup',
+    existingAccountUrl: 'aisensy.com',
+    newAccountUrl: 'aisensy.com',
   },
 };
 
@@ -66,7 +66,7 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
 
   test('existing account link flow should work @priority=normal', async ({ page }) => {
     await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
-    const { title, existingAccountUrl, providerPageTitle } = BusinessProvier.AiSensy;
+    const { title, providerPageTitle, existingAccountUrl } = BusinessProvier.AiSensy;
 
     const linkExistingAccount = page.getByRole('button', {
       name: 'Proceed',
@@ -86,7 +86,7 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     const newPageTitle = await newPage.title();
     const newPageUrl = await newPage.url();
     await expect(newPageTitle).toBe(providerPageTitle);
-    await expect(newPageUrl).toBe(existingAccountUrl);
+    await expect(newPageUrl).toContain(existingAccountUrl);
 
     await expect(
       page.getByRole('heading', { name: 'We’ve initiated the integration' }),
@@ -96,7 +96,7 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
 
   test('create new account flow should work @priority=normal', async ({ page }) => {
     await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
-    const { newAccountUrl, providerPageTitle } = BusinessProvier.AiSensy;
+    const { providerPageTitle, newAccountUrl } = BusinessProvier.AiSensy;
 
     const createNewAccountBtn = page.getByRole('link', {
       name: 'Create Whatsapp Business Account',
@@ -110,7 +110,7 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     const newPageTitle = await newPage.title();
     const newPageUrl = await newPage.url();
     await expect(newPageTitle).toBe(providerPageTitle);
-    await expect(newPageUrl).toBe(newAccountUrl);
+    await expect(newPageUrl).toContain(newAccountUrl);
   });
 
   test('should show success modal on callback url @priority=normal', async ({ page }) => {

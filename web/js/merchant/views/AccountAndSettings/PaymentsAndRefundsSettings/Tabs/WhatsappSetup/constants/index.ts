@@ -9,9 +9,9 @@ export const BusinessServiceProvider = [
 ];
 
 export const SERVICE_PROVIDER_LOGIN_HREF: Record<string, string> = {
-  aisensy: 'https://www.app.aisensy.com/login',
+  aisensy: 'https://wa.aisensy.com/ref/s9tftz9',
 };
 
-export const SERVICE_PROVIDER_SIGNUP_HREF = 'https://www.app.aisensy.com/signup';
+export const SERVICE_PROVIDER_SIGNUP_HREF = 'https://wa.aisensy.com/ref/s9tftz9';
 
 export const FEATURE_WHATSAPP_PL = 'notify_via_whatsapp_plink';
