@@ -682,7 +682,7 @@ export default class User {
   }
 
   get isPaymentPageStorefrontEnabled() {
-    return getSplitzExperimentVariant('pp_ecommerce')?.variables?.result === 'on';
+    return this.isOrgRZP && getSplitzExperimentVariant('pp_ecommerce')?.variables?.result === 'on';
   }
 
   get isInvoiceCreateFlowUXOptimizationEnabled() {
