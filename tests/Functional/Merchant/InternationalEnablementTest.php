@@ -676,6 +676,63 @@ Team Razorpay',
         });
     }
 
+    public function testSubmitV2WithMandatoryDocumentCaseForBusinessType()
+    {
+        Mail::fake();
+
+        $merchant = $this->createFixtures([
+            Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED  => 'toggle_international_revamped',
+        ], 'test');
+
+        $this->storkMockForUnderReview();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $this->fixtures->edit('merchant_detail', $merchant->getId(), [
+            'business_type'         => 4
+        ]);
+
+        $testData = $this->testData['testSubmitValidUseCase2'];
+
+        $testData['request']['content']['version'] = 'v2';
+
+        $testData['request']['content']['documents']['moa'] = [
+            [
+                'id'           => 'doc_10000011111111',
+                'display_name' => 'display_name_1',
+            ],
+        ];
+
+        $testData['request']['content']['documents']['aoa'] = [
+            [
+                'id'           => 'doc_10000011111111',
+                'display_name' => 'display_name_1',
+            ],
+        ];
+
+        $this->startTest($testData);
+
+        $insertedDocument = $this->getDbLastEntity('merchant_document');
+
+        assert(in_array($insertedDocument['document_type'],["moa", "aoa"]));
+        self::assertEquals('10000011111111', $insertedDocument['file_store_id']);
+        self::assertEquals($merchant->getId(), $insertedDocument['merchant_id']);
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            if ($mail->view === 'emails.merchant.ie_under_review')
+            {
+                return true;
+            }
+
+            return false;
+        });
+    }
+
     public function testInternationalProductStatusRequestedSecondTime()
     {
         Mail::fake();

@@ -80,7 +80,10 @@ class Service extends Base\Service
 
         $input = $sanitizedInput;
 
-        $this->createReminderForRemarketing($this->merchant->getId());
+        // Commenting this Create reminder for filling international activation flow since we have to handle the
+        // VCIP flow activation with this together with this
+
+        //$this->createReminderForRemarketing($this->merchant->getId());
 
         $mutexKey = sprintf(Constants::INTERNATIONAL_ENABLEMENT_LOCK_KEY, $this->merchant->getId());
 

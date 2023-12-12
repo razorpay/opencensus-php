@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\InternationalEnablement\Document;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\InternationalEnablement\Detail;
+use RZP\Models\Merchant\Document;
 
 class Core extends Base\Core
 {
@@ -23,7 +24,7 @@ class Core extends Base\Core
     public function upsertBulk($oldDetailEntity, Detail\Entity $newDetailEntity, $documents, string $action, $version = 'v1')
     {
         $merchantDetail = $this->merchant->merchantDetail;
-        
+
         (new Validator)->validateExternalPayload($documents, Detail\Constants::ACTION_DRAFT, $merchantDetail, $version);
 
         $existingDocumentsInExternalFormat = [];
@@ -62,6 +63,14 @@ class Core extends Base\Core
                 $documentInInternalFormat, $newDetailEntity, $this->merchant->getId());
 
             $this->repo->saveOrFail($newDocEntity);
+
+            if (($this->isDocumentTypeValidForMerchantDocuments($newDocEntity->getType(),$merchantDetail->getBusinessType()) === true) and ($action === Detail\Constants::ACTION_SUBMIT))
+            {
+                $merchantDocumentEntity = [
+                    'id' => $newDocEntity->getDocumentId()
+                ];
+                (new Document\Core)->saveInMerchantDocument($merchantDocumentEntity,$merchantDetail->getId(),$newDocEntity->getType(), strtotime('now'));
+            }
         }
     }
 
@@ -216,5 +225,15 @@ class Core extends Base\Core
         }
 
         return $externalFormat;
+    }
+
+    public function isDocumentTypeValidForMerchantDocuments(string $documentType, string $businessType): bool
+    {
+        if(isset($businessType) === true and array_key_exists($businessType, Constants::BUSINESS_TYPE_DOCUMENT_TYPE_MAP))
+        {
+            return (in_array($documentType, Constants::BUSINESS_TYPE_DOCUMENT_TYPE_MAP[$businessType],true));
+        }
+
+        return false;
     }
 }

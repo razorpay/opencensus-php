@@ -4,14 +4,32 @@ namespace RZP\Models\Merchant\InternationalEnablement\Document;
 
 use RZP\Models\Merchant\Detail\BusinessCategoriesV2\BusinessCategory as Category;
 use RZP\Models\Merchant\Detail\BusinessCategoriesV2\BusinessSubcategory as Subcategory;
+use RZP\Models\Merchant\Detail\BusinessType;
 
 class Constants
 {
+    const ID                                        = 'id';
+    const DISPLAY_NAME                              = 'display_name';
     const FIRC                                      = 'firc';
     const IE_CODE                                   = 'ie_code';
     const INVOICES                                  = 'invoices';
     const BANK_STATEMENT_INWARD_REMITTANCE          = 'bank_statement_inward_remittance';
     const CURRENT_PAYMENT_PARTNER_SETTLEMENT_RECORD = 'current_payment_partner_settlement_record';
+
+    const MSME_CERTIFICATE                          = 'msme_certificate';
+    const SHOP_ESTABLISHMENT_CERTIFICATE            = 'shop_establishment_certificate';
+    const SALES_TAX_RETURNS                         = 'sales_tax_returns';
+    const INCOME_TAX_RETURNS                        = 'income_tax_returns';
+    const GST_CERTIFICATE                           = 'gst_certificate';
+    const CERTIFICATION_REGISTRATION_BY_TAX_AUTH    = 'certificate_registration_by_tax_auth';
+    const IEC_LICENSE                               = 'iec_license';
+    const UTILITY_BILLS                             = 'utility_bills';
+    const MOA                                       = 'moa';
+    const AOA                                       = 'aoa';
+    const DARPAN_PORTAL                             = 'darpan_portal';
+    const PROOF_OF_PROFESSION                       = 'proof_of_profession';
+    const TRADE_LICENSE                             = 'trade_license';
+
     const IATA                                      = 'iata';
     const FCRA                                      = 'fcra';
     const FSSAI                                     = 'fssai';
@@ -50,6 +68,19 @@ class Constants
         self::BANK_STATEMENT_INWARD_REMITTANCE,
         self::CURRENT_PAYMENT_PARTNER_SETTLEMENT_RECORD,
         self::OTHERS,
+        self::MSME_CERTIFICATE,
+        self::SHOP_ESTABLISHMENT_CERTIFICATE,
+        self::SALES_TAX_RETURNS,
+        self::INCOME_TAX_RETURNS,
+        self::GST_CERTIFICATE,
+        self::CERTIFICATION_REGISTRATION_BY_TAX_AUTH,
+        self::IEC_LICENSE,
+        self::UTILITY_BILLS,
+        self::MOA,
+        self::AOA,
+        self::DARPAN_PORTAL,
+        self::PROOF_OF_PROFESSION,
+        self::TRADE_LICENSE
     ];
 
     const DOCUMENT_TYPE_VALIDATOR_CSV =
@@ -72,6 +103,19 @@ class Constants
         self::GII . ',' .
         self::RERA . ',' .
         self::GAMING_ADDENDUM_CERTIFICATE . ',' .
+        self::MSME_CERTIFICATE. ',' .
+        self::SHOP_ESTABLISHMENT_CERTIFICATE. ',' .
+        self::SALES_TAX_RETURNS. ',' .
+        self::INCOME_TAX_RETURNS. ',' .
+        self::GST_CERTIFICATE. ',' .
+        self::CERTIFICATION_REGISTRATION_BY_TAX_AUTH. ',' .
+        self::IEC_LICENSE. ',' .
+        self::UTILITY_BILLS. ',' .
+        self::MOA. ',' .
+        self::AOA. ',' .
+        self::DARPAN_PORTAL. ',' .
+        self::PROOF_OF_PROFESSION. ',' .
+        self::TRADE_LICENSE. ',' .
         self::OTHERS;
 
     const BUSINESS_CATEGORY_SUBCATEGORY_DOCUMENT_TYPE_MAP = [
@@ -124,6 +168,32 @@ class Constants
             Subcategory::FANTASY_SPORTS                     => self::GAMING_ADDENDUM_CERTIFICATE,
             Subcategory::GAMING_MARKETPLACE                 => self::GAMING_ADDENDUM_CERTIFICATE,
         ],
+    ];
+
+    const BUSINESS_TYPE_DOCUMENT_TYPE_MAP = [
+        BusinessType::PROPRIETORSHIP => [
+            self::MSME_CERTIFICATE,
+            self::SHOP_ESTABLISHMENT_CERTIFICATE,
+            self::SALES_TAX_RETURNS,
+            self::INCOME_TAX_RETURNS,
+            self::GST_CERTIFICATE,
+            self::CERTIFICATION_REGISTRATION_BY_TAX_AUTH,
+            self::IEC_LICENSE,
+            self::UTILITY_BILLS,
+            self::PROOF_OF_PROFESSION,
+            self::TRADE_LICENSE,
+        ],
+        BusinessType::PUBLIC_LIMITED => [
+            self::MOA,
+            self::AOA,
+        ],
+        BusinessType::PRIVATE_LIMITED => [
+            self::MOA,
+            self::AOA,
+        ],
+        BusinessType::NGO => [
+            self::DARPAN_PORTAL,
+        ]
     ];
 
     public static function isMandatoryDocumentType(string $documentType): bool

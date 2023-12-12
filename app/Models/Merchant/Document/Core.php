@@ -737,7 +737,7 @@ class Core extends Base\Core
         return $this->repo->merchant_document->findDocumentsForMerchantIdAndValidationId($merchantId, $validationId);
     }
 
-    public function saveInMerchantDocument(array $response, string $merchantId, string $documentType, int $documentDate = null)
+    public function saveInMerchantDocument(array $response, string $merchantId, string $documentType, int $documentDate)
     {
         $input = [
             Entity::FILE_STORE_ID => $response[GatewayConstants::ID],

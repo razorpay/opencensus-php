@@ -77,6 +77,14 @@ class Type
     const LEGAL_OPINION          = 'legal_opinion';
     const BUSINESS_CORRESPONDENT = 'business_correspondent';
 
+    const SALES_TAX_RETURNS                  = 'sales_tax_returns';
+    const INCOME_TAX_RETURNS                 = 'income_tax_returns';
+    const CERTIFICATION_REGISTRATION_BY_TAX_AUTH    = 'certificate_registration_by_tax_auth';
+    const UTILITY_BILLS                             = 'utility_bills';
+    const MOA                                       = 'moa';
+    const AOA                                       = 'aoa';
+    const DARPAN_PORTAL                             = 'darpan_portal';
+
 
     //FIRS Documents
     const FIRS_FILE = 'firs_file';
@@ -345,6 +353,14 @@ class Type
         self::GST_CERTIFICATE,
         self::MSME_CERTIFICATE,
         self::BANK_STATEMENT,
+
+        self::SALES_TAX_RETURNS,
+        self::INCOME_TAX_RETURNS,
+        self::CERTIFICATION_REGISTRATION_BY_TAX_AUTH,
+        self::UTILITY_BILLS,
+        self::MOA,
+        self::AOA,
+        self::DARPAN_PORTAL,
 
         self::FIRS_FILE,
         self::FIRS_ZIP,
