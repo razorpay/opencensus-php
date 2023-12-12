@@ -4346,6 +4346,47 @@ class CommissionCreateTest extends TestCase
         $this->assertCount(0, $invoices);
     }
 
+    public function testForAdjustmentViaSettlementTDSFromPRTS()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->fixtures->create('transaction',
+            [
+                'id' => 'NAw8H5ejH7YCwc',
+                'entity_id' => '9nDpYjuyZsOlMK',
+                'merchant_id' => '1000000000plat',
+                'type' => 'adjustment'
+            ]
+        );
+
+        DB::connection('test')->table('adjustment')->insert(
+            [
+                'id' => '9nDpYjuyZsOlMK',
+                'merchant_id' => '1000000000plat',
+                'entity_id' => 'MLMq2vRFqMlyoJ',
+                'entity_type' => 'commission_invoice',
+                'amount' => 1264,
+                'currency' => 'INR',
+                'description' => 'desc',
+                'channel' => 'yesbank',
+                'transaction_id' => 'NAw8H5ejH7YCwc',
+                'status' => 'processed',
+                'balance_id' => 'FD7BWf1yiyRo18',
+                'created_at' => '1548745646',
+                'updated_at' => '1548745646',
+            ],
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest($testData);
+
+        $adj = $this->getDbEntities('adjustment');
+        $this->assertCount(1, $adj);
+    }
+
     public function testReverseShadowCompleteFlowFromPRTS()
     {
         // invoices created with issued status

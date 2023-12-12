@@ -1437,4 +1437,27 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testForAdjustmentViaSettlementTDSFromPRTS' => [
+        'request' => [
+            'method' => 'post',
+            'url'    => '/internal/commissions_invoice/process',
+            'content' => [
+                "id" => "Mazh0bq30sJVmu",
+                "action" => "settlement",
+                "payload" => "{\"Invoice\":{\"id\":\"MLMq2vRFqMlyoJ\",\"created_at\":1691015878,\"updated_at\":1691016142,\"deleted_at\":{\"Int64\":0,\"Valid\":false},\"merchant_id\":\"1000000000plat\",\"month\":7,\"year\":2023,\"status\":\"approved\",\"gross_amount\":1264,\"tax_amount\":193,\"balance_id\":\"FD7BWf1yiyRo18\",\"file_details\":{\"fileName\":\"fileName.pdf\",\"location\":\"pdfs/commission/\",\"bucketName\":\"S3BucketName\"},\"line_items\":[{\"id\":\"MLMq2wPcBB9IpP\",\"created_at\":1691015878,\"updated_at\":1691015878,\"deleted_at\":{\"Int64\":0,\"Valid\":false},\"name\":\"primary_commission\",\"entity_type\":\"commission_invoice\",\"entity_id\":\"MLMq2vRFqMlyoJ\",\"gross_amount\":1264,\"currency\":\"INR\",\"tax_amount\":193,\"tax_rate\":1800,\"Taxes\":[{\"id\":\"MLMq2whfYbZBOB\",\"created_at\":1691015878,\"updated_at\":1691015878,\"deleted_at\":{\"Int64\":0,\"Valid\":false},\"line_item_id\":\"MLMq2wPcBB9IpP\",\"tax_id\":\"9nDpYjuyZsOlMK\",\"name\":\"CGST @ 9%\",\"rate\":90000,\"rate_type\":\"percentage\",\"amount\":96},{\"id\":\"MLMq2wn7UaimaB\",\"created_at\":1691015878,\"updated_at\":1691015878,\"deleted_at\":{\"Int64\":0,\"Valid\":false},\"line_item_id\":\"MLMq2wPcBB9IpP\",\"tax_id\":\"9nDpYqgYcqpr8q\",\"name\":\"SGST @ 9%\",\"rate\":90000,\"rate_type\":\"percentage\",\"amount\":96}]}]},\"CreateTds\":true,\"TdsPercentage\":{\"IsSet\":false,\"Value\":0}}",
+                "created_at" => 1694433789,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "id" => "Mazh0bq30sJVmu",
+                "created_at" => 1694433789,
+                "response" => [
+                    "processed" => true,
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

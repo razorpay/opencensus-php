@@ -442,8 +442,17 @@ class Core extends Base\Core
         return $configs->first()->getTdsPercentage();
     }
 
-    public function createCommissionTds(Merchant\Entity $partner, int $totalTds)
+    public function createCommissionTds(Merchant\Entity $partner, int $totalTds, string $invoiceId = null)
     {
+        if($invoiceId != null)
+        {
+            $adj = $this->repo->adjustment->findAdjustmentByEntityIdAndEntityType($invoiceId, 'commission_invoice', $partner->getId());
+            if(isset($adj) === true)
+            {
+                return;
+            }
+        }
+
         // adj should be on yes_bank channel as commission channel is also yes_bank
         $input = [
             Adjustment\Entity::TYPE        => Balance\Type::COMMISSION,
@@ -452,6 +461,11 @@ class Core extends Base\Core
             Adjustment\Entity::CHANNEL     => Channel::YESBANK,
             Adjustment\Entity::DESCRIPTION => Constants::ADJUSTMENT_TDS_DESCRIPTION,
         ];
+        if ($invoiceId != null)
+        {
+            $input[Adjustment\Entity::ENTITY_TYPE] = 'commission_invoice';
+            $input[Adjustment\Entity::ENTITY_ID]   = $invoiceId;
+        }
 
         (new Adjustment\Core)->createAdjustment($input, $partner);
     }
