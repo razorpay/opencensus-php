@@ -115,6 +115,17 @@ class Payment extends Base
             return;
         }
 
+        $isInternalPaymentMethod = PaymentModel\Method::isInternalPaymentMethod($method);
+
+        if (($rulesCount === 0) and ($isInternalPaymentMethod === true) and ($orgId === Org\Entity::RAZORPAY_ORG_ID))
+        {
+            $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($this->entity);
+
+            $this->pricingRules->push($zeroPricingRule);
+
+            return;
+        }
+
         $rule = $this->getPricingRule($rules, $method);
 
         if ($rule === null)

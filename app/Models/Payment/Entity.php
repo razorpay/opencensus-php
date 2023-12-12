@@ -2706,6 +2706,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
     }
 
+    public function isRazorpayAccountPayment()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::RAZORPAY_ACCOUNT);
+    }
+
     public function isAppTwid()
     {
         return  (($this->getAttribute(self::METHOD) === Payment\Method::APP) and

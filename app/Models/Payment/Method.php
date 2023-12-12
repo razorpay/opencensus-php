@@ -24,6 +24,7 @@ class Method
     const UNSELECTED            = 'unselected';
     const INTL_BANK_TRANSFER    = 'intl_bank_transfer';
     const FPX                   = 'fpx';
+    const RAZORPAY_ACCOUNT      = 'razorpay_account';
 
     protected static $methods = [
         self::CARD                  => 'Card',
@@ -43,6 +44,7 @@ class Method
         self::OFFLINE               => 'Offline',
         self::INTL_BANK_TRANSFER    => 'Intl Bank Transfer',
         self::FPX                   => 'Financial Process Exchange',
+        self::RAZORPAY_ACCOUNT      => 'Razorpay Account',
     ];
 
     protected static $nonEsAutomaticMethods = [
@@ -53,6 +55,10 @@ class Method
 
     protected static $preAuthorizeGooglePayMethods = [
         self::UNSELECTED   => 'unselected',
+    ];
+
+    protected static $internalPaymentMethods = [
+        self::RAZORPAY_ACCOUNT,
     ];
 
     public static $bankMethods = [
@@ -149,6 +155,11 @@ class Method
     public static function getNonEsPaymentMethods()
     {
         return array_keys(self::$nonEsAutomaticMethods);
+    }
+
+    public static function isInternalPaymentMethod($method)
+    {
+        return in_array($method, self::$internalPaymentMethods, true);
     }
 
     public static function isValid($method)

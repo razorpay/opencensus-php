@@ -184,8 +184,7 @@ class Core extends Base\Core
 
         $payment->merchant()->associate($merchant);
 
-        if ($payment->getCpsRoute() !== Payment\Entity::REARCH_PCP_PAYMENT_SERVICE)
-        {
+        if (empty($payment->getTerminalId()) === false) {
             $terminal = $this->repo->terminal->findOrFail($payment->getTerminalId());
             $payment->terminal()->associate($terminal);
         }
@@ -202,20 +201,24 @@ class Core extends Base\Core
 
             $txn =  $this->createTransactionForCapturedPayment($payment, $txnId);
 
-            //For rearch card payments, journals are created in payments-card microservice in reverse-shadow mode
-            if (($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
-                (in_array($payment->getCpsRoute(), [Payment\Entity::REARCH_CARD_PAYMENT_SERVICE,
-                                                    Payment\Entity::REARCH_UPI_PAYMENT_SERVICE,
-                                                    Payment\Entity::REARCH_PCP_PAYMENT_SERVICE]) === false) and
-                ($payment->merchant->getCurrency() === "INR"))
+            // for razorpay account payment method, journals are created in nbplus irrespective of ledger mode
+            if ($payment->isRazorpayAccountPayment() === false)
+            {
+                //For rearch card payments, journals are created in payments-card microservice in reverse-shadow mode
+                if (($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
+                    (in_array($payment->getCpsRoute(), [Payment\Entity::REARCH_CARD_PAYMENT_SERVICE,
+                            Payment\Entity::REARCH_UPI_PAYMENT_SERVICE,
+                            Payment\Entity::REARCH_PCP_PAYMENT_SERVICE]) === false) and
+                    ($payment->merchant->getCurrency() === "INR"))
 
-            {
-                $this->createPaymentLedgerEntriesInReverseShadow($payment);
-            }
-            else
-            {
-                $this->createLedgerEntriesForGatewayCapture($payment);
-                $this->createLedgerEntriesForMerchantCapture($payment, $txn);
+                {
+                    $this->createPaymentLedgerEntriesInReverseShadow($payment);
+                }
+                else
+                {
+                    $this->createLedgerEntriesForGatewayCapture($payment);
+                    $this->createLedgerEntriesForMerchantCapture($payment, $txn);
+                }
             }
 
             $this->repo->transaction(function() use ($payment,$txn)
@@ -334,7 +337,7 @@ class Core extends Base\Core
             {
                 CardsPaymentTransaction::dispatch($data);
             }
-            else if ($payment->isNetbanking() === true || $payment->isFpx() === true || $payment->isWallet() === true)
+            else if ($payment->isNetbanking() === true || $payment->isFpx() === true || $payment->isWallet() === true || $payment->isRazorpayAccountPayment() === true)
             {
                 $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
 

@@ -304,9 +304,10 @@ class Core extends Base\Core
 
         foreach ($methodsToCheck as $method)
         {
-            if ($method === Payment\Method::COD)
+            if (($method === Payment\Method::COD) or ($method === Payment\Method::RAZORPAY_ACCOUNT))
             {
                 // for Cod we are adding default pricing incase explicit pricing is not present
+                // for razorpay_account method, pricing is always zero which is set in pricing calculator
                 // hence the check can be ignored here
                 continue;
             }

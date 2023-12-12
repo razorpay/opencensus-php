@@ -2570,6 +2570,21 @@ class Processor
         return false;
     }
 
+    private function canRouteRazorpayAccountThroughRearchFlow($input): bool
+    {
+        // for razorpay_account payment method, always process via rearch flow except in test mode in production
+        if ($input[Payment\Entity::METHOD] === Payment\METHOD::RAZORPAY_ACCOUNT)
+        {
+            if ((app()->isEnvironmentProduction() === true) and ($this->mode === Mode::TEST))
+            {
+                return false;
+            }
+
+            return true;
+        }
+        return false;
+    }
+
     private function processPaymentViaPGRouter(array $input, $startTime)
     {
         (new Payment\Metric)->pushCreateMetricsViaPGRouter($input);
@@ -2614,6 +2629,12 @@ class Processor
             {
                 $input[Payment\Entity::CUSTOMER_ID] = $customer->getId();
             }
+        }
+
+        // strip sign if present before calling pg-router
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        {
+            Subscription\Entity::verifyIdAndSilentlyStripSign($input[Payment\Entity::SUBSCRIPTION_ID]);
         }
 
         //Add raw request coming from Edge to API for parity
@@ -2674,6 +2695,10 @@ class Processor
         if (isset($paymentData['payment_id']) === true)
         {
             return $paymentData['payment_id'];
+        }
+        if (isset($paymentData['data']) === true && isset($paymentData['data']['payment']) === true && isset($paymentData['data']['payment']['id']) === true)
+        {
+            return $paymentData['data']['payment']['id'];
         }
         if (isset($paymentData['razorpay_payment_id']) === true)
         {
@@ -2911,6 +2936,7 @@ class Processor
                 ($this->isOpgspImportMerchant() === false) and
                 ($this->isJPMCImportFlowMerchant() === false) and
                 (($this->canRouteWalletThroughRearchFlow($input) === true) or
+                ($this->canRouteRazorpayAccountThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or
                 ($this->canRouteThroughUpsRearchFlow($input) === true) or
