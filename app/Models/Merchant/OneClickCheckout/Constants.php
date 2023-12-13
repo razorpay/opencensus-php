@@ -119,6 +119,8 @@ class Constants
 
     const ONE_CC_SHIPPING_USING_CHECKOUT = "one_cc_shipping_using_checkout";
 
+    const ONE_CC_HIDE_COD_WHEN_DISABLED = "one_cc_hide_cod_when_disabled";
+
     const SHOPIFY_API_TYPES = [
         self::STOREFRONT,
         self::ADMIN_REST,
@@ -204,6 +206,7 @@ class Constants
         self::RETARGETING_SETTINGS,
         self::SHIPPING_ENGINE,
         self::ONE_CC_SHIPPING_USING_CHECKOUT,
+        self::ONE_CC_HIDE_COD_WHEN_DISABLED,
     ];
 
     /**
@@ -251,6 +254,7 @@ class Constants
        self::ONE_CC_PREPAY_COD_CONVERSION,
        self::SHIPPING_ENGINE,
        self::ONE_CC_COUPON_ENGINE,
+       self::ONE_CC_HIDE_COD_WHEN_DISABLED,
     ];
 
     const INTELLIGENCE_CONFIGS = [
