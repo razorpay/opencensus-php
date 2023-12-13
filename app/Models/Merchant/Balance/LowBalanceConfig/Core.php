@@ -513,6 +513,13 @@ class Core extends Base\Core
 
         if ($product === Balance\Type::BANKING)
         {
+            /*
+             * Not needed as method_exists and call_user_func_array are case insensitive, but doing this for clarity.
+             * Ref - https://www.php.net/manual/en/function.method-exists.php#93934
+             */
+            $channel     = title_case($channel);
+            $accountType = title_case($accountType);
+
             $getBalanceAmountMethod = 'getBalanceAmountFor' . $channel . $accountType . 'Account';
 
             if (method_exists($this, $getBalanceAmountMethod) === true)
@@ -525,6 +532,16 @@ class Core extends Base\Core
     }
 
     public function getBalanceAmountForRblDirectAccount(Balance\Entity $balanceEntity)
+    {
+        return $balanceEntity->bankingAccountStatementDetails->getGatewayBalance() ?? 0;
+    }
+
+    public function getBalanceAmountForIciciDirectAccount(Balance\Entity $balanceEntity)
+    {
+        return $balanceEntity->bankingAccountStatementDetails->getGatewayBalance() ?? 0;
+    }
+
+    public function getBalanceAmountForYesbankDirectAccount(Balance\Entity $balanceEntity)
     {
         return $balanceEntity->bankingAccountStatementDetails->getGatewayBalance() ?? 0;
     }
