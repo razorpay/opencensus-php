@@ -1,22 +1,27 @@
-// utils
-import { render, screen, userEvent } from 'test-utils';
-import { Provider } from 'react-redux';
-import { storeWithInitialState } from 'merchant/store';
-
-// components
 import { Formik } from 'formik';
+import { Provider } from 'react-redux';
 
-// states
+import { storeWithInitialState } from 'merchant/store';
+import SupportingDocuments from 'merchant/views/Settings/Configuration/Questionnaire/SupportingDocuments';
 import {
   formInitialValues,
   getFormSchema,
 } from 'merchant/views/Settings/Configuration/Questionnaire/utils';
+import { render, screen, userEvent } from 'test-utils';
 
-// testable
-import SupportingDocuments from 'merchant/views/Settings/Configuration/Questionnaire/SupportingDocuments';
-
-// mock
 jest.mock('merchant/utils/ajax');
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: jest.fn(() => ({
+    abExperiments: {
+      internationalAdditionalDocs: {
+        variables: {
+          result: 'on',
+        },
+      },
+    },
+  })),
+}));
 
 const onSubmit = jest.fn();
 
@@ -27,7 +32,9 @@ const renderComponent = (props, values) => {
         session: {
           mode: 'live',
           org: { id: '123' },
-          user: {},
+          user: {
+            business_type: '4',
+          },
         },
       })}
     >
@@ -166,5 +173,14 @@ describe('Test <SupportingDocuments /> component', () => {
     await userEvent.click(screen.getByText('+Add'));
 
     expect(await screen.findByText('test 2')).toBeInTheDocument();
+  });
+
+  test('should render additional documents if experiments are enabled', () => {
+    renderComponent({
+      isRevampFlow: true,
+    });
+
+    expect(screen.getByText(/Articles of Association/)).toBeInTheDocument();
+    expect(screen.getByText(/Memorandom of Association/)).toBeInTheDocument();
   });
 });

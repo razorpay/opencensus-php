@@ -1,59 +1,27 @@
-import Input from 'common/new-ui/Input';
-import { useFormikContext } from 'formik';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
 import React from 'react';
+import { useFormikContext } from 'formik';
 import { connect } from 'react-redux';
-import MultiFileUpload from './MultiFileUpload';
-import { getAdditionalDocumentsBasedOnSubCategory, getIsOtherDocumentInRevampFlow } from './utils';
-import { LabelWithTooltip } from 'merchant/views/Settings/Configuration/Questionnaire/Tooltip';
+
+import Input from 'common/new-ui/Input';
+import { useSplitzService } from 'common/splitz';
 import { stringToObj } from 'common/utils/rzp-utils';
-import styled from 'styled-components';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { LabelWithTooltip } from 'merchant/views/Settings/Configuration/Questionnaire/Tooltip';
+import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
 
-const StyledFieldContainer = styled.div`
-  .container {
-    display: flex;
-    justify-content: flex-start;
-    width: 100%;
-    margin-top: 15px;
-  }
-
-  .document-label {
-    color: #58666e;
-    font-size: 14px;
-    padding: 10px;
-    margin-left: 20px;
-    font-weight: bold;
-  }
-
-  .document-label-info {
-    color: #8895a8;
-    font-size: 12px;
-    padding: 10px;
-    width: 250px;
-  }
-
-  .Input {
-    margin-top: 0;
-  }
-
-  @media (max-width: 820px) {
-    .container {
-      flex-direction: column;
-      align-items: flex-start;
-      margin-left: -25px;
-    }
-
-    .document-label {
-      margin-left: 0;
-    }
-  }
-`;
+import AdditionalDocuments from './AdditionalDocuments';
+import MultiFileUpload from './MultiFileUpload';
+import { StyledFieldContainer } from './styles';
+import { getAdditionalDocumentsBasedOnSubCategory, getIsOtherDocumentInRevampFlow } from './utils';
 
 const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user }) => {
   const [transactionProofDocs, setTransactionProofDocs] = React.useState([]);
   const [additionalDocs, setAdditionalDocs] = React.useState([]);
   const formikProps = useFormikContext();
+  const {
+    abExperiments: { internationalAdditionalDocs },
+  } = useSplitzService();
+  const isAdditionalDocExperimentEnabled = internationalAdditionalDocs.variables.result === 'on';
 
   const handleFileUpload = (docType, file, progressTracker) => {
     const formData = new FormData();
@@ -188,7 +156,7 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
 
   const getAdditionalDocumentsOptions = () => {
     const documents = [
-      { label: '', name: '' },
+      { label: 'Select', name: '' },
       { label: 'Forward inward remittance statement', name: 'firc' },
     ];
 
@@ -208,6 +176,10 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
       setTransactionProofDocs([]);
       setAdditionalDocs([]);
     }
+  };
+
+  const handleImportCodeChange = (e) => {
+    formikProps.setFieldValue('import_export_code', e?.target?.value);
   };
 
   const getError = (name) =>
@@ -238,7 +210,7 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
         placeholder="Enter I/E code here (Optional)"
         info="Example: U67190TN20"
         disabled={disabled}
-        onBlur={handleChange}
+        onChange={handleImportCodeChange}
         value={formikProps.values.import_export_code}
         mature={formikProps.touched.import_export_code}
         propagatedError={getError('import_export_code')}
@@ -280,7 +252,7 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
           </div>
           <Input.Select
             options={[
-              { label: '', name: '' },
+              { label: 'Select', name: '' },
               { label: 'Bank Statement', name: 'bank_statement' },
               { label: 'Invoices', name: 'invoices' },
             ]}
@@ -358,6 +330,10 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
           />
         );
       })}
+
+      {isAdditionalDocExperimentEnabled ? (
+        <AdditionalDocuments disabled={disabled} saveFormData={saveFormData} />
+      ) : null}
 
       <div class="Input Input--required Input--checkbox">
         <div class="Input-content">

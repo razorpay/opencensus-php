@@ -17,6 +17,7 @@ const StorageStatePath = {
   PLATFORM_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/platform-partner-desktop-test-mode-login.json`,
   OPTIMIZER_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-login.json`,
   OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
+  INTERNATIONAL_ACTIVATION_STATE: `${BASE_PATH}/international-activation.json`,
 };
 
 const routes = {
@@ -57,6 +58,7 @@ const routes = {
   OPTIMIZER: 'app/optimizer/rules',
   WHATSAPP_ACCOUNT_SETUP: 'app/payments-and-refunds-settings/whatsapp-account-setup',
   PAYMENT_METRICS: '/app/payment-metrics',
+  INTERNATIONAL_PAYMENTS: '/app/payment-methods/international-payments',
 };
 
 const EmailCredentials = [
@@ -125,6 +127,12 @@ const EmailCredentials = [
     username: ENV.EMAIL_OPTIMIZER_V1_USERNAME,
     password: ENV.EMAIL_OPTIMIZER_V1_PASSWORD,
     storagePath: StorageStatePath.OPTIMIZER_V1_LOGIN_STATE,
+  },
+  {
+    type: 'international-activation.json',
+    username: ENV.INTERNATIONAL_ACTIVATION_USERNAME,
+    password: ENV.INTERNATIONAL_ACTIVATION_PASSWORD,
+    storagePath: StorageStatePath.INTERNATIONAL_ACTIVATION_STATE,
   },
 ];
 

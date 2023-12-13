@@ -1,10 +1,19 @@
+import * as Yup from 'yup';
+
 import { BUSINESS_SUBCATEGORIES } from 'common/typings/User';
 import { humanize } from 'common/utils/rzp-utils';
-import * as Yup from 'yup';
+
 import BusinessDetails from './BusinessDetails';
 import SubmitForm from './SubmitForm';
 import SupportingDetails from './SupportingDetails';
 import SupportingDocuments from './SupportingDocuments';
+import {
+  ADDITIONAL_DOCUMENTS_FOR_BUSINESS_TYPE,
+  FIRC_DOCUMENT,
+  SETTLEMENT_RECORD,
+  EMPTY_OPTION,
+  DOCUMENTS_SCHEMA,
+} from './constants';
 
 export const formInitialValues = {
   products: [],
@@ -384,7 +393,7 @@ export const getAdditionalDocumentsBasedOnSubCategory = ({ business_subcategory 
   }
 };
 
-export const getFormSchema = (isIERevamp) => {
+export const getFormSchema = (isIERevamp, businessType) => {
   const schema = Yup.object().shape({
     products: Yup.string().nullable().required('Please select an option'),
     goods_type: Yup.string().nullable().required('Goods Type is a required field'),
@@ -404,15 +413,25 @@ export const getFormSchema = (isIERevamp) => {
   });
 
   if (isIERevamp) {
+    let documents = Yup.object().shape({
+      bank_statement_inward_remittance: Yup.array().nullable(),
+      invoices: Yup.array().nullable(),
+      current_payment_partner_settlement_record: Yup.array().nullable(),
+      firc: Yup.array().nullable(),
+    });
+
+    if (businessType) {
+      const additionalDocSchema = DOCUMENTS_SCHEMA[businessType];
+
+      if (additionalDocSchema) {
+        documents = documents.concat(additionalDocSchema);
+      }
+    }
+
     return schema.concat(
       Yup.object().shape({
         about_us_link: Yup.string().nullable(),
-        documents: Yup.object().shape({
-          bank_statement_inward_remittance: Yup.array().nullable(),
-          invoices: Yup.array().nullable(),
-          current_payment_partner_settlement_record: Yup.array().nullable(),
-          firc: Yup.array().nullable(),
-        }),
+        documents,
       }),
     );
   } else {
@@ -429,4 +448,21 @@ export const getIsOtherDocumentInRevampFlow = (docType) => {
     !defaultFileTypesIERevamp.find((_fileTypes) => _fileTypes.name === docType) &&
     docType !== 'current_payment_partner_settlement_record'
   );
+};
+
+export const getAdditionalDocumentsBasedOnBusinessType = ({ businessType, acceptsIntlTxns }) => {
+  let config = ADDITIONAL_DOCUMENTS_FOR_BUSINESS_TYPE[businessType];
+
+  if (!config) {
+    config = [
+      {
+        type: 'select',
+        options: acceptsIntlTxns
+          ? [EMPTY_OPTION, FIRC_DOCUMENT, SETTLEMENT_RECORD]
+          : [EMPTY_OPTION, FIRC_DOCUMENT],
+      },
+    ];
+  }
+
+  return config;
 };

@@ -89,6 +89,7 @@ type UserProperties = {
     max_payment_amount: number;
     currency: string;
   };
+  business_type: string;
   business_subcategory: BUSINESS_SUBCATEGORIES | string;
   isTransacted: boolean;
   isAllowedView: (args: string) => boolean;

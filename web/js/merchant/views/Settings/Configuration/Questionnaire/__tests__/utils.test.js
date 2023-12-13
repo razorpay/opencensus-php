@@ -7,6 +7,7 @@ import {
   defaultFileTypesIERevamp,
   getIsOtherDocumentInRevampFlow,
   getFormSchema,
+  getAdditionalDocumentsBasedOnBusinessType,
 } from 'merchant/views/Settings/Configuration/Questionnaire/utils';
 
 describe('Test modelFormData util', () => {
@@ -154,24 +155,25 @@ describe('getIsOtherDocumentInRevampFlow', () => {
 });
 
 describe('getFormSchema', () => {
-  test.each([[true], [false]])(
-    'should contain common fields when IE revamp is %s',
-    (isIERevamp) => {
-      const fieldsList = getFormSchema(isIERevamp).fields;
-      [
-        'products',
-        'goods_type',
-        'business_use_case',
-        'business_txn_size',
-        'existing_risk_checks',
-        'accepts_intl_txns',
-        'import_export_code',
-        'submit',
-      ].forEach((field) => {
-        expect(fieldsList[field]).toBeDefined();
-      });
-    },
-  );
+  test.each([
+    [true, false],
+    [false, true],
+    [true, true],
+  ])('should contain common fields when IE revamp is %s', (isIERevamp, businessType) => {
+    const fieldsList = getFormSchema(isIERevamp, businessType ? '1' : null).fields;
+    [
+      'products',
+      'goods_type',
+      'business_use_case',
+      'business_txn_size',
+      'existing_risk_checks',
+      'accepts_intl_txns',
+      'import_export_code',
+      'submit',
+    ].forEach((field) => {
+      expect(fieldsList[field]).toBeDefined();
+    });
+  });
 
   test('should contain about us link and documents when IE revamp is true', () => {
     const fieldsList = getFormSchema(true).fields;
@@ -185,5 +187,41 @@ describe('getFormSchema', () => {
     ].forEach((document) => {
       expect(fieldsList.documents.fields[document]).toBeDefined();
     });
+  });
+});
+
+describe('Test getAdditionalDocumentsBasedOnBusinessType util', () => {
+  test('Should return default documents if business type is not provided', () => {
+    expect(getAdditionalDocumentsBasedOnBusinessType({})).toStrictEqual([
+      {
+        options: [
+          { label: 'Select', name: '' },
+          { label: 'Forward inward remittance statement', name: 'firc' },
+        ],
+        type: 'select',
+      },
+    ]);
+  });
+
+  test('Should return default documents if valid business type is not provided', () => {
+    expect(getAdditionalDocumentsBasedOnBusinessType({ businessType: 'gaming' })).toStrictEqual([
+      {
+        options: [
+          { label: 'Select', name: '' },
+          { label: 'Forward inward remittance statement', name: 'firc' },
+        ],
+        type: 'select',
+      },
+    ]);
+  });
+
+  test('Should return additional documents if business type is provided', () => {
+    expect(getAdditionalDocumentsBasedOnBusinessType({ businessType: '4' })).toStrictEqual([
+      {
+        label: 'Articles of Association',
+        name: 'aoa',
+      },
+      { label: 'Memorandom of Association', name: 'moa' },
+    ]);
   });
 });

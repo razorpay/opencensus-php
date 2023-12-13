@@ -1,23 +1,35 @@
 import React, { useCallback, useEffect, useReducer, useRef } from 'react';
+import { IconButton, ArrowLeftIcon } from '@razorpay/blade/components';
 import { Formik, Form } from 'formik';
 import { connect } from 'react-redux';
 
-import { merchantFetch } from 'merchant/utils/ajax';
-import Spinner from 'common/ui/Spinner';
-import { ModalAsideNav } from 'common/new-ui/Wizard';
-import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Button from 'common/new-ui/Button';
-import { IconButton, ArrowLeftIcon } from '@razorpay/blade/components';
-import Loader from 'merchant/components/Activation/components/Loader';
+import { Modal, ModalContent } from 'common/new-ui/Modal';
+import { ModalAsideNav } from 'common/new-ui/Wizard';
+import { useSplitzService } from 'common/splitz';
+import Spinner from 'common/ui/Spinner';
+import useDebounce from 'common/utils/useDebounce';
 import { LOADING } from 'merchant/components/Activation/Constants';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import SuccessModal from './SuccessModal';
-import ExitConfirmation from './ExitConfirmation';
-import { initialState, initialStateForRevamp, reducer } from './stateHelpers';
+import Loader from 'merchant/components/Activation/components/Loader';
+import { merchantFetch } from 'merchant/utils/ajax';
 import {
   openModal as openModalFn,
   closeModal as closeModalFn,
 } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import ExitConfirmation from './ExitConfirmation';
+import FormWrapper from './FormWrapper';
+import SuccessModal from './SuccessModal';
+import {
+  trackDataSaveError,
+  trackDataSaveSuccess,
+  trackDataSaving,
+  trackFormButtonClicked,
+  trackModalClosed,
+  trackModalOpened,
+} from './analytics';
+import { initialState, initialStateForRevamp, reducer } from './stateHelpers';
 import {
   tabsData as tabs,
   revampTabs,
@@ -28,18 +40,6 @@ import {
   modelFormDataBeforeSave,
   getAdditionalDocumentsBasedOnSubCategory,
 } from './utils';
-
-//Analytics
-import {
-  trackDataSaveError,
-  trackDataSaveSuccess,
-  trackDataSaving,
-  trackFormButtonClicked,
-  trackModalClosed,
-  trackModalOpened,
-} from './analytics';
-import FormWrapper from './FormWrapper';
-import useDebounce from 'common/utils/useDebounce';
 
 // eslint-disable-next-line no-shadow
 const Questionnaire = ({
@@ -57,6 +57,11 @@ const Questionnaire = ({
   let loaderTimeout;
   const isDisabled = false;
   const tabsData = isRevampFlow ? revampTabs : tabs;
+  const {
+    abExperiments: { internationalAdditionalDocs },
+  } = useSplitzService();
+
+  const isAdditionalDocExperimentEnabled = internationalAdditionalDocs.variables.result === 'on';
 
   useEffect(() => {
     dispatch({ type: 'LOADING', payload: true });
@@ -403,7 +408,10 @@ const Questionnaire = ({
     );
   };
 
-  const schema = getFormSchema(isRevampFlow);
+  const schema = getFormSchema(
+    isRevampFlow,
+    isAdditionalDocExperimentEnabled ? user.business_type : null,
+  );
 
   // only consider isNextDisabled in revamp
   const isNextDisabled = !tabsValidity[activeTab] && isRevampFlow;
