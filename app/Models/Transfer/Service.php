@@ -556,26 +556,32 @@ class Service extends Base\Service
 
     public function processCreatedOrderTransfers(array $input)
     {
-        $limit = (int) ($input['limit'] ?? 300);
+        if (isset($input['order_ids']) === false)
+        {
+            $limit = (int)($input['limit'] ?? 300);
 
-        $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
+            $olderThanMinutes = (int)($input['minutes'] ?? 3 * 60);
 
-        $startTime = microtime();
+            $startTime = microtime();
 
-        $orderIds = $this->repo->transfer->fetchCreatedOrderTransfers($limit, $olderThanMinutes);
+            $orderIds = $this->repo->transfer->fetchCreatedOrderTransfers($limit, $olderThanMinutes);
 
-        $endTime = microtime();
+            $endTime = microtime();
 
-        $this->trace->info(
-            TraceCode::CREATED_ORDER_TRANSFERS_FOR_KEY_MERCHANTS_FETCHED,
-            [
-                'order_ids'      => $orderIds,
-                'time_taken'     => ($endTime - $startTime),
-                'count'          => array_count_values($orderIds),
-                'sync'           => $syncProcessing,
-                'older_than_min' => $olderThanMinutes
-            ]
-        );
+            $this->trace->info(
+                TraceCode::CREATED_ORDER_TRANSFERS_FOR_KEY_MERCHANTS_FETCHED,
+                [
+                    'order_ids' => $orderIds,
+                    'time_taken' => ($endTime - $startTime),
+                    'count' => array_count_values($orderIds),
+                    'older_than_min' => $olderThanMinutes
+                ]
+            );
+        }
+        else
+        {
+            $orderIds = $input['order_ids'];
+        }
 
         foreach ($orderIds as $orderId)
         {
@@ -583,6 +589,12 @@ class Service extends Base\Service
 
             if (empty($order) === false)
             {
+                $this->trace->info(
+                    TraceCode::PAID_ORDER_CREATED_TRANSFER_PICKED_VIA_CRON,
+                    [
+                       'order_id' => $order->getId()
+                    ]
+                );
                 $this->core->fetchTransfersAndMoveToPending($order);
             }
         }

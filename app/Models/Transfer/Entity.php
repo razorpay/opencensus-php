@@ -459,7 +459,7 @@ class Entity extends Base\PublicEntity
 
     public function setPending()
     {
-        $this->setAttribute(self::PENDING, $status);
+        $this->setStatus(Status::PENDING);
     }
 
     public function setProcessed()

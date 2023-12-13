@@ -1265,7 +1265,7 @@ class Core extends Base\Core
     {
         $transfers = $this->repo
                           ->transfer
-                          ->fetchBySourceTypeAndIdAndMerchant(Constant::ORDER,  $order->getId(), $order->merchant , [Status::FAILED]);
+                          ->fetchBySourceTypeAndIdAndMerchant(Constant::ORDER,  $order->getId(), $order->merchant , [Status::CREATED]);
 
         if (empty($transfers) === true)
         {

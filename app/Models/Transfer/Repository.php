@@ -10,6 +10,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
+use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
 use RZP\Models\Transaction\Entity as TxnEntity;
 
@@ -241,31 +242,23 @@ class Repository extends Base\Repository
 
     public function fetchCreatedOrderTransfers(int $count, int $minutes)
     {
-        $orderId        = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
-        $paymentStatus  = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
-        $OrderStatus    = $this->repo->payment->dbColumn(Order\Entity::STATUS);
-        $merchantId     = $this->repo->transfer->dbColumn(Entity::MERCHANT_ID);
+        $orderId        = $this->repo->order->dbColumn(Payment\Entity::ID);
+        $orderStatus    = $this->repo->order->dbColumn(Order\Entity::STATUS);
         $sourceId       = $this->repo->transfer->dbColumn(Entity::SOURCE_ID);
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
-        $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
+        $createdAt      = $this->repo->transfer->dbColumn(Entity::CREATED_AT);
 
-        $query = $this->newQueryOnSlave();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getPaymentFetchReplicaConnection();
-
-            $query = $this->newQueryWithConnection($connectionType);
-        }
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN));
 
         return $query
-                    ->join(Table::PAYMENT, $sourceId, '=', $orderId)
+                    ->from(\DB::raw('`transfers` FORCE INDEX (transfers_created_at_index)'))
+                    ->join(Table::ORDER, $sourceId, '=', $orderId)
                     ->select(Entity::SOURCE_ID)
                     ->where(Entity::SOURCE_TYPE, Constant::ORDER)
                     ->where($transferStatus, Status::CREATED)
                     ->where($orderStatus, Order\Status::PAID)
-                    ->where($paymentStatus, Payment\Status::CAPTURED)
-                    ->where($updatedAt, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
+                    ->where($createdAt, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
+                    ->where($createdAt, '>', Carbon::now()->subMinutes($minutes + 1440)->getTimestamp())
                     ->limit($count)
                     ->distinct()
                     ->pluck(Entity::SOURCE_ID)
