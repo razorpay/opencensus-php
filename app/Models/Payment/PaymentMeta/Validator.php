@@ -59,7 +59,7 @@ class Validator extends Base\Validator
         if (Currency::isSupportedCurrency($input[Entity::GATEWAY_CURRENCY]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid DCC Currency: '.$input[Entity::GATEWAY_CURRENCY]);
+                'Invalid Currency selected');
         }
     }
 

@@ -1942,7 +1942,7 @@ class Validator extends Base\Validator
         if (Currency::isSupportedCurrency($dccCurrency) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid DCC Currency: ' . $dccCurrency);
+                'Invalid Currency selected');
         }
     }
 
