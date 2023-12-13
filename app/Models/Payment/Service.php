@@ -7218,6 +7218,8 @@ class Service extends Base\Service
                 // and entity id field is only indexed on slave.
                 $paymentDocument = $this->repo->invoice->findOrFail($paymentDocument->getId());
                 $paymentDocument->setRefNum($documentId);
+                $paymentDocument->setStatus(Invoice\Status::PAID);
+
                 $this->repo->invoice->saveOrFail($paymentDocument);
 
                 $this->trace->info(TraceCode::PAYMENT_UPDATED_WITH_MERCHANT_DOC,
@@ -7317,6 +7319,8 @@ class Service extends Base\Service
                 $paymentDocument = $this->repo->invoice->findOrFail($paymentDocument->getId());
 
                 $paymentDocument->setRefNum(substr($uploadResponse['id'],4));
+
+                $paymentDocument->setStatus(Invoice\Status::PAID);
 
                 $this->repo->invoice->saveOrFail($paymentDocument);
 

@@ -498,6 +498,27 @@ class Core extends Base\Core
             $notes = $paymentEntity->getNotes()->toArray();
         }
 
+        if ((isset($merchantEntity) === false) ||
+            (isset($paymentEntity) === false) || 
+            (isset($orderEntity) === false) ||
+            (empty($cartInfo) === true) ||
+            (empty($notes) === true))
+        {
+             $this->trace->info(
+                TraceCode::JPMC_TRANSACTION_META_DETAILS_MISSING,
+                [
+                    'payment_available'         => isset($paymentEntity),
+                    'order_available'           => isset($orderEntity),
+                    'merchant_available'        => isset($merchantEntity),
+                    'cart_info_empty'           => empty($cartInfo),
+                    'payment_notes_empty'       => empty($notes),
+                    'transaction_id'            => $txn->getId(),
+                    'merchant_id'               => $txn->getMerchantId(),
+                ]);
+
+            throw new Exception\LogicException('Transaction meta details not found for JPMC');
+        }
+
         $paymentDetails = [
             'id'                => $paymentEntity->getId(),
             'invoice_number'    => $notes['invoice_number'] ?? '',
@@ -506,7 +527,7 @@ class Core extends Base\Core
             'amount'            => $paymentEntity->getAmount(),
             'currency'          => $paymentEntity->getCurrency(),
             'base_amount'       => $paymentEntity->getBaseAmount(),
-            'customer_id'       => $paymentEntity->customer->getId(),
+            'customer_id'       => $paymentEntity->getAttribute('customer_id'),
         ];
 
         $orderDetails = [

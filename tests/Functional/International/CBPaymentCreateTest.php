@@ -2263,4 +2263,130 @@ class CBPaymentCreateTest extends TestCase
             'shipping_details'  => $customer,
         ];
     }
+
+    public function testJPMCImportFlowPaymentWithCustomCheckout()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+            'purpose_code' => 'S0802',
+            'convert_currency' => true,
+            'international' => false,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'enable_jpmc_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => $merchantId,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => 'jpmc_import_flow',
+            InternationalIntegration\Entity::INTEGRATION_KEY => 'jpmc_import_flow',
+            InternationalIntegration\Entity::NOTES => [
+                'hs_code' => '85238020'
+            ],
+        ]);
+
+        // create order
+        $order = $this->fixtures->create('order', 
+            [
+                'amount' => 1000,
+                'currency' => 'INR',
+            ]);
+
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValue(),
+                'type'     => 'cart_info',
+            ]);
+
+        // create payment
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+
+        $payment['amount'] = '1000';
+
+        $payment['currency'] = 'INR';
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $payment['notes'] = [
+            'invoice_number' => '1234567890qwertyuiop',
+            'goods_description' => 'sample description for goods or services',
+        ];
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $this->assertArrayHasKey('razorpay_order_id', $response);
+        $this->assertArrayHasKey('razorpay_signature', $response);
+        $this->assertEquals($order->getPublicId(), $response['razorpay_order_id']);
+
+        // validate payment authorized and details saved
+        $paymentEntity = $this->getDbLastPayment();
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($order->getId(), $paymentEntity['order_id']);
+        $this->assertEquals($payment['notes']['invoice_number'], $paymentEntity['notes']['invoice_number']);
+        $this->assertEquals($payment['notes']['goods_description'], $paymentEntity['notes']['goods_description']);
+
+        // validate payment invoice updated
+        $paymentInvoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($paymentEntity['id'], $paymentInvoice['entity_id']);
+        $this->assertEquals('jpmc_invoice', $paymentInvoice['type']);
+        $this->assertEquals($paymentEntity['notes']['invoice_number'], $paymentInvoice['receipt']);
+        $this->assertEquals('issued', $paymentInvoice['status']);
+        $this->assertNull($paymentInvoice['ref_num']);
+
+        // capture payment
+        $this->capturePayment($response['razorpay_payment_id'], $paymentEntity['amount'], $paymentEntity['currency'], $paymentEntity['amount']);
+
+        // validate payment captured and txn on_hold
+        $paymentEntity = $this->getDbLastPayment();
+        $transactionEntity = $paymentEntity->transaction;
+
+        $this->assertEquals('captured', $paymentEntity['status']);
+        $this->assertTrue($paymentEntity['captured']);
+
+        $this->assertEquals($paymentEntity['amount'], $transactionEntity['amount']);
+        $this->assertTrue($transactionEntity['on_hold']);
+
+        // upload invoice flow
+        Queue::fake();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId , $merchantUser['id']);
+
+        $request = [
+            'url'       => '/payment/' . $paymentEntity['id'] . '/update_merchant_doc',
+            'method'    => 'patch',
+            'content'   => [
+                'document_id'   => "doc_1234567890",
+                'document_type' => "jpmc_invoice"
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['document_updated']);
+
+        $paymentInvoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($request['content']['document_id'], $paymentInvoice['ref_num']);
+        $this->assertEquals('paid', $paymentInvoice['status']);
+
+        Queue::assertPushed(CrossBorderCommonUseCases::class, 1);
+    }
 }
