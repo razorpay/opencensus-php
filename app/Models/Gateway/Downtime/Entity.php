@@ -34,6 +34,8 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID   = 'merchant_id';
     const CREATED_AT    = 'created_at';
     const UPDATED_AT    = 'updated_at';
+    const FLOW          = 'flow';
+    const IN_APP        = 'in_app';
 
     // the following 3 are for network, issuer and card_type
     // for the appropriate default values instead of storing
@@ -207,6 +209,12 @@ class Entity extends Base\PublicEntity
                 case Payment\Method::NETBANKING:
                 case Payment\Method::WALLET:
                 case Payment\Method::UPI:
+                    if ($input[Entity::FLOW] === Entity::IN_APP)
+                        {
+                            $input[Entity::CARD_TYPE] = Entity::IN_APP;
+                            unset($input[Entity::FLOW]);
+                            break;
+                        }
                     $input[Entity::CARD_TYPE] = Entity::NA;
                     break;
 

@@ -8,9 +8,9 @@ use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DowntimeTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\MockHttpResponseTrait;
 
@@ -3288,5 +3288,118 @@ class GatewayDowntimeTest extends TestCase
         $this->app->razorx
             ->method('getTreatment')
             ->willReturn('enabled');
+    }
+
+    // turbo-upi downtime
+
+    public function testGatewayPlannedDowntimeCreateForTurboUpi()
+    {
+        $this->enablePaymentDowntimes();
+        $this->ba->adminAuth();
+
+        $startTime = strval(Carbon::now()->subMinutes(60)->timestamp);
+        $endTime   = strval(Carbon::now()->addMinutes(60)->timestamp);
+
+        $request = [
+            'content' => [
+                'scheduled'   => '1',
+                'begin'       => $startTime,
+                'end'         => $endTime,
+                'gateway'     => 'ALL',
+                'method'      => 'upi',
+                'source'      => 'BILLDESK',
+                'flow'        => 'in_app',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'partial'     => '0',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertEquals('upi', $response['method']);
+        $this->assertEquals($startTime, $response['begin']);
+        $this->assertEquals($endTime, $response['end']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('upi', $paymentDowntime['method']);
+        $this->assertEquals('in_app', $paymentDowntime['type']);
+        $this->assertEquals('medium', $paymentDowntime['severity']);
+        $this->assertEquals($startTime, $paymentDowntime['begin']);
+        $this->assertEquals($endTime, $paymentDowntime['end']);
+
+        return $response;
+    }
+
+    public function testGatewayPlannedDowntimeResolveForTurboUpi()
+    {
+
+        $this->ba->adminAuth();
+
+        $gatewayDowntime = $this->testGatewayPlannedDowntimeCreateForTurboUpi();
+        $beginTime       = $gatewayDowntime['begin'];
+        $endTime         = Carbon::now()->timestamp;
+
+        $request = [
+            'content' => [
+                'scheduled'   => '1',
+                'begin'       => $beginTime,
+                'end'         => $endTime,
+                'gateway'     => 'ALL',
+                'method'      => 'upi',
+                'source'      => 'BILLDESK',
+                'flow'        => 'in_app',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'partial'     => '0',
+            ],
+            'method' => 'PUT',
+            'url'    => '/gateway/downtimes/'.$gatewayDowntime['id']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('in_app', $response['card_type']);
+        $this->assertEquals('upi', $response['method']);
+        $this->assertEquals($beginTime, $response['begin']);
+        $this->assertNotNull($response['end']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('upi', $paymentDowntime['method']);
+        $this->assertEquals('in_app', $paymentDowntime['type']);
+        $this->assertEquals('medium', $paymentDowntime['severity']);
+        $this->assertEquals($paymentDowntime['begin'], $beginTime);
+        $this->assertEquals('started', $paymentDowntime['status']);
+        $this->assertNotNull($paymentDowntime['end']);
+    }
+
+    public function testGatewayPlannedDowntimeDeleteForTurboUpi()
+    {
+        $this->ba->adminAuth();
+
+        $gatewayDowntime = $this->testGatewayPlannedDowntimeCreateForTurboUpi();
+
+        $request = [
+            'content' => [],
+            'method' => 'DELETE',
+            'url'    => '/gateway/downtimes/'.$gatewayDowntime['id']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($gatewayDowntime['id'], $response['id']);
+
+        $existinggatewayDowntime = $this->getDbEntities('gateway_downtime')
+                                     ->where('id', '=', $gatewayDowntime['id'])
+                                     ->first();
+
+        $this->assertNull($existinggatewayDowntime);
+
+        $paymentDowntime = $this->getDbLastEntity('payment.downtime');
+
+        $this->assertEquals('resolved', $paymentDowntime->getStatusByTime());
     }
 }
