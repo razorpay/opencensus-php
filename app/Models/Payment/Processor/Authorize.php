@@ -1725,6 +1725,8 @@ trait Authorize
                     unset($request['content']['next']);
                 }
 
+                (new Payment\Service())->addExperimentDetailsInGatewayOtpPostFormData($response);
+
                 $templateData = [
                     'data'          => $response,
                     'cdn'           => $this->app['config']->get('url.cdn.production'),
@@ -1835,6 +1837,8 @@ trait Authorize
 
             //Process gateway specific parameters
             $response = $this->buildGatewayOtpResponse($response, $payment);
+
+            (new Payment\Service())->addExperimentDetailsInGatewayOtpPostFormData($response);
 
             $templateData = [
                'data'          => $response,

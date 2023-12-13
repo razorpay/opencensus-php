@@ -1240,6 +1240,8 @@ class PaymentCreateController extends Controller
             App::getLocale() :
             LocaleCore::setLocale($data, $merchant->getId());
 
+        $this->service(E::PAYMENT)->addExperimentDetailsInGatewayOtpPostFormData($input);
+
         $templateData = [
                'data'          => $input,
                'cdn'           => $this->config->get('url.cdn.production'),
@@ -1464,6 +1466,8 @@ class PaymentCreateController extends Controller
                     return $response;
                 }
 
+                $this->service(E::PAYMENT)->addExperimentDetailsInGatewayOtpPostFormData($data);
+
                 $templateData = [
                    'data'          => $data,
                    'cdn'           => $this->config->get('url.cdn.production'),
@@ -1565,6 +1569,9 @@ class PaymentCreateController extends Controller
                         return View::make('gateway.gatewayCardlessEmiForm')
                                    ->with('data', $data);
                     }
+
+                    $this->service(E::PAYMENT)->addExperimentDetailsInGatewayOtpPostFormData($data);
+
                     $templateData = [
                        'data'          => $data,
                        'cdn'           => $this->config->get('url.cdn.production'),

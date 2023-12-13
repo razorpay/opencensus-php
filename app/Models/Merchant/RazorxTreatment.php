@@ -956,7 +956,10 @@ final class RazorxTreatment
      * Razorx flag to enable/disable validation on payee_account length during bank_transfer Callback
      */
     const PAYEE_ACCOUNT_LENGTH_VALIDATION = 'payee_account_length_validation';
-
+    /*
+    * Razorx flag is used to control versions(old/new) of otp unification for acs page
+    */
+    const OTP_UNIFICATION_ACS_PAGE  = 'otp_unification_acs_page';
     /**
      * Razorx flag to ramp up experiment to fix the bug of converting amount to rupee from paise
      */

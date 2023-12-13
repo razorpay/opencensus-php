@@ -7862,4 +7862,19 @@ class Service extends Base\Service
             return $this->repo->payment->fetchTurboUpiPaymentByReference1($txnId, $startTime, $currentTime);
         }
     }
+
+    /**
+     * @param array &$input
+     */
+    public function addExperimentDetailsInGatewayOtpPostFormData(array &$input): void
+    {
+        $merchantId = $input["merchant_id"] ?? "";
+        $otpUnificationAcsPageVariant = $this->app['razorx']->getTreatment(
+            $merchantId,
+            RazorxTreatment::OTP_UNIFICATION_ACS_PAGE,
+            $this->app['rzp.mode'],
+        );
+
+        $input['experiments']['otp_unification_acs_page'] = $otpUnificationAcsPageVariant;
+    }
 }
