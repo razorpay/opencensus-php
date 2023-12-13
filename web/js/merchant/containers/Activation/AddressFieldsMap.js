@@ -1,6 +1,7 @@
 import Input from 'common/new-ui/Input';
-import { states } from 'merchant/helpers/data';
 import { excludeFor_Indiv } from 'merchant/components/Activation/ActivationUtils';
+import { states } from 'merchant/helpers/data';
+import { getUser } from 'merchant/store';
 
 const stateOptions = ['--Select--'].concat(
   Object.keys(states).map((c) => {
@@ -165,10 +166,31 @@ function differentAddress(activation) {
   return activation.state.same_address === '0';
 }
 
-function isPinValid(value) {
+const malaysiaPostcodeRegex = /^[0-9]{5}$/;
+
+export const COUNTY_PINCODE_NUMBER_MAP = {
+  MY: 5,
+  IN: 6,
+};
+
+export const getInvalidErrorCodeMsg = (pinLength) => `Please enter ${pinLength} digit pincode.`;
+
+export function isPinValid(value) {
+  const user = getUser();
+  const errorMsg = getInvalidErrorCodeMsg(COUNTY_PINCODE_NUMBER_MAP[user.merchant.country_code]);
+
+  if (user.merchant.country_code === 'MY') {
+    if (malaysiaPostcodeRegex.test(value)) {
+      return 0;
+    }
+
+    return errorMsg;
+  }
+
   const pin = Number(value);
   if (!pin || pin < 100000 || pin > 999999) {
-    return 'Please enter 6 digit pincode';
+    return errorMsg;
   }
+
   return 0;
 }
