@@ -283,6 +283,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
+    const PAYMENT_TIMEOUT_CARDLESSEMI       = 1800;     //30 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 604800;   // 7 Days
     const BASE_CURRENCY                     = 'base_currency';
     const PAYMENT_TIMEOUT_NACH              = 86400 * 30;  // 30 Days
@@ -313,6 +314,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const UPI_PROVIDER                      = 'upi_provider';
 
     // To identify GPay Card Payments
+
     protected $application                  = null;
 
     // To identify GPay payments in verify flow
@@ -5612,7 +5614,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $timeWindow = self::PAYMENT_TIMEOUT_WALLET;
             }
         }
-
         //
         // Irrespective of the created_flow or auto refund delay,
         // if it's emandate debit payment, the timeout window
@@ -5639,6 +5640,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                  (Payment\Gateway::isApiBasedAsyncEMandateGateway($gateway) === true))
         {
             return self::PAYMENT_TIMEOUT_EMANDATE_RECURRING;
+        }
+        else if ($this->isCardlessEmi() === true)
+        {
+            // for cardless emi timeout is 30 Mins
+            return self::PAYMENT_TIMEOUT_CARDLESSEMI;
         }
 
         /**
