@@ -23,6 +23,7 @@ import { tabsOrder, tabsMeta } from 'merchant/containers/Home/KeyMetrics/data';
 import { getQuery as getPaymentMethodsQuery } from 'merchant/containers/Home/PaymentMethods/data';
 import Home from 'merchant/containers/Home/Index';
 import { AppProvider } from 'common/context/App';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 import { ThemeProvider } from 'styled-components';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
@@ -171,13 +172,18 @@ render(
       <Provider store={store}>
         <AppProvider>
           <Router>
-            <SpiltzServiceProvider dashboardType="pokedex" customLoader={() => <FullPageLoader />}>
-              <SplitzRoutesBasedService customLoader={() => <FullPageLoader />}>
-                <I18ServiceProvider>
-                  <App />
-                </I18ServiceProvider>
-              </SplitzRoutesBasedService>
-            </SpiltzServiceProvider>
+            <ErrorBoundary rank={Ranks.P0} team={Teams.PG_DASHBOARD} resetOnProps>
+              <SpiltzServiceProvider
+                dashboardType="pokedex"
+                customLoader={() => <FullPageLoader />}
+              >
+                <SplitzRoutesBasedService customLoader={() => <FullPageLoader />}>
+                  <I18ServiceProvider>
+                    <App />
+                  </I18ServiceProvider>
+                </SplitzRoutesBasedService>
+              </SpiltzServiceProvider>
+            </ErrorBoundary>
           </Router>
         </AppProvider>
       </Provider>
