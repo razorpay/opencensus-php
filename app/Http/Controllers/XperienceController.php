@@ -164,14 +164,6 @@ class XperienceController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function deleteCostCenter(string $costCenterId)
-    {
-
-        $response = $this->xperience->deleteCostCenter($costCenterId);
-
-        return ApiResponse::json($response);
-    }
-
     public function disableCostCenter(string $costCenterId)
     {
 

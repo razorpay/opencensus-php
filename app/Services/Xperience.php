@@ -468,15 +468,6 @@ class Xperience
         return $response;
     }
 
-    public function deleteCostCenter(string $costCenterId)
-    {
-        $url = $this->getConstructedUrl(sprintf(self::SINGLE_COST_CENTER_PATH, $costCenterId));
-
-        $response = $this->makeRequest($url, [], [], self::DELETE);
-
-        return $response;
-    }
-
     public function disableCostCenter(string $costCenterId)
     {
         $url = $this->getConstructedUrl(sprintf(self::DISABLE_COST_CENTER_PATH, $costCenterId));

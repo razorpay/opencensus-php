@@ -1875,6 +1875,7 @@ class Route
         'fetch_pending_payout_links_summary'        => ['post',     'payout-links/pending/summary',                 'PayoutLinkController@fetchPendingPayoutLinksSummary'                          ],
 
         'workflow_config_create_admin'              => ['post',    'admin/workflow/config',                               'WorkflowServiceController@createWorkflowConfig'                           ],
+        'workflow_config_list_admin'                => ['post',    'admin/workflow/config/list',                          'WorkflowServiceController@listWorkflowConfig'                        ],
         'workflow_config_update_admin'              => ['put',    'admin/workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
         'workflow_config_delete_admin'              => ['delete',    'admin/workflow/config',                             'WorkflowServiceController@deleteWorkflowConfig'                           ],
         'workflow_config_create_bulk_admin'         => ['post',    'admin/workflow/config/bulk',                          'WorkflowServiceController@bulkCreateWorkflowConfig'                           ],
@@ -1900,8 +1901,10 @@ class Route
         'cost_center_create'                        => ['post',     'xperience/cost-centers',                   'XperienceController@createCostCenters'],
         'cost_center_get'                           => ['get',      'xperience/cost-centers/{id}',              'XperienceController@getCostCenter'],
         'cost_center_update'                        => ['put',      'xperience/cost-centers/{id}',              'XperienceController@updateCostCenter'],
-        'cost_center_delete'                        => ['delete',   'xperience/cost-centers/{id}',              'XperienceController@deleteCostCenter'],
         'cost_center_disable'                       => ['post',     'xperience/cost-centers/{id}/disable',      'XperienceController@disableCostCenter'],
+        'cost_center_list_admin'                    => ['get',      'admin/xperience/cost-centers/list',        'XperienceController@getCostCenters'],
+        'cost_center_create_admin'                  => ['post',     'admin/xperience/cost-centers/create',      'XperienceController@createCostCenters'],
+        'cost_center_update_admin'                  => ['put',      'admin/xperience/cost-centers/{id}',        'XperienceController@updateCostCenter'],
 
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
@@ -2422,11 +2425,11 @@ class Route
         'payment_on_hold_bulk_update'              => ['post',     'payments/on_hold/bulk_update',                   'PaymentController@updateOnHoldBulkUpdate'                          ],
 
         'migrate_virtual_account_rbl_axis'        =>  ['post',     'migrate_rbl',                                    'VirtualAccountController@migrateRblToAxis'                         ],
-        
+
         // Cron to deactivate Bank accounts for migrated virtual accounts
         'deactivate_migrated_ba'                  =>  ['post',     'virtual_accounts/ba/deactivate',                 'VirtualAccountController@deactivateMigratedBA'                         ],
         'deactivate_virtual_account_rbl'          =>  ['post',     'virtual_accounts/rbl/gateway_deactivate',        'VirtualAccountController@bulkDeactivateClosedRBLBankAccount'       ],
-        
+
         // Dummy routes to test Account Auth
         'admin_dummy_account_test'                 => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
 
@@ -7615,7 +7618,6 @@ class Route
         'cost_center_create',
         'cost_center_get',
         'cost_center_update',
-        'cost_center_delete',
         'cost_center_disable',
 
         'payout_partner_bank_status',
@@ -8957,10 +8959,16 @@ class Route
         'bulk_payouts_migrate_admin',
 
         // Self serve workflow admin routes
+        'workflow_config_list_admin',
         'workflow_config_create_admin',
         'workflow_config_update_admin',
         'workflow_config_delete_admin',
         'workflow_config_create_bulk_admin',
+
+        // cost center admin routes
+        'cost_center_list_admin',
+        'cost_center_create_admin',
+        'cost_center_update_admin',
 
         //1cc rto model configs
         '1cc_rto_mlmodel_configs_create_admin',
@@ -10549,9 +10557,13 @@ class Route
 
         // Self serve workflow admin routes
         'workflow_config_create_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'workflow_config_list_admin'                => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_update_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_delete_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_create_bulk_admin'         => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'cost_center_list_admin'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'cost_center_create_admin'                  => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'cost_center_update_admin'                  => Permission::SELF_SERVE_WORKFLOW_CONFIG,
 
         'salesforce_event_admin'                    => Permission::VIEW_ACTIVATION_FORM,
         'salesforce_event_admin_one_ca'             => Permission::SUBMIT_ONE_CA,
@@ -11114,7 +11126,6 @@ class Route
         'cost_center_create'                        => Permission::CREATE_COST_CENTER,
         'cost_center_get'                           => Permission::VIEW_COST_CENTER,
         'cost_center_update'                        => Permission::CREATE_COST_CENTER,
-        'cost_center_delete'                        => Permission::CREATE_COST_CENTER,
         'cost_center_disable'                       => Permission::CREATE_COST_CENTER,
 
         'payout_partner_bank_status'                  => Permission::CREATE_PAYOUT,
@@ -13084,7 +13095,6 @@ class Route
             'cost_center_create',
             'cost_center_get',
             'cost_center_update',
-            'cost_center_delete',
             'cost_center_disable',
 
 
@@ -15496,10 +15506,16 @@ class Route
             'edit_cac_role',
 
             // Self serve workflow admin routes
+            'workflow_config_list_admin',
             'workflow_config_create_admin',
             'workflow_config_update_admin',
             'workflow_config_delete_admin',
             'workflow_config_create_bulk_admin',
+
+            // cost center admin routes
+            'cost_center_list_admin',
+            'cost_center_create_admin',
+            'cost_center_update_admin',
 
             '1cc_configs_update',
             '1cc_configs_get',
@@ -15596,7 +15612,6 @@ class Route
             'cost_center_create',
             'cost_center_get',
             'cost_center_update',
-            'cost_center_delete',
             'cost_center_disable',
             // xperience admin routes
             'bulk_payouts_migrate_admin',
@@ -18118,7 +18133,6 @@ class Route
         'cost_center_create',
         'cost_center_get',
         'cost_center_update',
-        'cost_center_delete',
         'cost_center_disable',
     ];
 
