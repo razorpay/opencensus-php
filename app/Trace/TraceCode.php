@@ -4777,6 +4777,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_REFERRAL_FOR_CAPITAL                          = 'PARTNER_REFERRAL_FOR_CAPITAL';
     const PARTNER_REFERRAL_LINK_FOR_CAPITAL                     = 'PARTNER_REFERRAL_LINK_FOR_CAPITAL';
     const PARTNER_REFERRAL_LINK_FOR_POS                         = 'PARTNER_REFERRAL_LINK_FOR_POS';
+    const POS_SUBMERCHANT_TAG                                   = 'POS_SUBMERCHANT_TAG';
+
     const CAPITAL_SUBMERCHANT_POST_PROCESS                      = 'CAPITAL_SUBMERCHANT_POST_PROCESS';
     const CAPITAL_SUBMERCHANT_TAG                               = 'CAPITAL_SUBMERCHANT_TAG';
     const CAPITAL_SUBMERCHANT_ATTRIBUTE                         = 'CAPITAL_SUBMERCHANT_ATTRIBUTE';

@@ -827,6 +827,30 @@ return [
         ],
     ],
 
+
+    'testFetchPartnerSubmerchantsPOS' => [
+        'request'  => [
+            'url'     => '/submerchants?product=pos',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => 'activated',
+                        ],
+                        'dashboard_access' => false,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsOptimised' => [
         'request'  => [
             'url'     => '/submerchants',

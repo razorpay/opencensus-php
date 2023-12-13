@@ -87,6 +87,9 @@ final class Constants
 
     const CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX = 'capital-cc-submerchant-';
     const CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX            = 'capital-loc-submerchant-';
+
+    const POS_PARTNERSHIP_TAG_PREFIX            = 'pos-sub-';
+
     const PARTNER_REFERRAL_TAG_PREFIX                   = 'ref-';
     const CAPITAL_CORPORATE_CARD_PRODUCT_NAME           = 'CARDS';
     const CAPITAL_LOC_EMI_PRODUCT_NAME                  = 'LOC_EMI';
@@ -169,7 +172,7 @@ final class Constants
     const RAZORX_EXPERIMENT_ON                    = 'on';
 
     const FETCH_MERCHANT_ID_SAME_EMAIL_FROM_WDA   = 'fetch_merchant_id_same_email_from_wda';
-    
+
     // Splitz Constants
     const SPLITZ_LIVE                             = 'live';
     const SPLITZ_PILOT                            = 'pilot';

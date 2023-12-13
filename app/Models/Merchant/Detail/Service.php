@@ -63,6 +63,7 @@ use RZP\Notifications\AdminDashboard\Events;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Services\Segment as SegmentAnalytics;
 use RZP\Notifications\AdminDashboard\Handler;
+use RZP\Models\Merchant\POSSubMerchantUtility;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\BankingAccount as BankingAccount;
 use RZP\Models\Workflow\Action as WorkflowAction;
@@ -2409,6 +2410,7 @@ class Service extends Base\Service
     /**
      * @param        $subMerchant
      * @param array  $input
+     * @param bool   $isSignUpFlow
      */
     public function applyReferralPartner($subMerchant, array $input, bool $isSignUpFlow = true)
     {
@@ -2454,6 +2456,13 @@ class Service extends Base\Service
                 or (($utmParams['website'] ?? null) === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE));
         }
 
+        if($referralProduct == Product::POS)
+        {
+            $actualReferralProduct = $referralProduct;
+
+            $referralProduct = Product::PRIMARY;
+        }
+
         if ($referralProduct === $requestProduct or ($actualReferralProduct === Product::CAPITAL and $isCapitalLocSignupPageVisited === true))
         {
             $mappingInput = [
@@ -2463,7 +2472,13 @@ class Service extends Base\Service
             ];
 
             $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct, $isSignUpFlow);
+
+            if ($actualReferralProduct === Product::POS)
+            {
+                PosSubMerchantUtility::addSubmerchantTag($partnerId, $subMerchant);
+            }
         }
+
     }
 
     public function getReferralInput(Referral\Entity $referral): array

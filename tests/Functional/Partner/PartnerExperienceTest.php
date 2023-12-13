@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use App\User\Constants;
 use ReflectionFunction;
 use RZP\Constants\Mode as EnvMode;
+use RZP\Constants\Product;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -812,6 +813,18 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->startTest();
     }
 
+
+    public function testFetchPartnerSubmerchantsPOS()
+    {
+        $this->createResellerPartnerSubmerchant(false, false, Product::POS);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerSubmerchants()
     {
         $this->createPartnerAndAddMultipleSubmerchants();
@@ -825,7 +838,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantsOptimised()
     {
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
 
         $this->createPartnerAndAddMultipleSubmerchants();
 
@@ -836,8 +848,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantsOptimisedWithContactNoFilter()
     {
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
-
         $this->allowAdminToAccessPartnerMerchant();
 
         $this->allowAdminToAccessMerchant(self::DEFAULT_SUBMERCHANT_ID);
@@ -851,8 +861,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantsOptimisedWithContactMobileFilter()
     {
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
-
         $this->allowAdminToAccessPartnerMerchant();
 
         $this->allowAdminToAccessMerchant(self::DEFAULT_SUBMERCHANT_ID);
@@ -866,8 +874,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantsOptimisedWithEmailFilter()
     {
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
-
         $this->allowAdminToAccessPartnerMerchant();
 
         $this->allowAdminToAccessMerchant(self::DEFAULT_SUBMERCHANT_ID);
@@ -892,8 +898,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantsFiltersOptimised()
     {
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
-
         $this->createPartnerAndAddMultipleSubmerchants();
 
         $this->ba->adminProxyAuth();
@@ -972,8 +976,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->ba->adminProxyAuth();
 
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
-
         $this->startTest();
     }
 
@@ -1014,8 +1016,6 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->fixtures->create('merchant_access_map',$accessMap);
 
         $this->ba->adminProxyAuth();
-
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
 
         $this->startTest();
     }
@@ -1058,8 +1058,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->ba->adminProxyAuth();
 
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
-
         $this->startTest();
     }
 
@@ -1100,8 +1098,6 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->fixtures->create('merchant_access_map',$accessMap);
 
         $this->ba->adminProxyAuth();
-
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
 
         $this->startTest();
     }
@@ -1161,8 +1157,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->ba->adminProxyAuth();
 
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
-
         $this->startTest();
     }
 
@@ -1204,8 +1198,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->ba->adminProxyAuth();
 
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
-
         $this->startTest();
     }
 
@@ -1246,8 +1238,6 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->fixtures->create('merchant_access_map',$accessMap);
 
         $this->ba->adminProxyAuth();
-
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
 
         $this->startTest();
     }
@@ -1335,8 +1325,6 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->fixtures->create('merchant_access_map', $accessMap);
 
         $this->ba->adminProxyAuth();
-
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -1430,7 +1418,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->ba->adminProxyAuth();
 
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
         $testData = $this->testData[__FUNCTION__];
 
         $this->startTest($testData);
@@ -1449,8 +1436,6 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantsPaginationFiltersOptimised()
     {
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
-
         $this->createPartnerAndAddMultipleSubmerchants();
 
         $this->ba->adminProxyAuth();
@@ -1510,8 +1495,6 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->ba->adminProxyAuth();
 
         $testData = $this->testData[__FUNCTION__];
-
-        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
 
         $this->startTest($testData);
     }
@@ -2721,7 +2704,7 @@ class PartnerExperienceTest extends OAuthTestCase
         );
     }
 
-    public function createResellerPartnerSubmerchant(bool $isContactMobileVerified = false, bool $addPricing = false)
+    public function createResellerPartnerSubmerchant(bool $isContactMobileVerified = false, bool $addPricing = false, string $product = Product::PRIMARY)
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -2730,7 +2713,7 @@ class PartnerExperienceTest extends OAuthTestCase
             'email'        => 'test@example.com',
         ]);
 
-        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+        $subMerchant = $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
             'email' => 'testing@example.com',
         ]);
 
@@ -2782,6 +2765,12 @@ class PartnerExperienceTest extends OAuthTestCase
 
             $this->fixtures->create('pricing', $subMerchantPricingPlan);
             $this->fixtures->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['pricing_plan_id' => 'LFbrOUOTRSyAqq']);
+        }
+
+        if ($product === Product::POS)
+        {
+            // POS subMs will be assinged with the pos partnerships tag.
+            (new Merchant\Core())->appendTag($subMerchant, 'pos-sub-'.self::DEFAULT_MERCHANT_ID);
         }
     }
 
@@ -3795,27 +3784,6 @@ class PartnerExperienceTest extends OAuthTestCase
         return [$partnerId, $app, $subMerchant];
     }
 
-    private function mockSubmerchantFetchMultipleOptimisedExperiment(): void
-    {
-        $input = [
-            "id"            => self::DEFAULT_MERCHANT_ID,
-            "experiment_id" => "KHTp8UvvI3JWnn",
-            'request_data'  => json_encode([
-                'mid' => self::DEFAULT_MERCHANT_ID,
-                'auth_type' => 'private'
-            ]),
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-        $this->mockSplitzTreatment($input, $output);
-    }
-
     private function createPartnerMigrationAuditInput(Merchant\Entity $merchant, array $input)
     {
         return [
@@ -3883,6 +3851,59 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertNotNull($accessMap);
 
         $this->assertEquals($partnerMerchant['id'], $accessMap['entity_owner_id']);
+    }
+
+
+
+    // The following testcase would create a merchant entity for the subM, attach the subM to the partner via referral code for POS
+    public function testUserRegisterWithMobileWithPOSReferralCode()
+    {
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context' => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $testData = & $this->testData['testUserRegisterWithMobileWithReferralCode'];
+
+        $this->mockAllSplitzTreatment();
+
+        //Create a dummy partner to fetch primary referral link
+        $partnerMerchant = $this->createPartner('reseller');
+
+        $referralLink = $this->getDbEntity('referrals', ['product' => 'pos']);
+
+        $referralCode = $referralLink['ref_code'];
+
+        $partnerId = $referralLink['merchant_id'];
+
+        $testData['request']['content']['partner_referral_code'] = $referralCode;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+
+        $accessMap = $this->getDbEntity('merchant_access_map',
+                                        ['entity_owner_id' => $partnerMerchant['id'],
+                                         'merchant_id' => $createdSubM['id']
+                                        ]);
+        $this->assertNotNull($accessMap);
+
+        $this->assertEquals($partnerMerchant['id'], $accessMap['entity_owner_id']);
+
+        $this->assertTrue($createdSubM->isTagAdded('pos-sub-'.$partnerId));
     }
 
     public function testLinkSubMerchantForPPReferralFlow()

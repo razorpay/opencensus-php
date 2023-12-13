@@ -5403,7 +5403,7 @@ class Core extends Base\Core
         return $app;
     }
 
-    public function listSubmerchantsV2(Entity $partner, array $params, string $isExpEnabled) : array
+    public function listSubmerchantsV2(Entity $partner, array $params) : array
     {
         $merchantAppIds = $this->getMerchantAppIdsForPartner($partner, $params);
 
@@ -5428,7 +5428,7 @@ class Core extends Base\Core
         $partnerUser = $partner->primaryOwner();
 
         $reqStartAt                    = millitime();
-        $merchantsData                 = $this->getPartnerSubMerchantDataV2($subMerchants, $partner, $partnerUser, $product, $isExpEnabled);
+        $merchantsData                 = $this->getPartnerSubMerchantDataV2($subMerchants, $partner, $partnerUser, $product);
         $fetchSubMerchantsDataLatency  = millitime() - $reqStartAt;
 
         $this->trace->info(
@@ -5441,7 +5441,6 @@ class Core extends Base\Core
                 'fetch_sub_merchants_latency'       => $fetchSubMerchantsLatency,
                 'fetch_sub_merchants_data_latency'  => $fetchSubMerchantsDataLatency,
                 'overall_latency'                   => $fetchSubMerchantsLatency + $fetchSubMerchantsDataLatency,
-                'exp_enabled'                       => $isExpEnabled
             ]
         );
 
@@ -5487,24 +5486,60 @@ class Core extends Base\Core
         $params['skip'] = $params['skip'] ?? 0;
         $params['count'] = $params['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
-        return $this->preProcessForCapital($params, $partner);
+        return $this->preProcessForProducts($params, $partner);
     }
 
-    private function preProcessForCapital(array $params, $partner)
+    /***
+     * @param array $params
+     * @param       $partner
+     *
+     * @return array
+     *
+     * subMs with tags will be created only if partner is enabled for Capital or POS
+     * If the partner is NOT enabled with either of products, then we need not query the subMs with tags.
+     * This will be taken care by FE to make the relevant call. Not adding the experiment check in BE to reduce the latency
+     * If the partner is enabled with either of capital or pos products, query the subMs with respective product tags
+     *              1. capital product          - capital tags
+     *              2. POS product              - POS tags
+     *              3. Primary product          - exclude all capital and POS tags
+     *
+     */
+    private function preProcessForProducts(array $params, $partner)
     {
-        if ($this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId()) === true)
-        {
-            $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
+        $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
 
+        $experimentEnable = false;
+
+        if ($product === Product::CAPITAL)
+        {
+            $experimentEnable = $this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId());
+            $params[ENTITY::PRODUCT] = Product::BANKING;
+            $params[Constants::TAGS] = [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+        }
+        else if($product === Product::POS)
+        {
+            $experimentEnable = (new Partner\Core())->isPOSEnabledForPartner($partner->getId());
+            $params[ENTITY::PRODUCT] = Product::PRIMARY;
+            $params[Constants::TAGS] = [Constants::POS_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+        }
+
+        if ($experimentEnable === true)
+        {
             if ($product === Product::CAPITAL)
             {
                 $params[ENTITY::PRODUCT] = Product::BANKING;
                 $params[Constants::TAGS] = [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
             }
+            else if($product === Product::POS)
+            {
+                $params[ENTITY::PRODUCT] = Product::PRIMARY;
+                $params[Constants::TAGS] = [Constants::POS_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+            }
             else
             {
                 $params[Constants::WITHOUT_TAGS] = [
                     Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+                    Constants::POS_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
                     Constants::CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
                 ];
             }
@@ -5763,7 +5798,7 @@ class Core extends Base\Core
 
     private function getPartnerSubMerchantDataV2(
         PublicCollection $submerchants, Entity $partner, User\Entity $partnerUser = null,
-        string $product = null, bool $isExpEnabled = false
+        string $product = null
     ): PublicCollection
     {
         $accessRequests = null;

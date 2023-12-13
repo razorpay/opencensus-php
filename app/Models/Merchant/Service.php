@@ -7777,15 +7777,10 @@ class Service extends Base\Service
         }
 
         $startTime = millitime();
-        $isExpEnabled = $this->isSubmerchantFetchMultipleOptimisationExpEnabled($partner->getId());
 
         $result = Tracer::inspan(['name' => HyperTrace::LIST_SUBMERCHANTS_CORE], function () use ($partner, $input, $isExpEnabled) {
-            if ($isExpEnabled)
-            {
-                return $this->core()->listSubmerchantsV2($partner, $input, $isExpEnabled);
-            }
 
-            return $this->core()->listSubmerchants($partner, $input);
+            return $this->core()->listSubmerchantsV2($partner, $input);
         });
 
         $response = $isExpEnabled ? $result[0]->toListSubmerchantsArray() : $result[0]->toArrayPartner();
