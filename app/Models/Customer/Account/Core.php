@@ -3,15 +3,11 @@
 namespace RZP\Models\Customer;
 
 use RZP\Exception\BadRequestException;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\IntegrationException;
-use RZP\Exception\ServerErrorException;
 use RZP\Http\RequestContextV2;
 use Str;
-use http\Url;
 use Lib\PhoneBook;
 use RZP\Constants\Mode;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
@@ -20,8 +16,6 @@ use RZP\Models\Address;
 use RZP\Models\Device;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Customer\Account\Constants as AccountConstants;
 use RZP\Constants;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -861,22 +855,30 @@ class Core extends Base\Core
     }
 
     /**
-     * @throws Exception\BadRequestException
+     * @param $input
+     *
+     * @return array[]
+     *
+     * @throws BadRequestException
      */
-    public function recordAddressConsent1cc($input)
+    public function recordAddressConsent1cc($input): array
     {
-        $appToken = Session()->get($this->mode . '_app_token');
+        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
         $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
 
-        if (empty($appToken) && empty($globalCustomerId)) {
+        if (empty($appTokenId) && empty($globalCustomerId)) {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
 
-        list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
-            ['app_token' => $appToken, Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId],
+        [$customer, $appToken] = (new Customer\Core)->getCustomerAndApp(
+            [
+                Payment\Entity::APP_TOKEN => $appTokenId,
+                Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId,
+            ],
             $this->merchant,
-            true);
+            true,
+        );
 
         (new Address\Core)->recordAddressConsent1cc($input, $customer);
 
@@ -1783,19 +1785,22 @@ class Core extends Base\Core
      */
     public function recordCustomerConsent1cc($input)
     {
-        if(Session()->has($this->mode . '_app_token') === false)
-        {
+        $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
+
+        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+
+        if (empty($globalCustomerId) && empty($appTokenId)) {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
 
-        $appToken = Session()->get($this->mode . '_app_token');
-
-        $globalCustomerId = optional($this->reqCtx->passportUtil)->getGlobalCustomerId() ?: '';
-
-        list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
-            ['app_token' => $appToken, Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId],
+        [$customer, $appToken] = (new Customer\Core())->getCustomerAndApp(
+            [
+                Payment\Entity::APP_TOKEN => $appTokenId,
+                Payment\Entity::GLOBAL_CUSTOMER_ID => $globalCustomerId,
+            ],
             $this->merchant,
-            true);
+            true,
+        );
 
         return (new CustomerConsent1cc\Core())->recordCustomerConsent1cc($input, $customer, $this->merchant);
     }
@@ -1873,7 +1878,7 @@ class Core extends Base\Core
         $formattedPaymentDetails['payment']['merchant_logo'] = $paymentDetails['merchant_logo'];
         $formattedPaymentDetails['payment']['gateway'] = $payment->getGateway();
         $formattedPaymentDetails['payment']['optimizer_payment'] = $payment->terminal->isOptimizer();
-      
+
         if ($payment->merchant->isLRSFlowEnabled() === true)
         {
             $formattedPaymentDetails['payment']['is_lrs_transaction'] = true;
