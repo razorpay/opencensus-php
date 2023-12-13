@@ -17060,6 +17060,8 @@ class Route
             'refund_fetch_multiple',
             'refund_fetch_by_id',
             'payment_fetch_refunds',
+            'internal_merchant_fetch',
+            'internal_merchant_details_fetch',
         ],
     ];
 
