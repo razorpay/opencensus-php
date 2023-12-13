@@ -42,7 +42,6 @@ use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Gateway\Upi\Base\Type as UpiType;
 
 class Core extends Base\Core
 {
@@ -608,11 +607,7 @@ class Core extends Base\Core
 
         if (empty($recurringUpiTerminals) === false)
         {
-            $recurringData['upi'] = true;  //this is deprecated and on frontend we'll not use the upi field
-            $recurringData['upi_autopay'] = [
-                UpiType::COLLECT => $recurringUpiTerminals->isCollectTerminal(),
-                UpiType::INTENT => $recurringUpiTerminals->isPay(),
-            ];
+            $recurringData['upi'] = true;
         }
     }
 
