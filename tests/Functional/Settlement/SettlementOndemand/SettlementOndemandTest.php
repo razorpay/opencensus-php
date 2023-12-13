@@ -4959,62 +4959,6 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
 
-        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
-        $this->app->instance('ledger', $mockLedger);
-
-        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
-            ->times(1)
-            ->andReturn([
-                    "body" => [
-                        "accounts"  => [
-                            [
-                                "id"                => "sampleAccountID",
-                                "name"              => "test name",
-                                "status"            => "ACTIVATED",
-                                "balance"           => "10000000.000000",
-                                "min_balance"       => "0.000000",
-                                "merchant_id"       => "sampleMerchant",
-                                "created_at"        => "1634027277",
-                                "updated_at"        => "1634027277",
-                                "entities"          => [
-                                    "account_type"      => ["payable"],
-                                    "fund_account_type" => ["merchant_balance"]
-                                ]
-                            ],
-                            [
-                                "id"                => "sampleAccountID",
-                                "name"              => "test name",
-                                "status"            => "ACTIVATED",
-                                "balance"           => "0.000000",
-                                "min_balance"       => "0.000000",
-                                "merchant_id"       => "sampleMerchant",
-                                "created_at"        => "1634027277",
-                                "updated_at"        => "1634027277",
-                                "entities"          => [
-                                    "account_type"      => ["payable"],
-                                    "fund_account_type" => ["merchant_fee_credits"]
-                                ]
-
-                            ],
-                            [
-                                "id"                => "sampleAccountID",
-                                "name"              => "test name",
-                                "status"            => "ACTIVATED",
-                                "balance"           => "0.000000",
-                                "min_balance"       => "0.000000",
-                                "merchant_id"       => "sampleMerchant",
-                                "created_at"        => "1634027277",
-                                "updated_at"        => "1634027277",
-                                "entities"          => [
-                                    "account_type"      => ["payable"],
-                                    "fund_account_type" => ["reward"]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            );
-
         $this->startTest();
 
         $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
@@ -5739,33 +5683,6 @@ class SettlementOndemandTest extends TestCase
         $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', $mockWebhhok);
 
         $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.webhook_key', 'DUMMY_KEY');
-
-        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
-        $this->app->instance('ledger', $mockLedger);
-
-        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
-            ->times(1)
-            ->andReturn([
-                    "body" => [
-                        "accounts"  => [
-                            [
-                                "id"                => "sampleAccountID",
-                                "name"              => "test name",
-                                "status"            => "ACTIVATED",
-                                "balance"           => "10000000.000000",
-                                "min_balance"       => "0.000000",
-                                "merchant_id"       => "sampleMerchant",
-                                "created_at"        => "1634027277",
-                                "updated_at"        => "1634027277",
-                                "entities"          => [
-                                    "account_type"      => ["payable"],
-                                    "fund_account_type" => ["merchant_balance"]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            );
 
         if($mockWebhhok) {
             $settlementOndemand = $this->fixtures->on('test')->create('settlement.ondemand',[

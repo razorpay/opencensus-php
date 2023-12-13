@@ -111,19 +111,18 @@ class Core extends Base\Core
     public function createSettlementOndemandWithReverseShadowOnLedger(array $input, Merchant\Entity $merchant, User\Entity $user = null, array $requestDetails = [])
     {
 
-        $reverseShadowCapital = new ReverseShadowCapitalCore();
-
-        $isAmountValid = $reverseShadowCapital->validateBalance($input,$merchant);
-
-        if(!$isAmountValid){
+        if ($input[Entity::AMOUNT] > $merchant->primaryBalance->getBalance())
+        {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,
                 null,
                 [
                     'amount'  => $input[Entity::AMOUNT],
-                    'merchant_id' => $merchant->getMerchantId(),
+                    'balance' => $merchant->primaryBalance->getBalance(),
                 ]);
         }
+
+        $reverseShadowCapital = new ReverseShadowCapitalCore();
 
         $this->checkMerchantFundsOnHold();
 

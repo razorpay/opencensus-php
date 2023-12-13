@@ -229,15 +229,6 @@ class Service extends Base\Service
     //which is fetched in this function
     public function getAllowedSettlementAmount($featureConfig)
     {
-        $merchantPrimaryBalance = $this->merchant->primaryBalance->getBalance();
-
-        if(($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)){
-
-            $reverseShadowCapital = new ReverseShadowCapitalCore();
-
-            $merchantPrimaryBalance = $reverseShadowCapital->fetchBalance($this->merchant);
-        }
-
         $amountSettledToday = (new Ondemand\Repository)->findAmountSettledTodayByMerchantId($this->merchant->getId());
 
         $maxAmountLimitPerDay = $featureConfig->getMaxAmountLimit();
@@ -248,7 +239,7 @@ class Service extends Base\Service
 
         if($amountLeftForToday > 0)
         {
-            $amountLimitPerSettlement = ceil((round($merchantPrimaryBalance) * $featureConfig->getPercentageOfBalanceLimit())/100);
+            $amountLimitPerSettlement = ceil(($this->merchant->primaryBalance->getBalance() * $featureConfig->getPercentageOfBalanceLimit())/100);
         }
 
         $settlableAmount = min($amountLeftForToday, $amountLimitPerSettlement);

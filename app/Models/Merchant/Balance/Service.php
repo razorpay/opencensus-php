@@ -123,30 +123,9 @@ class Service extends Base\Service
 
         $merchantIds = $input['merchant_ids'];
 
-        $nonReverseShadowMerchants = [];
-
         $result = new Base\PublicCollection;
 
-        foreach($merchantIds as $merchantId){
-
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-            if(($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)){
-
-                $reverseShadowCapital = new ReverseShadowCapitalCore();
-
-                $balance = $reverseShadowCapital->fetchBalance($merchant);
-
-                $result->push([
-                    'merchant_id'=> stringify($merchantId),
-                    'balance'    => round($balance)
-                ]);
-            }else{
-                array_push($nonReverseShadowMerchants,$merchantId);
-            }
-        }
-
-        $balances = $this->repo->balance->getBalancesForMerchantIds($nonReverseShadowMerchants, $input['balance_type']);
+        $balances = $this->repo->balance->getBalancesForMerchantIds($merchantIds, $input['balance_type']);
 
         foreach($balances as $merchantId => $balance) {
             $result->push([
