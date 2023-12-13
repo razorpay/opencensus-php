@@ -20,6 +20,7 @@ class ErrorCodeMapping
     const BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                                  = 'BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING';
     const BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                         = 'BAD_REQUEST_NEGATIVE_BALANCE_BREACHED';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                                  = 'BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT';
+    const BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED                        = 'BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED';
     const BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                                     = 'BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE';
     const INTERNAL_SERVER_ERROR                                                         = 'INTERNAL_SERVER_ERROR';
 
@@ -29,6 +30,7 @@ class ErrorCodeMapping
         self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              => 'Keys sent in linked_account_notes must exist in notes',
         self::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                     => 'Maximum negative balance limit was breached',
         self::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              => 'Fees calculated for transfer is greater than transfer amount',
+        self::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED                    => 'Transfer failed as source payment is refunded',
         self::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                                 => 'Account does not have sufficient balance to carry out transfer operation',
         self::INTERNAL_SERVER_ERROR                                                     => 'Internal server error',
     ];
@@ -38,6 +40,7 @@ class ErrorCodeMapping
         self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              => 'invalid_notes_keys',
         self::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                     => 'maximum_negative_balance_limit_breached',
         self::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              => 'amount_less_than_minimum_amount',
+        self::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED                    => 'transfer_failed_as_source_payment_refunded',
         self::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                                 => 'insufficient_account_balance',
         self::INTERNAL_SERVER_ERROR                                                     => 'server_error',
 
@@ -48,6 +51,7 @@ class ErrorCodeMapping
         self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              => Entity::LINKED_ACCOUNT_NOTES,
         self::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                     => Entity::AMOUNT,
         self::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              => Entity::AMOUNT,
+        self::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED                    => Entity::SOURCE,
         self::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                                 => Entity::AMOUNT,
     ];
 
@@ -56,6 +60,7 @@ class ErrorCodeMapping
         self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              => 'transfer_processing',
         self::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                     => 'transfer_processing',
         self::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              => 'transfer_processing',
+        self::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED                    => 'transfer_processing',
         self::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                                 => 'transfer_processing',
     ];
 

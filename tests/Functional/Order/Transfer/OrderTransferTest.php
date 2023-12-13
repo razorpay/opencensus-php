@@ -5,10 +5,12 @@ namespace RZP\Tests\Functional\Order\Transfers;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\EntityOrigin\Core;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Unit\Mock\BasicAuth;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Account\Entity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -17,6 +19,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OrderTransferTest extends TestCase
 {
+    use MocksRazorx;
     use MocksSplitz;
     use PaymentTrait;
     use PartnerTrait;
@@ -449,5 +452,68 @@ class OrderTransferTest extends TestCase
         $response = $this->runRequestResponseFlow($data);
 
         $this->assertEquals(2, $response['order_transfers_count']['category1']);
+    }
+
+    public function testRefundPaymentForOrderTransfers($order = null)
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED, 'on');
+
+        $data = $this->testData['testCreateOrderTransfers'];
+
+        $data['request']['content']['transfers'][0]['amount'] = 10000;
+        $data['response']['content']['transfers'][0]['amount'] = 10000;
+
+        $this->ba->privateAuth();
+
+        $response = $this->runRequestResponseFlow($data);
+
+        $order = ['id' => $response['id']];
+
+        $transferId = $response['transfers'][0]['id'];
+
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => explode("_", $response['id'])[1],
+            'source_type'        => "order",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 10000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->subDays(1)->getTimestamp(),
+            'updated_at'         => Carbon::now()->subDays(1)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $this->refundPayment($payment['id'], null,[], [], true);
+
+        $transferPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(explode('_', $transferId)[1], $transferPayment['transfer_id']);
+
+        $this->assertEquals(10000, $transferPayment['amount_refunded']);
+
+        $paymentEntity = $this->getEntityById('payment', $payment['id'], true);
+
+        $paymentAmountRefunded = $paymentEntity['amount_refunded'];
+
+        $this->assertEquals($payment['amount'], $paymentAmountRefunded);
+
+        $transferEntity = $this->getEntityById('transfer', $transferId, true);
+
+        $amountReversed = $transferEntity['amount_reversed'];
+
+        $this->assertEquals(10000, $amountReversed);
+
+        $failedTransferEntity = $this->getEntityById('transfer', 'AnyRandomID123', true);
+        $this->assertEquals('failed', $failedTransferEntity['status']);
+        $this->assertEquals(0, $failedTransferEntity['amount_reversed']);
+        $this->assertEquals("Transfer failed as source payment is refunded", $failedTransferEntity['message']);
+        $this->assertEquals("BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED", $failedTransferEntity['error_code']);
     }
 }

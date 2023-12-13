@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Reversal\Entity as ReversalEntity;
@@ -338,7 +339,9 @@ trait Reversal
         //  - Payment has not been transferred (amount_transferred = 0), or
         //  - Payment method = 'transfer'
         //
-        if (($payment->isTransferred() === false) or
+        $isFailTransfersExpEnabled = $this->checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($payment->merchant);
+
+        if ((($payment->isTransferred() === false) and ($isFailTransfersExpEnabled === false)) or
             ($payment->isTransfer() === true))
         {
             return false;
@@ -376,34 +379,61 @@ trait Reversal
 
             $transfersFromPayment = (new Transfer\Core())->getForPayment($payment->getId());
 
-                foreach ($transfersFromPayment as $transfer)
+            foreach ($transfersFromPayment as $transfer)
+            {
+                if ($transfer->isFailed() === true and
+                    $transfer->getAttempts() < Transfer\Constant::MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
+                }
+
+                if (($isFailTransfersExpEnabled === true) and ($transfer->getStatus() === Transfer\Status::PENDING))
+                {
+                    $transfer->setStatus(Transfer\Status::FAILED);
+
+                    $transfer->setErrorCode(ErrorCode::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
+
+                    $transfer->setMessage(PublicErrorDescription::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
+
+                    $transfer->saveOrFail();
+
+                    continue;
+                }
+
+                $transfers->push($transfer);
+            }
+
+            if ($payment->hasOrder() === true)
+            {
+                $orderId = $payment->getApiOrderId();
+
+                $transfersFromOrder = (new Transfer\Core())->getForOrder($orderId);
+
+                foreach ($transfersFromOrder as $transfer)
                 {
                     if ($transfer->isFailed() === true and
-                        $transfer->getAttempts() < Transfer\Constant::MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS)
+                        $transfer->getAttempts() < Transfer\Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
                     {
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
                     }
 
+                    if (($isFailTransfersExpEnabled === true) and
+                        (($transfer->getStatus() === Transfer\Status::PENDING) or ($transfer->getStatus() === Transfer\Status::CREATED)))
+                    {
+                        $transfer->setStatus(Transfer\Status::FAILED);
+
+                        $transfer->setErrorCode(ErrorCode::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
+
+                        $transfer->setMessage(PublicErrorDescription::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
+
+                        $transfer->saveOrFail();
+
+                        continue;
+                    }
+
                     $transfers->push($transfer);
                 }
-
-                if ($payment->hasOrder() === true)
-                {
-                    $orderId = $payment->getApiOrderId();
-
-                    $transfersFromOrder = (new Transfer\Core())->getForOrder($orderId);
-
-                    foreach ($transfersFromOrder as $transfer)
-                    {
-                        if ($transfer->isFailed() === true and
-                            $transfer->getAttempts() < Transfer\Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
-                        {
-                            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
-                        }
-
-                        $transfers->push($transfer);
-                    }
-                }
+            }
 
             if (isset($input['refund_type']) === true)
             {
@@ -570,6 +600,26 @@ trait Reversal
             TraceCode::REFUND_AFTER_REVERSAL_EXPERIMENT_CHECK,
             [
                 'merchant_id'    => $this->merchant->getId(),
+                'is_exp_enabled' => $isExperimentEnabled,
+            ]);
+
+        return $isExperimentEnabled;
+    }
+
+    protected function checkIfFailCreatedAndPendingTransfersExperimentIsEnabled($merchant)
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED,
+            $this->mode
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(
+            TraceCode::FAIL_CREATED_AND_PENDING_TRANSFERS_EXPERIMENT_CHECK,
+            [
+                'merchant_id'    => $merchant->getId(),
                 'is_exp_enabled' => $isExperimentEnabled,
             ]);
 

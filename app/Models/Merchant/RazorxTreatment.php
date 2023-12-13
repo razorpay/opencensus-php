@@ -898,6 +898,12 @@ final class RazorxTreatment
      */
     const REFUND_AFTER_TRANSFER_REVERSAL = 'refund_after_transfer_reversal';
 
+    /**
+     * Experiment to fail created and pending transfers if source payment is refunded
+     */
+    const FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED = 'fail_created_and_pending_transfers_if_payment_refunded';
+
+
     // FeatureFlag to toggle Pricing Rule Fee Model override for BPCL
     const FEE_MODEL_OVERRIDE = 'FEE_MODEL_OVERRIDE';
 

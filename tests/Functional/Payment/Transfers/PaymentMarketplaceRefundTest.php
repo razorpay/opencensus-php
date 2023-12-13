@@ -2,16 +2,20 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use Carbon\Carbon;
 use RZP\Models\Admin;
 use RZP\Models\Transfer;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
 
 class PaymentMarketplaceRefundTest extends TestCase
 {
+    use MocksRazorx;
     use PaymentTrait;
     use TransferTrait;
     use DbEntityFetchTrait;
@@ -429,5 +433,118 @@ class PaymentMarketplaceRefundTest extends TestCase
         $this->assertEquals(0, $balanceLinkedAccount1['balance']);
         $this->assertEquals(0, $balanceLinkedAccount2['balance']);
         $this->assertEquals(123456 + 20000 - 50000, $balanceMerchant['balance']);
+    }
+
+    public function testRefundWhenTransfersAreInPendingStateAndExperimentIsEnabled()
+    {
+        $this->markTestSkipped('Test case should be fixed');
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED, 'on');
+
+        $paymentId = explode('_', $payment['id'])[1];
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'merchant_id'        => 10000000000000,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 2000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->subDays(1)->getTimestamp(),
+            'updated_at'         => Carbon::now()->subDays(1)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $this->refundPayment($payment['id'], null,[], [], true);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $paymentAmountRefunded = $paymentEntity['amount_refunded'];
+
+        $this->assertEquals($payment['amount'], $paymentAmountRefunded);
+
+        $transferEntity = $this->getEntityById('transfer', 'AnyRandomID123', true);
+
+        $this->assertEquals('failed', $transferEntity['status']);
+        $this->assertEquals(0, $transferEntity['amount_reversed']);
+        $this->assertEquals("Transfer failed as source payment is refunded", $transferEntity['message']);
+        $this->assertEquals("BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED", $transferEntity['error_code']);
+    }
+
+    public function testRefundWhenOneTransfersInPendingStateAndAnotherInProcessedStateAndExperimentIsEnabled()
+    {
+        $this->markTestSkipped('Test case should be fixed');
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_CREATED_AND_PENDING_TRANSFERS_IF_PAYMENT_REFUNDED, 'on');
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 1000,
+            'currency'=> 'INR',
+        ];
+
+        $transfers = $this->transferPayment($payment['id'], $transfers);
+
+        $transferId = explode('_', $transfers['items'][0]['id'])[1];
+
+        $paymentId = explode('_', $payment['id'])[1];
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'merchant_id'        => 10000000000000,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 2000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->subDays(1)->getTimestamp(),
+            'updated_at'         => Carbon::now()->subDays(1)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $this->refundPayment($payment['id'], null,[], [], true);
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
+
+        $this->checkReversalsSingle($transfers['items']);
+
+        $transferPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($transferId, $transferPayment['transfer_id']);
+
+        $this->assertEquals(1000, $transferPayment['amount_refunded']);
+
+        $paymentEntity = $this->getEntityById('payment', explode('_', $payment['id'])[1], true);
+
+        $paymentAmountRefunded = $paymentEntity['amount_refunded'];
+
+        $this->assertEquals($payment['amount'], $paymentAmountRefunded);
+
+        $transferEntity = $this->getEntityById('transfer', $transferId, true);
+
+        $amountReversed = $transferEntity['amount_reversed'];
+
+        $this->assertEquals(1000, $amountReversed);
+
+        $failedTransferEntity = $this->getEntityById('transfer', 'AnyRandomID123', true);
+        $this->assertEquals('failed', $failedTransferEntity['status']);
+        $this->assertEquals(0, $failedTransferEntity['amount_reversed']);
+        $this->assertEquals("Transfer failed as source payment is refunded", $failedTransferEntity['message']);
+        $this->assertEquals("BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED", $failedTransferEntity['error_code']);
     }
 }
