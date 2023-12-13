@@ -57,4 +57,6 @@ final class Constants
     const TRANSACTIONS_CREDIT            = 'transactions_credit';
 
     const GENERATED_BY                   = 'generated_by';
+
+    const WALLET_ADMIN_ROLE              = 'wallet_report_admin';
 }

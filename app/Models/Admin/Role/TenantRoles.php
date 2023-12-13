@@ -13,4 +13,5 @@ class TenantRoles
     const ENTITY_PAYMENTS          = 'tenant:payments';
     const ENTITY_BANKING           = 'tenant:banking';
     const ENTITY_PAYMENTS_EXTERNAL = 'tenant:payments_external';
+    const ENTITY_WALLET            = 'tenant:wallet';
 }

@@ -30,6 +30,11 @@ class Factory
         {
             return new RXReportValidator($input);
         }
+        else if ($reportType === Reporting::RTPL_WALLET)
+        {
+            // using PGReportValidator for RTPL Wallet, as the email validation logic will remain same for PG and Wallet
+            return new PGReportValidator($input);
+        }
 
         return null;
     }

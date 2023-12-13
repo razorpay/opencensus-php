@@ -65,6 +65,7 @@ class Reporting implements ExternalService
     const MERCHANT      = 'merchant';
     const PARTNER       = 'partner';
     const RAZORPAYX     = 'razorpayx';
+    const RTPL_WALLET   = 'wallet';
 
     //CA TRANSACTION constants
     const RAW_SQL            = 'raw_sql';
@@ -95,6 +96,7 @@ class Reporting implements ExternalService
         self::MERCHANT,
         self::RAZORPAYX,
         self::PARTNER,
+        self::RTPL_WALLET,
     ];
 
     const ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE = [
@@ -295,6 +297,12 @@ class Reporting implements ExternalService
     {
         $this->validateFeatures($input);
 
+        $reportType = Request::header(self::REPORT_TYPE_HEADER);
+
+        if ($this->ba->isAdminAuth() && $reportType === self::RTPL_WALLET) {
+            $this->failIfNotRTPLAdmin();
+        }
+
         return $this->createAndSendRequest(Requests::POST, self::CONFIG_PATH, $input);
     }
 
@@ -393,6 +401,8 @@ class Reporting implements ExternalService
         //
         $input['mode'] = $this->mode;
 
+        $reportType = Request::header(self::REPORT_TYPE_HEADER);
+
         /**
          * If request is coming from the proxy auth (merchant)
          * Adds the merchant id of the merchant who initiated the request
@@ -401,6 +411,13 @@ class Reporting implements ExternalService
          */
         if ($this->ba->isProxyAuth())
         {
+            // as per compliance, we should not allow non-wallet admins to download Wallet reports. So blocking the
+            // requests for wallet reportType where logged in as a merchant.
+            if (Request::header(self::REPORT_TYPE_HEADER) === self::RTPL_WALLET &&
+                $this->ba->isAdminLoggedInAsMerchantOnDashboard())  {
+               throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+            }
+
             $input['generated_by'] = $this->ba->authCreds->getKey();
         }
 
@@ -425,6 +442,11 @@ class Reporting implements ExternalService
                 elseif (in_array(TenantRoles::ENTITY_BANKING, $adminRoles) === true)
                 {
                     $tenantRole = TenantRoles::ENTITY_BANKING;
+                }
+
+                if ($reportType === self::RTPL_WALLET) {
+                    $this->failIfNotRTPLAdmin();
+                    $tenantRole = TenantRoles::ENTITY_WALLET;
                 }
 
                 $this->headers[self::TENANT_ROLE] = $tenantRole;
@@ -1336,7 +1358,8 @@ class Reporting implements ExternalService
         {
             if (($reportType !== self::MERCHANT) and
                 ($reportType !== self::PARTNER) and
-                ($reportType !== self::RAZORPAYX))
+                ($reportType !== self::RAZORPAYX) and
+                ($reportType !== self::RTPL_WALLET))
             {
                 throw new Exception\BadRequestValidationFailureException('Invalid report type');
             }
@@ -1643,6 +1666,14 @@ class Reporting implements ExternalService
         {
             $featureNames = $input[Feature::FEATURE_NAMES];
             (new FeatureService())->validateFeatureNames($featureNames);
+        }
+    }
+
+    protected function failIfNotRTPLAdmin()
+    {
+        $roles = $this->ba->getAdmin()->getRolesAndPermissionsList()['roles'];
+        if (!in_array(Constants::WALLET_ADMIN_ROLE, $roles)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
     }
 
