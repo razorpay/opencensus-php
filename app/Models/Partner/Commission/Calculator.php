@@ -669,7 +669,10 @@ class Calculator extends Base\Core
     /**
      * Calculates all types of applicable commissions [implicit (fixed and variable), explicit (fixed)] and saves them.
      *
+     * @param bool $save - this boolean specifies whether to save the commissions or not after calculation
+     *
      * @throws LogicException
+     * @throws \RZP\Exception\AssertionException
      */
     public function calculateAndSaveCommission(bool $save = true)
     {

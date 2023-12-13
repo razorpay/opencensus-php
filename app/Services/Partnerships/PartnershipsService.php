@@ -23,11 +23,12 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Jobs\PartnershipServiceAsync;
 use RZP\Models\Merchant\PhantomUtility;
 use RZP\Models\Partner\Commission\Entity;
-use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
+use RZP\Models\Partner\Commission\Constants;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\EntityOrigin\Core as EntityOriginCore;
+use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
 
 class PartnershipsService extends Base\Service
 {
@@ -377,12 +378,14 @@ class PartnershipsService extends Base\Service
     /**
      * Creates Commission in Partnerships service in Shadow Phase by pushing job to the queue using pushRaw.
      *
-     * @param array            $commissions The commissions.
-     * @param PaymentEntity    $payment     The payment entity.
+     * @param array         $commissions The commissions.
+     * @param array         $components
+     * @param PaymentEntity $payment     The payment entity.
+     * @param string|null   $experimentMode
      *
      * @return  void
      */
-    public function sendPaymentCaptureEvent(array $commissions, array $components, PaymentEntity $payment, string $experimentMode): void
+    public function sendPaymentCaptureEvent(array $commissions, array $components, PaymentEntity $payment, ?string $experimentMode = Constants::SHADOW_MODE): void
     {
         try
         {
