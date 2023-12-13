@@ -2,14 +2,28 @@
 
 namespace RZP\Models\Gateway\File\Processor\Combined;
 
+use Mail;
+use Throwable;
 use Carbon\Carbon;
+use Monolog\Logger;
+
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Mail\Base\Constants;
+use RZP\Services\Beam\Service;
+use RZP\Mail\Gateway\DailyFile;
+use RZP\Models\Gateway\File\Status;
+use RZP\Exception\GatewayFileException;
+use RZP\Services\Beam\Constants as BeamConstants;
 
 class Canara extends Base
 {
+    const BEAM_FILE_TYPE = "combined";
+    const FILE_TYPE      = FileStore\Type::CANARA_NETBANKING_REFUND;
 
-    protected function formatDataForMail(array $data)
+    protected function formatDataForMail(array $data): array
     {
         $amount = [
             'claims'  => 0,
@@ -83,5 +97,75 @@ class Canara extends Base
             'date'        => $date,
             'emails'      => $this->gatewayFile->getRecipients(),
         ];
+    }
+
+    /**
+     * @throws GatewayFileException
+     */
+    public function sendFile($data): void
+    {
+        try
+        {
+            $fileInfo = [];
+
+            if (isset($data['refunds']) === true)
+            {
+                $fileInfo[] = $this->getFileData(FileStore\Type::CANARA_NETBANKING_REFUND);
+            }
+
+            if (isset($data['claims']) === true)
+            {
+                $fileInfo[] = $this->getFileData(FileStore\Type::CANARA_NETBANKING_CLAIMS);
+            }
+
+            $bucketConfig = $this->getBucketConfig();
+
+            $beamData =  [
+                Service::BEAM_PUSH_FILES         => $fileInfo,
+                Service::BEAM_PUSH_JOBNAME       => BeamConstants::CANARA_NETBANKING_COMBINED_PUSH,
+                Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+                Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+            ];
+
+            // In seconds
+            $timelines = [];
+
+            $mailInfo = [
+                'fileInfo'  => $fileInfo,
+                'channel'   => 'tech_alerts',
+                'filetype'  => self::BEAM_FILE_TYPE,
+                'subject'   => 'Canara Combined File send failure',
+                'recipient' => Constants::MAIL_ADDRESSES[Constants::NBPLUS_TECH]
+            ];
+
+            $this->app['beam']->beamPush($beamData, $timelines, $mailInfo);
+
+            $mailData = $this->formatDataForMail($data);
+
+            $dailyFileMail = new DailyFile($mailData);
+
+            Mail::send($dailyFileMail);
+
+            $this->gatewayFile->setFileSentAt(time());
+
+            $this->gatewayFile->setStatus(Status::FILE_SENT);
+
+            $this->reconcileNetbankingRefunds($data['refunds'] ?? []);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::INFO,
+                TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE, [
+                    'id' => $this->gatewayFile->getId()
+                ]);
+
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE, [
+                    'id' => $this->gatewayFile->getId(),
+                ],
+                $e);
+        }
     }
 }
