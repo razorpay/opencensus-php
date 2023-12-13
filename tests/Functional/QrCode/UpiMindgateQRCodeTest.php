@@ -422,7 +422,7 @@ class UpiMindgateQRCodeTest extends TestCase
 
         $rrn = '000011100101';
         $request['content']['data']['upi']['npci_reference_id'] = $rrn;
-        $request['content']['data']['upi']['merchant_reference'] = 'STQ' . $qrCodeId . 'qrv2';
+        $request['content']['data']['upi']['merchant_reference'] = 'STQ' . $qrCodeId . 'qrv2!84872094692';
 
         $response = $this->makeUpiPaymentInternal($request);
 

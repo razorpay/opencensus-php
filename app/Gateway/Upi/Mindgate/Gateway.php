@@ -833,6 +833,8 @@ class Gateway extends Base\Gateway
             unset($input['data']['_raw']);
         }
 
+        $input['data']['upi'][ResponseFields::MERCHANT_REFERENCE] =$this->upiPaymentIdFromServerCallback($input);
+
         return [
             'callback_data' => $input,
             'qr_data'       => $qrData
