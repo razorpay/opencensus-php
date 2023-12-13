@@ -39,3 +39,9 @@ export const paymentPagesEcommerceData = {
     slug: '',
   },
 };
+
+export const batchPaymentPageData = {
+  detailsPage: {
+    paymentLinkId: 'pl_NBIHnwkjVUIseX',
+  },
+};

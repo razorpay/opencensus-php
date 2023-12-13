@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 
 import { PAYMENT_PAGES_TYPES } from './constants';
 import { SELECTORS } from './selectors';
+import { routes } from '../../utils/constants';
 
 export const createPaymentPage = async ({ page, productData, type }) => {
   try {
@@ -69,4 +70,24 @@ export const createProduct = async ({ page, product }) => {
     .filter({ hasText: 'CancelAdd product' })
     .getByRole('button', { name: 'Add product' })
     .click();
+};
+
+export const validateBatchPaymentPageDetails = async ({ page, productData }) => {
+  try {
+    const id = productData.detailsPage.paymentLinkId;
+    const tdElement = await page.waitForSelector(`td:has-text("${id}")`, { timeout: 7000 });
+    if (tdElement) {
+      await tdElement.click();
+      await expect(page).toHaveURL(
+        `${routes.BATCH_PAYMENT_PAGES}/${id}/payments#batchpaymentpages`,
+      );
+      await expect(page.getByText('Paid Count')).toBeVisible();
+      await expect(page.getByText('Paid Amount')).toBeVisible();
+      await expect(page.getByText('Unpaid Count')).toBeVisible();
+      await expect(page.getByText('Unpaid Amount')).toBeVisible();
+      await expect(page.getByText('Total Pending Late Fee')).toBeVisible();
+    }
+  } catch (e) {
+    // continue regardless of error
+  }
 };

@@ -16,7 +16,6 @@ import store from 'merchant/store';
 import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
 import PaymentPagesDetails from 'merchant/views/PaymentPages/PaymentPages/Details';
 
-// import * as analytics from 'common/utils/analytics';
 import 'jest-location-mock';
 import { transformedStore } from './mocks/fixtures/storefront';
 import { paymentPagesErrorHandlers } from './mocks/handlers';
@@ -382,6 +381,7 @@ describe('Batch Payment Pages -> Details page', () => {
     expect(screen.getByText('Paid Amount')).toBeInTheDocument();
     expect(screen.getByText('Unpaid Count')).toBeInTheDocument();
     expect(screen.getByText('Unpaid Amount')).toBeInTheDocument();
+    expect(screen.getByText('Total Pending Late Fee')).toBeInTheDocument();
   });
 
   test('should show error while getting pending payments', async () => {

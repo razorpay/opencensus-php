@@ -1,6 +1,6 @@
-import { RULE_TYPES } from 'merchant/views/MagicCheckout/constants';
-import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import Amount from 'common/ui/Amount';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import { RULE_TYPES } from 'merchant/views/MagicCheckout/constants';
 
 /*
   Function: transfeeRuleToApiFormat used to convert rupee to paise and change the structure to API required format
@@ -81,7 +81,7 @@ export const getAlertMsg = ({ isBatchPaymentPages, field }) => {
 
 export const getBatchStatsTable = ({ paymentPageEntity, pendingPayments }) => {
   const { captured_payments_count, total_amount_paid, currency } = paymentPageEntity;
-  const { total_pending_payments, total_pending_revenue } = pendingPayments;
+  const { total_pending_payments, total_pending_revenue, total_pending_late_fee } = pendingPayments;
 
   return [
     {
@@ -99,6 +99,10 @@ export const getBatchStatsTable = ({ paymentPageEntity, pendingPayments }) => {
     {
       title: 'Unpaid Amount',
       value: <Amount value={total_pending_revenue} currency={currency} />,
+    },
+    {
+      title: 'Total Pending Late Fee',
+      value: <Amount value={total_pending_late_fee} currency={currency} />,
     },
   ];
 };

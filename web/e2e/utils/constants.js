@@ -56,6 +56,7 @@ const routes = {
   AFFILIATE_ACCOUNTS: '/app/partners/submerchants',
   AFFILIATE_ACCOUNTS_CAPITAL: '/app/partners/submerchants/capital',
   OPTIMIZER: 'app/optimizer/rules',
+  BATCH_PAYMENT_PAGES: '/app/paymentpages/batchpaymentpages',
   WHATSAPP_ACCOUNT_SETUP: 'app/payments-and-refunds-settings/whatsapp-account-setup',
   PAYMENT_METRICS: '/app/payment-metrics',
   INTERNATIONAL_PAYMENTS: '/app/payment-methods/international-payments',
