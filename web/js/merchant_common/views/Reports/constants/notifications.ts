@@ -3,7 +3,8 @@ export const MANDATORY_FIELD_REQUIRED = 'Please fill all the mandatory data.';
 export const REPORT_GENERATE_LOG_POST_FAILED =
   'Unable to process report log at this time, please try again later.';
 
-export const REPORT_GENERATE_LOG_POST_SUCCESS = 'Report log request placed successfully.';
+export const REPORT_GENERATE_LOG_POST_SUCCESS =
+  'Report download request submitted successfully. Track your request from the downloads tab.';
 
 export const REPORT_GENERATE_LOG_POST_INVALID_RES =
   'Unable to process report log at this time, please try again later.';

@@ -375,6 +375,7 @@ export const ScheduleReportModal = ({
                 value={allReportConfigs
                   .findIndex((config) => selectedConfig && config.id === selectedConfig.id)
                   .toString()}
+                isDisabled={actionViaModal === 'Edit'}
               />
               <DropdownOverlay>
                 <ActionList
