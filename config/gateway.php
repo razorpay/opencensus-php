@@ -139,6 +139,7 @@ return [
         'paylater_icici',
         'hdfc_debit_emi',
         'kotak_debit_emi',
+        'icici_debit_emi',
         'indusind_debit_emi',
         'netbanking_dlb',
         'fulcrum',

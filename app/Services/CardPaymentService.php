@@ -38,6 +38,8 @@ use RZP\Constants\Shield as ShieldConstants;
 class CardPaymentService
 {
     const FETCH_PID_FROM_REF2_QUERY     = "SELECT payment_id FROM hive.realtime_pgpayments_card_live.authorization WHERE gateway='%s' and gateway_reference_id2= '%s'";
+    const FETCH_REF_FROM_PID_QUERY     =  "SELECT gateway_transaction_id,gateway_reference_id1 FROM hive.realtime_pgpayments_card_live.emi_gateway WHERE gateway='%s' and payment_id = '%s' and action= '%s'";
+    const FETCH_PID_FROM_REF_QUERY     =  "SELECT payment_id FROM hive.realtime_pgpayments_card_live.emi_gateway WHERE gateway='%s' and gateway_transaction_id = '%s' and action= '%s'";
     const CONTENT_TYPE_HEADER           = 'Content-Type';
     const ACCEPT_HEADER                 = 'Accept';
     const APPLICATION_JSON              = 'application/json';
@@ -145,6 +147,43 @@ class CardPaymentService
     public function fetchPaymentIdFromVerificationFields($verificationFields)
     {
         $dataLakeQuery = sprintf(self::FETCH_PID_FROM_REF2_QUERY, $verificationFields['gateway'], $verificationFields['gateway_reference_id2']);
+
+        $response = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        if(empty($response) === false && isset($response[0]['payment_id']) === true)
+        {
+            return $response[0]['payment_id'];
+        }
+
+        return [];
+    }
+
+    public function fetchEmiGatewayReferenceIdsFromPaymentId($verificationFields)
+    {
+        $dataLakeQuery = sprintf(self::FETCH_REF_FROM_PID_QUERY, $verificationFields['gateway'], $verificationFields['payment_id'], $verificationFields['action']);
+
+        $response = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        $finalResponse = [];
+
+        if(empty($response) === false)
+        {
+            if(isset($response[0]['gateway_reference_id1']) === true)
+            {
+                $finalResponse['gateway_reference_id1'] = $response[0]['gateway_reference_id1'];
+            }
+            if(isset($response[0]['gateway_transaction_id']) === true)
+            {
+                $finalResponse['gateway_transaction_id'] = $response[0]['gateway_transaction_id'];
+            }
+        }
+
+        return $finalResponse;
+    }
+
+    public function fetchPaymentIdFromEmiGatewayReferenceIds($verificationFields)
+    {
+        $dataLakeQuery = sprintf(self::FETCH_PID_FROM_REF_QUERY, $verificationFields['gateway'], $verificationFields['gateway_transaction_id'], $verificationFields['action']);
 
         $response = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
 

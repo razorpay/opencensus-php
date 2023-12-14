@@ -218,6 +218,7 @@ class Gateway
     const HDFC_DEBIT_EMI     = 'hdfc_debit_emi';
     const KOTAK_DEBIT_EMI    = 'kotak_debit_emi';
     const INDUSIND_DEBIT_EMI = 'indusind_debit_emi';
+    const ICICI_DEBIT_EMI    = 'icici_debit_emi';
     const CURRENCY_CLOUD     = 'currency_cloud';
 
     const VA_SWIFT = 'swift';

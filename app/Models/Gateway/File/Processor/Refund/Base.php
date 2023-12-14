@@ -847,6 +847,11 @@ class Base extends BaseProcessor
             $col['card'] = $payment->card->toArray();
         }
 
+        if($payment->isEmi() === true and $payment->emiPlan != null)
+        {
+            $col['payment']['emi_plan'] = $payment->emiPlan->toArray();
+        }
+
         return $col;
     }
 

@@ -76,6 +76,7 @@ class Constants
     const HDFC_CORP        = 'hdfc_corp';
     const UJVN             = 'ujjivan';
     const INDUS_IND_DEBIT  = 'indusind_debit';
+    const ICICI_DEBIT_EMI   = 'icici_debit_emi';
 
     const AXIS_V2          = 'axis_v2';
     const YESB_EARLY_DEBIT = 'yesb_early_debit';
@@ -118,6 +119,7 @@ class Constants
             self::HDFC_EMANDATE,
             self::UPI_SBI,
             self::ICICI_EMI,
+            self::ICICI_DEBIT_EMI,
             self::HDFC_CORP,
             self::UPI_AIRTEL,
             self::UPI_YESBANK,
@@ -126,6 +128,7 @@ class Constants
         ],
         Type::EMI => [
             self::INDUS_IND_DEBIT,
+            self::ICICI_DEBIT_EMI,
             self::INDUSIND,
             self::KOTAK,
             self::AXIS,

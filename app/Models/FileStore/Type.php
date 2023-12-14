@@ -248,6 +248,8 @@ class Type
     const BENEFICIARY_FILE                  = 'beneficiary_file';
     const EMI_FILE                          = 'emi_file';
     const AXIS_EMI_FILE                     = 'axis_emi_file';
+    const ICICI_DEBIT_EMI_FILE              = 'icici_debit_emi_file';
+    const ICICI_DEBIT_EMI_REFUND_FILE       = 'icici_debit_emi_refund_file';
     const INDUSIND_EMI_FILE                 = 'indusind_emi_file';
     const KOTAK_EMI_FILE                    = 'kotak_emi_file';
     const RBL_EMI_FILE                      = 'rbl_emi_file';
@@ -490,6 +492,8 @@ class Type
             self::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE,
             self::INDUS_IND_DEBIT_EMI_FILE,
             self::FEDERAL_EMI_FILE,
+            self::ICICI_DEBIT_EMI_FILE,
+            self::ICICI_DEBIT_EMI_REFUND_FILE,
             self::IDFC_EMI_FILE,
         ],
 
@@ -699,6 +703,8 @@ class Type
         self::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE,
         self::INDUS_IND_DEBIT_EMI_FILE,
         self::FEDERAL_EMI_FILE,
+        self::ICICI_DEBIT_EMI_FILE,
+        self::ICICI_DEBIT_EMI_REFUND_FILE,
         self::IDFC_EMI_FILE,
     ];
 
@@ -775,6 +781,8 @@ class Type
             self::HSBC_EMI_FILE,
             self::INDUS_IND_DEBIT_EMI_FILE,
             self::FEDERAL_EMI_FILE,
+            self::ICICI_DEBIT_EMI_FILE,
+            self::ICICI_DEBIT_EMI_REFUND_FILE,
         ],
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [

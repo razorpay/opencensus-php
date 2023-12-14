@@ -467,6 +467,39 @@ return [
         ]
     ],
 
+    'testGenerateEmiFileForIciciDebit' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emi',
+                'targets' => ['icici_debit_emi'],
+                'begin'   => Carbon::today(Timezone::IST)->subMinutes(30)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emifiles@razorpay.com',
+                        'type'                => 'emi',
+                        'target'              => 'icici_debit_emi',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testGenerateEmiFileForSbiNce' => [
         'request' => [
             'content' => [

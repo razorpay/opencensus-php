@@ -120,7 +120,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_SARASWAT,
         RequestProcessor\Base::EMERCHANTPAY,
         RequestProcessor\Base::NETBANKING_DBS,
-        RequestProcessor\Base::ICICI
+        RequestProcessor\Base::ICICI,
+        RequestProcessor\Base::ICICI_DEBIT_EMI
 
     ];
 
@@ -131,6 +132,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     const SKIP_IIN_SAVING_GATEWAYS = [
         RequestProcessor\Base::HITACHI
     ];
+
+    // skip the call to cps to fetch gateway ref ids
+    const gatewaysToIgnoreCardDispatch = [
+        Payment\Gateway::ICICI_DEBIT_EMI,
+    ];
+
     const GATEWAY_FEES_MISSING_GATEWAYS = [
         // For HDFC, record gateway fees of payments before 7th Nov
         RequestProcessor\Base::HDFC         => 1509993000,
@@ -456,6 +463,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             'gateway'    => $this->gateway,
             'batch_id'   => $this->batchId,
         ];
+
+        if (in_array($this->gateway, self::gatewaysToIgnoreCardDispatch)) {
+            return;
+        }
 
         if ($this->payment->getGateway() === Payment\Gateway::CYBERSOURCE && $this->payment->terminal->getGatewayAcquirer() === 'axis')
         {

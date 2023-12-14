@@ -24,6 +24,10 @@ class Constants
 
     const INDUSIND_EMI_FILE_JOB_NAME   = 'indusind_emi';
 
+    const ICICI_DEBIT_EMI_FILE_JOB_NAME   = 'icici_debit_emi_push';
+
+    const ICICI_DEBIT_EMI_REFUND_FILE_JOB_NAME   = 'icici_debit_emi_refund_push';
+
     const RBL_EMI_FILE_JOB_NAME        = 'rbl_push';
 
     const ICIC_EMI_FILE_JOB_NAME       = 'icici_emi';

@@ -4798,6 +4798,47 @@ EOT;
             ->get();
     }
 
+    public function fetchEmiPaymentsWithGatewayAndCardType($from, $to, $bank, $gateway, $type)
+    {
+        $tRepo = $this->repo->terminal;
+        $cRepo = $this->repo->card;
+
+        $paymentCardIdCol = $this->dbColumn(Payment\Entity::CARD_ID);
+
+        $cardIdCol = $cRepo->dbColumn(Card\Entity::ID);
+
+        $cardType = $cRepo->dbColumn(Card\Entity::TYPE);
+
+        $cardTableName = $cRepo->getTableName();
+
+        $tTableName = $tRepo->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $terminalGateway = $tRepo->dbColumn(Terminal\Entity::GATEWAY);
+
+        $paymentData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+            ->join($cardTableName, $paymentCardIdCol, '=', $cardIdCol)
+            ->whereBetween(Entity::AUTHORIZED_AT, [$from, $to])
+            ->whereIn($paymentStatus, [Status::CAPTURED, Status::AUTHORIZED])
+            ->where(Entity::BANK, '=', $bank)
+            ->where($cardType, '=' ,$type)
+            ->where(Entity::METHOD, '=', Method::EMI)
+            ->where($terminalGateway, '=', $gateway)
+            ->with('card.globalCard', 'emiPlan', 'merchant', 'terminal')
+            ->select($paymentData)
+            ->get();
+    }
+
     private function getWdaConnectionType(string $connection)
     {
         if($connection === Connection::DATA_WAREHOUSE_ADMIN_TEST or $connection === Connection::DATA_WAREHOUSE_ADMIN_LIVE)
