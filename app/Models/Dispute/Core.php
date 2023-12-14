@@ -2364,6 +2364,10 @@ class Core extends Base\Core
                 return $this->getRecoveryMethodForUpiDispute($dispute);
             case Method::WALLET:
                 return $this->getRecoveryMethodForWalletDispute($dispute);
+            case Method::EMI:
+                return $this->getRecoveryMethodForEmiDispute($dispute);
+            case Method::PAYLATER:
+                return $this->getRecoveryMethodForPaylaterDispute($dispute);
         }
 
         return RecoveryMethod::RISK_OPS_REVIEW;
@@ -2406,6 +2410,26 @@ class Core extends Base\Core
             return RecoveryMethod::REFUND;
         }
 
+
+        return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
+    protected function getRecoveryMethodForEmiDispute(Entity $dispute): string
+    {
+        if (in_array($dispute->payment->getGateway(), RecoveryMethod::EMI_RECOVER_VIA_ADJUSTMENT_GATEWAY, true) === true)
+        {
+            return RecoveryMethod::ADJUSTMENT;
+        }
+
+        return RecoveryMethod::RISK_OPS_REVIEW;
+    }
+
+    protected function getRecoveryMethodForPaylaterDispute(Entity $dispute): string
+    {
+        if (in_array($dispute->payment->getGateway(), RecoveryMethod::PAYLATER_RECOVER_VIA_ADJUSTMENT_GATEWAYS, true) === true)
+        {
+            return RecoveryMethod::ADJUSTMENT;
+        }
 
         return RecoveryMethod::RISK_OPS_REVIEW;
     }

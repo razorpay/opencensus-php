@@ -701,15 +701,23 @@ class DisputePresentmentTest extends TestCase
                 'expected_recovery_method' => 'adjustment',
             ],
             [
-                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'mobikwik'],
-                'expected_recovery_method' => 'adjustment',
-            ],
-            [
                 'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_payzapp'],
                 'expected_recovery_method' => 'adjustment',
             ],
             [
-                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'bajajfinserv'],
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_amazonpay'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_phonepeswitch'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_airtelmoney'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'mobikwik'],
                 'expected_recovery_method' => 'refund',
             ],
             [
@@ -722,6 +730,18 @@ class DisputePresentmentTest extends TestCase
             ],
             [
                 'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'bajajfinserv'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_openwallet'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'wallet_bajaj'],
+                'expected_recovery_method' => 'refund',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'wallet', 'gateway' => 'paypal'],
                 'expected_recovery_method' => 'refund',
             ],
             [
@@ -750,6 +770,62 @@ class DisputePresentmentTest extends TestCase
             ],
             [
                 'payment_edit_input'       => ['method' => 'upi', 'gateway' => 'upi_juspay'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'hitachi'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'hdfc'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'fulcrum'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'mgps'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'first_data'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'hdfc_debit_emi'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'cybersource'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'card_fss'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'axis_migs'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'paysecure'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'indusind_debit_emi'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'isg'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'emi', 'gateway' => 'bajajfinserv'],
+                'expected_recovery_method' => 'adjustment',
+            ],
+            [
+                'payment_edit_input'       => ['method' => 'paylater', 'gateway' => 'paylater'],
                 'expected_recovery_method' => 'adjustment',
             ],
         ];

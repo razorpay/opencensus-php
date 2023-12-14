@@ -39,13 +39,39 @@ class RecoveryMethod
     const WALLET_RECOVER_VIA_ADJUSTMENT_GATEWAYS = [
         Gateway::WALLET_OLAMONEY,
         Gateway::WALLET_PHONEPE,
-        Gateway::MOBIKWIK,
         Gateway::WALLET_PAYZAPP,
+        Gateway::WALLET_AMAZONPAY,
+        Gateway::WALLET_PHONEPESWITCH,
+        Gateway::WALLET_AIRTELMONEY
     ];
 
     const WALLET_RECOVER_VIA_REFUND_GATEWAYS = [
         Gateway::BAJAJFINSERV,
         Gateway::WALLET_FREECHARGE,
         Gateway::WALLET_JIOMONEY,
+        Gateway::MOBIKWIK,
+        Gateway::WALLET_OPENWALLET,
+        Gateway::WALLET_BAJAJ,
+        Gateway::PAYPAL
+    ];
+
+    const EMI_RECOVER_VIA_ADJUSTMENT_GATEWAY = [
+        Gateway::HITACHI,
+        Gateway::HDFC,
+        Gateway::FULCRUM,
+        Gateway::MGPS,
+        Gateway::FIRST_DATA,
+        Gateway::HDFC_DEBIT_EMI,
+        Gateway::CYBERSOURCE,
+        Gateway::CARD_FSS,
+        Gateway::AXIS_MIGS,
+        Gateway::PAYSECURE,
+        Gateway::INDUSIND_DEBIT_EMI,
+        Gateway::ISG,
+        Gateway::BAJAJFINSERV
+    ];
+
+    const PAYLATER_RECOVER_VIA_ADJUSTMENT_GATEWAYS = [
+        Gateway::PAYLATER
     ];
 }

@@ -64,6 +64,7 @@ class Gateway
     const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
     const FIRST_DATA             = 'first_data';
     const FULCRUM                = 'fulcrum';
+    const MGPS                   = 'mgps';
     const HDFC                   = 'hdfc';
     const SBIN                   = 'sbin';
     const HITACHI                = 'hitachi';
