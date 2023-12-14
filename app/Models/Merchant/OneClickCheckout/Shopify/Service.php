@@ -1380,7 +1380,7 @@ class Service extends Base\Service
             ]
         ];
 
-        $calculateDraftOrder = (new Shopify\Core())->calculateDraftOrder($order, $orderMeta);
+        $calculateDraftOrder = (new Core)->calculateDraftOrder($order, $orderMeta);
 
         $totalTax = null;
 
