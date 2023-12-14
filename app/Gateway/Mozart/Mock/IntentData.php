@@ -57,4 +57,27 @@ class IntentData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function upi_mindgate($input)
+    {
+        $response = [
+            'data'              => [
+                '_raw'     => '{}',
+                'terminal' => $input['terminal'],
+                'payment'  => $input['payment'],
+                'upi'      => $input['upi'],
+            ],
+            'error'             => null,
+            'external_trace_id' => 'DummyRequestId',
+            'mozart_id'         => 'DummyMozartId',
+            'next'              => [
+                'intent_url' => 'upi://pay?am=95.26&cu=INR&mc=2345&pa=MERCHANTAPP&pn=MerchantName&tn=Thisisaverylongdescriptionwithlengthgrea&tr=paymentID',
+            ],
+            'success'           => true,
+        ];
+
+        $response['data']['upi']['gateway_merchant_id'] = $input['terminal']['gateway_merchant_id]'];
+
+        return $response;
+    }
 }

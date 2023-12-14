@@ -31,6 +31,11 @@ class Action
     const MANDATE_CANCEL   = 'mandate_cancel';
     const AUTHORIZE_FAILED = 'authorize_failed';
     const INTENT_QR        = 'intent_qr';
+
+    const INTENT           = 'intent';
+    const INTENT_TPV       = 'intent_tpv';
+    const COLLECT          = 'collect';
+
     const FORCE_AUTHORIZE_FAILED        = 'force_authorize_failed';
 
     public static $nonVerifiableActions = [

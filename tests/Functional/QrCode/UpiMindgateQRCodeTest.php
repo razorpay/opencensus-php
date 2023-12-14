@@ -137,18 +137,46 @@ class UpiMindgateQRCodeTest extends TestCase
 
     public function testSingleUseQrCodeWithCloseBy()
     {
-        $this->expectException(BadRequestException::class);
+        $days = 3;
 
-        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CREATE_HDFC);
+        $expiryTime = Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60);
 
-        $days =3;
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
                 'type'           => 'upi_qr',
                 'fixed_amount'   => true,
                 'payment_amount' => 300,
-                'close_by'       => Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60),
+                'close_by'       => $expiryTime,
+            ],
+            'live',
+            'LiveAccountMer');
+
+        $this->runEntityAssertionsForDedicatedTerminalQr();
+
+        $qrCode = $this->getLastEntity('qr_code', true, 'live');
+
+        $this->assertEquals($expiryTime, $qrCode['close_by']);
+        $this->assertStringContainsString('@hdfcbank', $qrCode['qr_string']);
+    }
+
+    public function testSingleUseQrCodeWithCloseByGreaterThan7Days()
+    {
+        $days = 8;
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CREATE_HDFC);
+
+        $expiryTime = Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60);
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+                'close_by'       => $expiryTime,
             ],
             'live',
             'LiveAccountMer');

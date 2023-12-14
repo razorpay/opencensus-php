@@ -1930,6 +1930,15 @@ class Gateway extends Base\Gateway
 
                 return $url;
             }
+
+            if ($this->action === Action::INTENT_QR)
+            {
+                $version = 'v2';
+
+                $url = $baseUrl . $prefix . '/' . $gateway . '/' . $version . '/' . $this->action;
+
+                return $url;
+            }
         }
 
         return $url;

@@ -5,9 +5,11 @@ namespace RZP\Gateway\Upi\Mindgate;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Monolog\Logger;
+
 use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
@@ -18,6 +20,7 @@ use RZP\Models\Terminal;
 use RZP\Gateway\Upi\Base;
 use RZP\Models\UpiTransfer;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
@@ -25,6 +28,8 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Gateway\Upi\Base\UpiErrorCodes;
+use RZP\Constants\Entity as CoreEntity;
+use RZP\Models\QrCode\Entity as QrEntity;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
@@ -99,7 +104,7 @@ class Gateway extends Base\Gateway
 
     protected $qrPaymentMerchantRefPrefix = QrCode\Constants::QR_CODE_V2_HDFC_PREFIX;
 
-    protected $qrPaymentMerchantRefSuffix = QrCode\Constants::QR_CODE_V2_HDFC_SUFFFIX;
+    protected $qrPaymentMerchantRefSuffix = QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
     /**
      * Authorizes a payment using UPI Gateway
      * @param array $input
@@ -2185,7 +2190,7 @@ class Gateway extends Base\Gateway
 
     public function authorizePush($input)
     {
-        list($paymentId , $callbackData) = $input;
+        [$paymentId , $callbackData] = $input;
         // It checks if the version is V2,which is request from art
         if ((empty($callbackData['meta']['version']) === false) and
             ($callbackData['meta']['version'] === 'api_v2'))
@@ -2244,7 +2249,7 @@ class Gateway extends Base\Gateway
      */
     protected function authorizePushV2($input)
     {
-        list ($paymentId, $content) = $input;
+        [$paymentId, $content] = $input;
 
         // Create attributes for upi entity.
         $attributes = [
@@ -2465,5 +2470,145 @@ class Gateway extends Base\Gateway
           }
       }
 
+    }
+
+    /**
+     * Gets the QR merchant reference/ref ID.
+     * Makes a call to HDFC Order Validate API to register expiry if needed
+     *
+     * @param $input
+     *
+     * @return string
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
+     */
+    public function getQrRefId($input): string
+    {
+        $merchantReference = $this->getMerchantReferenceForQrExpiryRequest($input[CoreEntity::QR_CODE]);
+
+        // We won't call HDFC if there's no expiry time set
+        if (empty($input[CoreEntity::QR_CODE][QrEntity::CLOSE_BY]) === true)
+        {
+            return $merchantReference;
+        }
+
+        if (
+            strtolower(
+                $this->app->razorx->getTreatment(
+                    $input['merchant']->getId(),
+                    RazorxTreatment::HDFC_QR_EXPIRY,
+                    $this->getMode()
+                )
+            ) !== RazorxTreatment::RAZORX_VARIANT_ON
+        )
+        {
+            return $merchantReference;
+        }
+
+        $request = $this->buildQrRequest($input, $merchantReference);
+
+        $this->trace->info(TraceCode::CREATE_QR_MOZART_REQUEST, [
+            'request' => $request,
+            'gateway' => $this->gateway
+        ]);
+
+        $gatewayRequestStartTime = microtime(true);
+
+        $result = $this->upiSendGatewayRequest(
+            $request,
+            TraceCode::GATEWAY_INTENT_REQUEST,
+            Action::INTENT_QR
+        );
+
+        $this->gatewayTimeTakenMs = get_diff_in_millisecond($gatewayRequestStartTime);
+
+        $data = $result['data'];
+
+        $this->trace->info(TraceCode::CREATE_QR_MOZART_RESPONSE, [
+            'result'  => $result,
+            'gateway' => $this->gateway,
+        ]);
+
+        if (
+            ($result['success'] === true) and
+            (!is_null($data['upi'])) and
+            (
+                ($data['upi']['merchant_reference'] !== 'NA') or
+                (empty($data['upi']['merchant_reference']) === false)
+            )
+        )
+        {
+            return $data['upi']['merchant_reference'];
+        }
+
+        return throw new Exception\RuntimeException('Invalid Response from Mozart');
+    }
+
+    protected function buildQrRequest($input, $refId = null): array
+    {
+        /*
+         * $input = [
+            'qr_code'  => $qrCode->toArray(),
+            'terminal' => $terminal->toArray(),
+            'merchant' => $qrCode->merchant,
+            'amount'   => $qrCode->getRawAmount(),
+        ];
+         */
+
+        $merchantReference = $refId ?? $this->getMerchantReferenceForQrExpiryRequest($input[CoreEntity::QR_CODE]);
+
+        $request = [
+            CoreEntity::PAYMENT  => [
+                'id'       => $merchantReference,
+                'amount'   => $input[QrEntity::AMOUNT],
+                'currency' => 'INR',
+                'gateway'  => $this->gateway,
+            ],
+            CoreEntity::TERMINAL => [
+                'id'                   => $input[CoreEntity::TERMINAL]['id'],
+                'gateway_merchant_id'  => $input[CoreEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
+                'gateway_merchant_id2' => $input[CoreEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2],
+                'vpa'                  => $input[CoreEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2],
+            ],
+            CoreEntity::UPI      => [
+                Entity::MERCHANT_REFERENCE => $merchantReference,
+            ],
+            CoreEntity::MERCHANT => [
+                'category'      => $input[CoreEntity::MERCHANT]->getCategory(),
+                'billing_label' => $input[CoreEntity::MERCHANT]->getBillingLabel(),
+            ],
+            'gateway' => [
+                'cps_route' => Payment\Entity::UPI_PAYMENT_SERVICE,
+            ],
+        ];
+
+        if (empty($input[CoreEntity::QR_CODE][QrEntity::CLOSE_BY]) === false)
+        {
+            $expTime = $this->getQrExpiryTime($input[CoreEntity::QR_CODE][QrEntity::CLOSE_BY]);
+
+            $request[CoreEntity::QR_CODE][QrEntity::CLOSE_BY] = $expTime;
+            $request[CoreEntity::QR_CODE]['expiry_flag'] = 'Y';
+        }
+
+        return $request;
+    }
+
+    /**
+     * HDFC expects expiry date in 'YYYY-MM-DD HH:MM:SS format.
+     * This function converts QR close_by timestamp to this format.
+     * @param $input int
+     *
+     * @return string
+     */
+    protected function getQrExpiryTime(int $input): string
+    {
+        return Carbon::createFromTimestamp($input, Timezone::IST)->toDateTimeString();
+    }
+
+    protected function getMerchantReferenceForQrExpiryRequest(array $qrCode): string
+    {
+        return ($qrCode[QrEntity::REQ_USAGE_TYPE] === QrCode\NonVirtualAccountQrCode\UsageType::MULTIPLE_USE) ?
+            QrCode\Constants::QR_CODE_V2_HDFC_PREFIX . $qrCode[QrEntity::ID] . QrCode\Constants::QR_CODE_V2_TR_SUFFIX :
+            $qrCode[QrEntity::ID] . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
     }
 }

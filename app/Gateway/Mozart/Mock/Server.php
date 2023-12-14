@@ -125,6 +125,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $intentObj, 'intent');
     }
 
+    public function intentQr($input)
+    {
+        $intentObj = new IntentData();
+
+        return $this->processMockResponse($input, $intentObj, 'intent');
+    }
+
     public function checkAccount($input)
     {
         $elligiblityObj = new CheckAccountData();
@@ -241,6 +248,15 @@ class Server extends Base\Mock\Server
                 ($action === Action::VERIFY)))
         {
             $input['entities'] = $input;
+        }
+
+        if ((isset($input['entities']) === false) and
+            (empty($input['gateway']['cps_route']) === false))
+        {
+            if ($input['gateway']['cps_route'] === 4)
+            {
+                $input['entities'] = $input;
+            }
         }
 
         $entities = $input['entities'];

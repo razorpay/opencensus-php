@@ -91,6 +91,4 @@ class Constants
     const QR_CODE_V2_YESBANK_PREFIX = 'RZPY';
 
     const QR_CODE_V2_HDFC_PREFIX    = 'STQ';
-
-    const QR_CODE_V2_HDFC_SUFFFIX   = 'qrv2';
 }

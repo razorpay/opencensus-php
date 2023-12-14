@@ -2,6 +2,9 @@
 
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Vpa;
@@ -158,7 +161,27 @@ class Generator extends QrCode\Generator
 
                 case Gateway::UPI_MINDGATE:
                 {
-                    if ((empty($qrCode->getCloseBy()) === false) or ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === true))
+                    $variantForFeature = $this->app->razorx
+                        ->getTreatment(
+                            $this->merchant->getId(),
+                            RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE,
+                            $this->mode
+                        );
+
+                    // If there's no expiry passed, this variable will remain true,
+                    // else, we will check if the expiry time is beyond 7 days.
+                    // If it is beyond 7 days, this variable becomes false.
+                    $expirySupport = true;
+
+                    if (empty($qrCode->getCloseBy()) === false)
+                    {
+                        $expirySupport = $this->checkCloseBySupportForUpiMindgate($qrCode->getCloseBy());
+                    }
+
+                    if (($expirySupport !== true) or
+                        ((strtolower($variantForFeature) === RazorxTreatment::RAZORX_VARIANT_ON) and
+                            ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === true))
+                    )
                     {
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_CREATE_HDFC);
                     }
@@ -865,5 +888,19 @@ class Generator extends QrCode\Generator
     public function formatAmountToRupees($amount): string
     {
         return substr_replace((string) $amount, '.', -2, 0);
+    }
+
+    /**
+     * upi_mindgate gateway does not support the expiry of QRs beyond 7 days from current time.
+     * This function checks if the close_by time of the QR code is 7 days after current time or not.
+     * @param int $closeBy the timestamp which needs to be checked for expiry
+     *
+     * @return bool true if upi_mindgate supports this expiry, false otherwise
+     */
+    protected function checkCloseBySupportForUpiMindgate(int $closeBy): bool
+    {
+        $timeAfter7Days = Carbon::now(Timezone::IST)->addDays(7)->timestamp;
+
+        return ($closeBy < $timeAfter7Days);
     }
 }

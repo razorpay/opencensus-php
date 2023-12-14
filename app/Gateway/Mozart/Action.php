@@ -26,6 +26,8 @@ class Action
 
     const INTENT                = 'intent';
 
+    const INTENT_QR             = 'intent_qr';
+
     //action to fetch reconcile data in case of api based recon
     const RECONCILE             = 'reconcile';
 
