@@ -970,18 +970,6 @@ class Validator extends Base\Validator
     {
         (new Vpa\Validator)->validateAddress($attribute, $vpa);
 
-        $vpaParts = explode('@', $vpa);
-
-        if ((ProviderCode::validate($vpaParts[1]) === false))
-        {
-            // Invalid VPA
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
-                $attribute,
-                [
-                    'vpa' => $vpa
-                ]);
-        }
     }
 
     protected function validateAction(string $attribute, string $action)

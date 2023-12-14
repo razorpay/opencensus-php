@@ -79,6 +79,60 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
         ], $upi);
     }
 
+    public function testPaymentSuccessWithNotWhitelistedVpa()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->payment['vpa'] = 'failed@hdfcbanking';
+
+        $this->doAjaxPayment('terminal:shared_upi_mindgate_terminal', 'upi_mindgate');
+
+        $this->setRazorxMock(function ($mid, $feature, $mode) {
+            return $this->getRazoxVariant($feature, 'api_upi_mindgate_pre_process_v1', 'upi_mindgate');
+        });
+
+        $payment = $this->getDbLastpayment()->toArray();
+
+        $this->assertArraySubset([
+            Entity::CPS_ROUTE => 0,
+        ], $payment);
+
+        $upi = $this->getDBLastEntity('upi')->toArray();
+
+        $content = $this->mockServer('upi_mindgate')->getAsyncCallbackContent($upi, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_mindgate');
+
+        $this->assertEquals(
+            [
+                'success' => true
+            ], $response
+        );
+
+        $payment = $this->getDbLastpayment()->toArray();
+
+        $upi = $this->getDBLastEntity('upi')->toArray();
+
+        $this->assertArraySubset([
+            Entity::STATUS => Status::AUTHORIZED,
+            Entity::REFERENCE16 => $upi['npci_reference_id'],
+            Entity::VPA => $upi['vpa'],
+            Entity::TERMINAL_ID => $this->terminal->getId(),
+            Entity::GATEWAY => $this->gateway
+        ], $payment);
+
+        $this->assertArraySubset([
+            UpiEntity::TYPE => Flow::COLLECT,
+            UpiEntity::ACTION => 'authorize',
+            UpiEntity::GATEWAY => $this->gateway,
+            UpiEntity::STATUS_CODE => '00',
+            UpiEntity::MERCHANT_REFERENCE => $payment['id']
+        ], $upi);
+    }
+
+
     public function testPaymentFailureWithV2PreProcess()
     {
         $this->gateway = 'upi_mozart';

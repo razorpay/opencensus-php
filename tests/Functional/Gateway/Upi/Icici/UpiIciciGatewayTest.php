@@ -885,9 +885,6 @@ EOT;
         $vpas = [
             // Emails are not VPAs
             'nemo@razorpay.com',
-            // See ProviderCode
-            'nemo@statebank',
-            'fake@invalidbank',
             // \ not valid
             'a\b@razorpay',
         ];
