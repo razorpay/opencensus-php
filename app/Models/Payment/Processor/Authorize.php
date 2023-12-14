@@ -12,6 +12,7 @@ use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 use RZP\Constants\Country;
+use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
 use RZP\Http\RequestHeader;
@@ -853,6 +854,10 @@ trait Authorize
                 {
                     $request = $this->runOtpPaymentFlow($payment, $terminalGatewayInput);
                 }
+                else if ($this->isFirstRecurringPaymentForOptimizer($this->payment) === true)
+                {
+                    $request = $this->processRecurringDebitForUpiOptimizer($this->payment,$terminalGatewayInput);
+                }
                 else
                 {
                     $request = $this->callGatewayAuthorize($payment, $terminalGatewayInput);
@@ -1007,6 +1012,18 @@ trait Authorize
         }
 
         return $request;
+    }
+
+    protected function isFirstRecurringPaymentForOptimizer(Payment\Entity $payment): bool
+    {
+        if (($payment->isUpiRecurring() === true) and
+            ($payment->isRecurringTypeInitial() === true) and
+            (in_array($payment->getGateway(),RecurringTrait::$optimizerUpiRecurringGateway) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function isAltIdExperimentEnabled($payment): bool

@@ -861,6 +861,8 @@ final class RazorxTreatment
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';
 
+    const ALLOW_OPTIMIZER_UPI_RECURRING = 'allow_optimizer_upi_recurring';
+
     /**
      * Razorx flag to enable capture settings for optimizer merchants overriding the Direct settlement capture flow
      */

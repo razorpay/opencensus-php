@@ -2,26 +2,28 @@
 
 namespace RZP\Gateway\Upi\Payu;
 
+use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Upi\Base\Entity;
 use RZP\Exception\LogicException;
-use RZP\Gateway\Upi\Payu\Fields;
+use RZP\Gateway\Upi\Base\Response;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Wallet\Base\WalletTrait;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
-use RZP\Gateway\Upi\Base\Response;
 
 class Gateway extends Base\Gateway
 {
-
     use AuthorizeFailed;
 
     use WalletTrait;
 
     use CommonGatewayTrait;
+
+    use Base\RecurringTrait;
 
     const ACQUIRER = 'payu';
 
@@ -48,6 +50,43 @@ class Gateway extends Base\Gateway
             return $this->walletAuthorize($input);
         }
         throw new LogicException('Invalid Payment method, authorize request failed');
+    }
+
+    protected function updateGatewayPaymentResponse(Entity $payment, array $response, bool $shouldMap = true)
+    {
+        $attr = $response;
+
+        if ($shouldMap === true)
+        {
+            $attr = $this->getMappedAttributes($response);
+        }
+
+        if (isset($attr[Fields::MIHPAYID]) === true)
+        {
+            $attr[Entity::NPCI_REFERENCE_ID] = $attr[Fields::MIHPAYID];
+
+            $attr[Entity::GATEWAY_DATA] = $payment->getGatewayData();
+
+            // Not exactly needed, but just to be on safer side
+            if (is_array($attr[Entity::GATEWAY_DATA]) === false)
+            {
+                $attr[Entity::GATEWAY_DATA] = [];
+            }
+
+            $attr[Entity::GATEWAY_DATA][Entity::NPCI_REFERENCE_ID][$attr[Entity::NPCI_REFERENCE_ID]] = [
+                Entity::ACTION      => $this->getAction(),
+                Entity::UPDATED_AT  => Carbon::now()->getTimestamp(),
+            ];
+        }
+
+        // To mark that we have received a response for this request
+        $attr[Entity::RECEIVED] = 1;
+
+        $payment->fill($attr);
+
+        $payment->generatePspData($attr);
+
+        $payment->saveOrFail();
     }
 
     public function callback(array $input)

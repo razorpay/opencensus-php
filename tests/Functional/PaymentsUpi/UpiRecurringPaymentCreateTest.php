@@ -194,6 +194,133 @@ class UpiRecurringPaymentCreateTest extends TestCase
         });
     }
 
+    public function testCreatePayuUpiMandatePayment()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $terminal = $this->fixtures->create('terminal:payu_upi_recurring_terminal');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->getDefaultUpiRecurringPaymentArray(),
+        ];
+
+        $request['content']['force_terminal_id'] = 'term_' . $terminal->getId();
+
+        $request['content']['order_id'] = $orderId;
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === "allow_optimizer_upi_recurring")
+            {
+                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
+            }
+
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
+
+        $request['content']['description'] = 'success_recurring_collect';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['payment_id'] ?? null);
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals($upiMandate['token_id'], $token['id']);
+
+        $this->assertEquals($upiMandate['customer_id'], $token['customer_id']);
+
+        $this->assertEquals('created', $upiMandate['status']);
+
+        $this->fixtures->merchant->removeFeatures(['raas', 'allow_force_terminal_id']);
+    }
+
+    public function testCreatePayuUpiMandateIntentPayment()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $terminal = $this->fixtures->create('terminal:payu_upi_recurring_terminal');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->getDefaultUpiRecurringPaymentArray(),
+        ];
+
+        $request['content']['force_terminal_id'] = 'term_' . $terminal->getId();
+
+        $request['content']['order_id'] = $orderId;
+
+        unset($request['content']['vpa']);
+
+        $request['content']['_']['flow'] = 'intent';
+
+        $request['content']['description'] = 'success_recurring_intent';
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === "allow_optimizer_upi_recurring")
+            {
+                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
+            }
+
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['payment_id'] ?? null);
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals($upiMandate['token_id'], $token['id']);
+        $this->assertEquals($response['type'], 'intent');
+
+        $this->assertEquals($upiMandate['customer_id'], $token['customer_id']);
+
+        $this->assertEquals('created', $upiMandate['status']);
+
+        $this->fixtures->merchant->removeFeatures(['raas', 'allow_force_terminal_id']);
+    }
+
+    protected function setMockRazorxTreatment(array $razorxTreatment, string $defaultBehaviour = 'off')
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use ($razorxTreatment, $defaultBehaviour)
+                {
+                    if (array_key_exists($feature, $razorxTreatment) === true)
+                    {
+                        return $razorxTreatment[$feature];
+                    }
+
+                    return strtolower($defaultBehaviour);
+                }));
+    }
+
+
     protected function mockSession($appToken = 'capp_1000000custapp')
     {
         $data = ['test_app_token' => $appToken];

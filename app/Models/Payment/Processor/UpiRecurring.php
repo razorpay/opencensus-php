@@ -20,7 +20,10 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\PaymentsUpi\Vpa as Vpa;
+use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Models\UpiMandate\Entity as Mandate;
 use RZP\Models\QrCode\NonVirtualAccountQrCode;
@@ -88,6 +91,67 @@ trait UpiRecurring
                     {
                         return;
                     }
+
+                    throw $exception;
+                }
+            });
+    }
+
+    public function processRecurringDebitForUpiOptimizer(Payment\Entity $payment, array $inputRec): array
+    {
+        $variant = $this->app['razorx']->getTreatment(
+            $payment->merchant->getId(),
+            RazorxTreatment::ALLOW_OPTIMIZER_UPI_RECURRING,
+            $this->mode
+        );
+
+         if (strtolower($variant) !== 'on')
+         {
+             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED);
+         }
+
+        $input = [
+            'action'        => Payment\Action::DEBIT,
+            'gateway'       => $payment->getGateway(),
+            'terminal'      => $payment->terminal,
+            'payment'       => $payment,
+            'merchant'      => $payment->merchant,
+            'upi_mandate'   => $inputRec['upi_mandate'],
+            'token'         => $payment->getGlobalOrLocalTokenEntity(),
+            'upi'           => $payment->getUpiMetadata()->toArray(),
+        ];
+
+        $amount = [
+            'currency' => "INR",
+            'value' => $payment->getAmount(),
+        ];
+        $input['amount'] = $amount;
+        $input['payment']['callback_url'] = route('gateway_payment_callback_recurring', ["gateway" => $payment->getGateway()], true);
+
+        return $this->app['api.mutex']->acquireAndRelease('debit_' . $payment->getId(),
+            function() use ($input, $payment) {
+                try
+                {
+                    $response = $this->callGatewayFunction(Payment\Action::DEBIT, $input);
+
+                    $this->processDebitGatewaySuccess($payment, $response);
+
+                    return $response;
+                }
+                catch (Exception\GatewayErrorException $exception)
+                {
+                    $this->trace->traceException(
+                        $exception,
+                        Trace::INFO,
+                        TraceCode::GATEWAY_PAYMENT_ERROR,
+                        [
+                            'payment_id'    => $input['payment']->getId(),
+                            'gateway'       => $input['gateway'],
+                            'action'        => $input['action'],
+                            'terminal_id'   => $input['terminal']->getId(),
+                        ]);
+
+                    $this->processDebitGatewayFailure($payment, $exception);
 
                     throw $exception;
                 }

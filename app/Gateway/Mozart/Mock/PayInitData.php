@@ -168,6 +168,42 @@ class PayInitData extends Base\Mock\Server
 
         if ($method === Payment\Method::UPI)
         {
+            if ($entities['payment']['recurring'] === true)
+            {
+                $response = [
+                    'data' =>
+                        [
+                            'status' => 'register_init_success',
+                        ],
+                    'error' => NULL,
+                    'external_trace_id' => 'DUMMY_REQUEST_ID',
+                    'mozart_id' => 'DUMMY_MOZART_ID',
+                    'next' => [],
+                    'success' => true,
+                ];
+
+                switch ($entities['payment']['description']) {
+                    case 'success_recurring_intent':
+                        $response['data'] = [
+                            "intent_url" => "upi://pay?am=100.00&cu=INR&mc=5411&pa=some@abfspay&pn=merchantname&tn=PayviaRazorpay&tr=pay_someid",
+                        ];
+                        break;
+
+                    case 'success_recurring_collect':
+                        $response['data'] = [
+                            'vpa' => 'test@okhdfcbank',
+                        ];
+                        break;
+
+                    case 'paymentCreateFailed':
+                        $response['success'] = false;
+                        $response['data'] = [];
+                        $response['error']['internal_error_code'] = 'GATEWAY_ERROR_REQUEST_ERROR';
+                        break;
+                }
+                return $response;
+            }
+
             if ($this->isV2Mock($entities['payment']['description']) === true)
             {
                 return $this->upiMozartV2($entities);

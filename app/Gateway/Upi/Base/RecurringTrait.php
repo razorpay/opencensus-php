@@ -36,6 +36,10 @@ trait RecurringTrait
         'notify'                => Action::PRE_DEBIT,
     ];
 
+    public static $optimizerUpiRecurringGateway = [
+        'payu'    => Payment\Gateway::PAYU,
+    ];
+
     // 24 + 1 hours in second
     protected $defaultExecuteBuffer = 90000;
 

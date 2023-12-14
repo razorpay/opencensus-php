@@ -142,6 +142,24 @@ class UpiMetadataTransformer extends UpiTransformer
             {
                 // S2S response for authenticate with success means that now callback/verify is pending from gateway
                 $this->item->setInternalStatus(InternalStatus::AUTHORIZE_INITIATED);
+
+                if (($this->input['payment']['recurring_type'] === 'initial') and
+                    (in_array($this->input['gateway'], RecurringTrait::$optimizerUpiRecurringGateway) === true)) {
+
+                    if ($this->isTypeIntent() === true) {
+                        $this->dataBlock = [
+                            // This is the mandate url that needs to be sent in the response
+                            // in case of intent flow for recurring
+                            'intent_url' => $this->response->getIntentUrl()
+                        ];
+                    } else {
+                        $this->dataBlock = [
+                            // This is the merchant VPA not the customer VPA which is supposed to
+                            // sent to merchant/customer in the request co proto.
+                            Entity::VPA => $this->response('terminal.vpa'),
+                        ];
+                    }
+                }
             }
             else
             {
