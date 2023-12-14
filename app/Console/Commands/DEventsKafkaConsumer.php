@@ -153,6 +153,20 @@ class DEventsKafkaConsumer extends Command
             $conf->set('fetch.message.max.bytes', env('DEDUPE_KAFKA_FETCH_MESSAGE_MAX_BYTES'));
 
         }
+        elseif (count($topics) == 1 && (str_contains($topics[0], KafkaMessageProcessor::PGOS_PROD_CDC_EVENTS)
+                                        or str_contains($topics[0], KafkaMessageProcessor::PGOS_STAGE_CDC_EVENTS)))
+        {
+            $consumerGroup = env('PGOS_API_CDC_WORKER_CONSUMER_GROUP');
+
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
+
+            $conf->set('group.id', $consumerGroup);
+
+            $conf->set('session.timeout.ms', env('PGOS_API_CDC_WORKER_SESSION_TIMEOUT'));
+
+            $conf->set('auto.offset.reset', 'largest');
+
+        }
         else
         {
             if (count($topics) == 1 && $topics[0] == env('RAW_CONTACTS_KAFKA_TOPIC_NAME'))
