@@ -87,4 +87,5 @@ class Constants
     const SKIP  = 'skip';
     const COUNT = 'count';
     const MERCHANT_IDS = 'merchant_ids';
+    const IS_PRIORITY_BALANCE_UPDATE = 'is_priority_balance_update';
 }

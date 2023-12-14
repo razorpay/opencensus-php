@@ -283,7 +283,8 @@ class Validator extends Base\Validator
         ConfigKey::UPI_TURBO_PAYEE_EXECUTION_HOLD_TIME                                 => 'filled|integer',
         ConfigKey::UPI_TURBO_PAYMENT_ID_BY_GATEWAY_TXN_TTL                             => 'filled|integer',
         ConfigKey::UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE                          => 'filled|integer',
-
+        ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST                                 => 'filled|array',
+        ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST                               => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

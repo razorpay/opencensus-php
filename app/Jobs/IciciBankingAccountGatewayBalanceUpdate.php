@@ -21,6 +21,9 @@ class IciciBankingAccountGatewayBalanceUpdate extends Job
      */
     protected $queueConfigKey = 'icici_banking_account_gateway_balance_update';
 
+    // config for priority balance update queue
+    public const PRIORITY_QUEUE_CONFIG_KEY = 'icici_banking_account_gateway_balance_priority_update';
+
     /**
      * @var array
      */
@@ -49,6 +52,7 @@ class IciciBankingAccountGatewayBalanceUpdate extends Job
                     [
                         'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                         'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                        'queue_name'  => $this->queue,
                     ]);
             }
             else
@@ -58,6 +62,7 @@ class IciciBankingAccountGatewayBalanceUpdate extends Job
                     [
                         'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                         'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                        'queue_name'  => $this->queue,
                     ]);
 
                 $BASCore = new BASCore();
@@ -83,6 +88,7 @@ class IciciBankingAccountGatewayBalanceUpdate extends Job
                 [
                     'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                     'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                    'queue_name'  => $this->queue,
                 ]);
 
             $this->checkRetry();
@@ -97,6 +103,7 @@ class IciciBankingAccountGatewayBalanceUpdate extends Job
                                [
                                    'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                                    'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                                   'queue_name'  => $this->queue,
                                ]);
 
             $this->release(self::MAX_RETRY_DELAY);
@@ -108,6 +115,7 @@ class IciciBankingAccountGatewayBalanceUpdate extends Job
                                     'channel'      => $this->params[BankingAccount\Entity::CHANNEL],
                                     'merchant_id'  => $this->params[BankingAccount\Entity::MERCHANT_ID],
                                     'job_attempts' => $this->attempts(),
+                                    'queue_name'   => $this->queue,
                                 ]);
 
             $this->trace->count(BankingAccount\Metrics::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_FAILED, [
@@ -141,6 +149,7 @@ class IciciBankingAccountGatewayBalanceUpdate extends Job
         $this->trace->info(TraceCode::BANKING_QUEUE_WORKER_TIMEOUT_HANDLING, [
             'is_deleted'  => optional($this->job)->isDeleted() ?? null,
             'is_released' => optional($this->job)->isReleased() ?? null,
+            'queue_name'  => $this->queue,
         ]);
     }
 }

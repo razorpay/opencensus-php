@@ -161,6 +161,10 @@ class ConfigKey
 
     const ICICI_CA_BALANCE_UPDATE_LIMITS = self::PREFIX . 'icici_ca_balance_update_limits';
 
+    const RBL_CA_PRIORITY_BALANCE_UPDATE_LIST = self::PREFIX . 'rbl_ca_priority_balance_update_list';
+
+    const ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST = self::PREFIX . 'icici_ca_priority_balance_update_list';
+
     const RBL_STATEMENT_FETCH_RETRY_LIMIT           = self::PREFIX . 'rbl_statement_fetch_retry_limit';
 
     const FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD = self::PREFIX . 'fund_management_payouts_retrieval_threshold';

@@ -3579,4 +3579,32 @@ class IciciCaPayoutTest extends TestCase
         $this->setDowntimeInformationForOnHold($testDataDowntime);
     }
 
+    public function testICICIPriorityMerchantBalanceUpdate()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on'
+            ]
+        );
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
+
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
+
+        Queue::fake();
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/icici/balance',
+            'content' => [
+                'is_priority_balance_update' => true
+            ]
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        Queue::assertPushedOn('icici_banking_account_gateway_balance_priority_update_test', IciciBankingAccountGatewayBalanceUpdate::class);
+    }
 }

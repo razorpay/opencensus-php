@@ -403,8 +403,16 @@ return [
         'test'       =>  env('AWS_RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_TEST_QUEUE'),
         'live'       =>  env('AWS_RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_LIVE_QUEUE'),
     ],
+    'rbl_banking_account_gateway_balance_priority_update' => [
+        'test'       =>  env('AWS_RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_PRIORITY_UPDATE_TEST_QUEUE'),
+        'live'       =>  env('AWS_RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_PRIORITY_UPDATE_LIVE_QUEUE'),
+    ],
     'icici_banking_account_gateway_balance_update' => [
         'live'       =>  env('AWS_ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_LIVE_QUEUE'),
+    ],
+    'icici_banking_account_gateway_balance_priority_update' => [
+        'test'       =>  env('AWS_ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_PRIORITY_UPDATE_TEST_QUEUE'),
+        'live'       =>  env('AWS_ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_PRIORITY_UPDATE_LIVE_QUEUE'),
     ],
     'connected_banking_account_gateway_balance_update' => [
         'live'       => env('AWS_CONNECTED_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_LIVE_QUEUE'),

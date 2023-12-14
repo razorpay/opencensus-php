@@ -328,4 +328,30 @@ class Repository extends Base\Repository
             ->pluck(Entity::ID)
             ->toArray();
     }
+
+    public function getCAMerchantIdsForChannel(string $channel, array $merchantIds = []): array
+    {
+        $channelColumn = $this->dbColumn(Entity::CHANNEL);
+        $accountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $statusList = Status::getStatusesForActiveCaFlows();
+
+        $query =  $this->newQueryWithConnection($this->getSlaveConnection())
+                       ->select($merchantIdColumn)
+                       ->where($channelColumn, '=', $channel)
+                       ->where($accountTypeColumn, '=', AccountType::DIRECT)
+                       ->whereIn($statusColumn, $statusList);
+
+        if (empty($merchantIds) === false)
+        {
+            $query = $query->whereIn($merchantIdColumn, $merchantIds);
+        }
+
+        return $query->get()
+                     ->pluck(Entity::MERCHANT_ID)
+                     ->toArray();
+    }
 }

@@ -169,10 +169,22 @@ main() {
     queue_name=$2
     sleep_time=$3
     if [ "$#" -ne 3 ]; then
+      if [ "$#" -eq 4 ]; then
+        priority_queue_name=$4
+        echo "starting priority sqs listener"
+        create_kafka_credentials_dir
+        if [[ "${APP_MODE}" == "devserve" ]]; then
+          tail -F storage/logs/$HOSTNAME-trace-$(date +%Y-%m-%d).log &
+          php artisan queue:listen "${app_type}" --tries=0 --queue="${APP_MODE}-${priority_queue_name},${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+        else
+          php artisan queue:work "${app_type}" --tries=0 --queue="${APP_MODE}-${priority_queue_name},${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+        fi
+      else
         echo "Need to specify following args: "
         echo "queue: <sqs-name>"
         echo "sleep: <n seconds>"
         exit -1
+      fi
     else
       echo "starting sqs listener"
       create_kafka_credentials_dir

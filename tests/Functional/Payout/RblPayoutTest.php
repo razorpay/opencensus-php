@@ -1985,4 +1985,63 @@ class RblPayoutTest extends TestCase
 
         $this->assertNotEquals(0, $basDetailsAfterCronRuns->getBalanceLastFetchedAt());
     }
+
+    public function testRBLPriorityMerchantBalanceUpdate()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on'
+            ]
+        );
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        Queue::fake();
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/rbl/balance',
+            'content' => [
+                'is_priority_balance_update' => true
+            ]
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        Queue::assertPushedOn('rbl_banking_account_gateway_balance_priority_update_test', RblBankingAccountGatewayBalanceUpdate::class);
+    }
+
+    public function testRBLPriorityMerchantBalanceUpdatePushOnUniqueGatewayBalanceUpdateJob()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on',
+                RazorxTreatment::UNIQUE_RBL_BALANCE_UPDATE => 'on'
+            ]
+        );
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        Queue::fake();
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/rbl/balance',
+            'content' => [
+                'is_priority_balance_update' => true
+            ]
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        Queue::assertPushedOn('rbl_banking_account_gateway_balance_priority_update_test', RblUniqueGatewayBalanceUpdate::class);
+    }
 }

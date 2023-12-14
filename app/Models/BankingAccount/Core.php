@@ -91,6 +91,7 @@ class Core extends Base\Core
     const MADE_PAYOUT_RULE = 'made_payout';
     const BALANCE_CHANGE_RULE = 'balance_change';
     const MANDATORY_UPDATE_RULE = 'mandatory_update_rule';
+    const PRIORITY_UPDATE_RULE = 'priority_update_rule';
 
     // Values for default Fee Recovery Schedule
     const DEFAULT_SCHEDULE_PERIOD   = Period::DAILY;
@@ -2292,6 +2293,13 @@ class Core extends Base\Core
             return $response;
         }
 
+        $isPriorityBalanceUpdate = false;
+
+        if (isset($input[Constants::IS_PRIORITY_BALANCE_UPDATE]) === true)
+        {
+            $isPriorityBalanceUpdate = $input[Constants::IS_PRIORITY_BALANCE_UPDATE];
+        }
+
         $validator = new Validator();
 
         $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, [Entity::CHANNEL => $channel]);
@@ -2302,14 +2310,19 @@ class Core extends Base\Core
 
         if (strtolower($variant) === 'on')
         {
-            return $this->dispatchGatewayBalanceUpdateForMerchantsV2($channel);
+            return $this->dispatchGatewayBalanceUpdateForMerchantsV2($channel, $isPriorityBalanceUpdate);
         }
 
-        return $this->dispatchGatewayBalanceUpdateForMerchantsV1($channel);
+        return $this->dispatchGatewayBalanceUpdateForMerchantsV1($channel, $isPriorityBalanceUpdate);
     }
 
-    public function dispatchGatewayBalanceUpdateForMerchantsV1(string $channel)
+    public function dispatchGatewayBalanceUpdateForMerchantsV1(string $channel, bool $isPriorityBalanceUpdate = false)
     {
+        if ($isPriorityBalanceUpdate === true)
+        {
+            return $this->dispatchPriorityBalanceUpdateForChannel($channel);
+        }
+
         // different limit for each channel
         $limit = $this->getGatewayBalanceUpdateRateLimit($channel);
 
@@ -2332,7 +2345,7 @@ class Core extends Base\Core
     }
 
     // tech spec for this dispatch logic: https://docs.google.com/document/d/1rqTkDsnoYamSFDsEnnmgG_0aNf6jA8Y9Bglu6c_1tXM/edit#heading=h.lc0fi15c803g
-    protected function dispatchGatewayBalanceUpdateForMerchantsV2(string $channel)
+    protected function dispatchGatewayBalanceUpdateForMerchantsV2(string $channel, bool $isPriorityBalanceUpdate = false)
     {
         switch ($channel)
         {
@@ -2350,6 +2363,11 @@ class Core extends Base\Core
         if (empty($balanceUpdateLimits) === true)
         {
             $balanceUpdateLimits = self::DEFAULT_CA_BALANCE_UPDATE_LIMITS;
+        }
+
+        if ($isPriorityBalanceUpdate === true)
+        {
+            return $this->dispatchPriorityBalanceUpdateForChannel($channel);
         }
 
         // time period to be used in made_payout rule and balance_change rule.
@@ -2469,6 +2487,27 @@ class Core extends Base\Core
 
         if (empty($job) === false)
         {
+            if ($rule === self::PRIORITY_UPDATE_RULE)
+            {
+                if ($job::PRIORITY_QUEUE_CONFIG_KEY !== null && $job::PRIORITY_QUEUE_CONFIG_KEY !== '')
+                {
+                    $job::dispatch($this->mode,
+                                   [
+                                       Entity::CHANNEL     => $channel,
+                                       Entity::MERCHANT_ID => $merchantId,
+                                   ])->using([], $job::PRIORITY_QUEUE_CONFIG_KEY);
+                }
+
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_GATEWAY_PRIORITY_QUEUE_CONFIG_MISSING,
+                    [
+                        Entity::CHANNEL     => $channel,
+                        Entity::MERCHANT_ID => $merchantId
+                    ]);
+
+                return;
+            }
+
             $job::dispatch($this->mode,
                            [
                                Entity::CHANNEL     => $channel,
@@ -3571,5 +3610,71 @@ class Core extends Base\Core
         ]);
 
         return $isExperimentEnabled;
+    }
+
+    /**
+     * This function will be used to push merchant balance update on to the priority balance update queue
+     * List of priority merchants will be pulled from redis
+     */
+    private function dispatchPriorityBalanceUpdateForChannel(string $channel)
+    {
+        $priorityMerchants = [];
+
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $priorityMerchants = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST]);
+                break;
+            case Channel::ICICI:
+                $priorityMerchants = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST]);
+                break;
+            default:
+                $priorityMerchants = [];
+                break;
+        }
+
+        if (empty($priorityMerchants) === true)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_GATEWAY_PRIORITY_BALANCE_UPDATE_JOB_LIST_UNSET, [
+                'channel'     => $channel,
+            ]);
+
+            return [];
+        }
+
+        $merchantIdsToDispatch = $this->repo->banking_account_statement_details->getCAMerchantIdsForChannel($channel, $priorityMerchants);
+
+        $successfullyDispatchedMerchantIds = [];
+
+        foreach ($merchantIdsToDispatch as $merchantId)
+        {
+            try
+            {
+                $this->dispatchGatewayBalanceUpdateJob($channel, $merchantId, self::PRIORITY_UPDATE_RULE);
+
+                $successfullyDispatchedMerchantIds[] = $merchantId;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::BANKING_ACCOUNT_GATEWAY_PRIORITY_BALANCE_UPDATE_JOB_FAILED,
+                    [
+                        'merchant_id' => $merchantId,
+                        'exception'   => $ex->getMessage(),
+                    ]);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_GATEWAY_PRIORITY_BALANCE_UPDATE_JOB_COMPLETE, [
+            'total_merchants'     => sizeof($merchantIdsToDispatch),
+            'successful_dispatch' => sizeof($successfullyDispatchedMerchantIds),
+            'priority_merchants'  => sizeof($priorityMerchants)
+        ]);
+
+        return $successfullyDispatchedMerchantIds;
     }
 }
