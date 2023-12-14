@@ -154,7 +154,10 @@ class MarketplaceContainer extends React.Component {
             <span className="support-tagline">
               Now start creating Direct Transfers to your linked accounts directly
             </span>
-            <DocsLink url="https://razorpay.com/docs/route/dashboard/" title="Learn more" />
+            <DocsLink
+              url="https://razorpay.com/docs/payments/route/transfer-funds-to-linked-accounts/#direct-transfers"
+              title="Learn more"
+            />
           </AnnouncementBanner>
         )}
 
