@@ -9519,6 +9519,107 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testUserDetailsForPayroll()
+    {
+        $user = $this->fixtures->create('user');
+        $merchant = $user->primaryMerchants()->first();
+
+        $secondMerchant = $this->fixtures->create('merchant', [
+            'business_banking'  => true,
+        ]);
+
+        $userFixture = new UserFixture();
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $secondMerchant['id'],
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+        $userFixture->createUserMerchantMapping($mappingData, 'test');
+        $userFixture->createUserMerchantMapping($mappingData, 'live');
+
+        $mappingData['product'] = 'banking';
+        $userFixture->createUserMerchantMapping($mappingData, 'test');
+        $userFixture->createUserMerchantMapping($mappingData, 'live');
+
+        // check the data for default test merchant
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'GET',
+                'url'       => '/users_fetch_for_payroll?email='.$user['email'],
+            ],
+            'response' => [
+                'content' => [
+                    'name'                      => $user->getName(),
+                    'email'                     => $user->getEmail(),
+                    'contact_mobile'            => NULL,
+                    'contact_mobile_verified'   => FALSE,
+                    'account_locked'            => FALSE,
+                    'confirmed'                 => TRUE,
+                    'merchants' => [
+                        [
+                            'gstin'             => NULL,
+                            'pan'               => NULL,
+                            'billing_address'   => NULL,
+                            'id'                => $merchant->getId(),
+                            'activated'         => FALSE,
+                            'website'           => $merchant->getWebsite(),
+                            'name'              => $merchant->getName(),
+                            'description'       => NULL,
+                            'billing_label'     => $merchant->getBillingLabelNotName(),
+                            'purpose_code'      => $merchant->getPurposeCode(),
+                            'purpose_code_desc' => $merchant->getPurposeCodeDescription(),
+                            'iec_code'          => $merchant->getIecCode(),
+                            'is_business_banking_enabled' => false,
+                            'role' => 'owner',
+                            'product' => 'primary'
+                        ],
+                        [
+                            'gstin'             => NULL,
+                            'pan'               => NULL,
+                            'billing_address'   => NULL,
+                            'id'                => $secondMerchant->getId(),
+                            'activated'         => FALSE,
+                            'website'           => $secondMerchant->getWebsite(),
+                            'name'              => $secondMerchant->getName(),
+                            'description'       => NULL,
+                            'billing_label'     => $secondMerchant->getBillingLabelNotName(),
+                            'purpose_code'      => $secondMerchant->getPurposeCode(),
+                            'purpose_code_desc' => $secondMerchant->getPurposeCodeDescription(),
+                            'iec_code'          => $secondMerchant->getIecCode(),
+                            'is_business_banking_enabled' => true,
+                            'role' => 'owner',
+                            'product' => 'banking'
+                        ],
+                        [
+                            'gstin'             => NULL,
+                            'pan'               => NULL,
+                            'billing_address'   => NULL,
+                            'id'                => $secondMerchant->getId(),
+                            'activated'         => FALSE,
+                            'website'           => $secondMerchant->getWebsite(),
+                            'name'              => $secondMerchant->getName(),
+                            'description'       => NULL,
+                            'billing_label'     => $secondMerchant->getBillingLabelNotName(),
+                            'purpose_code'      => $secondMerchant->getPurposeCode(),
+                            'purpose_code_desc' => $secondMerchant->getPurposeCodeDescription(),
+                            'iec_code'          => $secondMerchant->getIecCode(),
+                            'is_business_banking_enabled' => true,
+                            'role' => 'owner',
+                            'product' => 'primary'
+                        ],
+                    ],
+                    'total_merchant_count' => 3
+                ],
+            ]
+        ];
+
+        $this->ba->xpayrollAuth();
+
+        $this->startTest();
+    }
+
     public function testUserDetailsUnified()
     {
         $user = $this->fixtures->create('user');

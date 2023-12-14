@@ -593,6 +593,13 @@ class UserController extends Controller
         return $this->service()->getDetails($input);
     }
 
+    public function getUserDetailsForPayroll()
+    {
+        $input = Request::all();
+
+        return $this->service()->getDetailsForPayroll($input);
+    }
+
     public function getInternationalUserDetails()
     {
         $input = Request::all();

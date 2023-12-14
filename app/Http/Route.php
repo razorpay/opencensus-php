@@ -2497,7 +2497,8 @@ class Route
         'user_opt_in_whatsapp'                     => ['post',     'users/whatsapp/opt_in',                          'UserController@optInForWhatsapp'                                   ],
         'user_opt_in_status_whatsapp'              => ['get',      'users/whatsapp/opt_in_status',                   'UserController@optInStatusForWhatsapp'                             ],
         'user_opt_out_whatsapp'                    => ['post',     'users/whatsapp/opt_out',                         'UserController@optOutForWhatsapp'                                  ],
-        'user_details'                             => ['get',      'users',                                          'UserController@getUserDetails'                                     ],
+        'user_details'                             => ['get',      'users',                                          'UserController@getUserDetails'                                     ], 
+        'user_details_for_payroll'                 => ['get',      'users_fetch_for_payroll',                        'UserController@getUserDetailsForPayroll'                           ],
         'user_details_unified'                     => ['get',      'users_unified',                                  'UserController@getUserDetailsUnified'                              ],
         'user_all_roles'                           => ['get',      'users/{id}/roles/{merchant_id}',                 'UserController@getUserRoles'                                       ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
@@ -5985,6 +5986,7 @@ class Route
         'order_fetch_by_id_internal',
         'order_fetch_by_id_internal_admin',
         'user_details',
+        'user_details_for_payroll',
         'user_details_unified',
         'user_all_roles',
 
@@ -16386,6 +16388,7 @@ class Route
             'fund_account_create_internal',
             'banking_accounts_list_internal',
             'tax_payments_internal_icici_action',
+            'user_details_for_payroll',
             'bulk_payout_purpose_post',
         ],
 

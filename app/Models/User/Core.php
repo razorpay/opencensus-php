@@ -5987,6 +5987,38 @@ class Core extends Base\Core
         ];
     }
 
+
+    /**
+     * it'll fetch the user details given the user email id
+     * user details contains
+     * - basic user information
+     * - all primary merchant accounts associated with the user
+     * - business specific details
+     *
+     * @param array $input
+     * @return array
+     */
+    public function getDetailsForPayroll(array $input): array
+    {
+        $user = $this->repo
+                     ->user
+                     ->getUserFromEmailOrFail($input['email']);
+
+        $merchantDetails = $this->getMerchantDetailsForPayroll($user);
+
+        return [
+            'user_id'                 => $user->getId(),
+            'name'                    => $user->getName(),
+            'email'                   => $user->getEmail(),
+            'contact_mobile'          => $user->getContactMobile(),
+            'contact_mobile_verified' => $user->isContactMobileVerified(),
+            'account_locked'          => $user->isAccountLocked(),
+            'confirmed'               => $user->confirmed,
+            'merchants'               => $merchantDetails,
+            'total_merchant_count'    => $user->merchants()->count()
+        ];
+    }
+
     public function getDetailsUnified(array $input): array
     {
         $user = $this->repo
@@ -6039,7 +6071,6 @@ class Core extends Base\Core
      * it'll collect all the accounts (pg + banking accounts) associated with the user
      * along with their business details
      *
-     * we will be adding first merchant who is associated with the user (product requirement)
      *
      * @param Entity $user
      * @return array
@@ -6089,6 +6120,70 @@ class Core extends Base\Core
         ];
 
         return [$merchantDetails];
+    }
+
+    /**
+     * it'll collect all the accounts (pg + banking accounts) associated with the user
+     * along with their business details
+     *
+     * @param Entity $user
+     * @return array
+     */
+    protected function getMerchantDetailsForPayroll(Entity $user): array
+    {
+        $merchants = $user->merchants()->orderBy('created_at')->limit(10)->get();
+
+        // if there is no merchant details then return empty result
+        if (empty($merchants))
+        {
+            return [];
+        }
+
+        $merchantsList = [];
+
+        foreach($merchants as $merchant) {
+
+            $merchantDetails = [
+                'gstin'           => NULL,
+                'pan'             => NULL,
+                'billing_address' => NULL,
+                'description'     => NULL,
+                'iec_code'        => NULL,
+                'purpose_code'    => NULL,
+                'purpose_code_desc' => NULL,
+            ];
+
+            $details = $merchant->merchantDetail;
+
+            // update merchant details if there is data
+            if ($details !== NULL)
+            {
+                $merchantDetails = [
+                    'gstin'             => $details->getGstin(),
+                    'pan'               => $details->getPan(),
+                    'billing_address'   => $details->getBusinessAddress(),
+                    'description'       => $details->getBusinessDescription(),
+                    'iec_code'          => $details->getIecCode(),
+                ];
+            }
+
+            $merchantDetails += [
+                'id'                => $merchant->getId(),
+                'activated'         => $merchant->isActivated(),
+                'website'           => $merchant->getWebsite(),
+                'name'              => $merchant->getName(),
+                'billing_label'     => $merchant->getBillingLabelNotName(),
+                'purpose_code'      => $merchant->getPurposeCode(),
+                'purpose_code_desc' => $merchant->getPurposeCodeDescription(),
+                'is_business_banking_enabled' => $merchant->isBusinessBankingEnabled(),
+                'role' => $merchant->pivot->role,
+                'product' => $merchant->pivot->product
+            ];
+
+            $merchantsList[] = $merchantDetails;
+        }
+
+        return $merchantsList;
     }
 
     /**

@@ -3258,6 +3258,13 @@ class Service extends Base\Service
         return (new Core())->getDetails($input);
     }
 
+    public function getDetailsForPayroll(array $input)
+    {
+        (new Validator)->validateInput('get_details', $input);
+
+        return (new Core())->getDetailsForPayroll($input);
+    }
+
 
     public function getInternationalDetails(array $input)
     {
