@@ -568,6 +568,18 @@ trait Authorize
         {
             $requestData['merchant']['id'] = $payment['merchant_id'];
         }
+
+        if(isset($payment->merchant))
+        {
+            $requestData['merchant']['billing_label'] = $payment->merchant->getBillingLabel();
+
+            $requestData['merchant']['category'] = $payment->merchant->getCategory();
+
+            $requestData['merchant']['name'] = $payment->merchant->getName();
+
+        }
+
+
         if(isset($payment['amount']))
         {
             $requestData['payment']['amount'] = $payment['amount'];
