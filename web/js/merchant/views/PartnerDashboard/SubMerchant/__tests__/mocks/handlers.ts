@@ -58,7 +58,7 @@ export const subMerchantListHandlers = [
 
 export const createBureauLinkSuccess = (response = createBureauLinkResponse) => {
   return rest.post(
-    '*/partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/GenerateBureauLink',
+    '*/partnerships/twirp/rzp.partnerships.onboarding.capital.v1.CapitalAPI/GenerateBureauLink',
     (req, res, ctx) => {
       return res(ctx.status(200), ctx.json(response), ctx.delay(50));
     },
@@ -67,7 +67,7 @@ export const createBureauLinkSuccess = (response = createBureauLinkResponse) => 
 
 export const createBureauLinkError = () => {
   return rest.post(
-    '*/partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/GenerateBureauLink',
+    '*/partnerships/twirp/rzp.partnerships.onboarding.capital.v1.CapitalAPI/GenerateBureauLink',
     (req, res, ctx) => {
       return res(
         ctx.status(200),

@@ -34,7 +34,7 @@ export const fetchBureauLink = (
   merchantId: string,
 ): Promise<FetchBureauLinkResponse> => {
   return merchantFetch({
-    url: 'partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/GenerateBureauLink',
+    url: 'partnerships/twirp/rzp.partnerships.onboarding.capital.v1.CapitalAPI/GenerateBureauLink',
     method: 'post',
     data: {
       merchant_id: merchantId,
@@ -49,7 +49,7 @@ export const sendMessage = (
   bureauLink: string,
 ): Promise<SendMessageResponse> => {
   return merchantFetch({
-    url: 'partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/CommunicateBureauLink',
+    url: 'partnerships/twirp/rzp.partnerships.onboarding.capital.v1.CapitalAPI/CommunicateBureauLink',
     method: 'post',
     data: {
       merchant_id: merchantId,
@@ -92,7 +92,7 @@ export const submitBankStatements = (data: {
   }[];
 }): Promise<submitBankStatementResponse> => {
   return merchantFetch({
-    url: 'partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/UploadDocuments',
+    url: 'partnerships/twirp/rzp.partnerships.onboarding.capital.v1.CapitalAPI/UploadDocuments',
     method: 'post',
     data,
     headers: {

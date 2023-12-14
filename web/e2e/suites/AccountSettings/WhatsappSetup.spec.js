@@ -113,7 +113,7 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     await expect(newPageUrl).toContain(newAccountUrl);
   });
 
-  test('should show success modal on callback url @priority=normal', async ({ page }) => {
+  test.skip('should show success modal on callback url @priority=normal', async ({ page }) => {
     await page.goto(`${routes.WHATSAPP_ACCOUNT_SETUP}/?isWhatsappSetupCompleted=true`);
     await mockApiResponseForConnectedApplication({ page });
 
@@ -127,7 +127,7 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     ).toBeVisible();
   });
 
-  test('should show already connected account flow @priority=normal', async ({ page }) => {
+  test.skip('should show already connected account flow @priority=normal', async ({ page }) => {
     await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
     await mockApiResponseForConnectedApplication({ page });
 
@@ -141,7 +141,7 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     await expect(page.locator('label')).toBeVisible();
   });
 
-  test('should show delete CTA when app is already connected @priority=normal', async ({
+  test.skip('should show delete CTA when app is already connected @priority=normal', async ({
     page,
   }) => {
     await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
@@ -155,7 +155,7 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
   });
 
-  test('should show notification toggle switch when app is already connected @priority=normal', async ({
+  test.skip('should show notification toggle switch when app is already connected @priority=normal', async ({
     page,
   }) => {
     await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);

@@ -3,7 +3,7 @@ import { smsResponse, uploadStatementResponse, submitStatementResponse } from '.
 
 export const sendMessageSuccess = (response = smsResponse) => {
   return rest.post(
-    '*/partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/CommunicateBureauLink',
+    '*/partnerships/twirp/rzp.partnerships.onboarding.capital.v1.CapitalAPI/CommunicateBureauLink',
     (req, res, ctx) => {
       return res(ctx.status(200), ctx.json(response), ctx.delay(50));
     },
@@ -12,7 +12,7 @@ export const sendMessageSuccess = (response = smsResponse) => {
 
 export const sendMessageError = () => {
   return rest.post(
-    '*/partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/CommunicateBureauLink',
+    '*/partnerships/twirp/rzp.partnerships.onboarding.capital.v1.CapitalAPI/CommunicateBureauLink',
     (req, res, ctx) => {
       return res(
         ctx.status(200),
@@ -55,7 +55,7 @@ export const uploadBankStatementError = () => {
 
 export const submitBankStatementSuccess = (response = submitStatementResponse) => {
   return rest.post(
-    '*/partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/UploadDocuments',
+    '*/partnerships/twirp/rzp.partnerships.onboarding.capital.v1.CapitalAPI/UploadDocuments',
     (req, res, ctx) => {
       return res(ctx.status(200), ctx.json(response), ctx.delay(50));
     },
@@ -64,7 +64,7 @@ export const submitBankStatementSuccess = (response = submitStatementResponse) =
 
 export const submitBankStatementError = () => {
   return rest.post(
-    '*/partnerships/twirp/rzp.partnerships.merchant.v1.CapitalAPI/UploadDocuments',
+    '*/partnerships/twirp/rzp.partnerships.onboarding.capital.v1.CapitalAPI/UploadDocuments',
     (req, res, ctx) => {
       return res(
         ctx.status(200),
