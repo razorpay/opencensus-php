@@ -914,7 +914,7 @@ class AmountWithdraw extends React.Component {
 
   isRepaymentFrequencyDays90 = () => {
     return (
-      this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.DAYS_90 &&
+      this.isRepaymentFrequencyCustomORDays90() &&
       this.props?.withdrawalConfigurationDetails?.data?.configuration?.end_day_limit === '90'
     );
   };
