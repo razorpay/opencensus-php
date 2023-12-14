@@ -590,10 +590,11 @@ class Entity
     const CAPITAL_LOS_VENDORS                                     = 'loan_origination_system.vendors';
 
     // Payout service
-    const PAYOUTS_PAYOUTS        = 'payouts.payouts';
-    const PAYOUTS_REVERSALS      = 'payouts.reversals';
-    const PAYOUTS_PAYOUT_LOGS    = 'payouts.payout_logs';
-    const PAYOUTS_PAYOUT_SOURCES = 'payouts.payout_sources';
+    const PAYOUTS_PAYOUTS                           = 'payouts.payouts';
+    const PAYOUTS_REVERSALS                         = 'payouts.reversals';
+    const PAYOUTS_PAYOUT_LOGS                       = 'payouts.payout_logs';
+    const PAYOUTS_PAYOUT_SOURCES                    = 'payouts.payout_sources';
+    const PAYOUTS_BANKING_ACCOUNT_STATEMENT_DETAILS = 'payouts.banking_account_statement_details';
 
     // care service
     const CARE_CALLBACK                 = 'care.callback';
@@ -1766,10 +1767,11 @@ class Entity
         self::CAPITAL_LOS_SIGN_INVITEES                             => \RZP\Services\ExternalServiceClient::class,
         self::CAPITAL_LOS_VENDORS                                   => \RZP\Services\ExternalServiceClient::class,
 
-        self::PAYOUTS_PAYOUTS        => \RZP\Services\PayoutService\AdminFetch::class,
-        self::PAYOUTS_REVERSALS      => \RZP\Services\PayoutService\AdminFetch::class,
-        self::PAYOUTS_PAYOUT_LOGS    => \RZP\Services\PayoutService\AdminFetch::class,
-        self::PAYOUTS_PAYOUT_SOURCES => \RZP\Services\PayoutService\AdminFetch::class,
+        self::PAYOUTS_PAYOUTS                           => \RZP\Services\PayoutService\AdminFetch::class,
+        self::PAYOUTS_REVERSALS                         => \RZP\Services\PayoutService\AdminFetch::class,
+        self::PAYOUTS_PAYOUT_LOGS                       => \RZP\Services\PayoutService\AdminFetch::class,
+        self::PAYOUTS_PAYOUT_SOURCES                    => \RZP\Services\PayoutService\AdminFetch::class,
+        self::PAYOUTS_BANKING_ACCOUNT_STATEMENT_DETAILS => \RZP\Services\PayoutService\AdminFetch::class,
 
         self::GOVERNOR_RULES        => \RZP\Services\GovernorService::class,
         self::GOVERNOR_RULE_GROUPS  => \RZP\Services\GovernorService::class,

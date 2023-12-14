@@ -2548,6 +2548,19 @@ return [
         ],
     ],
 
+    'testAdminFetchPayoutBankingAccountStatementDetailsViaService' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/payouts.banking_account_statement_details/Gg7sgBZgvYjlSB',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testFreePayoutMigrationAdminAction' => [
         'request'  => [
             'url'     => '/admin/payouts/free_payout_migration',

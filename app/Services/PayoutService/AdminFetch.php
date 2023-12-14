@@ -18,6 +18,8 @@ class AdminFetch extends Base
 
     const ADMIN_FETCH_PAYOUT_SOURCES_URI = self::ADMIN_FETCH_PAYOUTS_BASE_URI . '/payout_sources';
 
+    const ADMIN_FETCH_PAYOUT_BANKING_ACCOUNT_STATEMENT_DETAILS_URI = self::ADMIN_FETCH_PAYOUTS_BASE_URI . '/banking_account_statement_details';
+
     // payout create service name for singleton class
     const PAYOUT_SERVICE_ADMIN_FETCH = 'payout_service_admin_fetch';
 

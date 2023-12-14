@@ -5727,6 +5727,21 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals('poutsrc_Gg7sgBZgvYjlSB', $response['id']);
     }
 
+    public function testAdminFetchPayoutBankingAccountStatementDetailsViaService()
+    {
+        $this->mockPayoutServiceAdminFetch();
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->startTest();
+
+        $this->assertTrue(is_array($response));
+
+        $this->assertNotEmpty($response);
+
+        $this->assertEquals('basd_Gg7sgBZgvYjlSB', $response['id']);
+    }
+
     public function adminGetResponseForService($entity, $id)
     {
         if (empty($entity) === true)
@@ -5776,6 +5791,16 @@ class PayoutServiceTest extends TestCase
         if (empty($id) === false)
         {
             return $this->getAdminFetchForPayoutSourcesByIdViaService();
+        }
+
+        return [];
+    }
+
+    protected function getAdminFetchForBankingaccountstatementdetailsViaService($id)
+    {
+        if (empty($id) === false)
+        {
+            return $this->getAdminFetchForPayoutBankingAccountStatementDetailsByIdViaService();
         }
 
         return [];
@@ -5862,6 +5887,30 @@ class PayoutServiceTest extends TestCase
                 "priority"    => 1,
                 "created_at"  => 1614325826,
             ];
+
+        return $response;
+    }
+
+    public function getAdminFetchForPayoutBankingAccountStatementDetailsByIdViaService()
+    {
+        $response = [
+            "id"                                  => "basd_Gg7sgBZgvYjlSB",
+            "entity"                              => "banking_account_statement_details",
+            "MerchantID"                          => "N2JCXR3Tp1hAJz",
+            "account_number"                      => "409002144666",
+            "balance_id"                          => "N8MeYRr0eDM9LU",
+            "channel"                             => "rbl",
+            "status"                              => "active",
+            "statement_closing_balance"           => 0,
+            "gateway_balance"                     => 900,
+            "statement_closing_balance_change_at" => null,
+            "gateway_balance_change_at"           => null,
+            "last_statement_attempt_at"           => null,
+            "balance_last_fetched_at"             => 1614325826,
+            "pagination_key"                      => "1701788294_sJmsh8VD8FDny9Dd92qT1ugb+u1Z0vC4gitwAoJwzT",
+            "account_type"                        => "rx_wallet",
+            "created_at"                          => 1614325826,
+        ];
 
         return $response;
     }

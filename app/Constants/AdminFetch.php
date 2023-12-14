@@ -1649,6 +1649,12 @@ class AdminFetch
             ],
             Entity::PAYOUTS_PAYOUT_SOURCES => [
             ],
+            Entity::PAYOUTS_BANKING_ACCOUNT_STATEMENT_DETAILS => [
+                'merchant_id'       => [
+                    Fetch::LABEL    => 'Merchant Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+            ],
 
             Entity::GOVERNOR_RULES => [
                 'rule_group_id'       => [
