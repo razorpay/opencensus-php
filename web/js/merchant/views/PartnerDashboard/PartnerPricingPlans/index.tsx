@@ -46,21 +46,30 @@ const PartnerPricingPlans = ({ showNotification }: PartnerPricingPlansProps): JS
         backgroundColor="surface.background.level2.lowContrast"
       >
         <Box minHeight="500px">
-          {PAYMENT_METHODS_IN_ORDER.map((payment_method) => {
-            if (!groupedRules[payment_method]) return null;
-            return (
-              <Box
-                key={payment_method}
-                backgroundColor="brand.gray.300.lowContrast"
-                marginBottom="spacing.5"
-              >
-                <PricingRulesTable
-                  paymentMethod={payment_method}
-                  rules={groupedRules[payment_method]}
-                />
-              </Box>
-            );
-          })}
+          {!isEmpty(groupedRules) ? (
+            <>
+              <Text>
+                We acknowledge and agree that the Razorpay Fees applicable for transactions
+                initiated through OAuth shall be as provided hereinbelow:
+              </Text>
+              <br />
+              {PAYMENT_METHODS_IN_ORDER.map((payment_method) => {
+                if (!groupedRules[payment_method]) return null;
+                return (
+                  <Box
+                    key={payment_method}
+                    backgroundColor="brand.gray.300.lowContrast"
+                    marginBottom="spacing.5"
+                  >
+                    <PricingRulesTable
+                      paymentMethod={payment_method}
+                      rules={groupedRules[payment_method]}
+                    />
+                  </Box>
+                );
+              })}
+            </>
+          ) : null}
           {isEmpty(groupedRules) ? (
             <Text color="feedback.text.negative.lowContrast">
               No Pricing Plan found for partner ID: '{partnerId}'
