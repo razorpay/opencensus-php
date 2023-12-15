@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\BusinessDetail\Transformers;
 
 use RZP\Base;
 use RZP\Models\Merchant\BusinessDetail\Core;
+use Selective\Transformer\ArrayTransformer;
+use RZP\Models\Merchant\BusinessDetail\Constants;
 
 class MerchantsTransformer extends Base\Transformer
 {
@@ -84,6 +86,12 @@ class MerchantsTransformer extends Base\Transformer
                 "column" => 'website_details.live_website_or_app'
             ]
         ],
+        'business_details.lead_score_components'                      => [
+            [
+                "column" => 'lead_score_components',
+                "function" => 'addDefaultLeadScoreValues'
+            ]
+        ],
     ];
 
 
@@ -92,5 +100,36 @@ class MerchantsTransformer extends Base\Transformer
         parent::__construct();
 
         $this->core = new Core();
+    }
+
+    protected function registerFilters(ArrayTransformer $transformer)
+    {
+        $transformer->registerFilter(
+            'addDefaultLeadScoreValues',
+            function($value) {
+
+                $LeadScoreComponents = [
+                    Constants::GSTIN_SCORE => 0,
+                    Constants::REGISTERED_YEAR => null,
+                    Constants::AGGREGATED_TURNOVER_SLAB => "",
+                    Constants::DOMAIN_SCORE => 0,
+                    Constants::WEBSITE_VISITS => 0,
+                    Constants::ECOMMERCE_PLUGIN => false,
+                    Constants::ESTIMATED_ANNUAL_REVENUE => "",
+                    Constants::TRAFFIC_RANK => "",
+                    Constants::CRUNCHBASE => false,
+                    Constants::TWITTER_FOLLOWERS => 0,
+                    Constants::LINKEDIN => false,
+                ];
+
+                foreach($LeadScoreComponents as $key => $component)
+                {
+                    if (empty($value[$key]) === false ){
+                        $LeadScoreComponents[$key] = $value[$key];
+                    }
+                }
+                return $LeadScoreComponents;
+            }
+        );
     }
 }

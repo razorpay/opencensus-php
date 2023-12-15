@@ -70,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::MIQ_SHARING_DATE,
         self::TESTING_CREDENTIALS_DATE,
         self::METADATA,
+        self::LEAD_SCORE_COMPONENTS,
     ];
 
     protected $casts = [
