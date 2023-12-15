@@ -5381,6 +5381,157 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals('queued', $payouts[0]['status']);
     }
 
+    public function testProcessingRblFeeRecoveryQueuedPayoutAndNormalPayoutsQueueing()
+    {
+        $balance = $this->getDbLastEntity('balance');
+        $redisKey = 'queued_fee_recovery_payout_' . $balance->getId();
+
+        $this->app['redis']->del($redisKey);
+
+        /** @var BasDetails\Entity $basDetails */
+        $basDetails = $balance->bankingAccountStatementDetails;
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(100);
+
+        $queuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  100,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payout->setStatus(Payout\Status::INITIATED);
+
+        $payout->saveOrFail();
+
+        $feeRecovery = $this->getDbLastEntity('fee_recovery')->toArray();
+
+        $this->assertEquals($payout->getId(), $feeRecovery['entity_id']);
+        $this->assertEquals(\RZP\Models\FeeRecovery\Status::UNRECOVERED, $feeRecovery['status']);
+        $this->assertEquals(0, $feeRecovery['attempt_number']);
+        $this->assertNull($feeRecovery['recovery_payout_id']);
+
+        $redisKey = 'queued_fee_recovery_payout_' . $payout->getBalanceId();
+
+        $this->assertEquals("", $this->app['redis']->get($redisKey));
+
+        $basDetails->setGatewayBalance(0);
+        $basDetails->saveOrFail();
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $balanceId = $payout->getBalanceId();
+
+        $startTime = $payout->getInitiatedAt() - 100;
+        $endTime   = $payout->getInitiatedAt() + 100;
+
+        $data['request']['content'] = [
+            'balance_id'    => $balanceId,
+            'from'          => $startTime,
+            'to'            => $endTime,
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $feeRecoveryPayout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals("1", $this->app['redis']->get($redisKey));
+
+        $this->testData[__FUNCTION__] =
+            $this->testData['testProcessingRblQueuedPayoutWhenBalanceFetchCronRunsAfterBankingAccountStatementCron'];
+
+        $basDetails->setGatewayBalance(50);
+        $basDetails->saveOrFail();
+
+        $queuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  6000,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        sleep(1);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            Payout\Entity::PURPOSE => Payout\Purpose::RZP_FEES
+        ]);
+
+        $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron(50);
+
+        $response = $this->dispatchQueuedPayouts();
+
+        $this->assertEquals($balance['id'], $response['balance_id_list'][0]);
+
+        $payouts = $this->getDbEntities('payout');
+        $psd = $this->getDbEntities('payouts_status_details');
+
+        $this->assertEquals('refund', $payouts[0]['purpose']);
+        $this->assertEquals('initiated', $payouts[0]['status']);
+        $this->assertEquals('rzp_fees', $payouts[1]['purpose']);
+        $this->assertEquals('created', $payouts[1]['status']);
+        $this->assertEquals('refund', $payouts[2]['purpose']);
+        $this->assertEquals('queued', $payouts[2]['status']);
+        $this->assertEquals('rzp_fees', $payouts[3]['purpose']);
+        $this->assertEquals('queued', $payouts[3]['status']);
+
+        $this->assertEquals('queued', $psd[0]['status']);
+        $this->assertEquals('low_balance', $psd[0]['reason']);
+        $this->assertEquals($payouts[1]['id'], $psd[0]['payout_id']);
+        $this->assertEquals("Payout is queued as there is insufficient balance in your account to process the payout.", $psd[0]['description']);
+
+        $this->assertEquals('queued', $psd[1]['status']);
+        $this->assertEquals('fee_recovery_pending', $psd[1]['reason']);
+        $this->assertEquals($payouts[2]['id'], $psd[1]['payout_id']);
+        $this->assertEquals("Payout is queued as you have a pending fee recovery payout. " .
+            "It will get processed after the fee recovery payout is cleared.", $psd[1]['description']);
+
+        $this->assertEquals('queued', $psd[2]['status']);
+        $this->assertEquals('fee_recovery_pending', $psd[2]['reason']);
+        $this->assertEquals($payouts[3]['id'], $psd[2]['payout_id']);
+        $this->assertEquals("Payout is queued as you have a pending fee recovery payout. " .
+            "It will get processed after the fee recovery payout is cleared.", $psd[2]['description']);
+
+        $this->assertEquals("1", $this->app['redis']->get($redisKey));
+
+        $this->fixtures->edit('payout', $payouts[2]['id'], [
+            Payout\Entity::AMOUNT => 100
+        ]);
+
+        $this->fixtures->edit('payout', $payouts[3]['id'], [
+            Payout\Entity::AMOUNT => 100
+        ]);
+
+        $response = $this->dispatchQueuedPayouts();
+
+        $this->assertEquals($balance['id'], $response['balance_id_list'][0]);
+
+        $payouts = $this->getDbEntities('payout');
+
+        $this->assertEquals('refund', $payouts[0]['purpose']);
+        $this->assertEquals('initiated', $payouts[0]['status']);
+        $this->assertEquals('rzp_fees', $payouts[1]['purpose']);
+        $this->assertEquals('created', $payouts[1]['status']);
+        $this->assertEquals('refund', $payouts[2]['purpose']);
+        $this->assertEquals('created', $payouts[2]['status']);
+        $this->assertEquals('rzp_fees', $payouts[3]['purpose']);
+        $this->assertEquals('created', $payouts[3]['status']);
+
+        $this->assertEquals(null, $this->app['redis']->get($redisKey));
+
+        $this->app['redis']->del($redisKey);
+    }
+
     protected function getBasicNegativeBalanceResponse()
     {
         $response = [

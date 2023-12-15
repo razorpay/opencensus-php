@@ -179,6 +179,8 @@ class Base extends BaseCore
     // Payout Service Mutex Keys
     const FTA_CREATION_PAYOUT_SERVICE    = 'fta_creation_payout_service_';
     const LEDGER_CREATION_PAYOUT_SERVICE = 'ledger_creation_payout_service_';
+    const QUEUED_FEE_RECOVERY_PAYOUT     = 'queued_fee_recovery_payout_';
+    const QUEUED_FEE_RECOVERY_PAYOUT_TTL = 30;
 
     /**
      * @var Mutex
@@ -363,6 +365,8 @@ class Base extends BaseCore
             return $payout;
         });
 
+        $this->setQueuedFeeRecoveryPayoutsFlag($payout);
+
         $payoutEntityCreateAndProcessEndTime = millitime();
 
         $this->trace->histogram(
@@ -437,6 +441,127 @@ class Base extends BaseCore
         $this->fireEventForPayoutStatus($payout);
 
         return $payout;
+    }
+
+    public function setQueuedFeeRecoveryPayoutsFlag(Entity $payout): void
+    {
+        if (($payout->getPurpose() !== Payout\Purpose::RZP_FEES) ||
+            ($payout->getStatus() !== Status::QUEUED))
+        {
+            return;
+        }
+
+        $redis = $this->app['redis']->connection();
+        $redisKey = self::QUEUED_FEE_RECOVERY_PAYOUT . $payout->getBalanceId();
+
+        try {
+            $currentValue = $redis->get($redisKey);
+        }
+        catch (\Throwable)
+        {
+            $currentValue = null;
+        }
+
+        if (($currentValue !== null) and
+            ($currentValue === true))
+        {
+            return;
+        }
+
+        try {
+            $this->mutex->acquireAndRelease(
+                $redisKey,
+                function() use ($redis, $redisKey)
+                {
+                    $redis->set($redisKey, true);
+                },
+                self::QUEUED_FEE_RECOVERY_PAYOUT_TTL,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                3
+            );
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Logger::CRITICAL,
+                TraceCode::QUEUED_PAYOUT_PROCESS_EXCEPTION,
+                [
+                    'payout_id'         => $payout->getId(),
+                    Entity::BALANCE_ID  => $payout->getBalanceId(),
+                    Entity::MERCHANT_ID => $payout->getMerchantId(),
+                    'process' => 'setting_redis_flag'
+                ]
+            );
+        }
+    }
+
+    public function getQueuedFeeRecoveryPayoutsFlag(Entity $payout): bool
+    {
+        $redis = $this->app['redis']->connection();
+
+        $redisKey = self::QUEUED_FEE_RECOVERY_PAYOUT . $payout->getBalanceId();
+
+        try {
+            $currentValue = $redis->get($redisKey);
+        }
+        catch (\Throwable)
+        {
+            $currentValue = null;
+        }
+
+        if (($currentValue !== null) and
+            ($currentValue == "1"))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function unsetQueuedFeeRecoveryPayoutsFlag(string $balanceId, string $merchantId): void
+    {
+        $redis = $this->app['redis']->connection();
+        $redisKey = self::QUEUED_FEE_RECOVERY_PAYOUT . $balanceId;
+
+        try {
+            $currentValue = $redis->get($redisKey);
+        }
+        catch (\Throwable)
+        {
+            $currentValue = null;
+        }
+
+        if ($currentValue == null)
+        {
+            return;
+        }
+
+        try {
+            $this->mutex->acquireAndRelease(
+                $redisKey,
+                function() use ($redis, $redisKey)
+                {
+                    $redis->del($redisKey);
+                },
+                self::QUEUED_FEE_RECOVERY_PAYOUT_TTL,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                3
+            );
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Logger::CRITICAL,
+                TraceCode::QUEUED_PAYOUT_PROCESS_EXCEPTION,
+                [
+                    Entity::BALANCE_ID  => $balanceId,
+                    Entity::MERCHANT_ID => $merchantId,
+                    'process' => 'unsetting_redis_flag'
+                ]
+            );
+        }
     }
 
     /**

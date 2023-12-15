@@ -74,6 +74,30 @@ class Base extends FundAccountPayout\Base
 
     protected function queueIfLowBalance(Entity $payout) : bool
     {
+        if ($payout->getPurpose() != Payout\Purpose::RZP_FEES)
+        {
+            $queueDueToFeeRecovery = (new Payout\Processor\Base)->getQueuedFeeRecoveryPayoutsFlag($payout);
+
+            if ($queueDueToFeeRecovery === true)
+            {
+                $payout->setStatus(Status::QUEUED);
+
+                $payout->setQueuedReason(Payout\QueuedReasons::FEE_RECOVERY_PENDING);
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_QUEUED,
+                    [
+                        'payout_id'     => $payout->getId(),
+                        'payout_amount' => $payout->getAmount(),
+                        'queue_flag'    => $payout->toBeQueued(),
+                        'batch_id'      => $payout->getBatchId(),
+                        'balance_id'    => $payout->getBalanceId()
+                    ]);
+
+                return true;
+            }
+        }
+
         if ($payout->toBeQueued() === false)
         {
             return false;

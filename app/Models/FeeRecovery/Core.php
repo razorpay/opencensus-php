@@ -948,7 +948,7 @@ class Core extends Base\Core
                                                ]);
         }
 
-        if (empty($rzpFeesContacts) === true)
+        if (count($rzpFeesContacts) == 0)
         {
             (new BankingAccount\Core)->createRZPFeesContactAndFundAccount($merchant, $balance->getChannel());
 

@@ -2962,6 +2962,8 @@ class Core extends Base\Core
             ];
         }
 
+        (new Processor\Base)->unsetQueuedFeeRecoveryPayoutsFlag($balance->getId(), $balance->getMerchantId());
+
         // We are going to get the count of Free Payouts here but we shall not be incrementing or decrementing the
         // count at this point. Increments/Decrements should ideally reside in the same flow.
         // This will also help avoid issues with counter getting stuck or any other race conditions.

@@ -4,6 +4,25 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
 return [
+    'testProcessingRblFeeRecoveryQueuedPayoutAndNormalPayoutsQueueing' => [
+        'request'  => [
+            'url'    => '/payouts/fee_recovery',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 590,
+                'currency'        => 'INR',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'rzp_fees',
+                'status'          => 'queued',
+                'mode'            => 'IFT',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
     'testRblXlsxStatementGeneration' => [
         'request' => [
             'method' => 'POST',
