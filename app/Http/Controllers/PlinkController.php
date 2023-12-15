@@ -399,6 +399,10 @@ class PlinkController extends Controller
         $id = Entity::stripSignWithoutValidation($id);
 
         $merchant = $this->ba->getMerchant();
+        
+        /**
+         * @var $payment \RZP\Models\Payment\Entity
+         */
         $payment  = $this->repo->payment->findByIdAndMerchant($id, $merchant);
 
         $response = [
@@ -407,6 +411,8 @@ class PlinkController extends Controller
         ];
 
         $response['payment']['fee_in_mcc'] = $payment->getFeeInMcc() ?? 0;
+        $response['payment']['customer_fee'] = $payment->getConvenienceFee() ?? 0;
+        $response['payment']['customer_fee_gst'] = $payment->getConvenienceFeeGst() ?? 0;
 
         return ApiResponse::json($response);
     }
