@@ -2823,6 +2823,21 @@ class DatabaseSeeder extends Seeder
             'created_at'                => time(),
             'updated_at'                => time()
         ]);
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::PAYLATER_AMAZONPAY_TERMINAL,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'paylater',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'paylater'                  => 1,
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id2'      => 'ABCD',
+            'gateway_acquirer'          => 'epaylater',
+            'mode'                      => 1,
+            'gateway_terminal_password' => Crypt::encrypt('random_secret'),
+            'created_at'                => time(),
+            'updated_at'                => time()
+        ]);
     }
 
     protected function createNetbankingKvbTerminal()

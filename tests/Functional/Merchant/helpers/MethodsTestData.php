@@ -870,6 +870,7 @@ return [
                     ['provider' => 'icic'],
                     ['provider' => 'flexmoney'],
                     ['provider' => 'lazypay'],
+                    ['provider' => 'amazonpay'],
                 ],
                 'wallets' => [
                     ['provider' => 'mobikwik'],

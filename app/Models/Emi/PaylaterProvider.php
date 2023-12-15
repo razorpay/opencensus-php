@@ -13,6 +13,7 @@ class PaylaterProvider
     const LAZYPAY = 'lazypay';
     const ICIC = 'icic';
     const HDFC = 'hdfc';
+    const AMAZONPAY = 'amazonpay';
     const PAYLATER = 'paylater';
 
 
@@ -21,6 +22,7 @@ class PaylaterProvider
         self::LAZYPAY,
         self::ICIC,
         self::HDFC,
+        self::AMAZONPAY,
     ];
 
     public static function checkProviderValidity($provider)

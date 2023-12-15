@@ -942,6 +942,7 @@ class MethodsTest extends TestCase
                     'lazypay' => "1",
                     'icic' => "1",
                     'hdfc'  => "0",
+                    'amazonpay' => 0,
                 ]
             ],
         ];
@@ -955,7 +956,8 @@ class MethodsTest extends TestCase
             'lazypay' => 1,
             'icic' => 1,
             'hdfc'  => 0,
-        ], array_slice($merchantMethods->getPaylaterProviders(), 0, 4));
+            'amazonpay' => 0,
+        ], array_slice($merchantMethods->getPaylaterProviders(), 0, 5));
     }
 
     public function testBulkEnableHdfcDebitEmiProvider()

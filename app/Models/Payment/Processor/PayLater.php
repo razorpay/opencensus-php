@@ -11,6 +11,7 @@ class PayLater
     const ICICI        = 'icic';
     const FLEXMONEY    = 'flexmoney';
     const LAZYPAY      = 'lazypay';
+    const AMAZONPAY    = 'amazonpay';
 
     const HDFC         = 'hdfc';
     const KKBK         = 'kkbk';
@@ -22,6 +23,7 @@ class PayLater
         self::HDFC     => 100000, // Rs. 1000
         self::ICICI    => 100,    // Rs. 1
         self::KKBK     => 200000, // Rs. 2000
+        self::AMAZONPAY=> 100,    // Rs. 1
     ];
 
     /** @var string[] The order in which pay later providers should be displayed on checkout */
@@ -31,6 +33,7 @@ class PayLater
         self::ICICI,
         self::HDFC,
         self::KKBK,
+        self::AMAZONPAY,
     ];
 
     public static $fullName = [
@@ -39,6 +42,7 @@ class PayLater
         self::ICICI        => 'icic',
         self::FLEXMONEY    => 'flexmoney',
         self::LAZYPAY      => 'lazypay',
+        self::AMAZONPAY    => 'amazonpay',
     ];
 
     public static $fullNameForSupportedBanks = [

@@ -2648,6 +2648,8 @@ class Validator extends Base\Validator
         Entity::MODE                        => 'sometimes',
         Entity::TYPE                        => 'sometimes|array',
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required_if:gateway_acquirer,amazonpay|string'
     ];
 
     protected static $paylaterEditTerminalRules = [

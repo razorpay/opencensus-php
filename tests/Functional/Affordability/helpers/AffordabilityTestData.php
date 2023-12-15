@@ -94,6 +94,10 @@ return [
                                 'enabled' => true,
                                 'min_amount' => 100,
                             ],
+                            'amazonpay' => [
+                                'enabled' => true,
+                                'min_amount' => 100,
+                            ],
                         ],
                     ],
                 ]
@@ -191,6 +195,10 @@ return [
                                 'min_amount' => 200000,
                             ],
                             'lazypay' => [
+                                'enabled' => true,
+                                'min_amount' => 100,
+                            ],
+                            'amazonpay' => [
                                 'enabled' => true,
                                 'min_amount' => 100,
                             ],

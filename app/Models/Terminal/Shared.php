@@ -148,6 +148,7 @@ class Shared
     const PAYLATER_ICICI_TERMINAL            = '10PLaterIciTml';
     const PAYLATER_FLEXMONEY_TERMINAL        = '10PLaterFlxTml';
     const PAYLATER_LAZYPAY_TERMINAL          = '10PLaterLPTmnl';
+    const PAYLATER_AMAZONPAY_TERMINAL        = '20PLaterLPTmnl';
     const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
     const IDFB_TPV_TERMINAL                  = '100idfctpvTrml';
     const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';

@@ -176,6 +176,7 @@ class Gateway
     const SOFORT             = 'sofort';
     const GIROPAY            = 'giropay';
     const UMOBILE            = 'umobile';
+    const AMAZONPAY          = 'amazonpay';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -279,7 +280,7 @@ class Gateway
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369, CardlessEmi::SEZZLE],
-        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY, Paylater::LAZYPAY],
+        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY, Paylater::LAZYPAY, Paylater::AMAZONPAY],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC, self::ACQUIRER_OCBC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
@@ -310,6 +311,7 @@ class Gateway
             PayLater::ICICI,
             PayLater::FLEXMONEY,
             Paylater::LAZYPAY,
+            PayLater::AMAZONPAY,
             self::ACQUIRER_AMEX,
             self::PAYU
         ],
@@ -3693,6 +3695,7 @@ class Gateway
     public static $checkAccountSkipProvider = [
         CardlessEmi::WALNUT369,
         CardlessEmi::SEZZLE,
+        PayLater::AMAZONPAY,
     ];
 
     public static $verifyClientOnS2s = [
@@ -3853,6 +3856,11 @@ class Gateway
     {
         return ((in_array($provider, Payment\Gateway::$checkAccountSkipProvider, true) === true) or
             (in_array(CardlessEmi::getProviderForBank($provider), Payment\Gateway::$checkAccountSkipProvider, true) === true));
+    }
+
+    public static function isPaylaterSkipCheckAccountProvider($provider)
+    {
+        return (in_array($provider, Payment\Gateway::$checkAccountSkipProvider, true) === true);
     }
 
     public static function isCardlessEmiPlanValidationApplicable($input, $payment, $mode)
@@ -4771,6 +4779,7 @@ class Gateway
             ],
             self::PAYLATER     => [
                 Paylater::LAZYPAY,
+                PayLater::AMAZONPAY,
             ],
         ];
 
@@ -4910,6 +4919,7 @@ class Gateway
             ],
             self::PAYLATER     => [
                 Paylater::LAZYPAY,
+                PayLater::AMAZONPAY,
             ],
         ];
 

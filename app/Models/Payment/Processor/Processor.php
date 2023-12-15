@@ -4018,6 +4018,11 @@ class Processor
             $this->setPaymentRoutedThroughCpsIfApplicable($payment, []);
         }
 
+        if
+            (Payment\Gateway::isPaylaterSkipCheckAccountProvider($input['provider']) === true)
+        {
+            return;
+        }
         if($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE)
         {
             $gatewayInput = $input;

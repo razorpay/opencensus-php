@@ -2354,7 +2354,7 @@ trait Authorize
 
     protected function shouldSkipContactAndProviderValidation($input)
     {
-        if (($input['provider'] === PayLater::ICICI and $input['method'] === Gateway::PAYLATER) or ($input['provider'] === Paylater::LAZYPAY and $input['method'] === Gateway::PAYLATER) or ($input['ott'] === Constants::GETSIMPLTOKEN))
+        if (($input['provider'] === PayLater::ICICI and $input['method'] === Gateway::PAYLATER) or ($input['provider'] === Paylater::LAZYPAY and $input['method'] === Gateway::PAYLATER) or ($input['ott'] === Constants::GETSIMPLTOKEN) or ($input['provider'] === PayLater::AMAZONPAY and $input['method'] === Gateway::PAYLATER) )
         {
             return true;
         }

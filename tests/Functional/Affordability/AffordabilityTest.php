@@ -107,6 +107,10 @@ class AffordabilityTest extends TestCase
             'enabled' => true,
             'min_amount' => 100,
         ],
+        'amazonpay' => [
+            'enabled' => true,
+            'min_amount' => 100,
+        ],
     ];
 
     protected function setUp(): void

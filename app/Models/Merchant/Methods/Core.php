@@ -121,7 +121,7 @@ class Core extends Base\Core
             PaylaterProvider::LAZYPAY => '0',
             PaylaterProvider::HDFC => '0',
             PaylaterProvider::ICIC => '1',
-
+            PaylaterProvider::AMAZONPAY=>'0',
         ]
 
     ];

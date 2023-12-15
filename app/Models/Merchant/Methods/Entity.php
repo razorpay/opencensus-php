@@ -485,7 +485,8 @@ class Entity extends Base\PublicEntity
             Paylaterprovider::GETSIMPL,
             Paylaterprovider::LAZYPAY,
             Paylaterprovider::ICIC,
-            Paylaterprovider::HDFC
+            Paylaterprovider::HDFC,
+            PaylaterProvider::AMAZONPAY,
         ],
 
         self::CARD => [
