@@ -1,3 +1,5 @@
+import { delay } from 'common/utils/timeout';
+
 import {
   PlaybookFiltersType,
   FetchPlaybookItemsResponse,
@@ -7,7 +9,6 @@ import {
 } from 'merchant/views/PartnerDashboard/PartnerPlaybook/types';
 
 import { programItemsData } from './data';
-const delay = (time = 1000): Promise<void> => new Promise((r) => setTimeout(r, time));
 
 export const FETCH_PLAYBOOK_ERRORS = {
   ERROR_NO_PLAYBOOK_ITEMS: 'No playbook items found',

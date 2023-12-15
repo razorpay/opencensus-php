@@ -1,8 +1,11 @@
 import PropTypes from 'prop-types';
+import AsyncButton from 'react-async-button';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
-import AsyncButton from 'react-async-button';
 
+import { delay } from 'common/utils/timeout';
+
+const MODAL_CLOSE_TIMEOUT_MS = 300;
 const ConfirmModal = (props) => {
   const confirmModelStyle = {
     overlay: { ...Modal.defaultStyles.overlay, zIndex: 10000 },
@@ -10,13 +13,19 @@ const ConfirmModal = (props) => {
   };
   const { header, message, className } = props.options;
 
+  const onAffirmClick = async () => {
+    await props.onAffirm();
+    // Keep the button disabled until the animation closes
+    await delay(MODAL_CLOSE_TIMEOUT_MS);
+  };
+
   return (
     <div>
       <Modal
         isOpen={props.show}
         style={confirmModelStyle}
         onRequestClose={props.onAbort}
-        closeTimeoutMS={300}
+        closeTimeoutMS={MODAL_CLOSE_TIMEOUT_MS}
         className={`${
           props?.org?.custom_code || ''
         } Modal Modal--small Modal--confirm ${className}`}
@@ -40,7 +49,7 @@ const ConfirmModal = (props) => {
               <AsyncButton
                 type="button"
                 className="btn btn-primary"
-                onClick={props.onAffirm}
+                onClick={onAffirmClick}
                 text={props.options.affirmativeLabel}
                 pendingText={props.options.affirmativePendingLabel}
               />
