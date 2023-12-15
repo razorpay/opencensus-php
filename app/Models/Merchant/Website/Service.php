@@ -382,30 +382,49 @@ class Service extends Base\Service
 
     /**
      * @throws ServerErrorException
+     * @throws BadRequestException
      */
     public function getMerchantWebsiteSection()
     {
         $input = [];
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_get_policy_compliance_details', $input, $this->merchant);
-        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-            'route' => 'merchant_get_policy_compliance_details',
-            'merchant_id' => $this->merchant->getId(),
-            'response' => $response
-        ]);
 
-        // return PGOS response if data is present
-        if(isset($response['data']) === true)
-        {
-            return $response['data'];
+        $policyEligibility = $this->getPolicyEligibilityIfValid();
+
+        if ($policyEligibility === Constants::NOT_ELIGIBLE or $policyEligibility === Constants::SYSTEM_APPROVED) {
+
+            $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                'merchant_id'               => $this->merchant->getId(),
+                'policy_eligibility_status' => $policyEligibility
+            ]);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }
 
-        if(isset($response['msg']) === true and str_contains($response['msg'], "Merchant not eligible for policy wizard v2")===false)
-        {
-            throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+        if (empty($policyEligibility) === true or $policyEligibility === Constants::POLICY_WIZARD_V2) {
 
-                'error description' => $response['msg']
+            try {
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_get_policy_compliance_details', $input, $this->merchant);
 
-            ]);
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'route'         => 'merchant_get_policy_compliance_details',
+                    'merchant_id'   => $this->merchant->getId(),
+                    'response'      => $response
+                ]);
+
+                // return PGOS response if data is present
+                if (isset($response['data']) === true) {
+                    return $response['data'];
+                }
+
+                if (isset($response['policy_eligibility']) === Constants::SYSTEM_APPROVED) {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
+                }
+
+            } catch (\Throwable $e) {
+                throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                    'error description' => $e
+                ]);
+            }
         }
 
         /* if merchant is not eligible for policy wizard v2, then direct to monolith flow
@@ -458,31 +477,43 @@ class Service extends Base\Service
             "merchant_id" => $this->merchant->getId()
         ]);
 
-        $pgosInput = $this->getSanitizedInputForPgos($input);
+        $policyEligibility = $this->getPolicyEligibilityIfValid();
 
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_save_policy_compliance_details', $pgosInput, $this->merchant, true);
-        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-            'route' => 'merchant_save_policy_compliance_details',
-            'merchant_id' => $this->merchant->getId(),
-            'response' => $response
-        ]);
+        if ($policyEligibility === Constants::NOT_ELIGIBLE or $policyEligibility === Constants::SYSTEM_APPROVED) {
 
-        /*
-            if is_policy_wizard_v2_eligible key is present and is true, then return data or error directly
-            if either is_policy_wizard_v2_eligible is not present or is false, then redirect to monolith flow
-        */
-        if(isset($response[Constants::IS_POLICY_WIZARD_V2_ELIGIBLE]) === true and $response[Constants::IS_POLICY_WIZARD_V2_ELIGIBLE] === true)
-        {
-            // return PGOS response if data is present
-            if(isset($response['msg']) === false and isset($response['data']) === true)
-            {
-                return $response['data'];
-            }
+            $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                'merchant_id'               => $this->merchant->getId(),
+                'policy_eligibility_status' => $policyEligibility
+            ]);
 
-            if(isset($response['msg']) === true)
-            {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
+        }
+
+        if (empty($policyEligibility) === true or $policyEligibility === Constants::POLICY_WIZARD_V2) {
+
+            try {
+                $pgosInput = $this->getSanitizedInputForPgos($input);
+
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_save_policy_compliance_details', $pgosInput, $this->merchant, true);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'route'         => 'merchant_save_policy_compliance_details',
+                    'merchant_id'   => $this->merchant->getId(),
+                    'response'      => $response
+                ]);
+
+                // return PGOS response if data is present
+                if (isset($response['data']) === true) {
+                    return $response['data'];
+                }
+
+                if (isset($response['policy_eligibility']) === Constants::SYSTEM_APPROVED) {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
+                }
+
+            } catch (\Throwable $e) {
                 throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
-                    'error description' => $response['msg']
+                    'error description' => $e
                 ]);
             }
         }
@@ -1945,7 +1976,6 @@ class Service extends Base\Service
     //validate input url is same as business_Website,additional_websites, playstore_url, appstore_url
     private function validateAdminSaveSectionAction($merchant, $input)
     {
-
         $urlType = $input[Constants::URL_TYPE];
 
         $url = trim(strtolower($input[Constants::URL]), '/');
@@ -2041,40 +2071,50 @@ class Service extends Base\Service
         }
     }
 
-    public function getAdminWebsiteSection($merchantId, array $input)
+    public function getAdminWebsiteSection($merchantId)
     {
-
-        $request = [];
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_get_policy_compliance_details', $request, $merchant);
+        $policyEligibility = $this->getPolicyEligibilityIfValid();
 
-        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-            'route' => 'merchant_get_policy_compliance_details',
-            'merchant_id' => $merchantId,
-            'response' => $response
-        ]);
+        if ($policyEligibility === Constants::NOT_ELIGIBLE or $policyEligibility === Constants::SYSTEM_APPROVED) {
 
-        /*
-            if is_policy_wizard_v2_eligible key is present and is true, then return data or error directly
-            if either is_policy_wizard_v2_eligible is not present or is false, then redirect to monolith flow
-        */
-        if(isset($response[Constants::IS_POLICY_WIZARD_V2_ELIGIBLE]) === true and $response[Constants::IS_POLICY_WIZARD_V2_ELIGIBLE] === true)
-        {
-            // return PGOS response if data is present
-            if(isset($response['msg']) === false and isset($response['data']) === true)
-            {
-                return $response['data'];
-            }
+            $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                'merchant_id'               => $this->merchant->getId(),
+                'policy_eligibility_status' => $policyEligibility
+            ]);
 
-            if(isset($response['msg']) === true)
-            {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
+        }
+
+        if (empty($policyEligibility) === true or $policyEligibility === Constants::POLICY_WIZARD_V2) {
+
+            try {
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_get_policy_compliance_details', [], $this->merchant);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'route'         => 'merchant_get_policy_compliance_details',
+                    'merchant_id'   => $this->merchant->getId(),
+                    'response'      => $response
+                ]);
+
+                // return PGOS response if data is present
+                if (isset($response['data']) === true) {
+                    return $response['data'];
+                }
+
+                if (isset($response['policy_eligibility']) === Constants::SYSTEM_APPROVED) {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
+                }
+
+            } catch (\Throwable $e) {
                 throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
-                    'error description' => $response['msg']
+                    'error description' => $e
                 ]);
             }
         }
+
 
         /* if merchant is not eligible for policy wizard v2, then direct to monolith flow
            this is sent directly in get compliance details api instead of separate call again to eligibility api, since pgos internally checks eligiblity
@@ -2090,7 +2130,7 @@ class Service extends Base\Service
         }
         */
 
-        if ($this->isWebsiteSectionsApplicable($merchant, true) === false)
+        if ($this->isWebsiteSectionsApplicable($merchant, true, false) === false)
         {
             return ["isWebsiteSectionsApplicable" => false,
                     "isGracePeriodApplicable"     => false
@@ -2867,6 +2907,43 @@ class Service extends Base\Service
         }
 
         return $pgosInput;
+
+    }
+
+    public function getPolicyEligibilityIfValid($revaluateEligibility = false)
+    {
+        if ($this->merchant->isRazorpayOrgId() === false or $this->isMerchantApplicableForWebsiteSections($this->merchant) === false) {
+            return Constants::NOT_ELIGIBLE;
+        }
+
+        $merchantDetails = $this->repo->merchant_detail->getByMerchantId($this->merchant->getId());
+
+        if ($merchantDetails === null or $merchantDetails->getActivationFormMilestone() === null) {
+            return Constants::NOT_ELIGIBLE;
+        }
+
+        $websiteDetails = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetails->getMerchantId());
+
+        if ($websiteDetails !== null) {
+
+            $merchantWebsiteDetails = $websiteDetails->getMerchantWebsiteDetails();
+
+            if ($merchantWebsiteDetails != null and
+                isset($merchantWebsiteDetails['additional_data']['policy_eligibility']) === true) {
+
+                $isPolicyWizardV2Enabled = $merchantWebsiteDetails['additional_data']['policy_eligibility'];
+
+                //$isPolicyWizardV2Enabled -> v1, v2, system_approved
+
+                if ($isPolicyWizardV2Enabled !== Constants::POLICY_WIZARD_V1 and (bool)($revaluateEligibility) === true) {
+                    return "";
+                }
+
+                return $isPolicyWizardV2Enabled;
+            }
+        }
+
+        return "";
 
     }
 }

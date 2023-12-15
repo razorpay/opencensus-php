@@ -343,7 +343,8 @@ class TncActivationTest extends TestCase
     public function testMerchantSaveSectionDetailsErrors()
     {
 
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com',
+            'activation_form_milestone' => 'L1']);
 
         //1. website in the input is different from business website
         $input = [
@@ -538,7 +539,7 @@ class TncActivationTest extends TestCase
 
     public function testMerchantCreateWebsiteSectionDetailsSectionStatus1()
     {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com', 'activation_form_milestone' => 'L1']);
 
         $input = [
             "merchant_website_details" => [
@@ -573,7 +574,7 @@ class TncActivationTest extends TestCase
 
     public function testMerchantCreateWebsiteSectionDetailsSectionStatus2()
     {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com', 'activation_form_milestone' => 'L1']);
 
         $input = [
             "shipping_period"             => "3-5 days",
@@ -620,7 +621,7 @@ class TncActivationTest extends TestCase
 
     public function testMerchantCreateWebsiteSectionDetailsSectionStatus3()
     {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com', 'activation_form_milestone' => 'L1']);
 
         $input = [
             "shipping_period"             => "3-5 days",
@@ -658,7 +659,7 @@ class TncActivationTest extends TestCase
     public function testMerchantCreateWebsiteSectionDetailsSectionEdit()
     {
 
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com', 'activation_form_milestone' => 'L1']);
 
         $this->createWebsiteDetails([
                                         'merchant_id'              => $merchant->getId(),
@@ -717,7 +718,7 @@ class TncActivationTest extends TestCase
 
     public function testMerchantCreateWebsiteSectionDetailsSectionEditSame()
     {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com',  'activation_form_milestone' => 'L1']);
 
         $merchantWebsite = $this->createWebsiteDetails([
                                                            'merchant_id'              => $merchant->getId(),
@@ -1047,7 +1048,7 @@ class TncActivationTest extends TestCase
     // Allow partner to create website section
     public function testMerchantCreateWebsiteSectionDetailsSectionForPartner()
     {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com', 'activation_form_milestone' => 'L1']);
         $this->fixtures->merchant->edit($merchant->getId(), ['partner_type' => 'aggregator']);
 
 
@@ -1082,7 +1083,7 @@ class TncActivationTest extends TestCase
 
     }
 
-    // Allow subM to create website section
+    // Throw exception is activation milestone is null
     public function testMerchantCreateWebsiteSectionDetailsSectionForSubM()
     {
         $partner = $this->createMerchant(['business_website' => 'https://hello.com'],false);
@@ -1103,23 +1104,13 @@ class TncActivationTest extends TestCase
                 ]
             ]];
 
-        $websiteDetail = (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
-
-        $this->assertArraySubset([
-                                     "merchant_website_details" => [
-                                         "contact_us" => [
-                                             "section_status" => 1,
-                                             "status"         => null,
-                                             "website"        => [
-                                                 "http://www.example.com/" => [
-                                                     "url" => "http://www.example.com/contact_us"
-                                                 ]
-                                             ]
-                                         ]
-                                     ]], $websiteDetail);
-
-        $this->assertArrayNotHasKey('admin_website_details', $websiteDetail);
-
+        try {
+            $websiteDetail = (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+        }
     }
 
     //Partner add website section from admin dashboard
@@ -1415,7 +1406,7 @@ class TncActivationTest extends TestCase
     {
         Config::set('pgos.proxy.request.mock', true);
 
-        $this->createMerchant(['business_website' => 'https://hello.com']);
+        $this->createMerchant(['business_website' => 'https://hello.com', 'activation_form_milestone' => 'L1']);
 
         $input = [
             "shipping_period"             => "0-2 days"

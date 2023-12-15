@@ -61,6 +61,10 @@ class Constants
 
     const IS_POLICY_WIZARD_V2_ELIGIBLE = 'is_policy_wizard_v2_eligible';
 
+    const NOT_ELIGIBLE      = 'not_eligible';
+    const SYSTEM_APPROVED   = 'system_approved';
+    const POLICY_WIZARD_V1  = 'v1';
+    const POLICY_WIZARD_V2  = 'v2';
 
     const NEEDS_CLARIFICATION_KEYS = [
         self::PLAYSTORE_URL,

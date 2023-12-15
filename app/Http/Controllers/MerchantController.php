@@ -3092,9 +3092,7 @@ class MerchantController extends Controller
 
     public function getAdminWebsiteSection(string $merchantId)
     {
-        $input = Request::all();
-
-        $response = $this->service(E::MERCHANT_WEBSITE)->getAdminWebsiteSection($merchantId,$input);
+        $response = $this->service(E::MERCHANT_WEBSITE)->getAdminWebsiteSection($merchantId);
 
         return ApiResponse::json($response);
     }

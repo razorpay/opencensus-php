@@ -382,6 +382,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         $this->trace->info(TraceCode::PGOS_DASHBOARD_PROXY_REQUEST, [
             'route'     => $route,
             'twirpPath' => $twirpPath,
+            'request'   => $request,
         ]);
 
         try
@@ -550,6 +551,24 @@ class MerchantOnboardingProxyController extends BaseProxyController
                     $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
                         'section'   => "Error in Pre Validation",
                         'case'      => self::SEND_SMS_OTP,
+                        'error'     => $e->getMessage()
+                    ]);
+                }
+            case self::MERCHANT_GET_L2_DYNAMIC_CONFIGS:
+                try
+                {
+                    $policyEligibility = (new WebsiteService())->getPolicyEligibilityIfValid($body['revaluate_eligibility']);
+
+                    if (empty($policyEligibility) === false) {
+                        $response['validated'] = false;
+                        $response['policy_eligibility'] = $policyEligibility;
+                    }
+
+                } catch (\Throwable $e)
+                {
+                    $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                        'section'   => "Error in Pre Validation",
+                        'case'      => self::MERCHANT_GET_L2_DYNAMIC_CONFIGS,
                         'error'     => $e->getMessage()
                     ]);
                 }

@@ -12085,7 +12085,8 @@ We look forward to transacting with you!
 
         $this->fixtures->create('merchant_detail',
             ["merchant_id"      => $merchantId,
-                'business_website' => "http://hello.com"
+                'business_website' => "http://hello.com",
+                'activation_form_milestone' => 'L1'
             ]);
 
         $this->fixtures->create('merchant_website', [
@@ -12140,7 +12141,8 @@ We look forward to transacting with you!
 
         $this->fixtures->create('merchant_detail',
             ["merchant_id"      => $merchantId,
-                'business_website' => "http://hello.com"
+                'business_website' => "http://hello.com",
+                'activation_form_milestone' => 'L1'
             ]);
 
         $this->fixtures->create('merchant_access_map', [
