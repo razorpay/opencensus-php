@@ -37,6 +37,7 @@ import Settings from './views/Settings';
 import { isADayAgo, isLenderLiquiloans, isMerchantNew, showSettings } from './utils';
 import Alert from 'common/new-ui/Alert';
 import LlDashboard from './LlDashboard';
+import withEDIMigration from 'merchant/views/Capital/CashAdvance/withEDIMigration';
 
 const Loader = () => {
   return (
@@ -428,4 +429,4 @@ class CashAdvance extends React.Component {
 
 CashAdvance.propTypes = {};
 
-export default withRouter(CashAdvance);
+export default withEDIMigration(withRouter(CashAdvance));

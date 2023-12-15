@@ -8,11 +8,15 @@ import {
   fetchFunctionalWithdrawalConfigByMerchantID,
   fetchInstallments,
 } from 'merchant/reducers/capital/withdrawals';
-import { CASH_ADVANCE_SECTIONS, SCHEDULED_REPAYMENT_LINKS } from '../constants';
+import {
+  CASH_ADVANCE_SECTIONS,
+  SCHEDULED_REPAYMENT_LINKS,
+} from 'merchant/views/Capital/CashAdvance/constants';
 import ScheduledRepaymentsList from './ScheduledRepaymentList';
 import ListFilter from 'merchant/components/ListFilter';
 import moment from 'moment';
 import { getProductType } from 'merchant/views/Capital/utils';
+import withEDIMigration from 'merchant/views/Capital/CashAdvance/withEDIMigration';
 
 @connect(
   (state) => ({
@@ -181,4 +185,4 @@ class RepaymentsSchedule extends Component {
   }
 }
 
-export default RepaymentsSchedule;
+export default withEDIMigration(RepaymentsSchedule);

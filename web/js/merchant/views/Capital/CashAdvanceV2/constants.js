@@ -224,12 +224,16 @@ export const SIGNATORY_STATUS = {
 
 export const APPLICATION_NOT_SUBMITTED = 'record not found';
 
-export const CASH_ADVANCE_LINK = `https://x.razorpay.com/cash-advance?from=dashboard`;
+export const CASH_ADVANCE_LINK =
+  'https://x.razorpay.com/capital/cash-advance/application/?from=dashboard';
+
+export const NEW_CASH_ADVANCE_DASHBOARD =
+  'https://x.razorpay.com/capital/cash-advance/?from=dashboard';
 
 export const PRODUCT_CONFIG = {
   [CAPITAL_PRODUCT_CODES.CASH_ADVANCE]: {
     faqUrl: 'https://razorpay.com/knowledgebase/#merchant',
-    applicationUrl: 'https://x.razorpay.com/cash-advance/?from=dashboard',
+    applicationUrl: CASH_ADVANCE_LINK,
     dashboardUrl: '/capital/cash-advance/withdrawals',
     content: {
       heading: 'Cash Advance',
@@ -241,8 +245,8 @@ export const PRODUCT_CONFIG = {
   [CAPITAL_PRODUCT_CODES.LOC_EMI]: {
     faqUrl: 'https://razorpay.com/x/line-of-credit/#faqs',
     applicationUrl:
-      'https://x.razorpay.com/line-of-credit/application/?intent=capital_loc_emi&from=dashboard',
-    dashboardUrl: 'https://x.razorpay.com/line-of-credit/?from=dashboard',
+      'https://x.razorpay.com/capital/line-of-credit/application/?intent=capital_loc_emi&from=dashboard',
+    dashboardUrl: 'https://x.razorpay.com/capital/line-of-credit/?from=dashboard',
     content: {
       heading: 'Line of Credit',
       title: 'Your Line of Credit Application',

@@ -73,9 +73,9 @@ export const checkCreditPullStatus = (application = {}) => {
 };
 
 export const checkApplicationReviewStatus = (application = {}) => {
-  const { loc_offers = [], contract } = application;
-  const offerGenerated = !!loc_offers?.length;
-  const isContractGenerated = !!contract;
+  const { loc_offers = [], offer_list = [], approved_product_id } = application;
+  const offerGenerated = !!loc_offers?.length || !!offer_list?.length;
+  const isContractGenerated = !!approved_product_id;
 
   let status = APPLICATION_STATES.CREDIT_OFFER_PENDING;
 

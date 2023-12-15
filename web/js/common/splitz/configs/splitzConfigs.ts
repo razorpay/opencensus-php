@@ -558,7 +558,7 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
-      routesToMatch: [/capital\/cash-advance.*/i],
+      routesToMatch: ['/capital/cash-advance/*'],
       abExperiments: [
         {
           uniqueHashKey: 'capitalPreclosureEdiExp',
@@ -568,6 +568,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
           defaultVariant: {
             name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
+          uniqueHashKey: 'capital_edi_dashboard_migration',
+          experimentId: {
+            beta: 'NBQ0tT4tn9cn04',
+            production: 'NBS3tTVDFnFcEv',
+          },
+          defaultVariant: {
+            name: 'use x dashboard',
             variables: [
               {
                 key: 'result',
