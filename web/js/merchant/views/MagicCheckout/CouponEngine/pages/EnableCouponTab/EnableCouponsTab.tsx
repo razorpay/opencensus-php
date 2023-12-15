@@ -149,7 +149,7 @@ const EnableCouponsTab: React.FC<EnableCouponsTabProps> = ({ openModal }) => {
                 <div>
                   Your coupons have been successfully synced from{' '}
                   <strong>{lastSyncDates.start_date}</strong> to{' '}
-                  <strong>{lastSyncDates.end_date}</strong>. You can view them <strong>here</strong>
+                  <strong>{lastSyncDates.end_date}</strong>.
                 </div>
               )}
             </CardContent>

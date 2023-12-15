@@ -53,7 +53,7 @@ const MainPage: React.FC<MainPageProps> = ({
     try {
       const [statusResponse, couponsResponse] = await Promise.allSettled([
         getSyncShopifyCouponsStatus(),
-        listCoupons(),
+        listCoupons({ count: 1 }),
       ]);
 
       // Check the status of each promise
@@ -66,8 +66,10 @@ const MainPage: React.FC<MainPageProps> = ({
 
       // Check conditions and set activeNav
       if (
-        (isStatusSuccess && statusData.status === 'not-started') ||
-        (isCouponsSuccess && couponsData.coupons.length === 0)
+        isStatusSuccess &&
+        statusData.status === 'not-started' &&
+        isCouponsSuccess &&
+        couponsData.coupons.length === 0
       ) {
         setActiveNav(NAV_ITEMS[0].id);
       } else {

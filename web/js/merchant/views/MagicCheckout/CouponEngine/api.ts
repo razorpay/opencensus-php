@@ -57,7 +57,7 @@ export const listCoupons = (payload: any = {}): any => {
     type = '',
     code = '',
     status = '',
-    sort_by = '',
+    sort_by = 'date-desc',
     skip = 0,
     count = 10,
     display,

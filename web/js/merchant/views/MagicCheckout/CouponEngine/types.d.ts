@@ -85,6 +85,7 @@ interface CouponDetails {
   description: string;
   display: boolean;
   autoapply: boolean;
+  prepaidMethodsOnly: boolean;
 }
 
 export interface ErrorStates {

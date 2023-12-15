@@ -44,12 +44,22 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user, abExp
   const isAnalyticsSettingExperimentEnabled =
     abExperiments?.magic_analytics_setting?.variables?.result === 'on';
 
+  const isHideCodWhenDisabledExperimentEnabled =
+    abExperiments?.magic_hide_cod_when_disabled?.variables?.result === 'on';
+
   useEffect(() => {
     const { isShopifyMagicEnabled } = user;
     if (!isShopifyMagicEnabled && SHOPIFY_CHECKOUT_SETTINGS[0].key === SHOPIFY_BUY_NOW_BUTTON) {
       SHOPIFY_CHECKOUT_SETTINGS.shift();
     }
-  }, [user]);
+
+    if (!isHideCodWhenDisabledExperimentEnabled) {
+      const index = SHOPIFY_CHECKOUT_SETTINGS.findIndex(
+        (setting) => setting.key === 'one_cc_hide_cod_when_disabled',
+      );
+      SHOPIFY_CHECKOUT_SETTINGS.splice(index, 1);
+    }
+  }, [user, isHideCodWhenDisabledExperimentEnabled]);
 
   const onSave = useCallback(() => {
     const payload = {

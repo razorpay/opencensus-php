@@ -38,7 +38,7 @@ const initialFiltersState: FormData = {
   type: 'all',
   code: '',
   status: 'all',
-  sort_by: '',
+  sort_by: 'date-desc',
   skip: 0,
   count: 10,
   display: 'all',

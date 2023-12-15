@@ -11,6 +11,7 @@ import {
   ADDITIONAL_WOOC_SETTINGS_CONFIG,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { getInitialSettings } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
+import { useSplitzService } from 'common/splitz';
 
 const CheckoutWrapper = ({
   settings,
@@ -21,9 +22,17 @@ const CheckoutWrapper = ({
   extraClass,
   user,
 }) => {
-  const { nestedTabsStatus, one_cc_capture_gstin, one_cc_capture_order_instructions } = settings;
+  const {
+    nestedTabsStatus,
+    one_cc_capture_gstin,
+    one_cc_capture_order_instructions,
+    one_cc_hide_cod_when_disabled,
+  } = settings;
 
   const { isMagicWoocEnabled } = user;
+  const { abExperiments } = useSplitzService();
+  const isHideCodWhenDisabledExperimentEnabled =
+    abExperiments?.magic_hide_cod_when_disabled?.variables?.result === 'on';
 
   useEffect(() => {
     if (nestedTabsStatus !== FETCH_STATUS.LOADING) {
@@ -41,6 +50,13 @@ const CheckoutWrapper = ({
         checkoutSettings = [...CHECKOUT_SETTINGS_CONFIG, ...ADDITIONAL_WOOC_SETTINGS_CONFIG];
       }
 
+      if (!isHideCodWhenDisabledExperimentEnabled) {
+        const index = checkoutSettings.findIndex(
+          (setting) => setting.key === 'one_cc_hide_cod_when_disabled',
+        );
+        checkoutSettings.splice(index, 1);
+      }
+
       const tempCheckoutSettings = getInitialSettings(checkoutSettings, prevSettings);
 
       tempCheckoutSettings.forEach((settingItem) => {
@@ -48,7 +64,13 @@ const CheckoutWrapper = ({
       });
       return tempCheckoutSettings;
     });
-  }, [one_cc_capture_gstin, one_cc_capture_order_instructions, settings]);
+  }, [
+    one_cc_capture_gstin,
+    one_cc_capture_order_instructions,
+    settings,
+    one_cc_hide_cod_when_disabled,
+    isHideCodWhenDisabledExperimentEnabled,
+  ]);
 
   const onToggleCheckout = useCallback((checked, label) => {
     setCheckoutSettings((prevSettings) => {

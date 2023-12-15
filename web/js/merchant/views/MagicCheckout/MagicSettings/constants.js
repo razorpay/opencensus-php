@@ -191,6 +191,12 @@ export const SHOPIFY_CHECKOUT_SETTINGS = [
     value: false,
     key: 'one_cc_capture_order_instructions',
   },
+  {
+    label: 'Hide COD payment when disabled',
+    value: false,
+    key: 'one_cc_hide_cod_when_disabled',
+    description: `When Cash on Delivery (COD) payment method is disabled by default for some pincodes or due to RTO risk or prepaid coupon codes, it won't appear as a payment method during checkout.`,
+  },
 ];
 
 export const SHOPIFY_ANALYTICS_SETTINGS = [
@@ -318,6 +324,12 @@ export const CHECKOUT_SETTINGS_CONFIG = [
     label: 'Capture order instructions?',
     value: false,
     key: 'one_cc_capture_order_instructions',
+  },
+  {
+    label: 'Hide COD payment when disabled',
+    value: false,
+    key: 'one_cc_hide_cod_when_disabled',
+    description: `When Cash on Delivery (COD) payment method is disabled by default for some pincodes or due to RTO risk or prepaid coupon codes, it won't appear as a payment method during checkout.`,
   },
 ];
 

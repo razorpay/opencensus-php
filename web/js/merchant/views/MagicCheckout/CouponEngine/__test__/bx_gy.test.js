@@ -19,6 +19,9 @@ test('should render buyx_gety coupon correctly', async () => {
   });
 
   expect(screen.getByText('Buy X Get Y')).toBeInTheDocument();
+  expect(
+    screen.getByText('Enable this coupon code only for Prepaid Payment methods'),
+  ).toBeInTheDocument();
   expect(screen.getByText('Coupon Code')).toBeInTheDocument();
   expect(screen.getByText('Coupon description')).toBeInTheDocument();
   const couponWidgets = [

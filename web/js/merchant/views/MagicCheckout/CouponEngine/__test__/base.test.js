@@ -1,9 +1,11 @@
-// removing this file from tests, because this flow have been removed
 // ui imports
 import CouponEngineTab from 'merchant/views/MagicCheckout/CouponEngine/index';
 
 // test utils
 import { render, screen, waitFor, userEvent } from 'test-utils';
+
+// function imports
+import { listCoupons } from 'merchant/views/MagicCheckout/CouponEngine/api';
 
 global.rzpQ = {
   productOnboarding: () => ({
@@ -26,12 +28,24 @@ jest.mock(
   },
 );
 
+jest.mock('merchant/views/MagicCheckout/CouponEngine/api', () => ({
+  ...jest.requireActual('merchant/views/MagicCheckout/CouponEngine/api'),
+  listCoupons: jest.fn(),
+}));
+
+listCoupons.mockReturnValue({
+  data: {
+    coupons: [],
+  },
+});
+
 const variantOn = { variables: { result: 'on' } };
 
 jest.mock('common/splitz', () => ({
   useSplitzService: () => ({
     abExperiments: {
       magic_shopify_coupon_sync: variantOn,
+      magic_hide_cod_when_disabled: variantOn,
     },
   }),
   withSplitzService: jest.fn(),

@@ -447,6 +447,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'magic_hide_cod_when_disabled',
+          experimentId: {
+            beta: 'NBmJ2kwae0JDrc',
+            production: 'NBmG3Kn0WUEwC5',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

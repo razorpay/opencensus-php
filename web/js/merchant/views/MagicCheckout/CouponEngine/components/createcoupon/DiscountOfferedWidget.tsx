@@ -40,6 +40,13 @@ const AccordionBody: React.FC = () => {
           discountValue: null,
         },
       }));
+      setWidgetsData((prevState) => ({
+        ...prevState,
+        discountOffered: {
+          ...prevState.discountOffered,
+          discountValue: 0,
+        },
+      }));
     }
   };
 

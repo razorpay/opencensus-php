@@ -19,6 +19,9 @@ test('should render create amount_off_products coupon correctly', async () => {
   });
 
   expect(screen.getByText('Amount discounted on products')).toBeInTheDocument();
+  expect(
+    screen.getByText('Enable this coupon code only for Prepaid Payment methods'),
+  ).toBeInTheDocument();
   expect(screen.getByText('Coupon Code')).toBeInTheDocument();
   expect(screen.getByText('Coupon description')).toBeInTheDocument();
   const couponWidgets = [

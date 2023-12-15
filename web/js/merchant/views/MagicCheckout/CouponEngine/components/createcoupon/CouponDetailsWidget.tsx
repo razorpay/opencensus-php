@@ -92,7 +92,7 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'creat
             {flow !== 'edit' && (
               <CheckboxGroup>
                 <Input.Check
-                  defaultValue={widgetsData.couponDetails.display}
+                  checked={widgetsData.couponDetails.display}
                   type="checkbox"
                   name="display"
                   onChange={(e) => handleInputChange(e, 'display')}
@@ -101,6 +101,17 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'creat
                 <span>Display this coupon at checkout</span>
               </CheckboxGroup>
             )}
+
+            <CheckboxGroup>
+              <Input.Check
+                checked={widgetsData.couponDetails.prepaidMethodsOnly}
+                type="checkbox"
+                name="prepaidMethodsOnly"
+                onChange={(e) => handleInputChange(e, 'prepaidMethodsOnly')}
+                autoRender
+              />
+              <span>Enable this coupon code only for Prepaid Payment methods</span>
+            </CheckboxGroup>
 
             {/* Intentionally commented out, will uncomment in coupon engine v2 */}
             {/* <CheckboxGroup>

@@ -24,6 +24,7 @@ const CheckoutWrapper = ({
     one_cc_capture_billing_address,
     one_cc_capture_gstin,
     one_cc_capture_order_instructions,
+    one_cc_hide_cod_when_disabled,
   } = settings;
 
   useEffect(() => {
@@ -49,6 +50,7 @@ const CheckoutWrapper = ({
     one_cc_capture_billing_address,
     one_cc_capture_gstin,
     one_cc_capture_order_instructions,
+    one_cc_hide_cod_when_disabled,
     setCheckoutSettings,
   ]);
 

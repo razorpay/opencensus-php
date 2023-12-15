@@ -163,6 +163,7 @@ export function createProductDiscountPayload({
       },
     },
     customer_whitelist,
+    disabled_methods: couponDetails.prepaidMethodsOnly ? ['cod'] : null,
   };
 
   return sanitizePayload(couponPayload);

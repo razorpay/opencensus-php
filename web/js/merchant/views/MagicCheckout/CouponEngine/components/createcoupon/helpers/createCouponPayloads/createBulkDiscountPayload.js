@@ -192,6 +192,7 @@ export function createBulkDiscountPayload({
       },
     },
     customer_whitelist,
+    disabled_methods: couponDetails.prepaidMethodsOnly ? ['cod'] : null,
   };
 
   return sanitizePayload(couponPayload);

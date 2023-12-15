@@ -61,6 +61,7 @@ const initialWidgetsData: ModalContextValue['widgetsData'] = {
     description: '',
     display: true,
     autoapply: false,
+    prepaidMethodsOnly: false,
   },
   bulkDiscountDetails: {
     discountSubType: 'fixedAmount',
