@@ -1161,6 +1161,8 @@ class Processor
                                     ];
                                     $input[Payment\Entity::CARD] = $cardInput;
                                     $input[Payment\Entity::API_VAULT] = $card->getVault();   // We are passing API_VALUT key to CPS to send it to router so that it can provide us terminals acc.
+                                    // explicitly adding token_id in token since for global customer we add token instead of token_id
+                                    $input[Payment\Entity::TOKEN] = $token->getId();
                                     $this->trace->info(
                                         TraceCode::DUAL_TOKENISATION_REARCH,
                                         [
@@ -4724,7 +4726,7 @@ class Processor
             $input[Payment\Entity::METHOD] = Payment\Method::CARD;
         }
     }
-    
+
     /**
      * This function will check if merchant has remove_emandate_cooloff feature enabled or not
      * Incase enabled, it will ignore token status check else will validate token
@@ -4736,7 +4738,7 @@ class Processor
     protected function checkForCooloffAndTokenValidateStatus(Token\Entity $token, Merchant\Entity $merchant)
     {
         $removeCooloff = $merchant->isFeatureEnabled(Feature::REMOVE_EMANDATE_COOLOFF);
-        
+
         if($removeCooloff !== true)
         {
             $this->validateEmandateTokenStatus($token, $merchant);
@@ -4757,7 +4759,7 @@ class Processor
 //                    $input[Constants::TOKEN_ENTITY] = $token;
 //                }
     }
-    
+
     /**
      * This function will validate token status and will throw error incase token is blocked temporarily
      * @param Token\Entity $token
