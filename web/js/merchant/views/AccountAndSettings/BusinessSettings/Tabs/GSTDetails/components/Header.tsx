@@ -75,10 +75,7 @@ const Header = ({ openModal, gstList, defaultGSTIn, setAlertStatus }: HeaderProp
           <Heading>GST details</Heading>
         </Box>
       )}
-      <ShowWhen
-        myRole="owner admin"
-        additionalCondition={(usr) => usr.isAllowedEdit('profile') && gstList.length}
-      >
+      <ShowWhen myRole="owner admin" additionalCondition={(usr) => usr.isAllowedEdit('profile')}>
         <Box
           display="flex"
           flexDirection="column"

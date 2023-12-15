@@ -58,15 +58,25 @@ const GSTDetails = ({
     }
   }, []);
 
-  if (user.isUnregisteredBusiness) {
+  if (user.isUnregisteredBusiness || !gstList.length) {
     return (
-      <Alert
-        color="negative"
-        isDismissible={false}
-        isFullWidth={true}
-        title="GSTIN information"
-        description="GST addition is not supported for your business type. You can create a new Razorpay Account as a Non- Individual business type and link GST to it."
-      />
+      <Box
+        backgroundColor="surface.background.level2.lowContrast"
+        margin="auto"
+        padding="spacing.7"
+      >
+        <Alert
+          color="negative"
+          isDismissible={false}
+          isFullWidth={true}
+          title="GSTIN information"
+          description={
+            user.isUnregisteredBusiness
+              ? 'GST addition is not supported for your business type. You can create a new Razorpay Account as a Non- Individual business type and link GST to it.'
+              : 'There is no GSTIN currently linked to your provided PAN number. Either link GSTIN to your PAN or Create a new Razorpay account with a GSTIN linked PAN.'
+          }
+        />
+      </Box>
     );
   }
 

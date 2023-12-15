@@ -21,14 +21,14 @@ describe('GST details component', () => {
   describe('dWeb - registered merchant', () => {
     beforeEach(() => {
       useMobile.mockReturnValue(false);
-      server.use(mockFetchGSTList(), mockFetchGST());
       window.rzp_user = {};
     });
     test('should render content correctly', async () => {
+      server.use(mockFetchGSTList(), mockFetchGST());
       render(<App />, { initialState });
 
-      expect(screen.getByText('GST details')).toBeInTheDocument();
       await waitFor(() => {
+        expect(screen.getByText('GST details')).toBeInTheDocument();
         expect(screen.getByText('GST Number')).toBeInTheDocument();
         expect(screen.getByText('29AAGCR4375J1E4')).toBeInTheDocument();
       });

@@ -95,7 +95,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
   const { isGSTUpdateEnabled } = useGSTUpdateExperiment();
-  const GSTDetailsComponet = isGSTUpdateEnabled ? GSTDetailsV2 : GSTDetails;
+  const GSTDetailsComponent = isGSTUpdateEnabled ? GSTDetailsV2 : GSTDetails;
   const isHideStyle = isGSTUpdateEnabled && location.pathname === ROUTES_INFO.GST_DETAILS;
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   if (!user.isAccountAndSettingsRevampEnabled) {
@@ -199,7 +199,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
                       path={getRefRoute(ROUTES_INFO.GST_DETAILS)}
                       element={
                         <RouteGuard>
-                          <GSTDetailsComponet />
+                          <GSTDetailsComponent />
                         </RouteGuard>
                       }
                     />
