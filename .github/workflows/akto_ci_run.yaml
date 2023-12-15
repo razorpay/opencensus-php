@@ -1,0 +1,21 @@
+name: Akto
+on:
+  push:
+    branches: ["master"]
+  schedule:
+    - cron: "0 17 * * 6"
+
+jobs:
+  akto-ci-run:
+    #    if: always()
+    if: github.ref == 'refs/heads/master'
+    runs-on: [ self-hosted ]
+    steps:
+      - name: Akto CI Integration
+        uses: razorpay/security-action/akto@master
+        with:
+          check_name: 'Build Dashboard'
+          git_token: ${{ secrets.GITHUB_TOKEN }}
+          argo_token: ${{ secrets.ARGO_TOKEN }}
+          harbor_docker_username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          harbor_docker_password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
