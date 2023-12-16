@@ -177,7 +177,7 @@ class UpdateMerchantContext extends Job
                 $isEligibleForFeeBasedGating = $feeBasedGatingResponse[DetailConstant::FEE_BASED_GATING][DetailConstant::IS_ELIGIBLE] ?? false;
             }
 
-            $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY,[
+            $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY, [
                 'isEligibleForFeeBasedGating' => $isEligibleForFeeBasedGating,
                 'activationStatus'            => $newActivationStatus
             ]);
@@ -202,102 +202,9 @@ class UpdateMerchantContext extends Job
             if (($newActivationStatus === Status::ACTIVATED and $splitzResult === Merchant\Constants::SPLITZ_LIVE) or
                 ($newActivationStatus === Status::KYC_QUALIFIED_UNACTIVATED and $splitzResult === Merchant\Constants::SPLITZ_KQU))
             {
-                // save website policy links
-                $websitePolicy = $app['repo']->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
-                    $this->merchantId,
-                    Constant::WEBSITE_POLICY,
-                    MVD\Constants::NUMBER
-                );
-
-                $websitePolicyResult = (empty($websitePolicy) === false) ? $websitePolicy->getMetadata() : [];
-
-
-
-                /* example of websitePolicyResult
-                 [
-                    "refund"              => [
-                        "analysis_result" => [
-                            "links_found"       => [
-                                "https://ilovesarees.com/pages/returns"
-                            ],
-                            "confidence_score"  => 0.5465,
-                            "relevant_details"  => [
-                            ],
-                            "validation_result" => true
-                        ]
-                    ]
-                ]
-                */
-
-                $websitePolicyLinks = [];
-
-                foreach ($websitePolicyResult as $policy => $value)
-                {
-                    if (empty($value['analysis_result']['links_found'][0]) === false and !in_array($policy, ['about_us', 'pricing']))
-                    {
-                        if ($policy === 'refund' and isset($websitePolicyLinks['cancellation']) === false)
-                        {
-                            $websitePolicyLinks['cancellation']['url'] = $value['analysis_result']['links_found'][0];
-                        }
-
-                        $websitePolicyLinks[$policy]['url'] = $value['analysis_result']['links_found'][0];
-                    }
-                }
-
-                $websiteDetail = $app['repo']->merchant_website->getWebsiteDetailsForMerchantId($this->merchantId);
-
-                //if verified policy pages not found , save hosted policy pages in admin_website_details
-                if(empty($websiteDetail) === false)
-                {
-                    $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
-                    /* example of policiesData
-                    [
-                        "terms" => [
-                            "section_status" => 3,
-                            "status"         => "submitted",
-                            "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms" ]
-                    ]
-                    */
-                    foreach ($policiesData as $policyName => $policyDetails)
-                    {
-                        if (isset($policyDetails['section_status']) === true and $policyDetails['section_status'] === 3 and !in_array($policyName, ['about_us', 'pricing']))
-                        {
-                            // Filtered policy with status 3 found
-                            if (isset($policyDetails['published_url']) === true and isset($websitePolicyLinks[$policyName]) === false)
-                            {
-                                if ($policyName === 'refund' and isset($websitePolicyLinks['cancellation']) === false)
-                                {
-                                    $websitePolicyLinks['cancellation'] = [
-                                        'url' => $policyDetails['published_url'],
-                                    ];
-                                }
-                                $websitePolicyLinks[$policyName] = [
-                                    'url' => $policyDetails['published_url'],
-                                ];
-                            }
-                        }
-                    }
-                }
-
-
-                $adminWebsiteDetails = optional($websiteDetail)->getAdminWebsiteDetails() ?? [];
-
-                $additionalData = optional($websiteDetail)->getAdditionalData() ?? [];
-
-                $input = [
-                    Website\Entity::ADDITIONAL_DATA       => array_replace_recursive($additionalData, [
-                        'admin_website_details' => $adminWebsiteDetails
-                    ]),
-                    Website\Entity::ADMIN_WEBSITE_DETAILS => array_replace_recursive($adminWebsiteDetails, [
-                        'website' => [
-                            $merchantDetail->getWebsite() => $websitePolicyLinks
-                        ]
-                    ]),
-                ];
-
-
-                (new Website\Core)->createOrEditWebsiteDetails($merchantDetail, $input);
-
+                // prefill bvs policy urls and hosted policies to admin website details
+                // these urls are used in validateMerchantActivation for activating merchant
+                (new DetailCore())->prefillSystemUrlsInAdminWebisteDetails($merchantDetail);
                 // save category & subcategory
                 $businessDetailsInput = [
                     BusinessDetail\Entity::METADATA => [

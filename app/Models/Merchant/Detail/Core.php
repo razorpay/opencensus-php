@@ -10498,6 +10498,96 @@ class Core extends Base\Core
         }
     }
 
+    public function prefillSystemUrlsInAdminWebisteDetails(MerchantDetail $merchantDetail)
+    {
+        // save website policy links
+        $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+            $merchantDetail->getMerchantId(),
+            Constant::WEBSITE_POLICY,
+            MVD\Constants::NUMBER
+        );
+
+        $websitePolicyResult = (empty($websitePolicy) === false) ? $websitePolicy->getMetadata() : [];
+
+        /* example of websitePolicyResult
+         [
+            "refund"              => [
+                "analysis_result" => [
+                    "links_found"       => [
+                        "https://ilovesarees.com/pages/returns"
+                    ],
+                    "confidence_score"  => 0.5465,
+                    "relevant_details"  => [
+                    ],
+                    "validation_result" => true
+                ]
+            ]
+        ]
+        */
+
+        $websitePolicyLinks = [];
+
+        foreach ($websitePolicyResult as $policy => $value)
+        {
+            if (empty($value['analysis_result']['links_found'][0]) === false and !in_array($policy, ['about_us', 'pricing']))
+            {
+                if ($policy === 'refund' and isset($websitePolicyLinks['cancellation']) === false)
+                {
+                    $websitePolicyLinks['cancellation']['url'] = $value['analysis_result']['links_found'][0];
+                }
+
+                $websitePolicyLinks[$policy]['url'] = $value['analysis_result']['links_found'][0];
+            }
+        }
+
+        $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetail->getMerchantId());
+
+        //if verified policy pages not found , save hosted policy pages in admin_website_details
+        if (empty($websiteDetail) === false)
+        {
+            $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
+            /* example of policiesData
+            [
+                "terms" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms" ]
+            ]
+            */
+            foreach ($policiesData as $policyName => $policyDetails)
+            {
+                if (isset($policyDetails['section_status']) === true and $policyDetails['section_status'] === 3 and !in_array($policyName, ['about_us', 'pricing']))
+                {
+                    // Filtered policy with status 3 found
+                    if (empty($policyDetails['published_url']) === false and isset($websitePolicyLinks[$policyName]) === false)
+                    {
+                        if ($policyName === 'refund' and isset($websitePolicyLinks['cancellation']) === false)
+                        {
+                            $websitePolicyLinks['cancellation']['url'] = $policyDetails['published_url'];
+                        }
+                        $websitePolicyLinks[$policyName]['url'] = $policyDetails['published_url'];
+                    }
+                }
+            }
+        }
+
+        $adminWebsiteDetails = optional($websiteDetail)->getAdminWebsiteDetails() ?? [];
+
+        $additionalData = optional($websiteDetail)->getAdditionalData() ?? [];
+
+        $input = [
+            Website\Entity::ADDITIONAL_DATA       => array_replace_recursive($additionalData, [
+                'admin_website_details' => $adminWebsiteDetails
+            ]),
+            Website\Entity::ADMIN_WEBSITE_DETAILS => array_replace_recursive($adminWebsiteDetails, [
+                'website' => [
+                    $merchantDetail->getWebsite() => $websitePolicyLinks
+                ]
+            ]),
+        ];
+
+        (new Website\Core)->createOrEditWebsiteDetails($merchantDetail, $input);
+    }
     public function fetchMerchantGatingDetails(Merchant\Entity $merchant)
     {
         $app = App::getFacadeRoot();

@@ -1089,14 +1089,19 @@ class Service extends Base\Service
             );
 
             $gracePeriodValue = null;
+            /*
+             * update grace_period to 0 if all urls are verified and found via bvs
+             * update grace_period to 1 if any urls are hosted by razorpay and not found via bvs
+             */
 
-            if((new DetailCore)->isGracePeriodApplicableForMerchantRequiredPolicies($merchantDetails, $websitePolicy) ===true )
+            if(optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED){
+                $gracePeriodValue = 0;
+            }
+            else if((new DetailCore)->isGracePeriodApplicableForMerchantRequiredPolicies($merchantDetails, $websitePolicy) ===true )
             {
                 $gracePeriodValue = 1;
             }
-            else if(optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED){
-                $gracePeriodValue = 0;
-            }
+
             if ($gracePeriodValue !== null)
             {
                 $websiteDetail = $this->core->createOrEditWebsiteDetails($merchantDetails, [Entity::GRACE_PERIOD =>$gracePeriodValue ]);
@@ -2076,61 +2081,10 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        $policyEligibility = $this->getPolicyEligibilityIfValid();
-
-        if ($policyEligibility === Constants::NOT_ELIGIBLE or $policyEligibility === Constants::SYSTEM_APPROVED) {
-
-            $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
-                'merchant_id'               => $this->merchant->getId(),
-                'policy_eligibility_status' => $policyEligibility
-            ]);
-
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
-        }
-
-        if (empty($policyEligibility) === true or $policyEligibility === Constants::POLICY_WIZARD_V2) {
-
-            try {
-                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_get_policy_compliance_details', [], $this->merchant);
-
-                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-                    'route'         => 'merchant_get_policy_compliance_details',
-                    'merchant_id'   => $this->merchant->getId(),
-                    'response'      => $response
-                ]);
-
-                // return PGOS response if data is present
-                if (isset($response['data']) === true) {
-                    return $response['data'];
-                }
-
-                if (isset($response['policy_eligibility']) === Constants::SYSTEM_APPROVED) {
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
-                }
-
-            } catch (\Throwable $e) {
-                throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
-                    'error description' => $e
-                ]);
-            }
-        }
-
-
-        /* if merchant is not eligible for policy wizard v2, then direct to monolith flow
-           this is sent directly in get compliance details api instead of separate call again to eligibility api, since pgos internally checks eligiblity
-           so this avoids extra api call to pgos
-           in the future, entire flow will be v2, so flow of code would never come here
-           {
-             "code": "invalid_argument",
-             "msg": "bad_request: Merchant not eligible for policy wizard v2",
-             "meta": {
-                 "description": "something bad happened",
-                 "field": ""
-             }
-        }
+        /* making api should be the source of truth for admin section details, going forward we will move everything to pgos
         */
 
-        if ($this->isWebsiteSectionsApplicable($merchant, true, false) === false)
+        if ($this->isWebsiteSectionsApplicable($merchant, true, false, true) === false)
         {
             return ["isWebsiteSectionsApplicable" => false,
                     "isGracePeriodApplicable"     => false
@@ -2148,7 +2102,83 @@ class Service extends Base\Service
             ];
         }
 
-        return $this->createResponse($websiteDetail->toArray(), $websiteDetail, $merchantDetails);
+
+        /*transforming ADMIN_WEBSITE_DETAILS based on the priority
+        1-BVS
+        2-Hosted Policies is BVS not found
+        3-admin entered Urls
+
+        fetch business verfication details to fill the admin website details
+        */
+        $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+            $merchant->getId(),
+            Constant::WEBSITE_POLICY,
+            MVD\Constants::NUMBER
+        );
+
+        $websitePolicyResult = (empty($websitePolicy) === false) ? $websitePolicy->getMetadata() : [];
+
+        /* example of websitePolicyResult
+                     [
+                        "refund"              => [
+                            "analysis_result" => [
+                                "links_found"       => [
+                                    "https://ilovesarees.com/pages/returns"
+                                ],
+                                "confidence_score"  => 0.5465,
+                                "relevant_details"  => [
+                                ],
+                                "validation_result" => true
+                            ]
+                        ]
+                    ]
+                    */
+
+        $transformedWebsiteDetail = $websiteDetail->toArray();
+        $websitePolicyLinks = [];
+        foreach ($websitePolicyResult as $policy => $value)
+        {
+            if (empty($value['analysis_result']['links_found'][0]) === false and !in_array($policy, ['about_us', 'pricing']))
+            {
+                if ($policy === 'refund')
+                {
+                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()]['cancellation']['url'] = $value['analysis_result']['links_found'][0];
+                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()]['cancellation']['system_approved'] = true;
+                    $websitePolicyLinks['cancellation'] = true;
+                }
+                $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()][$policy]['url'] = $value['analysis_result']['links_found'][0];
+                $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()][$policy]['system_approved'] = true;
+                $websitePolicyLinks[$policy] = true;
+            }
+        }
+        $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
+        /* example of policiesData
+        [
+            "terms" => [
+                "section_status" => 3,
+                "status"         => "submitted",
+                "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms" ]
+        ]
+        */
+        foreach ($policiesData as $policyName => $policyDetails)
+        {
+            if (isset($policyDetails['section_status']) === true and $policyDetails['section_status'] === 3 and !in_array($policyName, ['about_us', 'pricing']))
+            {
+                // Filtered policy with status 3 found
+                if (empty($policyDetails['published_url']) === false and isset($websitePolicyLinks[$policyName]) === false)
+                {
+                    if ($policyName === 'refund')
+                    {
+                        $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()]['cancellation']['url'] =  $policyDetails['published_url'];
+                        $websitePolicyLinks['cancellation'] = true;
+                    }
+                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()][$policyName]['url'] = $policyDetails['published_url'];
+                    $websitePolicyLinks[$policy] = true;
+                }
+            }
+        }
+
+        return $this->createResponse($transformedWebsiteDetail, $websiteDetail, $merchantDetails);
     }
 
     public function saveAdminWebsiteSection($merchantId, array $input)
