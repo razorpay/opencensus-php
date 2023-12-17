@@ -110,12 +110,12 @@ class Canara extends Base
 
             if (isset($data['refunds']) === true)
             {
-                $fileInfo[] = $this->getFileData(FileStore\Type::CANARA_NETBANKING_REFUND);
+                $fileInfo[] = $this->getFileDataForSftp(FileStore\Type::CANARA_NETBANKING_REFUND);
             }
 
             if (isset($data['claims']) === true)
             {
-                $fileInfo[] = $this->getFileData(FileStore\Type::CANARA_NETBANKING_CLAIMS);
+                $fileInfo[] = $this->getFileDataForSftp(FileStore\Type::CANARA_NETBANKING_CLAIMS);
             }
 
             $bucketConfig = $this->getBucketConfig();
@@ -167,5 +167,15 @@ class Canara extends Base
                 ],
                 $e);
         }
+    }
+
+    protected function getFileDataForSftp(string $type)
+    {
+        $file = $this->gatewayFile
+            ->files()
+            ->where(FileStore\Entity::TYPE, $type)
+            ->first();
+
+        return $file->getLocation();
     }
 }
