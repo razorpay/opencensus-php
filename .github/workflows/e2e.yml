@@ -114,7 +114,7 @@ jobs:
             APP_NAME=${{env.APP_NAME}}
 
       - name: Wait for tests to succeed
-        uses: lewagon/wait-on-check-action@v1.2.0
+        uses: lewagon/wait-on-check-action@v1.3.1
         with:
           ref: ${{ env.COMMIT_ID }}
           check-name: "Build Dashboard"

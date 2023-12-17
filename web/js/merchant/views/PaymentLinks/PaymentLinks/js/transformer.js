@@ -32,11 +32,11 @@ export function transformCreatePLPayload_OldToNew(data) {
     reqPayload.notify = {};
 
     if (reqPayload.hasOwnProperty('email_notify')) {
-      reqPayload.notify.email = reqPayload.email_notify === '1' ? true : false;
+      reqPayload.notify.email = reqPayload.email_notify === '1';
     }
 
     if (reqPayload.hasOwnProperty('sms_notify')) {
-      reqPayload.notify.sms = reqPayload.sms_notify === '1' ? true : false;
+      reqPayload.notify.sms = reqPayload.sms_notify === '1';
     }
   }
 
@@ -75,8 +75,11 @@ export function transformPLDetails_NewToOld(data) {
   delete resPayload.customer;
 
   // 3.
-  resPayload.email_notify = resPayload.email ? '1' : '0';
-  resPayload.sms_notify = resPayload.sms ? '1' : '0';
+  const { notify: { email, sms, whatsapp } = {} } = data;
+
+  resPayload.email_notify = email ? '1' : '0';
+  resPayload.sms_notify = sms ? '1' : '0';
+  resPayload.whatsapp_notify = whatsapp ? '1' : '0';
 
   delete resPayload.notify;
 
@@ -93,9 +96,7 @@ export function transformPLDetails_NewToOld(data) {
   resPayload.first_payment_min_amount = resPayload.first_min_partial_amount;
 
   // 8.
-  resPayload.reminder_status = resPayload.reminders
-    ? resPayload.reminders.status
-    : null;
+  resPayload.reminder_status = resPayload.reminders ? resPayload.reminders.status : null;
 
   // Other keys are not needed to be changed and extra keys need not to be deleted, as they won't beused further
 

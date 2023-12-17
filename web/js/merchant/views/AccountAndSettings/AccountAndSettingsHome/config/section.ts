@@ -419,10 +419,11 @@ export const Sections: SectionCardInterface[] = [
         id: PaymentRefundsFields.WHATSAPP_ACCOUNT_SETUP,
         title: PaymentRefundsTitles[PaymentRefundsFields.WHATSAPP_ACCOUNT_SETUP],
         href: ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP,
+        isNew: true,
         additionalCondition:
           ({ extraConfig }) =>
           (user: User): boolean =>
-            isWhatsAppAccountSetupEnabled(user, extraConfig),
+            isWhatsAppAccountSetupEnabled(user, extraConfig, true),
       },
     ],
   },

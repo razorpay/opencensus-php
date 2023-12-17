@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
-
+import { capitalizeFirstLetter } from 'common/utils/rzp-utils';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Amount from 'common/ui/Amount';
@@ -29,6 +29,22 @@ import {
   trackTogglePartialPayment,
   trackClickDuplicatePaymentLink,
 } from 'merchant/views/PaymentLinks/PaymentLinks/ga';
+
+const NotifyListing = ({ notify = {} }) => {
+  const Mediums = ['sms', 'email', 'whatsapp'];
+  const notifyListing = Mediums.filter((each) => notify[`${each}_notify`] === '1').map(
+    capitalizeFirstLetter,
+  );
+  return notifyListing.length > 0 ? (
+    <ul className="notify-listing">
+      {notifyListing.map((each, idx) => (
+        <li key={idx}>{each}</li>
+      ))}
+    </ul>
+  ) : (
+    '--'
+  );
+};
 
 export default (props) => {
   const {
@@ -243,6 +259,10 @@ export default (props) => {
                       }}
                     />
                   )}
+                />
+                <EntityDetailRow
+                  label="Notify At"
+                  value={() => <NotifyListing notify={paymentlink} />}
                 />
                 <EntityDetailRow label="Customer Details">
                   <CustomerDetails

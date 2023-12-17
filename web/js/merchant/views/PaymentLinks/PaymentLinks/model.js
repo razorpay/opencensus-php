@@ -191,6 +191,12 @@ export function createPaymentLinkV2(payload) {
 
   delete reqPayload.sms_notify;
 
+  if (reqPayload.whatsapp_notify) {
+    notify.whatsapp = reqPayload.whatsapp_notify === '1';
+  }
+
+  delete reqPayload.whatsapp_notify;
+
   if (Object.keys(notify).length) {
     reqPayload.notify = notify;
   }

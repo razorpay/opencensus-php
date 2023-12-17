@@ -1,4 +1,6 @@
 import React from 'react';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
 import { withI18Service } from 'common/i18';
 import Input from 'common/new-ui/Input';
 import DocsLink from 'merchant/components/DocsLink';
@@ -10,6 +12,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { withSplitzService } from 'common/splitz';
 import { whatsappAccountSetupAnalyticsTrack } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/utils';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 class Notify extends React.Component {
   handleEmailNotify = (event) => {
@@ -33,18 +36,26 @@ class Notify extends React.Component {
   };
 
   handleNotifyClick = () => {
-    this.props.history.push(ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP);
+    const { user, showNotification } = this.props;
+    if (user.isOwner) {
+      this.props.history.push(ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP);
+    } else {
+      showNotification({
+        type: 'error',
+        message: 'Can be updated from Owner account only',
+      });
+    }
   };
 
   render() {
     const { props } = this;
-    const { user, applications, splitz } = props;
-    const { isApplicationsLoading, isNotificationShow, title, CtaText, businessProviderName } =
+    const { user, splitz } = props;
+    const { isNotificationShow, title, CtaText, businessProviderName } =
       getWhatsPLNotificationStatus({
         user,
-        applications,
         splitz,
       });
+
     return (
       <>
         <Input.Group
@@ -80,7 +91,7 @@ class Notify extends React.Component {
             />
           </ShowWhen>
         </Input.Group>
-        {!isApplicationsLoading && isNotificationShow ? (
+        {isNotificationShow ? (
           <Alert
             title={title}
             marginTop="spacing.4"
@@ -108,4 +119,12 @@ class Notify extends React.Component {
     );
   }
 }
-export default withSplitzService(withRouter(withI18Service(Notify)));
+
+export default compose(
+  withSplitzService,
+  withRouter,
+  withI18Service,
+  connect((state) => ({ user: state.session.user }), {
+    showNotification,
+  }),
+)(Notify);

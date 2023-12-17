@@ -134,11 +134,14 @@ export const shouldShowTeamInvitations = (user: User): boolean =>
 
 export const isWhatsAppAccountSetupEnabled = (
   user: User,
-  splitz: Pick<SpiltzContextState, 'abExperiments'>,
+  { abExperiments }: Pick<SpiltzContextState, 'abExperiments'> = { abExperiments: {} },
+  roleCheckEnable?: boolean,
 ): boolean => {
-  const { abExperiments } = splitz || {};
-
-  if (!abExperiments?.whatsAppPLEnabled) return false;
-
+  if (!abExperiments?.whatsAppPLEnabled) {
+    return false;
+  }
+  if (roleCheckEnable) {
+    return isExperimentEnabled(abExperiments.whatsAppPLEnabled) && user.isOrgRZP && user.isOwner;
+  }
   return isExperimentEnabled(abExperiments.whatsAppPLEnabled) && user.isOrgRZP;
 };

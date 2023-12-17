@@ -19,7 +19,7 @@ jobs:
     steps:
       # Wait for build to finish
       - name: Wait for tests to succeed
-        uses: lewagon/wait-on-check-action@v1.2.0
+        uses: lewagon/wait-on-check-action@v1.3.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           check-name: 'Build Dashboard'

@@ -32,7 +32,6 @@ import {
   showNoExpiryPL,
   showDynamicFields,
 } from 'merchant/views/PaymentLinks/utils';
-import { fetchOauthConnectedApplications } from 'merchant/reducers/applications';
 
 import { CUSTOM_FIELDS } from './constants';
 import PaymentLinkTypeSelector from './components/PaymentLinkTypeSelector';
@@ -40,6 +39,7 @@ import BaseForm from './Forms/BaseForm';
 import StandardForm from './Forms/StandardForm';
 import UPIForm from './Forms/UPIForm';
 import track from './track';
+import { getWhatsPLNotificationStatus } from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/Utils/whatsAppUtils';
 
 const PAYMENT_LINKS_TYPES = {
   BASE: 'base',
@@ -66,7 +66,6 @@ export const CONTACT_PLACEHOLDER = {
     reminders: state.reminders,
     isMobileResolution: state.app.isMobileResolution,
     paymentLinkRemindersConfig: state.reminders.product_configs.payment_link,
-    applications: state.applications,
   }),
   {
     luminateRow,
@@ -77,7 +76,6 @@ export const CONTACT_PLACEHOLDER = {
     updateUserFeatures,
     fetchReminders,
     fetchRemindersMerchantConfigs,
-    fetchOauthConnectedApplications,
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentLinkCreateV2'))
@@ -147,7 +145,6 @@ class PaymentLinkCreateV2 extends React.Component {
   }
 
   componentDidMount() {
-    fetchOauthConnectedApplications();
     this.prepareDataForPaymentLinkCreation()
       .then(() => {
         this.setState({ isLoading: false }, () => {
@@ -278,6 +275,13 @@ class PaymentLinkCreateV2 extends React.Component {
       isFormLocked: true,
     });
 
+    const { user, splitz } = this.props;
+
+    const { isNotificationEnabled } = getWhatsPLNotificationStatus({
+      user,
+      splitz,
+    });
+
     let notificationMSG = 'Payment link created successfully.';
     const notifyMedium = [];
 
@@ -287,6 +291,11 @@ class PaymentLinkCreateV2 extends React.Component {
 
     if (reqPayload.email_notify) {
       notifyMedium.push('Email');
+    }
+
+    if (isNotificationEnabled) {
+      reqPayload.whatsapp_notify = '1';
+      notifyMedium.push('WhatsApp');
     }
 
     if (notifyMedium.length > 0) {
@@ -460,7 +469,6 @@ class PaymentLinkCreateV2 extends React.Component {
     const { linkType, dynamicFields } = state;
     const {
       user,
-      applications,
       i18: { isConfigTagEnabled },
     } = props;
     const { merchant } = user;
@@ -503,8 +511,6 @@ class PaymentLinkCreateV2 extends React.Component {
             history={props.history}
             contactPlaceholder={CONTACT_PLACEHOLDER[merchant.country_code]}
             dynamicFields={dynamicFields}
-            user={user}
-            applications={applications}
           />
         )}
       </div>

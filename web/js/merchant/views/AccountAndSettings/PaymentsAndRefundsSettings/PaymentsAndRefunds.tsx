@@ -129,7 +129,7 @@ const PaymentsAndRefundsSettings = ({
           <NavLink to={ROUTES_INFO.TRANSACTION_LIMITS}>Transaction limits</NavLink>
           <ShowWhen
             additionalCondition={(user, { splitz }): boolean =>
-              isWhatsAppAccountSetupEnabled(user, splitz)
+              isWhatsAppAccountSetupEnabled(user, splitz, true)
             }
           >
             <NavLink to={ROUTES_INFO.WHATSAPP_ACCOUNT_SETUP}>Whatsapp Account Setup</NavLink>
@@ -196,7 +196,7 @@ const PaymentsAndRefundsSettings = ({
                       element={
                         <RouteGuard
                           additionalCondition={(user, { splitz }): boolean =>
-                            isWhatsAppAccountSetupEnabled(user, splitz)
+                            isWhatsAppAccountSetupEnabled(user, splitz, true)
                           }
                         >
                           <WhatsAppSetup />
