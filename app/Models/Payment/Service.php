@@ -2348,6 +2348,7 @@ class Service extends Base\Service
             Entity::MERCHANT_ID => $paymentMerchantId,
             Entity::TERMINAL_ID => $payment->getTerminalId(),
             Entity::UPDATED_AT => $payment->getUpdatedAt(),
+            Entity::INTERNAL_ERROR_CODE => $payment->getInternalErrorCode(),
         ]);
 
         if ($entity['order_id'] != null)
@@ -2356,7 +2357,14 @@ class Service extends Base\Service
                 ->order
                 ->findByPublicId($entity['order_id']);
 
-            $entity['order'] = $order->toArrayPublic();
+            $orderEntity = $order->toArrayPublic();
+
+            $orderEntity = array_merge($orderEntity,[
+                Order\Entity::ACCOUNT_NUMBER => $order->getAccountNumber(),
+                Order\Entity::BANK => $order->getBank(),
+            ]);
+
+            $entity['order'] = $orderEntity;
         }
 
         return $entity;
