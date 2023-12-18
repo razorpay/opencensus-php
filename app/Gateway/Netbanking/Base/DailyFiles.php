@@ -10,6 +10,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Constants\MailTags;
 use RZP\Models\Payment\Refund;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Trace\TraceCode;
 
 class DailyFiles
 {
@@ -63,6 +64,10 @@ class DailyFiles
 
     protected function getRefundsData($from, $to)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'DailyFiles->getRefundsData'
+        ]);
+
         $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
                                             Payment\Entity::BANK, $this->bankCode, $from, $to, $this->gateway);
 

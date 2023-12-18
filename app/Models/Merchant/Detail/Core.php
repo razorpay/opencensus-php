@@ -9558,6 +9558,9 @@ class Core extends Base\Core
         {
             $response['transactions'] = $this->repo->payment->fetch($input, $merchantId)->toArrayPublic()['items'];
         }
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'Core/getMerchantInfo',
+        ]);
 
         $response['refunds'] = $this->repo->refund->fetch($input, $merchantId)->toArrayPublic()['items'];
 

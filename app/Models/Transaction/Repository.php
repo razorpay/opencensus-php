@@ -1004,6 +1004,9 @@ class Repository extends Base\Repository
      */
     public function getCancelledBilldeskPaymentRefundTransactions(int $limit = 200)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'getCancelledBilldeskPaymentRefundTransactions',
+        ]);
         $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
         $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
 
@@ -1319,6 +1322,10 @@ class Repository extends Base\Repository
         }
         else
         {
+            $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                'method'       => 'getQueryClausesForUnreconSummaryByGateway',
+            ]);
+
             $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
 
             $settledByColumn = $this->repo->refund->dbColumn(Payment\Entity::SETTLED_BY);
@@ -1564,6 +1571,10 @@ class Repository extends Base\Repository
         //
         if ($entityName === ConstantEntity::REFUND)
         {
+            $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                'method'       => 'getSelectParamsQueryForReconSummary',
+            ]);
+
             $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
         }
 
@@ -1624,6 +1635,9 @@ class Repository extends Base\Repository
         //
         if ($entityName === ConstantEntity::REFUND)
         {
+            $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                'method'       => 'getMinimumSelectParamsQueryForUnreconSummary',
+            ]);
                 $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
         }
 
@@ -1721,6 +1735,10 @@ class Repository extends Base\Repository
 
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchUnreconciledEntitiesBetweenDates',
+        ]);
+
         $refundParams = $this->repo->refund->getAliasesForRefundsDbColumns($refundParams);
 
         $paymentParams = $this->repo->payment->getAliasesForPaymentsDbColumns($paymentParams);
@@ -1736,6 +1754,10 @@ class Repository extends Base\Repository
             if (empty($refundParams) === false)
             {
                 $entityName = ConstantEntity::REFUND;
+
+                $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                    'method'       => 'fetchUnreconciledEntitiesBetweenDates',
+                ]);
 
                 $this->addRefundJoinForReconSummary($query);
 
@@ -1794,6 +1816,10 @@ class Repository extends Base\Repository
         (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
 
         $transactionsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
+
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'getSelectQueryForUnreconciledEntites',
+        ]);
 
         $refundProcessedAtColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
 
@@ -1854,6 +1880,10 @@ class Repository extends Base\Repository
         }
         else
         {
+            $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                'method'       => 'getQueryClausesForUnreconciledEntities',
+            ]);
+
             $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
         }
 
@@ -1890,6 +1920,10 @@ class Repository extends Base\Repository
         }
         else
         {
+            $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                'method'       => 'getQueryClausesForReconSummary',
+            ]);
+
             $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
 
             $settledByColumn = $this->repo->refund->dbColumn(Payment\Entity::SETTLED_BY);
@@ -1905,6 +1939,11 @@ class Repository extends Base\Repository
 
     protected function addRefundJoinForReconSummary($query)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'addRefundJoinForReconSummary',
+        ]);
+
+
         $refundId = $this->repo->refund->dbColumn(Refund\Entity::ID);
 
         $refundStatus = $this->repo->refund->dbColumn(Refund\Entity::STATUS);

@@ -623,6 +623,10 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         try
         {
+            $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                'method'       => 'getApiRefundEntityFromRow',
+            ]);
+
             $this->refund = $this->repo->refund->findOrFail($refundId);
         }
         catch (\Exception $ex)

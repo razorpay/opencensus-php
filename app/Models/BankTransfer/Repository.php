@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant\Balance;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -47,6 +48,10 @@ class Repository extends Base\Repository
 
     protected function addQueryParamRefundId($query, $params)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'BankTransfer/Repository/addQueryParamRefundId'
+        ]);
+
         $paymentId   = $this->dbColumn(Entity::PAYMENT_ID);
 
         $refundPayId = $this->repo->refund->dbColumn(Refund\Entity::PAYMENT_ID);

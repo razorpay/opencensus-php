@@ -1829,6 +1829,10 @@ class Core extends Base\Core
 
         $refundsService = new Refund\Service();
 
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'Account/Core/fetchPaymentsByCustomerContact'
+        ]);
+
         foreach ($payments as $payment)
         {
             $paymentsDetails['payments'][] = $this->formatPaymentDetailsForSupportPage(

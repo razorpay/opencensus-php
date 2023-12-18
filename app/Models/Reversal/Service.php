@@ -66,6 +66,10 @@ class Service extends Base\Service
 
         $input['expand'] = ['reversal'];
 
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchLinkedAccountReversals',
+        ]);
+
         $refunds = $this->repo->refund->fetch($input, $merchantId);
 
         $refunds = $this->createReversalsResponse($refunds);

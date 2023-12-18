@@ -679,6 +679,10 @@ class Service extends Base\Service
     {
         Entity::stripSignWithoutValidation($refundId);
 
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'Refund/Service/fetchEntityOrNull',
+        ]);
+
         $refund = $this->repo->refund->find($refundId);
 
         if (empty($refund) === true)
@@ -2913,6 +2917,10 @@ class Service extends Base\Service
         }
         else
         {
+            $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                'method'       => 'Refund/Service/fetchRefundDetailsForCustomerFromMerchantNotes',
+            ]);
+
             $refund = $this->repo->refund->fetch([Entity::NOTES => $id]);
 
             if (empty($refund->toArray()) === false)
@@ -3071,6 +3079,10 @@ class Service extends Base\Service
     protected function getRefundFromRefundIdForCustomerDetails($refundId)
     {
         Entity::stripSignWithoutValidation($refundId);
+
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'Refund/Service/getRefundFromRefundIdForCustomerDetails',
+        ]);
 
         $refund = $this->repo->refund->find($refundId);
 
@@ -3500,6 +3512,10 @@ class Service extends Base\Service
             $refundId = $refundArray[Entity::ID];
 
             Entity::verifyIdAndStripSign($refundId);
+
+            $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                'method'       => 'Refund/Service/addParamsForDashboard',
+            ]);
 
             $refund = $this->repo->refund->find($refundId);
 

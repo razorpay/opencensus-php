@@ -2036,6 +2036,9 @@ class Core extends Base\Core
             }
             else
             {
+                $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                    'method'       => 'createTransferReversalTransactions',
+                ]);
                 $customerRefund = $this->repo->refund->findOrFail($customerRefundId);
             }
 
@@ -2128,6 +2131,9 @@ class Core extends Base\Core
                 }
                 else
                 {
+                    $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+                        'method'       => 'createTransferReversalTransactionsInReverseShadow',
+                    ]);
                     $refund = $this->repo->refund->findOrFail($refundId);
                 }
 

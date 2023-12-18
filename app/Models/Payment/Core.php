@@ -60,6 +60,10 @@ class Core extends Base\Core
 
     public function retrieveRefundById($refundId)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'retrieveRefundById',
+        ]);
+
         return $this->repo->refund->findOrFail($refundId);
     }
 

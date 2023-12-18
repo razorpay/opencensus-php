@@ -455,7 +455,7 @@ class CrossBorderCommonUseCases extends Job
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if(($merchant->isOpgspImportSettlementEnabled() === false) and 
+        if(($merchant->isOpgspImportSettlementEnabled() === false) and
            ($merchant->isJpmcImportFlowEnabled() === false))
         {
             $this->trace->info(TraceCode::IMPORT_FLOW_MISSING_RISK_VALIDATION, [

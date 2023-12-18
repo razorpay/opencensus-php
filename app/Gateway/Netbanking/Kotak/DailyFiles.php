@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Kotak;
 
 use RZP\Models\Payment;
 use RZP\Gateway\Netbanking\Base;
+use RZP\Trace\TraceCode;
 
 class DailyFiles extends Base\DailyFiles
 {
@@ -58,6 +59,10 @@ class DailyFiles extends Base\DailyFiles
 
     public function getRefundsDataForTpv($from, $to, $tpvEnabled = false)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'Kotak/DailyFiles/getEntitiesToReconcile'
+        ]);
+
         $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
                                             Payment\Entity::BANK,
                                             $this->bankCode,

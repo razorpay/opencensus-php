@@ -437,6 +437,7 @@ class Entity extends Base\PublicEntity
 
         if ($this->getSourceType() === Type::REFUND)
         {
+
             $refund = (new Refund\Repository())->findOrFail($this->getSourceId());
 
             $this->source()->associate($refund);

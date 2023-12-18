@@ -339,6 +339,11 @@ class Repository extends Base\Repository
 
     public function findByPublicIdFromAPI(string $publicRefundId)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'findByPublicIdFromAPI',
+            'route' => $this->route
+        ]);
+
         $id = Refund\Entity::verifyIdAndStripSign($publicRefundId);
 
         return $this->newQuery()
@@ -1140,6 +1145,10 @@ class Repository extends Base\Repository
 
     public function fetchDebitEmiRefundsWithRelationsBetween($from, $to, $bank, $gateway)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchDebitEmiRefundsWithRelationsBetween'
+        ]);
+
         $tRepo = $this->repo->terminal;
 
         $paymentRepo = $this->repo->payment;

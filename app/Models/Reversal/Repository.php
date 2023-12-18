@@ -19,6 +19,7 @@ use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Transaction\Entity as TxnEntity;
 use RZP\Models\Transfer\Entity as TransferEntity;
 use RZP\Models\FundAccount\Validation\Entity as FavEntity;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -44,6 +45,10 @@ class Repository extends Base\Repository
      */
     public function fetchLaReversalsOfTransfer(string $transferId, string $merchantId)
     {
+        $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
+            'method'       => 'fetchLaReversalsOfTransfer',
+        ]);
+
         $reversalColumns = $this->dbColumn('*');
 
         $reversalId = $this->repo->refund->dbColumn(Refund\Entity::REVERSAL_ID);
