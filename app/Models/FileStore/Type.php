@@ -335,6 +335,8 @@ class Type
 
     const PAYOUT_ATTACHMENTS = 'payout_attachments';
 
+    const JPMC_DECRYPTED_FILES = 'jpmc_decrypted_files';
+
     /**
      * Map of types allowed for each entity.
      */

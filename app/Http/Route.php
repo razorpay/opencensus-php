@@ -2690,6 +2690,7 @@ class Route
         'process_settlement_repatriation'          => ['post',      'settlements/nium/repat',               'LambdaController@processLambdaSettlementRepatriation'                  ],
 
         'process_opgsp_settlement_repatriation'          => ['post', 'settlements/opgsp/repat',       'LambdaController@processLambdaOpgspSettlementRepatriation'                  ],
+        'process_jpmc_settlement_repatriation'          => ['post', 'settlements/jpmc/repat',       'LambdaController@processLambdaJpmcSettlementRepatriation'                  ],
 
         //cyber-helpdesk admin route
         'cyber_helpdesk_admin_upload_document' => [
@@ -5730,6 +5731,7 @@ class Route
         'automate_merchant_master_firs',
         'process_settlement_repatriation',
         'process_opgsp_settlement_repatriation',
+        'process_jpmc_settlement_repatriation',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
         'refund_processed_at_backfill',
@@ -16441,6 +16443,7 @@ class Route
             'automate_merchant_master_firs',
             'process_settlement_repatriation',
             'process_opgsp_settlement_repatriation',
+            'process_jpmc_settlement_repatriation',
         ],
 
         'merchants-risk' => [

@@ -1907,4 +1907,12 @@ return [
     'razorassist' => [
         'secret'    => env('APP_RAZORASSIST_SECRET')
     ],
+
+    'jpmc' => [
+        'jpmc_pub_key'         => env('OPGSP_JPMC_PUB_KEY'),
+        'jpmc_priv_key'        => env('OPGSP_JPMC_PRIV_KEY'),
+        'razorpay_pub_key'     => env('OPGSP_JPMC_RZP_PUB_KEY'),
+        'razorpay_priv_key'    => env('OPGSP_JPMC_RZP_PRIV_KEY'),
+        'razorpay_passphrase'  => env('OPGSP_JPMC_RZP_PASSPHRASE'),
+    ],
 ];

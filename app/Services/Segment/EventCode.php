@@ -139,4 +139,6 @@ class EventCode
 
     //Lead Score Calculation
     const LEAD_SCORE_CALCULATED = "Lead Score Calculated";
+
+    const JPMC_IMPORT_FLOW_RECON_FILE_RECEIVED = 'JPMC_IMPORT_FLOW_RECON.FILE_RECEIVED';
 }

@@ -10835,6 +10835,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW                 = 'INVALID_INVOICE_FOR_JPMC_IMPORT_FLOW';
     const JPMC_TRANSACTION_META                                = 'JPMC_TRANSACTION_META';
     const JPMC_TRANSACTION_META_DETAILS_MISSING                = 'JPMC_TRANSACTION_META_DETAILS_MISSING';
+    const JPMC_REPATRIATION_LAMBDA_REQUEST                     = 'JPMC_REPATRIATION_LAMBDA_REQUEST';
+    const JPMC_REPATRIATION_INVALID_FILE                       = 'JPMC_REPATRIATION_INVALID_FILE';
+    const JPMC_REPATRIATION_INVALID_DETAILS                    = 'JPMC_REPATRIATION_INVALID_DETAILS';
+    const JPMC_REPATRIATION_FAILED                             = 'JPMC_REPATRIATION_FAILED';
+    const JPMC_REPATRIATION_SUCCESS                            = 'JPMC_REPATRIATION_SUCCESS';
+    const JPMC_REPATRIATION_INVALID_AMOUNT                     = 'JPMC_REPATRIATION_INVALID_AMOUNT';
+    const JPMC_REPATRIATION_DIFFERENT_FILE                     = 'JPMC_REPATRIATION_DIFFERENT_FILE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

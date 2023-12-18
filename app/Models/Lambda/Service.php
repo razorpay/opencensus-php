@@ -10,6 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorDescription;
 use RZP\Excel\Import as ExcelImport;
 use RZP\Exception;
+use RZP\Error;
 use RZP\Exception\ServerErrorException;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Mail\Base\Constants;
@@ -25,10 +26,13 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Services\UfhService;
 use RZP\Models\Merchant\Document;
+use RZP\Encryption\PGPEncryption;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Reconciliator\FileProcessor;
 use Symfony\Component\HttpFoundation;
 use RZP\Models\Merchant\Document\Entity;
+use RZP\Models\Merchant\Account as MerchantAccount;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Settlement\InternationalRepatriation\Entity as RepatEntity;
 use RZP\Models\Settlement\InternationalRepatriation\Service as RepatService;
@@ -78,6 +82,12 @@ class Service extends Base\Service
     const FIRSTDATA_SUMMARY_FIRS_TYPE   = 'Sum';
     const FIRS_FIRSTDATA_FILE           = 'firs_firstdata_file';
     const FIRS_FIRSTDATA_SUMMARY_FILE   = 'firs_firstdata_sum_file';
+
+    const JPMC                      = "jpmc";
+    const VALID_JPMC_REPAT_FILE     = "RAZORPAYIN.POSTGTP.EXCEL";
+    const VALID_JPMC_REVERSE_FILES  = array("RAZORPAYIN.DISCREPANCY.EXCEL", "RAZORPAYIN.GTP.EXCEL", "RAZORPAYIN.MLR.EXCEL", "RAZORPAYIN.RETURNMIS.EXCEL", "RAZORPAYIN.VIOLATIONREP.EXCEL");
+    const JPMC_DECRYPTED_FILES      = 'jpmc_decrypted_files';
+
 
     protected static $headers = [
         'MID',
@@ -913,6 +923,249 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    // for JPMC repatriation
+    // files sent by JPMC are encrypted
+    // JPMC can send multiple files
+    // 
+    public function processLambdaJpmcSettlementRepatriation(array $input)
+    {
+        RuntimeManager::setMaxExecTime(7200);
+
+        try
+        {
+            $this->trace->info(TraceCode::JPMC_REPATRIATION_LAMBDA_REQUEST, [
+                'input' => $input
+            ]);
+
+            // set the mode
+            if (isset($this->app['rzp.mode']) === false)
+            {
+                $this->app['rzp.mode'] = 'live';
+            }
+
+            list($file, $locationType) = $this->getFileDetails($input, 'jpmc_import_flow_repatriation', true);
+            $fileDetails = $this->fileProcessor->getFileDetails($file, $locationType, false);
+            $fileName = $file->getFilename();
+
+            $this->trace->info(TraceCode::JPMC_REPATRIATION_LAMBDA_REQUEST, [
+                'file_details'  => $fileDetails,
+                'file_name'     => $fileName,
+            ]);
+
+            if ($this->checkValidFile($fileName, self::VALID_JPMC_REVERSE_FILES) === true)
+            {
+                // jpmc can send different types of files
+                // log them
+                $this->trace->info(TraceCode::JPMC_REPATRIATION_DIFFERENT_FILE, [
+                    'message'       => 'JPMC sent different reverse file',
+                    'input'         => $input,
+                    'file_details'  => $fileDetails,
+                    'file_name'     => $fileName,
+                ]);
+
+                $this->getDecryptedFile($fileDetails);
+
+                $this->uploadAndNotifyFileForJpmc($fileDetails, $input, $fileName);
+
+                return ['success' => true, 'file_name' => $fileName, 'message' => 'JPMC sent different reverse file'];
+            }
+
+            if (($input['partner'] === self::JPMC) && 
+                ($this->checkValidFile($fileName, self::VALID_JPMC_REPAT_FILE) === true))
+            {
+                $this->getDecryptedFile($fileDetails);
+
+                $excelReader = (new ExcelImport(1))->toArray($fileDetails['file_path']);
+
+                if (count($excelReader) < 1)
+                {
+                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_FILE, [
+                        'message'       => 'empty file found',
+                        'input'         => $input,
+                        'file_details'  => $fileDetails,
+                        'file_name'     => $fileName,
+                    ]);
+                    return ['success' => false, 'message' => 'empty file found'];
+                }
+
+                $transactionLevelDetails = $excelReader[0];
+
+                if (count($transactionLevelDetails) === 0)
+                {
+                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_FILE, [
+                        'message'       => 'repatriation sheet does not have appropriate number of entries',
+                        'input'         => $input,
+                        'file_details'  => $fileDetails,
+                        'file_name'     => $fileName,
+                    ]);
+                    return ['success' => false, 'message' => 'repatriation sheet does not have appropriate number of entries'];
+                }
+
+                $totalSettlementAmount = 0;
+                $totalINRAmount = 0;
+                $totalForexAmount = 0;
+
+                // get the settlement id since file is per settlement
+                $orderNum = $transactionLevelDetails['0']['order_no'] ?? '';
+
+                if (empty($orderNum) === true)
+                {
+                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_DETAILS, [
+                        'message'       => 'repatriation sheet missing order number',
+                        'input'         => $input,
+                        'file_details'  => $fileDetails,
+                        'file_name'     => $fileName,
+                        'transaction_level_details' => $transactionLevelDetails['0'] ?? '',
+                    ]);
+                    return ['success' => false, 'message' => 'repatriation sheet missing order number'];
+                }
+
+                [$str1, $str2] = explode("|", $orderNum);
+                $settlementId = SEntity::verifyIdAndStripSign($str2);
+                $settlementEntity = $this->repo->settlement->findOrFail($settlementId);
+                $merchant = $this->repo->merchant->findOrFail($settlementEntity->merchant_id);
+
+                if ($merchant->isJpmcImportFlowEnabled() === false)
+                {
+                    $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
+                        'message'       => 'Merchant not on jpmc import flow',
+                        'input'         => $input,
+                        'file_details'  => $fileDetails,
+                        'file_name'     => $fileName,
+                    ]);
+
+                    throw new Exception\BadRequestException(
+                        Error\ErrorCode::BAD_REQUEST_INVALID_ACTION);
+                }
+
+                // get transaction details
+                foreach ($transactionLevelDetails as $row)
+                {
+                    $status = $row['invoice_status'];
+
+                    if ($status !== 'paid')
+                    {
+                        $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
+                            'message'       => 'Transaction is not processed',
+                            'input'         => $input,
+                            'file_details'  => $fileDetails,
+                            'file_name'     => $fileName,
+                            'status'        => $status,
+                            'record'        => $row,
+                        ]);
+                        return ['success' => false, 'status' => $status, 'record' => $row, 'message' => 'Transaction is not processed'];
+                    }
+
+                    $orderNum = $row['order_no'];
+                    [$str1, $str2] = explode("|", $orderNum);
+                    $paymentId = substr($str1, 4);
+                    $transactionEntity = $this->repo->transaction->findByEntityIdWithConnection($paymentId, $merchant, true);
+
+                    $txnAmount = $transactionEntity->getCredit();
+                    $rowAmount = $row['net_invoice_amount'] * 100;
+
+                    if ($txnAmount != $rowAmount)
+                    {
+                        $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
+                            'message'       => 'Transaction amount mismatch',
+                            'input'         => $input,
+                            'file_details'  => $fileDetails,
+                            'file_name'     => $fileName,
+                            'txn_amount'    => $txnAmount,
+                            'row_amount'    => $rowAmount,
+                        ]);
+                        return ['success' => false, 'txn_amount' => $txnAmount, 'row_amount' => $rowAmount, 'order_num' => $orderNum, 'txn_id' => $transactionEntity->getId(), 'message' => 'Transaction amount mismatch'];
+                    }
+
+                    $totalSettlementAmount += $row['net_invoice_amount'];
+                    $totalForexAmount += $row['transaction_amount'];
+                    $totalINRAmount += ($row['transaction_amount'] * $row['exchange_rate']);
+                }
+
+                $formattedCreditAmount = number_format((float)$totalSettlementAmount, 2, '.', '') * 100;
+                $formattedForexAmount = number_format((float)$totalForexAmount, 2, '.', '') * 100;
+                $formattedAmount = number_format((float)$totalINRAmount, 2, '.', '') * 100;
+
+                if ($formattedCreditAmount != $settlementEntity->getAmount())
+                {
+                    $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_AMOUNT, [
+                        'message'       => 'Invalid total settlement amount in file',
+                        'file_details'  => $fileDetails,
+                        'file_name'     => $fileName,
+                        'amount'        => $formattedAmount,
+                        'settlement'    => $settlementId,
+                        'formatted_credit_amount'   => $formattedCreditAmount,
+                        'settlement_amount'         => $settlementEntity->getAmount(),
+                    ]);
+                    return ['success' => false, 'formatted_credit_amount' => $formattedCreditAmount, 'settlement_amount' => $settlementEntity->getAmount(), 'message' => 'Invalid total settlement amount in file'];
+                }
+
+                // save to repat ledger
+                $repatriationEntity = [];
+
+                $repatriationEntity[RepatEntity::SETTLED_AT] = $settlementEntity->getUpdatedAt();
+                $repatriationEntity[RepatEntity::CURRENCY] = Currency::INR;
+                $repatriationEntity[RepatEntity::CREDIT_CURRENCY] = $transactionLevelDetails['0']['transaction_currency'] ?? '';
+                $repatriationEntity[RepatEntity::PARTNER_TRANSACTION_ID] = $transactionLevelDetails[0]['match_id'];
+                $repatriationEntity[RepatEntity::AMOUNT] = $settlementEntity->getAmount();
+                $repatriationEntity[RepatEntity::CREDIT_AMOUNT] = $formattedForexAmount;
+                $repatriationEntity[RepatEntity::MERCHANT_ID] = $settlementEntity->getMerchantId();
+                $repatriationEntity[RepatEntity::UPDATED_AT] = time();
+                $repatriationEntity[RepatEntity::SETTLEMENT_IDS] = [$settlementId];
+                $repatriationEntity[RepatEntity::INTEGRATION_ENTITY] = $input['partner'];
+
+                $forexRate  = $transactionLevelDetails['0']['exchange_rate'] ?? '';
+                $forexRateFormatted = number_format((float)$forexRate, 6, '.', '');
+                $repatriationEntity[RepatEntity::FOREX_RATE] = $forexRateFormatted;
+
+                $this->saveRepatriationDetails($repatriationEntity);
+
+                $this->uploadAndNotifyFileForJpmc($fileDetails, $input, $fileName, $settlementEntity->getMerchantId());
+
+                $properties = [
+                    'merchant_id'        => $settlementEntity->getMerchantId(),
+                    'merchant_mcc_code'  => $merchant->getCategory(),
+                    'merchant_category2' => $merchant->getCategory2(),
+                    'settlement_id'      => $settlementId,
+                    'settlement_amt'     => $settlementEntity->getAmount(),
+                    'file_type'          => $fileName,
+                ];
+
+                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                    $merchant, $properties, SegmentEvent::JPMC_IMPORT_FLOW_RECON_FILE_RECEIVED);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::JPMC_REPATRIATION_INVALID_FILE, [
+                    'message'       => 'JPMC invalid file',
+                    'file_details'  => $fileDetails,
+                    'file_name'     => $fileName,
+                ]);
+                return ['success' => false, 'file_name' => $fileName, 'message' => 'JPMC invalid file'];
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::JPMC_REPATRIATION_FAILED, [
+                    'message'       => 'JPMC repatriation failed',
+                    'input'         => $input,
+                    'error_message' => $e->getMessage(),
+                    'file_details'  => $fileDetails,
+                    'file_name'     => $fileName,
+                ]);
+            $this->trace->traceException($e);
+            return ['success' => false, 'error_message' => $e->getMessage(), 'message' => 'JPMC repatriation failed'];
+        }
+
+        $this->trace->info(TraceCode::JPMC_REPATRIATION_SUCCESS, [
+                    'message'       => 'JPMC repatriation success',
+                    'file_details'  => $fileDetails,
+                    'file_name'     => $fileName,
+                ]);
+        return ['success' => true, 'message' => 'JPMC repatriation success'];
+    }
+
     // To save repatriation details into DB
     protected function saveRepatriationDetails($repatriationEntity){
 
@@ -983,6 +1236,117 @@ class Service extends Base\Service
                 [
                     'document_id' => $document->getId()
                 ]);
+        }
+    }
+
+    protected function checkValidFile($fileName, $listOfValidFiles)
+    {
+        if (is_array($listOfValidFiles) === true)
+        {
+            foreach ($listOfValidFiles as $validFile)
+            {
+                if (strpos($fileName, $validFile) !== false)
+                {
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            if (strpos($fileName, $listOfValidFiles) !== false)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function getDecryptedFile(array & $fileDetails)
+    {
+        $config = $this->app['config']->get('applications.jpmc');
+
+        $filePath = $fileDetails['file_path'];
+
+        $pgpConfig = [
+            PGPEncryption::PUBLIC_KEY   => trim(str_replace('\n', PHP_EOL, $config['jpmc_pub_key'])),
+            PGPEncryption::PRIVATE_KEY  => trim(str_replace('\n', PHP_EOL, $config['razorpay_priv_key'])),
+            PGPEncryption::PASSPHRASE   => $config['razorpay_passphrase']
+        ];
+
+        $encryptedText = file_get_contents($filePath);
+
+        $res = new PGPEncryption($pgpConfig);
+
+        $decryptedText = $res->decryptVerify($encryptedText);
+
+        file_put_contents($filePath, $decryptedText);
+    }
+
+    protected function uploadAndNotifyFileForJpmc(array & $fileDetails, array $input, string $fileName, string $merchantId = '')
+    {
+        // ufh details to send
+        $localFilePath = $fileDetails['file_path'];
+
+        $dateTimeStamp = Carbon::now(Timezone::IST)->isoFormat('YYYY/MMM/DD/HH/mm/ss');
+
+        $ufhFilePath = 'opgsp_import/jpmc/decrypted_files/' . $dateTimeStamp . '/';
+        $ufhFileType = self::JPMC_DECRYPTED_FILES;
+        if (empty($merchantId) === true)
+        {
+            $merchantId = MerchantAccount::SHARED_ACCOUNT;
+        }
+
+        $response = $this->uploadFileToUfh($localFilePath, $fileName, $ufhFilePath, $ufhFileType, $merchantId);
+
+        // slack details to send
+        $link = "https://admin-dashboard.razorpay.com/admin/entity/ufh.files/". $this->app['rzp.mode']. "/" . $response[GatewayConstants::ID];
+        $team = "<!subteam^S039KPJ0LTS>"; // cb oncall
+        $text = $team . " JPMC Reverse File Received: ". "<$link>";
+        $data = [
+            'ufh_file_id'   => $response[GatewayConstants::ID],
+            'file_name'     => $fileName,
+        ];
+        $channel = $this->app->config->get('slack.channels.cross_border_alerts');
+        $color = 'good';
+
+        $this->slackPost($text, $data, $channel, '', $color);
+
+    }
+
+    protected function uploadFileToUfh(string $localFilePath, $fileName, $ufhFilePath, $ufhFileType, $merchantId)
+    {
+        $ufhService = $this->app['ufh.service'];
+
+        $file = new HttpFoundation\File\UploadedFile($localFilePath, $fileName, null, null, true);
+
+        $storageFileName = $ufhFilePath . $fileName;
+
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        $response = $ufhService->uploadFileAndGetResponse($file, $storageFileName, $ufhFileType, $merchant);
+
+        $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS,
+                [
+                    'success'   => isset($response[GatewayConstants::ID]),
+                    'response'  => $response,
+                    'file_type' => $ufhFileType,
+                ]);
+
+        return $response;
+    }
+
+    protected function slackPost($headline, $postData, $channel, $pretext = '', $color = 'good')
+    {
+        if ($this->app->config->get('slack.is_slack_enabled') === true)
+        {
+            $settings = [];
+            $settings['color'] = $color;
+            $settings['pretext'] = $pretext;
+            $settings['link_names'] = 1;
+            $settings['channel'] = $channel;
+
+            $this->app['slack']->queue($headline, $postData, $settings);
         }
     }
 }

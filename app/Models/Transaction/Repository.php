@@ -2858,4 +2858,32 @@ class Repository extends Base\Repository
 
         DB::connection($mode)->statement($query);
     }
+
+    public function findByEntityIdWithConnection($entityId, $merchant, $fail = false, $connection = null)
+    {
+        $query = $this->newQueryOnSlave();
+
+        if (isset($connection) === true)
+        {
+            $query = $this->newQueryWithConnection($connection);
+        }
+
+        $txn = $query->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
+                    ->merchantId($merchant->getId())
+                    ->first();
+
+        if (($txn === null) and
+            ($fail))
+        {
+            throw new Exception\LogicException(
+                'Failed to find transaction with entity_id',
+                null,
+                [
+                    'entity_id'     => $entityId,
+                    'merchant_id'   => $merchant->getId(),
+                ]);
+        }
+
+        return $txn;
+    }
 }

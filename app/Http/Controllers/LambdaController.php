@@ -56,4 +56,13 @@ class LambdaController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function processLambdaJpmcSettlementRepatriation()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processLambdaJpmcSettlementRepatriation($input);
+
+        return ApiResponse::json($data);
+    }
 }
