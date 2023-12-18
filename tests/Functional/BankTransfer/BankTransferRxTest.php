@@ -491,6 +491,8 @@ class BankTransferRxTest extends TestCase
         $bankAccount = $this->createVirtualAccountForBanking('live');
 
         $this->assertEquals(VirtualAccount\Provider::AXIS_COMMON_IFSC, $bankAccount['ifsc']);
+        $this->assertEquals(\RZP\Models\BankAccount\Entity::ACCOUNT_NUMBER_LENGTH_FOR_AXIS_BANKING_TERMINAL,
+            strlen($bankAccount['account_number']));
 
         $this->fixtures->on('live')->create('banking_account_tpv',
             [

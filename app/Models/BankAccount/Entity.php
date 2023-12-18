@@ -68,6 +68,8 @@ class Entity extends Base\PublicEntity
 
     const ACCOUNT_NUMBER_LENGTH         = 16;
 
+    const ACCOUNT_NUMBER_LENGTH_FOR_AXIS_BANKING_TERMINAL = 15;
+
     const SPECIAL_IFSC_CODE             = 'RZPB0000000';
 
     //

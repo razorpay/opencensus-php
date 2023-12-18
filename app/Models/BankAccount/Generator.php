@@ -36,6 +36,8 @@ class Generator extends Base\Core
 
     const VA_BANK_ACCOUNT_GENERATION            = 'va_bank_account_generation';
 
+    const AXIS_BANKING_ROOT = '9845';
+
     const MAX_ACCOUNT_GENERATION_ATTEMPTS       = 10;
 
     /**
@@ -360,7 +362,7 @@ class Generator extends Base\Core
 
         $handle = $this->getHandle($terminal);
 
-        $accountNumberLength =  $this->getAccountNumberLength();
+        $accountNumberLength =  $this->getAccountNumberLength($terminal);
 
         if ($this->options[Generator::DESCRIPTOR] !== null)
         {
@@ -466,13 +468,23 @@ class Generator extends Base\Core
         return $terminal;
     }
 
-    public function getAccountNumberLength()
+    public function getAccountNumberLength(Terminal\Entity $terminal = null)
     {
         $accountNumberLength = (new Settings\Service)->getForMerchant(Settings\Module::VIRTUAL_ACCOUNT, Settings\Keys::ACCOUNT_NUMBER_LENGTH, $this->merchant);
 
         if ($accountNumberLength !== null)
         {
             return $accountNumberLength;
+        }
+
+        if (is_null($terminal) === false)
+        {
+            $root = $this->getRoot($terminal);
+
+            if ($root == self::AXIS_BANKING_ROOT)
+            {
+                return Entity::ACCOUNT_NUMBER_LENGTH_FOR_AXIS_BANKING_TERMINAL;
+            }
         }
 
         return Entity::ACCOUNT_NUMBER_LENGTH;
