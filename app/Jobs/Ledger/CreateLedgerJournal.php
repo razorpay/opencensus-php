@@ -40,6 +40,8 @@ class CreateLedgerJournal extends Job
     {
         parent::handle();
 
+        return;
+
        if($this->mode === Mode::TEST)
        {
            return;

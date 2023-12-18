@@ -2587,4 +2587,71 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertEquals($transaction['id'], 'txn_'.$dummyPayment['transaction_id']);
     }
 
+    /* Partial feature check */
+
+    public function testFeatureEnabledForParentButNotChildTransferReverseShadowOutboxPushFailure()
+    {
+        $this->assertNotNull($this->payment);
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
+
+        $oldMarketBalance = $this->getAccountBalance('10000000000000');
+        $this->assertGreaterThanOrEqual($this->payment['amount'],$oldMarketBalance);
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 50000,
+            'currency'=> 'INR',
+        ];
+
+        $expected = [
+            'count' => 1,
+            'items' => [
+                [
+                    'source'          => $this->payment['id'],
+                    'recipient'       => 'acc_10000000000001',
+                    'amount'          => 50000,
+                    'amount_reversed' => 0,
+                    'status' => 'pending',
+                ],
+            ],
+        ];
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+        $this->assertNotNull($content);
+        $this->assertArraySelectiveEquals($expected, $content);
+        $this->assertCount(1, $content['items']);
+
+        $transferResponse = $content['items'][0];
+        $transferId = $transferResponse['id'];
+
+        // transfer entity exists
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertNotNull($transfer);
+        $this->assertEquals($transferId, sprintf('trf_%s',$transfer['id']));
+
+        // dummy payment entity exists
+        $transferPayment = $this->getDbLastEntity('payment');
+        $this->assertNotNull($transferPayment);
+        $this->assertEquals('transfer', $transferPayment['method']);
+        $this->assertEquals($transferId, 'trf_'.$transferPayment['transfer_id']);
+
+        // transfer txn and dummy payment txn  created in non reverse shadow
+        $this->assertNotNull($transfer['transaction_id']);
+        $this->assertNotNull($transferPayment['transaction_id']);
+        $transferTxn = $this->getDbEntityById('transaction', $transfer['transaction_id']);
+        $this->assertNotNull($transferTxn);
+
+        $transferPaymentTxn = $this->getDbEntityById('transaction', $transferPayment['transaction_id']);
+        $this->assertNotNull($transferPaymentTxn);
+
+        // fetch transfer journal payload from ledger_outbox
+        $ledgerOutboxEntity = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNull($ledgerOutboxEntity);
+
+    }
+
+
 }

@@ -941,7 +941,7 @@ class Core extends Base\Core
                 {
                     $sourceOrderId = $transfer->getSourceId();
 
-                    $sourcePayment = $this->repo->payment->getCapturedPaymentForOrder($sourceOrderId);
+                    $sourcePayment = $this->repo->payment->getCapturedRearchAndNonrearchPaymentForOrder($sourceOrderId);
 
                     // fetching payment again to get from sources configured for archived entity
                     // As of now, archived payment fetch with findOrFail happens on fallback replica
@@ -1220,7 +1220,7 @@ class Core extends Base\Core
                             ]);
                         }
                     }
-                    catch (Exception $e)
+                    catch (\Throwable $e)
                     {
                         // catches all txn failure exceptions
                         $this->trace->traceException(
@@ -1262,7 +1262,7 @@ class Core extends Base\Core
                         array_push($failedIds, $transactorId);
                     }
                 }
-                catch (Exception $e)
+                catch (\Throwable $e)
                 {
                     $this->trace->traceException(
                         $e,

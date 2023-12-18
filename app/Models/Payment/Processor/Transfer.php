@@ -41,8 +41,10 @@ trait Transfer
 
         $processViaLedgerReverseShadow = false;
 
+        $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
+
         if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
-            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+            ($subMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
         {
             $processViaLedgerReverseShadow = true;
         }

@@ -117,6 +117,8 @@ abstract class AbstractTransfer
 
             foreach ($transfers as $transfer)
             {
+                $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
+
                 try
                 {
                     $transferProcessStartTime = microtime(true);
@@ -157,7 +159,7 @@ abstract class AbstractTransfer
                 finally
                 {
                     if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false) or
-                        ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false ) )
+                        ($subMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false ) )
                     {
                         //Note: for reverse shadow merchants, this would done from ack worker
                         $transferProcessEndTime = microtime(true);
@@ -276,8 +278,10 @@ abstract class AbstractTransfer
 
                 $processViaReverseShadow = false;
 
+                $subMerchant = $this->repo->merchant->findOrFail($transfer->getToId());
+
                 if (($transfer->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
-                    ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+                    ($subMerchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
                 {
                     $processViaReverseShadow = true;
                 }

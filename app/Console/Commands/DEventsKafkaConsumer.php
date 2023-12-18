@@ -167,23 +167,23 @@ class DEventsKafkaConsumer extends Command
             $conf->set('auto.offset.reset', 'largest');
 
         }
+        elseif (count($topics) == 1 && $topics[0] == env('PG_LEDGER_ACK_TOPIC'))
+        {
+            $consumerGroup = env('PG_LEDGER_ACK_WORKER_CONSUMER_GROUP');
+
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
+
+            $conf->set('group.id', $consumerGroup);
+
+            $conf->set('session.timeout.ms', env('PG_LEDGER_ACK_WORKER_SESSION_TIMEOUT'));
+
+            $conf->set('auto.offset.reset', 'largest');
+        }
         else
         {
             if (count($topics) == 1 && $topics[0] == env('RAW_CONTACTS_KAFKA_TOPIC_NAME'))
             {
                 $conf->set('session.timeout.ms', env('RAW_CONTACTS_KAFKA_SESSION_TIMEOUT_MS'));
-            }
-            else
-            {
-                if (count($topics) == 1 && $topics[0] == env('PG_LEDGER_ACK_TOPIC'))
-                {
-
-                    $consumerGroup = env('QUEUE_KAFKA_COSUMER_GROUP');
-
-                    $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
-
-                    $conf->set('group.id', $consumerGroup);
-                }
             }
         }
 

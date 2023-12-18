@@ -2575,6 +2575,25 @@ EOT;
         return $payment;
     }
 
+    public function getCapturedRearchAndNonrearchPaymentForOrder(string $orderId)
+    {
+        $payment = $this->newQuery()
+            ->whereNotNull(Entity::CAPTURED_AT)
+            ->where(Entity::ORDER_ID, '=', $orderId)
+            ->first();
+
+        if (empty($payment) === false)
+        {
+            return $payment;
+        }
+
+        $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))->whereNotNull(Entity::CAPTURED_AT)
+        ->where(Entity::ORDER_ID, '=', $orderId)
+        ->first();
+
+        return $payment;
+    }
+
     //Resetting the connection to default as we don't want any subsequent DB calls going to this Archive data replica.
     public function resetDefaultConnInEntity($entity)
     {
