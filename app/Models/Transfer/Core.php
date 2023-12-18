@@ -193,16 +193,14 @@ class Core extends Base\Core
 
         $this->addAccountFromAccountCodeIfApplicable($input);
 
-        $orderTransfers = new Base\PublicCollection();
-
-        $paymentTransfers = new Base\PublicCollection();
+        $orderTransfers =new Base\PublicCollection();
 
         if ($payment->hasOrder() === true)
         {
             $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $payment->getApiOrderId(), $this->merchant);
-
-            $paymentTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $payment->getApiOrderId(), $this->merchant);
         }
+
+        $paymentTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $payment->getId(), $this->merchant);
 
         $allTransfers = $orderTransfers->merge($paymentTransfers);
 
