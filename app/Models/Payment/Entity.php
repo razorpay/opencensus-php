@@ -264,6 +264,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const GATEWAY_DATA             = 'gateway_data';
 
+    const GATEWAY_TXN_ID             = 'gateway_txn_id';
+
     const GATEWAY_ERROR_CODE        = 'gateway_error_code';
     const GATEWAY_ERROR_DESCRIPTION = 'gateway_error_description';
 
@@ -3502,6 +3504,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->getAttribute(self::DCC_MARKUP_AMOUNT);
     }
 
+    public function getGatewayTxnId()
+    {
+        return $this->getAttribute(self::GATEWAY_TXN_ID);
+    }
+
     /**
      * Gets adjusted amount with respect to customer fee bearer merchants.
      * This amount is compared against the requested capture amount by merchant
@@ -6494,7 +6501,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isHdfcVasDSCustomerFeeBearerSurcharge()
     {
-        if ($this->isCard() === false)
+        if ($this->isCard() === false || Gateway::isPOSGateway($this->getGateway()) )
         {
             return false;
         }

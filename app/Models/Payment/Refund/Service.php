@@ -21,6 +21,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
+use RZP\Models\Payment\Gateway;
 use RZP\Services\Dcs\Features\Type;
 use RZP\Services\Ledger as LedgerService;
 
@@ -838,6 +839,11 @@ class Service extends Base\Service
                         $data[RefundConstants::PAYMENT_RAW_CURRENCY_DENOMINATION] = Currency::getDenomination($payment->getCurrency());
 
                         $data[RefundConstants::GATEWAY_CURRENCY_DENOMINATION] = Currency::getDenomination($payment->getGatewayCurrency());
+
+                        if (Gateway::isPOSGateway($payment->getGateway()))
+                        {
+                            $data[Payment\Entity::GATEWAY_TXN_ID] = $payment->getGatewayTxnId();
+                        }
                     }
 
                     $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT][RefundConstants::DATA] = $data;

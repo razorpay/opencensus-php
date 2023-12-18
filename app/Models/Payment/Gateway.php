@@ -136,6 +136,7 @@ class Gateway
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
     const HDFC_EZETAP            = 'hdfc_ezetap';
+    const HDFC_POS               = 'hdfc_pos';
     const UPI_CITI               = 'upi_citi';
     const UPI_JUSPAY             = 'upi_juspay';
     const BILLDESK_SIHUB         = 'billdesk_sihub';
@@ -584,6 +585,13 @@ class Gateway
         self::HDFC,
         self::HITACHI,
         self::CARD_FSS,
+    ];
+
+    /**
+     * Gateways that are used for payments via Ezetap POS devices
+     */
+    const POS_GATEWAYS = [
+        self::HDFC_POS
     ];
 
     /**
@@ -5120,6 +5128,14 @@ class Gateway
     public static function isAddressAndNameRequiredGateway($gateway) : bool
     {
         return (in_array($gateway, self::ADDRESS_NAME_REQUIRED_GATEWAYS, true));
+    }
+
+   /*
+    * Checks if gateway is supported for Ezetap POS device transactions
+    */
+    public static function isPOSGateway($gateway) : bool
+    {
+        return (in_array($gateway, self::POS_GATEWAYS, true));
     }
 
     /*
