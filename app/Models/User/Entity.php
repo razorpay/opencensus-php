@@ -292,22 +292,40 @@ class Entity extends Base\PublicEntity
             foreach ($merchantUsers as $merchantUser) {
                 if ($merchantUser['merchant_id'] === $merchant['id']) {
                     $mergedMerchant['pivot'] = (object) $merchantUser;
+                    $mE = new Merchant\Entity();
+                    $mE->setRawAttributes($mergedMerchant, true);
+                    $merchantsWithPivot[] = $mE;
                 }
             }
-
-            $mE = new Merchant\Entity();
-            $mE->setRawAttributes($mergedMerchant, true);
-            $merchantsWithPivot[] = $mE;
         }
 
-        usort($merchantsWithPivot, function ($a, $b) {
-            if ( !empty($a->getEmail()) && $a->getEmail() == $this->getAttribute(self::EMAIL) && $a->getAttribute(self::PIVOT)->role == self::OWNER) {
-                return -1;
-            } elseif ($a->getAttribute(self::PIVOT)->role == self::OWNER) {
+        $userEmail = $this->getAttribute(self::EMAIL);
+        usort($merchantsWithPivot, function ($a, $b) use ($userEmail) {
+            $emailA = $a->getEmail();
+            $emailB = $b->getEmail();
+            $roleA = $a->getAttribute(self::PIVOT)->role;
+            $roleB = $b->getAttribute(self::PIVOT)->role;
+            $conditionA = ( !empty($emailA) && $emailA == $userEmail && $roleA == self::OWNER);
+            $conditionB = ( !empty($emailB) && $emailB == $userEmail && $roleB == self::OWNER);
+
+            if ($conditionA && $conditionB)
+            {
                 return 0;
-            } else {
+            } else if ($conditionA)
+            {
+                return -1;
+            }else if ($conditionB)
+            {
                 return 1;
             }
+
+            if ($roleA == self::OWNER && $roleB != self::OWNER) {
+                return -1;
+            } elseif ($roleA != self::OWNER && $roleB = self::OWNER) {
+                return 1;
+            }
+
+            return 0;
         });
 
         return new Base\PublicCollection($merchantsWithPivot);;
