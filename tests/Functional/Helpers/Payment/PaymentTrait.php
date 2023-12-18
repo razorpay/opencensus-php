@@ -3977,6 +3977,9 @@ trait PaymentTrait
             "trio",
             "fifederal",
             "mbk",
+            "drhdfcbank",
+            "digikhata",
+            "bpaywallet",
         ];
 
         return $vpaHandles;

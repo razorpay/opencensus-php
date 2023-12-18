@@ -198,6 +198,9 @@ class ProviderCode
     const trio               = 'trio';
     const fifederal          = 'fifederal';
     const mbk                = 'mbk';
+    const DRHDFCBANK         = 'drhdfcbank';
+    const DIGIKHATA          = 'digikhata';
+    const BPAYWALLET         = 'bpaywallet';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -387,6 +390,9 @@ class ProviderCode
         self::trio               => 'NPCI',
         self::fifederal          => 'NPCI',
         self::mbk                => 'NPCI',
+        self::DRHDFCBANK         => 'NPCI',
+        self::DIGIKHATA          => 'NPCI',
+        self::BPAYWALLET         => 'NPCI',
     ];
 
     /**
