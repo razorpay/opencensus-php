@@ -535,6 +535,7 @@ class RouteTeamMap
         'downtime_auto_resolve_cron'                      =>[self::TEAM_PAYMENTS_DOWNTIME],
         'dispute_ingestion'                               => [self::TEAM_CMMA],
         'dispute_bulk_create_internal'                    => [self::TEAM_CMMA],
+        'dispute_bulk_edit_internal'                      => [self::TEAM_CMMA],
         'dispute_dcs_config_add'                          => [self::TEAM_CMMA],
         'dispute_dcs_config_get'                          => [self::TEAM_CMMA],
         'dispute_dcs_config_update'                       => [self::TEAM_CMMA],

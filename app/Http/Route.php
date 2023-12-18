@@ -2911,6 +2911,7 @@ class Route
         'dispute_edit'                             => ['post',     'disputes/{id}',                                  'DisputeController@update'                                          ],
         'dispute_bulk_create'                      => ['post',     'disputes/bulk-create',                           'DisputeController@bulkCreate'                                      ],
         'dispute_bulk_edit'                        => ['post',     'disputes/bulk-edit',                             'DisputeController@bulkUpdate'                                      ],
+        'dispute_bulk_edit_internal'               => ['post',     'disputes/bulk-edit/internal',                    'DisputeController@bulkUpdate'                                      ],
         'dispute_reason_create'                    => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
         'dispute_deduction_reversal_cron'          => ['post',     'disputes/deduction_reversal_cron',               'DisputeController@deductionReversalCron'                           ],
         'dispute_fetch_multiple'                   => ['get',      'disputes',                                       'DisputeController@fetchMultiple'                                   ],
@@ -6389,6 +6390,7 @@ class Route
         'ca_check_fund_management_payout_cron',
 
         'dispute_bulk_create_internal',
+        'dispute_bulk_edit_internal',
         'payment_dispute_create_internal',
 
         '1cc_internal_otp_create',
@@ -16860,7 +16862,7 @@ class Route
             'payment_refund_internal',
             'dispute_bulk_create_internal',
             'payment_dispute_create_internal',
-            'dispute_bulk_edit',
+            'dispute_bulk_edit_internal',
         ],
 
         'banking_account_service' => [
