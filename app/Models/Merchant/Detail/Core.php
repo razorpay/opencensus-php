@@ -4088,6 +4088,30 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    public function updateMerchantStoreInternal(string $merchantId, array $input): array
+    {
+        try
+        {
+            $data = [
+                Merchant\Store\Constants::NAMESPACE => ConfigKey::ONBOARDING_NAMESPACE,
+                $input['cache_key']                 => $input['cache_value'],
+            ];
+
+            $cacheOutput = (new StoreCore())->updateMerchantStore($merchantId, $data, Merchant\Store\Constants::INTERNAL);
+        }
+        catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::SUBMIT_MERCHANT_INTERNAL, [
+                'MerchantId'   => $merchantId,
+                'ErrorMessage' => $e->getMessage()
+            ]);
+
+            return ['success' => false];
+        }
+
+        return ['success' => true];
+    }
+
     protected function checkLicenseExpiryValidationForMerchantDocuments($merchant, $input)
     {
         $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(

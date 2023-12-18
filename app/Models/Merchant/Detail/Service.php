@@ -4713,6 +4713,8 @@ class Service extends Base\Service
                 unset($input[DetailConstants::ACTION]);
                 $merchantService = new MerchantService();
                 return $merchantService->edit($merchantId, $input);
+            case 'STORE_IN_CACHE':
+                return $this->core->updateMerchantStoreInternal($merchantId, $input);
             default:
                 $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
                 return $this->core->submitMerchantInternal($input, $merchantDetails);
