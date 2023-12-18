@@ -52,7 +52,7 @@ class Validator extends Base\Validator
 
     protected static $bulkCreateForAddressRules = [
         self::ADDRESSES => 'required|array|min:1',
-        self::SOURCE => 'sometimes|string|in:woocommerce,sopc',
+        self::SOURCE => 'sometimes|string|in:woocommerce,sopc,unicommerce',
     ];
 
     protected static $processKafkaMessageRules = [

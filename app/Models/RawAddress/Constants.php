@@ -11,5 +11,6 @@ class Constants {
     const ADDRESS_SOURCE_TYPE_SHOPIFY = "shopify";
     const ADDRESS_SOURCE_TYPE_WOOCOMMERCE = "woocommerce";
     const ADDRESS_SOURCE_TYPE_SOPC = "sopc";
+    const ADDRESS_SOURCE_TYPE_UNICOMMERCE = "unicommerce";
 
 }
