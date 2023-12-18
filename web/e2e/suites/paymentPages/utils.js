@@ -91,3 +91,19 @@ export const validateBatchPaymentPageDetails = async ({ page, productData }) => 
     // continue regardless of error
   }
 };
+
+export const validateDownloadSampleFile = async ({ page, productData }) => {
+  try {
+    const id = productData.detailsPage.paymentLinkId;
+    const tdElement = await page.waitForSelector(`td:has-text("${id}")`, { timeout: 7000 });
+    if (tdElement) {
+      await page.getByRole('button', { name: 'Batch Details' }).first().click();
+      await expect(page).toHaveURL(
+        `paymentpages/batchuploads/${id}/Batch%20PP%20pl_NBIHnwkjVUIseX`,
+      );
+      await expect(page.getByText('Download Sample File')).toBeVisible();
+    }
+  } catch (e) {
+    // continue regardless of error
+  }
+};

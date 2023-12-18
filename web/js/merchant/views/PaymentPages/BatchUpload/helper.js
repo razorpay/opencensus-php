@@ -1,17 +1,17 @@
 export const getHeaderList = (details) => {
-  const paymentPageItems = details.payment_page_items?.map((element) => {
-    return element?.item?.name;
-  });
-  let udfSchema = [];
-  try {
-    udfSchema = JSON.parse(details.settings?.udf_schema);
-  } catch (error) {
-    return false;
-  }
-  const udfSchemaItems = udfSchema?.map((element) => {
-    return element?.title;
-  });
-  return paymentPageItems?.concat(udfSchemaItems);
+  const { payment_page_items = [], settings } = details || {};
+
+  const otherFields =
+    typeof settings?.udf_schema === 'string' ? JSON.parse(settings?.udf_schema) : [];
+
+  const allFields = [...payment_page_items, ...otherFields];
+
+  // Sort the fields according to their position.
+  allFields.sort((a, b) => Number(a?.settings?.position) - Number(b?.settings?.position));
+
+  const cols = allFields.map((fi) => fi?.item?.name ?? fi.title);
+
+  return cols;
 };
 
 export const getFormattedExcelData = (headerList) => {

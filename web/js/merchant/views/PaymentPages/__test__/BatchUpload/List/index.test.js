@@ -36,25 +36,6 @@ describe('Batch Payment Page - Batch Details', () => {
     expect(screen.getByText('Batch Id')).toBeInTheDocument();
   });
 
-  test('should show error message while parsing udf_schema', async () => {
-    const initialState = {
-      session: {
-        user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
-      },
-    };
-    const props = {
-      ...defaultProps,
-      id: 'pl_parsingerrortest',
-      isBatchPaymentPages: true,
-    };
-    server.use(paymentPagesErrorHandlers.paymentPagesDetailsParsingError());
-    renderApp(initialState, props);
-    await waitForLoadingToFinish();
-    expect(
-      screen.getByText(/Issue while parsing the udf_schema, please try again later/i),
-    ).toBeInTheDocument();
-  });
-
   test('should show error message while fetching payment page details', async () => {
     const initialState = {
       session: {

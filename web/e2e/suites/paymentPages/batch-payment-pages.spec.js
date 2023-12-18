@@ -1,8 +1,9 @@
 import { test } from '@playwright/test';
 
-import { validateBatchPaymentPageDetails } from './utils';
+import { batchPaymentPageData } from './constants';
+import { validateBatchPaymentPageDetails, validateDownloadSampleFile } from './utils';
 import { switchToTestMode } from '../../utils';
-import { routes, StorageStatePath, batchPaymentPageData } from '../../utils/constants';
+import { routes, StorageStatePath } from '../../utils/constants';
 import { clickSkipAndStartBtn } from '../paymentsLinks/utils';
 
 test.setTimeout(2 * 60 * 1000);
@@ -21,6 +22,13 @@ test.describe
 
   test.skip('should validate batch PP details page', async ({ page }) => {
     await validateBatchPaymentPageDetails({
+      page,
+      productData: batchPaymentPageData,
+    });
+  });
+
+  test.skip('should validate download sample file on the batch details page', async ({ page }) => {
+    await validateDownloadSampleFile({
       page,
       productData: batchPaymentPageData,
     });
