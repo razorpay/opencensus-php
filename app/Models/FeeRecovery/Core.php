@@ -25,15 +25,19 @@ use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
 {
-    const BATCH_SIZE = 50000;
+    const BULK_INSERT_SIZE = 1000;
 
     const INITIATE = 'initiate';
 
     const INTERMEDIATE = 'intermediate';
 
-    const FETCH = 'fetch';
+    const INSERT = 'insert';
 
     const UPDATE = 'update';
+
+    const BATCH_SIZE = 50000;
+
+    const FETCH = 'fetch';
 
     /** @var \RZP\Services\Mutex $mutex */
     protected $mutex;
@@ -257,7 +261,7 @@ class Core extends Base\Core
         }
 
         return $this->repo->transaction(
-            function () use($previousFeeRecoveryEntities, $balance, $amount)
+            function () use($previousFeeRecoveryEntities, $balance, $amount, $previousRecoveryPayout)
             {
                 $merchant = $balance->merchant;
 
@@ -283,10 +287,17 @@ class Core extends Base\Core
                                    ]
                 );
 
-                foreach ($previousFeeRecoveryEntities as $feeRecoveryEntity)
-                {
-                    $this->createAndUpdateFeeRecoveryEntityForRecoveryRetry($feeRecoveryEntity, $newFeeRecoveryPayout);
-                }
+                $newFeeRecoveryEntities = $this->getNewFeeRecoveryEntities($previousFeeRecoveryEntities, $newFeeRecoveryPayout);
+
+                $this->mutex->acquireAndRelease(
+                    'recreate_fee_recovery_' . $previousRecoveryPayout->getId(),
+                    function () use ($newFeeRecoveryEntities, $previousFeeRecoveryEntities)
+                    {
+                        $this->insertBulkFeeRecoveryEntitiesViaBatching($newFeeRecoveryEntities);
+                        $this->updateBulkStatusViaBatching($previousFeeRecoveryEntities, Status::FAILED);
+                    },
+                    600,
+                    ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
 
                 return $newFeeRecoveryPayout;
             });
@@ -1126,44 +1137,130 @@ class Core extends Base\Core
         ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
-    protected function createAndUpdateFeeRecoveryEntityForRecoveryRetry(Entity $feeRecoverySourceEntity,
-                                                                        Payout\Entity $feeRecoveryPayout)
+    protected function getNewFeeRecoveryEntities($previousFeeRecoveryEntities, $newFeeRecoveryPayout)
     {
-        $this->mutex->acquireAndRelease(
-            'fee_recovery_' . $feeRecoverySourceEntity->getId(),
-            function () use ($feeRecoverySourceEntity, $feeRecoveryPayout)
+        $newFeeRecoveryEntities = [];
+
+        foreach ($previousFeeRecoveryEntities as $feeRecoverySourceEntity)
+        {
+            $newFeeRecovery = $feeRecoverySourceEntity->replicate();
+
+            $newFeeRecovery->generateId();
+
+            $dataToUpdate = [
+                Entity::RECOVERY_PAYOUT_ID  => $newFeeRecoveryPayout->getId(),
+                Entity::ATTEMPT_NUMBER      => $feeRecoverySourceEntity->getAttemptNumber() + 1,
+            ];
+
+            $newFeeRecovery->edit($dataToUpdate);
+
+            $newFeeRecovery->setStatus(Status::PROCESSING);
+
+            $newFeeRecovery->setCreatedAt(Carbon::now()->getTimestamp());
+
+            $newFeeRecovery->setUpdatedAt(Carbon::now()->getTimestamp());
+
+            if ($feeRecoverySourceEntity->getEntityType() === Entity::REVERSAL)
             {
-                $newFeeRecovery = $feeRecoverySourceEntity->replicate();
+                $sourceEntity = $feeRecoverySourceEntity->reversal;
+            }
+            else
+            {
+                $sourceEntity = $feeRecoverySourceEntity->payout;
+            }
 
-                $dataToUpdate = [
-                    Entity::RECOVERY_PAYOUT_ID  => $feeRecoveryPayout->getId(),
-                    Entity::ATTEMPT_NUMBER      => $feeRecoverySourceEntity->getAttemptNumber() + 1,
-                ];
+            $newFeeRecovery->entity()->associate($sourceEntity);
 
-                $newFeeRecovery->edit($dataToUpdate);
+            $newFeeRecoveryEntities[] = $newFeeRecovery->toArray();
+        }
 
-                $newFeeRecovery->setStatus(Status::PROCESSING);
+        return $newFeeRecoveryEntities;
+    }
 
-                if ($feeRecoverySourceEntity->getEntityType() === Entity::REVERSAL)
-                {
-                    $sourceEntity = $feeRecoverySourceEntity->reversal;
-                }
-                else
-                {
-                    $sourceEntity = $feeRecoverySourceEntity->payout;
-                }
+    protected function insertBulkFeeRecoveryEntitiesViaBatching($entityList)
+    {
+        $left = 0;
 
-                $newFeeRecovery->entity()->associate($sourceEntity);
+        $batch = self::BULK_INSERT_SIZE;
 
-                $this->repo->saveOrFail($newFeeRecovery);
+        $insertedEntityCount = 0;
 
-                // Set status of earlier attempt to failed
-                $feeRecoverySourceEntity->setStatus(Status::FAILED);
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_BATCHING_PROCESS,
+            [
+                'step'               => self::INITIATE,
+                'operation'          => self::INSERT,
+                'start'              => $left,
+                'batch_size'         => $batch,
+                'inserted_count'     => $insertedEntityCount,
+                'total_count'        => count($entityList),
+            ]);
 
-                $this->repo->saveOrFail($feeRecoverySourceEntity);
-            },
-            60,
-            ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
+        while ($left < count($entityList))
+        {
+            $currentSlice = array_slice($entityList, $left, $batch, true);
+
+            $left += $batch;
+
+            $this->repo->fee_recovery->bulkInsert($currentSlice);
+
+            $insertedEntityCount += count($currentSlice);
+
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_BATCHING_PROCESS,
+                [
+                    'step'                => self::INTERMEDIATE,
+                    'operation'           => self::INSERT,
+                    'start'               => $left,
+                    'batch_size'          => $batch,
+                    'inserted_count'      => $insertedEntityCount,
+                    'total_count'         => count($entityList),
+                    'current_slice_count' => count($currentSlice),
+                ]);
+        }
+    }
+
+    protected function updateBulkStatusViaBatching($entityList, $status)
+    {
+        $left = 0;
+
+        $batch = self::BULK_INSERT_SIZE;
+
+        $updatedEntityCount = 0;
+
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_BATCHING_PROCESS,
+            [
+                'step'               => self::INITIATE,
+                'operation'          => self::UPDATE,
+                'start'              => $left,
+                'batch_size'         => $batch,
+                'updated_count'      => $updatedEntityCount,
+                'total_count'        => count($entityList),
+            ]);
+
+        while ($left < count($entityList))
+        {
+            $currentSlice = array_slice($entityList->toArray(), $left, $batch, true);
+
+            $left += $batch;
+
+            $this->repo->fee_recovery->updateBulkStatus(array_pluck($currentSlice, Entity::ID), $status);
+
+            $updatedEntityCount += count($currentSlice);
+
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_BATCHING_PROCESS,
+                [
+                    'step'                => self::INTERMEDIATE,
+                    'operation'           => self::UPDATE,
+                    'start'               => $left,
+                    'batch_size'          => $batch,
+                    'updated_count'       => $updatedEntityCount,
+                    'total_count'         => count($entityList),
+                    'current_slice_count' => count($currentSlice),
+                ]);
+        }
     }
 
     protected function sendSlackAlert($operation, $data)

@@ -215,4 +215,23 @@ class Repository extends Base\Repository
                     ->where($typeColumn, '=', Type::CREDIT)
                     ->first();
     }
+
+    public function updateBulkStatus($ids,
+                                     $status)
+    {
+        $dataToUpdate = [
+            Entity::STATUS => $status,
+        ];
+
+        $idColumn = $this->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+            ->whereIn($idColumn, $ids)
+            ->update($dataToUpdate);
+    }
+
+    public function bulkInsert($data)
+    {
+        return $this->newQuery()->insert($data);
+    }
 }

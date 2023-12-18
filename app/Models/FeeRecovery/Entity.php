@@ -48,6 +48,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $visible = [
+        self::ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::RECOVERY_PAYOUT_ID,
@@ -56,6 +57,8 @@ class Entity extends Base\PublicEntity
         self::REFERENCE_NUMBER,
         self::DESCRIPTION,
         self::TYPE,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $defaults = [
