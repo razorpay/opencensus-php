@@ -2564,6 +2564,14 @@ EOT;
                             ->first();
         }
 
+        // Fetch rearch payments
+        if (empty($payment) === true)
+        {
+            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))->whereNotNull(Entity::CAPTURED_AT)
+                ->where(Entity::ORDER_ID, '=', $orderId)
+                ->first();
+        }
+
         return $payment;
     }
 

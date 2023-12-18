@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Order\Transfers;
 
+use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\EntityOrigin\Core;
@@ -53,6 +54,17 @@ class OrderTransferTest extends TestCase
         $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
 
         $this->linkedAccountId = $account['id'];
+
+        $pgService = Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('fetchOrderPayments')
+            ->with(Mockery::type('string'), Mockery::type('string'))
+            ->andReturnUsing(function (string $orderId, string $merchantId)
+            {
+                return [];
+            });
     }
 
     public function testCreateOrderTransfers()

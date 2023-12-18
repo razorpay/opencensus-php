@@ -1315,7 +1315,7 @@ class Core extends Base\Core
 
             $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($orderId, $transfer->merchant->getId());
 
-            $rearchPayments = $this->app['pg_router']->fetchOrderPayments($orderId, $this->merchant->getId());
+            $rearchPayments = $this->app['pg_router']->fetchOrderPayments($orderId, $transfer->merchant->getId());
 
             $allPayments = $apiPayments->merge($rearchPayments);
 

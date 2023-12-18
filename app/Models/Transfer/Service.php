@@ -864,7 +864,25 @@ class Service extends Base\Service
                 continue;
             }
 
-            $payment = $this->repo->payment->getCapturedPaymentForOrder($order->getId());
+            $payment = null;
+
+            $orderId = $order->getId();
+
+            $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($orderId, $order->getMerchantId());
+
+            $rearchPayments = $this->app['pg_router']->fetchOrderPayments($orderId, $order->getMerchantId());
+
+            $allPayments = $apiPayments->merge($rearchPayments);
+
+            foreach ($allPayments as $singlePayment)
+            {
+                if ($singlePayment->getStatus() === Payment\Status::CAPTURED)
+                {
+                    $payment = $singlePayment;
+
+                    break;
+                }
+            }
 
             if ($payment === null)
             {
