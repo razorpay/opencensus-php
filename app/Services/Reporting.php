@@ -297,12 +297,6 @@ class Reporting implements ExternalService
     {
         $this->validateFeatures($input);
 
-        $reportType = Request::header(self::REPORT_TYPE_HEADER);
-
-        if ($this->ba->isAdminAuth() && $reportType === self::RTPL_WALLET) {
-            $this->failIfNotRTPLAdmin();
-        }
-
         return $this->createAndSendRequest(Requests::POST, self::CONFIG_PATH, $input);
     }
 
@@ -442,11 +436,6 @@ class Reporting implements ExternalService
                 elseif (in_array(TenantRoles::ENTITY_BANKING, $adminRoles) === true)
                 {
                     $tenantRole = TenantRoles::ENTITY_BANKING;
-                }
-
-                if ($reportType === self::RTPL_WALLET) {
-                    $this->failIfNotRTPLAdmin();
-                    $tenantRole = TenantRoles::ENTITY_WALLET;
                 }
 
                 $this->headers[self::TENANT_ROLE] = $tenantRole;
@@ -1666,14 +1655,6 @@ class Reporting implements ExternalService
         {
             $featureNames = $input[Feature::FEATURE_NAMES];
             (new FeatureService())->validateFeatureNames($featureNames);
-        }
-    }
-
-    protected function failIfNotRTPLAdmin()
-    {
-        $roles = $this->ba->getAdmin()->getRolesAndPermissionsList()['roles'];
-        if (!in_array(Constants::WALLET_ADMIN_ROLE, $roles)) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
     }
 
