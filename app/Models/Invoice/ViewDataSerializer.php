@@ -131,6 +131,9 @@ class ViewDataSerializer extends Base\Core
             'branding_logo' => '',
         ];
 
+        $branding[ENTITY::PRODUCT_DOMAIN_NAME] = $this->invoice->getDomainName();
+        $branding[ENTITY::PRODUCT_DOMAIN_LINK] = $this->invoice->getDomainLink();
+
         if($this->merchant->shouldShowCustomOrgBranding() === true)
         {
 

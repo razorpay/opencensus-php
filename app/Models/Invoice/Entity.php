@@ -88,6 +88,9 @@ class Entity extends Base\PublicEntity
     const OFFER_AMOUNT              = 'offer_amount';
     const REF_NUM                   = 'ref_num';
 
+    const PRODUCT_DOMAIN_NAME   = 'product_domain_name';
+    const PRODUCT_DOMAIN_LINK   = 'product_domain_link';
+
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
      * Value of this field would be valid GSTIN (For India 2 digit numeric number). We can't use state code(such as. BR,
@@ -229,6 +232,13 @@ class Entity extends Base\PublicEntity
         Item\Type::PLAN,
         Item\Type::ADDON,
     ];
+
+    // -------------------- Hosted Page Domains ----------------------
+    const INVOICE_DOMAIN_NAME_RAZORPAY = 'razorpay.com/invoices';
+    const INVOICE_DOMAIN_NAME_CURLEC = 'curlec.com/invoices';
+    const INVOICE_DOMAIN_LINK_RAZORPAY = 'https://razorpay.com/invoices/';
+    const INVOICE_DOMAIN_LINK_CURLEC = 'https://curlec.com/invoices/';
+
 
     protected static $sign         = 'inv';
 
@@ -2002,5 +2012,23 @@ class Entity extends Base\PublicEntity
         $report[self::CUSTOMER_CONTACT] = $this->getCustomerContact();
 
         return $report;
+    }
+
+    public function getDomainName(): ?string
+    {
+        $country = $this->merchant->getCountry();
+        if ($country == 'MY'){
+            return self::INVOICE_DOMAIN_NAME_CURLEC;
+        }
+        return self::INVOICE_DOMAIN_NAME_RAZORPAY;
+    }
+
+    public function getDomainLink(): ?string
+    {
+        $country = $this->merchant->getCountry();
+        if ($country == 'MY'){
+            return self::INVOICE_DOMAIN_LINK_CURLEC;
+        }
+        return self::INVOICE_DOMAIN_LINK_RAZORPAY;
     }
 }

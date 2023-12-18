@@ -36,6 +36,8 @@ class ViewDataSerializerTestHosted extends TestCase
         $this->assertNotEmpty($actual['invoice']['issued_at_formatted']);
         $this->assertNotEmpty($actual['invoice']['date_formatted']);
         $this->assertNotEmpty($actual['invoice']['expire_by_formatted']);
+        $this->assertEquals('razorpay.com/invoices',$actual['org']['branding']['product_domain_name']);
+        $this->assertEquals('https://razorpay.com/invoices/',$actual['org']['branding']['product_domain_link']);
     }
 
     public function testGetInvoiceForMyMerchant()
@@ -56,6 +58,8 @@ class ViewDataSerializerTestHosted extends TestCase
         $this->assertNotEmpty($actual['invoice']['date_formatted']);
         $this->assertNotEmpty($actual['invoice']['expire_by_formatted']);
         $this->assertNotEmpty($actual['org']['branding']['security_branding_logo']);
+        $this->assertEquals('curlec.com/invoices',$actual['org']['branding']['product_domain_name']);
+        $this->assertEquals('https://curlec.com/invoices/',$actual['org']['branding']['product_domain_link']);
 
         $this->assertEquals('13 Apr 2023', $actual['invoice']['issued_at_formatted']);
         $this->assertEquals('13 Apr 2023', $actual['invoice']['expire_by_formatted']);

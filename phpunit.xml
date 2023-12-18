@@ -612,6 +612,7 @@
             <directory>./tests/Functional/Item/</directory>
             <directory>./tests/Functional/PaymentLink/</directory>
             <directory>./tests/Unit/Models/PaymentLink</directory>
+            <directory>./tests/Unit/Models/Invoice/</directory>
             <exclude>./tests/Functional/Invoice/CheckoutInvoiceTest.php</exclude>
         </testsuite>
         <testsuite name="Platform Test Suite">

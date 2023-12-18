@@ -142,6 +142,8 @@ class ViewDataSerializerHosted extends Base\Core
         $branding = Org::ORG_BRANDING[$merchantCountryCode];
         $branding[Org::BUSINESS_NAME] = $org->getBusinessName() ?: Org::ORG_BRANDING[$merchantCountryCode][Org::BUSINESS_NAME];
         $branding['branding_logo'] = $org->getInvoiceLogo()   ?: Org::ORG_BRANDING[$merchantCountryCode][Org::BRANDING_LOGO];
+        $branding[ENTITY::PRODUCT_DOMAIN_NAME] = $this->invoice->getDomainName();
+        $branding[ENTITY::PRODUCT_DOMAIN_LINK] = $this->invoice->getDomainLink();
 
         if($this->merchant->shouldShowCustomOrgBranding() === true and $merchantCountryCode === 'IN')
         {
