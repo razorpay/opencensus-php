@@ -27,7 +27,10 @@ trait ArchivedCore
 
         $entity = $callback($this);
 
-        $entity->setConnection($originalConnectionName);
+        if ($entity !== null)
+        {
+            $entity->setConnection($originalConnectionName);
+        }
 
         return $entity;
     }

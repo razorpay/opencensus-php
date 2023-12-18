@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Gateway\Base;
+use RZP\Models\Base\Traits\ArchivedCore;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Base\ConnectionType;
@@ -10,6 +11,8 @@ use RZP\Gateway\Base\Action;
 
 class Repository extends Base\Repository
 {
+    use  ArchivedCore;
+
     protected $entity = 'upi';
 
     protected $appFetchParamRules = array(
@@ -24,7 +27,29 @@ class Repository extends Base\Repository
 
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
     {
-        $entity = parent::findByPaymentIdAndActionOrFail($paymentId, $action);
+        try
+        {
+            $entity = parent::findByPaymentIdAndActionOrFail($paymentId, $action);
+        }
+        catch (\Throwable $e)
+        {
+            $entity = $this->newQueryAndResetEntityConnection(function () use ($paymentId, $action)
+            {
+                $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                        ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                        ->where('action', '=', $action)
+                        ->orderBy(Entity::CREATED_AT, 'desc');
+
+                $upiEntity = $query->firstOrFail();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
 
         // We need to populate the npci_reference_id field from mozart entity
         // if it is not set in UPI entity.
@@ -56,58 +81,195 @@ class Repository extends Base\Repository
 
     public function fetchGatewayPaymentIdByPaymentId($paymentId)
     {
-        return $this->newQuery()
+        $gatewayPaymentIds = $this->newQuery()
+                            ->where('payment_id' , '=', $paymentId)
+                            ->pluck('gateway_payment_id');
+
+
+        if (empty($gatewayPaymentIds) === true)
+        {
+            $gatewayPaymentIds = $this->newQueryAndResetEntityConnection(function () use ($paymentId)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
                     ->where('payment_id' , '=', $paymentId)
                     ->pluck('gateway_payment_id');
+            });
+        }
+
+        return $gatewayPaymentIds;
     }
 
     public function fetchByGatewayPaymentIdAndAction(string $gatewayPaymentId, string $action = Action::AUTHORIZE)
     {
-        return $this->newQuery()
+        try
+        {
+            $upi =  $this->newQuery()
+                ->where('gateway_payment_id', '=', $gatewayPaymentId)
+                ->where('action', '=', $action)
+                ->firstOrFail();
+
+        }
+        catch (\Throwable $e)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($gatewayPaymentId,$action)
+            {
+                $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
                     ->where('gateway_payment_id', '=', $gatewayPaymentId)
                     ->where('action', '=', $action)
                     ->firstOrFail();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
+
+        return $upi;
     }
 
     public function fetchByNpciReferenceIdAndGateway(string $npciReferenceId, string $gateway, string $action = Action::AUTHORIZE)
     {
-        return $this->newQuery()
+        $upi =  $this->newQuery()
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
                     ->where('action', '=', $action)
                     ->where('gateway', '=', $gateway)
                     ->first();
+
+        if (is_null($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId,$gateway,$action)
+            {
+                $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->where('action', '=', $action)
+                    ->where('gateway', '=', $gateway)
+                    ->first();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
+
+        return $upi;
     }
 
     public function fetchByNpciReferenceIdAndPaymentIdAndGateway(string $npciReferenceId, string $paymentId, string $gateway, $action = Action::AUTHORIZE)
     {
-        return $this->newQuery()
+        $upi =  $this->newQuery()
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('gateway', '=', $gateway)
                     ->where('action', '=', $action)
                     ->first();
+
+        if (is_null($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId,$paymentId,$gateway,$action)
+            {
+                $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where('gateway', '=', $gateway)
+                    ->where('action', '=', $action)
+                    ->first();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
+
+        return $upi;
     }
 
     public function fetchByNpciReferenceIdAndActions(string $npciReferenceId, array $actions = [])
     {
-        return $this->newQuery()
+        $upi = $this->newQuery()
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
                     ->whereIn('action', $actions)
                     ->first();
+
+        if (is_null($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId,$actions)
+            {
+                $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->whereIn('action', $actions)
+                    ->first();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
+
+        return $upi;
     }
 
     public function fetchByPaymentId($paymentId)
     {
-        return $this->newQuery()
+        $upi =  $this->newQuery()
                     ->where(Entity::PAYMENT_ID , '=', $paymentId)
                     ->first();
+
+        if (is_null($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($paymentId)
+            {
+                $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::PAYMENT_ID , '=', $paymentId)
+                    ->first();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
+
+        return $upi;
     }
 
     public function fetchByRefundId(string $refundId)
     {
-        return $this->newQuery()
+        $upi = $this->newQuery()
                     ->where(Entity::REFUND_ID , '=', $refundId)
                     ->first();
+
+        if (is_null($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($refundId)
+            {
+                $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::REFUND_ID , '=', $refundId)
+                    ->first();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
+
+        return $upi;
     }
 
     public function fetchAllForBankUpdate($limit = 100, $lastId = 0)
@@ -135,82 +297,238 @@ class Repository extends Base\Repository
 
     public function fetchByMerchantReference(string $merchantReference)
     {
-        return $this->newQuery()
+        $upi =  $this->newQuery()
                     ->where('merchant_reference', '=', $merchantReference)
                     ->first();
+
+        if (is_null($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($merchantReference)
+            {
+                $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where('merchant_reference', '=', $merchantReference)
+                    ->first();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
+
+        return $upi;
     }
 
     public function fetchReceivedByMerchantReference(string $merchantReference)
     {
-        return $this->newQuery()
+        $upi = $this->newQuery()
                     ->where('merchant_reference', '=', $merchantReference)
                     ->first();
+
+        if (is_null($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($merchantReference)
+            {
+                $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where('merchant_reference', '=', $merchantReference)
+                    ->first();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
+
+        return $upi;
     }
 
     public function findAllByNpciTxnId(string $npciTxnId)
     {
-        return $this->newQuery()
+        $upi =  $this->newQuery()
                     ->where(Entity::NPCI_TXN_ID, '=', $npciTxnId)
                     ->get();
+
+        if (empty($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($npciTxnId)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::NPCI_TXN_ID, '=', $npciTxnId)
+                    ->get();
+            });
+        }
+
+        return $upi;
     }
 
     public function findByMatchingNpciReferenceId(string $match, array $select, int $count, array $filter)
     {
-        return $this->newQuery()
+        $upi = $this->newQuery()
                     ->select($select)
                     ->where($filter)
                     ->where(Entity::NPCI_REFERENCE_ID, 'like', $match)
                     ->orderBy(Entity::NPCI_REFERENCE_ID, 'desc')
                     ->limit($count)
                     ->get();
+
+        if (empty($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($match,$select,$count,$filter)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->select($select)
+                    ->where($filter)
+                    ->where(Entity::NPCI_REFERENCE_ID, 'like', $match)
+                    ->orderBy(Entity::NPCI_REFERENCE_ID, 'desc')
+                    ->limit($count)
+                    ->get();
+            });
+        }
+
+        return $upi;
     }
 
     public function fetchByNpciReferenceIdOrGatewayPaymentId(string $arn)
     {
-        return $this->newQuery()
+        $upi = $this->newQuery()
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $arn)
                     ->orWhere(Entity::GATEWAY_PAYMENT_ID, '=', $arn)
                     ->first();
+
+        if (is_null($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($arn)
+            {
+                $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $arn)
+                    ->orWhere(Entity::GATEWAY_PAYMENT_ID, '=', $arn)
+                    ->first();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
+
+        return $upi;
     }
 
     public function findAllByNpciReferenceIdAndGateway(string $npciReferenceId, string $gateway, string $action = Action::AUTHORIZE)
     {
-        return $this->newQuery()
+        $upi = $this->newQuery()
             ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
             ->where('action', '=', $action)
             ->where('gateway', '=', $gateway)
             ->get();
+
+        if (empty($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId, $gateway, $action)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->where('action', '=', $action)
+                    ->where('gateway', '=', $gateway)
+                    ->get();
+
+            });
+        }
+
+        return $upi;
     }
 
     public function findAllByNpciReferenceIdAmountAndGatewayAndMerchantReference(string $npciReferenceId, string $gateway,string $amount, string $merchantReference, string $action = Action::AUTHORIZE)
     {
-        return $this->newQuery()
+        $upi = $this->newQuery()
             ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
             ->where(Entity::AMOUNT, '=',$amount)
             ->where(Entity::MERCHANT_REFERENCE, '=',$merchantReference)
             ->where('action', '=', $action)
             ->where('gateway', '=', $gateway)
             ->get();
+
+        if (empty($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId, $gateway, $amount, $merchantReference, $action)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->where(Entity::AMOUNT, '=',$amount)
+                    ->where(Entity::MERCHANT_REFERENCE, '=',$merchantReference)
+                    ->where('action', '=', $action)
+                    ->where('gateway', '=', $gateway)
+                    ->get();
+
+            });
+        }
+
+        return $upi;
     }
 
     public function fetchByNpciReferenceIdAmountAndGatewayAndMerchantReference(string $npciReferenceId, string $gateway,string $amount, string $merchantReference, string $action = Action::AUTHORIZE)
     {
-        return $this->newQuery()
+        $upi = $this->newQuery()
             ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
             ->where(Entity::AMOUNT, '=',$amount)
             ->where(Entity::MERCHANT_REFERENCE, '=',$merchantReference)
             ->where('action', '=', $action)
             ->where('gateway', '=', $gateway)
             ->first();
+
+        if (is_null($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId, $gateway, $amount, $merchantReference, $action)
+            {
+                $upiEntity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->where(Entity::AMOUNT, '=',$amount)
+                    ->where(Entity::MERCHANT_REFERENCE, '=',$merchantReference)
+                    ->where('action', '=', $action)
+                    ->where('gateway', '=', $gateway)
+                    ->first();
+
+                if ($upiEntity !== null)
+                {
+                    $upiEntity->setArchived(true);
+                }
+
+                return $upiEntity;
+            });
+        }
+
+        return $upi;
     }
-  
+
     public function fetchAllByMerchantReferenceAndNpciReferenceIdAndGateway(string $merchantReference, string $npciReferenceId, string $gateway, string $action = Action::AUTHORIZE)
     {
-        return $this->newQuery()
+        $upi = $this->newQuery()
             ->where(Entity::MERCHANT_REFERENCE, '=', $merchantReference)
             ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
             ->where(Entity::GATEWAY, '=', $gateway)
             ->where('action', '=', $action)
             ->get();
+
+        if (empty($upi) === true)
+        {
+            $upi = $this->newQueryAndResetEntityConnection(function () use ($npciReferenceId, $gateway, $merchantReference, $action)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::MERCHANT_REFERENCE, '=', $merchantReference)
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->where('action', '=', $action)
+                    ->get();
+            });
+        }
+
+        return $upi;
     }
 }

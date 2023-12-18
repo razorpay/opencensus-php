@@ -4,6 +4,7 @@ namespace RZP\Gateway\Base;
 
 use RZP\Base;
 use RZP\Base\ConnectionType;
+use RZP\Gateway\Upi\Base\Entity;
 
 class Repository extends Base\Repository
 {
@@ -16,17 +17,50 @@ class Repository extends Base\Repository
                         ->where('payment_id', '=', $id)
                         ->get();
 
+        if (empty($hotData) === true)
+        {
+            $hotData = $this->newQueryAndResetEntityConnection(function () use ($id)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where('payment_id', '=', $id)
+                    ->get();
+            });
+        }
+
         return $hotData;
     }
 
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
     {
-        $query = $this->newQuery()
-            ->where(Entity::PAYMENT_ID, '=', $paymentId)
-            ->where('action', '=', $action)
-            ->orderBy(Entity::CREATED_AT, 'desc');
+        try
+        {
+            $query = $this->newQuery()
+                ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                ->where('action', '=', $action)
+                ->orderBy(Entity::CREATED_AT, 'desc');
 
-        return $query->firstOrFail();
+            $hotData =  $query->firstOrFail();
+        }
+        catch (\Throwable $e)
+        {
+            $hotData = $this->newQueryAndResetEntityConnection(function () use ($paymentId, $action)
+            {
+                $entity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where('action', '=', $action)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->firstOrFail();
+
+                if ($entity !== null)
+                {
+                    $entity->setArchived(true);
+                }
+
+                return $entity;
+            });
+        }
+
+        return $hotData;
     }
 
     public function findByPaymentIdAndAction($paymentId, $action)
@@ -36,6 +70,25 @@ class Repository extends Base\Repository
                     ->where('action', '=', $action)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->first();
+
+        if (is_null($data) === true)
+        {
+            $data = $this->newQueryAndResetEntityConnection(function () use ($paymentId, $action)
+            {
+                $entity =   $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where('action', '=', $action)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
+
+                if ($entity !== null)
+                {
+                    $entity->setArchived(true);
+                }
+
+                return $entity;
+            });
+        }
 
         return $data;
     }
@@ -51,6 +104,17 @@ class Repository extends Base\Repository
                         ->whereIn('payment_id', $paymentIds)
                         ->where('action', '=', $action)
                         ->get();
+
+        if (empty($hotData) === true)
+        {
+            $hotData = $this->newQueryAndResetEntityConnection(function () use ($paymentIds, $action)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->whereIn('payment_id', $paymentIds)
+                    ->where('action', '=', $action)
+                    ->get();
+            });
+        }
 
         return $hotData;
     }
@@ -110,15 +174,45 @@ class Repository extends Base\Repository
                      ->where(Entity::REFUND_ID, '=', $refundId)
                      ->first();
 
+        if (is_null($data) === true)
+        {
+            $data = $this->newQueryAndResetEntityConnection(function () use ($refundId)
+            {
+                $entity =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::REFUND_ID, '=', $refundId)
+                    ->first();
+
+                if ($entity !== null)
+                {
+                    $entity->setArchived(true);
+                }
+
+                return $entity;
+            });
+        }
+
         return $data;
     }
 
     public function findByRefundIdAndAction(string $refundId, string $action)
     {
-        return $this->newQuery()
+        $hotData =  $this->newQuery()
                     ->where(Entity::REFUND_ID, '=', $refundId)
                     ->where(Entity::ACTION, '=', $action)
                     ->get();
+
+        if (empty($hotData) === true)
+        {
+            $hotData = $this->newQueryAndResetEntityConnection(function () use ($refundId, $action)
+            {
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                    ->where(Entity::REFUND_ID, '=', $refundId)
+                    ->where(Entity::ACTION, '=', $action)
+                    ->get();
+            });
+        }
+
+        return $hotData;
 
     }
 
