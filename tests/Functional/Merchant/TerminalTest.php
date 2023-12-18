@@ -552,6 +552,26 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCcOnUpiTerminal()
+    {
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals('{"cc_on_upi":"1"}', $terminal['notes']);
+
+        $data = [
+            'wallet_on_upi'       => true,
+            'cc_on_upi'           => true
+        ];
+
+        $content = $this->editTerminal($terminal['id'], $data);
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals('{"cc_on_upi":"1","wallet_on_upi":"1"}', $terminal['notes']);
+    }
+
     public function testEditUPIInAppTerminal()
     {
         $terminal = $this->fixtures->create('terminal:upi_in_app_terminal');

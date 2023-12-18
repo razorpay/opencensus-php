@@ -852,6 +852,27 @@ return [
         ]
     ],
 
+    'testCreateCcOnUpiTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'              => 'upi_icici',
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'upi'                  => true,
+                'cc_on_upi'            => true
+            ],
+            'method'  => 'POST',
+            'url'     => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'enabled'              => true
+            ]
+        ]
+    ],
+
     'testCreateUPIInAppIOSTerminal' => [
         'request'  => [
             'content' => [

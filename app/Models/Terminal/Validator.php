@@ -1893,6 +1893,7 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::VPA                        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $upiYesbankEditTerminalRules = [

@@ -64,6 +64,8 @@ class Core extends Base\Core
 
         $input = $this->addMerchantMobileContactInNotesIfApplicable($input);
 
+        $input = $this->addCcOrWalletOnUpiInNotesIfApplicable($input);
+
         $terminal = (new Entity)->build($input);
 
         $terminal->merchant()->associate($merchant);
@@ -457,6 +459,8 @@ class Core extends Base\Core
                 ]);
 
             $input = $this->addMerchantMobileContactInNotesIfApplicable($input);
+
+            $input = $this->addCcOrWalletOnUpiInNotesIfApplicable($input);
 
             $syncInstruments = false;
             if( isset($input[TerminalConstants::SYNC_INSTRUMENTS]) )
@@ -1354,6 +1358,44 @@ class Core extends Base\Core
         $input[Entity::NOTES] = json_encode($input[Entity::NOTES]);
 
         unset($input[Entity::MERCHANT_MOBILE_CONTACT]);
+
+        return $input;
+    }
+
+    /**
+     * Add CC/Wallet on UPI feature in Notes if Applicable
+     * @param array $input
+     */
+    protected function addCcOrWalletOnUpiInNotesIfApplicable(&$input)
+    {
+        if((isset($input[Entity::CC_ON_UPI]) === false) and
+            (isset($input[Entity::WALLET_ON_UPI]) === false))
+        {
+            return $input;
+        }
+
+        if(isset($input[Entity::NOTES]) === false)
+        {
+            $input[Entity::NOTES] = [];
+        }
+        else
+        {
+            $input[Entity::NOTES] = json_decode($input[Entity::NOTES], true);
+        }
+
+        if(isset($input[Entity::CC_ON_UPI]) === true)
+        {
+            $input[Entity::NOTES][Entity::CC_ON_UPI] =  $input[Entity::CC_ON_UPI];
+            unset($input[Entity::CC_ON_UPI]);
+        }
+
+        if(isset($input[Entity::WALLET_ON_UPI]) === true)
+        {
+            $input[Entity::NOTES][Entity::WALLET_ON_UPI] =  $input[Entity::WALLET_ON_UPI];
+            unset($input[Entity::WALLET_ON_UPI]);
+        }
+
+        $input[Entity::NOTES] = json_encode($input[Entity::NOTES]);
 
         return $input;
     }
