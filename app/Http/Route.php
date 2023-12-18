@@ -4714,6 +4714,11 @@ class Route
         'get_all_country_dashboard_config'          => ['get',  'country/{country_code}/dashboard/configs',                  'DashboardUIController@getAllCountryDashboardUIConfigs'],
         'get_country_dashboard_config'              => ['get',  'country/{country_code}/dashboard/config/{config}',         'DashboardUIController@getCountryDashboardUIConfig'],
         'edit_country_dashboard_config'             => ['put',  'country/{country_code}/dashboard/configs',                  'DashboardUIController@editCountryConfigs'],
+
+
+        // mozart audit logs
+        'get_mozart_audit_logs_by_params'           => ['get', 'mozart/audit', 'EdgeProxyController@proxy'],
+        'get_mozart_audit_logs'                     => ['get', 'mozart/audit/{source_id}', 'EdgeProxyController@proxy'],
     ];
 
     public static $public = [
@@ -9024,6 +9029,9 @@ class Route
 
         //Upi Turbo
         'build_turbo_upi_error_mapping',
+
+        'get_mozart_audit_logs',
+        'get_mozart_audit_logs_by_params',
     ];
 
     protected static $splitPaymentRoutes = [
@@ -10600,6 +10608,9 @@ class Route
 
         //Turbo UPI Config
         'build_turbo_upi_error_mapping'           => Permission::SET_CONFIG_KEYS,
+
+        'get_mozart_audit_logs'                    => Permission::VIEW_ALL_ENTITY,
+        'get_mozart_audit_logs_by_params'          => Permission::VIEW_ALL_ENTITY,
     ];
 
     public static $bankLmsRoutePermissions = [

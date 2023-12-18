@@ -23,6 +23,8 @@ return [
         'dispute_dcs_config_add'           => ['host_id' => 'disputes'],
         'dispute_dcs_config_get'           => ['host_id' => 'disputes'],
         'dispute_dcs_config_update'        => ['host_id' => 'disputes'],
+        'get_mozart_audit_logs'            => ['host_id' => 'mozart'],
+        "get_mozart_audit_logs_by_params"  => ['host_id' => 'mozart'],
     ],
 
     // Map- <Host identifier, <Host, Auth[username, password]>>
@@ -91,11 +93,19 @@ return [
             'path_prefix_to_skip' => 'v1/partnerships/',
             'path_prefix_to_add'  => '',
         ],
+
         'barricade' => [
             'host'                => env('BARRICADE_SERVICE_BASE_URL'),
             'auth'                => [env('BARRICADE_SERVICE_KEY'), env('BARRICADE_SERVICE_SECRET')],
             'path_prefix_to_skip' => 'v1/barricade/config/',
             'path_prefix_to_add'  => 'twirp/barricade.config.v1.ConfigApi/',
+        ],
+
+        'mozart' => [
+            'host'                => env('MOZART_LIVE_URL'),
+            'auth'                => ['api', env('MOZART_LIVE_PASSWORD')],
+            'path_prefix_to_skip' => 'v1/mozart/',
+            'path_prefix_to_add'  => '',
         ],
     ],
 ];
