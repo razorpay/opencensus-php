@@ -899,6 +899,18 @@ class Generator extends QrCode\Generator
      */
     protected function checkCloseBySupportForUpiMindgate(int $closeBy): bool
     {
+        $variantForExpiry = $this->app->razorx
+            ->getTreatment(
+                $this->merchant->getId(),
+                RazorxTreatment::HDFC_QR_EXPIRY,
+                $this->mode
+            );
+
+        if ($variantForExpiry !== strtolower(RazorxTreatment::RAZORX_VARIANT_ON))
+        {
+            return false;
+        }
+
         $timeAfter7Days = Carbon::now(Timezone::IST)->addDays(7)->timestamp;
 
         return ($closeBy < $timeAfter7Days);

@@ -2565,7 +2565,7 @@ class Gateway extends Base\Gateway
                 'gateway'  => $this->gateway,
             ],
             CoreEntity::TERMINAL => [
-                'id'                   => $input[CoreEntity::TERMINAL]['id'],
+                'id'                   => $input[CoreEntity::TERMINAL][Terminal\Entity::ID],
                 'gateway_merchant_id'  => $input[CoreEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
                 'gateway_merchant_id2' => $input[CoreEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2],
                 'vpa'                  => $input[CoreEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2],
@@ -2602,7 +2602,7 @@ class Gateway extends Base\Gateway
      */
     protected function getQrExpiryTime(int $input): string
     {
-        return Carbon::createFromTimestamp($input, Timezone::IST)->toDateTimeString();
+        return Carbon::createFromTimestamp($input, Timezone::IST)->toAtomString();
     }
 
     protected function getMerchantReferenceForQrExpiryRequest(array $qrCode): string
