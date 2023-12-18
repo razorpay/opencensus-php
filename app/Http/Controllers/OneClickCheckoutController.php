@@ -301,6 +301,12 @@ class OneClickCheckoutController extends Controller
                 $data = $e->getError()->toPublicArray(true);
                 return ApiResponse::json($data, 503);
 
+            case ErrorCode::BAD_REQUEST_ERROR:
+            case ErrorCode::BAD_REQUEST_INVALID_ID:
+            case ErrorCode::BAD_REQUEST_VALIDATION_FAILED:
+                $data = $e->getError()->toPublicArray(true);
+                return ApiResponse::json($data, 400);
+
             default:
               throw $e;
         }
