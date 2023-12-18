@@ -120,9 +120,10 @@ class ViewSerializerTest extends TestCase
      * @param $brandingLogoUrl
      * @param $securityBrandingLogoUrl
      * @param $merchantCountryCode
+     * @param $productDomainName
      * @dataProvider serializePropertiesForHostedMalaysiaDataProvider
      */
-    public function testSerializePropertiesForHostedMalaysia($isCurlec, $showRzpLogo, $brandingLogoUrl, $securityBrandingLogoUrl, $merchantCountryCode)
+    public function testSerializePropertiesForHostedMalaysia($isCurlec, $showRzpLogo, $brandingLogoUrl, $securityBrandingLogoUrl, $merchantCountryCode, $productDomainName)
     {
         if($isCurlec === true)
         {
@@ -147,13 +148,14 @@ class ViewSerializerTest extends TestCase
         $this->assertEquals($brandingLogoUrl, array_get($serialized, "org.branding.branding_logo"));
         $this->assertEquals($securityBrandingLogoUrl, array_get($serialized, "org.branding.security_branding_logo"));
         $this->assertEquals($merchantCountryCode, array_get($serialized, "merchant.merchant_country_code"));
+        $this->assertEquals($productDomainName, array_get($serialized, "org.branding.product_domain_name"));
     }
 
     public function serializePropertiesForHostedMalaysiaDataProvider() : array
     {
         return [
-            [true, true, 'https://rzp-1415-prod-dashboard-activation.s3.ap-south-1.amazonaws.com/org_KjWRtYXwpK6VfK/payment_apps_logo/phplelIPA', 'https://cdn.razorpay.com/static/assets/i18n/malaysia/security-branding.png', 'MY'],
-            [false, true, '', '', 'IN'],
+            [true, true, 'https://rzp-1415-prod-dashboard-activation.s3.ap-south-1.amazonaws.com/org_KjWRtYXwpK6VfK/payment_apps_logo/phplelIPA', 'https://cdn.razorpay.com/static/assets/i18n/malaysia/security-branding.png', 'MY', 'Curlec Payment Pages'],
+            [false, true, '', '', 'IN', 'Razorpay Payment Pages'],
         ];
     }
 

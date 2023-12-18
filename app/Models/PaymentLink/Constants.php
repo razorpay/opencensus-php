@@ -57,4 +57,9 @@ class Constants
     const DEFAULT_IMAGE_COMPRESSION_QUALITY = 75;
 
     const SKIP_IMAGE_COMPRESSION_FORMAT = ['gif', 'GIF', 'webp', 'WEBP'];
+
+    //Hosted Page Domains
+    const PP_DOMAIN_NAME_RAZORPAY = "Razorpay Payment Pages";
+    const PP_DOMAIN_NAME_CURLEC = "Curlec Payment Pages";
+    const PB_BRANDING_LOGO_CURLEC = "https://cdn.razorpay.com/static/assets/i18n/malaysia/secured-by-curlec-by-rzp.svg";
 }

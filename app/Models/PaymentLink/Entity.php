@@ -197,6 +197,9 @@ class Entity extends Base\PublicEntity
     //File upload
     const PRI_REF_ID                            = 'pri__ref__id';
 
+    const PRODUCT_DOMAIN_NAME   = 'product_domain_name';
+    const PRODUCT_BRANDING_LOGO = 'branding_logo';
+
     const SETTINGS_KEYS                = [
         self::THEME,
         self::UDF_SCHEMA,
@@ -939,5 +942,22 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UDF_JSONSCHEMA_ID, $id);
     }
 
+    public function getPPDomainName(): ?string
+    {
+        $country = $this->merchant->getCountry();
+        if ($country == 'MY'){
+            return Constants::PP_DOMAIN_NAME_CURLEC;
+        }
+        return Constants::PP_DOMAIN_NAME_RAZORPAY;
+    }
+
+    public function getPBBrandingLogo(): ?string
+    {
+        $country = $this->merchant->getCountry();
+        if ($country == 'MY'){
+            return Constants::PB_BRANDING_LOGO_CURLEC;
+        }
+        return "";
+    }
     // -------------------------------------- End Setters -----------------------------
 }

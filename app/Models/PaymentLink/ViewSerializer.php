@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
+use RZP\Models\PaymentLink\Entity as PL_ENTITY;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -381,6 +382,13 @@ class ViewSerializer extends Base\Core
                 $branding['show_rzp_logo'] = false;
             }
             $branding['branding_logo'] = $org->getPaymentAppLogo() ?: self::AXIS_BRANDING_LOGO;
+        }
+
+        if($this->paymentLink->getViewType() === ViewType::PAGE){
+            $branding[PL_ENTITY::PRODUCT_DOMAIN_NAME] = $this->paymentLink->getPPDomainName();
+        }
+        if ($this->paymentLink->getViewType() === ViewType::BUTTON){
+            $branding[PL_ENTITY::PRODUCT_BRANDING_LOGO] = $this->paymentLink->getPBBrandingLogo();
         }
 
         return [
