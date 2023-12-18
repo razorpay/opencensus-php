@@ -17091,6 +17091,14 @@ class Route
             'payment_fetch_refunds',
             'internal_merchant_fetch',
             'internal_merchant_details_fetch',
+            'setl_sms_notification_status',
+            'setl_sms_notification_toggle',
+            'merchant_gst_fetch',
+            'merchant_fetch_keys',
+            'mir_instruments_get',
+            'merchant_instrument_status_get_by_merchant_id',
+            'create_payment_config',
+            'fetch_payment_config',
         ],
     ];
 
