@@ -107,6 +107,7 @@ class BusinessCategory
             Sub::FASHION_AND_LIFESTYLE,
             Sub::GIFTING,
             Sub::GROCERY,
+            Sub::HARDWARE_STORES,
             Sub::BABY_PRODUCTS,
             Sub::OFFICE_SUPPLIES,
             Sub::WHOLESALE,
