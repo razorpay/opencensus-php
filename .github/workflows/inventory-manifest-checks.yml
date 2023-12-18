@@ -1,0 +1,30 @@
+name: Check Resource Owner Mapping
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: 3.8
+
+      - name: Set environment variables
+        run: |
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          echo "PR_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
+
+      - name: Run Python script
+        run: |
+          pip3 install requests
+          python3 ./.github/actions/inventory-manifest-checks.py
