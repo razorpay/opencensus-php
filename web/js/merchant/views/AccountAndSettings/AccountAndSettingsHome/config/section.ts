@@ -1,59 +1,62 @@
 import { Modules } from 'common/constant/enums';
 import User from 'common/typings/User';
+import * as LocalStorageService from 'common/utils/localStorage';
+import { isExperimentActive } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import {
   AdditionalContextInterface,
   SectionCardInterface,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import {
-  SectionCardDataFields,
-  PaymentMethodsFields,
-  WebsiteAppSettingsFields,
-  BusinessSettingsFields,
-  PaymentRefundsFields,
-  NotificationSettingsFields,
-  CheckoutSettingsFields,
   BankAccountSettlementFields,
-  PricingFields,
-  PaymentMethodsTitles,
-  WebsiteAppSettingsTitles,
-  BusinessSettingsTitles,
-  PaymentRefundsTitles,
   BankAccountSettlementTitles,
-  NotificationSettingsTitles,
+  BusinessSettingsFields,
+  BusinessSettingsTitles,
+  CheckoutSettingsFields,
   CheckoutSettingsTitles,
-  PricingTitles,
   InternationalSettingsFields,
   InternationalSettingsTitles,
+  NotificationSettingsFields,
+  NotificationSettingsTitles,
+  PaymentMethodsFields,
+  PaymentMethodsTitles,
+  PaymentRefundsFields,
+  PaymentRefundsTitles,
+  PricingFields,
+  PricingTitles,
+  RewardGrowth,
+  SectionCardDataFields,
+  WebsiteAppSettingsFields,
+  WebsiteAppSettingsTitles,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import {
-  isConfigurationViewAllowed,
-  isWhatsappNotificationEnabled,
-  isSmsNotificationEnabled,
-  isTrustedBadgeAllowed,
-  isSkipMandatorySummaryPageAllowed,
-  isFlashCheckoutAllowed,
-  isPaymentMethodEnabled,
-  shouldShowFeeBearerSelfServe,
-  isWebsiteDetailsEnabled,
-  isWebhookEnabled,
-  isApiKeyEnabled,
-  isGstDetailsEnabled,
-  isTeamManagementAllowed,
   isAccountDetailsEnabled,
-  isSupportTicketEnabled,
-  isFailedPaymentRetryEnabled,
-  isPaymentCaptureAndRefundEnabled,
-  isReminderEnabled,
-  isCreditsEnabled,
+  isApiKeyEnabled,
+  isApplicationEnabled,
   isBalancesEnabled,
   isBankAccountDetailsAllowed,
-  isProfileViewAllowed,
-  shouldShowFIRCSection,
-  shouldShowTeamInvitations,
-  isApplicationEnabled,
+  isConfigurationViewAllowed,
+  isCreditsEnabled,
   isEmailNotificationEnabled,
+  isFailedPaymentRetryEnabled,
+  isFlashCheckoutAllowed,
+  isGstDetailsEnabled,
+  isPaymentCaptureAndRefundEnabled,
+  isPaymentMethodEnabled,
+  isProfileViewAllowed,
+  isReminderEnabled,
+  isSkipMandatorySummaryPageAllowed,
+  isSmsNotificationEnabled,
+  isSupportTicketEnabled,
+  isTeamManagementAllowed,
+  isTrustedBadgeAllowed,
+  isWebhookEnabled,
+  isWebsiteDetailsEnabled,
+  isWhatsappNotificationEnabled,
+  shouldShowFIRCSection,
+  shouldShowFeeBearerSelfServe,
+  shouldShowTeamInvitations,
   isWhatsAppAccountSetupEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
@@ -66,6 +69,7 @@ export const AccountNSettingsIcons = {
   notification_settings: 'i-notification-bell',
   checkout_settings: 'i-shopping-cart',
   pricing: 'i-zap',
+  streaks: 'i-play',
   international_settings: 'i-globe',
 };
 
@@ -551,6 +555,30 @@ export const Sections: SectionCardInterface[] = [
         id: PricingFields.PRICING_PLANS,
         title: PricingTitles[PricingFields.PRICING_PLANS],
         href: ROUTES_INFO.PRICING_PLANS,
+        isNew: true,
+      },
+    ],
+  },
+  {
+    id: SectionCardDataFields.STREAKS_REWARD,
+    title: 'Rewards',
+    icon: AccountNSettingsIcons.streaks,
+    iconBackground: 'linear-gradient(126deg, #C8BFFF 9.01%, #553EDF 98.6%)',
+    additionalCondition:
+      ({
+        extraConfig: { abExperiments: { STREAKS_REWARDS_GROWTH } = {} },
+        mode,
+      }: AdditionalContextInterface) =>
+      (): boolean =>
+        mode === 'live' &&
+        (LocalStorageService.getItem('CUSTOMER_GLU_URL_E2E') === 'on' ||
+          isExperimentActive(STREAKS_REWARDS_GROWTH)),
+    // CUSTOMER_GLU_URL_E2E - e2e run based on localStorage instead of  exp evaluation
+    subSections: [
+      {
+        id: RewardGrowth.STREAK_REWARD,
+        title: 'Streaks',
+        href: ROUTES_INFO.STREAK_REWARD,
         isNew: true,
       },
     ],

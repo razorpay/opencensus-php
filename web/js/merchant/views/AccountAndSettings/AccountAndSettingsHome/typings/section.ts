@@ -7,6 +7,7 @@ export enum SectionCardDataFields {
   NOTIFICATION_SETTINGS = 'notification_settings',
   CHECKOUT_SETTINGS = 'checkout_settings',
   PRICING = 'pricing',
+  STREAKS_REWARD = 'streaks_reward',
   INTERNATIONAL_SETTINGS = 'international_settings',
 }
 
@@ -67,6 +68,9 @@ export enum CheckoutSettingsFields {
 
 export enum PricingFields {
   PRICING_PLANS = 'pricing_plans',
+}
+export enum RewardGrowth {
+  STREAK_REWARD = 'streak_reward',
 }
 
 export enum BankAccountSettlementFields {

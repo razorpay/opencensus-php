@@ -8,6 +8,9 @@ import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import { withRouter } from 'common/deprecated/withRouter';
 import { LS_LABELS } from 'common/ui/PricingSubscription/constants';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentActive } from 'common/utils/rzp-utils';
+
 const LazyPricingBundleMweb = lazy(
   () =>
     import(
@@ -35,7 +38,12 @@ export const PricingBundle = ({
   const isNotInterested = Boolean(
     localStorage.getItem(`${LS_LABELS.NOT_INTERESTED}-${user?.current}`),
   );
+  const { abExperiments: { STREAKS_REWARDS_GROWTH } = {} } = useSplitzService();
+
+  const isStreaksExperimentEnabled = isExperimentActive(STREAKS_REWARDS_GROWTH);
+
   const isAllowedToFetch =
+    !isStreaksExperimentEnabled && // if merchant is part of customerGLU segment then don't open pricing bundle
     user?.isBundlePricingEnabled &&
     mode === 'live' &&
     impressionCount < maxImpressions &&

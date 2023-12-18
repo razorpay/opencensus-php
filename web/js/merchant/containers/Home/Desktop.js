@@ -1,105 +1,109 @@
-import React, { Component, Suspense } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
-import LazyLoad from 'react-lazyload';
-import { Link } from 'react-router-dom';
-import {
-  fetchInternationalProductsStatus as fnFetchInternationalProductsStatus,
-  fetchInternationalSettingStatus as fnFetchInternationalSettingStatus,
-} from 'merchant/reducers/config';
-import * as NotificationActions from 'merchant_common/reducers/notifications';
-import Header from 'common/ui/Header';
 import moment from 'moment';
+import React, { Component, Suspense } from 'react';
+import AsyncButton from 'react-async-button';
+import LazyLoad from 'react-lazyload';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+
+import Carousel from 'common/components/Carousel';
+import { withRouter } from 'common/deprecated/withRouter';
+import { withI18Service } from 'common/i18';
+import { withSplitzService } from 'common/splitz';
 import Amount from 'common/ui/Amount';
-import Group, { GroupItem } from 'common/ui/Group';
-import DateRangePicker from 'common/ui/DateRangePicker';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
-import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
-import ProductOnboardingCard from 'merchant/containers/Home/ProductOnboardingCard';
-import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
+import CovidKnowMore from 'common/ui/CovidKnowMore';
 import Announcement from 'merchant/components/Announcements/Instant';
-import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
-import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
-import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCampaign';
-import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
-import CatalystCampaignBannerPhase2 from 'merchant/components/Announcements/CatalystCampaignBannerPhase2';
-import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
-import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
 import InternationalFormStatusAnnouncement from 'merchant/components/Announcements/InternationalFormStatus';
+import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
+import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
+import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
+import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
+import CreditPullModal from 'merchant/containers/CreditPullModal';
+import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
+import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
+import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import ProductOnboardingCard from 'merchant/containers/Home/ProductOnboardingCard';
+import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
+import { fetchCarouselBanner as fetchCarouselBannerProp } from 'merchant/reducers/growthService';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
-import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
-import CovidKnowMore from 'common/ui/CovidKnowMore';
-import CreditPullModal from 'merchant/containers/CreditPullModal';
-import { fetchCarouselBanner as fetchCarouselBannerProp } from 'merchant/reducers/growthService';
+
+import DashboardBanner from 'common/ui/DashboardBanner';
+import DateRangePicker from 'common/ui/DateRangePicker';
+import Group, { GroupItem } from 'common/ui/Group';
+import GrowthAssetEB from 'common/ui/GrowthAssetEB';
+import Header from 'common/ui/Header';
+import NeoStoneTracker from 'common/ui/NotificationsDropdown/Neostone/Tracker';
+import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
+import Time from 'common/ui/Time';
+import { analyticsTrack } from 'common/utils/analytics';
+import * as LocalStorageService from 'common/utils/localStorage';
 import {
-  trackPresetChange,
-  trackSettlementsClick,
-  trackSettleNow,
-  selfServeSettleTracking,
-  EVENT_CATEGORY_DASHBOARD_HOME,
-} from './ga';
-import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
-import {
+  checkHTML5APIvalidity,
   getCommonAnalyticsProperties,
   getFormattedAmountNew,
-  checkHTML5APIvalidity,
+  isExperimentActive,
 } from 'common/utils/rzp-utils';
-import Time from 'common/ui/Time';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { analyticsTrack } from 'common/utils/analytics';
-import { fetchUser } from 'merchant/reducers/session';
-import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
-import AsyncButton from 'react-async-button';
-import { getSettlementStatus } from 'merchant/views/Capital/utils';
-import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
-import {
-  showKYCStatusModal,
-  fetchEscalations as fnFetchEscalations,
-  showProductsModal,
-} from 'merchant/reducers/home';
-import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
 import {
   getActivationState,
   isNewNcActivationStatus,
 } from 'merchant/components/Activation/ActivationUtils';
 import NCModal from 'merchant/components/Activation/NCModal';
-import DedupeModal from 'merchant/components/Home/DedupeModal';
-import NeoStoneTracker from 'common/ui/NotificationsDropdown/Neostone/Tracker';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
+import CatalystCampaignBannerPhase2 from 'merchant/components/Announcements/CatalystCampaignBannerPhase2';
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
-import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
-import ShowWhen from 'merchant/components/ShowWhen';
-import EasterEgg from 'merchant/components/EasterEgg';
-import GrowthAssetEB from 'common/ui/GrowthAssetEB';
-import M2MBanner from 'merchant/components/M2M/M2MBanner';
-import DashboardBanner from 'common/ui/DashboardBanner';
-import SupportRequest from 'merchant/components/Announcements/SupportRequest';
-import Carousel from 'common/components/Carousel';
-import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommendationnCard/IntlPaymentsRecommendation';
+import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCampaign';
 import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaymentsAnnouncement';
+import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import WebsiteComplianceBanner from 'merchant/components/Announcements/WebsiteCompliance';
+import EasterEgg from 'merchant/components/EasterEgg';
+import DedupeModal from 'merchant/components/Home/DedupeModal';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import M2MBanner from 'merchant/components/M2M/M2MBanner';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { XCorporateCardStatusTracker } from 'merchant/components/StatusTracker';
+import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
+import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommendationnCard/IntlPaymentsRecommendation';
+import RecentActivity from 'merchant/containers/Home/RecentActivity';
+import Traffic from 'merchant/containers/Home/Traffic';
+import {
+  fetchInternationalProductsStatus as fnFetchInternationalProductsStatus,
+  fetchInternationalSettingStatus as fnFetchInternationalSettingStatus,
+} from 'merchant/reducers/config';
+import {
+  fetchEscalations as fnFetchEscalations,
+  showKYCStatusModal,
+  showProductsModal,
+} from 'merchant/reducers/home';
+import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
+import { fetchUser } from 'merchant/reducers/session';
+import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
 import * as EventActions from 'merchant/reducers/trackEvents';
-import { STATUSES } from 'merchant/views/TicketSupport/utils';
-import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
+import lazy from 'merchant/routes/LazyLoader';
+import { merchantFetch } from 'merchant/utils/ajax';
 import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.desktop';
 import {
-  shouldShowWebsiteComplianceModal,
   isPolicyWizardV2Enabled,
+  shouldShowWebsiteComplianceModal,
 } from 'merchant/views/Account/WebsiteAppDetails/utils';
-import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
-import Traffic from 'merchant/containers/Home/Traffic';
-import RecentActivity from 'merchant/containers/Home/RecentActivity';
-import { XCorporateCardStatusTracker } from 'merchant/components/StatusTracker';
-import * as LocalStorageService from 'common/utils/localStorage';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
-import lazy from 'merchant/routes/LazyLoader';
-import { IsOutsideDateRangeForHPAnalytics } from './utils';
+import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
+import { getSettlementStatus } from 'merchant/views/Capital/utils';
+import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
+import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
+import { STATUSES } from 'merchant/views/TicketSupport/utils';
+import * as NotificationActions from 'merchant_common/reducers/notifications';
+
 import DateRangeTooltip from './DateRangeTooltip';
-import { withSplitzService } from 'common/splitz';
-import { withI18Service } from 'common/i18';
+import {
+  EVENT_CATEGORY_DASHBOARD_HOME,
+  selfServeSettleTracking,
+  trackPresetChange,
+  trackSettleNow,
+  trackSettlementsClick,
+} from './ga';
+import { IsOutsideDateRangeForHPAnalytics } from './utils';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -134,7 +138,9 @@ class AnalyticsDesktop extends Component {
     this.popupCredit();
     this.renderL1ActivationModals();
   }
-
+  hideGluOnE2E() {
+    return LocalStorageService.getItem('CUSTOMER_GLU_E2E') !== 'off';
+  }
   componentDidMount() {
     const {
       user,
@@ -145,7 +151,21 @@ class AnalyticsDesktop extends Component {
       fetchCarouselBanner,
       fetchInternationalSettingStatus,
       isNcEligibile,
+      splitz,
+      mode,
     } = this.props;
+
+    const { abExperiments: { STREAKS_REWARDS_GROWTH } = {} } = splitz;
+
+    if (this.hideGluOnE2E() && isExperimentActive(STREAKS_REWARDS_GROWTH) && mode === 'live') {
+      // TODO: remove 'mode' once new splitz flow have support for 'request_data'
+      import('merchant/views/Growth/StreaksReferralIncentiveProgram/CustomerGluSdk').then(
+        (loadedModule) => {
+          loadedModule?.loadCustomerGluSdk();
+        },
+      );
+    }
+
     fetchEscalations();
     analyticsTrack({
       objectName: 'home page',

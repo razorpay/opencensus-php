@@ -14,16 +14,16 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable no-use-before-define */
 /* eslint-disable prefer-const */
-import moment from 'moment';
 import axios from 'axios';
 import { SENSITIVE_FIELDS } from 'common/constant';
-import { acronyms, shortenText } from './acronyms';
 import { saveAs } from 'file-saver';
-import { utils, write } from 'xlsx';
+import isEmpty from 'lodash/isEmpty';
 import currencies from 'merchant/constants/currency';
 import { CURRENCY_FORMATTERS } from 'merchant/helpers/currency/helper';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
-import isEmpty from 'lodash/isEmpty';
+import moment from 'moment';
+import { utils, write } from 'xlsx';
+import { acronyms, shortenText } from './acronyms';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -1692,6 +1692,8 @@ export function isConfigTagAPISupported(merchantCountryCode) {
 
   return SUPPORTED_COUNTRIES.find((countryCode) => countryCode === merchantCountryCode);
 }
+export const isExperimentActive = (experimentHashKey) =>
+  experimentHashKey?.variables?.result === 'on';
 
 export function convertToLocale(amount, countryCode) {
   const SUPPORTED_LOCALE = {

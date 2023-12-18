@@ -24,6 +24,7 @@ const routes = {
   SIGN_IN_PATH: '/?screen=sign_in&isTestEnv=true',
   DASHBOARD: '/app/dashboard',
   ACCOUNT_SETTINGS: '/app/account-settings',
+  STREAKS_REWARDS: '/app/streak-reward',
   BALANCES: '/app/payments-and-refunds-settings/balances',
   CREDITS: '/app/payments-and-refunds-settings/credits',
   REMINDERS: '/app/payments-and-refunds-settings/reminders',

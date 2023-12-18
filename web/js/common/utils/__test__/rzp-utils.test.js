@@ -1,19 +1,20 @@
-import { currencyList, getSplitzExperiments } from './mocks/fixtures';
-import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import {
-  getCurrentFinancialYear,
-  stringTemplate,
+  convertToLocale,
+  exportFileAsExcel,
   getCurrencyConfig,
+  getCurrentFinancialYear,
   getFormattedAmount,
   i18CurrencyConversionFromCommonUnitToMinorUnit,
   i18CurrencyConversionFromMinorUnitToCommonUnit,
+  isExperimentActive,
   mergeCurrencyFormatting,
-  exportFileAsExcel,
   openTicketModal,
-  convertToLocale,
+  stringTemplate,
 } from 'common/utils/rzp-utils';
 import FileSaver from 'file-saver';
+import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import xlsx from 'xlsx';
+import { currencyList, getSplitzExperiments } from './mocks/fixtures';
 
 const saveAsSpy = jest.spyOn(FileSaver, 'saveAs');
 const writeSpy = jest.spyOn(xlsx, 'write');
@@ -239,6 +240,98 @@ describe('Tests for unit conversion', () => {
 
   test('i18CurrencyConversionFromMinorUnitToCommonUnit should return correct conversion for 2 decimal when currency passed does not exist', () => {
     expect(i18CurrencyConversionFromMinorUnitToCommonUnit(10012, 'ABC')).toBe(100.12);
+  });
+});
+
+describe('Tests for `isExperimentActive` function', () => {
+  test('`result: ` Should return true when pass result as on', () => {
+    const experimentObject = {
+      STREAKS_REWARDS_GROWTH: {
+        variables: {
+          result: 'on',
+        },
+      },
+    };
+    expect(isExperimentActive(experimentObject.STREAKS_REWARDS_GROWTH)).toBeTruthy();
+  });
+  test('`result: ` Should return false when result have any other value apart from on', () => {
+    const experimentObject = {
+      STREAKS_REWARDS_GROWTH: {
+        variables: {
+          result: 'off',
+        },
+      },
+    };
+    expect(isExperimentActive(experimentObject.STREAKS_REWARDS_GROWTH)).toBeFalsy();
+  });
+  test('`result: ` Should return false when result is set as null', () => {
+    const experimentObject = {
+      STREAKS_REWARDS_GROWTH: {
+        variables: {
+          result: null,
+        },
+      },
+    };
+    expect(isExperimentActive(experimentObject.STREAKS_REWARDS_GROWTH)).toBeFalsy();
+  });
+  test('`result: ` Should return false when result is set as {}', () => {
+    const experimentObject = {
+      STREAKS_REWARDS_GROWTH: {
+        variables: {
+          result: {},
+        },
+      },
+    };
+    expect(isExperimentActive(experimentObject.STREAKS_REWARDS_GROWTH)).toBeFalsy();
+  });
+  test('`result: ` Should return false when result key is rename to testResult or any other name', () => {
+    const experimentObject = {
+      STREAKS_REWARDS_GROWTH: {
+        variables: {
+          testResult: {},
+        },
+      },
+    };
+    expect(isExperimentActive(experimentObject.STREAKS_REWARDS_GROWTH)).toBeFalsy();
+  });
+  test('`result: ` Should return false when result is set as number', () => {
+    const experimentObject = {
+      STREAKS_REWARDS_GROWTH: {
+        variables: {
+          result: 1,
+        },
+      },
+    };
+    expect(isExperimentActive(experimentObject.STREAKS_REWARDS_GROWTH)).toBeFalsy();
+  });
+  test('`STREAKS_REWARDS_GROWTH: ` Should return false when pass empty object in isExperimentActive function', () => {
+    const experimentObject = {
+      STREAKS_REWARDS_GROWTH: {},
+    };
+    expect(isExperimentActive(experimentObject.STREAKS_REWARDS_GROWTH)).toBeFalsy();
+  });
+  test('`STREAKS_REWARDS_GROWTH: `Should return false when pass null in isExperimentActive function', () => {
+    const experimentObject = {
+      STREAKS_REWARDS_GROWTH: null,
+    };
+    expect(isExperimentActive(experimentObject.STREAKS_REWARDS_GROWTH)).toBeFalsy();
+  });
+
+  test('`variables: ` Should return false when variables is set as null', () => {
+    const experimentObject = {
+      STREAKS_REWARDS_GROWTH: {
+        variables: null,
+      },
+    };
+    expect(isExperimentActive(experimentObject.STREAKS_REWARDS_GROWTH)).toBeFalsy();
+  });
+  test('`variables: `Should return false when variables is set as empty object', () => {
+    const experimentObject = {
+      STREAKS_REWARDS_GROWTH: {
+        variables: {},
+      },
+    };
+    expect(isExperimentActive(experimentObject.STREAKS_REWARDS_GROWTH)).toBeFalsy();
   });
 });
 

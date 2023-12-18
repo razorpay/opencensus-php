@@ -360,6 +360,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['/dashboard', '/account-settings'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'STREAKS_REWARDS_GROWTH',
+          experimentId: {
+            beta: 'MxTTd86ndTW9w8',
+            production: 'MxU5rA1OJAmx3s',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: ['/offers'],
       abExperiments: [
         {

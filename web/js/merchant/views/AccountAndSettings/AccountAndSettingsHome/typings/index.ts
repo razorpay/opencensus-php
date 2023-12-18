@@ -1,17 +1,20 @@
-import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
+import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
+
 import {
   BankAccountSettlementFields,
   BusinessSettingsFields,
   CheckoutSettingsFields,
+  InternationalSettingsFields,
   NotificationSettingsFields,
   PaymentMethodsFields,
   PaymentRefundsFields,
   PricingFields,
+  RewardGrowth,
   SectionCardDataFields,
   WebsiteAppSettingsFields,
-  InternationalSettingsFields,
 } from './section';
-import { ExtraConfig } from 'merchant/components/SidebarV2/utils/Products';
+
+import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 
 export type isMobile = boolean | undefined;
 export type User = Record<string, any>;
@@ -127,6 +130,7 @@ export interface SubSection {
     | CheckoutSettingsFields
     | BankAccountSettlementFields
     | PricingFields
+    | RewardGrowth
     | InternationalSettingsFields;
   href: string;
   title: string;

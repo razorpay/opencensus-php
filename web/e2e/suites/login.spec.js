@@ -1,5 +1,11 @@
 import { hideSearchFTUXBannerByLocalStorage } from '../utils';
-import { hideCustomBannersFromState, loginByEmail, loginByMobile } from '../utils/common';
+import {
+  hideCustomBannersFromState,
+  hideCustomerGluGame,
+  loginByEmail,
+  loginByMobile,
+  showStreakRewardTileInAccountPage,
+} from '../utils/common';
 import { routes } from '../utils/constants';
 
 const { test, expect } = require('@playwright/test');
@@ -26,6 +32,10 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
 
       // hiding custom banner popups by udating local storage
       await hideCustomBannersFromState({ page });
+      // avoid loading customer glu Game script by updating local storage
+      await hideCustomerGluGame({ page });
+      // show streak reward tiles in account page for e2e based in localStorage instead of experiment evaluation
+      await showStreakRewardTileInAccountPage({ page });
 
       // storing login state in context to re-use at other logins
       await page.context().storageState({
@@ -73,6 +83,10 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
 
       // hiding custom banner popups by udating local storage
       await hideCustomBannersFromState({ page });
+      // avoid loading customer glu Game script by updating local storage
+      await hideCustomerGluGame({ page });
+      // show streak reward tiles in account page for e2e based in localStorage instead of experiment evaluation
+      await showStreakRewardTileInAccountPage({ page });
 
       // storing login state in context to re-use at other logins
       await page.context().storageState({
@@ -97,6 +111,10 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
 
       // hiding custom banner popups by udating local storage
       await hideCustomBannersFromState({ page });
+      // avoid loading customer glu Game script by updating local storage
+      await hideCustomerGluGame({ page });
+      // show streak reward tiles in account page for e2e based in localStorage instead of experiment evaluation
+      await showStreakRewardTileInAccountPage({ page });
 
       // storing login state in context to re-use at other logins
       await page.context().storageState({

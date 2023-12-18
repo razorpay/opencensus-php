@@ -45,6 +45,16 @@ export const hideCustomBannersFromState = async ({ page }) => {
     }
   });
 };
+export const hideCustomerGluGame = async ({ page }) => {
+  await page.evaluate(() => {
+    window.localStorage.setItem(`CUSTOMER_GLU_E2E`, 'off');
+  });
+};
+export const showStreakRewardTileInAccountPage = async ({ page }) => {
+  await page.evaluate(() => {
+    window.localStorage.setItem(`CUSTOMER_GLU_URL_E2E`, 'on');
+  });
+};
 
 export const switchMerchant = async ({ page, merchantToSwitch }) => {
   const switchMerchantCta = await page.locator(COMMON_SELECTORS.switchMerchantAction, {

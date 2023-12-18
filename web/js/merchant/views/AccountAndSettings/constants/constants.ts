@@ -38,6 +38,7 @@ export const ROUTE_MAP = {
   [ROUTES_INFO.FIRS]: 'Forward inwards remittance statement',
   [ROUTES_INFO.INTERNATIONAL_PAYMENTS_CODES]: 'International payments codes',
   [ROUTES_INFO.PRICING_PLANS]: 'Pricing Plans',
+  [ROUTES_INFO.STREAK_REWARD]: 'Rewards',
   [ROUTES_INFO.CARDS]: PaymentMethodsTitles.cards,
   [ROUTES_INFO.UPI_QR]: PaymentMethodsTitles.upi,
   [ROUTES_INFO.NETBANKING]: PaymentMethodsTitles.netbanking,

@@ -1,5 +1,6 @@
 /* eslint-disable import/order */
 /* eslint-disable react/no-unsafe */
+import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { ModalMask } from 'common/new-ui/Modal';
 import { withSplitzService } from 'common/splitz';
@@ -8,39 +9,40 @@ import MultiSlider from 'common/ui/MultiSlider';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 import Slider from 'common/ui/Slider';
 import { analyticsTrack } from 'common/utils/analytics';
+import * as LocalStorageService from 'common/utils/localStorage';
 import {
   classList,
   getCommonAnalyticsProperties,
+  isExperimentActive,
   isMobileResolution,
 } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { RouteGuard } from 'merchant/components/ShowWhen';
+import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
 import Home from 'merchant/containers/Home/Index';
 import { setActiveEntity, setBaseLocation, setSecActiveEntity } from 'merchant/reducers/app';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
+import {
+  isConfigurationViewAllowed,
+  isPaymentMethodEnabled,
+  isProfileViewAllowed,
+  isTrustedBadgeAllowed,
+  shouldShowFIRCSection,
+} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSchedule';
+import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { openSlider } from 'merchant_common/reducers/slider';
 import qs from 'query-string';
 import React, { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { NavLink, Navigate, Route, Routes, matchPath } from 'react-router-dom';
-import { withRouter } from 'common/deprecated/withRouter';
-import RepaymentsSchedule from 'merchant/views/Capital/CashAdvance/RepaymentsSchedule';
 import HandleIndex from './HandleIndex';
 import lazy from './LazyLoader';
-import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
-import {
-  isTrustedBadgeAllowed,
-  isPaymentMethodEnabled,
-  isProfileViewAllowed,
-  isConfigurationViewAllowed,
-  shouldShowFIRCSection,
-} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
-import { RouteGuard } from 'merchant/components/ShowWhen';
 
 // import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
-import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
-import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
 import { withI18Service } from 'common/i18';
+import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
+import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
 
 const B2bPaymentsList = lazy(() =>
   import(
@@ -365,6 +367,10 @@ const Pricing = lazy(() =>
   import(/* webpackChunkName: "Pricing" */ 'merchant/views/AccountAndSettings/Pricing'),
 );
 
+const StreaksReward = lazy(() =>
+  import(/* webpackChunkName: "StreaksReward" */ 'merchant/views/AccountAndSettings/Rewards'),
+);
+
 const BankAccountsAndSettlements = lazy(() =>
   import(
     /* webpackChunkName: "BankAccountsAndSettlements" */ 'merchant/views/AccountAndSettings/BankAccountsAndSettlements'
@@ -631,6 +637,8 @@ class Content extends Component {
     } = this.props;
     const { abExperiments } = splitz;
     const extraConfig = { isConfigTagEnabled, abExperiments };
+
+    const { STREAKS_REWARDS_GROWTH } = abExperiments;
 
     if (fullPageView) return fullPageView;
 
@@ -1929,6 +1937,20 @@ class Content extends Component {
             element={
               <RouteGuard additionalCondition={(user) => user?.isBundlePricingEnabled}>
                 <Pricing />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="streak-reward"
+            element={
+              <RouteGuard
+                additionalCondition={() =>
+                  mode === 'live' &&
+                  (LocalStorageService.getItem('CUSTOMER_GLU_URL_E2E') === 'on' ||
+                    isExperimentActive(STREAKS_REWARDS_GROWTH))
+                }
+              >
+                <StreaksReward mode={mode} />
               </RouteGuard>
             }
           />

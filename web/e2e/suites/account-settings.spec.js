@@ -232,4 +232,36 @@ test.describe
     await expect(await businessDetailsSection.getByText('Business Name')).toBeVisible();
     await expect(await businessDetailsSection.getByText('Playwright Test Account')).toBeVisible();
   });
+
+  test.describe.parallel('Rewards & Streak tile - Test Mode', () => {
+    test('do not render Rewards & Streak tile', async ({ page }) => {
+      // check the streak locator do not exists
+      const StringButton = await page.getByRole('button', { name: 'Streaks' });
+      await expect(StringButton).toHaveCount(0);
+    });
+  });
+});
+test.describe
+  .parallel('My account and settings @flow=account-settings @project=payments @project=payments-roast - Live Mode', () => {
+  test.use({
+    storageState: StorageStatePath.EMAIL_LIVE_LOGIN_STATE, // Live mode credential
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto(routes.ACCOUNT_SETTINGS);
+    await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
+  });
+
+  test.describe.parallel('Rewards & Streak tile  - Live Mode', () => {
+    test('should render Rewards & Streak tile', async ({ page }) => {
+      // initial click
+      await page.getByRole('button', { name: 'Streaks' }).click();
+      await expect(page).toHaveURL(routes.STREAKS_REWARDS);
+      // click on back arrow
+      await page.locator('[data-testid="breadcrumb"] i').first().click();
+      await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
+      await page.getByRole('button', { name: 'Streaks' }).click();
+      await expect(page).toHaveURL(routes.STREAKS_REWARDS);
+    });
+  });
 });

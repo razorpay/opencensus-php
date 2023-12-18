@@ -84,7 +84,7 @@ describe('AccountAndSettingsHomePage', () => {
       expect(screen.getByText('Accounts and Product Sections')).toBeInTheDocument();
     });
     await waitFor(() => {
-      expect(screen.getByText('9 sections found')).toBeInTheDocument();
+      expect(screen.getByText('10 sections found')).toBeInTheDocument();
     });
   });
 

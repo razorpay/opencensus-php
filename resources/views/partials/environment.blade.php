@@ -12,6 +12,7 @@
     window.INVISIBLE_CAPTCHA_SITE_KEY = "{{ env('INVISIBLE_CAPTCHA_SITE_KEY') }}";
     window.CHECKBOX_CAPTCHA_SITE_KEY = "{{ env('CHECKBOX_CAPTCHA_SITE_KEY') }}";
     window.RECAPTCHA_V3_SITE_KEY = "{{ env('RECAPTCHA_V3_SITE_KEY') }}";
+    window.STREAKS_REWARDS = "{{ env('STREAKS_REWARDS') }}";
     window.REFINER_PROJECT_ID = "{{ env('REFINER_PROJECT_ID') }}";
     window.EASY_ONBOARDING_URL = "{{ env('EASY_ONBOARDING_URL') }}";
     window.PP_ECOMMERCE_URL = "{{ env('PP_ECOMMERCE_URL') }}";

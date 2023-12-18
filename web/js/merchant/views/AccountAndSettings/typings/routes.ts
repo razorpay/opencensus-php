@@ -32,6 +32,7 @@ export enum ROUTES_INFO {
   SUPPORT_TICKETS_AGENT = '/business-settings/ticket-support/tickets/agent',
   BANK_ACCOUNT_DETAILS = '/bank-accounts-settlements/bank-account-details',
   SETTLEMENT_DETAILS = '/bank-accounts-settlements/settlement-details',
+  STREAK_REWARD = '/streak-reward',
   PRICING_PLANS = '/pricing/pricing-plans',
   PRICING_PLANS_RELATIVE = '/pricing-plans',
   CARDS = '/payment-methods/cards',

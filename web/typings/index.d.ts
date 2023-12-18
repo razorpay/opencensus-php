@@ -21,4 +21,7 @@ interface Window {
   PP_ECOMMERCE_URL: string;
   EASY_ONBOARDING_URL: string;
   RAZORPAY_WEBSITE: string;
+  STREAKS_REWARDS?: string;
+  rzp_user: any;
+  glu?: any;
 }
