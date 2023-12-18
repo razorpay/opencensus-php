@@ -40,6 +40,7 @@ class Entity
     const PAYOUT                     = 'payout';
     const PAYOUT_OUTBOX              = 'payout_outbox';
     const REFUND                     = 'refund';
+    const REFUND_TIDB                = 'refund_tidb';
     const REPORT                     = 'report';
     const COUNTER                    = 'counter';
     const CONTACT                    = 'contact';
@@ -1079,6 +1080,7 @@ class Entity
         self::TOKEN                     => \RZP\Models\Customer\Token::class,
         self::GEO_IP                    => \RZP\Models\GeoIP::class,
         self::REFUND                    => \RZP\Models\Payment\Refund::class,
+        self::REFUND_TIDB               => \RZP\Models\Payment\RefundTidb::class,
         self::REPORT                    => \RZP\Models\Report::class,
         self::BALANCE                   => \RZP\Models\Merchant\Balance::class,
         self::BALANCE_CONFIG            => \RZP\Models\Merchant\Balance\BalanceConfig::class,

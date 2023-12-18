@@ -190,6 +190,10 @@ return [
         // Key and secret through which api will call scrooge
         'scrooge_key'       => env('SCROOGE_KEY'),
         'scrooge_secret'    => env('SCROOGE_SECRET'),
+        'tidb_db_name' => [
+            'live' => env('SCROOGE_LIVE_TIDB_DB_NAME'),
+            'test' => env('SCROOGE_TEST_TIDB_DB_NAME'),
+        ],
     ],
 
     'razorflow' => [

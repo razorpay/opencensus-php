@@ -567,6 +567,10 @@ final class RazorxTreatment
 
     const SCROOGE_MISC_QUERIES_MIGRATION_ENABLED = 'SCROOGE_MISC_QUERIES_MIGRATION_ENABLED';
 
+    const SCROOGE_MISC_QUERIES_MIGRATION_TIDB = 'SCROOGE_MISC_QUERIES_MIGRATION_TIDB';
+
+    const SCROOGE_MISC_QUERIES_MIGRATION_TIDB_SHADOW = 'SCROOGE_MISC_QUERIES_MIGRATION_TIDB_SHADOW';
+
     // experiment to fetch transaction from central ledger service
     const RX_TRANSACTION_LOAD_FROM_LEDGER = 'rx_transaction_load_from_ledger';
 

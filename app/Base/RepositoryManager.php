@@ -32,6 +32,7 @@ use Razorpay\Trace\Logger as Trace;
  * @property Models\Payment\Repository                           $payment
  * @property Models\Settings\Repository                          $settings
  * @property Models\Payment\Refund\Repository                    $refund
+ * @property Models\Payment\RefundTidb\Repository                $refund_tidb
  * @property Models\Merchant\Repository                          $merchant
  * @property Models\Batch\Repository                             $batch
  * @property Models\BankAccount\Repository                       $bank_account

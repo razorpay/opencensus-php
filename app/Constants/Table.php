@@ -32,6 +32,7 @@ class Table
     const PAYOUT_OUTBOX                = 'payout_outbox';
     const LEDGER_OUTBOX                = 'ledger_outbox';
     const REFUND                       = 'refunds';
+    const REFUND_TIDB                  = 'refund_tidb';
     const REPORT                       = 'reports';
     const CONTACT                      = 'contacts';
     const COUNTER                      = 'counters';
@@ -518,7 +519,10 @@ class Table
         {
             return self::getTableNameForLedgerTable($tableName);
         }
+        if($entity == 'refund_tidb'){
 
+            return self::getTableNameForRefundsTable($tableName);
+        }
         return $tableName;
     }
 
@@ -539,6 +543,25 @@ class Table
         $tidbName = ($mode === Mode::LIVE) ? $config['tidb_db_name']['live'] : $config['tidb_db_name']['test'];
 
         return $tidbName . '.' . $tableName;
+    }
+
+    /**
+     * Refunds services' tables data is going to come only from TiDB, so appending tidb db name before table name
+     *
+     * @param string $tableName
+     * @return string
+     */
+    public static function getTableNameForRefundsTable(string $tableName)
+    {
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'];
+
+        $config = $app['config']->get('applications.scrooge');
+
+        $tidbName = ($mode === Mode::LIVE) ? $config['tidb_db_name']['live'] : $config['tidb_db_name']['test'];
+
+        return $tidbName . '.' . 'refunds';
     }
 
     public static function isLedgerTableName($tableName)

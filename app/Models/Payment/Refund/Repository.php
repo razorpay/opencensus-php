@@ -8,7 +8,9 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
@@ -90,6 +92,7 @@ class Repository extends Base\Repository
 
     public function fetchEmiRefundsWithCardTerminalsBetween($from, $to, $bank, $type = 'credit')
     {
+
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchEmiRefundsWithCardTerminalsBetween',
             'route'        => $this->route
@@ -131,7 +134,7 @@ class Repository extends Base\Repository
         $paymentMethod = $paymentRepo->dbColumn(Payment\Entity::METHOD);
         $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
 
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+        $refunds = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)
             ->join($tTableName, $paymentTerminalId, '=', $terminalId)
             ->join($cardTableName, $paymentCardIdCol, '=', $cardIdCol)
@@ -144,11 +147,33 @@ class Repository extends Base\Repository
             ->with('payment', 'payment.card.globalCard', 'payment.emiPlan', 'payment.merchant')
             ->select($refundData)
             ->get();
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variant = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_SHADOW,
+            $mode);
+
+        if(strtolower($variant) === 'on' && $this->app->environment('production') === true){
+            $refundstidb = $this->repo->refund_tidb->fetchEmiRefundsWithCardTerminalsBetweenFromTidb($from,$to,$bank,$type);
+
+            (new Service())->compareRefundsAndLogDifference(
+                $refunds->toArray(), $refundstidb->toArray(), ['method_name' => __FUNCTION__]);
+
+            $isTidbEnabled = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+                RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
+                $mode);
+
+            if(strtolower($isTidbEnabled) === 'on'){
+                return $refundstidb;
+            }
+        }
+
+        return $refunds;
     }
 
     public function fetchCardRefundsForMerchantAndGatewayBetween($from, $to, $merchantIds)
     {
-
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchCardRefundsForMerchantAndGatewayBetween',
             'route'        => $this->route
@@ -167,7 +192,7 @@ class Repository extends Base\Repository
 
         $paymentMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        $refunds= $this->newQueryWithConnection($this->getDataWarehouseConnection())
             ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)
             ->whereBetween($refundProcessedAt, [$from, $to])
             ->whereIn( $paymentMerchantId , $merchantIds)
@@ -177,6 +202,29 @@ class Repository extends Base\Repository
             ->orderBy($this->dbColumn(Refund\Entity::PROCESSED_AT), 'desc')
             ->select($refundData)
             ->get();
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variant = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_SHADOW,
+            $mode);
+
+        if(strtolower($variant) === 'on' && $this->app->environment('production') === true){
+            $refundstidb = $this->repo->refund_tidb->fetchCardRefundsForMerchantAndGatewayBetweenFromTidb($from,$to,$merchantIds);
+
+
+            (new Service())->compareRefundsAndLogDifference(
+                $refunds->toArray(), $refundstidb->toArray(), ['method_name' => __FUNCTION__]);
+
+            $isTidbEnabled = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+                RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
+                $mode);
+            if(strtolower($isTidbEnabled) === 'on'){
+                return $refundstidb;
+            }
+        }
+
+        return $refunds;
     }
 
     protected function addQueryParamInitiatorId($query, $params)
