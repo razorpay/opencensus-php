@@ -42,7 +42,7 @@ class GrowthService extends Base\Service
 
     const ACTIVATED = 'ACTIVATED';
 
-    // Tells the client what the content type of the returned content actually is
+    //Tell the client what the content type of the returned content actually is
     const CONTENT_TYPE = 'Content-Type';
 
     // Specifies the method or methods allowed when accessing the resource in response to a preflight request.
@@ -61,6 +61,7 @@ class GrowthService extends Base\Service
     const MAX_FILE_SIZE = 1048576;
 
     const X_SPLITZ_EXPERIMENT_REUSE      =  'X-Experiment-Reuse';
+    const X_SPLITZ_PROJECT      =  'X-Splitz-Project';
 
     /**
      * @var string
@@ -264,6 +265,7 @@ class GrowthService extends Base\Service
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
         $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
         $headers[self::X_SPLITZ_EXPERIMENT_REUSE] = Request::header(self::X_SPLITZ_EXPERIMENT_REUSE);
+        $headers[self::X_SPLITZ_PROJECT] = Request::header(self::X_SPLITZ_PROJECT);
 
         $options = [
             'timeout' => $this->requestTimeout,
