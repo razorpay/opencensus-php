@@ -1,14 +1,9 @@
 import React from 'react';
+
 import { notifyError } from 'razorx/components/Modal';
+import Field, { SearchableSelectField } from 'razorx/components/ui/Field';
 import Form from 'razorx/components/ui/Form';
-import Field, {
-  TextAreaField,
-  SwitchField,
-  SelectField,
-  SearchableSelectField,
-} from 'razorx/components/ui/Field';
 import { splitzFetch } from 'razorx/helpers/fetch';
-import { AppStore } from 'razorx/store';
 
 export default class ExperimentTester extends React.Component {
   state = {
@@ -71,7 +66,7 @@ export default class ExperimentTester extends React.Component {
     splitzFetch({
       url: 'experiment.v1.ExperimentAPI/List',
       data: {
-        limit: 1000,
+        limit: 10000,
         offset: 0,
       },
     })
@@ -95,6 +90,7 @@ export default class ExperimentTester extends React.Component {
   render() {
     const {
       isFetchingExperiments,
+      isFetching,
       experiments,
       selectedExperiment,
       evaluationResult,
@@ -102,7 +98,7 @@ export default class ExperimentTester extends React.Component {
     } = this.state;
     let result;
 
-    if (isFetchingExperiments) {
+    if (isFetchingExperiments || isFetching) {
       result = <span className="dot-loader">.</span>;
     } else if (evaluationResult === false) {
       result = (

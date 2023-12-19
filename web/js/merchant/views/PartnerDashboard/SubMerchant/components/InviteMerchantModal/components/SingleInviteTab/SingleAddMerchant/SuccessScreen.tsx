@@ -46,7 +46,7 @@ const SuccessScreen = ({
         marginTop="spacing.5"
         minHeight="spacing.10"
       >
-        <Spinner alignSelf="center" accessibilityLabel="public-links-spinner" />
+        <Spinner alignSelf="center" accessibilityLabel="success-screen-spinner" />
       </Box>
     );
   const referralUrl = referralData?.[productType]?.url;

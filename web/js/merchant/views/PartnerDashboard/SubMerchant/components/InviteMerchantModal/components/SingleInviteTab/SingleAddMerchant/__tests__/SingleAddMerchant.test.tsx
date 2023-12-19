@@ -92,6 +92,7 @@ describe('SingleAddMerchant', () => {
     // Check that we moved to next step
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('success-screen-spinner')).not.toBeInTheDocument();
     });
     expect(defaultProps.onAddSuccess).toHaveBeenCalled();
     expect(defaultProps.setShowHeaderAndTabs).toHaveBeenCalledWith(false);
@@ -115,6 +116,7 @@ describe('SingleAddMerchant', () => {
     // Check that we moved to next step
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('success-screen-spinner')).not.toBeInTheDocument();
     });
     expect(defaultProps.onAddSuccess).toHaveBeenCalled();
     expect(defaultProps.onDismiss).toHaveBeenCalled();
@@ -134,6 +136,7 @@ describe('SingleAddMerchant', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Send Invite' }));
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('success-screen-spinner')).not.toBeInTheDocument();
     });
     expect(showNotificationSpy).toHaveBeenCalledWith({ message, type: 'error' });
   });
