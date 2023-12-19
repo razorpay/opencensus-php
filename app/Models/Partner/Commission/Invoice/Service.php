@@ -50,7 +50,11 @@ class Service extends Base\Service
         if($variant == 'reverse-shadow' or $variant == 'cutoff')
         {
             $response =  $this->app->partnerships->updateInvoiceStatus(['id'=> $id, 'status'=> $input[Entity::ACTION]]);
-            if($response['status_code'] == 200 && $variant != 'cutoff')
+            if ( $variant == 'cutoff')
+            {
+                return $response['response'];
+            }
+            if($response['status_code'] == 200)
             {
                 $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant);
 
@@ -59,10 +63,7 @@ class Service extends Base\Service
                 $this->repo->saveOrFail($invoice);
 
             }
-            if($response['status_code'] != 404)
-            {
-                return $response;
-            }
+            return $response['response'];
         }
         $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant);
 
@@ -76,6 +77,15 @@ class Service extends Base\Service
 
     public function clearOnHoldForInvoiceBulk(array $input)
     {
+        // if reverse shadow is enabled invoice status update should be done at prts
+        $variant = (new Core)->getCommissionInvoiceExperimentMode($this->merchant->getId());
+        if($variant == 'reverse-shadow' or $variant == 'cutoff')
+        {
+            unset($input[Constants::UPDATE_INVOICE_STATUS]);
+            $response =  $this->app->partnerships->processBulkInvoiceSettlement($input);
+
+            return $response['response'];
+        }
         (new Validator)->validateInput('bulk_on_hold_clear', $input);
 
         return Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_COMMISSION_INVOICE_BULK_CORE], function () use ($input) {
@@ -90,7 +100,7 @@ class Service extends Base\Service
         // if cutoff is enabled then return the response from prts
         if($result['isCutOffEnabled'] === true)
         {
-            return  Response::make( $result['response'], $result['status_code']);
+            return $result['response'];
         }
 
         $params = [
@@ -110,7 +120,7 @@ class Service extends Base\Service
         // if cutoff is enabled then return the response from prts
         if($result['isCutOffEnabled'] === true)
         {
-            return  Response::make( $result['response'], $result['status_code']);
+            return $result['response'];
         }
 
         $invoices = $this->repo->commission_invoice->fetch($input, $this->merchant->getId());

@@ -68,6 +68,9 @@ class PartnershipsService extends Base\Service
 
     const UPDATE_INVOICE_STATUS          = '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/UpdateInvoiceStatus';
 
+    const PROCESS_BULK_INVOICE_SETTLEMENT = '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/ProcessBulkInvoiceSettlement';
+
+
     const UPDATE_PARTNER_CONFIG          = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/Update';
 
     const DELETE_PARTNER_CONFIG          = '/twirp/rzp.commissions.partner_config.v1.PartnerConfigAPI/Delete';
@@ -283,6 +286,11 @@ class PartnershipsService extends Base\Service
                 $parameters
             );
         }
+    }
+
+    public function processBulkInvoiceSettlement($parameters)
+    {
+        return $this->sendRequestWithRetry($parameters, self::PROCESS_BULK_INVOICE_SETTLEMENT, Requests::POST);
     }
 
     public function upsertPartnerConfig($parameters)
