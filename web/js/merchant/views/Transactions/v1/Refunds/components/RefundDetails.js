@@ -108,9 +108,9 @@ class PaymentDetailsContainer extends Component {
 
             <div className="SliderPanel__Body">
               <div
-                className={`panel-body${
+                className={`panel-body ${
                   user?.isSingleReconEnabled && user?.isOptimizerEnabled
-                    ? ' optimizer-refund-panel-body'
+                    ? 'optimizer-refund-panel-body'
                     : 'refund-panel-body'
                 }`}
               >
