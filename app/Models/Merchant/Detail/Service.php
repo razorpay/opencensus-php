@@ -898,7 +898,7 @@ class Service extends Base\Service
                     if(count($keyString)==2){
                         $merchantBusinessDetailEditInput[$attribute] =  $value;
                     }else{
-                        $merchantBusinessDetailEditInput[$attribute] = [$keyString[2] => $value];
+                        $merchantBusinessDetailEditInput[$attribute][$keyString[2]] = $value;
                     }
                     break;
                 case 'documents':
