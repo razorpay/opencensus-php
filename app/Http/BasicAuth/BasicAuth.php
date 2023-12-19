@@ -491,10 +491,18 @@ class BasicAuth
     /**
      * maximum number of method names allows in passportAlterationPath.
      * there are total of 9 public methods allowing passport alternation directly at max so keeping the limit same.
-     * 
+     *
      * @var integer
      */
     private static $passportAlterationPathLimit = 9;
+
+    /**
+     * Used to identify if merchant auth with impersonation request is treated as normal merchant auth
+     * due to merchant is not allowed to pass account id
+     * api will skip parsing account id if isAccountAuthAllowed() is false
+     * @var bool
+     */
+    public $is_mwi_converted_to_merchant_auth = false;
 
     public function __construct($app)
     {
@@ -2830,6 +2838,19 @@ class BasicAuth
                 ]);
             return true;
         }
+
+        $this->is_mwi_converted_to_merchant_auth = true;
+        // temp log added by edge team to identify requests which are sending account id when they are not allowed to
+        // api skips parsing of account id when the merchant is not allowed to pass account id
+        // edge is not aware of the allowed check hence verify if there are any such cases
+        $this->trace->info(TraceCode::MWI_CONVERTED_TO_MERCHANT_AUTH,
+            [
+                'merchant_id'    => $this->authCreds->getMerchant()->getId(),
+                'is_marketplace' => $this->authCreds->getMerchant()->isMarketplace(),
+                'partner_type'   => $this->authCreds->getMerchant()->getPartnerType(),
+                'account_id'     => $this->getAccountId(),
+                'private_auth'   => $this->isPrivateAuth(),
+            ]);
 
         return false;
     }

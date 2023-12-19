@@ -460,7 +460,8 @@ class Authenticate
                 self::STATUS              => $res->getStatusCode(),
                 self::AUTH                => $this->ba->getAuthType(),
                 self::AUTH_FLOW           => $this->app['request.ctx']->getAuthFlowType(),
-                self::ACCOUNT_ID_SOURCE   => $this->app['request.ctx']->getAccountIdSource()
+                self::ACCOUNT_ID_SOURCE   => $this->app['request.ctx']->getAccountIdSource(),
+                "is_mwi_skipped"          => $this->ba->is_mwi_converted_to_merchant_auth,        // temp variable will be removed by edge team
             ]);
         }
 
