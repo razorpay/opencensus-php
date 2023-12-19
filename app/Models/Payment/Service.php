@@ -4435,7 +4435,23 @@ class Service extends Base\Service
 
     public function fetchForSubscription(string $paymentId, string $subscriptionId): array
     {
-        $payment = $this->repo->payment->fetchByIdandSubscriptionId($paymentId, $subscriptionId);
+        $payment = null;
+        try {
+            $payment = $this->repo->payment->fetchByIdandSubscriptionId($paymentId, $subscriptionId);
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::PAYMENT_FETCH_EXCEPTION,
+                ['payment_id' => $paymentId, 'subscription_id' => $subscriptionId],
+            );
+            $payment = $this->repo->payment->findByIdAndMerchant($paymentId, $this->merchant);
+        }
+
+        if($payment->getSubscriptionId() != Entity::stripDefaultSign($subscriptionId)) {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
+        }
 
         $payload = $payment->toArrayAdmin();
 

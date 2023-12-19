@@ -1158,6 +1158,27 @@ return [
             ]
         ]
     ],
+    env('APP_V2_ID_CHARGE_COLLECTIONS_INTERNAL')                  => [
+        "name"        => "charge_collections_internal",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_CHARGE_COLLECTIONS_INTERNAL'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CHARGE_COLLECTIONS_INTERNAL'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.charge_collections_internal"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_CHARGE_COLLECTIONS_INTERNAL'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_CHARGE_COLLECTIONS_INTERNAL'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.charge_collections_internal"
+                ]
+            ]
+        ]
+    ],
     env('APP_V2_ID_PG_ROUTER')                  => [
         "name"        => "pg_router",
         "credentials" => [

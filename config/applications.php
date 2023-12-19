@@ -812,6 +812,10 @@ return [
         'secret'   => env('GROWTH_INTERNAL_SECRET'),
     ],
 
+    'charge_collections_internal' => [
+        'secret' => env('CHARGE_COLLECTIONS_INTERNAL_SECRET'),
+    ],
+
     'partnerships'   => [
         'mock'              => env('PARTNERSHIPS_MOCK', false),
         'url'               => [

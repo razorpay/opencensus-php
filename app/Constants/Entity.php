@@ -616,6 +616,7 @@ class Entity
     const CHARGE                         = 'charge';
 
     const BUNDLE_FEE                     = 'bundle_fee';
+    const PRICING_CHARGE                 = 'pricing_charge';
 
     const PAYMENTS_NBPLUS_PAYMENTS     = 'payments_nbplus.payments';
     const PAYMENTS_NBPLUS_NETBANKING   = 'payments_nbplus.netbanking';
@@ -1437,6 +1438,7 @@ class Entity
         self::INSTALLMENT       => \RZP\Models\CapitalTransaction::class,
         self::CHARGE            => \RZP\Models\CapitalTransaction::class,
         self::BUNDLE_FEE        => \RZP\Models\Growth\BundleFee::class,
+        self::PRICING_CHARGE    => \RZP\Models\ChargeCollections\PricingCharge::class,
 
         self::USER_DEVICE_DETAIL              => \RZP\Models\DeviceDetail::class,
         self::APP_ATTRIBUTION_DETAIL          => \RZP\Models\DeviceDetail\Attribution::class,

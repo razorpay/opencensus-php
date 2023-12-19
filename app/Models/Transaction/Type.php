@@ -29,6 +29,7 @@ class Type
     const INTEREST_WAIVER         = 'interest_waiver';
     const CREDIT_TRANSFER         = 'credit_transfer';
     const BUNDLE_FEE              = 'bundle_fee';
+    const PRICING_CHARGE          = 'pricing_charge';
 
     //
     // These entities from transaction will not be considered for merchant invoice as we wont charge on these entities

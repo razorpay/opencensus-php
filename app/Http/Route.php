@@ -2497,7 +2497,7 @@ class Route
         'user_opt_in_whatsapp'                     => ['post',     'users/whatsapp/opt_in',                          'UserController@optInForWhatsapp'                                   ],
         'user_opt_in_status_whatsapp'              => ['get',      'users/whatsapp/opt_in_status',                   'UserController@optInStatusForWhatsapp'                             ],
         'user_opt_out_whatsapp'                    => ['post',     'users/whatsapp/opt_out',                         'UserController@optOutForWhatsapp'                                  ],
-        'user_details'                             => ['get',      'users',                                          'UserController@getUserDetails'                                     ], 
+        'user_details'                             => ['get',      'users',                                          'UserController@getUserDetails'                                     ],
         'user_details_for_payroll'                 => ['get',      'users_fetch_for_payroll',                        'UserController@getUserDetailsForPayroll'                           ],
         'user_details_unified'                     => ['get',      'users_unified',                                  'UserController@getUserDetailsUnified'                              ],
         'user_all_roles'                           => ['get',      'users/{id}/roles/{merchant_id}',                 'UserController@getUserRoles'                                       ],
@@ -3178,6 +3178,10 @@ class Route
         'growth_pricing_bundle_add_amount_credits' => ['post',     'growth/pricing_bundle/add_amount_credits', 'GrowthInternalController@addAmountCredits'                         ],
         'growth_pricing_bundle_create_transaction' => ['post',     'growth/pricing_bundle/internal_transaction', 'GrowthInternalController@createBundleFeeTransaction'],
         'growth_pricing_bundle_assign_pricing_rule' => ['post', 'growth/pricing_bundle/assign_pricing_rule', 'GrowthInternalController@assignPricingRuleToMerchant'],
+
+        // charge collections routes
+        'cc_create_transaction'                    => ['post',     'charge_collections/internal_transaction',        'ChargeCollectionsInternalController@createInternalTransaction'     ],
+
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -5503,6 +5507,8 @@ class Route
         'growth_pricing_bundle_create_transaction',
         'growth_pricing_bundle_assign_pricing_rule',
 
+        // charge collection routes
+        'cc_create_transaction',
 
         // cron for generating merchant report
         'merchant_report',
@@ -16973,6 +16979,10 @@ class Route
             'growth_pricing_bundle_add_amount_credits',
             'growth_pricing_bundle_create_transaction',
             'growth_pricing_bundle_assign_pricing_rule',
+        ],
+
+        'charge_collections_internal' => [
+            'cc_create_transaction',
         ],
 
         'affordability' => [

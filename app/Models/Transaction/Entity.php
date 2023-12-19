@@ -797,6 +797,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::BUNDLE_FEE);
     }
 
+    public function isTypePricingCharge(): bool
+    {
+        return ($this->getType() === Type::PRICING_CHARGE);
+    }
+
     public function isTypeCreditRepayment(): bool
     {
         return ($this->getType() === Type::CREDIT_REPAYMENT);
@@ -864,6 +869,7 @@ class Entity extends Base\PublicEntity
         // For credit repayment & capital txns, we need id in response to store ids in entities
         if (($this->isTypeCreditRepayment() === true) or
             ($this->isTypeCapitalTransaction() === true) or
+            ($this->isTypePricingCharge() === true) or
             ($this->isTypeBundleFee() === true))
         {
             return $reportTxn;

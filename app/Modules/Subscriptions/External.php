@@ -3,7 +3,9 @@
 namespace RZP\Modules\Subscriptions;
 
 use Config;
+use Request;
 use RZP\Http\Request\Requests;
+use RZP\Http\RequestHeader;
 use \WpOrg\Requests\Session as Requests_Session;
 use Illuminate\Support\Str;
 
@@ -54,6 +56,8 @@ class External extends Base
             'Accept'         => 'application/json',
             'X-Razorpay-App' => 'api',
         ];
+
+        $defaultHeaders[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
         $defaultOptions = [
             'timeout' => $this->config['timeout'],
