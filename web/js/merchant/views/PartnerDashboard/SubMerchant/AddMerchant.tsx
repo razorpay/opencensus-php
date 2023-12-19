@@ -62,13 +62,6 @@ const PAYMENTS_DISABLED_STATUS = {
   curlec: false,
 };
 
-const getPaymentNote = (isShowResumeOnboarding = false) => {
-  return {
-    rzp: !isShowResumeOnboarding,
-    curlec: false,
-  };
-};
-
 const MOBILE_NUMBER_MAX_LENGTH = {
   IN: 10,
   MY: 12,
@@ -94,7 +87,6 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   onAddSuccess: () => void;
   isPartnershipForCapitalEnabled: boolean;
   isPartnershipFUX: boolean;
-  isShowResumeOnboarding: boolean;
   orgCode: string;
   orgName: string;
   countryCode: string;
@@ -102,12 +94,11 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     super(props);
     const { user, addType, referralData, onAddSuccess = () => {}, org } = props;
     const state = getInitialState({ user, addType, referralData });
-    const { isPartnershipFUX, isPartnershipForCapitalEnabled, isShowResumeOnboarding } = user;
+    const { isPartnershipFUX, isPartnershipForCapitalEnabled } = user;
     this.state = state;
     this.onAddSuccess = onAddSuccess;
     this.isPartnershipFUX = isPartnershipFUX;
     this.isPartnershipForCapitalEnabled = isPartnershipForCapitalEnabled;
-    this.isShowResumeOnboarding = isShowResumeOnboarding;
     this.orgCode = org?.custom_code || 'rzp';
     this.orgName = org?.business_name || 'Razorpay';
     this.countryCode = user?.merchant?.country_code || 'IN';
@@ -784,7 +775,6 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                     checked={merchantType === PRODUCT_TYPE.PG}
                     disabled={PAYMENTS_DISABLED_STATUS[this.orgCode]}
                     isMaintenance={PAYMENTS_MAINTENANCE_STATUS[this.orgCode]}
-                    showNote={getPaymentNote(this.isShowResumeOnboarding)[this.orgCode]}
                     orgName={this.orgName}
                   />
                   <ShowWhen

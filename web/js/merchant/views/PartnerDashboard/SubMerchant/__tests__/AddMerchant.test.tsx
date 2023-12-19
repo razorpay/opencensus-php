@@ -150,15 +150,6 @@ describe('AddMerchant', () => {
     jest.clearAllMocks();
   });
 
-  test('should show the note for resuming partner onboarding', () => {
-    renderApp();
-    expect(
-      screen.getByText(
-        'Note: New Business onboarding is temporarily paused! Your clients can submit their details so that their account can be activated at the earliest when we resume onboarding',
-      ),
-    ).toBeInTheDocument();
-  });
-
   test('should show different footer text for partnerships invite flow', async () => {
     renderApp({ isPartnershipsInviteFlowEnabled: true, isPartnershipForCapitalEnabled: false });
     const merchantBox = screen.getByText('Razorpay Payments');

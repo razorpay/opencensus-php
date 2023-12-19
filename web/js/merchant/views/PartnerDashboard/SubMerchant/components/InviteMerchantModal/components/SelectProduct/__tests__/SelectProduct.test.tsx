@@ -10,7 +10,6 @@ const defaultProps = {
   productType: null,
   setProductType: jest.fn(),
   onNextClick: jest.fn(),
-  isOnboardingDisabled: true,
 };
 const defaultUserExtra = {
   findTag: jest.fn(),
@@ -30,15 +29,6 @@ describe('SelectProduct', () => {
   };
   afterEach(() => {
     jest.clearAllMocks();
-  });
-  test('should show the note for resuming partner onboarding', () => {
-    renderApp({});
-
-    expect(
-      screen.getByText(
-        'Note: New business onboarding temporarily paused! Your clients can submit their details for quick activation when we resume onboarding',
-      ),
-    ).toBeInTheDocument();
   });
   test('should fire callbacks on click events', async () => {
     // Enable all options

@@ -11,14 +11,11 @@ const defaultProps = {
   checked: true,
   disabled: false,
   isMaintenance: false,
-  showNote: true,
   orgName: 'Razorpay',
 };
 describe('SelectBox', () => {
   test('should render in default setting', () => {
     render(<SelectBox {...defaultProps} />, {});
-    expect(
-      screen.getByText(/Note: New Business onboarding is temporarily paused!.*/),
-    ).toBeVisible();
+    expect(screen.queryByText(/Note: New Business onboarding is temporarily paused!.*/)).toBeNull();
   });
 });

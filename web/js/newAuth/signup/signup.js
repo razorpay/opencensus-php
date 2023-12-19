@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@razorpay/blade/components';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Size from '@razorpay/blade-old/src/atoms/Size';
 import Text from '@razorpay/blade-old/src/atoms/Text';
@@ -9,15 +8,11 @@ import QueryString from 'query-string';
 import { ThemeProvider } from 'styled-components';
 
 import { FullPageLoader } from 'common/components/Loader';
-import { Modal, ModalBody } from 'common/components/Modal';
-import { ModalHeader, ModalFooter } from 'common/components/Modal/Styled';
 import { setCookie } from 'common/utils/cookies';
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { fetchOrg } from 'newAuth/apis';
 import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
 import { ContentContainer } from 'newAuth/commonStyles';
-import { isSignupEnabled, isShowResumeOnboarding } from 'newAuth/splitz/index';
-import { trackWithSegment } from 'newAuth/trackEvents';
+import { isSignupEnabled } from 'newAuth/splitz/index';
 import {
   getURLQueryParams,
   isPasswordUXImprovementEnabled,
@@ -35,7 +30,6 @@ const SignUp = () => {
   const [programDsCheck, setProgramDsCheck] = useState(false);
   const [orgName, setOrgName] = useState();
   const [isFetchingOrgData, setFetchingOrgData] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [captchaDisabled, setDisabledCaptcha] = useState(false);
   const [oneTapInfo, setOneTapInfo] = useState({
     isExpOn: true,
@@ -54,20 +48,6 @@ const SignUp = () => {
     if (isSignUpFromWebsite) {
       setCookie('auth_source', auth_source);
     }
-
-    // show partner onboarding resumed notification modal
-    setIsOpen(true);
-    const objectName = isSigningUpAsPartner
-      ? 'Partner Onboarding Paused Modal'
-      : 'SubM Onboarding Paused Modal';
-    trackWithSegment({
-      objectName,
-      actionName: 'Loaded',
-      location: '',
-      properties: {
-        mobileSignup: true,
-      },
-    });
   }, []);
 
   useEffect(() => {
@@ -160,21 +140,6 @@ const SignUp = () => {
     window.location.href = '/#/access/signin';
   };
 
-  const onClose = () => {
-    setIsOpen(false);
-    const objectName = isSigningUpAsPartner
-      ? 'Partner Onboarding Paused Modal Continue'
-      : 'SubM Onboarding Paused Modal Continue';
-    trackWithSegment({
-      objectName,
-      actionName: 'Clicked',
-      location: '',
-      properties: {
-        mobileSignup: true,
-      },
-    });
-  };
-
   // enable signup for invitation merchant
   let disableSignup = !invitation && !programDsCheck && !merchant_invitation;
 
@@ -190,31 +155,7 @@ const SignUp = () => {
     disableSignup = false;
   }
 
-  if (!disableSignup && isSigningUpAsPartner)
-    return (
-      <>
-        <PartnerSignup />
-        {isShowResumeOnboarding() ? null : (
-          <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            bottomsheet={isMobileAndTablet()}
-            bottomSheetHeight="265px"
-          >
-            <ModalHeader>New business onboarding is temporarily paused</ModalHeader>
-            <ModalBody>
-              Please submit your details so that your partner account can be activated at the
-              earliest when we resume onboarding.
-              <br />
-              *You can keep referring your clients in the meanwhile
-            </ModalBody>
-            <ModalFooter>
-              <Button onClick={onClose}>Continue</Button>
-            </ModalFooter>
-          </Modal>
-        )}
-      </>
-    );
+  if (!disableSignup && isSigningUpAsPartner) return <PartnerSignup />;
 
   return (
     <ThemeProvider theme={theme}>
@@ -259,32 +200,6 @@ const SignUp = () => {
                       <InfoContainer handleContactUsClick={handleContactUsClick} />
                     </RelativeView>
                   )}
-                  <Modal
-                    isOpen={isOpen}
-                    onClose={onClose}
-                    bottomsheet={isMobileAndTablet()}
-                    bottomSheetHeight="265px"
-                  >
-                    <ModalHeader>New business onboarding is temporarily paused</ModalHeader>
-                    <ModalBody>
-                      {isSigningUpAsPartner ? (
-                        <>
-                          Please submit your details so that your partner account can be activated
-                          at the earliest when we resume onboarding.
-                          <br />
-                          *You can keep referring your clients in the meanwhile
-                        </>
-                      ) : (
-                        <>
-                          Please submit your details so that your merchant account can be activated
-                          at the earliest when we resume onboarding.
-                        </>
-                      )}
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button onClick={onClose}>Continue</Button>
-                    </ModalFooter>
-                  </Modal>
                 </ContentContainer>
               </Flex>
             </Size>

@@ -2,9 +2,6 @@ import React from 'react';
 import { Description, Label } from 'common/new-ui/Input';
 import { classList } from 'common/utils/rzp-utils';
 
-const PARTNER_ONBOARDING_NOTE =
-  'Note: New Business onboarding is temporarily paused!\n' +
-  'Your clients can submit their details so that their account can be activated at the earliest when we resume onboarding';
 export default class SelectBox extends React.Component {
   static defaultProps = {
     onClick() {},
@@ -70,7 +67,6 @@ export default class SelectBox extends React.Component {
                 inconvenience.
               </div>
             )}
-            {props.showNote ? <p className="note-text">{PARTNER_ONBOARDING_NOTE}</p> : null}
           </div>
 
           <div className="SelectBox-action">

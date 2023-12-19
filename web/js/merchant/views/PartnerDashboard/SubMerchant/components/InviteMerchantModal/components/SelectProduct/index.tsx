@@ -25,7 +25,6 @@ type SelectProductProps = {
   setProductType: (args: string) => void;
   productType: string;
   orgName: string;
-  isOnboardingDisabled?: boolean;
 };
 const SelectProduct = ({
   user,
@@ -33,7 +32,6 @@ const SelectProduct = ({
   productType,
   setProductType,
   onNextClick,
-  isOnboardingDisabled = false,
 }: SelectProductProps): JSX.Element => {
   const handleSelectProduct = ({ value }) => {
     setProductType(value);
@@ -68,12 +66,6 @@ const SelectProduct = ({
                         Refer merchants to {orgName} Payment gateway and other products to receive
                         payments
                       </Text>
-                      {isOnboardingDisabled ? (
-                        <Text color="feedback.text.notice.lowContrast" size="small">
-                          Note: New business onboarding temporarily paused! Your clients can submit
-                          their details for quick activation when we resume onboarding
-                        </Text>
-                      ) : null}
                     </Box>
                   </Box>
                 </Box>

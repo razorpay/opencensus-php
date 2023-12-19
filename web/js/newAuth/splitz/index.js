@@ -61,7 +61,3 @@ export const isOnboardAllAsResellers = () => {
 export const isSignupEnabled = () => {
   return evaluateExperiment(experimentDataMap.signup_enabled);
 };
-
-export const isShowResumeOnboarding = () => {
-  return evaluateExperiment(experimentDataMap.show_resume_onboarding);
-};

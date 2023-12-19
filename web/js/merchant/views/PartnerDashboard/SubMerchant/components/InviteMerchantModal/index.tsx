@@ -130,7 +130,6 @@ const InviteMerchantModal = ({
               productType={productType}
               setProductType={setProductType}
               onNextClick={onSelectProductNextClick}
-              isOnboardingDisabled
             />
           ) : null}
           {currentStep === CHOOSE_OAUTH_APP ? (

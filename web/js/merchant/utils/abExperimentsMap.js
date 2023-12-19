@@ -479,12 +479,6 @@ export default {
     //prod
     'LwV678pnF1EDwq',
   ],
-  show_resume_onboarding: [
-    // stage
-    'LklQDqgOLE7NNi',
-    // prod
-    'LklMvyKSFn6ETp',
-  ],
   show_terminal_status_banner: [
     // stage experiment ids
     'LfxVvG2agqRTco',
