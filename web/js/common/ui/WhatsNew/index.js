@@ -1,7 +1,22 @@
 import { Component, useEffect, Suspense, useRef } from 'react';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
+
+import ExclusiveOffer from 'common/ui/ExclusiveOffer';
+import GrowthAssetEB from 'common/ui/GrowthAssetEB';
+import GrowthServiceModal from 'common/ui/GrowthServiceModal';
+import GrowthServiceCenterCTAModal from 'common/ui/GrowthServiceModal/CenterCTAModal';
+import GrowthServiceThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
+import Loader from 'common/ui/Loader';
+import RazorpayXNitroAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
+import OpfinAnnouncement10L from 'common/ui/NotificationsDropdown/components/OpfinAnnouncement10L';
+import OpfinAnnouncementV2 from 'common/ui/NotificationsDropdown/components/OpfinAnnouncementV2';
+import { trackExpand, trackAnnouncement } from 'common/ui/NotificationsDropdown/ga';
+import { analyticsTrack } from 'common/utils/analytics';
+import { sendDataToSalesForce } from 'common/utils/common-api';
+import debounce from 'common/utils/debounce';
 import { getItem, setItem } from 'common/utils/localStorage';
 import {
   classList,
@@ -11,30 +26,25 @@ import {
   linkFromSource,
   getYoutubeVideoID,
 } from 'common/utils/rzp-utils';
+import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
+import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
+import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
+import {
+  setActivePageName as fnSetActivePageName,
+  setBaseLocation as fnSetBaseLocation,
+} from 'merchant/reducers/app';
+import { fetchAnnouncements } from 'merchant/reducers/growthService';
+import { showAcceptPaymentsModal } from 'merchant/reducers/home';
+import lazy from 'merchant/routes/LazyLoader';
 import {
   closeModal as closeModalx,
   openModal as openModalx,
 } from 'merchant_common/reducers/modals';
 import {
-  setActivePageName as fnSetActivePageName,
-  setBaseLocation as fnSetBaseLocation,
-} from 'merchant/reducers/app';
-import {
   pushSlider as pushSliderx,
   emptySliderStack as emptySliderStackx,
 } from 'merchant_common/reducers/multiSlider';
-import { trackExpand, trackAnnouncement } from 'common/ui/NotificationsDropdown/ga';
-import RazorpayXNitroAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
-import ExclusiveOffer from 'common/ui/ExclusiveOffer';
-import { showAcceptPaymentsModal } from 'merchant/reducers/home';
-import OpfinAnnouncementV2 from 'common/ui/NotificationsDropdown/components/OpfinAnnouncementV2';
-import OpfinAnnouncement10L from 'common/ui/NotificationsDropdown/components/OpfinAnnouncement10L';
-import Loader from 'common/ui/Loader';
-import { analyticsTrack } from 'common/utils/analytics';
 
-import GrowthAssetEB from 'common/ui/GrowthAssetEB';
-import { sendDataToSalesForce } from 'common/utils/common-api';
-import lazy from 'merchant/routes/LazyLoader';
 import './WhatsNew.styl';
 import {
   getNotificationsReadData,
@@ -44,15 +54,6 @@ import {
   getQueryData,
   getNotificationTrackingProperties,
 } from './common';
-import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
-import debounce from 'common/utils/debounce';
-import { fetchAnnouncements } from 'merchant/reducers/growthService';
-import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
-import moment from 'moment';
-import GrowthServiceModal from 'common/ui/GrowthServiceModal';
-import GrowthServiceCenterCTAModal from 'common/ui/GrowthServiceModal/CenterCTAModal';
-import GrowthServiceThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
-import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
 
 const WhatsNewDetailsPage = lazy(() =>
   import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
@@ -354,7 +355,6 @@ class WhatsNew extends Component {
         unreadID: this.state.unreadID,
         count_unread_IDs: this.state.unreadID?.length,
         lazy: true,
-        growth_service: user.isGSAnnouncementsEnabled,
       }),
     );
 
@@ -371,7 +371,6 @@ class WhatsNew extends Component {
         unreadID,
         experimentVersion: getExperimentVersion(user),
         lazy: true,
-        growth_service: user.isGSAnnouncementsEnabled,
       }),
     );
 
@@ -391,7 +390,7 @@ class WhatsNew extends Component {
   };
 
   trackEvents = (value, url, type, id, notification, image_url, video_url) => {
-    const { tracking, user } = this.props;
+    const { tracking } = this.props;
 
     const eventName =
       type === 'button'
@@ -414,7 +413,6 @@ class WhatsNew extends Component {
         ...getNotificationTrackingProperties(notification, eventName),
         trackingID: id,
         lazy: true,
-        growth_service: user.isGSAnnouncementsEnabled,
         mediaType,
       }),
     );
@@ -437,7 +435,6 @@ class WhatsNew extends Component {
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
           lazy: true,
-          growth_service: this.props.user.isGSAnnouncementsEnabled,
         }),
       );
 

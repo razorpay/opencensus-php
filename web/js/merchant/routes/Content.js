@@ -1434,9 +1434,7 @@ class Content extends Component {
             path="connected-banking/icici-linked-ca/*"
             element={
               <RouteGuard
-                additionalCondition={(user) =>
-                  user.isICICILinkedCAEnabled || getXCAStatus(user).showState === 'neostone-tracker'
-                }
+                additionalCondition={(user) => getXCAStatus(user).showState === 'neostone-tracker'}
               >
                 <ConnectedBanking />
               </RouteGuard>

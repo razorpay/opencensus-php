@@ -6,11 +6,9 @@ import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
-import UltraCampaignBanner from 'merchant/components/Announcements/UltraCampaignBanner';
-import UltraP2CashAdvanceBanner from 'merchant/components/Announcements/UltraP2CashAdvanceBanner';
 import CashAdvanceOrNitroBanner from 'merchant/components/CashAdvanceOrNitroBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
-import ShowWhen, { RouteGuard } from 'merchant/components/ShowWhen';
+import { RouteGuard } from 'merchant/components/ShowWhen';
 import { fetchCurrentBalance as fnFetchCurrentBalance } from 'merchant/reducers/home';
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
 import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
@@ -235,12 +233,6 @@ const Settlements = ({
         <CashAdvanceOrNitroBanner productName="Settlements" />
 
         <DashboardBanner />
-        <ShowWhen additionalCondition={(usr) => usr.isUltraCampaignBannerEnabled}>
-          <UltraCampaignBanner productName="Settlements" />
-        </ShowWhen>
-        <ShowWhen additionalCondition={(usr) => usr.isUltraP2CashAdvanceCampaignBannerEnabled}>
-          <UltraP2CashAdvanceBanner productName="Settlements" />
-        </ShowWhen>
       </div>
 
       {user?.isSettlementDashboardVisibilityEnabled ? (

@@ -63,7 +63,6 @@ import DedupeModal from 'merchant/components/Home/DedupeModal';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { XCorporateCardStatusTracker } from 'merchant/components/StatusTracker';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommendationnCard/IntlPaymentsRecommendation';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
@@ -772,7 +771,6 @@ class AnalyticsDesktop extends Component {
                 internationalSettingStatus={this.props.internationalSettingStatus}
               />
             </ShowWhen>
-            <XCorporateCardStatusTracker />
             {showNitroStatusTracker && (
               <div className="nss-tracker-wrapper">
                 <NeoStoneTracker proceededBank={proceededBank} user={user} />

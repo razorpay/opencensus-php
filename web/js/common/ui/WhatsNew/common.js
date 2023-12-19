@@ -1,12 +1,10 @@
 import moment from 'moment';
+
 import { getItem } from 'common/utils/localStorage';
+import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
 import store from 'merchant/store';
-import { getAssetTrackingProperties } from '../../../merchant/models/GrowthService/commonUtils';
 
-export const getExperimentVersion = (user) => {
-  if (user.isAnnouncementTextEnabled) return 2.1;
-  if (user.isWhatsNewTextEnabled) return 2.2;
-
+export const getExperimentVersion = () => {
   return 2.3;
 };
 
@@ -31,16 +29,9 @@ export const getNotificationTrackingProperties = (notification, event_name = '')
 export const getNotificationsReadData = (merchant_id) => {
   const lastReadTS = getItem(`announcements-slider-${merchant_id}`) || 0;
   const notifications = [];
-  const user = store.getState().session.user;
   const { announcements } = store.getState().growthService.announcements;
 
-  if (user.isGSAnnouncementsEnabled) {
-    notifications.push(...announcements);
-  } else {
-    if (window.old_notifications) notifications.push(...window.old_notifications);
-    if (window.new_notifications) notifications.push(...window.new_notifications);
-    notifications.sort((first, second) => second?.start_ts - first?.start_ts);
-  }
+  notifications.push(...announcements);
 
   const ID = [];
   const readID = [];

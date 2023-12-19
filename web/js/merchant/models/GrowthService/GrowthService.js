@@ -9,6 +9,11 @@ export default class GrowthService extends GenericEntity {
   resourceUrl = 'growth/assets';
   user = getUser();
 
+  constructor() {
+    super();
+    if (!this?.user?.current && window.rzp_user?.current) this.user = window.rzp_user;
+  }
+
   getUserFeatures = () => {
     let device, browser, features;
     const mode = getMode() || undefined;
@@ -113,19 +118,12 @@ export default class GrowthService extends GenericEntity {
   getAnnouncements = async (fromWhere) => {
     let announcements = [];
 
-    if (Array.isArray(window.old_notifications) && this.user?.isOrgRZP)
-      announcements.push(...window.old_notifications);
-    if (this.user.isGSAnnouncementsEnabled) {
-      const new_announcements = await this.fetchAssetData(
-        getChannelID(fromWhere, this.user.isOrgRZP),
-        assetNames.ANNOUNCEMENT,
-      );
+    const new_announcements = await this.fetchAssetData(
+      getChannelID(fromWhere, this.user.isOrgRZP),
+      assetNames.ANNOUNCEMENT,
+    );
 
-      if (Array.isArray(new_announcements)) announcements.push(...new_announcements);
-      else if (Array.isArray(window.new_notifications))
-        announcements.push(...window.new_notifications);
-    } else if (Array.isArray(window.new_notifications))
-      announcements.push(...window.new_notifications);
+    if (Array.isArray(new_announcements)) announcements.push(...new_announcements);
 
     announcements = announcements.filter((announcement) =>
       isValidAssetData(announcement, assetNames.ANNOUNCEMENT),
@@ -140,20 +138,16 @@ export default class GrowthService extends GenericEntity {
     const totalBannersLimit = 1;
     let banners = [];
 
-    if (this.user.isGSBannersEnabled) {
-      const channelDetail = {
-        namespace,
-        route: fromWhere,
-      };
-      const gsBanners = this.user?.isOrgRZP
-        ? await this.fetchAssetData(undefined, assetNames.BANNER, undefined, channelDetail)
-        : await this.fetchAssetData(
-            getChannelID(fromWhere, this.user?.isOrgRZP),
-            assetNames.BANNER,
-          );
+    const channelDetail = {
+      namespace,
+      route: fromWhere,
+    };
+    const gsBanners = this.user?.isOrgRZP
+      ? await this.fetchAssetData(undefined, assetNames.BANNER, undefined, channelDetail)
+      : await this.fetchAssetData(getChannelID(fromWhere, this.user?.isOrgRZP), assetNames.BANNER);
 
-      if (Array.isArray(gsBanners)) banners.push(...gsBanners);
-    }
+    if (Array.isArray(gsBanners)) banners.push(...gsBanners);
+
     banners = banners.filter(
       (banner) => isValidAssetData(banner, assetNames.BANNER) && this.removeDismissedData(banner),
     );

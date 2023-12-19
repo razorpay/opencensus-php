@@ -9,19 +9,6 @@
 */
 
 export default {
-  announcement_text_experiment: [
-    // beta experiment ids
-    'H7S9OMKVGV53ZZ',
-
-    // prod experiment ids
-    'H7UUNpcljDyGAn',
-  ],
-  whats_new_text_experiment: [
-    // beta experiment ids
-    'H7S8wOn3THVwUa',
-    // prod experiment ids
-    'H7UYFAJIqhQB0X',
-  ],
   partnership_nps: [
     // beta experiment ids
     'JLVDXyLyzWlTyI',
@@ -34,12 +21,6 @@ export default {
     'HPhSWihQaCQ2wJ',
     // prod experiment ids
     'HQqeKAnGRYPO4S',
-  ],
-  ultra_campaign_banner_experiment: [
-    // beta experiment ids
-    'HeLTdHr7f8YNOs',
-    // prod experiment ids
-    'Hf48AFfhZIa1cH',
   ],
   magic_prepay_cod: [
     //beta experiment id
@@ -73,27 +54,9 @@ export default {
     'M4Bi4l52fMeIrE',
   ],
 
-  ultra_p2_cash_advance_banner_experiment: [
-    // beta experiment ids
-    'HzfUh5Z1nw1toU',
-    // prod experiment ids
-    'I0w5RCjEkcJJNM',
-  ],
-
   cross_border_payments_campaign: [
     'IDVMGD3fth5Dkp', // Prod
     'I3f68nS3BRwvuF', // Beta
-  ],
-  catalyst_campaign_experiment: [
-    'HYimXrRKRI0V7y', // Prod
-    'HYiqGXEBQX3oo8', // Beta
-  ],
-  nitro_form_ab_experiment: [
-    //prod
-    'Hc1t1p85dJkRkp',
-
-    // beta
-    'Hb3p41OFV4RKzs',
   ],
   failure_analysis_text_exp: [
     // beta experiment ids
@@ -120,30 +83,6 @@ export default {
     'ICUOfCJSNQQD15',
   ],
 
-  gs_announcements_experiment: [
-    // prod
-    'HjnC4NvQhMA1u3',
-
-    // beta
-    'HjnDnqN0s8GXnV',
-  ],
-
-  gs_banners_experiment: [
-    // prod
-    'IUYQx3yRryEY64',
-
-    // beta
-    'IMixjTEYeDBCN9',
-  ],
-
-  gs_exclusive_offer_experiment: [
-    // prod
-    'IilXWVG87mw0tZ',
-
-    // beta
-    'IgmrwyclL61hVU',
-  ],
-
   project_moonshine: [
     // prod
     'HmypdLPF5UusXz',
@@ -154,13 +93,6 @@ export default {
     'HmF8BO9pvG303W',
   ],
 
-  keystone_corporate_cards_experiment: [
-    // prod
-    'Hs6nlYI2qQCsrD',
-
-    // beta
-    'HpkTnWlc8nrYLo',
-  ],
   keystone_cash_advance_experiment: [
     // prod
     'Hs6oZSmsa2rgey',
@@ -205,14 +137,6 @@ export default {
 
     // prod experiment ids,
     'IJsF9QOizHHLXC',
-  ],
-
-  connected_banking_icici_exp: [
-    // beta experiment ids
-    'IikYcTmmlnrKxi',
-
-    // prod experiment ids,
-    'IikVfIRle60YdX',
   ],
 
   show_razorpayx_widget_exp: [
@@ -271,19 +195,6 @@ export default {
     // prod experiment id
     'Iw2TWM0yRhXrWI',
   ],
-
-  ultra_campagin_capital_cards_only: [
-    // prod experiment id
-    'IzNDbBZJkmum9p',
-  ],
-  ultra_campagin_loc_only: [
-    // prod experiment id
-    'IzNBx4JjPFch8E',
-  ],
-  ultra_campagin_capital_cards_and_loc_both: [
-    // prod experiment id
-    'Izqj4llwT0wcZq',
-  ],
   cross_sell_edu_exp: [
     // prod experiment id
     'J7KsRnA49jUwMh',
@@ -291,18 +202,6 @@ export default {
   cross_sell_other_exp: [
     // prod experiment id
     'J7Kt1EpzaLk9dQ',
-  ],
-  ultra_exclusiveoffer_card_a: [
-    // prod
-    'JIswqOkKfeIiRG',
-  ],
-  ultra_exclusiveoffer_card_b: [
-    // prod
-    'JIt7Ul9iIt6gUG',
-  ],
-  ultra_exclusiveoffer_loc_test: [
-    // prod
-    'JJCnl2fwyUMPvm',
   ],
   digilocker_aadhaar_ekyc: [
     //beta
@@ -358,13 +257,6 @@ export default {
 
     // prod
     'JyimKdpm7rIDOw',
-  ],
-  x_corporate_card_status_tracker: [
-    // beta
-    'KJhJGHB1XCV1zB',
-
-    // prod
-    'KK3XCFGhaiLw8J',
   ],
   invoice_currentFY: [
     //beta

@@ -1,7 +1,23 @@
 import { Component, useEffect, useRef } from 'react';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';
 import RTracking from 'react-tracking';
+
+import ExclusiveOffer from 'common/ui/ExclusiveOffer';
+import GrowthAssetEB from 'common/ui/GrowthAssetEB';
+import GrowthServiceModal from 'common/ui/GrowthServiceModal';
+import GrowthServiceCenterCTAModal from 'common/ui/GrowthServiceModal/CenterCTAModal';
+import GrowthServiceThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
+import Loader from 'common/ui/Loader';
+import RazorpayXNitroAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
+import OpfinAnnouncement10L from 'common/ui/NotificationsDropdown/components/OpfinAnnouncement10L';
+import OpfinAnnouncementV2 from 'common/ui/NotificationsDropdown/components/OpfinAnnouncementV2';
+import { trackLoad, trackExpand, trackAnnouncement } from 'common/ui/NotificationsDropdown/ga';
+import Slider from 'common/ui/Slider';
+import { analyticsTrack } from 'common/utils/analytics';
+import { sendDataToSalesForce } from 'common/utils/common-api';
+import debounce from 'common/utils/debounce';
 import { getItem, setItem } from 'common/utils/localStorage';
 import {
   classList,
@@ -11,38 +27,23 @@ import {
   linkFromSource,
   getYoutubeVideoID,
 } from 'common/utils/rzp-utils';
-import {
-  closeModal as closeModalx,
-  openModal as openModalx,
-} from 'merchant_common/reducers/modals';
+import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
+import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
+import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
 import {
   setActivePageName as fnSetActivePageName,
   setBaseLocation as fnSetBaseLocation,
 } from 'merchant/reducers/app';
-import { trackLoad, trackExpand, trackAnnouncement } from 'common/ui/NotificationsDropdown/ga';
-import RazorpayXNitroAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
-import { showAcceptPaymentsModal } from 'merchant/reducers/home';
-import OpfinAnnouncementV2 from 'common/ui/NotificationsDropdown/components/OpfinAnnouncementV2';
-import OpfinAnnouncement10L from 'common/ui/NotificationsDropdown/components/OpfinAnnouncement10L';
-import { analyticsTrack } from 'common/utils/analytics';
-
-import { openSlider } from 'merchant_common/reducers/slider';
-import Slider from 'common/ui/Slider';
-import { sendDataToSalesForce } from 'common/utils/common-api';
-import './Old.styl';
-import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
-import debounce from 'common/utils/debounce';
-import Loader from 'common/ui/Loader';
 import { fetchAnnouncements } from 'merchant/reducers/growthService';
-import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
-import moment from 'moment';
+import { showAcceptPaymentsModal } from 'merchant/reducers/home';
+import {
+  closeModal as closeModalx,
+  openModal as openModalx,
+} from 'merchant_common/reducers/modals';
+import { openSlider } from 'merchant_common/reducers/slider';
+import './Old.styl';
+
 import { getButtonClass, iconMap, getQueryData, getNotificationTrackingProperties } from './common';
-import ExclusiveOffer from 'common/ui/ExclusiveOffer';
-import GrowthServiceModal from 'common/ui/GrowthServiceModal';
-import GrowthServiceCenterCTAModal from 'common/ui/GrowthServiceModal/CenterCTAModal';
-import GrowthServiceThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
-import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
-import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -96,7 +97,6 @@ class WhatsNewOld extends Component {
       window.rzpQ &&
         window.rzpQ.merchantActions().success('merchant_dashboard.display_notification', {
           experimentVersion: this.getExperimentVersion(),
-          growth_service: this.props.user.isGSAnnouncementsEnabled,
         }),
     );
 
@@ -108,11 +108,6 @@ class WhatsNewOld extends Component {
   }
 
   getExperimentVersion() {
-    const { user } = this.props;
-
-    if (user.isAnnouncementTextEnabled) return 2.1;
-    if (user.isWhatsNewTextEnabled) return 2.2;
-
     return 2.3;
   }
 
@@ -155,7 +150,6 @@ class WhatsNewOld extends Component {
           readID,
           unreadID,
           experimentVersion: this.getExperimentVersion(),
-          growth_service: this.props.user.isGSAnnouncementsEnabled,
         }),
       );
     }
@@ -394,12 +388,11 @@ class WhatsNewOld extends Component {
       },
     });
 
-    const { tracking, announcements, user } = this.props;
+    const { tracking, announcements } = this.props;
     tracking.trackEvent(
       window.rzpQ.merchantActions().success('dashboard.notification_section.read', {
         unreadID: this.state.unreadID,
         count_unread_IDs: this.state.unreadID?.length,
-        growth_service: user.isGSAnnouncementsEnabled,
       }),
     );
 
@@ -426,7 +419,6 @@ class WhatsNewOld extends Component {
         readID,
         unreadID,
         experimentVersion: this.getExperimentVersion(),
-        growth_service: user.isGSAnnouncementsEnabled,
       }),
     );
 
@@ -446,7 +438,7 @@ class WhatsNewOld extends Component {
   };
 
   trackEvents = (value, url, type, id, notification, image_url, video_url) => {
-    const { tracking, user } = this.props;
+    const { tracking } = this.props;
 
     const eventName =
       type === 'button'
@@ -468,7 +460,6 @@ class WhatsNewOld extends Component {
         url,
         ...getNotificationTrackingProperties(notification),
         trackingID: id,
-        growth_service: user.isGSAnnouncementsEnabled,
         mediaType,
       }),
     );
@@ -509,7 +500,6 @@ class WhatsNewOld extends Component {
       this.props.tracking.trackEvent(
         window.rzpQ.merchantActions().success('dashboard.notification_section.tool_tip.display', {
           tooltip_display_count: tooltipViewCount + 1,
-          growth_service: this.props.user.isGSAnnouncementsEnabled,
         }),
       );
       this.showTooltip();
@@ -544,11 +534,11 @@ class WhatsNewOld extends Component {
     const hasUnread = !!totalUnread;
     /* to show icon for both mweb and dweb so commented that code as of now */
     /*
-      if ((user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) && !showMobileNav) {
+      if (!showMobileNav) {
         return (
           <>
             <span onClick={this.handleSliderToggleClick} className={classList(hasUnread && 'highlight')}>
-              {user.isAnnouncementTextEnabled ? 'Announcements' : "What's New"}
+              What's New
             </span>
             {hasUnread && <span className="bubble">{totalUnread}</span>}
           </>

@@ -10,19 +10,15 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Textarea from 'common/ui/Forms/AutoResizeTextarea';
 import InputField from 'common/ui/Forms/InputField';
 import { RadioGroup } from 'common/ui/Forms/RadioGroup';
-import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
 import { getCookie } from 'common/utils/cookies';
 import { setItem } from 'common/utils/localStorage';
 import { email as validateEmail, phone as validatePhone } from 'common/utils/validators';
 import CrossSellSubscriptionsModal from 'merchant/components/Announcements/CrossSellSubscriptions/CrossSellSubscriptionsModal';
-import UltraCampaginModal from 'merchant/components/Announcements/UltraCampagin/UltraCampaginModal';
 import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 import { getUser } from 'merchant/store';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateUser } from 'merchant_common/reducers/user';
-
-import NitroSelfServe from './Neostone/index';
 
 const BENEFITS = {
   other: [
@@ -71,22 +67,11 @@ export const nitroCampaignId = () => {
 
 export const getCampaignID = () => {
   const user = getUser();
-  if (user.isUltraEOCardAEnabled) return 'Ultra_ExclusiveOffer_Card_A';
-  if (user.isUltraEOCardBEnabled) return 'Ultra_ExclusiveOffer_Card_B';
-  if (user.isUltraEOCardLOCTestEnabled) return 'Ultra_ExclusiveOffer_LOC';
-  if (user.isUCCapitalCardsOnlyCampaignEnabled) return 'Ultra_ExclusiveOffer_Card';
-  if (user.isUCCapitalLOCOnlyCampaignEnabled) return 'Ultra_ExclusiveOffer_LOC';
-  if (user.isICICILinkedCAEnabled) return 'Nitro_ICICIConnected';
-  if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
-  if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
   return nitroCampaignId(user).version;
 };
 
 export const getProductName = () => {
-  const user = getUser();
-  if (user.isUCCapitalLOCOnlyCampaignEnabled) return 'LOC';
-  if (user.isUCCapitalCardsOnlyCampaignEnabled) return 'CARDS';
-  else return 'Current_Account';
+  return 'Current_Account';
 };
 
 const selector = formValueSelector('customerDetails');
@@ -340,9 +325,6 @@ class DetailView extends React.Component {
   state = {
     showNitroFormFields: false,
   };
-  showKeystoneModal =
-    this.props.user.isProjectKeystoneCorporateCardsEnabled ||
-    this.props.user.isProjectKeystoneCashAdvanceEnabled;
 
   trackCTAClick = (status) => {
     this.props.tracking.trackEvent(
@@ -352,7 +334,7 @@ class DetailView extends React.Component {
         formId: 'NitroV1-Bangalore-v1',
         trackingID: 'NitroV1-Bangalore-v1',
         status,
-        form_version: this.props.user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
+        form_version: 'without_fields',
         ...nitroCampaignId(),
       }),
     );
@@ -373,36 +355,25 @@ class DetailView extends React.Component {
     setItem('offers_for_you_state', 'hasAppliedCA');
   };
 
-  sendDataToHubspot = (formData) => {
-    let formValues = [];
+  sendDataToHubspot = () => {
     let formID = '';
     const { user } = this.props;
 
-    if (user.isNitroFormFillEnabled && !this.showKeystoneModal) {
-      formValues = [
-        ...fields.map((field) => ({
-          name: field,
-          value: formData[field],
-        })),
-      ];
-      formID = 'e591bdcd-2304-458e-bc4c-72d3f41a75b8';
-    } else {
-      formValues = [
-        {
-          name: 'phone',
-          value: user?.user?.contact_mobile,
-        },
-        {
-          name: 'email',
-          value: user?.user?.email,
-        },
-        {
-          name: 'merchant_id__c',
-          value: user?.current,
-        },
-      ];
-      formID = '0ef8b5a3-f35f-48c4-be29-98b207699192';
-    }
+    const formValues = [
+      {
+        name: 'phone',
+        value: user?.user?.contact_mobile,
+      },
+      {
+        name: 'email',
+        value: user?.user?.email,
+      },
+      {
+        name: 'merchant_id__c',
+        value: user?.current,
+      },
+    ];
+    formID = '0ef8b5a3-f35f-48c4-be29-98b207699192';
 
     return axios({
       method: 'post',
@@ -427,37 +398,13 @@ class DetailView extends React.Component {
     });
   };
 
-  sendDataToSalesForce = (formData) => {
-    let formValues = [];
-    const SF_CHALLENGES =
-      'what_are_the_biggest_challenges_you_face_with_your_current_account_today';
-    const SF_VENDORS = 'how_do_you_pay_your_vendors_customers';
-    const SF_MONTHLY_PAYMENTS__GIVEN = 'how_many_outward_payments_do_you_make_in_a_month';
-    const SF_RAZORPAYX_SWITCH = 'how_soon_can_you_switch_to_a_razorpayx_current_account';
-    const SF_MONTHLY_PAYMENTS_RECEIVED = 'how_many_payments_do_you_receive_every_month';
+  sendDataToSalesForce = () => {
     const { user } = this.props;
 
-    if (user.isNitroFormFillEnabled && !this.showKeystoneModal)
-      formValues = {
-        contact_name: formData[NAME],
-        business_name: formData[NAME],
-        contact_email: formData[EMAIL],
-        contact_mobile: formData[PHONE],
-        [SF_CHALLENGES]: formData[CHALLENGES],
-        [SF_VENDORS]: formData[VENDORS],
-        [SF_MONTHLY_PAYMENTS__GIVEN]: formData[MONTHLY_PAYMENTS__GIVEN],
-        [SF_MONTHLY_PAYMENTS_RECEIVED]: formData[MONTHLY_PAYMENTS_RECEIVED],
-        [SF_RAZORPAYX_SWITCH]: formData[RAZORPAYX_SWITCH],
-        pin_code: null,
-        average_monthly_balance: null,
-        current_ca: null,
-        use_case: null,
-      };
-    else
-      formValues = {
-        contact_email: user?.user?.email,
-        contact_mobile: user?.user?.contact_mobile,
-      };
+    const formValues = {
+      contact_email: user?.user?.email,
+      contact_mobile: user?.user?.contact_mobile,
+    };
 
     const payload = {
       event_type: caReqEventType,
@@ -466,7 +413,7 @@ class DetailView extends React.Component {
         product_name: getProductName(),
         source: 'Project Nitro',
         Campaign_ID: getCampaignID(),
-        form_version: user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
+        form_version: 'without_fields',
         ...formValues,
       },
     };
@@ -482,13 +429,13 @@ class DetailView extends React.Component {
     });
   };
 
-  save = (formData) => {
+  save = () => {
     const { onOfferAccept, onSubmissionSuccess } = this.props;
 
     onOfferAccept();
 
-    return this.sendDataToHubspot(formData)
-      .then(() => this.sendDataToSalesForce(formData))
+    return this.sendDataToHubspot()
+      .then(() => this.sendDataToSalesForce())
       .then(() => {
         this.props.showNotification({
           type: 'success',
@@ -511,30 +458,13 @@ class DetailView extends React.Component {
 
   render() {
     const showNitroFormFields = this.state.showNitroFormFields;
-    const {
-      isNitroFormFillEnabled,
-      isCSSEducationEnabled,
-      isCSSOtherBusinessesEnabled,
-      isUCCapitalCardsOnlyCampaignEnabled,
-      isUCCapitalLOCOnlyCampaignEnabled,
-    } = this.props.user;
+    const { isCSSEducationEnabled, isCSSOtherBusinessesEnabled } = this.props.user;
     const content = BENEFITS.other;
 
-    if (this.showKeystoneModal)
-      return (
-        <KeystoneModal user={this.props.user} save={this.save} tracking={this.props.tracking} />
-      );
     if (showNitroFormFields) return <InfoForm save={this.save} tracking={this.props.tracking} />;
     if (isCSSEducationEnabled || isCSSOtherBusinessesEnabled)
       return <CrossSellSubscriptionsModal user={this?.props?.user} />;
-    if (isUCCapitalCardsOnlyCampaignEnabled || isUCCapitalLOCOnlyCampaignEnabled)
-      return (
-        <UltraCampaginModal
-          user={this?.props?.user}
-          save={this?.save}
-          tracking={this?.props?.tracking}
-        />
-      );
+
     return (
       <div className="razorpayx-announcement-details">
         <div className="section">
@@ -556,15 +486,7 @@ class DetailView extends React.Component {
               ))}
             </ul>
             <div className="btn-wrapper">
-              <AsyncBtn.Primary
-                type="submit"
-                class="btn btn-primary"
-                onClick={() => {
-                  if (isNitroFormFillEnabled) this.setState({ showNitroFormFields: true });
-                  else return this.save();
-                  return null;
-                }}
-              >
+              <AsyncBtn.Primary type="submit" class="btn btn-primary" onClick={this.save}>
                 Apply For Current Account
               </AsyncBtn.Primary>
             </div>
@@ -578,14 +500,14 @@ class DetailView extends React.Component {
   }
 }
 
-const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) => {
+const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking }) => {
   const [activeView, setActiveView] = useState('detail-view');
 
   const onOfferAccept = () => {
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(`${fromWhere}_click_popup_screen1_cta`, {
         ...nitroCampaignId(),
-        form_version: user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
+        form_version: 'without_fields',
       }),
     );
   };
@@ -594,9 +516,6 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) =>
     setActiveView('detail-view');
     hideModal();
   };
-
-  if (user.isPartOfNeostone)
-    return <NitroSelfServe user={user} handleClose={handleClose} tracking={tracking} />;
 
   if (activeView === 'detail-view') {
     return (

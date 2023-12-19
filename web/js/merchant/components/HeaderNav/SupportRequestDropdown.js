@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-
-import { logout, updateSession } from 'merchant/reducers/session';
 import RTracking from 'react-tracking';
+
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import { logout, updateSession } from 'merchant/reducers/session';
+import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 import { getFormattedDate, STATUSES } from 'merchant/views/TicketSupport/utils';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 @RTracking(() => window.rzpQ.component('SupportRequestDropdown'))
 class SupportTicketDropdown extends Component {
@@ -33,7 +33,7 @@ class SupportTicketDropdown extends Component {
   };
 
   render() {
-    const { user, trustedBadge } = this.props;
+    const { trustedBadge } = this.props;
     const { badgeStatus } = trustedBadge || {};
     const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
     const TicketsByaAgent = this.props.ticketsRaisedByAgents.filter(
@@ -45,11 +45,9 @@ class SupportTicketDropdown extends Component {
         {TicketsByaAgent && TicketsByaAgent.length > 0 && (
           <Dropdown closeOnClick={false} onShow={this.handleShow} onHide={this.handleHide}>
             <DropdownTrigger
-              className={`dropdown-toggle${
-                !user.isAnnouncementTextEnabled && !user.isWhatsNewTextEnabled
-                  ? ' dropdown-toggle--large-icon'
-                  : ''
-              }${isRTBEnabled ? ' rtb-user-dropdown' : ''}`}
+              className={`dropdown-toggle  dropdown-toggle--large-icon${
+                isRTBEnabled ? ' rtb-user-dropdown' : ''
+              }`}
             >
               <span class="support-request-dropdown-trigger">
                 {' '}

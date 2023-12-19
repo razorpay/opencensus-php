@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import OffersForYou from 'common/ui/OffersForYou';
@@ -9,6 +10,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import * as storage from 'common/utils/localStorage';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { fetchExclusiveOffer as fetchExclusiveOfferProp } from 'merchant/reducers/growthService';
+
 import { FtuxModal } from './FtuxModal';
 import SwitchMerchant from './SwitchMerchant';
 import ModesDropdown from './SwitchMode';
@@ -109,9 +111,7 @@ class NavFragment extends Component {
     const canShowOnboardingOffers =
       !isReferredMerchant && canShowMtuPopup && user.isOnboardingCouponEnabled;
 
-    const showOFYNitroFlow = user.isPartOfNeostone
-      ? user.isNeostoneFlowEnabled('offers-for-you')
-      : user.isProjectNitroEnabled;
+    const showOFYNitroFlow = user.isProjectNitroEnabled;
 
     const closeModal = () => {
       this.setState({
@@ -128,12 +128,7 @@ class NavFragment extends Component {
               showOFYNitroFlow ||
               canShowOnboardingOffers ||
               user.isProjectMoonshineEnabled ||
-              user.isProjectKeystoneCorporateCardsEnabled ||
-              user.isProjectKeystoneCashAdvanceEnabled ||
-              (Boolean(user?.isICICILinkedCAFlowEnabled) &&
-                user.isICICILinkedCAFlowEnabled('offers-for-you')) ||
-              user.isUCCapitalCardsOnlyCampaignEnabled ||
-              user.isUCCapitalLOCOnlyCampaignEnabled ||
+              user.isICICILinkedCAFlowEnabled('offers-for-you') ||
               shouldShowGSExclusiveOffers
             }
           >

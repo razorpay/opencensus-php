@@ -1,30 +1,31 @@
 import React, { Component } from 'react';
+import LazyLoad from 'react-lazyload';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
+
+import BusinessImage from 'assets/business.svg';
+import RTBUserIconBg from 'assets/trustedbadge/rtb_user_icon_bg.svg';
 import { withRouter } from 'common/deprecated/withRouter';
-import LazyLoad from 'react-lazyload';
-import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
-import ShowWhen from 'merchant/components/ShowWhen';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import Group, { GroupItem } from 'common/ui/Group';
 import Image from 'common/ui/Image';
 import ModalHeader from 'common/ui/ModalHeader';
-import Group, { GroupItem } from 'common/ui/Group';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { logout, updateSession } from 'merchant/reducers/session';
-import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
-import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
-import rolesList from 'merchant/helpers/permissions/roles-list';
-import logoutGoogleAccount from 'common/utils/logoutGoogle';
 import { analyticsTrack } from 'common/utils/analytics';
+import logoutGoogleAccount from 'common/utils/logoutGoogle';
 import { getCommonAnalyticsProperties, isLoggedInViaMobile } from 'common/utils/rzp-utils';
-import RTracking from 'react-tracking';
-import PaymentHandleSlug from 'merchant/views/PaymentHandle/components/DropDownSlug';
-import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
+import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
+import ShowWhen from 'merchant/components/ShowWhen';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import RTBUserIconBg from 'assets/trustedbadge/rtb_user_icon_bg.svg';
-import BusinessImage from 'assets/business.svg';
+import { logout, updateSession } from 'merchant/reducers/session';
+import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
+import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
+import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
+import PaymentHandleSlug from 'merchant/views/PaymentHandle/components/DropDownSlug';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { withI18Service } from 'common/i18';
 
 @withI18Service
@@ -210,11 +211,9 @@ class ProfileDropdown extends Component {
     return (
       <Dropdown closeOnClick={false} onShow={this.handleShow} onHide={this.handleHide}>
         <DropdownTrigger
-          className={`dropdown-toggle${
-            !user.isAnnouncementTextEnabled && !user.isWhatsNewTextEnabled
-              ? ' dropdown-toggle--large-icon'
-              : ''
-          }${isRTBEnabled ? ' rtb-user-dropdown' : ''}`}
+          className={`dropdown-toggle  dropdown-toggle--large-icon${
+            isRTBEnabled ? ' rtb-user-dropdown' : ''
+          }`}
         >
           {isRTBEnabled ? (
             <>

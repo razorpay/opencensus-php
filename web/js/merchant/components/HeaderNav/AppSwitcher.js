@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
 import LazyLoad, { forceCheck } from 'react-lazyload';
 import RTracking from 'react-tracking';
-import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
-import { utmCampaignMap, utmMediumMap, utmSourceMap } from 'merchant/helpers/x/updateUtmCookie';
+
+import CorporateCreditCards from 'assets/products/blue-theme/corporate-credit-cards.svg';
 import CurrentAccount from 'assets/products/blue-theme/current-account.svg';
 import PayoutLink from 'assets/products/blue-theme/payout-link.svg';
-import VendorPayments from 'assets/products/blue-theme/vendor-payments.svg';
 import Payouts from 'assets/products/blue-theme/payouts.svg';
 import Payroll from 'assets/products/blue-theme/payroll.svg';
-import Thirdwatch from 'assets/products/thirdwatch.svg';
-import PrepayCod from 'assets/products/prepay-cod.svg';
-import CorporateCreditCards from 'assets/products/blue-theme/corporate-credit-cards.svg';
 import RupeeSolidRounded from 'assets/products/blue-theme/rupee-solid-rounded.svg';
+import VendorPayments from 'assets/products/blue-theme/vendor-payments.svg';
+import PrepayCod from 'assets/products/prepay-cod.svg';
+import Thirdwatch from 'assets/products/thirdwatch.svg';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import { utmCampaignMap, utmMediumMap, utmSourceMap } from 'merchant/helpers/x/updateUtmCookie';
 
 const closeButtonClass = 'close';
 
@@ -160,16 +161,9 @@ class AppSwitcher extends Component {
   };
 
   render() {
-    const { user } = this.props;
     return (
       <Dropdown closeButtonClass={closeButtonClass} onShow={this.handleShow} closeOnClick={false}>
-        <DropdownTrigger
-          className={`dropdown-toggle${
-            !user.isAnnouncementTextEnabled && !user.isWhatsNewTextEnabled
-              ? ' dropdown-toggle--large-icon'
-              : ''
-          }`}
-        >
+        <DropdownTrigger className="dropdown-toggle dropdown-toggle--large-icon">
           <i className="i i-app-switcher" />
         </DropdownTrigger>
         <DropdownContent>

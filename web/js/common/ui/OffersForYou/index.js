@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import ExclusiveOffer from 'common/ui/ExclusiveOffer/index';
-import NitroSelfServe from 'common/ui/NotificationsDropdown/Neostone/index';
 import RazorpayXNitroAnnouncement, {
   getCampaignID,
 } from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
@@ -14,7 +14,6 @@ import { analyticsTrack } from 'common/utils/analytics';
 import * as LocalStorageService from 'common/utils/localStorage';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
-import { withRouter } from 'common/deprecated/withRouter';
 import {
   setActivePageName as fnSetActivePageName,
   setBaseLocation as fnSetBaseLocation,
@@ -36,8 +35,6 @@ const OffersForYou = ({
   user,
   mtuOfferCount,
   history,
-  setActivePageName,
-  setBaseLocation,
   showMobileNav = false,
 }) => {
   const offersForYouState = LocalStorageService.getItem('offers_for_you_state');
@@ -53,7 +50,7 @@ const OffersForYou = ({
       tracking.trackEvent(
         window.rzpQ.merchantActions().success(eventName, {
           trackingID: id,
-          flow_type: user.isPartOfNeostone ? 'self_serve' : 'sales_led',
+          flow_type: 'sales_led',
           ...getAssetTrackingProperties(id, exclusive_offers.tracking_data, {}, eventName),
         }),
       );
@@ -91,18 +88,11 @@ const OffersForYou = ({
     }
   }, [mtuOfferCount]);
 
-  const handleConnectedBankingFlow = () => {
-    history.push('/connected-banking/icici-linked-ca');
-    setBaseLocation('/connected-banking/icici-linked-ca');
-    setActivePageName('Connected Banking');
-  };
-
   const handleClick = () => {
     if (!showMobileNav) {
       /* onboarding offer will be the priority over the other offers.
     if two offer enable at the same time */
-      if (user.isICICILinkedCAEnabled) handleConnectedBankingFlow();
-      else if (canShowOnboardingOffers) {
+      if (canShowOnboardingOffers) {
         showMTUOffer(true);
         analyticsTrack({
           objectName: 'Exclusive Offer',
@@ -132,30 +122,13 @@ const OffersForYou = ({
           size: 'xlarge',
           className: 'RXPayrollMoonshine--Modal',
         });
-      } else if (user.isPartOfNeostone) {
-        openModals({
-          component: <NitroSelfServe user={user} handleClose={closeModals} tracking={tracking} />,
-          size: 'xlarge',
-          className: 'RazorpayXNitroAnnouncement--Modal',
-        });
-      } else if (
-        user.isUCCapitalCardsOnlyCampaignEnabled ||
-        user.isUCCapitalLOCOnlyCampaignEnabled ||
-        user.isProjectKeystoneCorporateCardsEnabled ||
-        user.isProjectKeystoneCashAdvanceEnabled ||
-        user.isProjectNitroEnabled ||
-        (Boolean(user?.isICICILinkedCAFlowEnabled) &&
-          user.isICICILinkedCAFlowEnabled('offers-for-you'))
-      ) {
+      } else if (user.isProjectNitroEnabled || user.isICICILinkedCAFlowEnabled('offers-for-you')) {
         openModals({
           component: (
             <RazorpayXNitroAnnouncement hideModal={closeModals} fromWhere="offers-for-you" />
           ),
           size: 'xlarge',
-          className:
-            user.isProjectKeystoneCorporateCardsEnabled || user.isProjectKeystoneCashAdvanceEnabled
-              ? 'Keystone--Modal'
-              : 'RazorpayXNitroAnnouncement--Modal',
+          className: 'RazorpayXNitroAnnouncement--Modal',
         });
       } else {
         openModals({
@@ -163,10 +136,7 @@ const OffersForYou = ({
             <RazorpayXNitroAnnouncement hideModal={closeModals} fromWhere="offers-for-you" />
           ),
           size: 'xlarge',
-          className:
-            user.isProjectKeystoneCorporateCardsEnabled || user.isProjectKeystoneCashAdvanceEnabled
-              ? 'Keystone--Modal'
-              : 'RazorpayXNitroAnnouncement--Modal',
+          className: 'RazorpayXNitroAnnouncement--Modal',
         });
       }
     } else if (user.isProjectNitroEnabled) {
@@ -176,7 +146,7 @@ const OffersForYou = ({
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_offer_for_you', {
         trackingID: exclusive_offers?.id || getCampaignID(),
-        flow_type: user.isPartOfNeostone ? 'self_serve' : 'sales_led',
+        flow_type: 'sales_led',
       }),
     );
     setIsStopped(true);

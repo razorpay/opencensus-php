@@ -1,13 +1,16 @@
 import React, { Suspense, useEffect, useState } from 'react';
-import lazy from 'merchant/routes/LazyLoader';
-import Loader from 'common/ui/Loader';
-import { pushSlider as fnPushSlider } from 'merchant_common/reducers/multiSlider';
 import { connect } from 'react-redux';
-import { compose } from 'redux';
-import { classList } from 'common/utils/rzp-utils';
-import { getExperimentVersion, getNotificationsReadData } from './common';
-import { trackLoad } from '../NotificationsDropdown/ga';
 import RTracking from 'react-tracking';
+import { compose } from 'redux';
+
+import Loader from 'common/ui/Loader';
+import { trackLoad } from 'common/ui/NotificationsDropdown/ga';
+import { classList } from 'common/utils/rzp-utils';
+import lazy from 'merchant/routes/LazyLoader';
+import { pushSlider as fnPushSlider } from 'merchant_common/reducers/multiSlider';
+
+import { getExperimentVersion, getNotificationsReadData } from './common';
+
 import './Icon.styl';
 
 const WhatsNewLazyComponent = lazy(() =>
@@ -30,7 +33,6 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
           unreadID,
           experimentVersion: getExperimentVersion(user),
           lazy: true,
-          growth_service: user.isGSAnnouncementsEnabled,
         }),
       );
     }
@@ -42,7 +44,6 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
         window.rzpQ.merchantActions().success('merchant_dashboard.display_notification', {
           experimentVersion: getExperimentVersion(user),
           lazy: true,
-          growth_service: user.isGSAnnouncementsEnabled,
         }),
     );
 
@@ -67,11 +68,11 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
     const { totalUnread } = getNotificationsReadData(user.current);
     const hasUnread = !!totalUnread;
 
-    if ((user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) && !showMobileNav) {
+    if (!showMobileNav) {
       return (
         <>
           <span onClick={handleSliderToggleClick} class={classList(hasUnread && 'highlight')}>
-            {user.isAnnouncementTextEnabled ? 'Announcements' : "What's New"}
+            What's New
           </span>
           {hasUnread && <span className="bubble">{totalUnread}</span>}
         </>

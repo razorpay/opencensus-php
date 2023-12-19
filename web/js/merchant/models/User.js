@@ -736,12 +736,6 @@ export default class User {
     return getSplitzExperimentVariant('developer_console_webhooks_tab')?.variables?.result === 'on';
   }
 
-  get isProjectKeystoneCorporateCardsEnabled() {
-    return (
-      getSplitzExperimentVariant('keystone_corporate_cards_experiment')?.variables?.result === 'on'
-    );
-  }
-
   get isCatalystBannerFL() {
     return getSplitzExperimentVariant('catalyst_banner_fl_experiment')?.variables?.result === 'on';
   }
@@ -750,28 +744,6 @@ export default class User {
   }
   get isCatalystBannerG() {
     return getSplitzExperimentVariant('catalyst_banner_g_experiment')?.variables?.result === 'on';
-  }
-
-  get isProjectKeystoneCashAdvanceEnabled() {
-    return (
-      getSplitzExperimentVariant('keystone_cash_advance_experiment')?.variables?.result === 'on'
-    );
-  }
-
-  get isGSAnnouncementsEnabled() {
-    return getSplitzExperimentVariant('gs_announcements_experiment')?.variables?.result === 'on';
-  }
-
-  get isGSBannersEnabled() {
-    return getSplitzExperimentVariant('gs_banners_experiment')?.variables?.result === 'on';
-  }
-
-  get isGSExclusiveOfferEnabled() {
-    return getSplitzExperimentVariant('gs_exclusive_offer_experiment')?.variables?.result === 'on';
-  }
-
-  get isICICILinkedCAEnabled() {
-    return getSplitzExperimentVariant('connected_banking_icici_exp')?.variables?.result === 'on';
   }
 
   get isShowRazorpayXWidgetEnabled() {
@@ -784,28 +756,6 @@ export default class User {
 
   get isWhatsNewLazyEnabled() {
     return getSplitzExperimentVariant('whats_new_lazy_experiment')?.variables?.result === 'on';
-  }
-
-  get isXCCStatusTrackerEnabled() {
-    return (
-      getSplitzExperimentVariant('x_corporate_card_status_tracker')?.variables?.result === 'on'
-    );
-  }
-
-  get isPartOfNeostone() {
-    return getSplitzExperimentVariant('neostone_experiment')?.variables?.result === 'on';
-  }
-
-  get isUltraEOCardAEnabled() {
-    return getSplitzExperimentVariant('ultra_exclusiveoffer_card_a')?.variables?.result === 'on';
-  }
-
-  get isUltraEOCardBEnabled() {
-    return getSplitzExperimentVariant('ultra_exclusiveoffer_card_b')?.variables?.result === 'on';
-  }
-
-  get isUltraEOCardLOCTestEnabled() {
-    return getSplitzExperimentVariant('ultra_exclusiveoffer_loc_test')?.variables?.result === 'on';
   }
 
   get isCSSEducationEnabled() {
@@ -821,7 +771,6 @@ export default class User {
 
   isNeostoneFlowEnabled = (showState = '') => {
     return (
-      this.isPartOfNeostone &&
       getXCAStatus(this).showState === showState &&
       this.isOwner &&
       !this.isRazorxRXCASelfServeFlowEnabled
@@ -829,45 +778,8 @@ export default class User {
   };
 
   isICICILinkedCAFlowEnabled = (showState = '') => {
-    return this.isICICILinkedCAEnabled && getXCAStatus(this).showState === showState;
+    return getXCAStatus(this).showState === showState;
   };
-
-  get isCatalystCampaignEnabled() {
-    return getSplitzExperimentVariant('catalyst_campaign_experiment')?.variables?.result === 'on';
-  }
-
-  get isUltraCampaignBannerEnabled() {
-    return (
-      getSplitzExperimentVariant('ultra_campaign_banner_experiment')?.variables?.result === 'on'
-    );
-  }
-
-  get isUltraP2CashAdvanceCampaignBannerEnabled() {
-    return (
-      getSplitzExperimentVariant('ultra_p2_cash_advance_banner_experiment')?.variables?.result ===
-      'on'
-    );
-  }
-
-  get isUCCapitalCardsOnlyCampaignEnabled() {
-    return (
-      getSplitzExperimentVariant('ultra_campagin_capital_cards_only')?.variables?.result === 'on' ||
-      getSplitzExperimentVariant('ultra_campagin_capital_cards_and_loc_both')?.variables?.result ===
-        'capital_cards'
-    );
-  }
-
-  get isUCCapitalLOCOnlyCampaignEnabled() {
-    return (
-      getSplitzExperimentVariant('ultra_campagin_loc_only')?.variables?.result === 'on' ||
-      getSplitzExperimentVariant('ultra_campagin_capital_cards_and_loc_both')?.variables?.result ===
-        'capital_loc'
-    );
-  }
-
-  get isNitroFormFillEnabled() {
-    return getSplitzExperimentVariant('nitro_form_ab_experiment')?.variables?.result === 'on';
-  }
 
   get isPartOfZapierIntegrationExperiment() {
     return getSplitzExperimentVariant('zapier_integration')?.variables?.result === 'on';
@@ -1120,14 +1032,6 @@ export default class User {
 
   get isAnnouncementIconEnabled() {
     return this.getExpStatus('AnnouncementIconJan2021');
-  }
-
-  get isAnnouncementTextEnabled() {
-    return getSplitzExperimentVariant('announcement_text_experiment')?.variables?.result === 'on';
-  }
-
-  get isWhatsNewTextEnabled() {
-    return getSplitzExperimentVariant('whats_new_text_experiment')?.variables?.result === 'on';
   }
 
   get isWebsiteComplianceFlowEnabled() {
