@@ -234,7 +234,7 @@ class Repository extends Base\Repository
 
     public function fetchContactFromTiDB($merchantId, $type, $limit = 10)
     {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->merchantId($merchantId)
                     ->where(Entity::TYPE, '=', $type)
                     ->limit($limit)
