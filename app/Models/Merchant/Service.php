@@ -5627,8 +5627,6 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        (new Validator)->validateTagsForOnlyDSMerchants($merchant, [$tagName]);
-
         $merchant->tag($tagName);
 
         $this->updateFraudTypeIfApplicable($merchant, $tagName);

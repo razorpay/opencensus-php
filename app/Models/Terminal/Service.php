@@ -203,51 +203,6 @@ class Service extends Base\Service
         return $terminals->toArrayPublic();
     }
 
-    protected function validateTerminalBeforeDeletion($merchant, $terminal)
-    {
-        $env = $this->app['env'];
-
-        if($env !== Environment::PRODUCTION)
-        {
-            return;
-        }
-
-        $variant  = $this->app->razorx->getTreatment($merchant->getId(),
-            RazorxTreatment::SKIP_NON_DS_CHECK,
-            $this->mode);
-
-        if($variant === 'on')
-        {
-            return;
-        }
-
-        if($merchant->isFeatureEnabled(FeatureConstants::ONLY_DS) === false)
-        {
-            return;
-        }
-
-        $type = $terminal->getType();
-
-        $check = array_intersect($type, [Type::DIRECT_SETTLEMENT_WITHOUT_REFUND,
-            Type::DIRECT_SETTLEMENT_WITH_REFUND]);
-
-        if(count($check) === 0)
-        {
-            return;
-        }
-
-        $result = $this->countAllTerminalsOfMerchantAndCheckForTypeArray($terminal->getMerchantId());
-
-        $dsCount = $result['ds_terminals'];
-
-        $nonDsCount = $result['non_ds_terminals'];
-
-        if($dsCount === 1)
-        {
-            throw new Exception\BadRequestValidationFailureException('Terminal Cannot Be Deleted');
-        }
-    }
-
     public function countAllTerminalsOfMerchantAndCheckForTypeArray($merchantId)
     {
         $params = [Entity::MERCHANT_ID => $merchantId];
@@ -308,8 +263,6 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
-        $this->validateTerminalBeforeDeletion($merchant, $terminal);
-
         $this->app['workflow']
              ->setEntityAndId($terminal->getEntity(), $terminal->getId())
              ->handle($terminal, (new \stdClass));
@@ -359,8 +312,6 @@ class Service extends Base\Service
         Entity::verifyIdAndSilentlyStripSign($id);
 
         $terminal = $this->repo->terminal->findOrFailPublic($id);
-
-        $this->validateTerminalBeforeDeletion($terminal->merchant, $terminal);
 
         $terminalArray = $terminal->toArrayAdmin();
 

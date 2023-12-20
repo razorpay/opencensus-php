@@ -218,35 +218,6 @@ return [
         ]
     ],
 
-    'testMultiAssignBlacklistedFeaturesWhereOneMerchantHasOnlyDS' => [
-        'request'  => [
-            'content' => [
-                'name'        => ['dummy', 'terminal_onboarding','white_labelled_route'],
-                'entity_ids'  => ['10000000000001', '10000000000002', '10000000000003'],
-                'entity_type' => 'merchant'
-            ],
-            'url'     => '/features/assign',
-            'method'  => 'POST',
-            'server'  => [
-                'HTTP_X-Dashboard'                => 'true',
-                'HTTP_X-Dashboard-Admin-Username' => 'admin',
-                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT,
-        ],
-    ],
-
     'testMultiRemoveFeature' => [
         'request'  => [
             'content' => [
@@ -3916,51 +3887,6 @@ return [
                     'entity_type' => 'merchant',
                 ]
             ]
-        ],
-    ],
-
-    'testAddBlacklistedFeatureWithoutOnlyDS' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'content' => [
-                'names'       => ['white_labelled_route'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'name' => 'white_labelled_route',
-                    'entity_id' => '10000000000000',
-                    'entity_type' => 'merchant',
-                ]
-            ]
-        ]
-    ],
-
-    'testAddBlackListedFeatureWithOnlyDS' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'content' => [
-                'names'       => ['white_labelled_route'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ]
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT,
         ],
     ],
 

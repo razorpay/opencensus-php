@@ -775,33 +775,6 @@ return [
         ]
     ],
 
-    'testvalidateTagsForOnlyDSMerchants' => [
-        'request' => [
-            'url'     => '/merchants/10000000000000/tags',
-            'method'  => 'POST',
-            'content' => [
-                'tags' => [
-                    'first_tag',
-                    'white_labelled_route',
-                    'another_tag',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'For MIDs with "only_ds feature flag enabled", these tags cannot be enabled: route, qr_codes, smart collect',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
     'testUpdateKeyExpireNow' => [
         'request' => [
             'content' => [

@@ -367,8 +367,7 @@ class Selector extends Base\Core
 
                 $sortedTerminals = [];
 
-                if (($merchant->isFeatureEnabled(Features::RAAS) === false) and ($fetchApiTerminals === true)
-                    and ($merchant->isFeatureEnabled(Features::ONLY_DS) === false))
+                if (($merchant->isFeatureEnabled(Features::RAAS) === false) and ($fetchApiTerminals === true))
                 {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
                 }
@@ -1325,8 +1324,7 @@ class Selector extends Base\Core
         $payment = $this->input['payment'];
         $merchant = $this->input['merchant'];
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONLY_DS) === true ||
-            $merchant->isFeatureEnabled(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD) === true ||
+        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD) === true ||
             (isset($payment[Entity::RECEIVER_TYPE]) && $payment[Entity::RECEIVER_TYPE] === Receiver::POS))
         {
             $this->trace->info(
@@ -1378,8 +1376,7 @@ class Selector extends Base\Core
         $payment = $this->input['payment'];
         $merchant = $this->input['merchant'];
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONLY_DS) === true ||
-            $merchant->isFeatureEnabled(Feature\Constants::SKIP_FULCRUM_AUTO_ONBOARD) === true ||
+        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_FULCRUM_AUTO_ONBOARD) === true ||
             (isset($payment[Entity::RECEIVER_TYPE]) && $payment[Entity::RECEIVER_TYPE] === Receiver::POS))
         {
             $this->trace->info(

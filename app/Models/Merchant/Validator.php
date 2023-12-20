@@ -131,13 +131,6 @@ class Validator extends Base\Validator
         Entity::MAX_INTERNATIONAL_PAYMENT_AMOUNT
     ];
 
-    const ONLY_DS_BLOCKED_TAGS = [
-        'white_labelled_route',
-        'white_labelled_marketplace',
-        'white_labelled_virtual_accounts',
-        'white_labelled_qr_codes'
-    ];
-
     protected static $createRules = [
         Entity::ID                          => 'sometimes|alpha_num|size:14|unique:merchants',
         Entity::NAME                        => 'sometimes|string|max:200',
@@ -1442,26 +1435,6 @@ class Validator extends Base\Validator
 
             // Check for admin permissions
             $admin->hasPermissionOrFail(self::ACTION_PERMISSION_MAP_FOR_MERCHANT_EDIT_BULK[$action]);
-        }
-    }
-
-    /**
-     *
-     */
-    public function validateTagsForOnlyDSMerchants(Entity $merchant, $tags)
-    {
-        if($merchant->isFeatureEnabled(Feature\Constants::ONLY_DS) === false)
-        {
-            return;
-        }
-
-        foreach ($tags as $tag)
-        {
-            if(in_array($tag, self::ONLY_DS_BLOCKED_TAGS, true) === true)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'For MIDs with "only_ds feature flag enabled", these tags cannot be enabled: route, qr_codes, smart collect');
-            }
         }
     }
 

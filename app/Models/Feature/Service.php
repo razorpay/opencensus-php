@@ -58,8 +58,6 @@ class Service extends Base\Service
 
         $validator->validateForRouteLaPennyTestingFeature($input[Constants::NAMES]);
 
-        $this->validateIfDisabledFeaturesArePresent($input, $entityType, $entityId);
-        
         $featureParams = $this->buildFeatureParams($input, $entityType, $entityId);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
@@ -145,48 +143,6 @@ class Service extends Base\Service
                 'Financial services are not allowed for bulk payment pages');
         }
 
-    }
-
-    protected function validateIfDisabledFeaturesArePresent($input, $entityType, $entityId)
-    {
-        $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
-
-        $entityId = $entityId ?? $input[Entity::ENTITY_ID];
-
-        if($entityType !== Constants::MERCHANT)
-        {
-            return;
-        }
-
-        $merchant = $this->repo->merchant->find($entityId);
-
-        if(isset($merchant) === false)
-        {
-            return;
-        }
-
-        if($merchant->isFeatureEnabled(Constants::ONLY_DS) === false)
-        {
-            return;
-        }
-
-        $disabledFeatures =  [
-            Features::WHITE_LABELLED_ROUTE,
-            Features::WHITE_LABELLED_MARKETPLACE,
-            Features::WHITE_LABELLED_VA,
-            Features::WHITE_LABELLED_QRCODES,
-        ];
-
-        $check = array_intersect($disabledFeatures, $input[Entity::NAMES]);
-
-        if(count($check) === 0)
-        {
-            return;
-        }
-        else
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT);
-        }
     }
 
     public function addFeatureAndOnboardOldAccountsToLedger(array $input)
@@ -946,8 +902,6 @@ class Service extends Base\Service
             $validateInput = $input;
 
             $validateInput['names'] = $input['name'];
-
-            $this->validateIfDisabledFeaturesArePresent($validateInput,$input['entity_type'],$entityId);
 
             $this->validateMCCForBulkPaymentPageFeature($validateInput,$input['entity_type'],$entityId);
         }

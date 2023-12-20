@@ -3630,11 +3630,6 @@ class Validator extends Base\Validator
 
         $ba = $app['basicauth'];
 
-        if (($terminal != null) and ($terminal->merchant->isFeatureEnabled(Feature\Constants::ONLY_DS) === true))
-        {
-            return false;
-        }
-
         if (($terminal != null) and
             ($terminal->merchant->isFeatureEnabled(Feature\Constants::RAAS) === true) and
             (in_array($terminal->gateway, Payment\Gateway::SKIP_TPV_EDIT_OPTIMIZER_GATEWAYS, true)) and

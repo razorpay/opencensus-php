@@ -6102,14 +6102,7 @@ Team Razorpay',
         $this->startTest();
     }
 
-    public function testvalidateTagsForOnlyDSMerchants()
-    {
-        $this->fixtures->merchant->addFeatures(['only_ds']);
 
-        $this->ba->adminAuth();
-
-        $this->startTest();
-    }
 
     public function testFetchEsScheduledPricing()
     {

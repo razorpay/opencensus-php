@@ -266,16 +266,6 @@ class FeaturesTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testMultiAssignBlacklistedFeaturesWhereOneMerchantHasOnlyDS()
-    {
-        $this->fixtures->create('merchant', ['id' => '10000000000001']);
-        $this->fixtures->create('merchant', ['id' => '10000000000002']);
-        $this->fixtures->create('merchant', ['id' => '10000000000003']);
-
-        $this->fixtures->merchant->addFeatures(['only_ds'],'10000000000001');
-        $this->startTest();
-    }
-
     public function testMultiRemoveFeature()
     {
         $this->fixtures->create(
@@ -3904,26 +3894,6 @@ Regards,
     public function test1ccDisableEmailCookie()
     {
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
-
-        $this->startTest();
-    }
-
-    public function testAddBlacklistedFeatureWithoutOnlyDS()
-    {
-        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
-
-        $this->startTest();
-
-        $this->verifyFeaturePresenceForAccounts(Mode::TEST,
-            self::DEFAULT_MERCHANT_ID,
-            ['white_labelled_route']);
-    }
-
-    public function testAddBlackListedFeatureWithOnlyDS()
-    {
-        $this->fixtures->merchant->addFeatures(['only_ds']);
-
-        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
 
         $this->startTest();
     }
