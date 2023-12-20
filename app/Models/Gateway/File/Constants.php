@@ -468,4 +468,11 @@ class Constants
     const FILE_FAILED        = 'file_failed';
     const FILE_TIMEOUT       = 'file_timeout';
     const FILE_UNKNOWN       = 'file_unknown';
+    
+    // disabling for all initially, can change accordingly after confirmation
+    const EMANDATE_RETRY_CONFIG_MAP = [
+        Type::NACH_DEBIT        . "_" . self::CITI       =>  false,
+        Type::NACH_DEBIT        . "_" . self::ICICI      =>  false,
+        Type::EMANDATE_DEBIT    . "_" . self::YESB       =>  false
+    ];
 }

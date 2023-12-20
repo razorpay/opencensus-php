@@ -302,43 +302,17 @@ class PaperNachCiti extends Debit\Base
      */
     public function sendFile($data)
     {
-        try {
-            $variant = $this->app['razorx']->getTreatment(
-                "SFTP_CITI",
-                'sftp_batches_and_retry',
-                $this->mode
-            );
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->info(TraceCode::RAZORX_REQUEST_FAILED,
-                [
-                    "razorx error" => $ex
-                ]);
-
-            $variant = 'off';
-        }
-
-        // for retry this step will fail anyway, as we don't have file store enttiy here
         if($this->fileStore === null)
         {
-            return;
+            $this->fileStore = $this->fetchFilestoreIds($this->gatewayFile);
         }
-
-
+        
         $files = $this->gatewayFile
             ->files()
             ->whereIn(FileStore\Entity::ID, $this->fileStore)
             ->get();
-
-        if (strtolower($variant) === 'on')
-        {
-            $this->sendFilesInBatches($files, 2);
-        }
-        else
-        {
-            $this->sendFilesBulk($files);
-        }
+        
+        $this->sendFilesInBatches($files, 2);
         
         $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
         
@@ -349,11 +323,8 @@ class PaperNachCiti extends Debit\Base
         $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
-
-        if($this->gatewayFile->getTarget() === Constants::PAPER_NACH_CITI_V2)
-        {
-            $this->sendMail($files);
-        }
+        
+        $this->sendMail($files);
     }
 
     protected function sendFilesBulk($files)
@@ -420,14 +391,17 @@ class PaperNachCiti extends Debit\Base
 
         if(count($sentFiles) !== count($fileInfo))
         {
-            $this->trace->info(
-                TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
-                [
-                    'target' => $this->gatewayFile->getTarget(),
-                    'type'   => $this->gatewayFile->getType()
-                ]);
-
-            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
+            if($this->gatewayFile->getAttempts() >= 4)
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
+                    [
+                        'target' => $this->gatewayFile->getTarget(),
+                        'type'   => $this->gatewayFile->getType()
+                    ]);
+                
+                $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
+            }
 
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
@@ -440,22 +414,26 @@ class PaperNachCiti extends Debit\Base
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_STATUS, [ $response ]);
     }
 
-    protected function sendEachFileBatch($pendingFiles)
+    protected function sendEachFileBatch($pendingFiles): array
     {
         $sentFiles = $failedFiles = $timeoutFiles = [];
-
+        
+        $configKey = $this->gatewayFile->getType() . "_" . Payment\Gateway::ACQUIRER_CITI;
+        
+        $retry = Constants::EMANDATE_RETRY_CONFIG_MAP[$configKey] ?? false;
+        
+        $filterStatusList = $retry ? [Constants::FILE_SENT] : [Constants::FILE_SENT, Constants::FILE_TIMEOUT];
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_PENDING,
             [
-                "pendingFiles" => $this->getFileNames($pendingFiles),
-                'gateway' => $this->gatewayFile->getTarget()
+                "pendingFiles"      => $this->getFileNames($pendingFiles),
+                "gateway"           => $this->gatewayFile->getTarget(),
+                "retry"             => $retry,
+                "filterStatusList"  => $filterStatusList
             ]);
-
-        $this->filterFiles($pendingFiles, $sentFiles,Constants::FILE_SENT);
-
-        $this->filterFiles($pendingFiles, $timeoutFiles, Constants::FILE_TIMEOUT);
-
-        $this->filterFiles($pendingFiles, $timeoutFiles, Constants::FILE_UNKNOWN);
-
+        
+        $this->filterFiles($pendingFiles, $sentFiles, $filterStatusList);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_FILTERED,
             [
                 "pendingFiles" => $this->getFileNames($pendingFiles),
@@ -488,13 +466,13 @@ class PaperNachCiti extends Debit\Base
                     {
                         $this->setFilesBeamStatus([$pendingFile], Constants::FILE_SENT);
 
-                        array_push($sentFiles, $pendingFileName);
+                        $sentFiles[] = $pendingFileName;
                     }
                     else
                     {
                         $this->setFilesBeamStatus([$pendingFile], Constants::FILE_FAILED);
 
-                        array_push($failedFiles, $pendingFileName);
+                        $failedFiles[] = $pendingFileName;
                     }
                 }
             }
@@ -933,15 +911,9 @@ class PaperNachCiti extends Debit\Base
 
     protected function getHeaderDate(): string
     {
-        $variant = $this->app['razorx']->getTreatment(
-            UniqueIdEntity::generateUniqueId(), self::CITI_NACH_DATE_SELECT, $this->app['basicauth']->getMode());
-
-        if ($variant === 'on')
-        {
-            return Carbon::now(Timezone::IST)->addDay()->format('dmY');
-        }
-
-        return Carbon::now(Timezone::IST)->format('dmY');
+        $offset = (int) $this->gatewayFile->getSubType();
+        
+        return Carbon::now(Timezone::IST)->addDays($offset)->format('dmY');
     }
 
     protected function getCacheKeyForFileIndex($utilityCode): string

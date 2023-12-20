@@ -737,10 +737,10 @@ class Yesb extends Base
      */
     public function sendFile($data)
     {
-        // for retry this step will fail anyway, as we don't have file store enttiy here
+        
         if($this->fileStore === null)
         {
-            return;
+            $this->fileStore = $this->fetchFilestoreIds($this->gatewayFile);
         }
 
         $files = $this->gatewayFile
@@ -788,16 +788,19 @@ class Yesb extends Base
 
         if(count($sentFiles) !== count($fileInfo))
         {
-            $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
-            
-            $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
-            
-            $this->trace->info(
-                TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
-                [
-                    'target' => $this->gatewayFile->getTarget(),
-                    'type'   => $this->gatewayFile->getType()
-                ]);
+            if($this->gatewayFile->getAttempts() >= 4)
+            {
+                $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
+                
+                $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
+                
+                $this->trace->info(
+                    TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
+                    [
+                        'target' => $this->gatewayFile->getTarget(),
+                        'type' => $this->gatewayFile->getType()
+                    ]);
+            }
             
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
@@ -816,22 +819,26 @@ class Yesb extends Base
      * code check: done
      * sending files in batches, and updating file store once files are sent
      */
-    protected function sendEachFileBatch($pendingFiles)
+    protected function sendEachFileBatch($pendingFiles): array
     {
         $sentFiles = $failedFiles = $timeoutFiles = [];
-
+        
+        $configKey = $this->gatewayFile->getType() . "_" . Payment\Gateway::ACQUIRER_YESB;
+        
+        $retry = Constants::EMANDATE_RETRY_CONFIG_MAP[$configKey] ?? false;
+        
+        $filterStatusList = $retry ? [Constants::FILE_SENT] : [Constants::FILE_SENT, Constants::FILE_TIMEOUT];
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_PENDING,
             [
-                "pendingFiles" => $this->getFileNames($pendingFiles),
-                'gateway' => $this->gatewayFile->getTarget()
+                "pendingFiles"      => $this->getFileNames($pendingFiles),
+                "gateway"           => $this->gatewayFile->getTarget(),
+                "retry"             => $retry,
+                "filterStatusList"  => $filterStatusList
             ]);
 
-        $this->filterFiles($pendingFiles, $sentFiles,Constants::FILE_SENT);
-
-        $this->filterFiles($pendingFiles, $timeoutFiles, Constants::FILE_TIMEOUT);
-
-        $this->filterFiles($pendingFiles, $timeoutFiles, Constants::FILE_UNKNOWN);
-
+        $this->filterFiles($pendingFiles, $sentFiles, $filterStatusList);
+        
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_FILTERED,
             [
                 "pendingFiles" => $this->getFileNames($pendingFiles),
@@ -864,7 +871,7 @@ class Yesb extends Base
                     {
                         $this->setFilesBeamStatus([$pendingFile], Constants::FILE_SENT);
 
-                        array_push($sentFiles, $pendingFileName);
+                        $sentFiles[] = $pendingFileName;
                     }
                     else
                     {
@@ -872,22 +879,22 @@ class Yesb extends Base
                         
                         $this->setFilesBeamStatus([$pendingFile], Constants::FILE_FAILED);
 
-                        array_push($failedFiles, $pendingFileName);
+                        $failedFiles[] = $pendingFileName;
                     }
                 }
             }
             else
             {
+                $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
+                
                 if($beamResponse === null)
                 {
-                    $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
-
+                    
                     $this->setFilesBeamStatus($pendingFiles, Constants::FILE_TIMEOUT);
                 }
                 else
                 {
-                    $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
-
+                    
                     $this->setFilesBeamStatus($pendingFiles, Constants::FILE_UNKNOWN);
                 }
             }

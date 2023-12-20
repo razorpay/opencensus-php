@@ -4311,6 +4311,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GATEWAY_FILE_BEAM_FILES_PENDING                       = 'GATEWAY_FILE_BEAM_FILES_PENDING';
     const GATEWAY_FILE_BEAM_FILES_FILTERED                      = 'GATEWAY_FILE_BEAM_FILES_FILTERED';
+    
+    const GATEWAY_FILTERED_FILE                                 = 'GATEWAY_FILTERED_FILE';
+    
     const GATEWAY_FILE_BEAM_RESPONSE                            = 'GATEWAY_FILE_BEAM_RESPONSE';
     const GATEWAY_FILE_BEAM_FILES_STATUS                        = 'GATEWAY_FILE_BEAM_FILES_STATUS';
 

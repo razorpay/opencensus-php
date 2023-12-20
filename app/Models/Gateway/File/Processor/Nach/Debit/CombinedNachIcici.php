@@ -190,45 +190,46 @@ class CombinedNachIcici extends Debit\Base
 
         return $rows;
     }
-
-    public function sendFile($data)
+    
+    /**
+     * @throws GatewayErrorException
+     */
+    public function sendFile($data): void
     {
-        $fileInfo = [];
+        if($this->fileStore === null)
+        {
+            $this->fileStore = $this->fetchFilestoreIds($this->gatewayFile);
+        }
 
         $files = $this->gatewayFile
                       ->files()
                       ->whereIn(FileStore\Entity::ID, $this->fileStore)
                       ->get();
+        
+        $this->sendFilesInBatches($files, 1);
+        
+        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
+        
+        $type = Constants::COMBINED_NACH_ICICI . '_' . self::STEP;
 
+        $mailable = new NachMail(['mailData' => $this->mailData], $type, $this->gatewayFile->getRecipients());
+
+        Mail::queue($mailable);
+    }
+    
+    protected function sendFilesBulk($files)
+    {
+        $fileInfo = [];
+        
         foreach ($files as $file)
         {
             $fullFileName = $file->getName() . '.' . $file->getExtension();
-
+            
             $fileInfo[] = $fullFileName;
         }
-
-        $bucketConfig = $this->getBucketConfig(FileStore\Type::ICICI_NACH_COMBINED_DEBIT);
-
-        $data = [
-            BeamService::BEAM_PUSH_FILES         => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::ICICI_ENACH_NB_JOB_NAME,
-            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
-            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
-        ];
-
-        // In seconds
-        $timelines = [];
-
-        $mailInfo = [
-            'fileInfo'  => $fileInfo,
-            'channel'   => 'nach',
-            'filetype'  => FileStore\Type::ICICI_NACH_COMBINED_DEBIT,
-            'subject'   => 'File Send failure',
-            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
-        ];
-
-        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
-
+        
+        $beamResponse = $this->beamPushRequest($fileInfo);
+        
         if ((isset($beamResponse['success']) === false) or
             ($beamResponse['success'] === null) or
             ($beamResponse['failed'] !== null))
@@ -247,14 +248,6 @@ class CombinedNachIcici extends Debit\Base
                 ]
             );
         }
-        
-        $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
-        
-        $type = Constants::COMBINED_NACH_ICICI . '_' . self::STEP;
-
-        $mailable = new NachMail(['mailData' => $this->mailData], $type, $this->gatewayFile->getRecipients());
-
-        Mail::queue($mailable);
     }
 
     protected function getFileToWriteNameWithoutExt(array $data)
@@ -607,5 +600,184 @@ class CombinedNachIcici extends Debit\Base
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('2048M');
+    }
+    
+    /**
+     * @param $fileInfo
+     * @param int $batch_size
+     * @throws GatewayErrorException
+     * code check: done
+     * converting entire files into batches
+     */
+    protected function sendFilesInBatches($fileInfo, $batch_size = 1)
+    {
+        $pendingBatches = $fileInfo->chunk($batch_size);
+        
+        $sentFiles = $failedFiles = $timeoutFiles = [];
+        
+        foreach($pendingBatches as $pendingBatch)
+        {
+            $response = $this->sendEachFileBatch($pendingBatch);
+            
+            $sentFiles = array_merge($sentFiles, $response['sent_files']);
+            
+            $failedFiles = array_merge($failedFiles, $response['failed_files']);
+            
+            $timeoutFiles = array_merge($timeoutFiles, $response['timeout_files']);
+        }
+        
+        $response = [
+            'gateway_id' => $this->gatewayFile->getId(),
+            'target' => $this->gatewayFile->getTarget(),
+            'type'   => $this->gatewayFile->getType(),
+            "failed_files"  => $failedFiles,
+            "sent_files"    => $sentFiles,
+            "timeout_files" => $timeoutFiles
+        ];
+        
+        if(count($sentFiles) !== count($fileInfo))
+        {
+            if($this->gatewayFile->getAttempts() >= 4)
+            {
+                $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
+                
+                $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
+                
+                $this->trace->info(
+                    TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
+                    [
+                        'target' => $this->gatewayFile->getTarget(),
+                        'type' => $this->gatewayFile->getType()
+                    ]);
+            }
+            
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
+                $response
+            );
+        }
+        
+        $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_STATUS, [ $response ]);
+    }
+    
+    /**
+     * @param $pendingFiles
+     * @return array
+     * code check: done
+     * sending files in batches, and updating file store once files are sent
+     */
+    protected function sendEachFileBatch($pendingFiles): array
+    {
+        $sentFiles = $failedFiles = $timeoutFiles = [];
+        
+        $configKey = $this->gatewayFile->getType() . "_" . Payment\Gateway::ICICI;
+        
+        $retry = Constants::EMANDATE_RETRY_CONFIG_MAP[$configKey] ?? false;
+        
+        $filterStatusList = $retry ? [Constants::FILE_SENT] : [Constants::FILE_SENT, Constants::FILE_TIMEOUT];
+        
+        $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_PENDING,
+            [
+                "pendingFiles"      => $this->getFileNames($pendingFiles),
+                "gateway"           => $this->gatewayFile->getTarget(),
+                "retry"             => $retry,
+                "filterStatusList"  => $filterStatusList
+            ]);
+        
+        $this->filterFiles($pendingFiles, $sentFiles, $filterStatusList);
+        
+        $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_FILTERED,
+            [
+                "pendingFiles" => $this->getFileNames($pendingFiles),
+                'gateway' => $this->gatewayFile->getTarget()
+            ]);
+        
+        if(count($pendingFiles) > 0)
+        {
+            $beamFiles = $this->getFileNames($pendingFiles);
+            
+            $beamResponse = $this->beamPushRequest($beamFiles);
+            
+            $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_RESPONSE,
+                [
+                    "beam_response" => $beamResponse,
+                    'gateway' => $this->gatewayFile->getTarget()
+                ]);
+            
+            if($beamResponse !== null and
+                isset($beamResponse['failed']) === true or
+                isset($beamResponse['success']) === true)
+            {
+                $beamSuccessFiles = $beamResponse['success'] ?? [];
+                
+                foreach ($pendingFiles as $pendingFile)
+                {
+                    $pendingFileName = $this->getSingleFileName($pendingFile);
+                    
+                    if(in_array($pendingFileName, $beamSuccessFiles))
+                    {
+                        $this->setFilesBeamStatus([$pendingFile], Constants::FILE_SENT);
+                        
+                        $sentFiles[] = $pendingFileName;
+                    }
+                    else
+                    {
+                        $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
+                        
+                        $this->setFilesBeamStatus([$pendingFile], Constants::FILE_FAILED);
+                        
+                        $failedFiles[] = $pendingFileName;
+                    }
+                }
+            }
+            else
+            {
+                $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
+                
+                if($beamResponse === null)
+                {
+                    
+                    $this->setFilesBeamStatus($pendingFiles, Constants::FILE_TIMEOUT);
+                }
+                else
+                {
+                    
+                    $this->setFilesBeamStatus($pendingFiles, Constants::FILE_UNKNOWN);
+                }
+            }
+        }
+        
+        return [
+            "failed_files"  => $failedFiles,
+            "sent_files"    => $sentFiles,
+            "timeout_files" => $timeoutFiles
+        ];
+    }
+    
+    protected function beamPushRequest($beamFiles)
+    {
+        $bucketConfig = $this->getBucketConfig(FileStore\Type::ICICI_NACH_COMBINED_DEBIT);
+        
+        $data = [
+            BeamService::BEAM_PUSH_FILES         => $beamFiles,
+            BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::ICICI_ENACH_NB_JOB_NAME,
+            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+        ];
+        
+        // In seconds
+        $timelines = [];
+        
+        $mailInfo = [
+            'fileInfo'  => $beamFiles,
+            'channel'   => 'nach',
+            'filetype'  => FileStore\Type::ICICI_NACH_COMBINED_DEBIT,
+            'subject'   => 'File Send failure',
+            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
+        ];
+        
+        return $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
     }
 }

@@ -364,9 +364,9 @@ abstract class Base extends Core
         $this->gatewayFile->setFileSentAt(time());
     }
 
-    protected function fetchFilestoreIds()
+    protected function fetchFilestoreIds($gatewayFile): array
     {
-        $fileStoreEntities = $this->repo->file_store->getFilesBasedOnEntity($this->gatewayFile->getId());
+        $fileStoreEntities = $this->repo->file_store->getFilesBasedOnEntity($gatewayFile->getId());
 
         $fileStoreIds = [];
 
@@ -407,15 +407,24 @@ abstract class Base extends Core
         }
     }
 
-    protected function filterFiles(& $fileList, & $statusFiles, $fileStatus)
+    protected function filterFiles(& $fileList, & $statusFiles, $fileStatusList=[]): void
     {
-        foreach ($fileList as $index => $eachFile)
+        foreach ($fileList as $index => $file)
         {
-            if ($eachFile->getComments() === $fileStatus)
+            $fileStatus = $file->getComments() ?? null;
+            
+            if (in_array($fileStatus, $fileStatusList, true))
             {
-                array_push($statusFiles, $this->getSingleFileName($eachFile));
+                $statusFiles[] = $this->getSingleFileName($file);
 
                 unset($fileList[$index]);
+                
+                $this->trace->info(TraceCode::GATEWAY_FILTERED_FILE,
+                    [
+                        "fileId"        => $file->getId(),
+                        'fileStatus'    => $fileStatus
+                    ]);
+                
             }
         }
     }
@@ -430,17 +439,6 @@ abstract class Base extends Core
     {
         try
         {
-            $variant = $this->app['razorx']->getTreatment(
-                $gateway,
-                'emandate_file_generation_instrumentation',
-                $this->mode
-            );
-
-            if (strtolower($variant) !== 'on')
-            {
-                return;
-            }
-
             $files = $this->repo->file_store->getFilesBasedOnEntity($gatewayFileId);
 
             foreach ($files as $file)

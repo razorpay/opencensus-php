@@ -175,6 +175,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::SUB_TYPE);
     }
+    
+    public function getAttempts()
+    {
+        return $this->getAttribute(self::ATTEMPTS);
+    }
 
     public function isAcknowledged(): bool
     {
