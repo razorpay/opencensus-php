@@ -552,7 +552,7 @@ class Processor
     protected $segment;
 
     protected $verifyRefundStatus;
-    
+
     /**
      * Api Route instance
      *
@@ -1344,7 +1344,11 @@ class Processor
 
             if (empty($order) === false and $order->getProductType() === ProductType::PAYMENT_LINK_V2)
             {
-                return true;
+                // Added the experiment back to stop PL traffic for MIDs on cards re-arch.
+                // JIRA: https://razorpay.atlassian.net/browse/CARDREARCH-195
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
             }
 
             if ($merchant->isFeatureEnabled('raas') === true)
@@ -7045,7 +7049,7 @@ class Processor
         if($payment->isEmandate() === true or $payment->isNach() === true)
         {
             $emandateErrorDesc = $this->getEmandateErrorDesc($exception);
-            
+
             if($emandateErrorDesc !== null)
             {
                 $payment->setEmandateErrorDesc($emandateErrorDesc);
@@ -7121,13 +7125,13 @@ class Processor
             $this->disableUpiTerminalIfRequired($payment);
         }
     }
-    
+
     protected function getEmandateErrorDesc($exception)
     {
         try
         {
             $emandateErrDesc = $exception->getData()["emandate_err_desc"] ?? null;
-            
+
             if ($emandateErrDesc !== null or $emandateErrDesc !== "")
             {
                 return $emandateErrDesc;
@@ -7137,7 +7141,7 @@ class Processor
         {
             $this->trace->traceException($ex);
         }
-        
+
         return null;
     }
 
