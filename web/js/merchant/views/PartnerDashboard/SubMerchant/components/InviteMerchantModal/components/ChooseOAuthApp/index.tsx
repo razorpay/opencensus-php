@@ -1,16 +1,35 @@
 import React from 'react';
-import { Box, Button, RadioGroup, Radio, Text, Spinner } from '@razorpay/blade/components';
+import {
+  Box,
+  Button,
+  RadioGroup,
+  Radio,
+  Text,
+  Spinner,
+  CardBody,
+  Card,
+  InfoIcon,
+} from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
+import styled from 'styled-components';
 
 import { ShowNotificationType } from 'common/typings';
 import Time from 'common/ui/Time';
+import ConditionalTooltip from 'merchant/containers/ConditionalTooltip';
 import Application from 'merchant/models/Application';
 import { OAuthAppDetailsType } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
 import useFetchApplications from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/hooks/useFetchApplications';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import { showNotification } from 'merchant_common/reducers/notifications';
+
+const StyledApplicationTile = styled.div(
+  ({ $hasInvalidAppSetting }: { $hasInvalidAppSetting: boolean }) =>
+    `
+    cursor: ${$hasInvalidAppSetting ? 'not-allowed;' : 'pointer;'}
+    `,
+);
 
 type ChooseOAuthAppProps = {
   onNextClick: () => void;
@@ -70,56 +89,96 @@ const ChooseOAuthApp = ({
           justifyContent="center"
           backgroundColor="surface.background.level2.lowContrast"
         >
-          {applications?.map((application) => (
-            <div onClick={() => handleApplicationSelect(application.id)} key={application.id}>
-              <Box
-                display="flex"
-                flexDirection="column"
-                gap="spacing.5"
-                justifyContent="center"
-                padding="spacing.6"
-                backgroundColor="surface.background.level2.lowContrast"
-                borderColor="surface.border.normal.lowContrast"
-                borderWidth="thin"
+          {applications?.map(({ id, name, logo_url, created_at, hasInvalidAppSetting }) => {
+            const onAppClick = () => {
+              if (hasInvalidAppSetting) return null;
+              return handleApplicationSelect(id);
+            };
+            return (
+              <Card
+                key={id}
+                elevation="midRaised"
+                padding="spacing.3"
+                surfaceLevel={2}
+                as="label"
+                accessibilityLabel={name}
+                isSelected={id === selectedApp?.application_id}
+                marginBottom="spacing.1"
               >
-                <Box
-                  display="flex"
-                  gap="spacing.5"
-                  alignItems="center"
-                  flex="1"
-                  justifyContent="space-between"
-                >
-                  <Box
-                    display="flex"
-                    gap="spacing.5"
-                    alignItems="center"
-                    paddingX="none"
-                    paddingY="spacing.6"
+                <CardBody>
+                  <StyledApplicationTile
+                    $hasInvalidAppSetting={hasInvalidAppSetting}
+                    onClick={onAppClick}
                   >
-                    <Box display="flex" gap="spacing.4" alignItems="center" flex="1">
-                      <Box>
-                        <img
-                          src={applicationModel.formatLogoUrl(application.logo_url)}
-                          alt="application logo"
-                          height={80}
-                        />
-                      </Box>
-                      <Box>
-                        <Text type="subdued" weight="bold">
-                          {application.name}
-                        </Text>
-                        <Text type="subdued">App Id : {application.id}</Text>
-                        <Text type="subdued">
-                          Created on : <Time value={application.created_at} format="DD MMM YYYY" />
-                        </Text>
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      gap="spacing.5"
+                      justifyContent="center"
+                    >
+                      <Box
+                        display="flex"
+                        gap="spacing.5"
+                        alignItems="center"
+                        flex="1"
+                        justifyContent="space-between"
+                      >
+                        <Box
+                          display="flex"
+                          gap="spacing.5"
+                          alignItems="center"
+                          paddingX="none"
+                          paddingY="spacing.6"
+                        >
+                          <Box display="flex" gap="spacing.4" alignItems="center" flex="1">
+                            <Box>
+                              <img
+                                src={applicationModel.formatLogoUrl(logo_url)}
+                                alt="application logo"
+                                height={80}
+                              />
+                            </Box>
+                            <Box>
+                              <Text type="subdued" weight="bold">
+                                {name}
+                              </Text>
+                              <Text type="subdued">App Id : {id}</Text>
+                              <Text type="subdued">
+                                Created on : <Time value={created_at} format="DD MMM YYYY" />
+                              </Text>
+                              <Text type="subdued">
+                                {hasInvalidAppSetting ? (
+                                  <ConditionalTooltip
+                                    showTooltip={hasInvalidAppSetting}
+                                    content="Please update with the correct URI in Production Redirect URI of your app settings"
+                                    onOpenChange={function noRefCheck() {}}
+                                    placement="right"
+                                    padding="spacing.1"
+                                  >
+                                    <Box>
+                                      <Text display="inline-block">Invalid Link</Text>
+                                      <InfoIcon
+                                        marginLeft="spacing.2"
+                                        size="small"
+                                        color="feedback.icon.neutral.lowContrast"
+                                      />
+                                    </Box>
+                                  </ConditionalTooltip>
+                                ) : null}
+                              </Text>
+                            </Box>
+                          </Box>
+                        </Box>
+                        <Radio isDisabled={hasInvalidAppSetting} value={id}>
+                          {''}
+                        </Radio>
                       </Box>
                     </Box>
-                  </Box>
-                  <Radio value={application.id}>{''}</Radio>
-                </Box>
-              </Box>
-            </div>
-          ))}
+                  </StyledApplicationTile>
+                </CardBody>
+              </Card>
+            );
+          })}
         </Box>
       </RadioGroup>
       <ModalFooter>

@@ -16,18 +16,36 @@ interface TApplication {
   };
 }
 type FetchApplicationResult = Array<TApplication>;
+type ParsedApplicationResult = Array<
+  TApplication & {
+    hasInvalidAppSetting: boolean;
+  }
+>;
+const parseApplications = (applications: FetchApplicationResult = []): ParsedApplicationResult => {
+  const parsedApplications = applications.map((application) => ({
+    ...application,
+    hasInvalidAppSetting: application.client_details?.prod?.redirect_url?.length === 0,
+  }));
+  // TODO v2: move previous selections to the top (load from local storage)
+  const orderedApplications = parsedApplications.sort((a, b) => {
+    if (a.hasInvalidAppSetting) return 1;
+    if (b.hasInvalidAppSetting) return -1;
+    return a.created_at - b.created_at;
+  });
+  return orderedApplications;
+};
 
 const useFetchApplications = ({ showNotification }: { showNotification: ShowNotificationType }) => {
   return useQuery({
     queryKey: ['fetch-applications'],
-    queryFn: async (): Promise<FetchApplicationResult> => {
+    queryFn: async (): Promise<ParsedApplicationResult> => {
       const { data } = await merchantFetch({
         url: 'oauth/applications',
         mode: 'live',
         method: 'get',
         data: {},
       });
-      return data.items;
+      return parseApplications(data.items);
     },
     enabled: true,
     retry: false,

@@ -82,7 +82,7 @@ const InviteMerchantModal = ({
   const { isPlatformPartnerInviteFlowEnabled } = usePartnerDashboardExperiments();
   // Note: we need the defaults outside useState because the component may not remount.
   const productType = selectedProductType || initialProductType;
-  const currentStep = selectedStep || initialStep;
+  const currentStep = (selectedStep || initialStep) as INVITE_MERCHANT_STEPS;
   useEffect(() => {
     // For back navigation/re-open cases
     setShowHeaderAndTabs(true);
@@ -122,7 +122,7 @@ const InviteMerchantModal = ({
           <ModalHeader
             modalTitle={shouldShowHeaderAndTabs ? modalTitle : ''}
             onDismiss={onDismiss}
-            showDivider={currentStep === SELECT_PRODUCT}
+            showDivider={[SELECT_PRODUCT, CHOOSE_OAUTH_APP].includes(currentStep)}
           />
           {currentStep === SELECT_PRODUCT ? (
             <SelectProduct
