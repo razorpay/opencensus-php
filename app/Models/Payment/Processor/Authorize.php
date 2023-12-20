@@ -578,6 +578,8 @@ trait Authorize
 
             $requestData['merchant']['name'] = $payment->merchant->getName();
 
+            $requestData['merchant']['business_name'] = empty($payment->merchant->merchantDetail) === false ? $payment->merchant->merchantDetail->getBusinessName(): "Razorpay";
+
         }
 
 

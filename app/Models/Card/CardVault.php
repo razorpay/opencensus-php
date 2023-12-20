@@ -675,9 +675,10 @@ class CardVault extends Base\Core
     {
         // todo: send required merchant attributes after api contract finalization
         $input['merchant'] = [
-            'id' => $merchant->getId(),
-            'category' => $merchant->getCategory(),
-            'features' => $merchant->getEnabledFeatures()
+            'id'            => $merchant->getId(),
+            'category'      => $merchant->getCategory(),
+            'features'      => $merchant->getEnabledFeatures(),
+            'business_name' => empty($merchant->merchantDetail) === false ? $merchant->merchantDetail->getBusinessName() : "Razorpay"
         ];
 
         return $input;
