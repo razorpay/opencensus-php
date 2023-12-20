@@ -1,19 +1,43 @@
 import { GraphQLClient, Variables } from 'graphql-request';
 import { print, DocumentNode } from 'graphql';
+import { getMode } from 'common/services/mode';
+import { getCookie } from 'common/utils/cookies';
 
-const GRAPHQL_SERVER_HOST = 'http://localhost:8888'; // replace with /graph for prod
+const isProd = process.env.STAGE == 'production';
+
+/**
+ * /graph is the dashboard route which will internally route the requests to graphql server
+ **/
+const GRAPHQL_SERVER_HOST = '/graph';
 
 type GraphQLRequestFn = (options: {
   document: DocumentNode;
   variables?: Variables;
 }) => Promise<any>;
 
+type GraphqlErrorResponse = {
+  response: { errors: Array<{ message?: string }> | Array<string> };
+};
+
+const requestMiddleware = (request) => {
+  const xsrfToken = getCookie('XSRF-TOKEN');
+
+  return {
+    ...request,
+    headers: {
+      ...request.headers,
+      'Content-Type': 'application/json',
+      'apollographql-client-name': 'merchant-dashboard',
+      //version/commitid is added only in production
+      ...(isProd ? { 'apollographql-client-version': window.__VERSION__ } : {}),
+      'x-app-mode': getMode(),
+      ...(xsrfToken ? { 'x-xsrf-token': xsrfToken } : {}),
+    },
+  };
+};
+
 const graphqlClient = new GraphQLClient(GRAPHQL_SERVER_HOST, {
-  headers: {
-    'Content-Type': 'application/json',
-    'apollographql-client-name': 'dashboard',
-    // 'apollographql-client-version': '' , //TODO: check how to use the deployed app version
-  },
+  requestMiddleware,
 });
 
 const graphqlRequest: GraphQLRequestFn = async ({ document, variables }) => {
@@ -21,14 +45,14 @@ const graphqlRequest: GraphQLRequestFn = async ({ document, variables }) => {
   try {
     const response = await graphqlClient.rawRequest(operationDocumentInString, variables);
     const csrfToken = response.headers.get('x-csrf-token');
+
     if (csrfToken) {
+      //set cookie here as well?
       graphqlClient.setHeader('X-Csrf-token', csrfToken);
     }
 
-    return response;
+    return response.data;
   } catch (error: any) {
-    //TODO: Add logic to capture errors
-
     let operationName = '';
     if (document.definitions[0] && 'name' in document.definitions[0]) {
       operationName = (document.definitions[0] as any).name.value; // Using 'as any' to handle type checking
@@ -40,10 +64,10 @@ const graphqlRequest: GraphQLRequestFn = async ({ document, variables }) => {
     } else {
       //Errors thrown by the server
       //if (error?.response) {
-      //TODO: trigger sentry exception capture with following variables
+      //TODO: Check if GQL server errors are to be captured on sentry?
       const { errors } = error?.response;
       errors.forEach(({ extensions, message }) => {
-        //TODO: trigger sentry excepture capture with following variables
+        //TODO: Check if GQL server errors are to be captured on sentry?
         console.log('Trigger sentry exception here with', {
           extensions,
           message,
@@ -67,5 +91,5 @@ const graphqlRequestMutation = ({ document, variables }) => {
   return graphqlRequest({ document, variables });
 };
 
-export { graphqlRequestQuery, graphqlRequestMutation };
+export { graphqlRequestQuery, graphqlRequestMutation, graphqlRequest, GraphqlErrorResponse };
 export default graphqlClient;

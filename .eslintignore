@@ -24,3 +24,4 @@ public/js/services.js
 web/js/common/ui/ConfirmModal/ConfirmModalProvider.js
 web/js/merchant/containers/Home/OnboardingCard/Instant/LiveMode.js
 web/js/common/deprecated
+web/js/common/typings/graph-types.ts

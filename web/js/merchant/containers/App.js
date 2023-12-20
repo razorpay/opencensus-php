@@ -77,6 +77,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import { withSplitzService } from 'common/splitz';
 import { withI18Service } from 'common/i18';
 import { fetchConfigTags } from 'merchant/reducers/session';
+import graphqlClient from 'common/services/graphql/graphql-client';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -332,6 +333,13 @@ class App extends Component {
       this.fetchUser().then(({ data }) => {
         const user = data;
         const role = user.userRole;
+        //set graphql x-dashboard-user-id, x-dashboard-merchant-id
+        /** gql.setHeader('x-dashboard-user-id', user.user.id ) */
+        graphqlClient.setHeaders({
+          'x-dashboard-user-id': user.current,
+          'x-dashboard-merchant-id': user.merchant.id,
+        });
+
         if (!currentMode) {
           currentMode = user.isActivated ? 'live' : 'test';
         } else if (this.canMerchantMoveToLiveMode(currentMode, isActivated, user)) {
@@ -362,6 +370,7 @@ class App extends Component {
         return data;
       }),
       this.fetchOrg().then(({ data }) => {
+        graphqlClient.setHeader('x-org-id', data.id);
         const orgCode = (this.orgCode = data.custom_code);
         if (orgCode && orgCode !== 'rzp') {
           applyTheme(data);
