@@ -552,9 +552,7 @@ class Processor
     protected $segment;
 
     protected $verifyRefundStatus;
-
-    protected $emandateDescError;
-
+    
     /**
      * Api Route instance
      *
@@ -7044,9 +7042,14 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        if(($payment->isEmandate() === true or $payment->isNach() === true) and $this->emandateDescError !== null)
+        if($payment->isEmandate() === true or $payment->isNach() === true)
         {
-            $payment->setEmandateErrorDesc($this->emandateDescError);
+            $emandateErrorDesc = $this->getEmandateErrorDesc($exception);
+            
+            if($emandateErrorDesc !== null)
+            {
+                $payment->setEmandateErrorDesc($emandateErrorDesc);
+            }
         }
 
         if (($exception instanceof Exception\GatewayErrorException) and
@@ -7117,6 +7120,25 @@ class Processor
         {
             $this->disableUpiTerminalIfRequired($payment);
         }
+    }
+    
+    protected function getEmandateErrorDesc($exception)
+    {
+        try
+        {
+            $emandateErrDesc = $exception->getData()["emandate_err_desc"] ?? null;
+            
+            if ($emandateErrDesc !== null or $emandateErrDesc !== "")
+            {
+                return $emandateErrDesc;
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
+        }
+        
+        return null;
     }
 
     protected function shouldDisableUpiTerminal(Payment\Entity $payment, $error)

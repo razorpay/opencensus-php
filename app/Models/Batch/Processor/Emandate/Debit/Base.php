@@ -263,7 +263,7 @@ class Base extends BaseProcessor
 
         $errorCode = $this->getApiErrorCode($content);
         
-        $this->processAchReturnsOrNRFlow($payment, $content);
+        $errorResp = $this->processAchReturnsOrNRFlow($payment, $content);
 
         $e = new Exception\GatewayErrorException(
             $errorCode,
@@ -271,6 +271,7 @@ class Base extends BaseProcessor
             $content[self::GATEWAY_ERROR_MESSAGE] ?? null,
             [
                 'payment_id' => $payment->getId(),
+                "emandate_err_desc" => $errorResp
             ]);
 
         $processor = $processor->setPayment($payment);
@@ -279,7 +280,7 @@ class Base extends BaseProcessor
 
     }
     
-    protected function processAchReturnsOrNRFlow(Payment\Entity $payment, array $content)
+    protected function processAchReturnsOrNRFlow(Payment\Entity $payment, array $content): string
     {
         $merchant = $payment->merchant;
         
@@ -295,7 +296,7 @@ class Base extends BaseProcessor
                     "merchant_id"         => $merchant->getId()
                 ]);
             
-            return false;
+            return "";
         }
     
         $processor = new Processor($merchant);
@@ -345,6 +346,8 @@ class Base extends BaseProcessor
                 }
             }
         }
+        
+        return "";
     }
 
     protected function getApiErrorCode(array $content): string

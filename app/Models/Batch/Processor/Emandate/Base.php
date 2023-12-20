@@ -61,6 +61,11 @@ abstract class Base extends BaseProcessor
         {
             return;
         }
+        
+        $this->trace->info(TraceCode::EMANDATE_DEBIT_RECONCILE_AT,
+            [
+                "payment_id" => $entity->getId(),
+            ]);
 
         $time = Carbon::now(Timezone::IST)->getTimestamp();
 

@@ -202,8 +202,8 @@ class Base extends BaseProcessor
         $processor = new Processor($merchant);
 
         $errorCode = $this->getApiErrorCode($content);
-    
-        $this->processAchReturnsOrNRFlow($payment, $content);
+        
+        $errorResp = $this->processAchReturnsOrNRFlow($payment, $content);
     
         $e = new Exception\GatewayErrorException(
             $errorCode,
@@ -212,6 +212,7 @@ class Base extends BaseProcessor
             [
                 'payment_id' => $payment->getId(),
                 'gateway'    => $this->gateway,
+                "emandate_err_desc" => $errorResp
             ]);
 
         $processor = $processor->setPayment($payment);
@@ -219,7 +220,7 @@ class Base extends BaseProcessor
         $processor->updatePaymentAuthFailed($e);
     }
     
-    protected function processAchReturnsOrNRFlow(Payment\Entity $payment, array $content)
+    protected function processAchReturnsOrNRFlow(Payment\Entity $payment, array $content): string
     {
         $merchant = $payment->merchant;
         
@@ -235,7 +236,7 @@ class Base extends BaseProcessor
                     "merchant_id"         => $merchant->getId()
                 ]);
             
-            return false;
+            return "";
         }
         
         $processor = new Processor($merchant);
@@ -283,6 +284,8 @@ class Base extends BaseProcessor
                 return $processor->emandateNRProcessingFlow($payment, $nrErrorCode);
             }
         }
+        
+        return "";
     }
 
     protected function getApiErrorCode(array $content): string

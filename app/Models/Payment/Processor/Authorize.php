@@ -8112,7 +8112,7 @@ trait Authorize
         (new Payment\Metric)->pushAuthenticationMetrics($this->payment);
     }
 
-    public function emandateNRProcessingFlow(Payment\Entity $payment, array $nrErrorCode)
+    public function emandateNRProcessingFlow(Payment\Entity $payment, array $nrErrorCode): string
     {
         try
         {
@@ -8126,7 +8126,7 @@ trait Authorize
             ]);
         }
 
-        return [];
+        return "";
     }
 
     protected function updateAndNotifyPaymentAuthorized(array $data = [], bool $wasFailed = false)

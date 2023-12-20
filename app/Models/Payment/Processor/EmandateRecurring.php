@@ -321,7 +321,7 @@ trait EmandateRecurring
         }
     }
     
-    public function achReturnProcessingFlow(Entity $payment, $errorCode)
+    public function achReturnProcessingFlow(Entity $payment, $errorCode): string
     {
         try
         {
@@ -338,7 +338,7 @@ trait EmandateRecurring
             // if payment created and response received are different months we ignore them
             if ($this->isCurrentMonth($payment) === false)
             {
-                return [];
+                return "";
             }
     
             $token = $payment->getGlobalOrLocalTokenEntity();
@@ -375,10 +375,8 @@ trait EmandateRecurring
     
             if ($updatedConfigs[Token\Constants::EMANDATE_TOKEN_STATUS] === Token\Constants::BLOCKED_TEMPORARILY)
             {
-                    $this->emandateDescError = " The token has been put on hold temporarily for raising recurring payments.";
+                return " The token has been put on hold temporarily for raising recurring payments.";
             }
-            
-            return [];
         }
         catch(\Throwable $ex)
         {
@@ -387,9 +385,11 @@ trait EmandateRecurring
                 "payment_id"  => $payment->getId()
             ]);
         }
+        
+        return "";
     }
     
-    public function isCurrentMonth($payment)
+    public function isCurrentMonth($payment): bool
     {
         $paymentCreatedMonth = $this->getCurrentMonthIST($payment->getCreatedAt());
     
@@ -414,7 +414,7 @@ trait EmandateRecurring
         return true;
     }
     
-    public function nrProcessingFlow(Entity $payment, $nrErrorCode)
+    public function nrProcessingFlow(Entity $payment, $nrErrorCode): string
     {
         $this->trace->info(
             TraceCode::EMANDATE_PAYMENT_UPDATE_TOKEN,
@@ -429,7 +429,7 @@ trait EmandateRecurring
         // if payment created and response received are different months we ignore them
         if ($this->isCurrentMonth($payment) === false)
         {
-            return [];
+            return "";
         }
         
         $merchantConfig = $this->fetchEmandateDcsConfigs($payment->getMerchantId());
@@ -445,7 +445,7 @@ trait EmandateRecurring
         
         if ($merchantConfig === null or $token === null)
         {
-            return [];
+            return "";
         }
         
         $emandateConfig = $this->fetchConfigsForToken($token, $merchantConfig, $nrErrorCode);
@@ -462,7 +462,7 @@ trait EmandateRecurring
         
         if($emandateConfig === null)
         {
-            return [];
+            return "";
         }
     
         (new Token\Core)->updateEmandateTokenDetails($token, $emandateConfig);
@@ -474,10 +474,10 @@ trait EmandateRecurring
         {
             $this->trace->info(TraceCode::EMANDATE_TOKEN_BLOCKED, $configArray);
             
-            $this->emandateDescError = " The token has been put on hold temporarily for raising recurring payments.";
+            return " The token has been put on hold temporarily for raising recurring payments.";
         }
         
-        return [];
+        return "";
     }
     
     public function fetchConfigsForToken($token, $merchantConfig, $nrErrorCode)
