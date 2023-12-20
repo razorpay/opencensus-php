@@ -475,8 +475,13 @@ class GatewayController extends Controller
                 }
                 else
                 {
-                    if($this->isAxisOliveCallbackWithFailedPayment($input, $gatewayDriver)) {
-                        return $this->holdTurboPayeeCallbackExecution($input, $mode, $startTime, $gatewayDriver);
+                    if($this->isAxisOliveCallbackWithFailedPayment($input, $gatewayDriver)) 
+                    {
+                        $reference17 = json_decode($payment->getReference17(), true);
+                        if ($reference17 === null || $reference17['payer'] === null)
+                        {
+                            return $this->holdTurboPayeeCallbackExecution($input, $mode, $startTime, $gatewayDriver);
+                        }
                     }
 
                     $payment = $this->repo->payment->findByPublicId($paymentId);
