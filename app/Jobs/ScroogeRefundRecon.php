@@ -15,6 +15,12 @@ class ScroogeRefundRecon extends Job
     const MAX_JOB_ATTEMPTS = 5;
     const JOB_RELEASE_WAIT = 300;
 
+
+    /**
+     * Scrooge refund job timeout at 120 seconds
+     */
+    public $timeout = 120;
+
     //
     // Make sure that this is below 900 (seconds) because
     // SQS doesn't support delay over 15 minutes.
