@@ -187,6 +187,21 @@ abstract class Base extends BaseModel\Core
 
         list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
 
+        if (($this->entity->getEntity() === Constants\Entity::PAYMENT) and
+            ($this->entity->isUpi()))
+        {
+            $this->trace->info(
+                TraceCode::PRICING_FEES_GREATER_THAN_AMOUNT,
+                [
+                    'merchantId' => $this->entity->getMerchantId(),
+                    'fees' => ($totalFees > $amount),
+                    'amountCredit' => ($amountCredits <= 0),
+                    'feeCredits' => ($totalFees > $feeCredits),
+                    'feeCreditsValue' => $feeCredits,
+                ]
+            );
+        }
+
         if (($totalFees > $amount) and
             ($amountCredits <= 0) and
             ($totalFees > $feeCredits))
