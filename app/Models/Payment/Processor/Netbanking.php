@@ -1399,6 +1399,7 @@ class Netbanking
         self::KKBK_C,
         self::HDFC_C,
         self::AUBL_C,
+        IFSC::KKBK,
     ];
 
     public static function isSupportedBank($bank)
