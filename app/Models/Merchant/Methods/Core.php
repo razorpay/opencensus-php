@@ -915,8 +915,9 @@ class Core extends Base\Core
             $defaultMethods[Entity::PHONEPE] = false;
         }
 
-        //disable UPI for certain merchants
-        if($this->isUPIPaymentMethodAllowed($merchant) === true)
+        /*Disable UPI method by default for regular PG merchants*/
+
+        if($this->shouldDisableUpiByDefault($merchant) === true)
         {
             $defaultMethods[Entity::UPI] = false;
         }
@@ -1545,6 +1546,26 @@ class Core extends Base\Core
         $upiDedicatedTerminalExpt = (new MerchantCore())->isRazorxExperimentEnable($merchant->getId(), RazorxTreatment::UPI_DEDICATED_TERMINAL);
 
         if($upiDedicatedTerminalExpt === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function shouldDisableUpiByDefault($merchant): bool
+    {
+        if ($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        if ($merchant->isBusinessBankingEnabled() === true or $merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
+        if ($merchant->isFeatureEnabled(FeatureConstants::OPTIMIZER_ONLY_MERCHANT) === true)
         {
             return false;
         }

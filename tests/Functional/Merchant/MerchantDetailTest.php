@@ -3010,7 +3010,7 @@ class MerchantDetailTest extends OAuthTestCase
             'debit_card'    => true,
             'amex'          => false,
             'netbanking'    => true,
-            'upi'           => true,
+            'upi'           => false,
             'emi'           => [], // emi disabled
             'prepaid_card'  => true,
             'paylater'      => true,

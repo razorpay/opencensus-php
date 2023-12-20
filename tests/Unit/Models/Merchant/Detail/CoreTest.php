@@ -6616,7 +6616,7 @@ class CoreTest extends TestCase
 
         $methods = $this->getDbEntityById('methods', $merchantDetails->getMerchantId())->toArray();
 
-        $this->assertEquals(true, $methods['upi']);
+        $this->assertEquals(false, $methods['upi']);
     }
 
     public function testFtuxDashboardKeysOnFirstTransaction()
