@@ -476,6 +476,16 @@ class CareServiceTest extends TestCase
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
             [
+                self::AUTH                                => 'cron',
+                self::API_ROUTE                           => '/care_service/cron/twirp/rzp.care.notification.v1.NotificationService/SendTransactionSummaryWhatsappNotification',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.notification.v1.NotificationService/SendTransactionSummaryWhatsappNotification',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
                 self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/GetSlots',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/GetSlots',

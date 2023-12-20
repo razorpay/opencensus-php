@@ -17114,6 +17114,7 @@ class Route
             'merchant_instrument_status_get_by_merchant_id',
             'create_payment_config',
             'fetch_payment_config',
+            'bank_account_fetch'
         ],
     ];
 

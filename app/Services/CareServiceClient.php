@@ -35,13 +35,15 @@ class CareServiceClient
 
     const MERCHANT_POPULAR_PRODUCTS_CRON = 'MerchantPopularProductsCron';
     const MERCHANT_NOTIFY_CSM_CHANGED_CRON = 'MerchantNotifyCsmChangedCron';
+    const TRANSACTION_SUMMARY_WHATSAPP_NOTIFICATION = 'TransactionSummaryWhatsappNotification';
 
     const FETCH_WORKFLOWS = 'MerchantWorkflows';
 
     const ROUTES_URL_MAP  = [
         self::MERCHANT_POPULAR_PRODUCTS_CRON => 'twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/PostMerchantPopularProducts',   // 5mins
         self::MERCHANT_NOTIFY_CSM_CHANGED_CRON => 'twirp/rzp.care.csm.v1.CsmService/NotifyMerchantsWithCsmChange',
-        self::FETCH_WORKFLOWS => 'twirp/rzp.care.sav.v1.SavService/FetchWorkflows'
+        self::FETCH_WORKFLOWS => 'twirp/rzp.care.sav.v1.SavService/FetchWorkflows',
+        self::TRANSACTION_SUMMARY_WHATSAPP_NOTIFICATION => 'twirp/rzp.care.notification.v1.NotificationService/SendTransactionSummaryWhatsappNotification'
     ];
 
     const PATH_TIMEOUT_MAP  = [
@@ -49,6 +51,7 @@ class CareServiceClient
         self::MERCHANT_NOTIFY_CSM_CHANGED_CRON => 300,
         self::FETCH_WORKFLOWS => 300,
         CareProxyController::SAV_FETCH_MERCHANT_STATS => 300,
+        self::TRANSACTION_SUMMARY_WHATSAPP_NOTIFICATION => 300,
     ];
 
     public function __construct($app = null)
