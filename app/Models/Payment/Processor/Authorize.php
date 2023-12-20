@@ -326,7 +326,7 @@ trait Authorize
             {
                 $chargeAccountMerchant = $gatewayInput[Payment\Entity::CHARGE_ACCOUNT_MERCHANT] ?? null;
 
-                $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $chargeAccountMerchant, null, $this->authenticationChannel);
+                $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $chargeAccountMerchant, null, $this->authenticationChannel, $gatewayInput['card']['is_cvv_less']);
             }
 
             $this->trace->info(

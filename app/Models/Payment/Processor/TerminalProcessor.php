@@ -41,7 +41,7 @@ class TerminalProcessor extends Base\Core
      * @return array
      */
     public function getTerminalsForPayment(Payment\Entity $payment, Merchant\Entity $chargeAccountMerchant = null,
-                                           CardMandate\Entity $cardMandate = null, string $authenticationChannel = Constants::DEFAULT_AUTHENTICATION_CHANNEL)
+                                           CardMandate\Entity $cardMandate = null, string $authenticationChannel = Constants::DEFAULT_AUTHENTICATION_CHANNEL, bool $isCvvLess = null)
     {
         $this->payment = $payment;
 
@@ -54,6 +54,10 @@ class TerminalProcessor extends Base\Core
             'card_mandate'              => $cardMandate,
             'authentication_channel'    => $authenticationChannel,
         ];
+
+        if(is_null($isCvvLess) === false) {
+            $input['is_cvv_less'] = $isCvvLess;
+        }
 
         $terminalSelector = new Terminal\Selector($input, $options);
 

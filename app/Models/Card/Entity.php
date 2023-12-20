@@ -76,6 +76,7 @@ class Entity extends Base\PublicEntity
     const NUMBER = 'number';
     const CVV    = 'cvv';
     const IS_CVV_OPTIONAL   = 'is_cvv_optional';
+    const IS_CVV_LESS       = 'is_cvv_less';
     const IS_TOKENIZED_CARD = 'is_tokenized_card';
 
     const TOKENISED         = 'tokenised';

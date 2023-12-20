@@ -26,7 +26,8 @@ class Validator extends Base\Validator
         Entity::LAST4              => 'sometimes|numeric|digits:4',
         Entity::TOKEN              => 'sometimes|string',
         Entity::PROVIDER_TYPE      => 'sometimes|string|nullable',
-        Entity::SERVICE_PROVIDER_TOKEN_DATA => 'sometimes|array'
+        Entity::SERVICE_PROVIDER_TOKEN_DATA => 'sometimes|array',
+        Entity::IS_CVV_LESS        => 'sometimes|boolean',
     ];
 
     protected static $createCpsRequestRules = [

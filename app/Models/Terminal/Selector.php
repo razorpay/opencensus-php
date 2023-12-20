@@ -229,7 +229,7 @@ class Selector extends Base\Core
 
                     // calling the smart routing service for sorted terminals set
                     $methodTerminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment,
-                        $this->input['merchant'], $allTerminals, $sortedTerminals);
+                        $this->input['merchant'], $allTerminals, $sortedTerminals, $this->input['is_cvv_less']);
 
                     if($methodTerminalSetReceivedFromSmartRouting !== null)
                     {
@@ -825,7 +825,7 @@ class Selector extends Base\Core
         }
     }
 
-    private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals)
+    private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals, $isCvvLess = null)
     {
         try
         {
@@ -859,6 +859,10 @@ class Selector extends Base\Core
                 $paymentData['card']['tokenised'] = $card->isTokenPan();
                 $paymentData['card']['iin'] = $card->getIin();
                 $paymentData['card']['token_iin'] = $card->getTokenIin();
+
+                if(is_null($isCvvLess) === false) {
+                    $paymentData['card']['is_cvv_less'] = $isCvvLess;
+                }
 
                 if (empty($this->input['card_mandate']) === false)
                 {

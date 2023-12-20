@@ -675,7 +675,8 @@ class Core extends Base\Core
                 Card\Entity::TOKENISED          => (empty($input[Card\Entity::TOKENISED]) === false) ? boolval($input[Card\Entity::TOKENISED]) : false,
                 Card\Entity::TOKEN_PROVIDER     => $input[Card\Entity::TOKEN_PROVIDER] ?? null,
                 Card\Entity::TOKEN_REFERENCE_ID     => $input[Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID] ?? null,
-                Card\Entity::TOKEN_REFERENCE_NUMBER     => $input[Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null
+                Card\Entity::TOKEN_REFERENCE_NUMBER     => $input[Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null,
+                Card\Entity::IS_CVV_LESS => $input[Card\Entity::IS_CVV_LESS]
             ]);
     }
 
@@ -1155,6 +1156,15 @@ class Core extends Base\Core
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];
+
+        if (boolval($input[Card\Entity::TOKENISED]) === true) {
+             if (empty($issCvvPresent) === true) {
+                 $input[Card\Entity::IS_CVV_LESS] = true;
+             }
+             else {
+                 $input[Card\Entity::IS_CVV_LESS] = false;
+             }
+        }
 
         // make cvv field empty for mastercard
         if (Card\Network::getFullName(Network::MC) === $card->getNetwork()
