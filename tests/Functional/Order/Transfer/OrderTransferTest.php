@@ -527,5 +527,6 @@ class OrderTransferTest extends TestCase
         $this->assertEquals(0, $failedTransferEntity['amount_reversed']);
         $this->assertEquals("Transfer failed as source payment is refunded", $failedTransferEntity['message']);
         $this->assertEquals("BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED", $failedTransferEntity['error_code']);
+        $this->assertEquals(4, $failedTransferEntity['attempts']);
     }
 }

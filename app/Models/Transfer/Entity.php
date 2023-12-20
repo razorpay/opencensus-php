@@ -490,6 +490,11 @@ class Entity extends Base\PublicEntity
         $this->increment(self::ATTEMPTS);
     }
 
+    public function setAttempts(int $attempts)
+    {
+        $this->setAttribute(self::ATTEMPTS, $attempts);
+    }
+
     public function setAccountCode(string $accountCode)
     {
         $this->setAttribute(self::ACCOUNT_CODE, $accountCode);

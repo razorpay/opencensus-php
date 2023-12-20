@@ -391,11 +391,21 @@ trait Reversal
                 {
                     $transfer->setStatus(Transfer\Status::FAILED);
 
+                    $transfer->setAttempts(Transfer\Constant::MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS);
+
                     $transfer->setErrorCode(ErrorCode::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
 
                     $transfer->setMessage(PublicErrorDescription::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
 
                     $transfer->saveOrFail();
+
+                    $this->trace->info(
+                        TraceCode::TRANSFER_FAILED_AS_SOURCE_PAYMENT_IS_REFUNDED,
+                        [
+                            'transfer_id'      => $transfer->getId(),
+                            'source_type'      => Transfer\Constant::PAYMENT,
+                            'payment_id'       => $payment->getId(),
+                        ]);
 
                     continue;
                 }
@@ -422,11 +432,22 @@ trait Reversal
                     {
                         $transfer->setStatus(Transfer\Status::FAILED);
 
+                        $transfer->setAttempts(Transfer\Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS);
+
                         $transfer->setErrorCode(ErrorCode::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
 
                         $transfer->setMessage(PublicErrorDescription::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
 
                         $transfer->saveOrFail();
+
+                        $this->trace->info(
+                            TraceCode::TRANSFER_FAILED_AS_SOURCE_PAYMENT_IS_REFUNDED,
+                            [
+                                'transfer_id'      => $transfer->getId(),
+                                'source_type'      => Transfer\Constant::ORDER,
+                                'payment_id'       => $payment->getId(),
+                                'order_id'         => $orderId,
+                            ]);
 
                         continue;
                     }
