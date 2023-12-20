@@ -17,7 +17,7 @@ class Constants
 	const ACTION_DISPUTE_CREATION_EXPIRY = 'dispute_creation_expiry';
 
 	const REFUND_BUFFER         = 10;
-	const DISPUTE_EXPIRES_AFTER = 2;
+	const DISPUTE_EXPIRES_AFTER = 3;
 
 	// FD Tags
 	const FD_TAGS_AUTOMATED_DISPUTE_FLOW        = 'automated_dispute_flow';
