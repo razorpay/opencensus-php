@@ -943,9 +943,7 @@ class Service extends Base\Service
         }
         catch(\Throwable $e)
         {
-            $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_FAILED_COUNT, [
-                'error'   => $e
-                ]);
+            $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_FAILED_COUNT);
 
             $this->trace->traceException($e, Trace::ERROR,
                 TraceCode::PAYMENT_HANDLE_CREATION_FAILED,
