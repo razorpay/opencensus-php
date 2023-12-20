@@ -26,7 +26,6 @@ export const PAYMENT_ENABLE = {
   secondryButtonText: 'Complete KYC',
 };
 
-// TODO OE comms changes part-2
 export const PAYMENT_DISABLE = {
   title: 'Few more details required',
   description:
@@ -38,11 +37,11 @@ export const TNC = {
   title: 'KYC is under review Generate TnC now',
   partial_match_title: 'KYC is under review, payments have been temporarily paused',
   description:
-    'Your KYC details are under review. KYC review process usually takes 3-4 working days. We will reach out to you in case we need any clarifications. Meanwhile you can generate your Terms and Conditons page. Your KYC review might get delayed in case of delays in generating TnC.',
+    "Your documents and KYC detail are under review. It's now our responsibility to make sure your documents are processed. It usually takes 3-4 working days for our team to review your documents. We will reach out to you if we need any clarification.",
   partial_match_description:
-    'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will review your KYC and reach out to you for any clarifications within 3-4 days. Meanwhile you can generate your Terms and Conditons page. Your KYC review might get delayed in case of delays in generating TnC',
+    'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will review your KYC and reach out to you for any clarifications within 3-4 days.',
   payment_enable_description:
-    'Your payment limits have been removed and KYC is under review. It usually takes 3-4 working days. We will reach out to you in case we need any clarifications. Meanwhile you can generate your Terms and Conditons page. Your KYC review might get delayed in case of delays in generating TnC.',
+    'Your payment limits have been removed and KYC is under review. KYC review process usually takes 3-4 working days. We will notify you if we require any clarifications on your KYC.',
   buttonText: 'Generate Terms And Conditions',
 };
 

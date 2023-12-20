@@ -37,22 +37,21 @@ export const ACTIVATION_STATUS_UNDER_REVIEW = {
   new_flow: {
     title: 'Payment limits have been removed',
     description_with_payment_enable:
-      'You can accept unlimited payments now. Settlements will be enabled after we successfully review your KYC details. We will notify you if we require any clarifications on your KYC. You may experience a delay.',
+      'You can accept unlimited payments now. Settlements will be enabled after we successfully review your KYC details. It usually takes 3-4 working days. We will notify you if we require any clarifications on your KYC.',
     partial_match_title: 'Payments temporarily paused',
     partial_match_desc:
-      'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will review your KYC and reach out to you for any clarifications. You may experience a delay.',
+      'Our compliance team and banking partners are reviewing your KYC and your payments have been temporarily paused. We will review your KYC and reach out to you for any clarifications within 3-4 days.',
     post_nc_description:
-      "Your documents and KYC detail are under review. It's now our responsibility to make sure your documents are processed. We will reach out to you if we need any clarification. You may experience a delay.",
+      "Your documents and KYC detail are under review. It's now our responsibility to make sure your documents are processed. It usually takes 3-4 working days for our team to review your documents. We will reach out to you if we need any clarification.",
   },
 };
 
-// NOTE OE comms changes part-1
 // normal key
 export const ACTIVATION_STATUS_NEEDS_CLARIFICATION = {
   title: 'Clarification required',
   description: {
     normal:
-      'We need clarifications on few details to complete KYC verification. Update these details to help us activate your account faster once we resume onboarding new businesses',
+      'We need some clarification regarding your submitted details. Please clarify these details at the earliest to get your account activated.',
     activated_mcc_pending:
       'We need some clarification regarding your submitted details. Update the required details in 1 day otherwise your settlements might get paused',
     funds_onhold:
@@ -60,7 +59,6 @@ export const ACTIVATION_STATUS_NEEDS_CLARIFICATION = {
   },
 };
 
-// TODO OE comms changes part-2
 export const ACTIVATION_STATUS_ACTIVATED = {
   old_title: 'Payments and Settlements have been enabled',
   title: 'KYC Verified Successfully',
@@ -96,7 +94,6 @@ export const PAYMENT_ACTIVATED = {
     'Complete your KYC form to extend payment limits. Please note that your payments have been temporarily paused until you finish your KYC.',
 };
 
-// NOTE OE comms changes part-1
 // old_description key
 export const DEDUPE = {
   title: 'Business Not Supported',
@@ -104,15 +101,14 @@ export const DEDUPE = {
     "We can't support your business because it doesn't meet our compliance requirements If you think this is a mistake please reach out to our support.",
   L2_description:
     'In case you have pending settlements, you can raise a ticket and get your funds settled to your account.',
-  old_title: 'Clarification required',
+  old_title: 'Business Not Supported',
   old_description:
-    'We need some clarification regarding your submitted details. Please contact us to help us activate your account faster once we resume onboarding new businesses',
+    "We can't support your business because it doesn't meet our compliance requirements If you think this is a mistake please reach out to our support.",
 };
 
 export const ACTIVATION_PROGRESS = {
   title: 'Few more details required',
-  description:
-    'Submit your KYC details to help us activate your account faster once we resume onboarding new businesses',
+  description: 'Submit your KYC details to help us activate your account faster',
 };
 
 export const HARD_LIMIT_REACHED = {

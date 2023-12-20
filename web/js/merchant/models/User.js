@@ -1153,7 +1153,7 @@ export default class User {
   }
 
   get isInstantActivationEnabled() {
-    return this.getExpStatus('instant-activations-functionality');
+    return !!this.isOrgRZP;
   }
 
   get isInstantActivationVideoEnabled() {

@@ -197,6 +197,9 @@ class AnalyticsDesktop extends Component {
       activationState === 'L2_dedupe_blocked' ||
       activationState === 'needs_clarification_mcc_pending' ||
       activationState === 'needs_clarification' ||
+      activationState === 'needs_clarification_payments_settlement_enabled' ||
+      activationState === 'needs_clarification_with_payment_disabled' ||
+      activationState === 'needs_clarification_with_payments_enabled' ||
       activationState === 'funds_on_hold' ||
       activationState === 'rejected';
 

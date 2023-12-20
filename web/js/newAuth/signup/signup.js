@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Size from '@razorpay/blade-old/src/atoms/Size';
-import Text from '@razorpay/blade-old/src/atoms/Text';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
 import Auth from '@razorpay/commander-shield/src/bootstrap/SignUpWrapper';
 import QueryString from 'query-string';
@@ -12,7 +11,6 @@ import { setCookie } from 'common/utils/cookies';
 import { fetchOrg } from 'newAuth/apis';
 import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
 import { ContentContainer } from 'newAuth/commonStyles';
-import { isSignupEnabled } from 'newAuth/splitz/index';
 import {
   getURLQueryParams,
   isPasswordUXImprovementEnabled,
@@ -24,10 +22,9 @@ import Header from './components/Header';
 import InfoContainer from './components/InfoContainer';
 import PartnerSignup from './components/PartnerSignup';
 import RefereeBanner from './components/RefereeBanner';
-import { AbsoluteView, RelativeView, Container, DisableSignupContainer } from './styles';
+import { AbsoluteView, RelativeView, Container } from './styles';
 
 const SignUp = () => {
-  const [programDsCheck, setProgramDsCheck] = useState(false);
   const [orgName, setOrgName] = useState();
   const [isFetchingOrgData, setFetchingOrgData] = useState(false);
   const [captchaDisabled, setDisabledCaptcha] = useState(false);
@@ -35,12 +32,7 @@ const SignUp = () => {
     isExpOn: true,
     isScriptFailed: window.isOneTapScriptFailed,
   });
-  const {
-    auth_source,
-    r: query_reference,
-    invitation,
-    merchant_invitation,
-  } = getURLQueryParams(window.location.search);
+  const { auth_source, r: query_reference } = getURLQueryParams(window.location.search);
   const isSignUpFromWebsite = auth_source && auth_source === 'website';
   const isSigningUpAsPartner = query_reference === 'partner';
 
@@ -97,12 +89,10 @@ const SignUp = () => {
     setFetchingOrgData(true);
     fetchOrg()
       .then((res) => {
-        const isProgramDsCheck = res?.data?.features?.indexOf('program_ds_check') > -1;
         setOrgName(res?.data?.custom_code);
         if (res?.data?.configurations?.disable_captcha) {
           setDisabledCaptcha(true);
         }
-        setProgramDsCheck(isProgramDsCheck);
         setFetchingOrgData(false);
       })
       .catch(() => {
@@ -140,22 +130,7 @@ const SignUp = () => {
     window.location.href = '/#/access/signin';
   };
 
-  // enable signup for invitation merchant
-  let disableSignup = !invitation && !programDsCheck && !merchant_invitation;
-
-  // Enable signup for curlec.com (Malaysia)
-  if (window.location.host === 'dashboard.curlec.com') {
-    disableSignup = false;
-  }
-
-  // splitz experiment to check if signup is enabled or disabled, should be removed when signup is enabled for all merchants
-  const signupEnabled = isSignupEnabled();
-
-  if (signupEnabled) {
-    disableSignup = false;
-  }
-
-  if (!disableSignup && isSigningUpAsPartner) return <PartnerSignup />;
+  if (isSigningUpAsPartner) return <PartnerSignup />;
 
   return (
     <ThemeProvider theme={theme}>
@@ -171,35 +146,24 @@ const SignUp = () => {
                     handleOnClick={handleLoginClick}
                     isSignUpFromWebsite={isSignUpFromWebsite}
                   />
-                  {/* Temprorary disable signup */}
-                  {disableSignup ? (
-                    <DisableSignupContainer>
-                      <Text size="large" weight="bold" align="center">
-                        We are under scheduled maintenance.
-                        <br /> Apologies for the inconvenience.
-                      </Text>
-                    </DisableSignupContainer>
-                  ) : (
-                    <RelativeView>
-                      <RefereeBanner />
-                      <AbsoluteView>
-                        <CommanderShieldThemeWrapper>
-                          <Auth
-                            appName="dashboard"
-                            authClientId={window.OAUTH_CLIENT_ID}
-                            oneTapInfo={oneTapInfo}
-                            showPasswordRules={isPasswordUXImprovementEnabled()}
-                            skipCaptcha={isTestEnvironment() || captchaDisabled}
-                            autoReadOtpSignup
-                            showMobileSignup
-                            orgName={orgName}
-                          />
-                        </CommanderShieldThemeWrapper>
-                      </AbsoluteView>
-
-                      <InfoContainer handleContactUsClick={handleContactUsClick} />
-                    </RelativeView>
-                  )}
+                  <RelativeView>
+                    <RefereeBanner />
+                    <AbsoluteView>
+                      <CommanderShieldThemeWrapper>
+                        <Auth
+                          appName="dashboard"
+                          authClientId={window.OAUTH_CLIENT_ID}
+                          oneTapInfo={oneTapInfo}
+                          showPasswordRules={isPasswordUXImprovementEnabled()}
+                          skipCaptcha={isTestEnvironment() || captchaDisabled}
+                          autoReadOtpSignup
+                          showMobileSignup
+                          orgName={orgName}
+                        />
+                      </CommanderShieldThemeWrapper>
+                    </AbsoluteView>
+                    <InfoContainer handleContactUsClick={handleContactUsClick} />
+                  </RelativeView>
                 </ContentContainer>
               </Flex>
             </Size>

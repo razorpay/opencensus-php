@@ -27,7 +27,6 @@ const WelcomeModal = ({
   isOnboardingV2Enabled,
   isProductRecommendationEnabled,
   isOrgAxis,
-  isOrgRZP,
   hideCTAs,
   referee,
   trackEvents,
@@ -202,21 +201,6 @@ const WelcomeModal = ({
               </div>
             </div>
           </div>
-        </React.Fragment>
-      ) : isOrgRZP ? (
-        <React.Fragment>
-          <h1 className="welcome-title">New business onboarding</h1>
-          <h1 className="welcome-title welcome-subtitle">is temporarily paused</h1>
-          <p className="welcome-content">
-            Please submit your KYC details to make sure your business is verified and trusted.
-          </p>
-          <br />
-          <p className="welcome-content">
-            <i>
-              Note: This will help us activate your account faster once we resume onboarding new
-              businesses
-            </i>
-          </p>
         </React.Fragment>
       ) : (
         <React.Fragment>

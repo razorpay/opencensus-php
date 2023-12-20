@@ -48,29 +48,6 @@ export const RelativeView = Styled(View)`
   }
 `;
 
-export const DisableSignupContainer = Styled(View)`
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
-  height: 100%;
-  border-radius: 4px;
-  display: flex;
-  flex-grow: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #FFFFFF;
-  @media ${media.mobile} {
-    height: auto;
-    margin-bottom: 30px;
-  }
-  @media ${media.tab} {
-    height: 480px;
-    flex-grow: initial;
-    position: relative;
-    background: ${({ theme }) => theme.bladeOld.colors.background[400]};
-    margin: 48px 0;
-  }
-`;
-
 export const Container = Styled(View)`
   height: 100%;
   overflow-y: auto;

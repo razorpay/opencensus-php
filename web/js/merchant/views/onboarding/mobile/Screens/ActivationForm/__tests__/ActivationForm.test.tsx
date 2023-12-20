@@ -31,7 +31,6 @@ test.skip('ActivationForm Flow', async () => {
     ...DataPieces.bankAndCompanyDetails,
     ...DataPieces.Documents,
   });
-  jest.setTimeout(30000);
   render(<ActivationForm />, {});
   await waitForLoaderToFinish();
   expect(screen.getByText('Contact Name')).toBeInTheDocument();

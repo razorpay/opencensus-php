@@ -77,7 +77,6 @@ class ActivationCard extends Component {
               </div>
             ) : (
               <div>
-                {/* TODO OE comms changes part-2 */}
                 Submit a few KYC details to start accepting payments and receive{' '}
                 <a
                   className="btn-link"
@@ -149,7 +148,6 @@ class ActivationCard extends Component {
         status = possibleStatuses.active;
         content = (
           <div>
-            {/* TODO OE comms changes part-2 */}
             Submit a few KYC details to start accepting payments and receive{' '}
             <a
               className="btn-link"
@@ -206,38 +204,6 @@ class ActivationCard extends Component {
         status = possibleStatuses.active;
         content =
           'Your submitted KYC details are under review. You can start accepting payments once the KYC is approved';
-        break;
-      }
-      case 'poi_verified':
-      case 'L1_instantly_activated': {
-        if (limitBreachHappened) {
-          title = 'Live payments and Settlements';
-          status = possibleStatuses.blocked;
-          content = (
-            <div>
-              <a
-                className="btn-link"
-                target="_blank"
-                rel="noopener noreferrer"
-                href="http://razorpay.com/settlement"
-              >
-                Settlements
-              </a>{' '}
-              will be enabled and payments limit will be extended after successful KYC review
-            </div>
-          );
-        } else {
-          title = 'Live payments and Settlements';
-          status = possibleStatuses.active;
-          content = (
-            <div>
-              <a className="btn-link" onClick={() => this.props.showProductsModal()}>
-                Start Accepting payments.
-              </a>{' '}
-              Settlements will be enabled once your KYC has been reviewed successfully
-            </div>
-          );
-        }
         break;
       }
       case 'under_review_with_tnc_partial': {
@@ -796,11 +762,12 @@ class ActivationCard extends Component {
   }
 
   get accountUnderReviewContent() {
-    const { internationalActivationFlow } = this.props;
+    const { internationalActivationFlow, kyc_clarification_reasons } = this.props;
     if (internationalActivationFlow.isGraylistFlow) {
-      return `Submit your KYC details to activate your account once new businesses onboarding resumes`;
+      return `We are reviewing your form. Expect confirmation in ${
+        kyc_clarification_reasons?.nc_count ? ' 3 ' : ' 3 - 4 '
+      } business days. You can request for international payments acceptance post KYC Verification.`;
     }
-
     return 'We are reviewing your KYC details for activation';
   }
 

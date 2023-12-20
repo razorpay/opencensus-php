@@ -6,7 +6,6 @@ import ImgBottomBg from 'assets/onboarding/bottom_bg.png';
 import ImgTopBg from 'assets/onboarding/top_bg.png';
 import Image from 'common/ui/Image';
 import { trackhubsContactUpdate } from 'common/utils/googleAnalytics';
-import PaymentProgressBar from 'merchant/containers/Home/OnboardingCard/PaymentProgressBar';
 import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
@@ -236,9 +235,6 @@ export default class OnboardingCardInstant extends Component {
                 isNcEligibile={isNcEligibile}
               />
             </div>
-            {user.isInstantActivationEnabled ? (
-              <PaymentProgressBar user={user} mode={mode} limitBreach={limitBreach} />
-            ) : null}
 
             <div className="onboarding-illustration-top">
               <Image src={ImgTopBg} alt="Top" isWebP />

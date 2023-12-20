@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { Link as Redirect } from 'react-router-dom';
+import Links from '@razorpay/blade-old/src/atoms/Link';
 import { withRouter } from 'common/deprecated/withRouter';
 import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps';
 import {
@@ -13,7 +14,6 @@ import {
   getNcExpiryDate,
 } from 'merchant/views/onboarding/mobile/services/utils';
 import { showProductsModal } from 'merchant/reducers/home';
-import Link from 'common/components/Link';
 import { getMode, switchMode } from 'common/services/mode';
 import Info from './Info';
 import Buttons from './Buttons';
@@ -22,7 +22,6 @@ import { useApp } from 'common/context/App';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import VideoModal from 'merchant/components/VideoModal';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import useEligibility from 'merchant/views/onboarding/mobile/hooks/useEligibility';
 import {
@@ -62,7 +61,6 @@ const CurrentActivationProgress: React.FC<
   const isEasyNcEnabled = eligibilityData?.nc_revamp_enabled;
   const isEligibleForFeeBasedGating = checkEligibilityForFeeBasedGating(user);
 
-  const [shouldShowVideoModal, setShouldShowVideoModal] = useState(false);
   const expiryDate = getNcExpiryDate(user?.kyc_clarification_reasons);
 
   const onCTAClick = () => {
@@ -251,13 +249,13 @@ const CurrentActivationProgress: React.FC<
           titleColor="neutral.960"
           description={Messages.HARD_LIMIT_REACHED.description}
           descriptionJSX={
-            <Link
+            <Links
               href="https://knowledgebase.razorpay.com/support/solutions/articles/11000103841-why-is-my-settle[%E2%80%A6]ld-and-my-account-under-review-after-getting-activated"
               target="_blank"
               rel="noreferrer noopener"
             >
               More details
-            </Link>
+            </Links>
           }
         />
       );
@@ -270,9 +268,18 @@ const CurrentActivationProgress: React.FC<
       let title = Messages.ACTIVATION_STATUS_UNDER_REVIEW.old_flow.title;
       let description = '';
       let titleColor = 'neutral.960';
-      /* Temp Code for opening up new onboarding temporarily */
-      description =
-        'We are reviewing your KYC details. Post KYC verification, we will activate your account as soon as new business onboarding resumes.';
+
+      if (isUnregisteredBusiness(data.business_type)) {
+        description = `This process usually takes ${
+          data.kyc_clarification_reasons?.nc_count ? ' 3 ' : ' 3 - 4 '
+        } working days after your first transaction. If we need any more information we will reach out to you on your registered email id.`;
+      } else if (!data.isAutoKycDone) {
+        description = `KYC Review process usually takes ${
+          data.kyc_clarification_reasons?.nc_count ? ' 3 ' : '3 - 4'
+        } working days. We will notify you if we require any clarifications on your KYC.`;
+      } else {
+        description = Messages.ACTIVATION_STATUS_UNDER_REVIEW.old_flow.description;
+      }
 
       if (isInstantActivationEnabled) {
         if (dedupeStatus === 'partial_match') {
@@ -299,6 +306,18 @@ const CurrentActivationProgress: React.FC<
       );
     }
 
+    if (data.activation_status === 'kyc_qualified_unactivated') {
+      const title = 'KYC verified successfully';
+      const titleColor = 'positive.960';
+      const description =
+        'There is no action due from your end. You will be able to accept payments as soon as we resume onboarding of new merchants. We will notify about this on your email ID and phone number.';
+      return (
+        <>
+          <Info title={title} titleColor={titleColor} description={description} />
+        </>
+      );
+    }
+
     if (data.activation_status === 'needs_clarification') {
       let description = Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.normal;
       if (isInstantActivationEnabled) {
@@ -318,9 +337,8 @@ const CurrentActivationProgress: React.FC<
           description =
             'You’ll be able to receive collected payments in your account only after the required details are updated';
         } else if (!data.activated) {
-          // NOTE OE comms changes part-1
           description =
-            'Update these details to help us activate your account faster once we resume onboarding new businesses';
+            'You’ll be able to collect payments and receive them in your bank account only after the required details are updated';
         }
         const title = Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title;
         return (
@@ -540,55 +558,15 @@ const CurrentActivationProgress: React.FC<
       )} credits`;
     }
 
-    const isInstantActivationVideoEnabled = user.isInstantActivationVideoEnabled;
-
-    if (isInstantActivationVideoEnabled) {
-      trackEvents({
-        objectName: 'Instant Activation',
-        actionName: 'Video enabled',
-        screen: 'home page',
-      });
-    }
-
-    const handleVideoClick = () => {
-      trackEvents({
-        objectName: 'Instant Activation',
-        actionName: 'Video CTA clicked',
-        screen: 'home page',
-      });
-    };
-
     if (!!data.activated || isLimitReached) {
       return (
         <>
           <Info
             title={Messages.PAYMENT_ACTIVATED.title}
             description={
-              isLimitReached ? (
-                Messages.PAYMENT_ACTIVATED.limit_breach_desc
-              ) : isInstantActivationVideoEnabled ? (
-                <div>
-                  {Messages.PAYMENT_ACTIVATED.description}{' '}
-                  <a
-                    rel="noreferrer noopener"
-                    onClick={() => {
-                      handleVideoClick();
-                      setShouldShowVideoModal(true);
-                    }}
-                  >
-                    <strong>Click here</strong>{' '}
-                  </a>
-                  to watch a simple video on how to start accepting payments.{' '}
-                  <VideoModal
-                    visible={shouldShowVideoModal}
-                    maskClosable={true}
-                    onClose={() => setShouldShowVideoModal(false)}
-                    src="https://www.youtube-nocookie.com/embed/FM2P1D-yjOU?rel=0"
-                  />
-                </div>
-              ) : (
-                Messages.PAYMENT_ACTIVATED.description
-              )
+              isLimitReached
+                ? Messages.PAYMENT_ACTIVATED.limit_breach_desc
+                : Messages.PAYMENT_ACTIVATED.description
             }
           />
           <Buttons.Primary onClick={onCTAClick} title="Complete KYC" icon="arrowRight" />

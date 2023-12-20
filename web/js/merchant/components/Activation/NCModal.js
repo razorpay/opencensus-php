@@ -65,10 +65,9 @@ const NCModal = ({
         return {
           title: 'We need a few more details to complete KYC verification',
           body: (
-            // NOTE OE comms changes part-1
             <div>
-              Update these details to help us activate your account faster once we resume onboarding
-              new businesses
+              You’ll be able to collect payments and receive them in your bank account only after
+              the required details are updated
             </div>
           ),
           pill: 'ACTION REQUIRED',

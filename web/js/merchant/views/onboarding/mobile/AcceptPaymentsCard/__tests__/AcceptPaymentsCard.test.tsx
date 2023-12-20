@@ -271,46 +271,4 @@ describe('<AcceptPaymentsCard />', () => {
       ).toBeInTheDocument();
     });
   });
-
-  test('should render correct message if payment not breached', async () => {
-    useActivation.mockReturnValue({
-      status: 'success',
-      data: ActivationDB.update({
-        ...ActivationDataPieces.PaymentEnable,
-        ...ActivationDataPieces.regBusinessOverview,
-        ...ActivationDataPieces.OnboardingMileStoneL1,
-      }),
-    });
-
-    useEscalation.mockReturnValue({
-      status: 'success',
-      data: {
-        amount: '1000000',
-      },
-    });
-    render(<AcceptPaymentsCard />, {});
-    await waitFor(() => {
-      expect(screen.getByText(Messages.PAYMENT_ESCALATION.not_breach)).toBeInTheDocument();
-    });
-  });
-
-  test('should not render payment escalation card if payment is disable and not breached', async () => {
-    useActivation.mockReturnValue({
-      status: 'success',
-      data: ActivationDB.update({
-        ...ActivationDataPieces.OnboardingMileStoneL1,
-      }),
-    });
-
-    useEscalation.mockReturnValue({
-      status: 'success',
-      data: {
-        amount: '900000',
-      },
-    });
-    render(<AcceptPaymentsCard />, {});
-    await waitFor(() => {
-      expect(() => screen.getByText(Messages.PAYMENT_ESCALATION.not_breach)).toThrow();
-    });
-  });
 });

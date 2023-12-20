@@ -107,7 +107,7 @@ test('should show needs clarification message with payments disabled', () => {
   render(<App isOpen={true} modaltype="needs_clarification_with_payment_disabled" />, {});
   expect(
     screen.queryByText(
-      'Update these details to help us activate your account faster once we resume onboarding new businesses',
+      'You’ll be able to collect payments and receive them in your bank account only after the required details are updated',
     ),
   ).toBeInTheDocument();
   expect(screen.queryByText('ACTION REQUIRED')).toBeInTheDocument();

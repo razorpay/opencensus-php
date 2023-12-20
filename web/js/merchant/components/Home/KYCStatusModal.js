@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
 import { compose } from 'redux';
+import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
 import { kycModalContent } from './KycStatusModalContent';
 import rTracking from 'react-tracking';
 import { connect } from 'react-redux';
@@ -16,6 +17,8 @@ import {
   redirectToEasyAfter1sec,
 } from 'merchant/components/Activation/ActivationUtils';
 import InstantActivationModal from './InstantActivationModal';
+import ImgNcKyc from 'assets/onboarding/ncKyc.svg';
+import Image from 'common/ui/Image';
 import * as EventsActions from 'merchant/reducers/trackEvents';
 import { isMobileDevice } from './data';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
@@ -24,11 +27,13 @@ const MODAL_CONTENT = {
   KYC_CLARIFICATION_SUBMIT_MODAL: {
     title: () => 'KYC under review',
     subtitle: () => 'Clarifications successfully submitted',
-    body: () => (
-      // NOTE OE comms changes part-1
+    body: (args) => (
       <div>
+        <p>Great, thank you for providing requested clarifications!</p>
         <p>
-          Thank you for submitting your updated details. We’ll verify them and share an update soon.
+          We’ll review the form and get back to you in{' '}
+          {args.activationDuration || predefinedActivationDuration}.{' '}
+          {args.isWhitelistFlow ? 'Meanwhile, you can continue accepting payments.' : ''}
         </p>
       </div>
     ),
@@ -217,17 +222,17 @@ const KYCStatusModal = ({
         <ModalMask>
           <Modal className="pan-status-modal nc-modal" onClose={() => onCloseModal()}>
             <div className={`modal-header ${content.background}`}>
-              <h1>{content.title}</h1>
-              {content.subtitle && <p>{content.subtitle}</p>}
+              <Image src={ImgNcKyc} alt="nc kyc" className="nc-img" />
             </div>
             <div className="modal-body">
-              {content.pill && <span>{content.pill}</span>}
+              {content.pill && <span className="status-pill">{content.pill}</span>}
+              <h1>{content.title}</h1>
               <div className="modal-description">{content.body}</div>
               {content.button}
             </div>
           </Modal>
         </ModalMask>
-      ) : !!content ? (
+      ) : !!content && !isNewNc ? (
         <ModalMask>
           <Modal className="pan-status-modal" onClose={() => onCloseModal()}>
             <div className={`modal-header ${content.background}`}>

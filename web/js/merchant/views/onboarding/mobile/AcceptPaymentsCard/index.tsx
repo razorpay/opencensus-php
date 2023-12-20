@@ -1,23 +1,19 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@tanstack/react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import View from '@razorpay/blade-old/src/atoms/View';
-import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
-import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
 import {
   checkIfDedupe,
-  getFormatedCurrency,
   isUnregisteredBusiness,
 } from 'merchant/views/onboarding/mobile/services/utils';
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
 import { useApp } from 'common/context/App';
 import * as Messages from './Constants';
-import usePaymentVolume from 'merchant/views/onboarding/mobile/hooks/usePaymentVolume';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const ViewWithBackground = styled(View)`
@@ -42,34 +38,7 @@ const Description = ({ content }) => (
   </Space>
 );
 
-const PaymentEscalation = ({ limit, transactionAmount, isLimitReached }) => {
-  return (
-    <Flex>
-      <Space margin={[0, 0, 0.5, 0]}>
-        <View>
-          <Space padding={[0, 1, 0, 0]}>
-            <Text color={isLimitReached ? 'negative.900' : 'shade.980'} weight="bold">
-              {getFormatedCurrency(transactionAmount)}
-            </Text>
-          </Space>
-          <Text color="shade.600" weight="bold">
-            /&nbsp; {getFormatedCurrency(limit)}
-          </Text>
-        </View>
-      </Space>
-    </Flex>
-  );
-};
-
-const getCardContent = ({
-  activationData,
-  isWebsiteInWorkflow,
-  internationalWorkflowData,
-  escalationsData,
-  transactionAmountInfo,
-  isInstantActivationEnabled,
-  isDedupe,
-}) => {
+const getCardContent = ({ activationData, isWebsiteInWorkflow, internationalWorkflowData }) => {
   const isAccepted = activationData.activation_status === 'activated';
   const businessWebsite = activationData.business_website;
   const isAnyProductInReview =
@@ -119,41 +88,6 @@ const getCardContent = ({
         <Description content={Messages.INTERNATIONAL_BLACKLIST.description} />
       </>
     );
-  }
-
-  if (
-    activationData.activation_flow === 'whitelist' ||
-    isUnregisteredBusiness(activationData.business_type)
-  ) {
-    const isLimitReached =
-      escalationsData && escalationsData?.amount >= escalationsData?.limit?.payment;
-    const isLatestTransaction = escalationsData?.amount > transactionAmountInfo;
-    if (
-      (activationData.activated || isLimitReached) &&
-      activationData.activation_form_milestone === 'L1' &&
-      !isDedupe &&
-      isInstantActivationEnabled &&
-      escalationsData
-    ) {
-      return (
-        <>
-          <PaymentEscalation
-            limit={escalationsData?.limit?.payment}
-            transactionAmount={
-              isLatestTransaction ? escalationsData?.amount : transactionAmountInfo
-            }
-            isLimitReached={isLimitReached}
-          />
-          <Description
-            content={
-              isLimitReached
-                ? Messages.PAYMENT_ESCALATION.breach
-                : Messages.PAYMENT_ESCALATION.not_breach
-            }
-          />
-        </>
-      );
-    }
   }
 
   if (activationData.activation_flow === 'whitelist') {
@@ -279,21 +213,9 @@ const AcceptPaymentsCard: React.FC = () => {
       if (err?.response?.errors) snackbar.error(err.response.errors[0]);
     },
   });
-  const { fetchPayment: fetchPaymentInfo, transactionAmount: transactionAmountInfo } =
-    usePaymentVolume();
 
-  const { status: escalationsStatus, data: escalationsData } = useEscalation();
+  const isError = activationQueryStatus === 'error' || websiteWorkflowQueryStatus === 'error';
 
-  useEffect(() => {
-    if (activationQueryStatus === 'success' && activationData.activation_form_milestone === 'L1') {
-      fetchPaymentInfo();
-    }
-  }, [activationQueryStatus]);
-
-  const isError =
-    activationQueryStatus === 'error' ||
-    websiteWorkflowQueryStatus === 'error' ||
-    (escalationsStatus === 'error' && isInstantActivationEnabled);
   if (isError) {
     return <div>Something Went Wrong</div>;
   }
@@ -309,10 +231,6 @@ const AcceptPaymentsCard: React.FC = () => {
       activationData,
       isWebsiteInWorkflow,
       internationalWorkflowData,
-      escalationsData,
-      transactionAmountInfo,
-      isInstantActivationEnabled,
-      isDedupe,
     });
 
     if (

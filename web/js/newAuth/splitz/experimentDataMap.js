@@ -21,13 +21,6 @@ export default {
     experiment_variable: 'exposed',
     trackImpression: true,
   },
-  signup_enabled: {
-    stage_exp_id: 'LMba3ww0kU1boF',
-    prod_exp_id: 'LN1A7n6cTobraV',
-    default_variant: 'variables',
-    experiment_variable: 'variables',
-    trackImpression: true,
-  },
   oauth_easy_onboarding: {
     stage_exp_id: 'MrFtKAtY44SUfd',
     prod_exp_id: 'MwMgeQHDwoff3d',

@@ -493,8 +493,8 @@ export const getModalContent = (
       image = <NCImg src={ImgNcKyc} />;
       description = (
         <>
-          Update these details to help us activate your account faster once we resume onboarding new
-          businesses
+          You’ll be able to collect payments and receive them in your bank account only after the
+          required details are updated
         </>
       );
       pill = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.pill;

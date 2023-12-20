@@ -10,15 +10,15 @@ export const METHODS = {
 };
 
 export const navigateToOptimizer = async (page) => {
-  await navigateTo(page, routes.DASHBOARD);
-  const modalClose = page.locator('span', { hasText: '×' });
-  if (modalClose) {
-    await modalClose.click();
-  }
-  const showProducts = page.locator('button', { hasText: 'Show all' });
-  await expect(showProducts).toBeVisible();
-  await showProducts.click();
-  await page.getByRole('link', { name: 'Optimizer' }).click();
+  await navigateTo(page, routes.OPTIMIZER);
+  // const modalClose = page.locator('span', { hasText: '×', timeout: 000 });
+  // if (modalClose) {
+  //   await modalClose.click();
+  // }
+  // const showProducts = page.locator('button', { hasText: 'Show all' });
+  // await expect(showProducts).toBeVisible();
+  // await showProducts.click();
+  // await page.getByRole('link', { name: 'Optimizer' }).click();
   await expect(page).toHaveURL(routes.OPTIMIZER);
 };
 

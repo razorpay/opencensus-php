@@ -1,5 +1,6 @@
 import React from 'react';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
+import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
 
 function getKycActivationSubmitBody(args) {
   if (
@@ -38,11 +39,13 @@ const MODAL_CONTENT = {
   KYC_CLARIFICATION_SUBMIT_MODAL: {
     title: () => 'KYC under review',
     subtitle: () => 'Clarifications successfully submitted',
-    body: () => (
+    body: (args) => (
       <div>
         <p>Great, thank you for providing requested clarifications!</p>
         <p>
-          Thank you for submitting your updated details. We’ll verify them and share an update soon.
+          We’ll review the form and get back to you in{' '}
+          {args.activationDuration || predefinedActivationDuration}.{' '}
+          {args.isWhitelistFlow ? 'Meanwhile, you can continue accepting payments.' : ''}
         </p>
       </div>
     ),

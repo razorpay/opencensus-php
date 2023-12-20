@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
+import * as LocalStorageService from 'common/utils/localStorage';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import SupportButton from 'merchant/components/Home/SupportButton';
 
@@ -18,7 +19,6 @@ import {
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
-import VideoModal from 'merchant/components/VideoModal';
 import { isMobileDevice } from 'merchant/components/Home/data';
 
 @connect(
@@ -32,9 +32,7 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 export default class InstantActivationAnnouncements extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      showVideoModal: false,
-    };
+    this.state = {};
   }
 
   trackEvent = (eventOrigin) => {
@@ -92,7 +90,6 @@ export default class InstantActivationAnnouncements extends Component {
       // eslint-disable-next-line no-shadow
       hideProductsModal,
       showProducts,
-      limitBreach,
       shouldShowTnCBannerForAxis = false,
     } = this.props;
     const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
@@ -105,25 +102,6 @@ export default class InstantActivationAnnouncements extends Component {
     let title;
     let content = payments instanceof Object;
 
-    const limitBreachHappened =
-      !!limitBreach && limitBreach.type === 'payment_breach'
-        ? (limitBreach.amount * 100) / limitBreach.limit >= 100
-        : false;
-
-    const handleVideoClick = () => {
-      tracking.trackEvent(
-        window.rzpQ.onbr().initiated('Instant Activation Video CTA clicked', {
-          clickSource: 'Instant_Announcement_Banner',
-        }),
-      );
-
-      analyticsTrack({
-        objectName: 'Instant Activation',
-        actionName: 'Video CTA clicked',
-        screen: 'home page',
-      });
-    };
-
     const activationState = getActivationState(
       user,
       user.isUnregisteredBusiness,
@@ -133,63 +111,6 @@ export default class InstantActivationAnnouncements extends Component {
     const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
 
     const expiryDate = getNcExpiryDate(user?.kyc_clarification_reasons);
-
-    const InstantActivationVideoLink = () => {
-      const isInstantActivationVideoEnabled = user.isInstantActivationVideoEnabled;
-
-      if (isInstantActivationVideoEnabled) {
-        // eslint-disable-next-line
-        const { tracking } = this.props;
-        tracking.trackEvent(
-          window.rzpQ.onbr().initiated('Instant Activation Video enabled', {
-            clickSource: 'Instant_Announcement_Banner',
-          }),
-        );
-
-        analyticsTrack({
-          objectName: 'Instant Activation',
-          actionName: 'Video enabled',
-          screen: 'home page',
-        });
-
-        return (
-          <>
-            <div>
-              Congratulations! You are now all set to start receiving payments up to INR 15,000.
-              Please complete your KYC to enable settlements and extend your limit.{' '}
-              <a
-                rel="noreferrer noopener"
-                onClick={() => {
-                  // eslint-disable-next-line
-                  this.setState({ showVideoModal: true });
-                  handleVideoClick();
-                }}
-                className="btn-link"
-              >
-                Click here
-              </a>{' '}
-              to watch a short video that will take you through your next steps.
-            </div>
-            <VideoModal
-              // eslint-disable-next-line
-              visible={this.state.showVideoModal}
-              width={853}
-              height={505}
-              // eslint-disable-next-line
-              onClose={() => this.setState({ showVideoModal: false })}
-              src="https://www.youtube-nocookie.com/embed/FM2P1D-yjOU?rel=0"
-            />
-          </>
-        );
-      } else
-        return (
-          <div>
-            Congratulations! You are now all set and can start receiving payments from your
-            customers up to INR 15,000. Complete your KYC Details to enable benefits like
-            settlements and to extend this limit further!{' '}
-          </div>
-        );
-    };
 
     if (user.isInstantActivationEnabled) {
       switch (activationState) {
@@ -223,8 +144,8 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <div class="announcement-container">
               <div class="announcement-info">
-                Please submit your KYC details to help us activate your account faster once we
-                resume onboarding new businesses{' '}
+                Please submit your KYC details to get your account activated and start accepting
+                payments{' '}
               </div>
               <div className="big-circle-seprator" />
               <Link to={activationUrl} onClick={() => this.sendL2StartEvent()}>
@@ -232,45 +153,6 @@ export default class InstantActivationAnnouncements extends Component {
               </Link>
             </div>
           );
-          break;
-        }
-        case 'poi_verified':
-        case 'L1_instantly_activated': {
-          if (limitBreachHappened) {
-            theme = 'warning';
-            title = 'Complete KYC details';
-            content = (
-              <div class="announcement-container">
-                <div class="announcement-info">
-                  Complete your KYC form to extend payment limits. Please note that your payments
-                  have been <b>temporarily paused </b> until you finish your KYC.{' '}
-                </div>
-                <div className="big-circle-seprator" />
-                <Link to={activationUrl} onClick={this.sendL2StartEvent}>
-                  Complete KYC
-                </Link>
-              </div>
-            );
-          } else {
-            theme = 'warning';
-            title = 'Accept Payments';
-            content = (
-              <div class="announcement-container">
-                <div class="announcement-info">
-                  {' '}
-                  <InstantActivationVideoLink />{' '}
-                </div>
-                <div className="big-circle-seprator" />
-                <button
-                  className="btn-link cursor-pointer"
-                  style={{ padding: '0' }}
-                  onClick={() => this.props.showProductsModal()}
-                >
-                  Accept Payments
-                </button>
-              </div>
-            );
-          }
           break;
         }
         case 'under_review_with_tnc_partial': {
@@ -284,7 +166,7 @@ export default class InstantActivationAnnouncements extends Component {
             <div>
               Our compliance team and banking partners are reviewing your KYC and your payments have
               been temporarily paused. We will review your KYC and reach out to you for any
-              clarifications. You may experience a delay.
+              clarifications within 3-4 days.
             </div>
           );
           break;
@@ -300,8 +182,8 @@ export default class InstantActivationAnnouncements extends Component {
             <div class="announcement-container">
               <div class="announcement-info">
                 Our compliance team and banking partners are reviewing your KYC and your payments
-                have been temporarily paused. We will reach out to you for any clarifications. You
-                may experience a delay. Meanwhile you can generate your Tnc page
+                have been temporarily paused. We will reach out to you for any clarifications.
+                within 3-4 days Meanwhile you can generate your Tnc page{' '}
               </div>
               <div className="big-circle-seprator" />
               <Button.Secondary
@@ -339,8 +221,8 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <div>
               You can accept unlimited payments now. Settlements will be enabled after we
-              successfully review your KYC details. We will notify you if we require any
-              clarifications on your KYC. You may experience a delay.
+              successfully review your KYC details. It usually takes 3-4 business days. We will
+              notify you if we require any clarifications on your KYC
             </div>
           );
           break;
@@ -357,8 +239,8 @@ export default class InstantActivationAnnouncements extends Component {
             <div class="announcement-container">
               <div class="announcement-info">
                 You can accept unlimited payments now. Settlements will be enabled after we
-                successfully review your KYC details. You may experience a delay. Generate TnC page
-                at the earliest, failing which KYC review might get delayed
+                successfully review your KYC details. It usually takes 3-4 business days. Generate
+                TnC page at the earliest, failing which KYC review might get delayed{' '}
               </div>
               <div className="big-circle-seprator" />
               <Button.Secondary
@@ -394,10 +276,9 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'warning';
           title = <div>KYC Under Review</div>;
           content = (
-            // TODO OE comms changes part-2
             <div>
-              We are reviewing your KYC details. We will notify you if we require any clarifications
-              on your KYC. You may experience a delay.
+              We are reviewing your KYC details. It usually takes 3-4 business days. We will notify
+              you if we require any clarifications on your KYC
             </div>
           );
           break;
@@ -477,8 +358,8 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <div class="announcement-container">
               <div class="announcement-info">
-                Update these details to help us activate your account faster once we resume
-                onboarding new businesses{' '}
+                We need some clarfication regarding your KYC details. Please clarify at the earliest
+                to get your KYC approved{' '}
               </div>
               <div className="big-circle-seprator" />
               <Link to={activationUrl}>Update details</Link>
@@ -553,15 +434,14 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Action required';
           content = (
-            // NOTE OE comms changes part-1
             <div class="announcement-container">
               <div>
                 <div class="announcement-info-header">
                   We need a few more details to complete KYC verification.
                 </div>
                 <div class="full-width-info">
-                  Update these details to help us activate your account faster once we resume
-                  onboarding new businesses
+                  Your payments acceptance and settlement to your bank account will be made live
+                  after getting the required inputs
                 </div>
               </div>
               <div className="big-circle-seprator" />
@@ -615,7 +495,7 @@ export default class InstantActivationAnnouncements extends Component {
             <div>
               Our compliance team and banking partners are reviewing your KYC and your funds have
               been temporarily put on hold. We will review your KYC and reach out to you for any
-              clarifications. You may experience a delay.
+              clarifications within 3-4 days
             </div>
           );
           break;
@@ -876,15 +756,14 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Action required';
           content = (
-            // NOTE OE comms changes part-1
             <div class="announcement-container">
               <div>
                 <div class="announcement-info-header">
                   We need a few more details to complete KYC verification.
                 </div>
                 <div class="full-width-info">
-                  Update these details to help us activate your account faster once we resume
-                  onboarding new businesses
+                  You’ll be able to collect payments and receive them in your bank account only
+                  after the required details are updated
                 </div>
               </div>
               <div className="big-circle-seprator" />
@@ -904,12 +783,11 @@ export default class InstantActivationAnnouncements extends Component {
             </div>
           );
         } else {
-          // NOTE OE comms changes part-1
           title = 'KYC Clarification';
           content = (
             <React.Fragment>
-              We need some clarfication regarding your KYC details. Update these details to help us
-              activate your account faster once we resume onboarding new businesses. &nbsp;
+              Your KYC details require further clarifications. Update required details within 1 day,
+              otherwise your settlements might get paused. &nbsp;
               <Link to={activationUrl} style={{ 'font-weight': 'bold' }}>
                 Update Details
               </Link>
@@ -1013,38 +891,50 @@ export default class InstantActivationAnnouncements extends Component {
           </div>
         );
       } else {
-        // !Note: Uncomment these once we fully resume onboarding
-        // let activation_tat = '1-2 days';
-        // const clarification_submitted = LocalStorageService.getItem(
-        //   `rzp_onboarding--${user.current}--clarification_submitted`,
-        // );
-        // if (clarification_submitted) {
-        //   activation_tat = '4-5 days';
-        // }
+        let activation_tat = '1-2 days';
+        const clarification_submitted = LocalStorageService.getItem(
+          `rzp_onboarding--${user.current}--clarification_submitted`,
+        );
+        if (clarification_submitted) {
+          activation_tat = '4-5 days';
+        }
         title = 'KYC Under Review';
         if (user.instantActivation.isWhitelistFlow) {
           if (payments && payments.items.length > 0 && mode === 'live') {
             content = (
               <>
-                We are reviewing your KYC details. Post KYC verification, we will activate your
-                account as soon as new business onboarding resumes.
+                We will be reviewing your KYC details after your first transaction. Review process
+                usually takes {activation_tat}{' '}
+                <strong>from the date of the first transaction</strong>, we will reach out to you on
+                your registered email ID if we need any clarifications. Your settlements will be
+                enabled after your KYC is reviewed and approved.
               </>
             );
           } else {
             title = 'Accept Payments';
             content = (
               <React.Fragment>
-                We are reviewing your KYC details. Post KYC verification, we will activate your
-                account as soon as new business onboarding resumes.
+                You can start using our products to accept payments right away, however your
+                settlements will be enabled after your KYC is reviewed. KYC Review process usually
+                takes {activation_tat} <strong>from the date of the first transaction</strong>, we
+                will reach out to you on your registered email ID if we need any clarifications.
+                &nbsp;
+                <a
+                  href="https://razorpay.freshdesk.com/support/solutions/articles/11000092582"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  Know more
+                </a>
               </React.Fragment>
             );
           }
         } else if (mode !== 'live') {
           content = (
             <React.Fragment>
-              We are reviewing your KYC details. Post KYC verification, we will activate your
-              account as soon as new business onboarding resumes. <br />
-              Meanwhile&nbsp;
+              KYC Review process usually takes{' '}
+              {user.kyc_clarification_reasons?.nc_count ? '3' : '3 - 4'} working days. We will
+              notify you if we require any clarifications on your KYC.
               <button
                 className="btn-link cursor-pointer"
                 style={{ padding: '0' }}
@@ -1057,8 +947,9 @@ export default class InstantActivationAnnouncements extends Component {
         } else {
           content = (
             <React.Fragment>
-              We are reviewing your KYC details. Post KYC verification, we will activate your
-              account as soon as new business onboarding resumes.
+              KYC Review process usually takes{' '}
+              {user.kyc_clarification_reasons?.nc_count ? '3' : '3 - 4'} working days. We will
+              notify you if we require any clarifications on your KYC.
             </React.Fragment>
           );
         }

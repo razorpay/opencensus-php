@@ -532,13 +532,9 @@ function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEli
     if (dedupeStatus === 'blocked') {
       activationState = 'L1_dedupe_blocked';
     } else if (dedupeStatus === 'passed' || dedupeStatus === 'partial') {
-      if (activation_status === 'instantly_activated') {
-        activationState = 'L1_instantly_activated';
-      } else if (isUnregisteredBusiness) {
+      if (isUnregisteredBusiness) {
         if (poi_verification_status === 'initiated' && !isL2AllowedForPoiInitiated) {
           activationState = 'poi_initiated';
-        } else if (poi_verification_status === 'verified' && activated) {
-          activationState = 'poi_verified';
         } else activationState = 'poi_failed';
       } else activationState = 'payment_disabled';
     }

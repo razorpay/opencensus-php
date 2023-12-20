@@ -12,8 +12,7 @@ export default ({ onClose, onGiveDetails }) => {
           <b>Few more details required</b>
         </div>
         <p className="kyc-details-modal__desc">
-          For your business model, you need to give a few more details to help us activate your
-          account faster once we resume onboarding new businesses
+          For your business model, you need to give a few more details to activate your account
         </p>
         <div className="kyc-details-modal__btn">
           <Button.Secondary onClick={onClose}>Do it later</Button.Secondary>

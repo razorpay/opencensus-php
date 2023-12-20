@@ -58,11 +58,6 @@ export const kycModalContent = (args = {}) => {
             <p>
               For your business model we need a few more KYC details to allow you to accept payments
             </p>
-            <br />
-            <i>
-              Note: This will help us activate your account faster once we resume onboarding new
-              businesses
-            </i>
           </div>
         ),
         background: 'pending',
@@ -136,77 +131,6 @@ export const kycModalContent = (args = {}) => {
         ),
       };
     }
-    case 'poi_verified':
-    case 'L1_instantly_activated': {
-      if (args.activationData?.isAutoPLEnabled) {
-        return null;
-      }
-      return {
-        title: 'Congratulations!',
-        subtitle: 'You are ready to accept payments now',
-        body: (
-          <div>
-            You are now all set and can start receiving payments from your customers up to INR
-            15,000. Complete your KYC Details to enable benefits like settlements and to extend this
-            limit further!
-            <br />
-            <br />
-            We have switched you to live mode, go ahead and accept your first payment!
-          </div>
-        ),
-        background: 'success',
-        button: (
-          <>
-            <button
-              className="btn btn-default KYC__more_details"
-              onClick={() => {
-                analyticsTrack({
-                  objectName: 'L2 Start',
-                  actionName: 'form fill initiated',
-                  screen: 'home page',
-                  properties: {
-                    clickSource: 'form submission popup',
-                    ...getCommonSegmentProperties(),
-                    milestone: 'L2 Start',
-                  },
-                });
-                args.trackEvents({
-                  objectName: 'Pop Up CTA',
-                  actionName: 'Clicked',
-                  screen: 'home page',
-                  properties: {
-                    'Pop-up Label': 'Congratulations!',
-                    'CTA Label': 'Complete KYC',
-                  },
-                });
-                args.onClose();
-                args.goToActivationForm();
-              }}
-            >
-              Complete KYC
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                args.trackEvents({
-                  objectName: 'Pop Up CTA',
-                  actionName: 'Clicked',
-                  screen: 'home page',
-                  properties: {
-                    'Pop-up Label': 'Congratulations!',
-                    'CTA Label': 'Accept Payments',
-                  },
-                });
-                args.onClose();
-                args.openPaymentAcceptModal();
-              }}
-            >
-              Accept Payments
-            </button>
-          </>
-        ),
-      };
-    }
     case 'under_review_without_tnc_partial': {
       return {
         title: 'KYC is under review',
@@ -215,7 +139,7 @@ export const kycModalContent = (args = {}) => {
           <div>
             Our compliance team and banking partners are reviewing your KYC and your payments have
             been temporarily paused. We will review your KYC and reach out to you for any
-            clarifications. You may experience a delay.
+            clarifications within 3-4 days.
             <br />
             Meanwhile you can generate your Terms and Conditons page. Your KYC review might get
             delayed in case of delays in generating TnC.
@@ -268,8 +192,7 @@ export const kycModalContent = (args = {}) => {
             Our compliance team and banking partners are reviewing your KYC and your payments have
             been temporarily paused.
             <br />
-            We will review your KYC and reach out to you for any clarifications. You may experience
-            a delay.
+            We will review your KYC and reach out to you for any clarifications within 3-4 days.
           </div>
         ),
         background: 'pending',
@@ -301,8 +224,8 @@ export const kycModalContent = (args = {}) => {
         subtitle: 'Payment limits have been removed',
         body: (
           <div>
-            Your payment limits have been removed and KYC is under review. We will reach out to you
-            in case we need any clarifications. You may experience a delay.
+            Your payment limits have been removed and KYC is under review. It usually takes 3-4
+            business days. We will reach out to you in case we need any clarifications
             <br />
             Meanwhile you can generate your Terms and Conditons page. Your KYC review might get
             delayed in case of delays in generating TnC
@@ -351,10 +274,9 @@ export const kycModalContent = (args = {}) => {
         title: 'KYC Under Review',
         subtitle: 'Payment limits have been removed',
         body: (
-          // TODO OE comms changes part-2
           <div>
-            Your payment limits have been removed and KYC is under review. You may experience a
-            delay.
+            Your payment limits have been removed and KYC is under review. KYC review process
+            usually takes 3-4 working days.
             <br />
             We will notify you if we require any clarifications on your KYC.
           </div>
@@ -387,10 +309,9 @@ export const kycModalContent = (args = {}) => {
         title: 'KYC is under review',
         subtitle: 'Our team is reviewing your KYC details',
         body: (
-          // TODO OE comms changes part-2
           <div>
-            Your KYC details are under review. We will reach out to you in case we need any
-            clarifications. You may experience a delay.
+            Your KYC details are under review. It usually takes 3-4 business days. We will reach out
+            to you in case we need any clarifications
             <br />
             Meanwhile you can generate your Terms and Conditons page. Your KYC review might get
             delayed in case of delays in generating TnC
@@ -430,16 +351,11 @@ export const kycModalContent = (args = {}) => {
         title: 'KYC Under Review',
         subtitle: 'Our team is reviewing your KYC details',
         body: (
-          // TODO OE comms changes part-2
           <div>
-            We’ll reach out once new business onboarding resumes and your KYC verification is
-            complete or if we need any other information.
+            KYC review process usually takes 3-4 working days.
             <br />
             <br />
-            <i>
-              Note: Currently new business onboarding is paused. Post KYC verification, we will
-              activate your account as soon as onboarding resumes
-            </i>
+            <i>We will notify you if we require any clarifications on your KYC.</i>
           </div>
         ),
         background: 'pending',
@@ -459,7 +375,7 @@ export const kycModalContent = (args = {}) => {
               args.onGoToDashboard();
             }}
           >
-            Okay, got it
+            Back to Dashboard
           </button>
         ),
       };
@@ -470,9 +386,8 @@ export const kycModalContent = (args = {}) => {
         title: 'KYC Clarification',
         body: (
           <div>
-            {/* NOTE OE comms changes part-1 */}
-            Update these details to help us activate your account faster once we resume onboarding
-            new businesses
+            We need some clarification regarding your KYC details. Please clarify at the earliest to
+            get your KYC approved
           </div>
         ),
         background: 'pending',
@@ -659,10 +574,9 @@ export const kycModalContent = (args = {}) => {
       return {
         title: 'We need a few more details to complete KYC verification',
         body: (
-          // NOTE OE comms changes part-1
           <div>
-            Update these details to help us activate your account faster once we resume onboarding
-            new businesses
+            You’ll be able to collect payments and receive them in your bank account only after the
+            required details are updated
           </div>
         ),
         pill: 'ACTION REQUIRED',
