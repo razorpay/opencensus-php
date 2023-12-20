@@ -6,6 +6,7 @@ export const user = {
   additional_websites: ['www.google.com', 'www.twitter.com'],
   isAdditionalDomainWhitelistSelfServeOn: true,
   has_key_access: true,
+  id: 'LLlV9ud8etevh8',
 };
 
 export const initialState = {
@@ -27,6 +28,11 @@ export const initialState = {
       permission: null,
       request_under_validation: false,
       tags: [],
+    },
+    business_website_automation_status: {
+      loading: true,
+      data: {},
+      error: null,
     },
   },
   session: {
@@ -52,6 +58,11 @@ export const initialStateForWorkflows = {
       permission: 'update_merchant_website',
       request_under_validation: false,
       tags: ['awaiting-customer-response'],
+    },
+    business_website_automation_status: {
+      loading: true,
+      data: {},
+      error: null,
     },
   },
   session: {

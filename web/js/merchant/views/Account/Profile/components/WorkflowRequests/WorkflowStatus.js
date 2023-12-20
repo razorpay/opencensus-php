@@ -69,19 +69,23 @@ const WorkflowStatus = ({
     showReviewStatus &&
     ((reviewWorkflowStatus.includes(workflow_status) && !needs_clarification) ||
       request_under_validation);
+
   const hasRejectedStatus =
     showRejectedStatus &&
     rejectedWorkflowStatus.includes(workflow_status) &&
     !request_under_validation &&
     isVisible(isBankAccountUpdateWorkflow, user.id);
+
   const hasCustomerRespondedStatus =
     showRespondedStatus &&
     isWorkflowInClarification(workflow, respondedWorkflowStatus) &&
     tags?.includes('customer-responded');
+
   const hasAwaitingCustomerResponseStatus =
     showResponseRequiredStatus &&
     isWorkflowInClarification(workflow, responseRequiredWorkflowStatus) &&
     tags?.includes('awaiting-customer-response');
+
   const hasSuccessStatus =
     showSuccessStatus &&
     successWorkflowStatus.includes(workflow_status) &&

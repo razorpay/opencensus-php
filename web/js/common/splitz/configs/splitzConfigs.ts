@@ -637,6 +637,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['website-app-settings/business-website-details'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'business_website_revamp',
+          experimentId: {
+            beta: 'NBQ9Mq1JoUvSG2',
+            production: 'NBQC99TbrljfUB',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       matchByDashboard: ['product'],
       routesToMatch: [
         /^\/paymentlinks(?:\/.*)?$/i,

@@ -1,37 +1,52 @@
 import Button from 'common/new-ui/Button';
 import { Store } from 'common/typings';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isPresent } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import DetailRow from 'merchant/components/DetailRow';
-import rolesList from 'merchant/helpers/permissions/roles-list';
-import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
-import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import {
+  fetchWorkflowStatus as fetchWorkflowStatusReducer,
+  fetchBusinessWebsiteFeatureStatus,
+} from 'merchant/reducers/workflows';
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 import { FLOWS } from 'merchant/views/Account/Profile/components/WebsiteSelfServe/Constants';
 import InitiateWebsiteChange from 'merchant/views/Account/Profile/components/WebsiteSelfServe/InitiateWebsiteChange';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
-import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 import {
   ACTION_QUERY_PARAM_KEY,
   UPDATE_WEBSITE_DETAILS,
 } from 'merchant/views/Account/Profile/deeplink-constants';
 import { BusinessWebsiteDetailsProps } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/typings';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
-const isWorkflowChangeAllowed = (workflow) => {
-  return (
-    !workflow?.loading &&
-    (workflow?.workflow_exists === false ||
-      !['open', 'approved'].includes(workflow?.workflow_status))
-  );
-};
+import {
+  Box,
+  Text,
+  Card,
+  CardBody,
+  CardHeader,
+  CardHeaderLeading,
+  Button as BladeButton,
+  PlusIcon,
+  EditIcon,
+  Alert,
+} from '@razorpay/blade/components';
+import {
+  StyledBusinessWebsiteContainer,
+  StyledLinksContainer,
+  StyledAdditionalWebsiteContainer,
+} from './styled';
+import { useMobile } from 'common/hooks/useMobile';
+import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
+import DetailRow from 'merchant/components/DetailRow';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import { isWorkflowChangeAllowed, useBusinessWebsiteRevamp } from './utils';
+import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 
 const renderWebsites = (user, handleEditWebsite, websiteWorkflow) => {
   return (
@@ -47,7 +62,6 @@ const renderWebsites = (user, handleEditWebsite, websiteWorkflow) => {
       )}
       {isWorkflowChangeAllowed(websiteWorkflow) &&
         user.role === 'owner' &&
-        user.isAccepted &&
         user.isWebsiteSelfServeOn && (
           <TriggerOnQueryParamMatch
             queryParamsMapping={[
@@ -131,10 +145,22 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
     openModal,
     closeModal,
     isFlowRevamped = true,
+    fetchBusinessWebsiteFeatureStatus,
   } = props;
 
   const businessWebsiteWorkflow = workflows[WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE];
   const additionalWebsiteWorkflow = workflows[WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE];
+  const isMobile = useMobile();
+  const isRevamp = useBusinessWebsiteRevamp();
+  const businessWebsiteAutomationStatus = workflows.business_website_automation_status;
+
+  useEffect(() => {
+    // FETCH FOR BUSINESS WEBSITE
+    if (isRevamp && [rolesList.OWNER].includes(user.role as string)) {
+      fetchBusinessWebsiteFeatureStatus(user.id as string);
+      fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE);
+    }
+  }, []);
 
   const handleEditWebsite = (flowType) => {
     const { has_key_access: hasWebsite, business_website, isActivated } = user;
@@ -217,6 +243,285 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
     });
   };
 
+  const showAlert = () => {
+    const {
+      workflow_status,
+      needs_clarification,
+      request_under_validation,
+      tags,
+      rejection_reason_message,
+    } = businessWebsiteWorkflow;
+    const { data } = businessWebsiteAutomationStatus;
+
+    const respondedWorkflowStatus = ['open', 'approved'];
+    const responseRequiredWorkflowStatus = ['open', 'approved'];
+    const rejectedWorkflowStatus = ['rejected'];
+    const reviewWorkflowStatus = ['open', 'approved'];
+
+    const hasReviewStatus =
+      (reviewWorkflowStatus.includes(workflow_status) && !needs_clarification) ||
+      request_under_validation;
+
+    const hasRejectedStatus =
+      rejectedWorkflowStatus.includes(workflow_status) && !request_under_validation;
+
+    const hasCustomerRespondedStatus =
+      isWorkflowInClarification(businessWebsiteWorkflow, respondedWorkflowStatus) &&
+      tags?.includes('customer-responded');
+
+    const hasAwaitingCustomerResponseStatus =
+      isWorkflowInClarification(businessWebsiteWorkflow, responseRequiredWorkflowStatus) &&
+      tags?.includes('awaiting-customer-response');
+
+    if (hasCustomerRespondedStatus) {
+      return (
+        <Alert
+          contrast="low"
+          description="Thank you for providing us with further information. Our team is going through the information provided by you and will help resolve this issue"
+          intent="notice"
+          isDismissible={false}
+          isFullWidth
+        />
+      );
+    } else if (hasAwaitingCustomerResponseStatus) {
+      return (
+        <Alert
+          contrast="low"
+          description={needs_clarification}
+          intent="negative"
+          isDismissible={false}
+          actions={{
+            primary: {
+              text: 'Add reply',
+              onClick: () =>
+                openNeedsClarificationModal({
+                  workflowType: WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE,
+                  workflowName:
+                    businessWebsiteWorkflow.permission === 'edit_merchant_website_detail'
+                      ? 'Add Business Website'
+                      : 'Update Business Website',
+                }),
+            },
+          }}
+          isFullWidth
+        />
+      );
+    } else if (hasRejectedStatus) {
+      return (
+        <Alert
+          contrast="low"
+          description={rejection_reason_message}
+          intent="negative"
+          isDismissible={false}
+          isFullWidth
+        />
+      );
+    } else if (hasReviewStatus) {
+      return (
+        <Alert
+          contrast="low"
+          description={
+            user.has_key_access === true
+              ? 'Your request to update the website is under review'
+              : "Our team will verify your website/app so that you can start collecting payments on it. We'll contact you via email if we need further information"
+          }
+          intent="notice"
+          isDismissible={false}
+          isFullWidth
+        />
+      );
+    } else if (data?.status === true) {
+      return (
+        <Alert
+          contrast="low"
+          description={
+            user.has_key_access === true
+              ? 'Your request to update the website is under review.'
+              : "Our team will verify your website/app so that you can start collecting payments on it. We'll contact you via email if we need further information."
+          }
+          intent="notice"
+          isDismissible={false}
+          isFullWidth
+        />
+      );
+    }
+
+    return null;
+  };
+
+  if (isRevamp) {
+    return (
+      <>
+        <StyledBusinessWebsiteContainer style={{ position: 'relative' }}>
+          <Card padding="spacing.3" elevation="none" testID="website-card-container">
+            <CardHeader>
+              <CardHeaderLeading title="Business website/app detail" />
+            </CardHeader>
+            <CardBody>
+              <Box marginBottom={'spacing.7'}>
+                <Text>
+                  This is the website/app where payments can be collected after integration of the
+                  payment gateway
+                </Text>
+              </Box>
+              <Box>{showAlert()}</Box>
+              <StyledLinksContainer>
+                <Box
+                  borderColor="surface.border.normal.lowContrast"
+                  marginY={'spacing.5'}
+                  borderRadius="small"
+                  padding={'spacing.7'}
+                  display="flex"
+                  overflow="scroll"
+                  width="100%"
+                >
+                  <Box
+                    borderColor="surface.border.normal.lowContrast"
+                    padding={'spacing.3'}
+                    borderRadius="medium"
+                    backgroundColor="surface.background.level1.lowContrast"
+                  >
+                    <img
+                      src="https://cdn.razorpay.com/static/assets/globe.svg"
+                      alt="globe"
+                      width="30px"
+                    />
+                  </Box>
+                  <Box marginLeft={'spacing.7'}>
+                    <Text color="surface.text.subtle.lowContrast" weight="bold">
+                      Website Url
+                    </Text>
+                    <Text marginTop={'spacing.3'}>
+                      {user.business_website ? user.business_website : '--'}
+                    </Text>
+                  </Box>
+                </Box>
+                <Box
+                  borderColor="surface.border.normal.lowContrast"
+                  marginY={'spacing.5'}
+                  borderRadius="small"
+                  padding={'spacing.7'}
+                  display="flex"
+                  overflow="scroll"
+                  width="100%"
+                >
+                  <Box
+                    borderColor="surface.border.normal.lowContrast"
+                    padding={'spacing.3'}
+                    borderRadius="medium"
+                    backgroundColor="surface.background.level1.lowContrast"
+                  >
+                    <img
+                      src="https://cdn.razorpay.com/static/assets/globe.svg"
+                      alt="globe"
+                      width="30px"
+                    />
+                  </Box>
+                  <Box marginLeft={'spacing.7'}>
+                    <Text color="surface.text.subtle.lowContrast" weight="bold">
+                      AppStore Url
+                    </Text>
+                    <Text marginTop={'spacing.3'}>
+                      {user.appstore_url ? user.appstore_url : '--'}
+                    </Text>
+                  </Box>
+                </Box>
+                <Box
+                  borderColor="surface.border.normal.lowContrast"
+                  marginY={'spacing.5'}
+                  borderRadius="small"
+                  padding={'spacing.7'}
+                  display="flex"
+                  overflow="scroll"
+                  width="100%"
+                >
+                  <Box
+                    borderColor="surface.border.normal.lowContrast"
+                    padding={'spacing.3'}
+                    borderRadius="medium"
+                    backgroundColor="surface.background.level1.lowContrast"
+                  >
+                    <img
+                      src="https://cdn.razorpay.com/static/assets/globe.svg"
+                      alt="globe"
+                      width="30px"
+                    />
+                  </Box>
+                  <Box marginLeft={'spacing.7'}>
+                    <Text color="surface.text.subtle.lowContrast" weight="bold">
+                      PlayStore Url
+                    </Text>
+                    <Text marginTop={'spacing.3'}>
+                      {user.playstore_url ? user.playstore_url : '--'}
+                    </Text>
+                  </Box>
+                </Box>
+              </StyledLinksContainer>
+            </CardBody>
+          </Card>
+          {isWorkflowChangeAllowed(businessWebsiteWorkflow) &&
+          businessWebsiteAutomationStatus?.data?.status === false ? (
+            <Box position="absolute" top={isMobile ? '12px' : '0px'} right="15px">
+              {isMobile ? (
+                <BladeButton
+                  icon={user.business_website ? EditIcon : PlusIcon}
+                  onClick={() => handleEditWebsite(FLOWS.BUSINESS_WEBSITE)}
+                />
+              ) : (
+                <BladeButton
+                  iconPosition="left"
+                  icon={user.business_website ? EditIcon : PlusIcon}
+                  onClick={() => handleEditWebsite(FLOWS.BUSINESS_WEBSITE)}
+                >
+                  Add website/app details
+                </BladeButton>
+              )}
+            </Box>
+          ) : null}
+        </StyledBusinessWebsiteContainer>
+        <StyledAdditionalWebsiteContainer
+          className={`${isFlowRevamped ? 'details-row-container' : ''}`}
+        >
+          <DetailRow
+            label={() => (
+              <div className="website-self-serve__listItem">
+                <span>Additional Business Website/App</span>
+                <small className="help-content">
+                  <i className="i i-info-outline" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>
+                        <div>
+                          {user?.isOrgCurlec
+                            ? ATTR_DETAILS.curlec_additional_website_info.desc
+                            : ATTR_DETAILS.additional_website_info.desc}
+                        </div>
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+                <WorkflowStatus
+                  roles={[rolesList.OWNER, rolesList.ADMIN]}
+                  workflowType={WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE}
+                  reviewStatus="Your request to add the website is under review. We'll contact you via email if we need further information."
+                  onReplyClick={() =>
+                    openNeedsClarificationModal({
+                      workflowType: WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE,
+                      workflowName: 'Add Additional Website',
+                    })
+                  }
+                />
+              </div>
+            )}
+            value={() =>
+              renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWorkflow)
+            }
+          />
+        </StyledAdditionalWebsiteContainer>
+      </>
+    );
+  }
+
   return (
     <div className={`${isFlowRevamped ? 'list-group details-row-container' : ''}`}>
       <DetailRow
@@ -298,6 +603,7 @@ const mapDispatchToProps = (dispatch) =>
       openModal,
       closeModal,
       fetchWorkflowStatus: fetchWorkflowStatusReducer,
+      fetchBusinessWebsiteFeatureStatus,
     },
     dispatch,
   );

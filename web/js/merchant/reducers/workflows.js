@@ -4,6 +4,8 @@ import { set } from 'common/utils/immutable';
 //reducer constant
 const FETCH_WORKFLOW_STATUS = 'FETCH_WORKFLOW_STATUS';
 
+const FETCH_BUSINESS_WEBSITE_AUTOMATION_STATUS = 'FETCH_BUSINESS_WEBSITE_AUTOMATION_STATUS';
+
 // initialState for each workflow
 const initialState = {
   increase_transaction_limit: {
@@ -35,6 +37,21 @@ const initialState = {
     loading: true,
     error: null,
   },
+  business_website_automation_status: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+};
+
+export const fetchBusinessWebsiteFeatureStatus = (mid) => {
+  return {
+    type: FETCH_BUSINESS_WEBSITE_AUTOMATION_STATUS,
+    resource: {
+      feature: 'website_automated_checks',
+    },
+    payload: merchantFetch(`feature/merchant/${mid}/website_automated_checks`),
+  };
 };
 
 //actions
@@ -71,6 +88,22 @@ export default (state = initialState, action) => {
         loading: false,
         error: action.payload.errors,
       });
+
+    case `${FETCH_BUSINESS_WEBSITE_AUTOMATION_STATUS}::SUCCESS`: {
+      return set(state, 'business_website_automation_status', {
+        loading: false,
+        error: null,
+        data: action.payload.data,
+      });
+    }
+
+    case `${FETCH_BUSINESS_WEBSITE_AUTOMATION_STATUS}::ERROR`: {
+      return set(state, 'business_website_automation_status', {
+        loading: false,
+        data: state.business_website_automation_status.data,
+        error: action.payload.errors,
+      });
+    }
 
     default:
       return state;

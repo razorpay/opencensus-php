@@ -11,9 +11,13 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, autoPrefixUrls } from 'common/utils/rzp-utils';
 import FileUpload from 'merchant/components/File/Upload';
 import { FLOWS } from './Constants';
-import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+import {
+  fetchWorkflowStatus as fetchWorkflowStatusReducer,
+  fetchBusinessWebsiteFeatureStatus,
+} from 'merchant/reducers/workflows';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { useBusinessWebsiteRevamp } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/utils';
 
 function WebsiteFields({
   flowType,
@@ -23,16 +27,58 @@ function WebsiteFields({
   file,
   validator,
 }) {
+  const isBusinessWebsiteRevamp = useBusinessWebsiteRevamp();
+
   return (
     <>
-      <Input
-        required
-        label="About us"
-        name="about_us"
-        validator={(input) => {
-          return validator('about_us', input);
-        }}
-      />
+      {isBusinessWebsiteRevamp && flowType === FLOWS.BUSINESS_WEBSITE ? null : (
+        <>
+          <Input
+            required
+            label="About us"
+            name="about_us"
+            validator={(input) => {
+              return validator('about_us', input);
+            }}
+          />
+
+          <Input
+            required
+            label={
+              <>
+                Pricing details{' '}
+                <small class="help-content">
+                  <i class="i i-info-circle" />
+                  <Popover align="top" theme="dark" parentQuerySelector=".modal-body">
+                    <PopoverBody>
+                      <div>
+                        In case of multiple product pricing pages, please share a URL for any one of
+                        them
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+                {}
+              </>
+            }
+            name="pricing_details"
+            validator={(input) => {
+              return validator('pricing_details', input);
+            }}
+          />
+        </>
+      )}
+
+      {isBusinessWebsiteRevamp && flowType === FLOWS.BUSINESS_WEBSITE ? (
+        <Input
+          required
+          label="Shipping policy"
+          name="shipping_policy"
+          validator={(input) => {
+            return validator('shipping_policy', input);
+          }}
+        />
+      ) : null}
 
       <Input
         required
@@ -40,31 +86,6 @@ function WebsiteFields({
         name="contact_us"
         validator={(input) => {
           return validator('contact_us', input);
-        }}
-      />
-
-      <Input
-        required
-        label={
-          <>
-            Pricing details{' '}
-            <small class="help-content">
-              <i class="i i-info-circle" />
-              <Popover align="top" theme="dark" parentQuerySelector=".modal-body">
-                <PopoverBody>
-                  <div>
-                    In case of multiple product pricing pages, please share a URL for any one of
-                    them
-                  </div>
-                </PopoverBody>
-              </Popover>
-            </small>
-            {}
-          </>
-        }
-        name="pricing_details"
-        validator={(input) => {
-          return validator('pricing_details', input);
         }}
       />
 
@@ -145,13 +166,27 @@ function UpdateWebsiteDetails(props) {
   const [file, setfile] = useState(null);
   const [isReasonValid, setisReasonValid] = useState(null); // Validity => minimum 100 words
   const [isLinkValid, setisLinkValid] = useState(true); // Validity => should not be an already existing one
-  const [areMetaUrlsValid, setareMetaUrlsValid] = useState({
-    about_us: true,
-    contact_us: true,
-    tnc: true,
-    pricing_details: true,
-    privacy_policy: true,
-    refund_policy: true,
+  const isBusinessWebsiteRevamp = useBusinessWebsiteRevamp();
+
+  const [areMetaUrlsValid, setareMetaUrlsValid] = useState(() => {
+    if (isBusinessWebsiteRevamp && props.flowType === FLOWS.BUSINESS_WEBSITE) {
+      return {
+        shipping_policy: true,
+        contact_us: true,
+        tnc: true,
+        privacy_policy: true,
+        refund_policy: true,
+      };
+    } else {
+      return {
+        about_us: true,
+        contact_us: true,
+        tnc: true,
+        pricing_details: true,
+        privacy_policy: true,
+        refund_policy: true,
+      };
+    }
   });
 
   const submitBusinessDetails = async (formFieldValues) => {
@@ -165,6 +200,10 @@ function UpdateWebsiteDetails(props) {
         const value = formFieldValues[key];
         payload[`business_website_${key}`] = isKeyCred ? value : autoPrefixUrls(value);
       });
+
+      if (isBusinessWebsiteRevamp) {
+        payload.version = 'v2';
+      }
 
       // If creds are not checked, removing these keys
       if (!doesNeedCreds) {
@@ -190,7 +229,7 @@ function UpdateWebsiteDetails(props) {
     if (urlDetails?.business_website_main_page === user?.business_website) {
       props.showNotification({
         type: 'error',
-        message: `${type} Updating with same detail,please change main website`,
+        message: `${type} Updating with same detail, please change main website`,
       });
       return;
     }
@@ -222,7 +261,7 @@ function UpdateWebsiteDetails(props) {
           type: 'success',
           message: `${type} submitted successfully`,
         });
-
+        props.fetchBusinessWebsiteFeatureStatus(user.id);
         props.fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE);
         props.closeModal();
         analyticsTrack({
@@ -623,6 +662,7 @@ const mapDispatchToProps = (dispatch) => {
       ...ModalActions,
       ...NotificationsActions,
       fetchWorkflowStatus: fetchWorkflowStatusReducer,
+      fetchBusinessWebsiteFeatureStatus,
     },
     dispatch,
   );

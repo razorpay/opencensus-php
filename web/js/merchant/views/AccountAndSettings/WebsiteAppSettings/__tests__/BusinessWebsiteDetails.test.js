@@ -1,12 +1,27 @@
 import React from 'react';
 import BusinessWebsiteDetails from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails';
-import { userEvent, render, screen } from 'test-utils';
+import { userEvent, render, screen, server } from 'test-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import {
   user,
   initialState,
   initialStateForWorkflows,
 } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/__tests__/mocks/fixtures/BusinessWebsiteDetails';
+import { useBusinessWebsiteRevamp } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/utils';
+import {
+  fetchWebsiteAutomationStatus,
+  fetchWorkflowStatus,
+} from 'merchant/views/AccountAndSettings/WebsiteAppSettings/__tests__/mocks/handlers';
+
+jest.mock(
+  'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/utils',
+  () => ({
+    ...jest.requireActual(
+      'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/utils',
+    ),
+    useBusinessWebsiteRevamp: jest.fn(),
+  }),
+);
 
 jest.mock('merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus', () => ({
   __esModule: true,
@@ -25,6 +40,8 @@ describe('Business website details', () => {
 
   beforeEach(() => {
     openModalSpy.mockClear();
+    useBusinessWebsiteRevamp.mockReturnValue(false);
+    server.use(fetchWebsiteAutomationStatus(user.id), fetchWorkflowStatus('additional_website'));
   });
 
   const renderApp = (props) => {
@@ -119,6 +136,57 @@ describe('Business website details', () => {
     test('should open nc modal on additional business website CTA click - workflow status[nc flow]', async () => {
       await renderApp();
       const addReplyBtn = screen.queryAllByRole('button', { name: 'Add Reply' })[1];
+      expect(addReplyBtn).toBeInTheDocument();
+      await userEvent.click(addReplyBtn);
+
+      expect(openModalSpy).toBeCalled();
+    });
+  });
+});
+
+describe('Business website details - Revamp', () => {
+  const openModalSpy = jest.spyOn(ModalActions, 'openModal');
+
+  beforeEach(() => {
+    openModalSpy.mockClear();
+    useBusinessWebsiteRevamp.mockReturnValue(true);
+    server.use(fetchWebsiteAutomationStatus(user.id), fetchWorkflowStatus('additional_website'));
+  });
+
+  const renderApp = (props) => {
+    render(<BusinessWebsiteDetails {...props} user={user} />, { initialState });
+  };
+
+  test('should render the section titles', async () => {
+    await renderApp();
+    const businessWebsite = screen.queryByText('Business website/app detail');
+    const additionalWebsite = screen.queryByText('Additional Business Website/App');
+    const descriptionText = screen.queryByText(
+      'This is the website/app where payments can be collected after integration of the payment gateway',
+    );
+    expect(businessWebsite).toBeInTheDocument();
+    expect(additionalWebsite).toBeInTheDocument();
+    expect(descriptionText).toBeInTheDocument();
+  });
+
+  test('should render business website name', async () => {
+    await renderApp();
+    const label = screen.queryByText('Website Url');
+    const businessWebsiteName = screen.queryByText(user.business_website);
+    expect(label).toBeInTheDocument();
+    expect(businessWebsiteName).toBeInTheDocument();
+  });
+
+  describe('Workflows are present', () => {
+    const renderApp = (props) => {
+      render(<BusinessWebsiteDetails {...props} user={user} />, {
+        initialState: initialStateForWorkflows,
+      });
+    };
+
+    test('should open nc modal on business website CTA click - workflow status[nc flow]', async () => {
+      await renderApp();
+      const addReplyBtn = screen.queryByRole('button', { name: 'Add reply' });
       expect(addReplyBtn).toBeInTheDocument();
       await userEvent.click(addReplyBtn);
 
