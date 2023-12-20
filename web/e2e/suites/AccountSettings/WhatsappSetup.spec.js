@@ -113,9 +113,9 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     await expect(newPageUrl).toContain(newAccountUrl);
   });
 
-  test.skip('should show success modal on callback url @priority=normal', async ({ page }) => {
-    await page.goto(`${routes.WHATSAPP_ACCOUNT_SETUP}/?isWhatsappSetupCompleted=true`);
+  test('should show success modal on callback url @priority=normal', async ({ page }) => {
     await mockApiResponseForConnectedApplication({ page });
+    await page.goto(`${routes.WHATSAPP_ACCOUNT_SETUP}/?isWhatsappSetupCompleted=true`);
 
     await expect(
       page.getByRole('heading', { name: 'Set-up completed successfully!' }),
@@ -127,9 +127,9 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     ).toBeVisible();
   });
 
-  test.skip('should show already connected account flow @priority=normal', async ({ page }) => {
-    await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
+  test('should show already connected account flow @priority=normal', async ({ page }) => {
     await mockApiResponseForConnectedApplication({ page });
+    await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
 
     await expect(
       page.getByRole('heading', { name: 'Your Whatsapp Business Account' }),
@@ -141,11 +141,11 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     await expect(page.locator('label')).toBeVisible();
   });
 
-  test.skip('should show delete CTA when app is already connected @priority=normal', async ({
+  test('should show delete CTA when app is already connected @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
     await mockApiResponseForConnectedApplication({ page });
+    await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
 
     const deleteBtn = await page.getByRole('button', { name: 'Delete' });
     await expect(deleteBtn).toBeVisible();
@@ -155,11 +155,11 @@ test.describe('Whatsapp Setup Settings @flow=whatsapp-setup @project=payments', 
     await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
   });
 
-  test.skip('should show notification toggle switch when app is already connected @priority=normal', async ({
+  test('should show notification toggle switch when app is already connected @priority=normal', async ({
     page,
   }) => {
-    await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
     await mockApiResponseForConnectedApplication({ page });
+    await page.goto(routes.WHATSAPP_ACCOUNT_SETUP);
 
     const toggleSwitch = await page.locator('label');
     await expect(toggleSwitch).toBeVisible();
