@@ -384,7 +384,12 @@ class Entity extends Base\PublicEntity
         unset($array[self::EVIDENCE]);
         unset($array[self::REASON_DESCRIPTION]);
         unset($array[self::REASON_CODE]);
-        $array = array_merge($array,[self::UNRECOVERED_AMOUNT => $this->getUnRecoveredAmount(),self::RECOVERY_STATUS => $this->getRecoveryStatus()]);
+
+        if (is_null($this->getRecoveryStatus()) === false)
+        {
+            $array = array_merge($array,[self::UNRECOVERED_AMOUNT => $this->getUnRecoveredAmount(),self::RECOVERY_STATUS => $this->getRecoveryStatus()]);
+        }
+        
         return $array;
     }
 
