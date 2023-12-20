@@ -5326,7 +5326,7 @@ class Core extends Base\Core
             return true;
         }
 
-        return ($mapping->hasKycAccess() === true);
+        return ($mapping[0]->hasKycAccess() === true);
     }
 
     /**

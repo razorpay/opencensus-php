@@ -55,6 +55,15 @@ class BusinessAuth
         'merchant_edit_pre_signup_details',
         'merchant_bmc_response_save',
         'merchant_bmc_response_fetch',
+        'merchant_consents_save',
+        'merchant_identity_verification',
+        'merchant_process_verification_details',
+        'merchant_website_section_page_load_v2',
+        'merchant_get_l2_dynamic_configs',
+        'merchant_policy_section_publish_v2',
+        'merchant_website_section_save',
+        'merchant_website_section_fetch',
+        'merchant_website_section_page_load',
     ];
 
     /**

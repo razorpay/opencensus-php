@@ -414,6 +414,15 @@ class Core extends Base\Core
     public function updatePartnerActivationStatus(Merchant\Entity $merchant, Entity $partnerActivation, Base\PublicEntity $maker, array $input)
     {
 
+        $triggerWorkflow = false;
+
+        if (isset($input[Constants::TRIGGER_WORKFLOW]) === true)
+        {
+            $triggerWorkflow = $input[Constants::TRIGGER_WORKFLOW];
+
+            unset($input[Constants::TRIGGER_WORKFLOW]);
+        }
+
         $partnerActivation->getValidator()->validateInput('activationStatus', $input);
 
         $currentActivationStatus = $partnerActivation->getActivationStatus();
@@ -435,6 +444,12 @@ class Core extends Base\Core
 
             unset($input[Entity::REJECTION_REASONS]);
         }
+
+        $oldPartnerActivation = clone $partnerActivation;
+
+        $partnerActivation->edit($input);
+
+        $newPartnerActivation = clone $partnerActivation;
 
         $partnerActivation->edit($input);
 
@@ -463,12 +478,30 @@ class Core extends Base\Core
         $this->repo->transactionOnLiveAndTest(function() use (
             $partnerActivation,
             $input,
-            $maker, $merchant, $rejectionReasons
+            $maker, $merchant, $rejectionReasons,
+            $oldPartnerActivation, $newPartnerActivation, $triggerWorkflow
         ) {
 
             if ($input[Entity::ACTIVATION_STATUS] === Constants::ACTIVATED)
             {
-                $this->activate($partnerActivation, $merchant);
+                /*
+                 * Setup workflow for activation_status change in partner_activation entity,
+                 * which will be triggered once all the validations are checked in the activate method.
+                 */
+                $original = $oldPartnerActivation->toArrayPublic();
+                $dirty    = $newPartnerActivation->toArrayPublic();
+
+                unset($original[Activation\Entity::ALLOWED_NEXT_ACTIVATION_STATUSES]);
+                unset($dirty[Activation\Entity::ALLOWED_NEXT_ACTIVATION_STATUSES]);
+
+                $this->app['workflow']
+                    ->setEntity($partnerActivation->getEntity())
+                    ->setEntityId($partnerActivation->getMerchantId())
+                    ->setOriginal($original)
+                    ->setDirty($dirty);
+
+                $this->activate($partnerActivation, $merchant, $triggerWorkflow);
+
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Constants::REJECTED)
@@ -542,7 +575,7 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Throwable
      */
-    protected function activate(Entity $partnerActivation, Merchant\Entity $merchant): Entity
+    protected function activate(Entity $partnerActivation, Merchant\Entity $merchant, bool $triggerWorkflow): Entity
     {
         $merchantDetail = $merchant->merchantDetail;
 
@@ -556,6 +589,13 @@ class Core extends Base\Core
         $partnerActivation->releaseFunds();
 
         $partnerActivation->setActivatedAt(time());
+
+        if ($triggerWorkflow === true)
+        {
+            // Triggering workflow for the activation_status change in partner_activation entity
+            $this->app['workflow']
+                ->handle();
+        }
 
         $merchantCore = new Merchant\Core;
 

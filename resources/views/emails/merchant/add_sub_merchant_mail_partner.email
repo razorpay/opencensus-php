@@ -91,11 +91,8 @@
 
 <h3>Activation Timeline</h3>
 
-@if($onboardingResumed === true)
-<p>As soon as the Activation Process is completed, depending on the business segment, we will take the account live in the upcoming {{{ $activationDuration}}}.</p>
-@else
-<p>As soon as activation process is completed by your affiliate account, we will review their KYC details. Post KYC verification, we will activate the account as soon as new business onboarding resumes.</p>
-@endif
+<p>As soon as activation process is completed by your affiliate account, we will review their KYC details. Post KYC verification, we will activate the account.</p>
+
 
 
 <p>

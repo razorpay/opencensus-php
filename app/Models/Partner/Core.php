@@ -787,7 +787,10 @@ class Core extends Detail\Core
             return;
         }
 
-        $input = [Entity::ACTIVATION_STATUS => Activation\Constants::ACTIVATED];
+        $input = [
+            Entity::ACTIVATION_STATUS              => Activation\Constants::ACTIVATED,
+            Activation\Constants::TRIGGER_WORKFLOW => true
+        ];
 
         // The reason routeName and Controller is set here because
         // the workflow being triggered is associated with the different route.

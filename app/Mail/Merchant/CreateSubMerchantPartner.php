@@ -45,13 +45,10 @@ class CreateSubMerchantPartner extends Mailable
 
     protected function addMailData()
     {
-        $isExpEnabled = (new Merchant\Service())->isSubmerchantOnboardingResumeExperimentEnabled($this->aggregator['id']);
-
         $data = [
             'merchant'           => $this->aggregator,
             'subMerchant'        => $this->subMerchant,
             'activationDuration' => Detail::ACTIVATION_DURATION,
-            'onboardingResumed'  => $isExpEnabled,
         ];
 
         $this->with($data);

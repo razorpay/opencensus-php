@@ -94,11 +94,8 @@
 </p>
 <h3 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; font-size: 16px; font-weight: bold; color: #39ACE5; margin-top: 10px;">Activation Timeline</h3>
 
-@if($onboardingResumed === true)
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">As soon as the Activation Process is completed, depending on the business segment, we will take the account live in the upcoming {{{ $activationDuration}}}.</p>
-@else
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">As soon as activation process is completed by your affiliate account, we will review their KYC details. Post KYC verification, we will activate the account as soon as new business onboarding resumes.</p>
-@endif
+<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">As soon as activation process is completed by your affiliate account, we will review their KYC details. Post KYC verification, we will activate the account.</p>
+
 
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
   Cheers,
