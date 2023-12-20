@@ -49,9 +49,9 @@ abstract class Base
         try
         {
             $data = (new Store\Core())->fetchValuesFromStore($this->merchant->getId(),
-                Store\ConfigKey::ONBOARDING_NAMESPACE,
-                [$this->attemptsCountCacheKey],
-                Store\Constants::INTERNAL);
+                                                             Store\ConfigKey::ONBOARDING_NAMESPACE,
+                                                             [$this->attemptsCountCacheKey],
+                                                             Store\Constants::INTERNAL);
         }
         catch (\Exception $ex)
         {

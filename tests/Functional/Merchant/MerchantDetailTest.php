@@ -5727,6 +5727,68 @@ Team Razorpay', '+911234567890');
 
     }
 
+    public function testPOIVerificationAsync()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        Config::set('services.bvs.mock', true);
+
+        Config::set('services.bvs.response', 'success');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'business_type' => 4,
+            'poi_verification_status'=> null
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $testData = $this->testData['testPOIVerificationAsyncPromoterPanName'];
+
+        $this->startTest($testData);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation', 'live');
+
+        $kafkaEventPayload = [
+            'data'  => [
+                'validation_id'     => $bvsValidation['validation_id'],
+                'status'            => 'success',
+                'error_description' => '',
+                'error_code'        => '',
+                'rule_execution_list' => [
+                    '0' => [
+                        'rule_type' => 'string_comparison_rule',
+                        'rule_def'  => [
+                            'fuzzy_suzzy' => [
+                                [
+                                    'var' => 'artefact.details.name.value'
+                                ],
+                                [
+                                    'var' => 'enrichments.online_provider.details.name.value'
+                                ],
+                                81,
+                            ],
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-validation-result-events', $kafkaEventPayload, 'live');
+
+        $bvsValidation = $this->getDbEntityById('bvs_validation', $bvsValidation['validation_id']);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', '1cXSLlUU8V9sXl');
+
+        $this->assertEquals('success', $bvsValidation->getValidationStatus());
+
+        $this->assertEquals('verified', $merchantDetail->getPoiVerificationStatus());
+    }
+
     public function testCINSignatorySuccessExperimentLiveAsync()
     {
         $merchantId = '1cXSLlUU8V9sXl';

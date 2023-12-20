@@ -138,28 +138,36 @@ class DefaultStatusUpdater extends BaseStatusUpdater
         {
             $documentValidationStatus = $this->getDocumentValidationStatus($validation);
 
-            switch ($this->entity)
+            $updateVerificationStatusAttribute = $this->validateDocumentTypeStatusUpdate($documentValidationStatus);
+
+            $this->trace->info(TraceCode::ENTITY_VERIFICATION_ATTRIBUTE_UPDATE, [
+                'status_update' => $updateVerificationStatusAttribute,
+            ]);
+
+            if ($updateVerificationStatusAttribute === true)
             {
-                case E::MERCHANT_DETAIL:
+                switch ($this->entity)
+                {
+                    case E::MERCHANT_DETAIL:
 
-                    $this->merchantDetails->setAttribute(
-                        $this->documentTypeStatusKey, $documentValidationStatus);
-                    $this->updateStakeholderStatusIfApplicable($documentValidationStatus);
+                        $this->merchantDetails->setAttribute(
+                            $this->documentTypeStatusKey, $documentValidationStatus);
+                        $this->updateStakeholderStatusIfApplicable($documentValidationStatus);
 
-                    break;
+                        break;
 
-                case E::STAKEHOLDER:
+                    case E::STAKEHOLDER:
 
-                    $this->merchantDetails->load('stakeholder');
+                        $this->merchantDetails->load('stakeholder');
 
-                    $this->merchantDetails->stakeholder->setAttribute(
-                        $this->documentTypeStatusKey, $documentValidationStatus);
-                    break;
+                        $this->merchantDetails->stakeholder->setAttribute(
+                            $this->documentTypeStatusKey, $documentValidationStatus);
+                        break;
+                }
             }
 
-            //
             // if $documentValidationStatus is null then don't send any metrics
-            //
+
             if (empty($documentValidationStatus) === false)
             {
                 $verificationMetrics = [
@@ -179,6 +187,44 @@ class DefaultStatusUpdater extends BaseStatusUpdater
         }
 
         $this->instantlyActivateMerchantIfApplicable($this->merchant, $this->merchantDetails);
+    }
+    /*
+     This function is to check for validations before updating the artefact status in the merchant details table
+     */
+
+    protected function validateDocumentTypeStatusUpdate($documentValidationStatus) : bool
+    {
+        $merchantId = $this->merchantDetails->getId();
+
+        $this->trace->info(TraceCode::ENTITY_VERIFICATION_ATTRIBUTE_UPDATE, [
+            'artefact_type'                => $this->artefactType,
+            'document_verification_status' => $documentValidationStatus,
+            'documentTypeStatusKey'        => $this->documentTypeStatusKey
+        ]);
+
+        if (($documentValidationStatus === ValidationConstants::VERIFIED) and
+            ($this->artefactType === Constant::PERSONAL_PAN) and
+            (($this->documentTypeStatusKey === Detail\Entity::POI_VERIFICATION_STATUS) or
+             ($this->documentTypeStatusKey === \RZP\Models\Merchant\Stakeholder\Entity::POI_STATUS)))
+        {
+            /*
+         We will set poi verification status in the db as verified only when we have updated pan name in the merchant
+         detail table. Fetching merchant details from the db and not the merchant detail object in the current context
+         */
+
+            $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
+
+            $promoterPanName = $merchantDetails->getPromoterPanName();
+
+            if ($promoterPanName !== null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     protected function postUpdateValidationStatus()

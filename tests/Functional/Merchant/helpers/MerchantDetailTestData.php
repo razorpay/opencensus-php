@@ -3864,6 +3864,38 @@ return [
         ],
     ],
 
+    'testPOIVerificationAsync' => [
+    'request'  => [
+        'method'  => 'POST',
+        'url'     => '/merchant/activation',
+        'content' => [
+            'promoter_pan'=>'ABCPD1234A'
+        ],
+    ],
+    'response' => [
+        'content' => [
+            'promoter_pan'=>'ABCPD1234A',
+        ],
+        'status_code' => 200,
+    ],
+],
+
+    'testPOIVerificationAsyncPromoterPanName' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'promoter_pan_name'=>'Rzp Test QA Merchant'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'promoter_pan_name'=>'Rzp Test QA Merchant',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testBankAccountSignatoryFailureExperimentLiveAsync' => [
         'request'  => [
             'method'  => 'POST',

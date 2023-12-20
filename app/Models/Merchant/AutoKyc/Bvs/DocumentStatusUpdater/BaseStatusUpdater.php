@@ -408,7 +408,6 @@ abstract class BaseStatusUpdater implements StatusUpdater
                 (new Stakeholder\Core)->createOrFetchStakeholder($this->merchantDetails);
                 $this->merchantDetails->stakeholder->setPanDocStatus($status);
                 break;
-
             case DetailEntity::POI_VERIFICATION_STATUS:
                 (new Stakeholder\Core)->createOrFetchStakeholder($this->merchantDetails);
                 $this->merchantDetails->stakeholder->setPoiStatus($status);
