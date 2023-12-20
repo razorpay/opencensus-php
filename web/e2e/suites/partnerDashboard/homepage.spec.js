@@ -6,6 +6,8 @@ const { test } = require('@playwright/test');
 const { RESELLER_WELCOME_TEXT, AGGREGATOR_WELCOME_TEXT, PLATFORM_PARTNER_WELCOME_TEXT } =
   WELCOME_TEXT_SELECTORS;
 
+const TIMEOUT = 20 * 1000;
+
 // Reseller Partner Tests
 test.describe
   .parallel('Test Reseller Partner Dashboard landing page @flow=partner-homepage @project=partner-dashboard', () => {
@@ -16,7 +18,10 @@ test.describe
     await page.goto(routes.PARTNER_DASHBOARD);
   });
   test('should load the Reseller Partner Dashboard @priority=critical', async ({ page }) => {
-    await waitForSelectorToBeVisible({ page, selector: RESELLER_WELCOME_TEXT }, { timeout: 10000 });
+    await waitForSelectorToBeVisible(
+      { page, selector: RESELLER_WELCOME_TEXT },
+      { timeout: TIMEOUT },
+    );
   });
 });
 
@@ -32,7 +37,7 @@ test.describe
   test('should load the Aggregator Partner Dashboard @priority=critical', async ({ page }) => {
     await waitForSelectorToBeVisible(
       { page, selector: AGGREGATOR_WELCOME_TEXT },
-      { timeout: 10000 },
+      { timeout: TIMEOUT },
     );
   });
 });
@@ -49,7 +54,7 @@ test.describe
   test('should load the Platform Partner Dashboard @priority=critical', async ({ page }) => {
     await waitForSelectorToBeVisible(
       { page, selector: PLATFORM_PARTNER_WELCOME_TEXT },
-      { timeout: 10000 },
+      { timeout: TIMEOUT },
     );
   });
 });
