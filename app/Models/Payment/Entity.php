@@ -156,6 +156,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
     const GATEWAY_PROVIDER      = 'gateway_provider';
+    const SOURCE_CHANNEL        = 'source_channel';
     const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
@@ -3507,6 +3508,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getGatewayTxnId()
     {
         return $this->getAttribute(self::GATEWAY_TXN_ID);
+    }
+
+    public function getSourceChannel()
+    {
+        return $this->getAttribute(self::SOURCE_CHANNEL);
     }
 
     /**

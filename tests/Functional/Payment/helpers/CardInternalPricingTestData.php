@@ -15,6 +15,20 @@ return [
             ],
         ],
     ],
+    'testPricingFeeForRearchCardPresentPayment' => [
+        'request' => [
+            'method' => 'get',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                "fees" => 8,
+                "tax" => 00,
+                "fee_bearer" => "platform",
+                "currency" => "INR"
+            ],
+        ],
+    ],
     'testPricingFeeCustomerFeeBearerRearchPayment' => [
         'request' => [
             'method' => 'get',

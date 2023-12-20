@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use Mockery;
 
+use RZP\Models\Pricing\Fee;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -210,6 +211,117 @@ class CardInternalPricingTest extends TestCase
         self::assertNotNull($resp);
     }
 
+    public function testPricingFeeForRearchCardPresentPayment()
+    {
+        $posCardPricingPlan = [
+            'plan_id'        => Fee::DEFAULT_PRICING_PLAN_ID,
+            'plan_name'      => 'TestPosCardPricingPlan',
+            'payment_method' => 'card',
+            'org_id'         => '100000razorpay',
+            'type'           => 'pricing',
+            'feature'        => 'payment',
+            'fee_bearer'     => 'platform',
+            'channel'        => 'in_person',
+            'percent_rate'   => 35, // 35 base points i.e. 0.35%
+            'fixed_rate'     => 0,
+        ];
+
+        $defaultCardPricingPlan = [
+            'plan_id'        => Fee::DEFAULT_PRICING_PLAN_ID,
+            'plan_name'      => 'TestDefaultCardPricingPlan',
+            'payment_method' => 'card',
+            'org_id'         => '100000razorpay',
+            'type'           => 'pricing',
+            'feature'        => 'payment',
+            'fee_bearer'     => 'platform',
+            'channel'        => null,
+            'percent_rate'   => 15, // 15 base points i.e. 0.15%
+            'fixed_rate'     => 0,
+        ];
+
+        $this->fixtures->create('pricing', $posCardPricingPlan);
+        $this->fixtures->create('pricing', $defaultCardPricingPlan);
+
+        $this->fixtures->merchant->editPricingPlanId(Fee::DEFAULT_PRICING_PLAN_ID);
+
+        $card = $this->card;
+
+        $paymentData = [
+            'body' => [
+                "data" => [
+                    "payment" => [
+                        'id'                => 'GfnS1Fj048VHo2',
+                        'merchant_id'       => '10000000000000',
+                        "order_id"          => null,
+                        "currency"          => "INR",
+                        "method"            => "card",
+                        "txn_type"          => "",
+                        "amount"            => 2150,
+                        "base_amount"       => 2150,
+                        "amount_refunded"   => 0,
+                        "idempotency_key"   => "ABCD",
+                        "status"            => "captured",
+                        "refund_status"     => "",
+                        "source_channel"    => "in_person",
+                        "error_code"        => "",
+                        "error_desc"        => "",
+                        "device_id"         => "1700410834",
+                        "gateway"           => "ezetap",
+                        "acquirer_code"     => "HDFC",
+                        "auth_code"         => "D07198",
+                        "issuer_code"       => "HDFC",
+                        "rrn"               => "RR248B7DF90B1B",
+                        "name_on_card"      => "raghav gupta",
+                        "bin"               => "549777",
+                        "last_four"         => "0501",
+                        "card_type"         => "CREDIT",
+                        "card_brand"        => "VISA",
+                        "card_payment_type" => "Swipe",
+                        "card"              => [
+                            "iin"     => "549777",
+                            "last4"   => "0501",
+                            "type"    => "CREDIT",
+                            "network" => "Visa",
+                        ],
+                    ],
+                ]
+            ]
+        ];
+
+        $this->pgService->shouldReceive('sendRequest')
+                        ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+                        ->andReturnUsing(function(string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry) use ($card, $paymentData) {
+                            if ($method === 'GET')
+                            {
+                                return $paymentData;
+                            }
+                            if ($method === 'POST')
+                            {
+                                return [];
+                            }
+                        });
+
+        $this->pgService->shouldReceive('sendRequest')
+                        ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
+                        ->andReturnUsing(function(string $endpoint, string $method, array $data, bool $throwExceptionOnFailure) use ($card, $paymentData) {
+                            if ($method === 'GET')
+                            {
+                                return $paymentData;
+                            }
+
+                            if ($method === 'POST')
+                            {
+                                return [];
+                            }
+                        });
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/internal/entity/payment/GfnS1Fj048VHo2/pricing';
+        $this->ba->pcpAppAuth();
+
+        $resp = $this->startTest();
+
+        self::assertNotNull($resp);
+    }
 
     public function testPricingFeeCustomerFeeBearerRearchPayment(){
 

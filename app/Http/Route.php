@@ -16696,6 +16696,7 @@ class Route
 
         'pcp_service' => [
             'internal_transactions',
+            'internal_pricing',
         ],
 
         'nbplus_payment_service' => [

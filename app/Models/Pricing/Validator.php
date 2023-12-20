@@ -61,7 +61,7 @@ class Validator extends Base\Validator
         Entity::MAX_FEE                 => 'sometimes|nullable|integer|min:1|max:10000000',
         Entity::TYPE                    => 'sometimes|string|custom',
         Entity::ACCOUNT_TYPE            => 'required_only_if:product,banking|filled|custom',
-        Entity::CHANNEL                 => 'required_if:account_type,direct|filled|custom',
+        Entity::CHANNEL                 => 'required_if:account_type,direct|filled',
         Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
         Entity::PAYOUTS_FILTER          => 'sometimes_if:product,banking',
         Entity::IS_BUY_PRICING_ALLOWED  => 'sometimes',
@@ -105,6 +105,7 @@ class Validator extends Base\Validator
         'addPlanRulePricingMethod',
         'addPlanRulePricingMethodType',
         'addPlanRuleMinAndMaxFee',
+        'addPlanRuleChannel',
         'addPlanRulePayoutFundTransfer',
         'addPlanRuleRefund',
         'addPlanRuleAuthType',
@@ -472,26 +473,32 @@ class Validator extends Base\Validator
 
     protected function validateEditPlanRuleChannel($input)
     {
+        // Empty channel value is a valid scenario
         if (array_key_exists(Entity::CHANNEL, $input) === false)
         {
             return;
         }
-
-        if ($this->entity->isPayoutsFilterFreePayout() == false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Channel update only allowed for free payout rules');
-        }
-
-        // This is a valid scenario for free payout
+        // This is a valid scenario
         if (empty($input[Entity::CHANNEL]) === true)
         {
             return;
         }
 
-        // We can add another validation here about when channel should be sent
-        // like product checks
-        self::validateChannel(Entity::CHANNEL, $input[Entity::CHANNEL]);
+        if ($this->isProductBanking($input) === true)
+        {
+            if ($this->entity->isPayoutsFilterFreePayout() == false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Channel update only allowed for free payout rules');
+            }
+            // We can add another validation here about when channel should be sent
+            // like product checks
+            self::validateChannel(Entity::CHANNEL, $input[Entity::CHANNEL]);
+        }
+        else
+        {
+            self::validateSourceChannel(Entity::CHANNEL, $input[Entity::CHANNEL]);
+        }
     }
 
 
@@ -900,6 +907,31 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateAddPlanRuleChannel($input)
+    {
+        // Empty channel value is a valid scenario
+        if (array_key_exists(Entity::CHANNEL, $input) === false)
+        {
+            return;
+        }
+        // This is a valid scenario
+        if (empty($input[Entity::CHANNEL]) === true)
+        {
+            return;
+        }
+
+        if ($this->isProductBanking($input) === true)
+        {
+            // We can add another validation here about when channel should be sent
+            // like product checks
+            self::validateChannel(Entity::CHANNEL, $input[Entity::CHANNEL]);
+        }
+        else
+        {
+            self::validateSourceChannel(Entity::CHANNEL, $input[Entity::CHANNEL]);
+        }
+    }
+
     public function createPlanValidate($input)
     {
         $this->validatePlanName($input);
@@ -1059,6 +1091,7 @@ class Validator extends Base\Validator
             if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
                 ($rule[Entity::PROCURER] === $newRule[Entity::PROCURER]) and
                 ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
+                ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_METHOD_SUBTYPE] === $newRule[Entity::PAYMENT_METHOD_SUBTYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
@@ -1081,6 +1114,7 @@ class Validator extends Base\Validator
 
             if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
                 ($rule[Entity::PROCURER] === $newRule[Entity::PROCURER]) and
+                ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL]) and
                 ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_METHOD_SUBTYPE] === $newRule[Entity::PAYMENT_METHOD_SUBTYPE]) and
@@ -1102,6 +1136,7 @@ class Validator extends Base\Validator
 
             if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
                 ($rule[Entity::PROCURER] === $newRule[Entity::PROCURER]) and
+                ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL]) and
                 ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_METHOD_SUBTYPE] === $newRule[Entity::PAYMENT_METHOD_SUBTYPE]) and
@@ -1278,6 +1313,12 @@ class Validator extends Base\Validator
     {
         // Only direct channels can have this set for now
         BASChannel::validate($value);
+    }
+
+    protected function validateSourceChannel($attribute, $value)
+    {
+        // Only direct channels can have this set for now
+        SourceChannel::validate($value);
     }
 
     protected function validateAccountType($attribute, $value)

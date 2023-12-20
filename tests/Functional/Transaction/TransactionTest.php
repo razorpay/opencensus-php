@@ -1630,6 +1630,21 @@ class TransactionTest extends TestCase
 
     public function testPaymentCaptureTransactionsCreateInternalWithPCPAuth()
     {
+        $posCardPricingPlan = [
+            'plan_id'        => '1hDYlICobzOCYt',
+            'plan_name'      => 'TestPosCardPricingPlan',
+            'payment_method' => 'card',
+            'org_id'         => '100000razorpay',
+            'type'           => 'pricing',
+            'feature'        => 'payment',
+            'fee_bearer'     => 'platform',
+            'channel'        => 'in_person',
+            'percent_rate'   => 35, // 35 base points i.e. 0.35%
+            'fixed_rate'     => 0,
+        ];
+
+        $this->fixtures->create('pricing', $posCardPricingPlan);
+
         $this->ba->pcpAppAuth();
 
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);

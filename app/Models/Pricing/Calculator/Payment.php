@@ -201,6 +201,8 @@ class Payment extends Base
     {
         $rules = $this->getRelevantPricingRuleForProcurer($rules);
 
+        $rules = $this->getRelevantPricingRuleForSourceChannel($rules);
+
         $rule = $this->getRelevantPricingRuleForMethod($rules, $method);
 
         return $rule;
@@ -371,6 +373,31 @@ class Payment extends Base
         $rules = $this->applyFiltersOnRules($rules, $filters2);
 
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForSourceChannel($rules)
+    {
+        $payment = $this->entity;
+
+        $sourceChannel = $payment->getSourceChannel();
+
+        // Empty channel scenario will be applicable for online payments
+        // Adding this rule only if source channel is present to ensure it doesn't affect online payments flow
+        if ((empty($sourceChannel) === true) or
+            ($sourceChannel === Pricing\SourceChannel::ONLINE))
+        {
+            $filters = [
+                [Pricing\Entity::CHANNEL, null, false, false],
+            ];
+
+            return $this->applyFiltersOnRules($rules, $filters);
+        }
+
+        $filters = [
+            [Pricing\Entity::CHANNEL, $sourceChannel, false, false],
+        ];
+
+        return $this->applyFiltersOnRules($rules, $filters);
     }
 
     protected function getRelevantPricingRuleForCardPayment($rules)

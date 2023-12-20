@@ -605,6 +605,36 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingRuleForChannelPrimary()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingRuleForChannelFailure()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals("Not a valid source channel: random",
+                            $response['error']['description']);
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $testData['request']['content']['product'] = 'banking';
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals("Not a valid channel: random",
+                            $response['error']['description']);
+    }
+
     /** We are removing channel from free payout pricing rules for current account */
     public function testUpdateFreePayoutRule()
     {
