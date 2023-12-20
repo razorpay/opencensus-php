@@ -16,6 +16,8 @@ class Constants
     const OLIVE_SDK_TIMEOUT  = 'olive_sdk_timeout';
     const SUPPORTED_PAYER_ACCOUNT_TYPES = 'supported_payer_account_types';
 
+    const ORDER_ID_NOT_BELONG_TO_CUSTOMER = 'order_id does not belong to the customer. Please check the order ID and try again.';
+
     const TURBO_PAYEE_EXECUTION_HOLD_TIME               = 2;
     const TURBO_GATEWAY_TXN_HOLD_TTL                    = 600;
     const TURBO_PAYEE_PAYMENT_CREATED_AT_RANGE          = 2;

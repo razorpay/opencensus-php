@@ -7,6 +7,7 @@ use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Models\P2p\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Customer;
 use RZP\Models\P2p\Device;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\Admin\ConfigKey;
@@ -17,6 +18,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Services\Dcs\Configurations as DcsConfig;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  *
@@ -39,6 +41,22 @@ class Processor extends Base\Processor
             $this->initialize(Action::GET_PREFERENCES, $input);
 
             $preferencesResponse = array_merge($this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
+
+            if (isset($input[Entity::CUSTOMER_ID]) === true and (isset($input[Entity::ORDER_ID]) === true))
+            {
+                $doesOrderBelongToCustomer = $this->doesOrderBelongToCustomer($input[Entity::ORDER_ID], $input[Entity::CUSTOMER_ID]);
+
+                if ($doesOrderBelongToCustomer === false)
+                {
+                    $this->trace()->warning(
+                        TraceCode::ORDER_ID_NOT_BELONG_TO_CUSTOMER,
+                        [
+                           'message' => Constants::ORDER_ID_NOT_BELONG_TO_CUSTOMER,
+                        ]);
+
+                    throw new BadRequestValidationFailureException( Constants::ORDER_ID_NOT_BELONG_TO_CUSTOMER,);
+                }
+            }
 
             if (isset($input[Entity::CUSTOMER_ID]) === true)
             {
@@ -86,6 +104,19 @@ class Processor extends Base\Processor
         }
 
         return $this->postProcess($preferencesResponse);
+    }
+
+    public function doesOrderBelongToCustomer($orderId, $customerId): bool
+    {
+        $order = (new Order\Service())->fetchCompleteOrderById($orderId);
+
+        $customerIdInOrder = $order[Entity::CUSTOMER_ID];
+
+        if ($customerIdInOrder === $customerId)
+        {
+            return true;
+        }
+        return  false;
     }
 
     protected function postProcess($preferencesResponse)
