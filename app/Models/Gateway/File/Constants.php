@@ -30,6 +30,7 @@ class Constants
     const AXIS_MIGS        = 'axis_migs';
     const ICIC_FIRST_DATA  = 'icic_first_data';
     const PAYLATER_ICICI   = 'paylater_icici';
+    const CARDLESS_EMI_LIQUILOANS = 'cardless_emi_liquiloans';
     const HDFC_CYBERSOURCE = 'hdfc_cybersource';
     const AXIS_CYBERSOURCE = 'axis_cybersource';
     const HDFC_EMANDATE    = 'hdfc_emandate';
@@ -123,6 +124,8 @@ class Constants
             self::HDFC_CORP,
             self::UPI_AIRTEL,
             self::UPI_YESBANK,
+            self::CARDLESS_EMI_LIQUILOANS,
+
         ],
         Type::CLAIM => [
         ],
@@ -282,6 +285,7 @@ class Constants
             self::AUBL_CORP     => ['ausf-corp-netbanking-refunds@razorpay.com'],
             self::ICICI_EMI     => ['icicicards.emi@razorpay.com'],
             self::HDFC_CORP     => [],
+            self::CARDLESS_EMI_LIQUILOANS => ['cancellations@liquiloans.com', 'amey.londhe@liquiloans.com', 'settlements@razorpay.com'],
         ],
 
         Type::COMBINED => [

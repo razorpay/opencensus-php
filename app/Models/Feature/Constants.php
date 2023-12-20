@@ -181,6 +181,7 @@ class Constants
     const GPAY                            = 'gpay';
     const PAYPAL_CC                       = 'paypal_cc';
     const SOURCED_BY_WALNUT369            = 'sourced_by_walnut369';
+    const LIQUILOANS_DIRECT_FEE           = 'liquiloans_direct_fee';
     const RAZORPAY_WALLET                 = 'razorpay_wallet';
     const SR_SENSITIVE_BUCKET_1           = 'sr_sensitive_bucket_1';
     const SR_SENSITIVE_BUCKET_2           = 'sr_sensitive_bucket_2';
@@ -2694,6 +2695,7 @@ class Constants
         self::DISABLE_TRUECALLER_LOGIN_HOME_SCREEN         => true,
         self::DISABLE_TRUECALLER_LOGIN_MWEB                => true,
         self::DISABLE_TRUECALLER_LOGIN_SDK                 => true,
+        self::LIQUILOANS_DIRECT_FEE                        => true,
         self::DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN => true,
         self::DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN  => true,
         self::ONLY_DS                                      => true,
@@ -3838,6 +3840,11 @@ class Constants
         self::AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED => [
             'feature'       => self::AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED,
             'display_name'  => 'Feature to enable Discount Whisperer on Affordability Widget',
+            'documentation' => '',
+        ],
+        self::LIQUILOANS_DIRECT_FEE => [
+            'feature'       => self::LIQUILOANS_DIRECT_FEE,
+            'display_name'  => 'Feature to enable direct fee on merchant for liquiloan payments',
             'documentation' => '',
         ],
         self::AFF_WIDGET_V3_DESIGN_ENABLED => [

@@ -2107,6 +2107,17 @@ trait Capture
                 return $discount->getAmount();
             }
         }
+
+        if (($payment->isCardlessEmiLiquiloans() === true) and ($payment->merchant->isFeatureEnabled(Feature\Constants::LIQUILOANS_DIRECT_FEE) === true))
+        {
+            $discount = $this->repo->discount->fetchDiscountWithoutOffer($payment->getId());
+
+            if ($discount !== null)
+            {
+                return $discount->getAmount();
+            }
+        }
+
         return null;
     }
 

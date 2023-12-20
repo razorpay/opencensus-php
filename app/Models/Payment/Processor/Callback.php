@@ -1331,6 +1331,11 @@ trait Callback
         {
             $this->addDiscountToWalnut369($payment, $callbackData);
         }
+
+        if ($payment->isCardlessEmiLiquiloans() === true)
+        {
+            $this->addDiscountToLiquiloans($payment, $callbackData);
+        }
     }
 
     protected function addDiscountToCred($payment, $callbackData)
@@ -1378,6 +1383,24 @@ trait Callback
             $discountAmount = (int) $discountAmount;
 
             $discountInput = [Discount\Entity::AMOUNT => $discountAmount];
+            (new Discount\Service)->create($discountInput, $payment, null);
+        }
+    }
+
+    protected function addDiscountToLiquiloans($payment, $callbackData) {
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::LIQUILOANS_DIRECT_FEE) === true)
+        {
+            // apply discount
+            $disbursedAmount = (float) $callbackData['additional_data']['disbursed_amount'];
+            if( (empty($disbursedAmount) == true ) or ($payment->getAmount() == $disbursedAmount) or ($disbursedAmount == 0))
+            {
+                return;
+            }
+
+            $discountedAmount = (int) ($payment->getAmount() - $disbursedAmount );
+
+            $discountInput = [Discount\Entity::AMOUNT => $discountedAmount];
             (new Discount\Service)->create($discountInput, $payment, null);
         }
     }

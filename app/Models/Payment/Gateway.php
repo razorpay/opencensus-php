@@ -280,7 +280,7 @@ class Gateway
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
-        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369, CardlessEmi::SEZZLE],
+        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369, CardlessEmi::SEZZLE, CardlessEmi::LIQUILOANS],
         self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY, Paylater::LAZYPAY, Paylater::AMAZONPAY],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC, self::ACQUIRER_OCBC],
@@ -307,6 +307,7 @@ class Gateway
             CardlessEmi::FLEXMONEY,
             CardlessEmi::WALNUT369,
             CardlessEmi::SEZZLE,
+            CardlessEmi::LIQUILOANS,
             PayLater::EPAYLATER,
             PayLater::GETSIMPL,
             PayLater::ICICI,
@@ -3569,6 +3570,7 @@ class Gateway
         Payment\Method::CARDLESS_EMI => [
             CardlessEmi::WALNUT369 => '90000',
             CardlessEmi::HCIN => '50000',
+            CardlessEmi::LIQUILOANS=> '90000',
         ],
     ];
 
@@ -3698,11 +3700,13 @@ class Gateway
         CardlessEmi::FLEXMONEY,
         CardlessEmi::WALNUT369,
         CardlessEmi::SEZZLE,
+        CardlessEmi::LIQUILOANS,
     ];
 
     public static $checkAccountSkipProvider = [
         CardlessEmi::WALNUT369,
         CardlessEmi::SEZZLE,
+        CardlessEmi::LIQUILOANS,
         PayLater::AMAZONPAY,
     ];
 
@@ -4784,6 +4788,7 @@ class Gateway
                 CardlessEmi::WALNUT369,
                 CardlessEmi::SEZZLE,
                 CardlessEmi::ZESTMONEY,
+                CardlessEmi::LIQUILOANS,
             ],
             self::PAYLATER     => [
                 Paylater::LAZYPAY,
@@ -4924,6 +4929,7 @@ class Gateway
                 CardlessEmi::WALNUT369,
                 CardlessEmi::SEZZLE,
                 CardlessEmi::ZESTMONEY,
+                CardlessEmi::LIQUILOANS,
             ],
             self::PAYLATER     => [
                 Paylater::LAZYPAY,

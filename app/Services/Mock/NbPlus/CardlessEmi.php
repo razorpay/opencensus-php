@@ -80,6 +80,7 @@ class CardlessEmi extends CardlessEmiBase
                     'additional_data'           => [
                         'mdr'           => '0.0',
                         'subvention'    => '3.0',
+                        'disbursed_amount' => '45000'
                     ]
                 ]
             ],

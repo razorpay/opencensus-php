@@ -20,6 +20,7 @@ class CardlessEmi
     const WALNUT369    = 'walnut369';
     const SEZZLE       = 'sezzle';
     const AXIO         = 'Axio';
+    const LIQUILOANS   = 'liquiloans';
 
     const HDFC = 'hdfc';
     const KKBK = 'kkbk';
@@ -54,6 +55,7 @@ class CardlessEmi
         self::KRBE         => 240000, // Rs. 2400
         self::CSHE         => 100000, // Rs. 1000
         self::TVSC         => 300000, // Rs. 3000
+        self::LIQUILOANS   => 90000,  // Rs. 900
     ];
 
     public static $fullName = [
@@ -62,6 +64,7 @@ class CardlessEmi
         self::FLEXMONEY    => 'FlexMoney',
         self::WALNUT369    => 'Walnut369',
         self::SEZZLE       => 'Sezzle',
+        self::LIQUILOANS   => 'Liquiloans',
     ];
 
     // Add dashboard display names for providers which and are not banks and are not present in IFSC repo

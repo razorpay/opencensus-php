@@ -55,6 +55,8 @@ class Type
     const ICICI_NETBANKING_REFUND_EMI       = 'icici_netbanking_refund_emi';
     const ICICI_PAYLATER_REFUND             = 'icici_paylater_refund';
 
+    const LIQUILOANS_CARDLESS_EMI_REFUND    = 'liquiloans_cardless_emi_refund';
+
     const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
 
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
@@ -369,6 +371,7 @@ class Type
             self::ICICI_NETBANKING_REFUND,
             self::ICICI_NETBANKING_REFUND_EMI,
             self::ICICI_PAYLATER_REFUND,
+            self::LIQUILOANS_CARDLESS_EMI_REFUND,
             self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -608,6 +611,7 @@ class Type
         self::ICICI_NETBANKING_REFUND_EMI,
         self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
         self::ICICI_PAYLATER_REFUND,
+        self::LIQUILOANS_CARDLESS_EMI_REFUND,
         self::AXIS_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,

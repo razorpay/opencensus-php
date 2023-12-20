@@ -111,6 +111,7 @@ class Core extends Base\Core
             CardlessEmiProvider::KRBE => '0',
             CardlessEmiProvider::CSHE => '0',
             CardlessEmiProvider::TVSC => '0',
+            CardlessEmiProvider::LIQUILOANS=>'0',
         ]
     ];
     const defaultPaylaterProvidersWhitelisted =[
@@ -1374,9 +1375,7 @@ class Core extends Base\Core
                 if ($isDisabledInstrument === true or isset($cardlessEmiProviders[$instrument]) == false or
                     $cardlessEmiProviders[$instrument] == 0)
                 {
-
                     unset($providers[$index]);
-
                 }
 
             }

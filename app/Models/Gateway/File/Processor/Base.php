@@ -299,7 +299,6 @@ abstract class Base extends Core
                         $request = [
                             'payment_ids'   => $requestPaymentIds,
                         ];
-
                         $response = $this->app['nbplus.payments']->fetchNbPlusData($request, $entity);
 
                         $start += $fetchLimit;

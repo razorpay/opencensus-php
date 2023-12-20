@@ -1447,6 +1447,25 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedCardlessEmiLiquiloansTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CARDLESS_EMI_LIQUILOANS_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'cardless_emi',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'cardless_emi'              => 1,
+            'gateway_acquirer'          => 'liquiloans',
+            'gateway_merchant_id'       => 'cardless_emi_merchant',
+            'mode'                      => 3,
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedCardlessEmiSezzleTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CARDLESS_EMI_SEZZLE_TERMINAL;

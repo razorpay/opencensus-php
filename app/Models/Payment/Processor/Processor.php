@@ -3791,6 +3791,9 @@ class Processor
             case CardlessEmi::EARLYSALARY:
                 $input['contact'] = $payment['contact'];
                 break;
+            case CardlessEmi::LIQUILOANS:
+                $input['contact'] = $payment['contact'];
+                break;
             default;
                 break;
         }

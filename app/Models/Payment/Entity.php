@@ -16,6 +16,7 @@ use RZP\Models\Address\Type;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
+use RZP\Models\Discount;
 use RZP\Models\Order\ProductType;
 use RZP\Models\Upi\Turbo\Utils;
 use RZP\Models\Vpa\Entity as VpaEntity;
@@ -297,6 +298,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const MCC_MARKDOWN_PERCENTAGE           = 1;
     const PAYMENT_TIMEOUT_EMANDATE_RECURRING = 604800;   // 7 Days
     const PAYMENT_UPI_COLLECT_MAX_EXPIRY_WINDOW = 345600; // 4 Days
+
 
     // payment services
     const API                               = 0;
@@ -2188,6 +2190,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return $this->discount->getAmount();
         }
 
+        if ($this->isCardlessEmiLiquiloans() === true)
+        {
+            $discount = (new Discount\Repository())->fetchDiscountWithoutOffer($this->getId());
+            if ($discount != null)
+            {
+                return $discount->getAmount();
+            }
+        }
+
         return null;
     }
 
@@ -2732,6 +2743,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return  (($this->getAttribute(self::METHOD) === Payment\Method::CARDLESS_EMI) and
             ($this->getAttribute(self::WALLET) === Payment\Processor\CardlessEmi::WALNUT369));
+    }
+
+    public function isCardlessEmiLiquiloans()
+    {
+        return  (($this->getAttribute(self::METHOD) === Payment\Method::CARDLESS_EMI) and
+            ($this->getAttribute(self::WALLET) === Payment\Processor\CardlessEmi::LIQUILOANS));
     }
 
     public function isWalletPaypal()
@@ -5326,6 +5343,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function discount()
     {
+        if($this->getWallet() == Payment\Processor\CardlessEmi::LIQUILOANS)
+        {
+            return $this->hasOne('RZP\Models\Discount\Entity')->whereNotNull(\RZP\Models\Discount\Entity::OFFER_ID);
+        }
         return $this->hasOne('RZP\Models\Discount\Entity');
     }
 

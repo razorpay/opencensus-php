@@ -131,6 +131,7 @@ class BuyPricing
     const NACH_ICICI            = 'nach_icici';
     const NACH_CITI             = 'nach_citi';
     const HITACHI               = 'hitachi';
+    const LIQUILOANS            = 'liquiloans';
 
     const NETBANKING_CORPORATION        = 'netbanking_corporation';
     const ENACH_NPCI_NETBANKING         = 'enach_npci_netbanking';
@@ -242,6 +243,7 @@ class BuyPricing
         self::EARLYSALARY,
         self::EPAYLATER,
         self::WALNUT369,
+        self::LIQUILOANS,
         self::CARDLESS_EMI,
         self::SHARP,
     ];

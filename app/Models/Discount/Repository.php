@@ -19,4 +19,24 @@ class Repository extends Base\Repository
 
         return $discount;
     }
+
+    public function fetchDiscountWithOffer($paymentID)
+    {
+        $discount = $this->newQuery()
+            ->where(Entity::PAYMENT_ID, '=', $paymentID)
+            ->whereNotNull(Entity::OFFER_ID)
+            ->first();
+
+        return $discount;
+    }
+
+    public function fetchDiscountWithoutOffer($paymentID)
+    {
+        $discount = $this->newQuery()
+            ->where(Entity::PAYMENT_ID, '=', $paymentID)
+            ->whereNull(Entity::OFFER_ID)
+            ->first();
+
+        return $discount;
+    }
 }
