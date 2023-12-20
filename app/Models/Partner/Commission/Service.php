@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner\Commission;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
@@ -10,13 +11,14 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
-use RZP\Exception;
+use RZP\Services\Partnerships;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\Repository as BaseRepository;
 use RZP\Models\Partner\Commission\Core as CommissionCore;
 
 class Service extends Base\Service
 {
+    use Partnerships\PartnershipServiceTrait;
     /**
      * Get per transaction commission list for a merchant
      *
@@ -26,13 +28,29 @@ class Service extends Base\Service
      */
     public function list(array $input): array
     {
+        $result = $this->proxyToPartnershipService($input, $this->merchant->getId());
+        // if cutoff is enabled then return the response from prts
+        if($result['isCutOffEnabled'] === true)
+        {
+            return  $result['response'];
+        }
+
         $commissions = $this->core()->list($this->merchant, $input);
+
+        $this->checkParity($result['response'], $commissions->toArrayPublic());
 
         return $commissions->toArrayPublic();
     }
 
     public function fetch(string $id): array
     {
+        $result = $this->proxyToPartnershipService(['id' => $id], $this->merchant->getId());
+        // if cutoff is enabled then return the response from prts
+        if($result['isCutOffEnabled'] === true)
+        {
+            return  $result['response'];
+        }
+
         $partner = $this->merchant;
 
         $input = [
@@ -44,6 +62,8 @@ class Service extends Base\Service
         // Refer Commission\Entity::scopeMerchantId() for more details.
         //
         $commission = $this->repo->commission->findByPublicIdAndMerchant($id, $partner, $input);
+
+        $this->checkParity($result['response'], $commission->toArrayPublic());
 
         return $commission->toArrayPublic();
     }
@@ -96,6 +116,14 @@ class Service extends Base\Service
 
     public function captureByPartner(string $partnerId): int
     {
+        $variant = (new Core)->getCommissionExperimentMode($this->merchant->getId());
+        if($variant == 'reverse-shadow' or $variant == 'cutoff')
+        {
+            $response = $this->app->partnerships->captureByPartner(['partner_id' => $partnerId]);
+
+            return $response['response'];
+        }
+
         $partner = $this->repo->merchant->findOrFailPublic($partnerId);
 
         return $this->core()->captureByPartner($partner);
@@ -103,11 +131,26 @@ class Service extends Base\Service
 
     public function bulkCaptureByPartner(array $input): int
     {
+        $variant = (new Core)->getCommissionExperimentMode($this->merchant->getId());
+        if($variant == 'reverse-shadow' or $variant == 'cutoff')
+        {
+            $response = $this->app->partnerships->bulkCaptureByPartner(['partner_ids' => $input[Constants::PARTNER_IDS]]);
+
+            return $response['response'];
+        }
         return $this->core()->bulkCaptureByPartner($input);
     }
 
     public function capture(string $id): array
     {
+        $variant = (new Core)->getCommissionExperimentMode($this->merchant->getId());
+        if($variant == 'reverse-shadow' or $variant == 'cutoff')
+        {
+            $response =  $this->app->partnerships->commissionCapture(['id'=> $id]);
+
+            return $response['response'];
+        }
+
         $commission = $this->repo->commission->findByPublicId($id);
 
         return Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE_CORE], function () use ($commission, $id) {

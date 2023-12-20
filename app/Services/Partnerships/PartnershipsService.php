@@ -91,6 +91,16 @@ class PartnershipsService extends Base\Service
 
     const GET_INVOICE_SIGNED_URL = '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/GetPreSignedUrl';
 
+    const COMMISSION_CAPTURE_URL = '/twirp/rzp.commissions.commission.v1.CommissionsAPI/Capture';
+
+    const CAPTURE_BY_PARTNER_URL = '/twirp/rzp.commissions.commission.v1.CommissionsAPI/CaptureByPartner';
+
+    const GET_COMMISSION_URL = '/twirp/rzp.commissions.commission.v1.CommissionsAPI/Get';
+
+    const LIST_COMMISSION_URL = '/twirp/rzp.commissions.commission.v1.CommissionsAPI/List';
+
+    const BULK_CAPTURE_BY_PARTNER_URL = '/twirp/rzp.commissions.commission.v1.CommissionsAPI/BulkCaptureByPartner';
+
     const GET_MASKED_DATA = '/twirp/rzp.partnerships.masking.v1.MaskingAPI/MaskSensitiveData';
 
     const ACTIVATED = 'ACTIVATED';
@@ -356,6 +366,21 @@ class PartnershipsService extends Base\Service
         ];
         $result =  $this->sendRequestWithRetry($parameters, self::GET_INVOICE_SIGNED_URL, Requests::POST);
         return empty($result['response']) ? "" : $result['response']['signed_url'];
+    }
+
+    public function commissionCapture($parameters)
+    {
+        return $this->sendRequestWithRetry($parameters, self::COMMISSION_CAPTURE_URL, Requests::POST);
+    }
+
+    public function captureByPartner($parameters)
+    {
+        return $this->sendRequestWithRetry($parameters, self::CAPTURE_BY_PARTNER_URL, Requests::POST);
+    }
+
+    public function bulkCaptureByPartner($parameters)
+    {
+        return $this->sendRequestWithRetry($parameters, self::BULK_CAPTURE_BY_PARTNER_URL, Requests::POST);
     }
 
     /**
@@ -873,7 +898,7 @@ class PartnershipsService extends Base\Service
             throw new Exception\RuntimeException('Malformed json response', $partnershipsServiceResponse);
         }
 
-        $this->trace->info(TraceCode::PARTNERSHIPS_REQUEST, $partnershipsServiceResponse);
+        $this->trace->info(TraceCode::PARTNERSHIPS_RESPONSE, $partnershipsServiceResponse);
 
         return $partnershipsServiceResponse;
     }

@@ -904,4 +904,30 @@ class Core extends Base\Core
             "message" => $message,
         ];
     }
+
+    public function getCommissionExperimentMode(string $partnerId): ?string
+    {
+        try
+        {
+            $requestData = ['mid' => $partnerId, 'mode' => $this->mode];
+
+            $properties = [
+                'id'            => $partnerId,
+                'experiment_id' => $this->app['config']->get('app.prts_commission_calculator_exp_id'),
+                'request_data'  => json_encode($requestData),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            return $response['response']['variant']['name'] ?? '';
+        }
+        catch (\Exception $e)
+        {
+            $id        = $properties['id'] ?? null;
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+
+            return '';
+        }
+    }
 }

@@ -12,8 +12,10 @@ use RZP\Trace\TraceCode;
 trait PartnershipServiceTrait
 {
     static array $PartnershipServicePathMap = array(
-        'commissions_invoice_fetch_all' => '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/List',
-        'commissions_invoice_fetch' =>  '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/Get',
+        'commissions_invoice_fetch_all'       => '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/List',
+        'commissions_invoice_fetch'           => '/twirp/rzp.commissions.commission_invoice.v1.CommissionInvoiceAPI/Get',
+        'commissions_get_multiple'            => PartnershipsService::LIST_COMMISSION_URL,
+        'commissions_get'                     => PartnershipsService::GET_COMMISSION_URL,
     );
     public function proxyToPartnershipService(array $parameters, string $partnerId)
     {
