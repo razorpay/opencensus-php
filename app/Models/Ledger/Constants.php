@@ -37,6 +37,8 @@ class Constants
     const RAZORPAY_REWARDS                                  = 'razorpay_rewards';
     const DFB_AMOUNT_CREDITS                                = 'dfb_amount_credits';
     const VAS_MERCHANT_FLOW                                 = "vas_merchant_flow";
+    const HDFC_VAS_DS_CFB_SURCHARGE_FLOW                    = "hdfc_vas_ds_cfb_surcharge_flow";
+    const HDFC_NON_DS_SURCHARGE_FLOW                        = "hdfc_non_ds_surcharge_flow";
 
     //Refund events
     const REFUND_REVERSAL                                   = "refund_reversed";
@@ -135,6 +137,7 @@ class Constants
     const METADATA                                          = "metadata";
     const SETTLEMENT_ONDEMAND_PAYOUT_ID                     = "settlement_ondemand_payout_id";
     const REASON                                            = "reason";
+    const GATEWAY_ACQUIRER_AMOUNT                           = "gateway_acquirer_amount";
 
     const MONEY_PARAMS                                      = 'money_params';
     const MERCHANT_ID                                       = 'merchant_id';

@@ -113,16 +113,10 @@ class Core extends Base\Core
         //Todo: how do we charge this amount from acquirer bank.
         else if ($payment->isHdfcVasDSCustomerFeeBearerSurcharge() === true)
         {
-            if ($this->isPostpaid($payment) === true)
-            {
-                $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval(0);
-            }
-            else
-            {
-                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval(0);
-            }
-            $moneyParams[Constants::TAX]                        = strval(0);
-            $moneyParams[Constants::COMMISSION]                 = strval(0);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval(0);
+            $moneyParams[Constants::TAX]                        = strval($tax);
+            $moneyParams[Constants::COMMISSION]                 = strval($commission);
+            $moneyParams[Constants::GATEWAY_ACQUIRER_AMOUNT]    = strval($commission+$tax);
         }
         else if($this->isPostpaid($payment) === true)
         {
@@ -167,6 +161,10 @@ class Core extends Base\Core
         if ($payment->merchant->isFeatureEnabled(Feature\Constants::VAS_MERCHANT) === true)
         {
             $rule[Constants::ACCOUNTING] = Constants::VAS_MERCHANT_FLOW;
+        }
+        else if ($payment->isHdfcVasDSCustomerFeeBearerSurcharge() === true)
+        {
+            $rule[Constants::ACCOUNTING] = Constants::HDFC_VAS_DS_CFB_SURCHARGE_FLOW;
         }
         else if($this->isPostpaid($payment) === true)
         {
@@ -219,21 +217,11 @@ class Core extends Base\Core
         //Todo: how do we charge this amount from acquirer bank.
         if ($payment->isHdfcNonDSSurcharge() === true)
         {
-            if ($this->isFeeCredits($feeCredits, $commission + $tax) === true)
-            {
-                $moneyParams[Constants::FEE_CREDITS]                = strval(0);
-            }
-            else if ($this->isPostpaid($payment) === true)
-            {
-                $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval(0);
-            }
-            else
-            {
-                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval(0);
-            }
-            $moneyParams[Constants::GMV_AMOUNT]                 = strval(0);
+            // Fee and tax is always zero for hdfcNonDSSurcharge payments
+            $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::TAX]                        = strval(0);
             $moneyParams[Constants::COMMISSION]                 = strval(0);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
         }
         else if ($creditOrReserveBalanceLoadingPaymentInfo[Constants::IS_CREDIT_OR_RESERVE_BALANCE_LOADING_PAYMENT] === true)
         {
@@ -372,7 +360,11 @@ class Core extends Base\Core
             return $additionalParams;
         }
 
-        if($this->isPostpaid($payment) === true)
+        if ($payment->isHdfcNonDSSurcharge() === true)
+        {
+             $rule[Constants::ACCOUNTING] = Constants::HDFC_NON_DS_SURCHARGE_FLOW;
+        }
+        else if($this->isPostpaid($payment) === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
         }

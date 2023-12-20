@@ -4,6 +4,7 @@ namespace Functional\Payment;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Services\RazorXClient;
@@ -15,6 +16,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Traits\PaymentLinkTestTrait;
 use RZP\Tests\Traits\TestsWebhookEvents;
 
@@ -31,6 +33,7 @@ class PaymentLedgerTest extends TestCase
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
     use TestsBusinessBanking;
+    use MocksRazorx;
 
     const TEST_PL_ID    = '100000000000pl';
     const TEST_PL_ID_2  = '100000000001pl';
@@ -4043,5 +4046,132 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals(1, $merchantCaptureLedgerOutboxEntity['is_deleted'], 'outbox entry not soft deleted');
         $this->assertEquals(1, $merchantCaptureLedgerOutboxEntity['retry_count']);
         $this->assertNotNull($merchantCaptureLedgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+    }
+
+    public function testNormalPaymentCaptureWithHDFCNonDSSurcharge()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->mockRazorxTreatmentV2('hdfc_vas_surcharge_2', 'on');
+
+        $merchant = $this->fixtures->merchant->edit('10000000000000',
+            [
+                'fee_bearer'  => 'customer',
+                'org_id'      =>  Org\Entity::HDFC_ORG_ID
+            ]
+        );
+
+        $terminal =   $this->fixtures->create('terminal', [ 'merchant_id' => '10000000000000', 'gateway' => 'hdfc']);
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
+        $attributes = [
+            'name'        => 'hdfc_vas_cards_surcharge',
+            'entity_id'   => $merchant->getOrgId(),
+            'entity_type' => 'org'
+        ];
+
+        $this->fixtures->create('feature', $attributes);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "1000.000000",
+                                "min_balance"       => "1000.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "1000.000000",
+                                "min_balance"       => "1000.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        // Enable customer fee_bearer model
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $amount = $payment['amount'];
+
+        $payment = $this->getFeesForPayment($payment)['input'];
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->capturePayment($response['razorpay_payment_id'], $amount);
+
+        $payment = $this->getDbLastEntity('payment');
+
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_merchant_captured",
+            "money_params" => [
+                "base_amount" => sprintf("%s", $payment->getBaseAmount()),
+                "gmv_amount" => sprintf("%s", $payment->getAmount()),
+                "merchant_balance_amount" => sprintf("%s", $payment->getAmount()),
+                "tax" => "0",
+                "commission" => "0",
+            ],
+            "additional_params" => [
+                "accounting" =>  "hdfc_non_ds_surcharge_flow",
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($payment->getPublicId(), $actualLedgerOutboxEntry['transactor_id']);
     }
 }
