@@ -21,18 +21,20 @@ class PaymentTransfer extends  AbstractTransfer
     {
         $mutexConfig = $this->fetchTransferProcessMutexConfig();
 
-        $mutexNumRetries = (int) ($mutexConfig['num_retries'] ?? self::MUTEX_NUM_RETRIES);
+        $mutexNumRetries = $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_NUM_RETRIES_KEY];
 
-        $mutexMinDelayMs = (int) ($mutexConfig['min_delay_ms'] ?? self::MUTEX_MIN_RETRY_DELAY_MS);
+        $mutexMinDelayMs = $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_MIN_RETRY_DELAY_MS_KEY];
 
-        $mutexMaxDelayMs = (int) ($mutexConfig['max_delay_ms'] ?? self::MUTEX_MAX_RETRY_DELAY_MS);
+        $mutexMaxDelayMs = $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_MAX_RETRY_DELAY_MS_KEY];
 
-        $mutexLockTimeoutSec = (int) ($mutexConfig['lock_timeout_sec'] ?? self::MUTEX_LOCK_TIMEOUT);
+        $mutexLockTimeoutSec = $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_LOCK_TIMEOUT_SEC_KEY];
+
+        $mutexResource = Core::getTransferProcessingMutexResource(Constant::ORDER);
 
         try
         {
             [$transfersProcessed, $failedTransfersToRetry] = $this->mutex->acquireAndRelease(
-                'payment_transfer_process_' . $this->payment->getPublicId(),
+                $mutexResource . $this->payment->getPublicId(),
                 function () {
 
                     $payment =  $this->payment;

@@ -679,9 +679,17 @@ abstract class AbstractTransfer
         return false;
     }
 
-    protected function fetchTransferProcessMutexConfig()
+    public static function fetchTransferProcessMutexConfig()
     {
         $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::TRANSFER_PROCESSING_MUTEX_CONFIG]);
+
+        $config['num_retries'] = (int) ($mutexConfig['num_retries'] ?? self::MUTEX_NUM_RETRIES);
+
+        $config['min_delay_ms'] = (int) ($mutexConfig['min_delay_ms'] ?? self::MUTEX_MIN_RETRY_DELAY_MS);
+
+        $config['max_delay_ms'] = (int) ($mutexConfig['max_delay_ms'] ?? self::MUTEX_MAX_RETRY_DELAY_MS);
+
+        $config['lock_timeout_sec'] = (int) ($mutexConfig['lock_timeout_sec'] ?? self::MUTEX_LOCK_TIMEOUT);
 
         return $config;
     }

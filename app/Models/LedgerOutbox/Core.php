@@ -11,6 +11,7 @@ use RZP\Constants\Metric;
 use RZP\Diag\EventCode;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Transfer\Constant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;
@@ -926,6 +927,8 @@ class Core extends Base\Core
                 LedgerConstants::SOURCE     => $source
             ]);
 
+            $mutexResource = null;
+
             try
             {
                 $transfer = $this->repo->transfer->findByPublicId($transactorPublicId);
@@ -936,6 +939,7 @@ class Core extends Base\Core
 
                     $transferProcessor = new PaymentTransfer($sourcePayment);
 
+                    $mutexResource = Transfer\Core::getTransferProcessingMutexResource(Transfer\Constant::PAYMENT);
                 }
                 else if ($transfer->getSourceType() === E::ORDER)
                 {
@@ -949,6 +953,8 @@ class Core extends Base\Core
                     $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
 
                     $transferProcessor = new OrderTransfer($sourcePayment);
+
+                    $mutexResource = Transfer\Core::getTransferProcessingMutexResource(Transfer\Constant::ORDER);
                 }
             }
             catch (\Exception $e)
@@ -964,10 +970,12 @@ class Core extends Base\Core
 
             $transferMetric =  new Transfer\Metric();
 
+            $mutexConfig = Transfer\AbstractTransfer::fetchTransferProcessMutexConfig();
+
             try {
                 $transferProcessStartTime = microtime(true);
 
-                $txn = $this->repo->transaction(function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source)
+                $txn = $this->repo->transaction(function () use ($mutexConfig, $mutexResource, $transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source)
                 {
                     if($transfer->getStatus() !== Transfer\Status::PROCESSED)
                     {
@@ -980,7 +988,17 @@ class Core extends Base\Core
 
                         $totalTransferAmount = $transfer->getAmount();
 
-                        $transferCore->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
+                        $this->mutex->acquireAndRelease(
+                            $mutexResource . $sourcePayment->getPublicId(),
+                            function () use ($totalTransferAmount, $sourcePayment, $transferCore)
+                            {
+                                $transferCore->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
+                            },
+                            $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_LOCK_TIMEOUT_SEC_KEY],
+                            ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_PROCESS_IN_PROGRESS,
+                            $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_NUM_RETRIES_KEY],
+                            $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_MIN_RETRY_DELAY_MS_KEY],
+                            $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_MAX_RETRY_DELAY_MS_KEY], true);
 
                         $this->repo->saveOrFail($transfer);
 

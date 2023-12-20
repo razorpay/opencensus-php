@@ -2274,4 +2274,20 @@ class Core extends Base\Core
 
         return $variant === self::FLAG_ASYNC_CUSTOMER_TRANSFER;
     }
+
+    public static function getTransferProcessingMutexResource($transferType)
+    {
+        if ($transferType == Transfer\Constant::ORDER)
+        {
+            return 'order_transfer_process_';
+        }
+        else if ($transferType == Transfer\Constant::PAYMENT)
+        {
+            return 'payment_transfer_process_';
+        }
+        else
+        {
+            throw new Exception\LogicException('Unsupported transfer type');
+        }
+    }
 }

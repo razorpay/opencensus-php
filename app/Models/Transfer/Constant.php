@@ -50,4 +50,11 @@ final class Constant
     const CATEGORY_1 = 'category1';
     const CATEGORY_2 = 'category2';
     const CATEGORY_3 = 'category3';
+
+    const TRANSFER_PROCESS_MUTEX_NUM_RETRIES_KEY = 'num_retries';
+    const TRANSFER_PROCESS_MUTEX_MIN_RETRY_DELAY_MS_KEY = 'min_delay_ms';
+
+    const TRANSFER_PROCESS_MUTEX_MAX_RETRY_DELAY_MS_KEY = 'max_delay_ms';
+
+    const TRANSFER_PROCESS_MUTEX_LOCK_TIMEOUT_SEC_KEY = 'lock_timeout_sec';
 }
