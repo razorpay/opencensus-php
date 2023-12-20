@@ -1044,13 +1044,6 @@ trait Refund
             throw $e;
         }
 
-        // In case of refunds rearch flow, these refunds would have been created in Scrooge already
-        // So skipping the Scrooge dispatch
-        if ($rearchRefund === true)
-        {
-            return [$results, $atomicJournalPayload];
-        }
-
         return [$results, $atomicJournalPayload];
     }
 
@@ -4767,24 +4760,6 @@ trait Refund
                             }
                         }
 
-                        try
-                        {
-                            // Dispatch refunds to scrooge
-                            foreach ($results as $result)
-                            {
-                                $refund = $result[1] ?? null;
-
-                                $this->callRefundFunctionOnScrooge($refund);
-                            }
-                        }
-                        catch (\Throwable $e)
-                        {
-                            $this->trace->traceException(
-                                $e,
-                                Trace::ERROR,
-                                TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH_FAILED
-                            );
-                        }
                     }
 
                     if($payment->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false)
