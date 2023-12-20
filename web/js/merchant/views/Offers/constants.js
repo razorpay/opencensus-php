@@ -86,6 +86,9 @@ export const BANK_MAP = {
   AMEX: 'American Express',
   IBKL: 'IDBI Bank',
   AUBL: 'AU small finance bank',
+  ESFB: 'Equitas Small Finance Bank',
+  DCBL: 'DCB Bank',
+  STCB: 'SBM Bank India',
 };
 
 export const WALLET_MAP = {
@@ -172,6 +175,9 @@ export const PaymentIssuersOptions = [
   { label: 'IDBI Bank', name: 'IBKL' },
   { label: 'AU small finance bank', name: 'AUBL' },
   { label: 'IDFC First bank', name: 'IDFB' },
+  { label: 'Equitas Small Finance Bank', name: 'ESFB' },
+  { label: 'DCB Bank', name: 'DCBL' },
+  { label: 'SBM Bank India', name: 'STCB' },
 ];
 
 export const PaymentNetworksOptions = [
