@@ -1787,7 +1787,8 @@ class Core extends Base\Core
         }
         catch (\Throwable $exception)
         {
-            $this->trace->info(
+            $this->trace->traceException($exception,
+                Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
                 [
                     Entity::CHANNEL                 => $channel,
@@ -1796,12 +1797,6 @@ class Core extends Base\Core
                     Entity::GATEWAY_BALANCE         => $basDetails->getGatewayBalance(),
                     Entity::BALANCE_LAST_FETCHED_AT => $basDetails->getBalanceLastFetchedAt(),
                 ]);
-
-            Tracer::startSpanWithAttributes(HyperTrace::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
-                                            [
-                                                Entity::CHANNEL                 => $channel,
-                                                Entity::MERCHANT_ID             => $basDetails->getMerchantId(),
-                                            ]);
         }
 
         return $basDetails;

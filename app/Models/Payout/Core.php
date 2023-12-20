@@ -3007,6 +3007,8 @@ class Core extends Base\Core
                 {
                     $payout->setQueuedReason(QueuedReasons::LOW_BALANCE);
 
+                    $payout->setConnection($this->mode);
+
                     $this->repo->payout->saveOrFail($payout);
                 }
                 continue;
