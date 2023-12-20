@@ -174,6 +174,8 @@ class UserRolesScope
                 [Role::RBL_SUPERVISOR, Role::AGENT, Role::PARTNER,]),
             'setl_fetch_details' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
                 [Role::RBL_SUPERVISOR, Role::AGENT]),
+            'setl_transaction_timeline' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
+                [Role::RBL_SUPERVISOR, Role::AGENT, Role::PARTNER]),
             'setl_amount_check' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
                 [Role::RBL_SUPERVISOR, Role::AGENT, Role::SUPPORT]),
 

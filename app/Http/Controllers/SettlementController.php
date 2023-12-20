@@ -1004,4 +1004,13 @@ class SettlementController extends Controller
         RuntimeManager::setMemoryLimit('1024M');
     }
 
+    public function getTransactionTimeline()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->settlementTransactionTimeline($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

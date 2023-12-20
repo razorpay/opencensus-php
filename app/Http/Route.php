@@ -1088,6 +1088,7 @@ class Route
         'setl_update_execution_transaction_count'  => ['put',      'settlements/optimizer/update_transaction_count', 'SettlementController@updateTransactionCountOfExecution'            ],
         'setl_update_optimiser_execution_status'   => ['put',      'settlements/optimizer/update_status_of_execution','SettlementController@updateStatusofOptimiserExecution'            ],
         'setl_trigger_file_generation'             => ['post',     'settlements/file_generation',                    'SettlementController@triggerFileGeneration'                                ],
+        'setl_transaction_timeline'                => ['get',      'settlements/transaction/timeline',               'SettlementController@getTransactionTimeline'                       ],
 
 
 
@@ -4998,6 +4999,7 @@ class Route
         'settlement_ondemand_fetch_by_id',
         'setl_merchant_dashboard_config_get',
         'setl_fetch_details',
+        'setl_transaction_timeline',
         'payment_links_get',
         'payment_links_create',
         'payment_links_update',
@@ -12640,6 +12642,7 @@ class Route
             'settlement_ondemand_razorpayx_webhook',
             'setl_merchant_dashboard_config_get',
             'setl_fetch_details',
+            'setl_transaction_timeline',
             'sms_callback',
             'splitz_evaluate',
             'splitz_preflight',
@@ -13222,6 +13225,7 @@ class Route
             'admin_account_lock_unlock',
             'setl_merchant_dashboard_config_get',
             'setl_fetch_details',
+            'setl_transaction_timeline',
             'setl_get_details_admin',
             'admin_setl_amount',
             'admin_setl_fetch_source_details',

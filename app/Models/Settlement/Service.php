@@ -2743,4 +2743,15 @@ class Service extends Base\Service
     {
         return app('settlements_api')->updateStatusofOptimiserExecution($input);
     }
+
+    public function settlementTransactionTimeline(array $input) : array
+    {
+        if (!isset($input['merchant_id'])) {
+            $merchant = $this->merchant;
+            $input['merchant_id'] = $merchant->getId();
+        }
+
+        return app('settlements_merchant_dashboard')->getSettlementTransactionTimeline($input);
+
+    }
 }

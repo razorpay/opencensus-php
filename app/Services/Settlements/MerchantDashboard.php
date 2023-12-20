@@ -115,4 +115,9 @@ class MerchantDashboard extends Base
             $year => $holidayDetails
         ];
     }
+
+    public function getSettlementTransactionTimeline(array $input) : array
+    {
+        return $this->makeRequest(self::GET_SETTLEMENT_TRANSACTION_TIMELINE, $input, self::SERVICE_MERCHANT_DASHBOARD);
+    }
 }

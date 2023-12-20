@@ -499,6 +499,7 @@ class RouteTeamMap
         'setl_optimizer_settlement_cron'                  => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_merchant_dashboard_config_get'              => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_get_transaction_details'                    => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_transaction_timeline'                       => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'fb_setl_fetch_transactions'                      => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_bucket_backfill'                            => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_bucket_delete'                              => [self::TEAM_PAYMENTS_SETTLEMENTS],
