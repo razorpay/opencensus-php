@@ -1,6 +1,7 @@
 import ShipRocketIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/shiprocket.svg';
 import DelhiveryIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/delhivery.svg';
 import IThinkLogisticsIcon from 'assets/ithink-logistics-logo.png';
+import UnicommerceIcon from 'assets/unicommerce.png';
 import lazy from 'merchant/routes/LazyLoader';
 
 const ShipRocketModal = lazy(() =>
@@ -18,6 +19,12 @@ const DelhiveryModal = lazy(() =>
 const IThinkModal = lazy(() =>
   import(
     /* webpackChunkName: "MagicShippingService" */ 'merchant/views/MagicCheckout/ShippingServices/IThinkAccountModal'
+  ),
+);
+
+const UnicommerceModal = lazy(() =>
+  import(
+    /* webpackChunckName: "MagicShippingService" */ 'merchant/views/MagicCheckout/ShippingServices/UnicommerceAccountModal'
   ),
 );
 
@@ -145,6 +152,11 @@ export const SHIPPING_PARTNERS = {
     image: IThinkLogisticsIcon,
     component: <IThinkModal />,
   },
+  unicommerce: {
+    provider_type: 'Unicommerce',
+    image: UnicommerceIcon,
+    component: <UnicommerceModal />,
+  },
 };
 
 export const DISCONNECT_TEXTS = {
@@ -173,6 +185,13 @@ export const DISCONNECT_TEXTS = {
     header: 'Disconnect iThink Logistics',
     subText: 'Are you sure you want to disconnect ?',
     desc: 'Razorpay will stop receiving delivery status updates from your iThink Logistics account. Orders shipped via iThink Logistics will no longer be eligible for RTO insurance.',
+    secondaryCtaLabel: 'No, don’t disconnect',
+    primaryCtaLabel: 'Yes, disconnect',
+  },
+  unicommerce: {
+    header: 'Disconnect Unicommerce',
+    subText: 'Are you sure you want to disconnect ?',
+    desc: 'Razorpay will stop receiving delivery status updates from your Unicommerce account. Orders shipped via Unicommerce will no longer be eligible for RTO insurance.',
     secondaryCtaLabel: 'No, don’t disconnect',
     primaryCtaLabel: 'Yes, disconnect',
   },
