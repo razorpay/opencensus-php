@@ -991,4 +991,6 @@ final class RazorxTreatment
      * Razorx flag to stop sending order data from API to PG-Router
      */
     const STOP_SENDING_ORDER_DATA_FROM_API = 'stop_sending_order_data_from_api';
+
+    const ALLOW_EMAIL_OPTIONAL_FOR_PARTNER = 'allow_email_optional_for_partner';
 }

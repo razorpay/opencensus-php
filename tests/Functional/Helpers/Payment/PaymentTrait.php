@@ -696,6 +696,35 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2sUpiPaymentWithOAuthToken($submerchantId, $payment = null, $server = null, string $accessToken)
+    {
+        $server = [
+            'HTTP_X-Razorpay-Account' => $submerchantId,
+        ];
+
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/upi',
+            'content' => $payment
+        ];
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doS2SPrivateAuthAndCapturePayment($payment = null)
     {
         $paymentAuth = $this->doS2SPrivateAuthPayment($payment);

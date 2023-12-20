@@ -11699,6 +11699,113 @@ class PaymentCreateTest extends TestCase
         }
     }
 
+    public function testPaymentOnOAuthWithEmailAsNilForPartnerWithExpEnabled()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet',
+                'partner_type'=>'pure_platform',
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+        $this->fixtures->merchant->enableUpi($sub->getId());
+        $this->fixtures->merchant->addFeatures('s2supi', $sub->getId());
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $payment = $this->getDefaultUpiIntentPaymentArray();
+        $payment["email"] = null;
+        $payment["upi"] = ["flow" => "intent"];
+
+        $accessToken = $this->generateOAuthAccessTokenForClient([
+                                                                    'merchant_id'   => $sub->getId(),
+                                                                    'scopes'        => ['read_write'],
+                                                                    'mode'          => Mode::TEST], $client);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $response = $this->doS2sUpiPaymentWithOAuthToken(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $payment, null, $accessToken->toString());
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['public_id'], $response['razorpay_payment_id']);
+    }
+
+    public function testPaymentOnOAuthWithEmailAsNilForPartnerWithExpDisabled()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet',
+                'partner_type'=>'pure_platform',
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+        $this->fixtures->merchant->enableUpi($sub->getId());
+        $this->fixtures->merchant->addFeatures('s2supi', $sub->getId());
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $payment = $this->getDefaultUpiIntentPaymentArray();
+        $payment["email"] = null;
+        $payment["upi"] = ["flow" => "intent"];
+
+        $accessToken = $this->generateOAuthAccessTokenForClient([
+                                                                    'merchant_id'   => $sub->getId(),
+                                                                    'scopes'        => ['read_write'],
+                                                                    'mode'          => Mode::TEST], $client);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('control');
+
+        try
+        {
+            $this->doS2sUpiPaymentWithOAuthToken(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $payment, null, $accessToken->toString());
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals("BAD_REQUEST_VALIDATION_FAILURE", $e->getCode());
+        }
+    }
+
     protected function mockSession(string $appToken = 'capp_1000000custapp'): void
     {
         $data = [

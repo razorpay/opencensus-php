@@ -889,9 +889,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         if (empty($input['email']) === true)
         {
-            $isEmailOptional = $this->merchant->isEmailOptional();
-
-            if ($isEmailOptional === true)
+            if ($this->isEmailOptionalForPartnerPayment() || $this->merchant->isEmailOptional())
             {
                 $input['email'] = self::DUMMY_EMAIL;
             }
@@ -7261,6 +7259,60 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return false;
+    }
+
+    /**
+     * isEmailOptionalForPartnerPayment checks if payment is made by partner & if the partner
+     * is whitelisted to allowed to create payments without email
+     */
+    public function isEmailOptionalForPartnerPayment() : bool
+    {
+        $app = \App::getFacadeRoot();
+
+        $partnerId = $app['basicauth']->getPartnerMerchantId();
+
+        if (empty($partnerId) === true)
+        {
+            return false;
+        }
+
+        return ($this->isEmailOptionalForPartner($partnerId) === true);
+    }
+
+    private function isEmailOptionalForPartner($partnerId)
+    {
+        $app = \App::getFacadeRoot();
+
+        try
+        {
+            $whitelistedPartnerIds = explode(',', $app['config']->get('app.email_optional_partner_MIDs'));
+
+            if (in_array($partnerId, $whitelistedPartnerIds) === false)
+            {
+                return false;
+            }
+
+            // TODO: remove this once the feature is stable in prod for WhatsApp
+            $variant = $app['razorx']->getTreatment($partnerId,
+                                                    RazorxTreatment::ALLOW_EMAIL_OPTIONAL_FOR_PARTNER,
+                                                    $app['rzp.mode'] ?? Mode::LIVE
+            );
+
+            $app['trace']->info(TraceCode::EMAIL_OPTIONAL_FOR_PARTNER_EXP_RESULT, [
+                "partner_id" => $partnerId,
+                "variant"    => $variant,
+            ]);
+
+            return (strtolower($variant) === 'on');
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->info(TraceCode::EMAIL_OPTIONAL_CHECK_FOR_PARNTER_FAILED, [
+                "error" => $e->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 
     protected function maskField($key, $value)

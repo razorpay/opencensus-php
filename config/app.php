@@ -787,5 +787,7 @@ return array(
 
     'customer_async_transfer_experiment_id' => env('CUSTOMER_ASYNC_TRANSFER_EXPERIMENT_ID'),
 
-    'split_payment_flow_new' => env('SPLIT_PAYMENT_FLOW_NEW_EXPERIMENT_ID')
+    'split_payment_flow_new' => env('SPLIT_PAYMENT_FLOW_NEW_EXPERIMENT_ID'),
+
+    'email_optional_partner_MIDs' => env('EMAIL_OPTIONAL_PARTNER_MIDS'),
 );

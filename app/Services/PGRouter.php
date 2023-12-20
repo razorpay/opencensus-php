@@ -122,6 +122,8 @@ class PGRouter
 
     const MODE = 'mode';
 
+    const PaymentsCreateUpiRoute = "payment_create_upi";
+
     const MERCHANT_BASED_ROUTES = [
         'order_fetch_by_id',
         'order_payments',
@@ -1294,6 +1296,14 @@ class PGRouter
             ($this->currentEndPoint === self::PGRouterFetchPayment))
         {
             $headers['MERCHANT_BASED_ROUTE'] = true;
+        }
+
+
+        $partnerId = $this->app['basicauth']->getPartnerMerchantId();
+
+        if (!empty($partnerId) && $this->app['api.route']->getCurrentRouteName() === self::PaymentsCreateUpiRoute)
+        {
+            $headers['PARTNER_MERCHANT_ID'] = $partnerId;
         }
 
         if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
