@@ -209,7 +209,8 @@ export default class LiveMode extends Component {
                 >
                   settlements
                 </a>{' '}
-                in your account as soon as we resume merchant onboarding
+                in your account in the next 2-3 days. There is no action required from your end. We
+                thank you for your patience.
               </div>
             );
           } else if (isRejected) {

@@ -310,7 +310,7 @@ const CurrentActivationProgress: React.FC<
       const title = 'KYC verified successfully';
       const titleColor = 'positive.960';
       const description =
-        'There is no action due from your end. You will be able to accept payments as soon as we resume onboarding of new merchants. We will notify about this on your email ID and phone number.';
+        'We are working to take your account live in the next 2-3 days and you will be able to start accepting payments immediately post that. There is no action required from your end. We thank you for your patience.';
       return (
         <>
           <Info title={title} titleColor={titleColor} description={description} />

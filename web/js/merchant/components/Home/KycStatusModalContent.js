@@ -10,7 +10,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
-export const kycModalContent = (args = {}) => {
+export const kycModalContent = (args = {}, navigate) => {
   const activationState = getActivationState(
     args.activationData,
     args.isUnregisteredBusiness,
@@ -415,7 +415,7 @@ export const kycModalContent = (args = {}) => {
                 });
                 redirectToEasyAfter1sec();
               } else {
-                history.push(activationFormUrl);
+                navigate(activationFormUrl);
               }
               args.onClose();
             }}
@@ -461,7 +461,7 @@ export const kycModalContent = (args = {}) => {
                 });
                 redirectToEasyAfter1sec();
               } else {
-                history.push(activationFormUrl);
+                navigate(activationFormUrl);
               }
               args.onClose();
             }}

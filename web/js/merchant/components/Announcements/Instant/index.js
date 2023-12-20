@@ -827,7 +827,7 @@ export default class InstantActivationAnnouncements extends Component {
         theme = 'success';
         title = 'KYC verified successfully';
         content =
-          'There is no action due from your end. You will be able to accept payments as soon as we resume onboarding of new merchants. We will notify about this on your email ID and phone number.';
+          'We are working to take your account live in the next 2-3 days and you will be able to start accepting payments immediately post that. There is no action required from your end. We thank you for your patience.';
       } else if (user.activation_status === 'under_review' && !!user.locked && user.isDedupe) {
         title = 'Contact Support';
         content = (

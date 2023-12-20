@@ -1,27 +1,29 @@
 import React, { useEffect } from 'react';
-import { ModalMask, Modal } from 'common/new-ui/Modal';
-import { compose } from 'redux';
-import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
-import { kycModalContent } from './KycStatusModalContent';
-import rTracking from 'react-tracking';
 import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
-import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
-import ProductsModal from 'merchant/components/Home/ProductsModal';
-import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import { useNavigate } from 'react-router-dom';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
+import ImgNcKyc from 'assets/onboarding/ncKyc.svg';
+import { ModalMask, Modal } from 'common/new-ui/Modal';
+import Image from 'common/ui/Image';
 import {
   getActivationState,
   isNewNcActivationStatus,
   redirectToEasyAfter1sec,
 } from 'merchant/components/Activation/ActivationUtils';
-import InstantActivationModal from './InstantActivationModal';
-import ImgNcKyc from 'assets/onboarding/ncKyc.svg';
-import Image from 'common/ui/Image';
+import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
+import ProductsModal from 'merchant/components/Home/ProductsModal';
+import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
+import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import * as EventsActions from 'merchant/reducers/trackEvents';
-import { isMobileDevice } from './data';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+
+import InstantActivationModal from './InstantActivationModal';
+import { kycModalContent } from './KycStatusModalContent';
+import { isMobileDevice } from './data';
 
 const MODAL_CONTENT = {
   KYC_CLARIFICATION_SUBMIT_MODAL: {
@@ -55,13 +57,13 @@ const KYCStatusModal = ({
   modalType,
   activationDuration,
   tracking,
-  history,
   showProductsModal: showProductsModals,
   hideProductsModal: hideProductsModals,
   showProducts,
   trackEvents,
   isNcEligibile,
 }) => {
+  const navigate = useNavigate();
   const activationState = getActivationState(user, user.isUnregisteredBusiness, isNcEligibile);
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
   const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
@@ -108,7 +110,7 @@ const KYCStatusModal = ({
       });
       redirectToEasyAfter1sec();
     } else {
-      history.push(activationUrl);
+      navigate(activationUrl);
     }
   };
 
@@ -137,7 +139,7 @@ const KYCStatusModal = ({
   const content =
     modalType === 'KYC_CLARIFICATION_SUBMIT_MODAL'
       ? MODAL_CONTENT.KYC_CLARIFICATION_SUBMIT_MODAL
-      : kycModalContent(args);
+      : kycModalContent(args, navigate);
 
   const sessionExpired = window.session_id !== window.sessionStorage.getItem('isNewNc');
 
@@ -256,7 +258,6 @@ const KYCStatusModal = ({
 };
 
 export default compose(
-  withRouter,
   connect(
     (state) => ({
       showProducts: state.home.instantActivations.showProductsModal,
