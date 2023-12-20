@@ -743,7 +743,9 @@ return array(
 
     'sbi_sku_v2_migration_experiment_id' => env('SBI_SKU_V2_MIGRATION_SPLITZ_EXP_ID'),
 
-    'route_to_offers_engine_experiment_id' => env('ROUTE_TO_OFFERS_ENGINE_EXP_ID'),
+    'offers_engine_dual_write_experiment_id' => env('OFFERS_ENGINE_DUAL_WRITE_EXP_ID'),
+
+    'offers_engine_fetch_offers_exp_id' => env('OFFERS_ENGINE_FETCH_OFFERS_EXP'),
 
     'fee_based_gating_exp_id' => env('FEE_BASED_GATING_EXP_ID'),
 
@@ -784,6 +786,6 @@ return array(
     'direct_send_mail_enabled' => env('DIRECT_SEND_MAIL_ENABLED'),
 
     'customer_async_transfer_experiment_id' => env('CUSTOMER_ASYNC_TRANSFER_EXPERIMENT_ID'),
-  
+
     'split_payment_flow_new' => env('SPLIT_PAYMENT_FLOW_NEW_EXPERIMENT_ID')
 );

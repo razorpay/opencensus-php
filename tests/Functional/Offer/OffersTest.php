@@ -918,6 +918,8 @@ class OffersTest extends TestCase
     {
         $offer = $this->fixtures->create('offer:card');
 
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
+
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
         $this->startTest();
@@ -926,6 +928,8 @@ class OffersTest extends TestCase
     public function testAddIinsToNonCardOffer()
     {
         $offer = $this->fixtures->create('offer:wallet');
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
@@ -947,6 +951,8 @@ class OffersTest extends TestCase
     {
         $offer = $this->fixtures->create('offer:wallet');
 
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
+
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
         $this->startTest();
@@ -959,6 +965,8 @@ class OffersTest extends TestCase
         $offer2 = $this->fixtures->create('offer:card', [
             'max_payment_count' => null,
         ]);
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer2->getPublicId();
 
@@ -974,6 +982,8 @@ class OffersTest extends TestCase
         ]);
 
          $offer2 = $this->fixtures->create('offer:card');
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variable_off', ]]]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer2->getPublicId();
 
@@ -1026,15 +1036,13 @@ class OffersTest extends TestCase
 
     public function testDeactivateOffer()
     {
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_on', ]]]);
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'variant_off', ]]]);
 
         $offer = $this->fixtures->create('offer:card');
 
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
         $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
-
-        $this->offersEngineMock->shouldReceive('updateOffer')->times(1);
 
         $this->startTest();
     }

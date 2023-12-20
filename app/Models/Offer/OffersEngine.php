@@ -3,8 +3,10 @@
 namespace RZP\Models\Offer;
 
 use App;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
@@ -78,7 +80,6 @@ class OffersEngine extends Base\Core
                 'exception' => $exception,
             ]);
         }
-
     }
 
     private function traceOffersDiff(Entity $offerApi, array $convertedOeResponse, $tenureDiscountMapAPI, $subscriptionInputAPI)
@@ -150,7 +151,7 @@ class OffersEngine extends Base\Core
             }
             else
             {
-                $state = Constants::UPDATE_STATE_DISABLED;
+                $state = Constants::STATE_DISABLED;
             }
 
             $offersEngineInput = [
@@ -224,10 +225,10 @@ class OffersEngine extends Base\Core
             Constants::TERMS_AND_CONDITIONS => strval($offer->getTerms()),
         ];
 
+        $metadata[Constants::ADVERTISER_ID] = 'rzp.merchant.' . $this->merchant->getId();
+
         // **offer_id**
         $metadata[Constants::OFFER_ID] = $offer->getId();
-
-        $metadata[Constants::ADVERTISER_ID] = 'rzp.merchant.' . $offer->getMerchantId();
 
         // getUser for merchant dashboard and getAdmin for admin dashboard
         if ($this->app['basicauth']->getUser() !== null)
@@ -620,7 +621,7 @@ class OffersEngine extends Base\Core
      * @return array
      * @throws Exception\BadRequestException
      */
-    private function convertOffersEngineResponseToEntityOffer(array $offersEngineResponse)
+    public function convertOffersEngineResponseToEntityOffer(array $offersEngineResponse)
     {
         $offer = new Entity();
 
@@ -642,7 +643,6 @@ class OffersEngine extends Base\Core
         $response = $this->mapOfferSpecAndSetAttributes($offersEngineResponse[Constants::OFFER][Constants::SPEC], $offer);
 
         // not present in oe
-        $offer[Entity::ACTIVE] = true;
         $offer[Entity::ERROR_MESSAGE] = Entity::DEFAULT_ERROR_MESSAGE;
 
         if (!empty($response[Constants::SUBSCRIPTION_FIELDS]))
@@ -661,13 +661,23 @@ class OffersEngine extends Base\Core
 
     private function mapOfferMetadata(array $offerMetadata, Entity $offer)
     {
-        $offer->setAttribute(Entity::ID, $offerMetadata[Constants::OFFER_ID]);
+        $offer->setAttribute(Entity::ID, Entity::verifyIdAndStripSign($offerMetadata[Constants::OFFER_ID]));
         $offer->setAttribute(Entity::NAME, $offerMetadata[Constants::NAME]);
         $offer->setAttribute(Entity::DISPLAY_TEXT, $offerMetadata[Constants::DESCRIPTION]);
         $offer->setAttribute(Entity::TERMS, $offerMetadata[Constants::TERMS][Constants::TERMS_AND_CONDITIONS]);
         $offer->setAttribute(Entity::MERCHANT_ID, str_replace('rzp.merchant.', '', $offerMetadata[Constants::ADVERTISER_ID]));
         $offer->setAttribute(Entity::STARTS_AT, $offerMetadata[Constants::SCHEDULES][Constants::STARTS_AT]);
         $offer->setAttribute(Entity::ENDS_AT, $offerMetadata[Constants::SCHEDULES][Constants::ENDS_AT]);
+
+        // set ACTIVE flag to false only if state is disabled, true for all
+        // other states as filtering for EXPIRED is on 'ends_at' not state
+        if ($offerMetadata[Constants::STATE] === Constants::STATE_DISABLED)
+        {
+            $offer->setAttribute(Entity::ACTIVE, false);
+        } else
+        {
+            $offer->setAttribute(Entity::ACTIVE, true);
+        }
     }
 
     private function mapChannelProperties(array $channelProperties, Entity $offer)
@@ -776,17 +786,21 @@ class OffersEngine extends Base\Core
         }
         else
         {
+            // set fields based on flat or percent discount, set others to null
             if ($availCondition[Constants::THEN][0][$discountType][0][Constants::FLAT_DISCOUNT] !== null)
             {
                 $offer->setAttribute(Entity::FLAT_CASHBACK, $availCondition[Constants::THEN][0][$discountType][0][Constants::FLAT_DISCOUNT]);
-            }
-            if ($availCondition[Constants::THEN][0][$discountType][0][Constants::PERCENTAGE_DISCOUNT] !== null)
+                $offer->setAttribute(Entity::PERCENT_RATE, null);
+                $offer->setAttribute(Entity::MAX_CASHBACK, null);
+            } else
             {
+                $offer->setAttribute(Entity::FLAT_CASHBACK, null);
                 $offer->setAttribute(Entity::PERCENT_RATE, $availCondition[Constants::THEN][0][$discountType][0][Constants::PERCENTAGE_DISCOUNT]);
-            }
-            if ($availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT] !== null)
-            {
-                $offer->setAttribute(Entity::MAX_CASHBACK, $availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT]);
+                if ($availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT] !== null) {
+                    $offer->setAttribute(Entity::MAX_CASHBACK, $availCondition[Constants::THEN][0][$discountType][0][Constants::MAX_DISCOUNT]);
+                } else {
+                    $offer->setAttribute(Entity::MAX_CASHBACK, null);
+                }
             }
         }
 
@@ -866,8 +880,8 @@ class OffersEngine extends Base\Core
         // linked_offer_ids(feature na), payment_count(not needed in OE), processing_time(not present in OE),
         // display_text, error_message, current_offer_usage, product_type
         $fieldsToCompare = [
-            Entity::MERCHANT_ID, Entity::NAME, Entity::PAYMENT_METHOD, Entity::PAYMENT_METHOD_TYPE, Entity::IINS,
-            Entity::BLOCK, Entity::TYPE, Entity::MIN_AMOUNT, Entity::MAX_CASHBACK,
+            Entity::ID, Entity::MERCHANT_ID, Entity::NAME, Entity::PAYMENT_METHOD, Entity::PAYMENT_METHOD_TYPE,
+            Entity::IINS, Entity::BLOCK, Entity::TYPE, Entity::MIN_AMOUNT, Entity::MAX_CASHBACK,
             Entity::FLAT_CASHBACK, Entity::EMI_SUBVENTION, Entity::EMI_DURATIONS,
             Entity::STARTS_AT, Entity::ENDS_AT, Entity::PAYMENT_NETWORK, Entity::ISSUER,
             Entity::MAX_OFFER_USAGE, Entity::DEFAULT_OFFER, Entity::MAX_ORDER_AMOUNT,

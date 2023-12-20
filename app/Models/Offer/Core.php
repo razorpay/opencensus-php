@@ -94,13 +94,17 @@ class Core extends Base\Core
 
         $this->verifyIdAndStripSignForLinkedOfferIds($input);
 
+        $offer->setExternal(false);
+
+        $offer->exists = true;
+
         $offer->edit($input);
 
         $this->repo->saveOrFail($offer);
 
         $this->traceNonExistingIins($offer, $merchant);
 
-        if ($this->shouldRouteToOffersEngine($merchant->getId()) === true) {
+        if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true) {
 
             $this->offersEngine->update($offer, $input);
 
@@ -133,6 +137,9 @@ class Core extends Base\Core
                     ]
                 );
 
+                // NOTE - not handling this as part of offers decomp as OE
+                // expects merchant_id always but this has just offer_id in request
+                // Even so, the update happens in OE as well so not an issue.
                 $offer = $this->repo->offer->findByPublicId($offerId);
 
                 $offer->deactivate();
@@ -560,6 +567,7 @@ class Core extends Base\Core
     }
 
     /**
+     * @deprecated
      * Checks if the offer ids provided in linked_offer_ids are valid and also
      * removes public sign from them
      *
@@ -691,6 +699,7 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($offer);
 
+                // not handling this as part of decomp reads as it is part of payment flow and involves usage updates
                 return $this->repo->offer->findByPublicIdAndMerchant($offer->getPublicId(), $this->merchant);
             });
 
@@ -864,6 +873,8 @@ class Core extends Base\Core
             );
         }
 
+        // NOTE - not handling this as part of offers decomp as this
+        // involves reading current offer usage and validates on same
         $baseOffer = $this->repo->offer->findByPublicId(Entity::getSignedId($offerId));
         $checker = new Checker($baseOffer, false);
 
@@ -988,7 +999,7 @@ class Core extends Base\Core
 
         $this->traceNonExistingIins($offer, $merchant);
 
-        if ($this->shouldRouteToOffersEngine($merchant->getId()) === true)
+        if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true)
         {
             $this->offersEngine->createOffer($offer, $subscriptionInput ?? []);
         }
@@ -996,14 +1007,14 @@ class Core extends Base\Core
         return $offer;
     }
 
-    private function shouldRouteToOffersEngine(string $merchantId): bool
+    public function shouldRouteToOffersEngine(string $merchantId, $experiment): bool
     {
         try
         {
             $properties = [
-                "id" => $merchantId,
-                "experiment_id" => $this->app['config']->get('app.route_to_offers_engine_experiment_id'),
-                'request_data' => json_encode(
+                "id"            => $merchantId,
+                "experiment_id" => $this->app['config']->get($experiment),
+                "request_data"  => json_encode(
                     [
                         'merchant_id' => $merchantId,
                     ]),

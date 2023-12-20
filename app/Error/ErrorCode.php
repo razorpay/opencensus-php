@@ -899,6 +899,8 @@ class ErrorCode
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                          = 'BAD_REQUEST_ORDER_DOES_NOT_EXIST';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                           = 'BAD_REQUEST_ORDER_INVALID_OFFER';
     const BAD_REQUEST_OFFERS_ENGINE_RESPONSE_EMPTY                                  = 'BAD_REQUEST_OFFERS_ENGINE_RESPONSE_EMPTY';
+    const SERVER_ERROR_OFFERS_ENGINE_MISSING_OFFERS                                 = 'SERVER_ERROR_OFFERS_ENGINE_MISSING_OFFERS';
+
     const BAD_REQUEST_AVAIL_RULE_GROUP_NOT_FOUND                                    = 'BAD_REQUEST_AVAIL_RULE_GROUP_NOT_FOUND';
     const BAD_REQUEST_BENEFIT_TYPE_NOT_FOUND                                        = 'BAD_REQUEST_BENEFIT_TYPE_NOT_FOUND';
     const BAD_REQUEST_ORDER_MULTIPLE_OFFERS                                         = 'BAD_REQUEST_ORDER_MULTIPLE_OFFERS';

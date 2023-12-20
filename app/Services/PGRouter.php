@@ -794,9 +794,23 @@ class PGRouter
             if (isset($entityOffers) and
                 (count($entityOffers) > 0)) {
                 $order->offers = new PublicCollection();
+                $offers = [];
 
-                foreach ($entityOffers as $entityOffer) {
-                    $offer = Offer\Entity::findOrFail($entityOffer->offer_id);
+                // get offer_ids
+                $offerIDs = [];
+                foreach ($entityOffers as $entityOffer)
+                {
+                    $offerIDs[] = $entityOffer->offer_id;
+                }
+
+                $offersEngineRepo = new Offer\Repository();
+
+                // fetches normal offers from OE and limited offers from API db
+                $offers = $offersEngineRepo->findManyFromOE($offerIDs, $order->getMerchantId());
+
+                // append each offer to order
+                foreach ($offers as $offer)
+                {
                     $order->offers->push($offer);
                 }
             }

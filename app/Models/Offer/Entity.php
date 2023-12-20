@@ -7,12 +7,13 @@ use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Emi;
 use RZP\Models\Base;
+use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
 
 class Entity extends Base\PublicEntity
 {
-    use AsvGetAttribute;
+    use AsvGetAttribute, ExternalOwner;
 
     const NAME                = 'name';
     const MERCHANT_ID         = 'merchant_id';

@@ -15,4 +15,18 @@ final class Metric
     const OFFERS_ENGINE_UPDATE_OFFER_RESPONSE_NIL          = 'offers_engine_update_offer_response_nil';
 
     const OFFERS_ENGINE_UPDATE_OFFER_FAIL          = 'offers_engine_update_offer_fail';
+
+    const OFFERS_ENGINE_FETCH_BY_ID_RESPONSE_NIL          = 'offers_engine_fetch_by_id_response_nil';
+
+    const OFFERS_ENGINE_FETCH_BY_ID_FAIL          = 'offers_engine_fetch_by_id_fail';
+
+    const OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFER_BY_ID_FAIL          = 'offers_engine_fetch_subscription_offer_by_id_fail';
+
+    const OFFERS_ENGINE_FETCH_ACTIVE_NONSUBSCRIPTION_OFFERS_FAIL          = 'offers_engine_fetch_active_nonsubscription_offes_fail';
+
+    const OFFERS_ENGINE_FETCH_SUBSCRIPTION_OFFERS_FAIL         = 'offers_engine_fetch_subscription_offers_fail';
+
+    const OFFERS_ENGINE_FETCH_OFFERS_FAIL          = 'offers_engine_fetch_offers_fail';
+
+    const OFFERS_ENGINE_FETCH_DEFAULT_OFFERS_FAIL          = 'offers_engine_fetch_default_offers_fail';
 }

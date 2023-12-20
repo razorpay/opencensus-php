@@ -7,12 +7,29 @@ use DB;
 use Illuminate\Database\Eloquent\Builder;
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Base\Traits\ExternalOffersRepo;
+use RZP\Models\Base\Traits\ExternalCore;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
 use RZP\Models\Order\ProductType;
 
 class Repository extends Base\Repository
 {
+    use ExternalOffersRepo, ExternalCore;
+
     protected $entity = 'offer';
+
+    protected OffersEngine $offersEngine;
+
+    protected Core $core;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->offersEngine = new OffersEngine();
+
+        $this->core = new Core();
+    }
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
@@ -48,6 +65,14 @@ class Repository extends Base\Repository
      */
     public function fetchAllActiveNonSubscriptionOffers(string $merchantId): Base\PublicCollection
     {
+        $oeResponse = $this->fetchAllActiveNonSubscriptionOffersFromOE($merchantId);
+
+        // if response is empty fallback to API query
+        if (empty($oeResponse) === false)
+        {
+            return $oeResponse;
+        }
+
         $now = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
@@ -62,6 +87,7 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    // NOTE - not picked as part of offers decomp
     public function fetchExistingOffers(Entity $newOffer, string $merchantId)
     {
         $query = $this->buildQuery($newOffer, $merchantId);
@@ -74,6 +100,9 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    /* @deprecated
+     NOTE - no such offers in prod currently, flow is deprecated
+     * */
     public function fetchOffersForCheckout(array $merchantIds)
     {
         $now = Carbon::now()->getTimestamp();
@@ -87,8 +116,17 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchOffersSubscription($paymentMethods = null, $merchantId, $offerId = null): Base\PublicCollection
+    // need to check this one
+    public function fetchOffersSubscription($merchantId, $paymentMethods = null, $offerId = null): Base\PublicCollection
     {
+        $oeResponse =  $this->fetchOffersSubscriptionFromOE($paymentMethods, $offerId, $merchantId);
+
+        // if response is empty fallback to API query
+        if ($oeResponse !== new Base\PublicCollection())
+        {
+            return $oeResponse ;
+        }
+
         $now = Carbon::now()->getTimestamp();
 
         $offerIdCol = $this->dbColumn(Entity::ID);
@@ -123,6 +161,14 @@ class Repository extends Base\Repository
 
     public function fetchSubscriptionOfferById(string $offerId, bool $fetchActive = true, bool $fetchExpired = false)
     {
+        $oeResponse = $this->fetchSubscriptionOfferByIdFromOE($offerId, $this->merchant->getId(), $fetchActive, $fetchExpired);
+
+        // if response is empty fallback to API query
+        if (empty($oeResponse) === false)
+        {
+            return $oeResponse;
+        }
+
         $now = Carbon::now()->getTimestamp();
 
         $offerIdCol = $this->dbColumn(Entity::ID);
@@ -153,6 +199,7 @@ class Repository extends Base\Repository
         return $offerQuery->first();
     }
 
+    // NOTE - flow is deprecated, deactivate flow is not exposed
     public function fetchActiveExpiredOffers()
     {
         $now = Carbon::now()->getTimestamp();
@@ -165,6 +212,13 @@ class Repository extends Base\Repository
 
     public function fetchAllDefaultOffersForMerchant(string $merchantId)
     {
+        $oeResponse = $this->fetchAllDefaultOffersForMerchantFromOE($merchantId);
+
+        if (empty($oeResponse) === false)
+        {
+            return $oeResponse;
+        }
+
         return $this->newQuery()
             ->where(Entity::DEFAULT_OFFER, '=', true)
             ->where(Entity::ACTIVE, '=', true)

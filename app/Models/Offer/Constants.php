@@ -75,6 +75,10 @@ final class Constants
 
     const OFFER = 'offer';
 
+    const OFFERS = 'offers';
+
+    const OFFER_PUBLISHERS = 'offer_publishers';
+
     const CHANNEL_RZP_CHECKOUT = 'CHANNEL_RZP_CHECKOUT';
     const BENEFICIARY_TYPE_SELF = 'BENEFICIARY_TYPE_SELF';
     const PUBLISH = 'publish';
@@ -140,5 +144,11 @@ final class Constants
 
     const UPDATE_STATE_CREATED = 'STATE_PUBLISHED';
 
-    const UPDATE_STATE_DISABLED = 'STATE_DEACTIVATED';
+    const STATE_DISABLED = 'STATE_DEACTIVATED';
+
+    const STATE_CREATED = 'STATE_CREATED';
+
+    const CREATE_OFFER_DUAL_WRITE_EXP = 'app.offers_engine_dual_write_experiment_id';
+
+    const OFFERS_ENGINE_FETCH_EXP = 'app.offers_engine_fetch_offers_exp_id';
 }

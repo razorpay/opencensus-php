@@ -109,6 +109,7 @@ class Service extends Base\Service
 
         $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
+
         $offer = $this->core->update($offer, $input);
 
         return $offer->toArrayProxy();
@@ -118,7 +119,8 @@ class Service extends Base\Service
     {
         $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        if ($offer->getProductType() === ProductType::SUBSCRIPTION) {
+        if ($offer->getProductType() === ProductType::SUBSCRIPTION)
+        {
             $offer = $this->repo->offer->fetchSubscriptionOfferById($offer->getId(), false, true);
         }
 
@@ -127,6 +129,9 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
+        // NOTE - not handling this as part of offers decomp as we are not migrating
+        // all the offers to OE, only active offers are being migrated but dashboard
+        // needs to show all the offers created by the merchant.
         $offers = $this->repo->offer->fetch($input, $this->merchant->getId());
 
         return $offers->toArrayProxy();
@@ -136,7 +141,7 @@ class Service extends Base\Service
     {
         $paymentMethods = $input['payment_methods'] ?? ['card', 'upi'];
 
-        $offers = $this->repo->offer->fetchOffersSubscription($paymentMethods, $this->merchant->getId());
+        $offers = $this->repo->offer->fetchOffersSubscription($this->merchant->getId(), $paymentMethods);
 
         return $offers->toArrayProxy();
     }
@@ -222,12 +227,15 @@ class Service extends Base\Service
 
         Entity::verifyIdAndStripSignMultiple($offerIds);
 
-        $offers = $this->repo->offer->findMany($offerIds);
-        //iterating over all offers
-        foreach ($offers as $offer) {
+        // fetches normal offers from OE and limited offers from API db
+        $offers = $this->repo->offer->findManyFromOE($offerIds, $this->merchant->getId());
+        // iterating over all offers
+        foreach ($offers as $offer)
+        {
             $checker = new Checker($offer, $verbose);
             //validating whether offer is applicable for payment or not
-            if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $orderEntity) === true) {
+            if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $orderEntity) === true)
+            {
                 //adding the offer public id to return list
                 $applicableOffers[] = $offer->getPublicId();
             }

@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\Offer\Constants;
 use RZP\Models\Offer\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
@@ -34,6 +35,8 @@ class OffersEngine
 
     protected $merchantId;
 
+    private $offersEngine;
+
     // Headers
     const ACCEPT            = 'Accept';
     const CONTENT_TYPE      = 'Content-Type';
@@ -50,6 +53,10 @@ class OffersEngine
     const OffersEngineUpdateOffer = 'v1/offers/%s';
 
     const OffersEngineAdminUpdateOffer = 'v1/admin/offers/%s';
+
+    const OffersEngineGetOfferByID = 'v1/offers/%s';
+
+    const OffersEngineGetOffers = 'v1/offers';
 
     // Requests/responses will be logged by default or if value for path mentioned here is true.
     const REQUEST_LOGGER_MAP = [];
@@ -80,6 +87,8 @@ class OffersEngine
         $this->secret = $this->config['offers_engine_password'][$this->mode];
 
         $this->auth = app('basicauth');
+
+        $this->offersEngine = new \RZP\Models\Offer\OffersEngine();
 
         $this->setHeaders();
     }
@@ -126,12 +135,16 @@ class OffersEngine
         $headers[self::ACCEPT]        = 'application/json';
         $headers[self::CONTENT_TYPE]  = 'application/json';
         $headers[self::X_TASK_ID]     = $this->app['request']->getTaskId();
+
         if ($this->auth->isAdminAuth() === false)
         {
             $headers[self::X_PASSPORT_JWT_V1] = $this->auth->getPassportJwt($this->baseUrl);
         }
+
         $headers['X-User-Id'] = $this->merchantId;
+
         $headers['X-User-Type'] = 'advertiser';
+
         $headers['X-Api-Decomp'] = 'shadow';
 
         $this->headers = $headers;
@@ -161,6 +174,7 @@ class OffersEngine
             $parsedResponse = $this->parseAndReturnResponse($response);
 
             $logResponse = $this->shouldLogResponse($endpoint, $request['method']);
+
             if($logResponse === true)
             {
                 $this->trace->info(TraceCode::OFFERS_ENGINE_RESPONSE,
@@ -176,17 +190,18 @@ class OffersEngine
             }
             else if ($response->status_code >= 400)
             {
+                $traceCode = TraceCode::OFFERS_ENGINE_REQUEST_FAILURE;
                 // don't throw error if update call doesn't have an offer
-                if ($parsedResponse['message'] !== "SERVER_ERROR_DB_FETCH_ERROR")
+                if ($parsedResponse['message'] === "SERVER_ERROR_DB_FETCH_ERROR")
                 {
-                    throw new ServerErrorException(
-                        TraceCode::OFFERS_ENGINE_REQUEST_FAILURE,
-                        ErrorCode::SERVER_ERROR,
-                        $parsedResponse
-                    );
+                    $traceCode = TraceCode::OFFERS_ENGINE_ID_NOT_FOUND;
                 }
-                // return empty response for update call offer unavailable
-                $parsedResponse = [];
+
+                throw new ServerErrorException(
+                    $traceCode,
+                    ErrorCode::SERVER_ERROR,
+                    $parsedResponse
+                );
             }
         }
         catch(\Throwable $e)
@@ -197,7 +212,8 @@ class OffersEngine
                 Trace::ERROR,
                 TraceCode::OFFERS_ENGINE_REQUEST_FAILURE,
                 [
-                    'data' => $e->getMessage()
+                    'data' => $e->getMessage(),
+                    'url'  => $request['url'],
                 ]);
 
             throw $e;
@@ -223,6 +239,8 @@ class OffersEngine
         if($logRequest === true)
         {
             $traceRequest = $request;
+
+            $traceRequest['mode'] = $this->mode;
 
             unset($traceRequest['options']['auth']);
 
@@ -317,5 +335,116 @@ class OffersEngine
         $endpoint = sprintf(self::OffersEngineAdminUpdateOffer, $id);
 
         return $this->sendRequest($endpoint, Requests::PATCH, $input);
+    }
+
+    /**
+     * @param string $id
+     * @param string $merchantId
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     * @throws ServerErrorException
+     * @throws \Throwable
+     */
+    public function fetch(string $entity, string $id, string $merchantId, array $input)
+    {
+        $this->merchantId = 'rzp.merchant.' . $merchantId;
+
+        $endpoint = sprintf(self::OffersEngineGetOfferByID, $id);
+
+        $endpoint = $endpoint . '?publisher_id=' . $this->merchantId;
+
+        $response = $this->sendRequest($endpoint, Requests::GET);
+
+        if (empty($response) === false)
+        {
+            // GetOfferByID has response key offer_publishers
+            $response[Constants::PUBLISH] = $response[Constants::OFFER_PUBLISHERS][0];
+
+            return $this->offersEngine->convertOffersEngineResponseToEntityOffer($response)[Constants::OFFER];
+        }
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, [
+            'id'         => $id,
+            'merchant_id' => $this->merchantId
+        ]);
+
+    }
+
+    /**
+     * @param string $merchantId
+     * @param array $ids
+     * @param array $input
+     * @return array
+     * @throws \Throwable
+     * @throws ServerErrorException
+     * @throws BadRequestException
+     */
+    public function fetchBulk(string $merchantId, array $ids = [], array $input = [])
+    {
+        $this->merchantId = 'rzp.merchant.' . $merchantId;
+
+        $input['publisher_id'] = $this->merchantId;
+
+        // set pages if no ids in input
+        if (sizeof($ids) === 0)
+        {
+            $input['page_size'] = 200;
+            $input['page'] = 1;
+        }
+
+        $endpoint = self::OffersEngineGetOffers;
+
+        if (empty($input) === false)
+        {
+            $endpoint .= "?".http_build_query($input);
+        }
+
+        if (empty($ids) === false)
+        {
+            foreach ($ids as $id)
+            {
+                $endpoint .= '&offer_ids=' . 'offer_' . $id;
+            }
+        }
+
+        $response = $this->sendRequest($endpoint, Requests::GET);
+
+        if (empty($response) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY, null, [
+                'ids'         => $ids,
+                'merchant_id'  => $this->merchantId,
+                'input'       => $input
+            ]);
+        }
+
+        $convertedOffers = [];
+
+        // for each offer<>offer_publisher pair, convert into API offer and filter based on input
+        foreach ($response[Constants::OFFERS] as $offer)
+        {
+            $convertedResponse = [];
+            $filter = false;
+            foreach ($response[Constants::OFFER_PUBLISHERS] as $offerPublisher)
+            {
+                if ('offer_' . $offerPublisher[Constants::OFFER_ID] === $offer[Constants::METADATA][Constants::OFFER_ID])
+                {
+                    $filter = true;
+                    $convertedResponse = $this->offersEngine->convertOffersEngineResponseToEntityOffer([
+                        Constants::OFFER => $offer,
+                        Constants::PUBLISH => $offerPublisher,
+                    ]);
+                    // no need to check other offer_publishers
+                    break;
+                }
+            }
+            if ($filter === true)
+            {
+                $convertedOffers[] = $convertedResponse[Constants::OFFER];
+            }
+
+        }
+        return $convertedOffers;
     }
 }
