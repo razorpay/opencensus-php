@@ -26,6 +26,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\BankingAccountService\Constants;
+use RZP\Models\BankingAccountStatement\Details\AccountType;
 use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -63,7 +64,7 @@ class BankingAccountServiceTest extends TestCase
         $this->sfLeadsTimeStamp = (int) $this->config['applications.banking_account_service.rbl_leads_sf_time_filter'];
     }
 
-    public function testCreateBankingEntities($bank = 'icici')
+    public function testCreateBankingEntities($bank = 'icici', $accountType = AccountType::DIRECT)
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
@@ -90,6 +91,17 @@ class BankingAccountServiceTest extends TestCase
             ]
         ];
 
+        if ($accountType == AccountType::RX_WALLET)
+        {
+            $dataToReplace['request']['content']['account_type'] = $accountType;
+
+            $dataToReplace['request']['content'][Constants::SOURCE_ACCOUNT_DETAILS] = [
+                'account_number'    => '12345678903833',
+                'ifsc'              => 'ICIC0000001',
+                'beneficiary_name'  => 'Dummy Name',
+            ];
+        }
+
         $timeBeforeActivation = Carbon::now(Timezone::IST);
 
         $response = $this->startTest($dataToReplace);
@@ -100,7 +112,7 @@ class BankingAccountServiceTest extends TestCase
                                       [
                                               'merchant_id'    => '10000000000000',
                                               'channel'        => $bank,
-                                              'account_type'   => 'direct',
+                                              'account_type'   => $accountType,
                                               'account_number' => '12345678903833',
                                           ]);
 
@@ -132,6 +144,11 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals('dummy-id', $merchantDetail->getBasBusinessId());
 
         return $response;
+    }
+
+    public function testCreateBankingEntitiesForRxWallet($bank = 'yesbank')
+    {
+        $this->testCreateBankingEntities($bank, AccountType::RX_WALLET);
     }
 
     public function createMerchantAttribute(string $merchant_id, string $product, string $group, string $type, string $value)

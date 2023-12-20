@@ -1394,7 +1394,7 @@ class Core extends Base\Core
 
             $balanceInfo = $this->getBalanceAttributesToSave($bankingAccount);
 
-            $balance = (new Merchant\Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
+            $balance = (new Merchant\Balance\Core)->createBalanceForAccountType($merchant, $balanceInfo, $mode);
 
             // Creating a contact of type 'rzp_fees' and a fund account related to it. To be used for fees recovery.
             $this->createRZPFeesContactAndFundAccount($merchant, $balance->getChannel());

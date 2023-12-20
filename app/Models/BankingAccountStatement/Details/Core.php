@@ -30,6 +30,9 @@ class Core extends Base\Core
 
         $channel = $input[Entity::CHANNEL];
 
+        // Todo: __pobo__ To be handled by payouts team
+        $accountType = $input[Entity::ACCOUNT_TYPE];
+
         /* @var Entity $basDetailEntity */
         $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
 

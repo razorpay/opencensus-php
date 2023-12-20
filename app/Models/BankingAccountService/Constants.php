@@ -164,6 +164,10 @@ class Constants
 
     const PARTNER_BANK                  = 'partner_bank';
 
+    const ACCOUNT_TYPE                  = 'account_type';
+
+    const SOURCE_ACCOUNT_DETAILS        = 'source_account_details';
+
     const SEARCH_LEADS_API_TO_BAS_QUERY_PARAM_MAPPING = [
         'merchant_business_name' => 'merchant_name',
         'status'                 => 'application_status',

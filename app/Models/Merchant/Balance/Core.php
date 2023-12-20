@@ -264,7 +264,7 @@ class Core extends Base\Core
         return $balance;
     }
 
-    public function createBalanceForCurrentAccount(Merchant\Entity $merchant, array $input, string $mode)
+    public function createBalanceForAccountType(Merchant\Entity $merchant, array $input, string $mode)
     {
         $content = [
             Entity::TYPE     => Product::BANKING,

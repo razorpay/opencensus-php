@@ -125,13 +125,23 @@ class Core extends Base\Core
         {
             $merchant = $this->repo->merchant->findOrFail($merchantId);
 
+            // rx_wallet is sent in input as account_type, else assume direct
+            $accountType = $input[Constants::ACCOUNT_TYPE] ?? Merchant\Balance\AccountType::DIRECT;
+
             $attributes = [
-                Merchant\Balance\Entity::ACCOUNT_TYPE        => Merchant\Balance\AccountType::DIRECT,
+                Merchant\Balance\Entity::ACCOUNT_TYPE        => $accountType,
                 Merchant\Balance\Entity::CHANNEL             => $input[Constants::CHANNEL],
                 Merchant\Balance\Entity::ACCOUNT_NUMBER      => $input[Constants::ACCOUNT_NUMBER],
             ];
 
             list($balance, $createdNow) = $this->createBalance($merchant, $attributes);
+
+            $sourceAccountDetails = array_pull($input, Constants::SOURCE_ACCOUNT_DETAILS);
+
+            if (!empty($sourceAccountDetails))
+            {
+                // Todo: __pobo__ To be handled by payouts team
+            }
 
             $basDetailEntity = $this->createBankingAccountStatementDetails($merchantId, $input, $balance->getId());
 
@@ -184,7 +194,7 @@ class Core extends Base\Core
         {
             $mode = $this->app['rzp.mode'];
 
-            $balance = (new Merchant\Balance\Core)->createBalanceForCurrentAccount($merchant, $attributes, $mode);
+            $balance = (new Merchant\Balance\Core)->createBalanceForAccountType($merchant, $attributes, $mode);
             return [$balance, true];
         }
 

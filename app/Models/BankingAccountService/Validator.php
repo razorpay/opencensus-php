@@ -21,9 +21,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Constants::CHANNEL        => 'required|string|custom',
-        Constants::ACCOUNT_NUMBER => 'required|string',
-        Constants::BAS_BUSINESS_ID  => 'sometimes|string'
+        Constants::CHANNEL                  => 'required|string|custom',
+        Constants::ACCOUNT_NUMBER           => 'required|string',
+        Constants::BAS_BUSINESS_ID          => 'sometimes|string',
+        Constants::ACCOUNT_TYPE             => 'sometimes|string',
+        Constants::SOURCE_ACCOUNT_DETAILS   => 'sometimes|array',
     ];
 
     protected static $businessRules = [
