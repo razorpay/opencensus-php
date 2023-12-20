@@ -10511,6 +10511,8 @@ class Core extends Base\Core
     {
         $partnerDetail = $partner->merchantDetail;
 
+        $merchantDetail = $merchant->merchantDetail;
+
         $consentDetails = [
             DEConstants::DOCUMENTS_DETAIL => [
                 [
@@ -10522,6 +10524,8 @@ class Core extends Base\Core
             Consent\Entity::ENTITY_ID     => $partner->getId(),
             Consent\Entity::ENTITY_TYPE   => DEConstants::PARTNER,
             DEConstants::CONSENT          => true,
+            DEConstants::OWNER_NAME       => $merchantDetail->getBusinessName() ?? 'NA',
+            DEConstants::SIGNATORY_NAME   => $merchantDetail->getPromoterPanName() ?? 'NA',
             ConsentConstant::PARTNER_ID   => $partner->getId(),
             ConsentConstant::PARTNER_NAME => $partnerDetail->getBusinessName() ?? $partner->getName(),
             ConsentConstant::EMAIL_PARAMS      => [

@@ -254,4 +254,47 @@ return [
             ],
         ],
     ],
+
+    'expectedPayloadForPhantomAggregatorConsentGeneration' => [
+        'client_details' => [
+            'platform' => 'pg'
+        ],
+        'owner_details' => [
+            'owner_id' => '10000000000000',
+            'ip_address' => '10.0.123.123',
+            'signatory_name' => 'NA',
+            'owner_name' => 'NA',
+            'contact_number' => null,
+            'email' => 'test@razorpay.com',
+            'time_zone' => 'IST',
+        ],
+        'documents_detail' => [
+            [
+                'type' => 'App Policy',
+                'template_id' => 'BbImW2mEOqWID5',
+            ],
+        ],
+        'send_email' => true,
+        'send_sms' => false,
+        'email_details' => [
+            'owner_id' => '10000000000000',
+            'owner_type' => 'merchant',
+            'org_id' => '100000razorpay',
+            'template_name' => 'email.partnerships.consent.tnc_app_policy_aggregator_partner',
+            'template_namespace' => 'partnerships',
+            'service' => 'api',
+            'from' => [
+                'address' => 'no-reply@razorpay.com',
+                'name' => 'Razorpay',
+            ],
+            'params' => [
+                'partner_business_name' => 'Amazon Inc',
+            ],
+            'to' => [
+                'address' => 'test@razorpay.com',
+                'name' => null,
+            ],
+            'subject' => 'Razorpay: App Policy',
+        ],
+    ],
 ];

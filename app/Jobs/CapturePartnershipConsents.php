@@ -191,6 +191,8 @@ class CapturePartnershipConsents extends Job
                 $legalDocumentsInput[DEConstants::IP_ADDRESS] = $input[DEConstants::IP_ADDRESS];
             }
 
+            $this->updateOwnerDetails($legalDocumentsInput, $input);
+
             $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
             $processor->setMerchant($merchant);
@@ -303,5 +305,21 @@ class CapturePartnershipConsents extends Job
         }
 
         return $notificationDetails;
+    }
+
+    private function updateOwnerDetails(& $ownerDetails, $input): void
+    {
+        $ownerFields = [
+            DEConstants::OWNER_NAME,
+            DEConstants::SIGNATORY_NAME,
+        ];
+
+        foreach ($ownerFields as $field)
+        {
+            if (empty($input[$field]) === false)
+            {
+                $ownerDetails[$field] = $input[$field];
+            }
+        }
     }
 }

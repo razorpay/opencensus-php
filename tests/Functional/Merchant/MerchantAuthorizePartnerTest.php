@@ -2,6 +2,7 @@
 
 namespace Functional\Merchant;
 
+use Mockery;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -265,4 +266,45 @@ class MerchantAuthorizePartnerTest extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testSaveMerchantAuthorizationWhenPromoterPanNameIsEmpty()
+    {
+        $testData = &$this->testData['testSaveMerchantAuthorizationWhenMerchantConsentIsPresentForAnotherPartner'];
+
+        list($partner, $app) = $this->createPartnerAndApplication();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->fixtures->edit('merchant_detail', $partner->getId(), ['business_name' => 'Amazon Inc']);
+
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => '10000000000000', 'promoter_pan_name' => null]);
+
+        $this->ba->proxyAuth();
+
+        $bvsMock = $this->mockCreateLegalDocument();
+
+        $bvsMock->expects($this->once())->method('createLegalDocumentV2')->with($this->callback(function ($requestPayload) {
+            $expectedDataWithoutTimestamp = $this->testData['expectedPayloadForPhantomAggregatorConsentGeneration'];
+
+            $actualPayload = $this->removeAcceptanceTimestamp($requestPayload);
+
+            return $actualPayload == $expectedDataWithoutTimestamp;
+
+        }), $this->isInstanceOf(\RZP\Models\Merchant\Entity::class));
+
+        $this->startTest($testData);
+    }
+
+    private function removeAcceptanceTimestamp($array)
+    {
+        foreach ($array as $key => &$value) {
+            if ($key === 'acceptance_timestamp') {
+                unset($array[$key]);
+            } elseif (is_array($value)) {
+                $value = $this->removeAcceptanceTimestamp($value);
+            }
+        }
+        return $array;
+    }
+
 }
