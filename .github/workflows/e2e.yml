@@ -15,7 +15,7 @@ on:
 
 env:
   APP_NAME: dashboard
-  HOME: /actions-runner/_work
+  HOME: /runner/_work
   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
   NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
   DOCKER_USERNAME: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -32,7 +32,7 @@ jobs:
       (github.ref == 'refs/heads/master' && !github.event.comment.body) ||
       (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
     timeout-minutes: 60
-    runs-on: [cache-3]
+    runs-on: [non-api-premium]
     steps:
       - name: Fetch data of comment's associated PR
         uses: xt0rted/pull-request-comment-branch@v2
