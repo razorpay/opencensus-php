@@ -83,6 +83,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const PGOS_FETCH_ALL_DEVICE_ORDER        = 'merchant_pos_fetch_all_order';
     const MERCHANT_POS_PAYMENT_CALLBACK      = 'merchant_pos_payment_callback';
     const MERCHANT_POS_FETCH_LATEST_ORDER    = 'merchant_pos_fetch_latest_order';
+
     const MERCHANT_FETCH_POS_ACTIVATION_FLOW = 'merchant_fetch_pos_activation_flow';
     const PGOS_FETCH_PGOS_ACTIVATION_STATUS  = 'merchant_pgos_fetch_activation_status';
     const PGOS_UPDATE_PGOS_ACTIVATION_STATUS = 'merchant_pgos_update_activation_status';

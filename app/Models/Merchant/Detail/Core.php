@@ -4214,121 +4214,129 @@ class Core extends Base\Core
     {
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        unset($input[Entity::ACTIVATION_STATUS]);
+        try {
 
-        $merchantPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
+            unset($input[Entity::ACTIVATION_STATUS]);
 
-        if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::UNDER_REVIEW)
-        {
-            if (($merchantPosActivationStatus === Status::REJECTED) and
-                (($this->app['basicauth']->isAdminAuth()) === false))
+            $merchantPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
+
+            if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::UNDER_REVIEW)
             {
-                throw new BadRequestValidationFailureException(
-                    'Rejected merchants are not allowed to submit activation form');
-            }
-        }
-
-        $merchantDetails->getValidator()
-                        ->validatePOSActivationStatusChange(
-                            $merchantPosActivationStatus,
-                            $input[DEConstants::POS_ACTIVATION_STATUS]);
-
-        $this->trace->info(TraceCode::MERCHANT_UPDATE_POS_ACTIVATION_STATUS, [
-            'input'       => $input,
-            'merchant_id' => $merchant->getId()
-        ]);
-
-        $newMerchantDetails = clone $merchantDetails;
-
-        $oldMerchantDetails = clone $merchantDetails;
-
-        $rejectionReasons = [];
-
-        if (empty($input[Entity::REJECTION_REASONS]) === false)
-        {
-            $rejectionReasons = $input[Entity::REJECTION_REASONS];
-
-            unset($input[Entity::REJECTION_REASONS]);
-        }
-
-        $this->repo->transactionOnLiveAndTest(function() use (
-            $merchantDetails,
-            $oldMerchantDetails,
-            $newMerchantDetails,
-            $input, $merchant,
-            $merchantPosActivationStatus
-        ) {
-            $oldMerchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $input[DEConstants::POS_ACTIVATION_STATUS];
-            if (($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB))
-            {
-
-                $this->pgosProxyController->handlePGOSProxyRequests('pos_merchant_config', ["merchant_id" => $merchant->getId()], $merchant, true);
-
-                $this->app['workflow']
-                    ->setEntity($merchantDetails->getEntity())
-                    ->setOriginal($merchantDetails)
-                    ->setDirty($oldMerchantDetails)
-                    ->setRouteParams([Entity::ID => $merchant->getId()])
-                    ->setInput($input)
-                    ->setPermission(Permission\Name::POS_EDIT_ACTIVATE_MERCHANT);
-
-                $this->app['workflow']
-                    ->handle();
-            }
-
-            if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::REJECTED)
-            {
-                $this->app['workflow']
-                    ->setEntity($merchantDetails->getEntity())
-                    ->setOriginal($merchantDetails)
-                    ->setDirty($oldMerchantDetails)
-                    ->setRouteParams([Entity::ID => $merchant->getId()])
-                    ->setInput($input)
-                    ->setPermission(Permission\Name::POS_EDIT_ACTIVATE_MERCHANT);
-
-                $this->sendRejectionEmail($merchant);
-            }
-
-            if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
-            {
-                $merchantId = $newMerchantDetails->getMerchantId();
-
-                $posClarificationDetails = (new ClarificationDetailService())->getClarificationDetail($merchantDetails->getMerchantId());
-                if (empty($posClarificationDetails) === false)
+                if (($merchantPosActivationStatus === Status::REJECTED) and
+                    (($this->app['basicauth']->isAdminAuth()) === false))
                 {
-                    $this->trace->info(TraceCode::NC_EMAIL_INITIATED, [
-                        'merchant_id'                => $merchantId,
-                        'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
-                        'pos_activation_status'      => $merchantDetails->getActivationStatus()
-                    ]);
-
-                    $merchantDetails->setLocked(false);
-
-                    if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
-                        (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
-                    {
-                        $this->sendNeedsClarificationEmail($merchant);
-                    }
-
-                    $this->trace->info(TraceCode::POS_NC_EMAIL_SENT, [
-                        'merchant_id'           => $merchantId,
-                        'pos_activation_status' => $merchantPosActivationStatus,
-                    ]);
+                    throw new BadRequestValidationFailureException(
+                        'Rejected merchants are not allowed to submit activation form');
                 }
             }
 
-            $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS]);
+            $merchantDetails->getValidator()
+                            ->validatePOSActivationStatusChange(
+                                $merchantPosActivationStatus,
+                                $input[DEConstants::POS_ACTIVATION_STATUS]);
 
-            $stateData = [
-                "pos_state"       => $input[DEConstants::POS_ACTIVATION_STATUS],
-                "merchant_id"     => $merchantDetails->getMerchantId(),
-                "onboarding_type" => "pos"
-            ];
+            $this->trace->info(TraceCode::MERCHANT_UPDATE_POS_ACTIVATION_STATUS, [
+                'input'       => $input,
+                'merchant_id' => $merchant->getId()
+            ]);
 
-            $this->pgosProxyController->handlePGOSProxyRequests('update_action_state', $stateData, $merchant, true);
+            $newMerchantDetails = clone $merchantDetails;
 
+            $oldMerchantDetails = clone $merchantDetails;
+
+            $rejectionReasons = [];
+
+            if (empty($input[Entity::REJECTION_REASONS]) === false)
+            {
+                $rejectionReasons = $input[Entity::REJECTION_REASONS];
+
+                unset($input[Entity::REJECTION_REASONS]);
+            }
+
+            $this->repo->transactionOnLiveAndTest(function() use (
+                $merchantDetails,
+                $oldMerchantDetails,
+                $newMerchantDetails,
+                $input, $merchant,
+                $merchantPosActivationStatus
+            ) {
+                $oldMerchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $input[DEConstants::POS_ACTIVATION_STATUS];
+                if (($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB))
+                {
+
+                    $this->pgosProxyController->handlePGOSProxyRequests('pos_merchant_config', ["merchant_id" => $merchant->getId()], $merchant, true);
+
+                    $this->app['workflow']
+                        ->setEntity($merchantDetails->getEntity())
+                        ->setOriginal($merchantDetails)
+                        ->setDirty($oldMerchantDetails)
+                        ->setRouteParams([Entity::ID => $merchant->getId()])
+                        ->setInput($input)
+                        ->setPermission(Permission\Name::POS_EDIT_ACTIVATE_MERCHANT);
+
+                    $this->app['workflow']
+                        ->handle();
+                }
+
+                if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::REJECTED)
+                {
+                    $this->app['workflow']
+                        ->setEntity($merchantDetails->getEntity())
+                        ->setOriginal($merchantDetails)
+                        ->setDirty($oldMerchantDetails)
+                        ->setRouteParams([Entity::ID => $merchant->getId()])
+                        ->setInput($input)
+                        ->setPermission(Permission\Name::POS_EDIT_ACTIVATE_MERCHANT);
+
+                    $this->sendRejectionEmail($merchant);
+                }
+
+                if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
+                {
+                    $merchantId = $newMerchantDetails->getMerchantId();
+
+                    $posClarificationDetails = (new ClarificationDetailService())->getClarificationDetail($merchantDetails->getMerchantId());
+                    if (empty($posClarificationDetails) === false)
+                    {
+                        $this->trace->info(TraceCode::NC_EMAIL_INITIATED, [
+                            'merchant_id'                => $merchantId,
+                            'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
+                            'pos_activation_status'      => $merchantDetails->getActivationStatus()
+                        ]);
+
+                        $merchantDetails->setLocked(false);
+
+                        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
+                            (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
+                        {
+                            $this->sendNeedsClarificationEmail($merchant);
+                        }
+
+                        $this->trace->info(TraceCode::POS_NC_EMAIL_SENT, [
+                            'merchant_id'           => $merchantId,
+                            'pos_activation_status' => $merchantPosActivationStatus,
+                        ]);
+                    }
+                }
+
+                $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS]);
+
+                $stateData = [
+                    "pos_state"       => $input[DEConstants::POS_ACTIVATION_STATUS],
+                    "merchant_id"     => $merchantDetails->getMerchantId(),
+                    "onboarding_type" => "pos"
+                ];
+                $this->pgosProxyController->handlePGOSProxyRequests('update_action_state', $stateData, $merchant, true);
+
+                return $merchantDetails;
         });
 
+        }
+        catch (\Throwable $e) {
+            $this->trace->error(TraceCode::ERROR_PARSING_RESPONSE, [
+                'ErrorMessage' => $e->getMessage()
+            ]);
+        }
         return $merchantDetails;
     }
 
@@ -11203,13 +11211,24 @@ class Core extends Base\Core
 
     private function getPOSStatusChangeLogs(Merchant\Entity $merchant)
     {
-        $input["merchant_id"] = $merchant->getId();
+        $states = [];
 
-        $input["onboarding_type"] = DEConstants::ONBOARDING_TYPE_POS;
+        try {
+            $input["merchant_id"] = $merchant->getId();
 
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_state_logs',$input, $merchant, true);
+            $input["onboarding_type"] = DEConstants::ONBOARDING_TYPE_POS;
 
-        return $response["states"];
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_state_logs',$input, $merchant, true);
+
+            $states = $response["states"];
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::ERROR_PARSING_RESPONSE, ["error" => $ex]);
+        }
+
+        return $states;
     }
 
     private function unlockL3FormIfApplicable(Merchant\Entity $merchant)
@@ -11352,7 +11371,7 @@ class Core extends Base\Core
             "account.account_detail.edd_verification_status"
         ];
 
-        try 
+        try
         {
             $account = (new AccountSDKWrapper())->getAccountByIDAndFieldMask($input['merchant_id'], $fieldList);
 
