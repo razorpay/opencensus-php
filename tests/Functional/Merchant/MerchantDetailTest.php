@@ -1171,7 +1171,7 @@ class MerchantDetailTest extends OAuthTestCase
         //verify email has been sent
 
         Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
-            $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_payments_not_live_reminder', $mail->getTemplate());
 
             return true;
         });
@@ -1250,7 +1250,7 @@ class MerchantDetailTest extends OAuthTestCase
 
             // check the NC url sent in email
             $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/onboarding/needs-clarification?applicationId=' . $app->getId(), $data['ncUrl']);
-            $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_payments_not_live_reminder', $mail->getTemplate());
 
             return true;
         });
@@ -1328,7 +1328,7 @@ class MerchantDetailTest extends OAuthTestCase
 
             // check the NC url sent in email
             $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/onboarding/needs-clarification?partnerId=' . $partner->getId(), $data['ncUrl']);
-            $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_payments_not_live_reminder', $mail->getTemplate());
 
             return true;
         });
@@ -1398,7 +1398,7 @@ class MerchantDetailTest extends OAuthTestCase
 
             // check the NC url sent in email
             $this->assertEquals(env('EASY_DASHBOARD_URL') . '/onboarding/needs-clarification', $data['ncUrl']);
-            $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_payments_not_live_reminder', $mail->getTemplate());
 
             return true;
         });
@@ -1489,7 +1489,7 @@ class MerchantDetailTest extends OAuthTestCase
 
             // check the NC url sent in email
             $this->assertEquals(env('EASY_DASHBOARD_URL') . '/sub-merchant/onboarding/needs-clarification?partnerId=' . $partner2->getId(), $data['ncUrl']);
-            $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_payments_not_live_reminder', $mail->getTemplate());
 
             return true;
         });

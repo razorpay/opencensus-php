@@ -577,6 +577,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         {
             case self::SAVE_MERCHANT_BMC_RESPONSE:
                 (new WebsiteService())->updateCommonWebsiteQuestions($body, true);
+                break;
         }
 
     }
@@ -587,12 +588,15 @@ class MerchantOnboardingProxyController extends BaseProxyController
         {
             case self::PAYMENT_ORDER_WEBHOOK:
                 (new Merchant\Detail\Core())->preProcessGatingRequest($body);
+                break;
 
             case self::PAYMENT_ORDER_CREATE:
                 (new Merchant\Detail\Core())->preProcessCreateOrderRequest($body);
+                break;
 
             case self::MERCHANT_CATEGORIES_V3:
                 (new Merchant\Detail\Core())->preProcessFetchCategoriesData($body);
+                break;
         }
     }
 
@@ -626,6 +630,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
                         'error'     => $e->getMessage()
                     ]);
                 }
+
+                break;
             case self::MERCHANT_GET_L2_DYNAMIC_CONFIGS:
                 try
                 {
@@ -644,8 +650,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
                         'error'     => $e->getMessage()
                     ]);
                 }
+
+                break;
             case self::PAYMENT_ORDER_WEBHOOK:
                $response['validated'] = (new Merchant\Detail\Core())->isGatingWebhookRequest($body);
+
+               break;
         }
 
         return $response;
