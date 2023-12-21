@@ -2,13 +2,12 @@ export const BANNER_HEADING = {
   pending: {
     theme: 'warning',
     mobile: {
-      title: 'Status on UPI payment method to be updated in 3-5 business days.',
+      title: 'You are live!',
       message: 'Start accepting payments across multiple methods now!',
     },
     desktop: {
-      title: 'UPI activation in-progress',
-      message:
-        'We’re actively working on enabling UPI payment for your business. We’ll update in 3-5 business days.',
+      title: 'You are live!',
+      message: 'Start accepting payments across multiple methods now!',
     },
   },
   success: {
