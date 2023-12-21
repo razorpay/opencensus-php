@@ -227,6 +227,8 @@ class CardVault extends Base\Core
                     'message'       => 'Failed to fetch alt id data'
                 ]
             );
+
+            throw $e;
         }
     }
 

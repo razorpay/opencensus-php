@@ -6,6 +6,8 @@ use Illuminate\Support\Str;
 use Route;
 
 use RZP\Exception;
+use RZP\Diag\EventCode;
+use RZP\Exception\BaseException;
 use RZP\Trace\Tracer;
 use RZP\Jobs\ParAsyncTokenisationJob;
 use RZP\Jobs\SavedCardTokenisationJob;
@@ -735,15 +737,33 @@ class Core extends Base\Core
     public function fetchAltIdData(array $fetchAltIdRequest, array $input, array & $gatewayInput, array & $terminalGatewayInput, $payment)
     {
         $response = null;
-        try {
+
+        $customProperties = [
+            'track_id' => $this->app['request']->getTaskId()
+        ];
+
+        try
+        {
+            $this->app['diag']->trackPaymentEventV2(EventCode::GUEST_CHECKOUT_REQUEST_INITIATED, $payment, null, [], $customProperties);
+
             $cardVault = (new Card\CardVault);
 
             $response = $cardVault->fetchAltIdData($fetchAltIdRequest);
+
             $this->trace->info(
                 TraceCode::VAULT_ALT_ID_RESPONSE,
                 [
                     'alt_id_response'        => $response,
                 ]);
+
+            if(isset($response['token']) && isset($response['alt_id']['value']))
+            {
+                $customProperties['alt_id_status'] = true;
+                $customProperties['alt_id_value'] = $response['alt_id']['value'];
+
+                $this->app['diag']->trackPaymentEventV2(EventCode::GUEST_CHECKOUT_RESPONSE_RECEIVED, $payment, null, [], $customProperties);
+            }
+
         }
         catch (\Throwable $e)
         {
@@ -752,6 +772,21 @@ class Core extends Base\Core
                 Trace::CRITICAL,
                 TraceCode::VAULT_CREATE_ALT_ID_DATA_FAILED
             );
+
+            $customProperties['alt_id_status'] = false;
+
+            $exceptionData = [];
+
+            if ($e instanceof BaseException)
+            {
+                $exceptionData = $e->getData();
+            }
+
+            $customProperties['internal_error_code']       = $exceptionData['data']['error']['internal_error_code'] ?? $e->getCode();
+            $customProperties['gateway_error_code']        = $exceptionData['data']['error']['gateway_error_code'] ?? '';
+            $customProperties['gateway_error_description'] = $exceptionData['data']['error']['gateway_error_description'] ?? '';
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::GUEST_CHECKOUT_RESPONSE_RECEIVED, $payment, $e, [], $customProperties);
         }
 
         // need to update this as we use terminalGatewayInput during authentication

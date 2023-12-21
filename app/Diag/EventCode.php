@@ -71,6 +71,16 @@ class EventCode
         'name'  => 'payment.riskcheck.processed'
     ];
 
+    const GUEST_CHECKOUT_REQUEST_INITIATED              = [
+        'group' => 'alt_id',
+        'name'  => 'guest_checkout.request.sent'
+    ];
+
+    const GUEST_CHECKOUT_RESPONSE_RECEIVED              = [
+        'group' => 'alt_id',
+        'name'  => 'guest_checkout.response.received'
+    ];
+
     const PAYMENT_TERMINAL_SELECTION_INITIATED          = [
         'group' => 'internal_checks',
         'name'  => 'payment.terminal.selection.initiated'
@@ -1470,7 +1480,7 @@ class EventCode
         'group' => 'upi_recurring',
         'name'  => 'upi_recurring.promo_intent_auth_link.clicked',
     ];
-    
+
     const PARTNERSHIPS_CAPITAL_INVITE_EXISTING_SUBMERCHANT_LINKED  = [
         'group' => 'onboarding',
         'name'  => 'partnerships.capital.bulk.existing_submerchant_linked',
