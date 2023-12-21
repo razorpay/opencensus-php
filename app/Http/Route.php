@@ -472,6 +472,7 @@ class Route
         'merchant_fetch_bank_account'              => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
         'merchant_generate_test_bank_acnt'         => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
         'merchant_create_terminal'                 => ['post',     'merchants/{id}/terminals',                       'MerchantController@postCreateTerminal'                             ],
+        'merchant_create_terminal_internal_app'    => ['post',     'merchants/{id}/terminals/create/internal',       'MerchantController@postCreateTerminal'                             ],
         'merchant_validate_create_terminal_v3'     => ['post',     'merchants/{id}/terminals/validatev3',            'MerchantController@postValidateCreateTerminalV3'                   ],
         'merchant_create_terminal_v3'              => ['post',     'merchants/{id}/terminals/v3',                    'MerchantController@postCreateTerminalV3'                           ],
         'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminalWithId',                      ],
@@ -5399,6 +5400,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_create_terminal_internal_app',
         'internal_get_merchant_key',
         'transfer_reversal_transactions_create',
         'irctc_settlement_batch_service',
@@ -16709,6 +16711,14 @@ class Route
             'collect_info_merchant_details_internal',
             'methods_update_merchants_internal',
         ],
+
+        'pos_app' => [
+            'merchant_create_terminal_internal_app',
+            'merchant_bank_account_create',
+            'merchant_schedule_bulk',
+            'webhook_create'
+        ],
+
         'spinnaker' => [
             'throttle_create_config_spinnaker',
             'add_verify_disabled_gateway',

@@ -1389,6 +1389,10 @@ return [
         'merchant_associate_terminals_from_ts' => env('MERCHANT_ASSOCIATE_TERMINALS_FETCHED_FROM_TERMINALS_SERVICE',0),
     ],
 
+    'pos_app' => [
+      'secret' => env('POS_APP_SECRET'),
+    ],
+
     'financial_data_service' => [
         'url'           => env('APP_FINANCIAL_DATA_SERVICE_URL'),
         'username'      => 'api',
