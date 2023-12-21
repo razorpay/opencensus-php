@@ -1099,4 +1099,74 @@ class BharatQrPaymentTest extends TestCase
         $request['content']['PayerAmount'] = 200;
         $this->processDuplicateUpiQrPayment($request);
     }
+
+    protected function enableRazorXTreatmentForBlockingQRrPayment()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+               ->andReturnUsing(function(string $id, string $featureFlag, string $mode) {
+                   if ($featureFlag === (RazorxTreatment::QR_CODE_BLOCK_PAYMENT))
+                   {
+                       return 'on';
+                   }
+
+                   return 'control';
+               });
+    }
+    public function testQrPaymentProcessForNonCompliantMerchant()
+    {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->enableRazorXTreatmentForBlockingQRrPayment();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        // For VPA type receiver as the shared sharp terminal is not seeded
+//        $this->fixtures->create('terminal:vpa_shared_terminal');
+        $this->fixtures->create('terminal:shared_bank_account_terminal');
+
+        $this->ba->directAuth();
+
+        $request = $this->testData['testUpiQrPaymentProcess'];
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId;
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($bharatQr['expected'], false);
+
+        //Check RRN capture
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
 }

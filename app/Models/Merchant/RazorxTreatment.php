@@ -994,5 +994,8 @@ final class RazorxTreatment
      */
     const STOP_SENDING_ORDER_DATA_FROM_API = 'stop_sending_order_data_from_api';
 
+    const QR_CODE_BLOCK_PAYMENT = 'qr_code_block_payment';
+
     const ALLOW_EMAIL_OPTIONAL_FOR_PARTNER = 'allow_email_optional_for_partner';
+
 }

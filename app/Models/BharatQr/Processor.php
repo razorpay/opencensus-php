@@ -14,6 +14,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Currency\Currency;
 use RZP\Models\QrCode\Entity as QrCode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends VirtualAccount\Processor
@@ -213,6 +214,24 @@ class Processor extends VirtualAccount\Processor
         $virtualAccount = $this->repo
                                ->virtual_account
                                ->getActiveVirtualAccountFromQrCodeId($qrCode->getId());
+
+        if ($virtualAccount === null)
+        {
+            return null;
+        }
+
+        $variantForFeature = $this->app->razorx->getTreatment($virtualAccount->merchant->getId(),
+                                                              RazorxTreatment::QR_CODE_BLOCK_PAYMENT, $this->mode);
+
+        if (strtolower($variantForFeature) === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $virtualAccount = null;
+
+            $this->trace->info(TraceCode::BHARAT_QR_PAYMENT_BLOCK_FOR_COMPLIANCE,
+                               [
+                                   'qr_code_id' => $qrCode->getId()
+                               ]);
+        }
 
         return $virtualAccount;
     }
