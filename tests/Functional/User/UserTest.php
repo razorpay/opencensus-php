@@ -10,7 +10,6 @@ use Queue;
 use Config;
 use Mockery;
 use Carbon\Carbon;
-
 use RZP\Constants\Table;
 use RZP\Models\User\BankingRole;
 use RZP\Http\UserRolePermissionsMap;
@@ -38,6 +37,7 @@ use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Services\Mock\AuthToken;
 use RZP\Services\VendorPortal\Service as VendorPortalService;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Error\PublicErrorCode;
@@ -68,6 +68,7 @@ use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
 use RZP\Services\Dcs\Features\Service as DCSService;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -2425,6 +2426,121 @@ class UserTest extends TestCase
         return $this->startTest();
     }
 
+    public function testVerifyCapitalReferralDuringMobileLoginAsyncMerchantAccessMap()
+    {
+        Queue::fake([PartnerSubmerchantLinkingReferralJob::class]);
+
+        $dummyPartnerId = 'NonExistent123';
+
+        $testData = $this->testData['testVerifyCapitalReferralDuringMobileLogin'];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->enableRazorXTreatmentForRazorX();
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['verifyOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->user->createUserForMerchant($merchant->getId(), [
+            'id'    => "FL0nl7kME8j3Dd",
+            'contact_mobile' => '9012345678',
+            'contact_mobile_verified'  => true
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant->getId(),
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $dummyReferralLink = $this->fixtures->create('referrals', ["product" => 'capital', 'merchant_id' => $dummyPartnerId]);
+
+        $this->mockCapitalPartnershipSplitzExperiment($dummyPartnerId);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        $merchantAccessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'merchant_id' => $merchant->getId(),
+            ],
+            'test'
+        );
+
+        $this->assertNull($merchantAccessMap);
+
+        Queue::assertPushed(
+            PartnerSubmerchantLinkingReferralJob::class,
+            function(PartnerSubmerchantLinkingReferralJob $job) use($merchant, $dummyReferralLink) {
+                $this->assertEquals($merchant->getId(), $job->getMerchantId());
+                $this->assertEquals(
+                    [
+                        'request_product'  => Product::BANKING,
+                        'referral_code'    => $dummyReferralLink['ref_code'],
+                        'referral_product' => Product::CAPITAL,
+                        'merchant_id'      => $dummyReferralLink['merchant_id'],
+                    ],
+                    $job->getReferralInput()
+                );
+                $this->assertFalse($job->getIsSignupFlow());
+                return true;
+            }
+        );
+
+        $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'reseller']);
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller'], true);
+
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+                                  ->makePartial()
+                                  ->shouldAllowMockingProtectedMethods();
+        $this->app->instance('losService', $losServiceMock);
+        $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $referralLink = $this->fixtures->create(
+            'referrals',
+            [
+                "product" => 'capital',
+                "ref_code" => 'tesladummycode',
+            ],
+        );
+
+        (new PartnerSubmerchantLinkingReferralJob(
+            EnvMode::TEST,
+            $merchant->getId(),
+            [
+                'request_product'  => Product::BANKING,
+                'referral_code'    => $referralLink['ref_code'],
+                'referral_product' => Product::CAPITAL,
+                'merchant_id'      => $referralLink['merchant_id'],
+            ],
+            false
+        ))->handle();
+
+        $merchantAccessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'merchant_id' => $merchant->getId(),
+            ],
+            'test'
+        );
+
+        $this->assertSame($merchant->getId(), $merchantAccessMap['merchant_id']);
+        $this->assertSame('10000000000000', $merchantAccessMap['entity_owner_id']);
+
+        $this->assertContains('Ref-' . '10000000000000', $merchant->tagNames());
+    }
+
     public function testVerifyCapitalReferralDuringMobileLogin()
     {
         $testData = & $this->testData[__FUNCTION__];
@@ -3907,6 +4023,116 @@ class UserTest extends TestCase
         $this->assertEmpty($merchantAccessMap);
 
         $this->assertNotContains('Ref-' . '10000000000000', $merchant->tagNames());
+    }
+
+    public function testCapitalReferralWithOauthLoginAsyncMerchantAccessMap()
+    {
+        Queue::fake([PartnerSubmerchantLinkingReferralJob::class]);
+
+        $dummyPartnerId = 'NonExistent123';
+
+        $testData = $this->testData['testCapitalReferralWithOauthLogin'];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->user->createUserForMerchant($merchant->getId(), [
+            'id'    => "FL0nl7kME8j3Dd",
+            'email' => 'hello123@gmail.com',
+            'contact_mobile' => '9876543210',
+            'confirm_token'  => null,
+            'signup_via_email' => 1,
+            'password' => 'hello123'
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'        => $merchant->getId(),
+            'business_name'      => $merchant['name'],
+            'contact_name'       => $merchant['name'],
+            'business_type'      => '1',
+            'transaction_volume' => '1',
+            'contact_mobile'     => '9999999999'
+        ]);
+
+        $dummyReferralLink = $this->fixtures->create('referrals', ["product" => 'capital', 'merchant_id' => $dummyPartnerId]);
+
+        $this->mockCapitalPartnershipSplitzExperiment($dummyPartnerId);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        Queue::assertPushed(
+            PartnerSubmerchantLinkingReferralJob::class,
+            function(PartnerSubmerchantLinkingReferralJob $job) use($merchant, $dummyReferralLink) {
+                $this->assertEquals($merchant->getId(), $job->getMerchantId());
+                $this->assertEquals(
+                    [
+                        'request_product'  => Product::BANKING,
+                        'referral_code'    => $dummyReferralLink['ref_code'],
+                        'referral_product' => Product::CAPITAL,
+                        'merchant_id'      => $dummyReferralLink['merchant_id'],
+                    ],
+                    $job->getReferralInput()
+                );
+                $this->assertFalse($job->getIsSignupFlow());
+                return true;
+            }
+        );
+
+        $merchantAccessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'merchant_id' => $merchant->getId(),
+            ]
+        );
+
+        $this->assertNull($merchantAccessMap);
+
+        $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'reseller']);
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller'], true);
+
+        $referralLink = $this->fixtures->create(
+            'referrals',
+            [
+                "product" => 'capital',
+                "ref_code" => 'tesladummycode',
+            ],
+        );
+
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+                                  ->makePartial()
+                                  ->shouldAllowMockingProtectedMethods();
+        $this->app->instance('losService', $losServiceMock);
+        $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        (new PartnerSubmerchantLinkingReferralJob(
+            EnvMode::TEST,
+            $merchant->getId(),
+            [
+                'request_product'  => Product::BANKING,
+                'referral_code'    => $referralLink['ref_code'],
+                'referral_product' => Product::CAPITAL,
+                'merchant_id'      => $referralLink['merchant_id'],
+            ],
+            false
+        ))->handle();
+
+        $merchantAccessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'merchant_id' => $merchant->getId(),
+            ],
+            'test'
+        );
+
+        $this->assertSame($merchant->getId(), $merchantAccessMap['merchant_id']);
+        $this->assertSame('10000000000000', $merchantAccessMap['entity_owner_id']);
+
+        $this->assertContains('Ref-' . '10000000000000', $merchant->tagNames());
     }
 
     public function testCapitalReferralWithOauthLogin()
@@ -10240,6 +10466,121 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testCapitalReferralFlowDuringLoginAsyncMerchantAccessMap()
+    {
+        Queue::fake([PartnerSubmerchantLinkingReferralJob::class]);
+
+        $dummyPartnerId = 'NonExistent123';
+
+        $testData = $this->testData['testCapitalReferralFlowDuringLogin'];
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->user->createUserForMerchant($merchant->getId(), [
+            'id'    => "FL0nl7kME8j3Dd",
+            'email' => 'hello123@gmail.com',
+            'confirm_token'  => null,
+            'signup_via_email' => 1,
+            'password' => 'hello123'
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant->getId(),
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $dummyReferralLink = $this->fixtures->create('referrals', ["product" => 'capital', 'merchant_id' => $dummyPartnerId]);
+
+        $this->mockCapitalPartnershipSplitzExperiment($dummyPartnerId);
+
+        $testData['request']['content'] = [
+            'email'                 => 'hello123@gmail.com',
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'referral_code'         => 'teslacomikejzc'
+        ];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        $merchantAccessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'merchant_id' => $merchant->getId(),
+            ],
+            'test'
+        );
+
+        $this->assertNull($merchantAccessMap);
+
+        Queue::assertPushed(
+            PartnerSubmerchantLinkingReferralJob::class,
+            function(PartnerSubmerchantLinkingReferralJob $job) use($merchant, $dummyReferralLink) {
+                $this->assertEquals($merchant->getId(), $job->getMerchantId());
+                $this->assertEquals(
+                    [
+                        'request_product'  => Product::BANKING,
+                        'referral_code'    => $dummyReferralLink['ref_code'],
+                        'referral_product' => Product::CAPITAL,
+                        'merchant_id'      => $dummyReferralLink['merchant_id'],
+                    ],
+                    $job->getReferralInput()
+                );
+                $this->assertFalse($job->getIsSignupFlow());
+                return true;
+            }
+        );
+
+        $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'reseller']);
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller'], true);
+
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+                                  ->makePartial()
+                                  ->shouldAllowMockingProtectedMethods();
+        $this->app->instance('losService', $losServiceMock);
+        $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $referralLink = $this->fixtures->create(
+            'referrals',
+            [
+                "product" => 'capital',
+                "ref_code" => 'tesladummycode',
+            ],
+        );
+
+        (new PartnerSubmerchantLinkingReferralJob(
+            EnvMode::TEST,
+            $merchant->getId(),
+            [
+                'request_product'  => Product::BANKING,
+                'referral_code'    => $referralLink['ref_code'],
+                'referral_product' => Product::CAPITAL,
+                'merchant_id'      => $referralLink['merchant_id'],
+            ],
+            false
+        ))->handle();
+
+        $merchantAccessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'merchant_id' => $merchant->getId(),
+            ],
+            'test'
+        );
+
+        $this->assertSame($merchant->getId(), $merchantAccessMap['merchant_id']);
+        $this->assertSame('10000000000000', $merchantAccessMap['entity_owner_id']);
+
+        $this->assertContains('Ref-' . '10000000000000', $merchant->tagNames());
+
+    }
+
     public function testCapitalReferralFlowDuringLogin()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -10569,11 +10910,11 @@ class UserTest extends TestCase
         $this->assertNotContains('Ref-' . '10000000000000', $merchant->tagNames());
     }
 
-    public function mockCapitalPartnershipSplitzExperiment(): void
+    public function mockCapitalPartnershipSplitzExperiment(string $partnerId = '10000000000000'): void
     {
         $input = [
             "experiment_id" => "L0rynez0HhIXHb",
-            "id" => '10000000000000',
+            "id" => $partnerId,
         ];
 
         $output = [

@@ -1941,8 +1941,6 @@ final class Constants
 
     const PHANTOM_ONBOARDING              = 'isPhantomOnboarding';
 
-    const PHANTOM_SIGNUP                  = 'phantom_signup';
-
     const PARTNER_ACCESS  = 'partner_access';
     const PARTNER_NAME    = 'partner_name';
 

@@ -24,11 +24,11 @@ trait PartnerTrait
 {
     use OAuthTrait;
 
-    public function mockCapitalPartnershipSplitzExperiment(): void
+    public function mockCapitalPartnershipSplitzExperiment(string $partnerId = self::DEFAULT_MERCHANT_ID): void
     {
         $input = [
             "experiment_id" => "L0rynez0HhIXHb",
-            "id" => self::DEFAULT_MERCHANT_ID,
+            "id" => $partnerId,
         ];
 
         $output = [

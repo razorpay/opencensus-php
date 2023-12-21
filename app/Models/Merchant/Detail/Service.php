@@ -66,6 +66,7 @@ use RZP\Models\Merchant\POSSubMerchantUtility;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\BankingAccount as BankingAccount;
 use RZP\Models\Workflow\Action as WorkflowAction;
+use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
 use RZP\Models\Merchant\CapitalSubmerchantUtility;
 use \RZP\Models\State\Entity as StateChangeEntity;
 use \WpOrg\Requests\Exception as RequestsException;
@@ -2239,7 +2240,7 @@ class Service extends Base\Service
 
                 $referralInput = $this->getReferralInput($referral);
 
-                $this->applyReferralPartner($subMerchant, $referralInput);
+                $this->applyReferralPartnerWithRetry($subMerchant, $referralInput);
 
             }
 
@@ -2335,15 +2336,16 @@ class Service extends Base\Service
     }
 
     /**
-     * This function consumes merchant & referral code and based on referral product, it makes merchant a submerchant and take necessary actions.
-     * For capital product, we also create LOC applications if it doesnt exist already.
+     * This function consumes merchant & referral code and based on referral product, it makes merchant a submerchant
+     * and take necessary actions. For capital product, we also create LOC applications if it doesnt exist already.
      *
-     * @param string $refCode
+     * @param string          $refCode
      * @param Merchant\Entity $merchant
      *
      * @return void
+     * @throws \Exception
      */
-    public function applyReferralIfApplicable(string $refCode, Merchant\Entity $merchant)
+    public function applyReferralIfApplicable(string $refCode, Merchant\Entity $merchant): void
     {
         $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
 
@@ -2356,34 +2358,87 @@ class Service extends Base\Service
         {
             case Product::CAPITAL:
 
-                $flag = (new CapitalSubmerchantUtility())->isCapitalReferralCodeApplicable($merchant, $referral);
+                $applyCapitalReferral = (new CapitalSubmerchantUtility())
+                    ->isCapitalReferralCodeApplicable($merchant, $referral);
 
                 $this->trace->info(TraceCode::PARTNER_REFERRAL_FOR_CAPITAL, [
                     'merchant_id' => $merchant->getId(),
                     'partner_id'  => $referral->getMerchantId(),
-                    'refer_flag'  => $flag
+                    'refer_flag'  => $applyCapitalReferral
                 ]);
 
-                if($flag === true)
+                if($applyCapitalReferral === true)
                 {
-                    $accessMaps = $this->repo->merchant_access_map->fetchAccessMapForMerchantIdAndOwnerId($merchant->getId(), $referral->getMerchantId());
+                    $accessMaps = $this->repo->merchant_access_map->fetchAccessMapForMerchantIdAndOwnerId(
+                        $merchant->getId(),
+                        $referral->getMerchantId(),
+                    );
 
                     $referralInput = $this->getReferralInput($referral);
 
-                    // Note: Passing $isSignUpFlow as false, since the parent function applyReferralIfApplicable() is always called for signIn flows only
-                    $this->applyReferralPartner($merchant, $referralInput, false);
+                    $utmParams = [];
+                    (new User\Service)->addUtmParameters($utmParams);
 
-                    $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
-
-                    //Disable commissions only if merchant was not a sub-merchant for the partner before referral
-                    if($accessMaps->isEmpty() === true)
+                    if (
+                        (($utmParams['final_page'] ?? null) === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE) or
+                        (($utmParams['website'] ?? null) === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE)
+                    )
                     {
-                        (new CapitalSubmerchantUtility())->createPartnerConfigForExistingMerchantsInvitedForLOC($partner, $merchant);
+                        $referralInput['request_product'] = Product::BANKING;
                     }
 
-                    (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent($partner, $merchant->getId(), PartnerConstants::REFERRAL);
+                    try
+                    {
+                        $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
 
-                    $this->createCapitalApplicationIfApplicable($merchant, $referral);
+                        // this transaction is here because we want the async retry to be triggered
+                        // even if the partner<>sbm passes but creating the capital application fails
+                        $this->repo->transactionOnLiveAndTest(
+                            function () use ($merchant, $partner, $referral, $referralInput, $accessMaps)
+                            {
+                                // Note: Passing $isSignUpFlow as false, since the parent function
+                                // applyReferralIfApplicable() is always called for signIn flows only
+                                $this->applyReferralPartner($merchant, $referralInput, false);
+
+                                //Disable commissions only if merchant was not a sub-merchant
+                                // for the partner before referral
+                                if($accessMaps->isEmpty() === true)
+                                {
+                                    (new CapitalSubmerchantUtility())
+                                        ->createPartnerConfigForExistingMerchantsInvitedForLOC($partner, $merchant);
+                                }
+
+                                (new CapitalSubmerchantUtility())
+                                    ->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent(
+                                        $partner,
+                                        $merchant->getId(),
+                                        PartnerConstants::REFERRAL,
+                                    );
+
+                                $this->createCapitalApplicationIfApplicable($merchant, $referral);
+                            }
+                        );
+                    }
+                    catch (Throwable $throwable)
+                    {
+                        $this->trace->traceException(
+                            $throwable,
+                            Trace::ERROR,
+                            TraceCode::REFERRAL_MERCHANT_ACCESS_MAP_SYNC_FAILURE,
+                            [
+                                'merchant_id'    => $merchant->getId(),
+                                'referral_input' => $referralInput,
+                                'message'        => 'Error occurred while applying referral code during login',
+                            ]
+                        );
+
+                        PartnerSubmerchantLinkingReferralJob::dispatch(
+                            $this->mode,
+                            $merchant->getId(),
+                            $referralInput,
+                            false,
+                        );
+                    }
                 }
                 break;
 
@@ -2397,14 +2452,14 @@ class Service extends Base\Service
      * the referred product is Capital and the capital partnership experiment is enabled for
      * the referring partner.
      *
-     * @param Merchant\Entity $subMerchant
+     * @param Merchant\Entity     $subMerchant
      * @param ReferralEntity|null $referral
      *
      * @return void
      * @throws BadRequestException
      * @throws BadRequestValidationFailureException
      */
-    private function createCapitalApplicationIfApplicable(Merchant\Entity $subMerchant, Referral\Entity $referral = null): void
+    public function createCapitalApplicationIfApplicable(Merchant\Entity $subMerchant, Referral\Entity $referral = null): void
     {
         // If referral code is present, but there is no referral entity associated against it
         // we need not create an application for submerchant.
@@ -2496,7 +2551,7 @@ class Service extends Base\Service
      * @param array  $input
      * @param bool   $isSignUpFlow
      */
-    public function applyReferralPartner($subMerchant, array $input, bool $isSignUpFlow = true)
+    public function applyReferralPartner($subMerchant, array $input, bool $isSignUpFlow = true): void
     {
         $refCode         = $input['referral_code'];
         $requestProduct  = $input['request_product'] ?? Product::PRIMARY;
@@ -2505,12 +2560,17 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::MERCHANT_REFERRAL_APPLY_REQUEST, $input);
 
-        $isCapitalLocSignupPageVisited = false;
-
         $actualReferralProduct = null;
 
         if ($referralProduct == Product::CAPITAL)
         {
+            $isCapitalPartnershipExpEnabled = (new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($partnerId);
+
+            if ($isCapitalPartnershipExpEnabled === false)
+            {
+                return;
+            }
+
             $actualReferralProduct = $referralProduct;
 
             $referralProduct = Product::BANKING;
@@ -2525,19 +2585,6 @@ class Service extends Base\Service
                     "submerchant_id"          => $subMerchant->getId(),
                 ]
             );
-
-            $isCapitalPartnershipExpEnabled = (new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($partnerId);
-
-            if ($isCapitalPartnershipExpEnabled === false)
-            {
-                return;
-            }
-
-            $utmParams = [];
-            (new User\Service)->addUtmParameters($utmParams);
-
-            $isCapitalLocSignupPageVisited = ((($utmParams['final_page'] ?? null) === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE)
-                or (($utmParams['website'] ?? null) === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE));
         }
 
         if($referralProduct == Product::POS)
@@ -2547,7 +2594,10 @@ class Service extends Base\Service
             $referralProduct = Product::PRIMARY;
         }
 
-        if ($referralProduct === $requestProduct or ($actualReferralProduct === Product::CAPITAL and $isCapitalLocSignupPageVisited === true))
+        if (
+            $referralProduct === $requestProduct or
+            ($actualReferralProduct === Product::CAPITAL and $requestProduct === Product::BANKING)
+        )
         {
             $mappingInput = [
                 'partner_id'     => $partnerId,
@@ -2563,6 +2613,49 @@ class Service extends Base\Service
             }
         }
 
+    }
+
+    /**
+     * applyReferralPartnerWithRetry will link a submerchant to a partner
+     * by first trying it synchronously.
+     * If that fails, a job is queued to retry it asynchronously
+     * @param Merchant\Entity $subMerchant
+     * @param array           $referralInput
+     * @param bool            $isSignUpFlow
+     *
+     * @return void
+     */
+    public function applyReferralPartnerWithRetry(
+        Merchant\Entity $subMerchant,
+        array $referralInput,
+        bool $isSignUpFlow = true,
+    ): void
+    {
+        try
+        {
+            $this->applyReferralPartner($subMerchant, $referralInput, $isSignUpFlow);
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->trace->traceException(
+                $throwable,
+                Trace::ERROR,
+                TraceCode::REFERRAL_MERCHANT_ACCESS_MAP_SYNC_FAILURE,
+                [
+                    'merchant_id'    => $subMerchant->getId(),
+                    'referral_input' => $referralInput,
+                    'is_signup_flow' => $isSignUpFlow,
+                    'message'        => 'Error occurred while applying referral code',
+                ]
+            );
+
+            PartnerSubmerchantLinkingReferralJob::dispatch(
+                $this->mode,
+                $subMerchant->getId(),
+                $referralInput,
+                $isSignUpFlow,
+            );
+        }
     }
 
     public function getReferralInput(Referral\Entity $referral): array
@@ -2618,8 +2711,6 @@ class Service extends Base\Service
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_LINKING_CONSENT_RESPONSE_RESULT,
                                                      $partner, null, $partnerLinkingData);
         }
-
-        $isSignUpFlow = \Request::all()[Merchant\Constants::PHANTOM_SIGNUP] ?? ($isSignUpFlow);
 
         if ($isSignUpFlow)
         {

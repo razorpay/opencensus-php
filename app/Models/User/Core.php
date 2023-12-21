@@ -1307,13 +1307,24 @@ class Core extends Base\Core
         return $this->get($user, true);
     }
 
-    private function applyReferralIfApplicable(array $input, Entity $user)
+    /**
+     * Applies referral code passed during login flows
+     * (this is currently only happening for capital flows)
+     * @param array  $input
+     * @param Entity $user
+     *
+     * @return void
+     */
+    private function applyReferralIfApplicable(array $input, Entity $user): void
     {
-        if((isset($input[MerchantDetailEntity::REFERRAL_CODE]) === true) and (empty($input[MerchantDetailEntity::REFERRAL_CODE]) === false))
+        if (
+            (isset($input[MerchantDetailEntity::REFERRAL_CODE]) === true) and
+            (empty($input[MerchantDetailEntity::REFERRAL_CODE]) === false)
+        )
         {
             $merchant = $user->merchants()->first();
 
-            if(empty($merchant) === false)
+            if (empty($merchant) === false)
             {
                 try
                 {
@@ -2243,9 +2254,12 @@ class Core extends Base\Core
 
     /**
      * @param array $input
+     *
      * @return array
      * @throws BadRequestException
-     * @throws Exception\ServerErrorException
+     * @throws NumberParseException
+     * @throws ServerErrorException
+     * @throws Throwable
      */
     public function verifyLoginOtp(array $input): array
     {

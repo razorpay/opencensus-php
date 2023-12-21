@@ -5,9 +5,9 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Illuminate\Support\Facades\App;
 use Mail;
+use Queue;
 use Config;
 use Mockery;
-
 use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -16,7 +16,9 @@ use RZP\Http\Request\Requests;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\EsDao;
 use RZP\Constants\Timezone;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Models\ClarificationDetail\Repository;
+use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Core;
@@ -6628,6 +6630,208 @@ Team Razorpay', '+911234567890');
         return $websites;
     }
 
+    /**
+     * The test case checks that if partner_referral_code is sent in the register/otp/verify flow
+     * and if creating merchant access map fails for any reason
+     * then the async job PartnerSubmerchantLinkingReferralJob is queued
+     * @return void
+     */
+    public function testPutPreSignupDetailsWithReferralCodeAsync(): void
+    {
+        Queue::fake([PartnerSubmerchantLinkingReferralJob::class]);
+
+        $dummyPartnerId = 'NonExistent123';
+
+        $partner = $this->fixtures->merchant->edit(
+            self::DEFAULT_MERCHANT_ID,
+            ['partner_type' => MerchantConstants::RESELLER]
+        );
+
+        $referralLink = $this->fixtures->create(Constants\Entity::REFERRALS);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => MerchantConstants::RESELLER]);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $merchantUser['id']);
+
+        $dummyReferralLink = $this->fixtures->create(
+            Constants\Entity::REFERRALS,
+            [
+                'product' => Constants\Product::PRIMARY,
+                'ref_code' => 'dummyreferral',
+                'merchant_id' => $dummyPartnerId,
+            ]
+        );
+
+        $testData = $this->testData['testPutPreSignUpDetailsWithReferralCode'];
+        $testData['request']['content']['referral_code'] = $dummyReferralLink['ref_code'];
+
+        $this->startTest($testData);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => self::DEFAULT_SUBMERCHANT_ID]);
+        $this->assertNull($accessMap);
+
+        // assert that the async job was pushed in the fake queue
+        Queue::assertPushed(
+            PartnerSubmerchantLinkingReferralJob::class,
+            function(PartnerSubmerchantLinkingReferralJob $job) use($dummyReferralLink) {
+                $this->assertEquals(self::DEFAULT_SUBMERCHANT_ID, $job->getMerchantId());
+                $this->assertEquals(
+                    [
+                        'request_product'  => Constants\Product::PRIMARY,
+                        'referral_code'    => $dummyReferralLink['ref_code'],
+                        'referral_product' => Constants\Product::PRIMARY,
+                        'merchant_id'      => $dummyReferralLink['merchant_id'],
+                    ],
+                    $job->getReferralInput()
+                );
+                $this->assertTrue($job->getIsSignupFlow());
+                return true;
+            }
+        );
+
+        // trigger the async job separately to check that it creates the merchant access map
+        // with the correct referral input
+        (new PartnerSubmerchantLinkingReferralJob(
+            EnvMode::TEST,
+            self::DEFAULT_SUBMERCHANT_ID,
+            [
+                'request_product'  => Constants\Product::PRIMARY,
+                'referral_code'    => $referralLink['ref_code'],
+                'referral_product' => Constants\Product::PRIMARY,
+                'merchant_id'      => $partner['id'],
+            ],
+            false
+        ))->handle();
+
+        $accessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'entity_owner_id' => $partner['id'],
+                'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+        $this->assertNotNull($accessMap);
+        $this->assertEquals($partner['id'], $accessMap['entity_owner_id']);
+    }
+
+    /**
+     * The test case checks that if partner_referral_code is sent in the register/otp/verify flow
+     * and if creating merchant access map fails for any reason
+     * then the async job PartnerSubmerchantLinkingReferralJob is queued
+     * @return void
+     */
+    public function testPutPreSignupDetailsWithCapitalReferralCodeAsync(): void
+    {
+        Queue::fake([PartnerSubmerchantLinkingReferralJob::class]);
+
+        $dummyPartnerId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->mockCapitalPartnershipSplitzExperiment($dummyPartnerId);
+
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+                                  ->makePartial()
+                                  ->shouldAllowMockingProtectedMethods();
+        $this->app->instance('losService', $losServiceMock);
+        $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $partner = $this->fixtures->merchant->edit(
+            self::DEFAULT_MERCHANT_ID,
+            ['partner_type' => MerchantConstants::RESELLER]
+        );
+
+        $referralLink = $this->fixtures->create(
+            Constants\Entity::REFERRALS,
+            ['product' => Constants\Product::CAPITAL]
+        );
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => MerchantConstants::RESELLER]);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $merchantUser['id']);
+
+        $dummyReferralLink = $this->fixtures->create(
+            Constants\Entity::REFERRALS,
+            [
+                'product' => Constants\Product::CAPITAL,
+                'ref_code' => 'dummyreferral',
+                'merchant_id' => $dummyPartnerId,
+            ]
+        );
+
+        $testData = $this->testData['testPutPreSignupDetailsWithCapitalReferralCode'];
+        $testData['request']['content']['referral_code'] = $dummyReferralLink['ref_code'];
+
+        $this->startTest($testData);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => self::DEFAULT_SUBMERCHANT_ID]);
+        $this->assertNull($accessMap);
+
+        // assert that the async job was pushed in the fake queue
+        Queue::assertPushed(
+            PartnerSubmerchantLinkingReferralJob::class,
+            function(PartnerSubmerchantLinkingReferralJob $job) use ($dummyReferralLink) {
+                $this->assertEquals(self::DEFAULT_SUBMERCHANT_ID, $job->getMerchantId());
+                $this->assertEquals(
+                    [
+                        'request_product'  => Constants\Product::BANKING,
+                        'referral_code'    => $dummyReferralLink['ref_code'],
+                        'referral_product' => Constants\Product::CAPITAL,
+                        'merchant_id'      => $dummyReferralLink['merchant_id'],
+                    ],
+                    $job->getReferralInput()
+                );
+                $this->assertTrue($job->getIsSignupFlow());
+                return true;
+            }
+        );
+
+        $this->mockCapitalPartnershipSplitzExperiment($partner['id']);
+
+        // trigger the async job separately to check that it creates the merchant access map
+        // with the correct referral input
+        (new PartnerSubmerchantLinkingReferralJob(
+            EnvMode::TEST,
+            self::DEFAULT_SUBMERCHANT_ID,
+            [
+                'request_product'  => Constants\Product::BANKING,
+                'referral_code'    => $referralLink['ref_code'],
+                'referral_product' => Constants\Product::CAPITAL,
+                'merchant_id'      => $partner['id'],
+            ],
+            true
+        ))->handle();
+
+        $accessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'entity_owner_id' => $partner['id'],
+                'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+        $this->assertNotNull($accessMap);
+        $this->assertEquals($partner['id'], $accessMap['entity_owner_id']);
+    }
+
     public function testPutPreSignUpDetailsWithReferralCode()
     {
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
@@ -6741,8 +6945,6 @@ Team Razorpay', '+911234567890');
         );
 
         $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
-
-        $merchantApp = $this->getDbEntity('merchant_application', ['application_id' => $app->getId()]);
 
         $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
                      ->where('user_id', '=', $referrerMerchantId)

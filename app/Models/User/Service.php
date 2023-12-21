@@ -41,8 +41,10 @@ use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\BusinessDetail as MBD;
+use RZP\Jobs\PartnerSubmerchantLinkingOauthJob;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\MerchantApplications\Repository as MerchantAppRepo;
+use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -755,7 +757,7 @@ class Service extends Base\Service
                 $signupMethod = Constants::OTP;
                 $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput);
                 $this->processReferralCode($merchantData['id'], $partnerReferralCode);
-                $this->linkSubMerchantToPlatformPartner($merchantData['id'], $sourceAppId, $isOauthReferral);
+                $this->linkSubMerchantToPlatformPartnerWithRetry($merchantData['id'], $sourceAppId, $isOauthReferral);
                 $this->createSignupSourceForPhantom($isPhantomOnboardingFlow, $sourceAppId, $merchantData['id']);
                 $response = $data;
 
@@ -1036,16 +1038,17 @@ class Service extends Base\Service
 
     private function processReferralCode(string $merchantId, string $referralCode): void
     {
-        try {
+        try
+        {
 
-            if(empty($referralCode) === true)
+            if (empty($referralCode) === true)
             {
                 return;
             }
 
             $referral = (new Merchant\Referral\Core)->fetchReferralByReferralCode($referralCode);
 
-            if(empty($referral) == true)
+            if (empty($referral))
             {
                 return;
             }
@@ -1059,11 +1062,12 @@ class Service extends Base\Service
 
             $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-            $detailService->applyReferralPartner($merchant, $referralInput);
+            $detailService->applyReferralPartnerWithRetry($merchant, $referralInput, false);
 
             $this->trace->count(Merchant\Metric::SUBMERCHANT_SIGNUP_LINKING_SUCCESS_TOTAL);
 
-        } catch(\Exception $e)
+        }
+        catch (\Exception $e)
         {
             $this->trace->traceException($e,
                                          Logger::ERROR,
@@ -1077,7 +1081,22 @@ class Service extends Base\Service
         }
     }
 
-    private function linkSubMerchantToPlatformPartner(string $merchantId, string $sourceAppId = null , bool $isOauthReferral = false): void
+    /**
+     * linkSubMerchantToPlatformPartnerWithRetry links a submerchant to a pure platform
+     * partner's application by first trying it synchronously.
+     * If that fails then it queues a job to retry asynchronously.
+     *
+     * @param string      $merchantId
+     * @param string|null $sourceAppId
+     * @param bool        $isOauthReferral
+     *
+     * @return void
+     */
+    private function linkSubMerchantToPlatformPartnerWithRetry(
+        string $merchantId,
+        string $sourceAppId = null,
+        bool $isOauthReferral = false,
+    ): void
     {
         try
         {
@@ -1086,7 +1105,10 @@ class Service extends Base\Service
                 return;
             }
 
-            $merchantApp = (new MerchantAppRepo)->fetchMerchantApplication($sourceAppId, Merchant\Constants::APPLICATION_ID);
+            $merchantApp = (new MerchantAppRepo)->fetchMerchantApplication(
+                $sourceAppId,
+                Merchant\Constants::APPLICATION_ID,
+            );
 
             $input = [
                 Merchant\Constants::PARTNER_ID       => $merchantApp[0][Merchant\Constants::MERCHANT_ID],
@@ -1107,7 +1129,8 @@ class Service extends Base\Service
                     'merchant_id'  => $merchantId,
                     'message'      => 'Error occurred while linking subM during signUp for pp referral flow'
                 ]);
-            $this->trace->count(Merchant\Metric::SUBM_SIGNUP_LINKING_PP_REFERRAL_FAILURE_TOTAL);
+
+            PartnerSubmerchantLinkingOauthJob::dispatch($this->mode, $merchantId, $sourceAppId);
         }
     }
 

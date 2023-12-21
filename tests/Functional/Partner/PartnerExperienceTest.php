@@ -12,7 +12,6 @@ use RZP\Constants\Mode;
 use App\User\Constants;
 use ReflectionFunction;
 use RZP\Constants\Mode as EnvMode;
-use RZP\Constants\Product;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -31,15 +30,20 @@ use RZP\Services\SalesForceClient;
 use RZP\Services\Elfin\Impl\Gimli;
 use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use Neves\Events\TransactionalClosureEvent;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Merchant\PartnerTypeSwitchEmail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Traits\MocksPartnershipsService;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Constants\Product as ProductConstants;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Tests\Functional\Merchant\MerchantTest;
+use RZP\Jobs\PartnerSubmerchantLinkingOauthJob;
+use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
 use RZP\Models\Merchant\MerchantApplications\Entity;
 use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
 use RZP\Jobs\MigratePurePlatformToResellerPartnerJob;
@@ -54,6 +58,7 @@ class PartnerExperienceTest extends OAuthTestCase
 {
     use TestsMetrics;
     use MocksSplitz;
+    use OAuthTrait;
     use PartnerTrait;
     use SalesforceTrait;
     use BatchTestTrait;
@@ -816,7 +821,7 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantsPOS()
     {
-        $this->createResellerPartnerSubmerchant(false, false, Product::POS);
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
 
         $this->mockAllSplitzTreatment();
 
@@ -2704,7 +2709,7 @@ class PartnerExperienceTest extends OAuthTestCase
         );
     }
 
-    public function createResellerPartnerSubmerchant(bool $isContactMobileVerified = false, bool $addPricing = false, string $product = Product::PRIMARY)
+    public function createResellerPartnerSubmerchant(bool $isContactMobileVerified = false, bool $addPricing = false, string $product = ProductConstants::PRIMARY)
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -2767,7 +2772,7 @@ class PartnerExperienceTest extends OAuthTestCase
             $this->fixtures->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['pricing_plan_id' => 'LFbrOUOTRSyAqq']);
         }
 
-        if ($product === Product::POS)
+        if ($product === ProductConstants::POS)
         {
             // POS subMs will be assinged with the pos partnerships tag.
             (new Merchant\Core())->appendTag($subMerchant, 'pos-sub-'.self::DEFAULT_MERCHANT_ID);
@@ -3809,6 +3814,8 @@ class PartnerExperienceTest extends OAuthTestCase
     // The following testcase would create a merchant entity for the subM, attach the subM to the partner via referral code
     public function testUserRegisterWithMobileWithReferralCode()
     {
+        Queue::fake([PartnerSubmerchantLinkingReferralJob::class]);
+
         $smsPayload = [
             'otp'        => '0007',
             'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
@@ -3850,6 +3857,114 @@ class PartnerExperienceTest extends OAuthTestCase
                                         ]);
         $this->assertNotNull($accessMap);
 
+        $this->assertEquals($partnerMerchant['id'], $accessMap['entity_owner_id']);
+
+        Queue::assertNotPushed(PartnerSubmerchantLinkingReferralJob::class);
+    }
+
+    /**
+     * The test case checks that if partner_referral_code is sent in the register/otp/verify flow
+     * and if creating merchant access map fails for any reason
+     * then the async job PartnerSubmerchantLinkingReferralJob is queued
+     * @return void
+     */
+    public function testUserRegisterWithMobileWithReferralCodeAsync()
+    {
+        Queue::fake([PartnerSubmerchantLinkingReferralJob::class]);
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $testData = $this->testData['testUserRegisterWithMobileWithReferralCode'];
+
+        $partnerMerchant = $this->createPartner(MerchantConstants::AGGREGATOR);
+
+        $referralLink = $this->getDbEntity(
+            EntityConstants::REFERRALS,
+            ['product' => ProductConstants::PRIMARY]
+        );
+
+        // create a dummy referral link with a non-existent partner ID
+        // this is to trigger an exception in applyReferralPartner
+        $dummyReferralLink = $this->fixtures->create(
+            EntityConstants::REFERRALS,
+            [
+                'product' => ProductConstants::PRIMARY,
+                'ref_code' => 'dummyreferral',
+                'merchant_id' => 'NonExistent123',
+            ]
+        );
+
+        $referralCode = $dummyReferralLink['ref_code'];
+
+        $testData['request']['content']['partner_referral_code'] = $referralCode;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->startTest($testData);
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+
+        // assert that merchant access map is not created
+        $accessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => $createdSubM['id']]);
+        $this->assertNull($accessMap);
+
+        // assert that the async job was pushed in the fake queue
+        Queue::assertPushed(
+            PartnerSubmerchantLinkingReferralJob::class,
+            function($job) use ($createdSubM, $dummyReferralLink, $partnerMerchant) {
+                $this->assertEquals($createdSubM['id'], $job->getMerchantId());
+                $this->assertEquals(
+                    [
+                        'request_product'  => ProductConstants::PRIMARY,
+                        'referral_code'    => $dummyReferralLink['ref_code'],
+                        'referral_product' => ProductConstants::PRIMARY,
+                        'merchant_id'      => 'NonExistent123',
+                    ],
+                    $job->getReferralInput()
+                );
+                $this->assertEquals(false, $job->getIsSignupFlow());
+                return true;
+            }
+        );
+
+        // trigger the async job separately to check that it creates the merchant access map
+        // with the correct referral input
+        (new PartnerSubmerchantLinkingReferralJob(
+            EnvMode::TEST,
+            $createdSubM['id'],
+            [
+                'request_product'  => ProductConstants::PRIMARY,
+                'referral_code'    => $referralLink['ref_code'],
+                'referral_product' => ProductConstants::PRIMARY,
+                'merchant_id'      => $partnerMerchant['id'],
+            ],
+            false
+        ))->handle();
+
+        $accessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'entity_owner_id' => $partnerMerchant['id'],
+                'merchant_id'     => $createdSubM['id'],
+            ]
+        );
+        $this->assertNotNull($accessMap);
         $this->assertEquals($partnerMerchant['id'], $accessMap['entity_owner_id']);
     }
 
@@ -3908,6 +4023,8 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testLinkSubMerchantForPPReferralFlow()
     {
+        Queue::fake([PartnerSubmerchantLinkingOauthJob::class]);
+
         $smsPayload = [
             'otp'        => '0007',
             'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
@@ -3955,6 +4072,101 @@ class PartnerExperienceTest extends OAuthTestCase
             ]);
         $this->assertNotNull($accessMap);
 
+        $this->assertEquals($partnerId, $accessMap['entity_owner_id']);
+
+        Queue::assertNotPushed(PartnerSubmerchantLinkingOauthJob::class);
+    }
+
+    /**
+     * The test case checks that if oauth_referral is sent in the register/otp/verify flow
+     * and if creating merchant access map fails for any reason
+     * then the async job PartnerSubmerchantLinkingOauthJob is queued
+     *
+     * @return void
+     */
+    public function testLinkSubMerchantForPPReferralFlowAsync()
+    {
+        Queue::fake([PartnerSubmerchantLinkingOauthJob::class]);
+
+        $smsPayload = [
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:signup_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['generateOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')
+                           ->willReturn($smsPayload);
+
+        $this->mockDcsFetchConfiguration();
+
+        $testData = &$this->testData['testUserRegisterWithMobileWithReferralCode'];
+
+        $partnerMerchant = $this->createPartner(MerchantConstants::PURE_PLATFORM);
+        $partnerId       = $partnerMerchant['id'];
+        $application     = DB::Connection('auth')
+                             ->table('applications')
+                             ->orderBy('created_at', 'desc')
+                             ->first();
+
+        // create a dummy application with a non-existent partner ID
+        // this is just to trigger an exception in mapOAuthApplication
+        $dummyApplication = $this->fixtures->merchant->createDummyPartnerApp(
+            [
+                'id' => 'DummyAppID1234',
+                'partner_type' => MerchantConstants::PURE_PLATFORM,
+                'merchant_id' => 'NonExistent123',
+            ],
+            true
+        );
+
+        $testData['request']['content']['source_app_id']  = $dummyApplication->id;
+        $testData['request']['content']['oauth_referral'] = true;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+
+        $createdSubM = $this->getDbLastEntity('merchant');
+
+        // assert that merchant access map is not created
+        $accessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => $createdSubM['id']]);
+        $this->assertNull($accessMap);
+
+        // assert that the async job was pushed in the fake queue
+        Queue::assertPushed(
+            PartnerSubmerchantLinkingOauthJob::class,
+            function(PartnerSubmerchantLinkingOauthJob $job) use ($createdSubM, $dummyApplication) {
+                $this->assertEquals($createdSubM['id'], $job->getMerchantId());
+                $this->assertEquals($dummyApplication->id, $job->getSourceAppId());
+                return true;
+            }
+        );
+
+        // trigger the async job separately to check that it creates the merchant access map
+        // with the correct referral input
+        (new PartnerSubmerchantLinkingOauthJob(
+            EnvMode::TEST,
+            $createdSubM['id'],
+            $application->id,
+        ))->handle();
+
+        $accessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'entity_owner_id' => $partnerId,
+                'merchant_id'     => $createdSubM['id'],
+            ]
+        );
+        $this->assertNotNull($accessMap);
         $this->assertEquals($partnerId, $accessMap['entity_owner_id']);
     }
 
