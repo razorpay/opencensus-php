@@ -27,7 +27,8 @@ class Entity extends Base\PublicEntity
     const NOTES               = 'notes';
     const TNC                 = 'tnc';
     const ACTION              = 'action';
-    const MAX_AUTO_APPROVAL_AMOUNT = 5000000;
+    const OLD_MAX_AUTO_APPROVAL_AMOUNT = 5000000;
+    const MAX_AUTO_APPROVAL_AMOUNT = 15000000;
     /**
      * Prefix for pdf file name
      */

@@ -3995,6 +3995,93 @@ class CommissionCreateTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
     }
 
+    public function testInvoiceCreateAutoApprovalOldLimitInvoiceYearCheckPassed()
+    {
+        Mail::fake();
+
+        $grossAmount = Invoice\Entity::OLD_MAX_AUTO_APPROVAL_AMOUNT;
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => $grossAmount,
+            'debit'  => 0,
+            'fee'    => $grossAmount,
+            'tax'    => 762727,
+            'created_at' => '1669135053',
+            'updated_at' => '1669135053',
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+        $testData['request']['content']['month']        = 11;
+        $testData['request']['content']['year']         = 2023;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
+        $this->startTest($testData);
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $invoiceExpectedData = [
+            'merchant_id'   => 'DefaultPartner',
+            'month'         => 11,
+            'year'          => 2022,
+            'status'        => 'issued',
+            'gross_amount'  => $grossAmount,
+            'tax_amount'    => 762727,
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
+    public function testInvoiceCreateAutoApprovalOldLimitInvoiceYearCheckFailed()
+    {
+        Mail::fake();
+
+        $grossAmount = ( Invoice\Entity::OLD_MAX_AUTO_APPROVAL_AMOUNT + 100 );
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => $grossAmount,
+            'debit'  => 0,
+            'fee'    => $grossAmount,
+            'tax'    => 762727,
+            'created_at' => '1669135053',
+            'updated_at' => '1669135053',
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+        $now = Carbon::now(Timezone::IST);
+        $testData['request']['content']['month']        = 11;
+        $testData['request']['content']['year']         = 2023;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
+        $this->startTest($testData);
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $invoiceExpectedData = [
+            'merchant_id'   => 'DefaultPartner',
+            'month'         => 11,
+            'year'          => 2022,
+            'status'        => 'issued',
+            'gross_amount'  => $grossAmount,
+            'tax_amount'    => 762727,
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
     public function testCreatePaymentPageWithPartnerRole()
     {
         $partner = $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);

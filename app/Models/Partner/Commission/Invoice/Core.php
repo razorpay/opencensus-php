@@ -184,10 +184,19 @@ class Core extends Base\Core
         if (!$this->isPartialFinanceApprovalRemovalExpEnabled($merchant->getId())) { // partner finance exp. check
             return false;
         }
-        if ($invoice->getGrossAmount() > Entity::MAX_AUTO_APPROVAL_AMOUNT) { // gross amount > 50k
+        if ($invoice->getGrossAmount() > $this->getMaxAutoApprovalAmount($invoice)) { // gross amount > 150k
             return false;
         }
         return ($invoice->getYear() >= 2023 or ($invoice->getYear() >= 2022 and $invoice->getMonth() >= 12));// partner approval timestamp check for invoice before dec-2022
+    }
+
+    private function getMaxAutoApprovalAmount(Entity $invoice): int
+    {
+        if ($invoice->getYear() >= 2024 or ($invoice->getYear() >= 2023 and $invoice->getMonth() >= 12)) {
+            return Entity::MAX_AUTO_APPROVAL_AMOUNT;
+        }
+
+        return Entity::OLD_MAX_AUTO_APPROVAL_AMOUNT;
     }
 
     /**
