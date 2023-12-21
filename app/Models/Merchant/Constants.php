@@ -1980,11 +1980,12 @@ final class Constants
 
     const AMOUNT_CREDITS_EXPIRY_NAMESPACE       = "amount_credits_expiry";
 
-    const ENTRY_COUNT   = "entry_count";
-    const REMINDER_DATA = "reminder_data";
-    const EXPIRED_AT    = "expired_at";
-    const CALLBACK_URL  = "callback_url";
-    const CREDIT        = "credit";
+    const ENTRY_COUNT    = "entry_count";
+    const REMINDER_DATA  = "reminder_data";
+    const EXPIRED_AT     = "expired_at";
+    const CALLBACK_URL   = "callback_url";
+    const CREDIT         = "credit";
+    const PHYSICAL_STORE = 'physical_store';
 
     const POS_CLARIFICATION_REASONS   = 'pos_clarification_reasons';
     const ALLOWED_NEXT_POS_ACTIVATION_STATUS = "allowed_next_pos_activation_status";

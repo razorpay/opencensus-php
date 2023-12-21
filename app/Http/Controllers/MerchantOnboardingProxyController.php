@@ -76,12 +76,19 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const ENABLE                         = 'enable';
     const LIVE                           = 'live';
 
+    const PGOS_FETCH_DEVICE_CONFIG           = 'merchant_fetch_device_config';
+    const PGOS_CREATE_DEVICE_ORDER           = 'merchant_pos_create_order';
+    const PGOS_UPDATE_DEVICE_ORDER           = 'merchant_pos_update_order';
+    const PGOS_FETCH_DEVICE_ORDER            = 'merchant_pos_fetch_order';
+    const PGOS_FETCH_ALL_DEVICE_ORDER        = 'merchant_pos_fetch_all_order';
+    const MERCHANT_POS_PAYMENT_CALLBACK      = 'merchant_pos_payment_callback';
+    const MERCHANT_POS_FETCH_LATEST_ORDER    = 'merchant_pos_fetch_latest_order';
+    const MERCHANT_FETCH_POS_ACTIVATION_FLOW = 'merchant_fetch_pos_activation_flow';
     const PGOS_FETCH_PGOS_ACTIVATION_STATUS  = 'merchant_pgos_fetch_activation_status';
     const PGOS_UPDATE_PGOS_ACTIVATION_STATUS = 'merchant_pgos_update_activation_status';
     const UPDATE_ACTION_STATE                = 'update_action_state';
     const FETCH_ACTION_STATE_COUNT           = 'fetch_action_state_count';
     const MERCHANT_POS_STATE_LOGS            = 'merchant_pos_state_logs';
-    const MERCHANT_FETCH_POS_ACTIVATION_FLOW = 'merchant_fetch_pos_activation_flow';
     const POST_MERCHANT_CONFIG               = 'pos_merchant_config';
 
     const PGOS_OWNED_FIELDS = [
@@ -212,12 +219,18 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantCategoriesV3EligibilitySave',
         self::SEND_SMS_OTP      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendSMSOTP',
         self::VERIFY_OTP        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/VerifyOTP',
-        self::PGOS_FETCH_PGOS_ACTIVATION_STATUS  => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetPosActivationStatus',
+        self::PGOS_FETCH_DEVICE_CONFIG                      => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchDeviceConfig',
+        self::PGOS_CREATE_DEVICE_ORDER                      => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/CreateDeviceOrder',
+        self::PGOS_UPDATE_DEVICE_ORDER                      => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/UpdateDeviceOrder',
+        self::PGOS_FETCH_DEVICE_ORDER                       => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchOrderById',
+        self::PGOS_FETCH_ALL_DEVICE_ORDER                   => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchAllOrdersForMerchant',
+        self::MERCHANT_POS_PAYMENT_CALLBACK                 => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/MerchantDevicePaymentCallback',
+        self::MERCHANT_POS_FETCH_LATEST_ORDER               => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchLatestOrder',
+
         self::PGOS_UPDATE_PGOS_ACTIVATION_STATUS => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdatePosActivationStatus',
         self::UPDATE_ACTION_STATE                => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateState',
         self::FETCH_ACTION_STATE_COUNT           => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateCount',
         self::MERCHANT_POS_STATE_LOGS            => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateLogs',
-        self::MERCHANT_FETCH_POS_ACTIVATION_FLOW => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchPosActivationFlow',
         self::POST_MERCHANT_CONFIG               => '/twirp/rzp.pg_onboarding.external.pos.v1.TerminalProcurementConsumerService/Consume',
     ];
 
@@ -348,7 +361,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
             $ignoreRoutingConditions = true;
         }
 
-        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()))
+        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()) or $this->shouldMerchantOnboardForPOS($merchant))
         {
             // get path from defined route url map
             $twirpPath = self::ROUTES_URL_MAP[$routeKey];
@@ -499,6 +512,47 @@ class MerchantOnboardingProxyController extends BaseProxyController
                     return $merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS;
                 }
             }
+        }
+
+        return false;
+    }
+
+    public function shouldMerchantOnboardForPOS(Merchant\Entity $merchant)
+    {
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $businessDetail = $merchantDetails->businessDetail;
+
+        if (empty($businessDetail) === false)
+        {
+            $isPosMerchant = (new Merchant\Detail\Core())->isPOSMerchant($businessDetail);
+
+            if ($isPosMerchant === true and $this->isPOSExperimentEnabledForCity($merchantDetails->getBusinessOperationCity()))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isPOSExperimentEnabledForCity(string $city): bool{
+
+        $properties = [
+            'request_data' => "{\"city\": \"$city\"}",
+            'experiment_id' => $this->app['config']->get('app.enable_routes_for_pos_merchant_exp_id'),
+        ];
+
+        $isExpEnabled =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'allow omni onboarding');
+
+        if ($isExpEnabled === true)
+        {
+            $this->trace->info(TraceCode::POS_MERCHANT_ONBOARDING_REQUEST, [
+                'message' => "POS merchant has requested for onboarding",
+            ]);
+
+            return true;
         }
 
         return false;

@@ -36,6 +36,13 @@ class UserRolesScope
             'merchant_activation_clarifications_fetch'             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
             'merchant_activation_clarifications_save'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
 
+            'fetch_device_config'                                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
+            'pos_create_order'                                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
+            'pos_update_order'                                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
+            'pos_fetch_device_order'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
+            'pos_fetch_all_device_orders'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
+            'pos_fetch_latest_order'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
+
             'merchant_bmc_response_fetch'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
             'merchant_bmc_response_fetch_admin'                    => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_document_save'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],

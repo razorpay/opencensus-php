@@ -12894,4 +12894,147 @@ class Service extends Base\Service
     {
         return $this->repo->key->getLatestActiveKeyForMerchant($merchantId);
     }
+
+    public function getDefaultDeviceConfig(): array
+    {
+        $merchant = $this->merchant;
+
+        // 10000razorpay - this is default RZP merchant id
+        $payload = ["merchant_id" => "10000razorpay"];
+
+        // routing condition is ignored as all POS requests have to be driven thorugh PGOS
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_fetch_device_config', $payload, $merchant, true);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_DEVICE_CONFIG,
+            [
+                'response'    => $response,
+            ]
+        );
+
+        return $response;
+    }
+
+    public function posCreateDeviceOrder(array $input) {
+
+        // Experiment enable.
+        $merchant = $this->merchant;
+
+        $input["merchant_id"] = $merchant->getId();
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_create_order', $input, $merchant, true);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_CREATE_DEVICE_ORDER,
+            [
+                'response'    => $response,
+            ]
+        );
+
+        return $response;
+    }
+
+    public function posUpdateDeviceOrder(array $input) {
+
+        // Experiment enable.
+        $merchant = $this->merchant;
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_update_order', $input, $merchant, true);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_DEVICE_ORDER,
+            [
+                'response'    => $response,
+            ]
+        );
+
+        return $response;
+    }
+
+    public function posFetchDeviceOrder(string $deviceOrderId) {
+
+        $merchant = $this->merchant;
+
+        $input['device_order_id'] = $deviceOrderId;
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_order', $input, $merchant, true);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_FETCH_DEVICE_ORDER,
+            [
+                'response'    => $response,
+            ]
+        );
+
+        return $response;
+    }
+
+    public function posFetchAllDeviceOrder(array $input) {
+
+        $merchant = $this->merchant;
+
+        $input['merchant_id'] = $merchant->getId();
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_all_order', $input, $merchant, true);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_FETCH_ALL_DEVICE_ORDER,
+            [
+                'response'    => $response,
+            ]
+        );
+
+        return $response;
+    }
+
+
+    public function posPaymentCallback($input) {
+
+        $this->trace->info(
+            TraceCode::MERCHANT_POS_PAYMENT_CALLBACK,
+            [
+                'input'    => $input,
+            ]
+        );
+
+        $input = json_decode($input, true);
+
+        $callBackObj["callback_object"] = $input;
+
+        $merchantId = $this->removePrefix($input["account_id"], "acc_");
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_payment_callback', $callBackObj, $merchant, true);
+    }
+
+    public function posFetchLatestOrder($input)
+    {
+        $merchant = $this->merchant;
+
+        $input['merchant_id'] = $merchant->getId();
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_latest_order', $input, $merchant, true);
+
+        if ($response === null) {
+            throw new Exception\ServerErrorException( "failed to execute fetch latest order request",
+                ErrorCode::SERVER_ERROR);
+        }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_FETCH_LATEST_DEVICE_ORDER,
+            [
+                'response'    => $response,
+            ]
+        );
+
+        return $response;
+    }
+
+    public function removePrefix($str, $prefix) {
+        if (strpos($str, $prefix) === 0) {
+            $str = substr($str, strlen($prefix));
+        }
+        return $str;
+    }
 }

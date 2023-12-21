@@ -4239,4 +4239,64 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getDefaultDeviceConfig()
+    {
+        $response = $this->service(E::MERCHANT)->getDefaultDeviceConfig();
+
+        return ApiResponse::json($response);
+    }
+
+    public function posPaymentCallback()
+    {
+        $input = Request::getContent();
+
+        $response = $this->service(E::MERCHANT)->posPaymentCallback($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function posCreateDeviceOrder()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT)->posCreateDeviceOrder($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function posUpdateDeviceOrder($id)
+    {
+        $input = Request::all();
+        $input["device_order_id"] = $id;
+
+        $response = $this->service(E::MERCHANT)->posUpdateDeviceOrder($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchDeviceOrder($id)
+    {
+        $response = $this->service(E::MERCHANT)->posFetchDeviceOrder($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchAllDeviceOrder()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT)->posFetchAllDeviceOrder($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchLatestOrder()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT)->posFetchLatestOrder($input);
+
+        return ApiResponse::json($response);
+    }
 }

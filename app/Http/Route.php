@@ -47,6 +47,16 @@ class Route
         'merchant_nc_revamp_eligibility_internal'           => ['get',      'merchant/internal/activation/{id}/clarifications/eligibility', 'MerchantController@getMerchantNcRevampEligibility'         ],
         'payments_api_backfill'                             => ['post',     'payments/api/backfill',                                    'PaymentController@callApiForBackfilling',                      ],
 
+        // Device related API's
+
+        'fetch_device_config'             => ['get',      'merchant/device_config',               'MerchantController@getDefaultDeviceConfig'  ],
+        'pos_payment_callback'            => ['post',     'merchant/payment/callback',            'MerchantController@posPaymentCallback'      ],
+        'pos_create_order'                => ['post',     'merchant/device/order',                'MerchantController@posCreateDeviceOrder'    ],
+        'pos_update_order'                => ['patch',    'merchant/device/{id}/order',           'MerchantController@posUpdateDeviceOrder'    ],
+        'pos_fetch_device_order'          => ['get',      'merchant/device/{id}/order',           'MerchantController@fetchDeviceOrder'        ],
+        'pos_fetch_all_device_orders'     => ['get',      'merchant/device/order',                'MerchantController@fetchAllDeviceOrder'     ],
+        'pos_fetch_latest_order'          => ['get',      'merchant/device/order/latest',         'MerchantController@fetchLatestOrder'        ],
+
         // internal
         'internal_create'    => ['post', 'internal', 'InternalController@create'],
         'internal_fail'      => ['post', 'internal/{id}/fail', 'InternalController@fail'],
@@ -7659,7 +7669,13 @@ class Route
         'partner_config_fetch',
         'partner_config_edit',
         'partner_config_edit_logo',
-        'submerchant_partner_feature_check'
+        'submerchant_partner_feature_check',
+        'fetch_device_config',
+        'pos_create_order',
+        'pos_update_order',
+        'pos_fetch_device_order',
+        'pos_fetch_all_device_orders',
+        'pos_fetch_latest_order',
     ];
 
     // These will run on internal auth with the assurance
@@ -10621,6 +10637,12 @@ class Route
         //Turbo UPI Config
         'build_turbo_upi_error_mapping'           => Permission::SET_CONFIG_KEYS,
 
+        'fetch_device_config'                           => Permission::VIEW_MERCHANT,
+        'pos_create_order'                              => Permission::EDIT_MERCHANT,
+        'pos_update_order'                              => Permission::EDIT_MERCHANT,
+        'pos_fetch_device_order'                        => Permission::VIEW_MERCHANT,
+        'pos_fetch_all_device_orders'                   => Permission::VIEW_MERCHANT,
+        'pos_fetch_latest_order'                        => Permission::VIEW_MERCHANT,
         'get_mozart_audit_logs'                    => Permission::VIEW_ALL_ENTITY,
         'get_mozart_audit_logs_by_params'          => Permission::VIEW_ALL_ENTITY,
     ];
@@ -11261,6 +11283,7 @@ class Route
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
+        'pos_payment_callback',
         'gateway_payment_validate_bharatqr',
         'upi_transfer_process',
         'upi_transfer_process_test',
@@ -13126,6 +13149,13 @@ class Route
 
             'get_all_country_dashboard_config',
             'get_country_dashboard_config',
+            'fetch_device_config',
+            'pos_payment_callback',
+            'pos_create_order',
+            'pos_update_order',
+            'pos_fetch_device_order',
+            'pos_fetch_all_device_orders',
+            'pos_fetch_latest_order',
         ],
 
         'admin_dashboard' => [
@@ -15662,6 +15692,13 @@ class Route
             'edit_country_dashboard_config',
             'get_country_dashboard_config',
             'get_all_country_dashboard_config',
+            'fetch_device_config',
+            'pos_payment_callback',
+            'pos_create_order',
+            'pos_update_order',
+            'pos_fetch_device_order',
+            'pos_fetch_all_device_orders',
+            'pos_fetch_latest_order',
         ],
 
         //
@@ -17571,6 +17608,7 @@ class Route
         'payment_redirect_callback',
         'gateway_payment_callback_bharatqr',
         'upi_transfer_process',
+        'pos_payment_callback',
     ];
 
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
