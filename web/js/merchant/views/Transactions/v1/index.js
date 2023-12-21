@@ -318,7 +318,7 @@ class TransactionsContainer extends Component {
               </NavLink>
             </ShowWhen>
             <ShowWhen
-              featureEnabled="opgsp_import_flow"
+              featureEnabled={['opgsp_import_flow', 'enable_jpmc_import_flow']}
               additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
             >
               <NavLink

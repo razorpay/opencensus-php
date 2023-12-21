@@ -1,4 +1,9 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
+import { connect } from 'react-redux';
+import {
+  UPLOAD_INVOICES_TYPE,
+  JPMC_FEATURE_FLAG,
+} from 'merchant/views/Transactions/v1/UploadInvoice/components/constants';
 import { modalContext } from './ModalContext';
 
 //components
@@ -8,7 +13,7 @@ import UploadTab from './UploadTab';
 import { BatchError, ModalContextType, UploadResultProps } from './types';
 import { getProgressMessage, getProgressPercentage, uploadFiles } from './utils';
 
-const UploadResult: React.FC<UploadResultProps> = ({ refreshList }) => {
+const UploadResult: React.FC<UploadResultProps> = ({ refreshList, user }) => {
   const { files, clientErrors, isUploading, setIsUploading } = useContext(
     modalContext,
   ) as ModalContextType;
@@ -20,7 +25,11 @@ const UploadResult: React.FC<UploadResultProps> = ({ refreshList }) => {
 
   const startUpload = async () => {
     setIsUploading(true);
-    const batchFails: Array<BatchError> = await uploadFiles(files, setFileIndex, mounted);
+    const purpose = user.tags?.some((tag) => tag.toLowerCase() === JPMC_FEATURE_FLAG)
+      ? UPLOAD_INVOICES_TYPE.JPMC
+      : UPLOAD_INVOICES_TYPE.OPGSP;
+
+    const batchFails: Array<BatchError> = await uploadFiles(files, setFileIndex, mounted, purpose);
     if (batchFails.length < files.length) refreshList();
     setFailedUploads(batchFails);
     setIsUploading(false);
@@ -59,4 +68,4 @@ const UploadResult: React.FC<UploadResultProps> = ({ refreshList }) => {
   );
 };
 
-export default UploadResult;
+export default connect((state) => ({ user: state.session.user }))(UploadResult);

@@ -74,13 +74,14 @@ export const uploadFiles = async (
   files: Array<File>,
   setFileIndex: (index: number) => void,
   mounted: RefObject<boolean>,
+  purpose: string,
 ): Promise<BatchError[]> => {
   const batchFails: Array<BatchError> = [];
   for (const i of Array(Math.ceil(files.length / batchSize)).keys()) {
     if (!mounted.current) break;
     const filePromises: Array<Promise<unknown>> = files
       .slice(i * batchSize, i * batchSize + batchSize)
-      .map((currentFile: File) => saveInvoice(currentFile));
+      .map((currentFile: File) => saveInvoice(currentFile, purpose));
     setFileIndex(i * batchSize);
     const results: Array<BulkUploadResponse> = await allSettled(filePromises); // eslint-disable-line
     results.forEach((result, index) => {

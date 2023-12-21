@@ -20,12 +20,12 @@ export const uploadInvoiceError = (payload) => ({
   payload,
 });
 
-export const uploadInvoice = (id, file) => {
+export const uploadInvoice = (id, file, purpose = 'opgsp_invoice') => {
   const resource = new PaymentUploadInvoice();
 
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('purpose', 'opgsp_invoice');
+  formData.append('purpose', purpose);
 
   return resource.uploadInvoice(id, formData);
 };

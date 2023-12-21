@@ -8,9 +8,9 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { uploadInvoice, viewInvoice } from 'merchant/reducers/paymentUploadInvoice';
 import lazy from 'merchant/routes/LazyLoader';
 import EmptyComponent from 'merchant/views/Transactions/v1/B2bPayments/components/EmptyComponent';
-import InfoBanner from 'merchant/views/Transactions/v1/B2bPayments/components/InfoBanner';
 import ListFilter from 'merchant/views/Transactions/v1/B2bPayments/components/ListFilter';
 import HeaderActions from 'merchant/views/Transactions/v1/BatchRefunds/HeaderActions';
+import { Alert } from '@razorpay/blade/components';
 import {
   trackFilterSubmit,
   trackSearchClicked,
@@ -23,6 +23,7 @@ import {
 } from 'merchant/views/Transactions/v1/UploadInvoice/analytics';
 import PaymentTable from 'merchant/views/Transactions/v1/UploadInvoice/components/PaymentTable';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
+import { UPLOAD_INVOICES_TYPE, JPMC_FEATURE_FLAG } from './constants';
 
 const BulkUploadModal = lazy(() =>
   import(
@@ -83,15 +84,24 @@ class PaymentsListContainer extends ListContainer {
   };
 
   onUploadInvoice = async (id, file) => {
-    const { uploadInvoicePending, uploadInvoiceSuccess, uploadInvoiceError, showNotification } =
-      this.props;
+    const {
+      uploadInvoicePending,
+      uploadInvoiceSuccess,
+      uploadInvoiceError,
+      showNotification,
+      user,
+    } = this.props;
     uploadInvoicePending({ id });
     trackInvoiceUploadClick({
       paymentId: id,
       version: this.getVersion(),
     });
     try {
-      await uploadInvoice(id, file);
+      const purpose = user.tags?.some((tag) => tag.toLowerCase() === JPMC_FEATURE_FLAG)
+        ? UPLOAD_INVOICES_TYPE.JPMC
+        : UPLOAD_INVOICES_TYPE.OPGSP;
+
+      await uploadInvoice(id, file, purpose);
       uploadInvoiceSuccess({ id });
       this.refreshList();
       showNotification({
@@ -201,7 +211,13 @@ class PaymentsListContainer extends ListContainer {
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
           />
-          <InfoBanner text="Uploading an invoice and AWB copy (if applicable) for international payments is required for audit purposes as per RBI guidelines. Without a valid invoice and AWB copy (if applicable) for each transaction, your settlements cannot be processed and will be put on hold if the invoice copy is not received within 15 days." />
+          <Alert
+            intent="information"
+            description="Uploading an invoice and AWB copy (for physical goods only) is required as a audit requirement as per RBI guidelines. Without a valid invoice and AWB copy (if applicable) for each transaction, your settlements cannot be processed and will be put on hold if the invoice copy is not received within 15 days."
+            isDismissible={false}
+            isFullWidth
+            marginBottom="spacing.5"
+          />
           <PaymentTable
             {...rest}
             count={count}

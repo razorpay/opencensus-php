@@ -105,6 +105,7 @@ export interface AccountSectionPropsInterface extends Device {
   isCtaAction?: boolean;
   isCollapsible?: boolean;
   accountData: AccountData;
+  user: IUser;
   handleAction: (payload: ActionPayload) => void;
 }
 

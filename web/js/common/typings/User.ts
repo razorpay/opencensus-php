@@ -100,6 +100,7 @@ type UserProperties = {
   business_registered_state?: string;
   business_registered_country?: string;
   business_registered_pin?: string;
+  tags: string[];
 };
 
 // as user properties are not available initially

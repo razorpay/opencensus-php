@@ -1,12 +1,13 @@
 import React, { lazy } from 'react';
+import { Alert } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { withSplitzService } from 'common/splitz';
 import ListContainer from 'merchant/containers/ListContainer';
-import { withRouter } from 'common/deprecated/withRouter';
 import { b2bActions } from 'merchant/reducers/b2bExports';
 import { fetchB2bPayments } from 'merchant/reducers/collection';
 import {
@@ -20,7 +21,6 @@ import {
   trackShown,
 } from 'merchant/views/Transactions/v1/B2bPayments/analytics';
 import EmptyComponent from 'merchant/views/Transactions/v1/B2bPayments/components/EmptyComponent';
-import InfoBanner from 'merchant/views/Transactions/v1/B2bPayments/components/InfoBanner';
 import ListFilter from 'merchant/views/Transactions/v1/B2bPayments/components/ListFilter';
 import ListTable from 'merchant/views/Transactions/v1/B2bPayments/components/ListTable';
 import HeaderActions from 'merchant/views/Transactions/v1/BatchRefunds/HeaderActions';
@@ -209,7 +209,13 @@ class PaymentsListContainer extends ListContainer {
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
           />
-          <InfoBanner text="Uploading an invoice for international payments is required for audit purposes as per RBI guidelines. Without a valid invoice for each transaction, your settlements cannot be processed and will be put on hold." />
+          <Alert
+            intent="information"
+            description="Uploading an invoice for international payments received via ACH/SWIFT/SEPA/BACS or domestic payments for international businesses is required for audit purposes as per RBI guidelines. Without a valid invoice for such transactions, your settlements cannot be processed and will be put on hold."
+            isDismissible={false}
+            isFullWidth
+            marginBottom="spacing.5"
+          />
           <ListTable
             {...this.props}
             count={count}

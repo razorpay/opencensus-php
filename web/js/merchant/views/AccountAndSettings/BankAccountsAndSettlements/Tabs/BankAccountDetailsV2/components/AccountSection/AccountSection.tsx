@@ -5,7 +5,7 @@ import {
   AccountSectionPropsInterface,
   FLOW_TYPE,
 } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { connect } from 'react-redux';
 import {
   CollapsibleIcon,
@@ -19,6 +19,7 @@ import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { Modules } from 'common/constant/enums';
 
 const AccountSection = ({
+  user,
   switchAction,
   isCtaAction,
   isCollapsible,
@@ -48,6 +49,20 @@ const AccountSection = ({
 
   const actionCta = banks.length ? 'Change bank account' : 'Add bank account';
 
+  const isImportMerchant = useMemo(() => {
+    return Array.isArray(user.tags)
+      ? user.tags.some((tag) =>
+          ['opgsp_import_flow', 'enable_jpmc_import_flow'].includes(tag.toLowerCase()),
+        )
+      : false;
+  }, [user.tags]);
+
+  /**
+   * Bank account update button should not be visible for import merchants
+   * with feature flag opgsp_import_flow, enable_jpmc_import_flow
+   */
+  const isBankAccountUpdateAllowed = banks.length ? !isImportMerchant : true;
+
   return (
     <StyledAccountSectionContainer>
       <StyledAccountSectionHeader>
@@ -57,7 +72,7 @@ const AccountSection = ({
             <CollapsibleIcon onClick={handleToggle} open={isShow} data-testid="collapse-btn">
               <ChevronDownIcon size="large" color="action.icon.link.default" />
             </CollapsibleIcon>
-          ) : !isMobile && isCtaAction ? (
+          ) : !isMobile && isCtaAction && isBankAccountUpdateAllowed ? (
             <Button
               variant="primary"
               icon={EditIcon}
@@ -69,7 +84,7 @@ const AccountSection = ({
           ) : null}
         </HeaderTopBar>
         <Text type="subtle">{description}</Text>
-        {isMobile && isCtaAction && (
+        {isMobile && isCtaAction && isBankAccountUpdateAllowed && (
           <Button
             variant="primary"
             icon={EditIcon}
@@ -104,6 +119,7 @@ const AccountSection = ({
 
 const mapStateToProps = (state) => ({
   isMobile: state.app.isMobileResolution,
+  user: state.session.user,
 });
 
 export default connect(mapStateToProps, null)(AccountSection);

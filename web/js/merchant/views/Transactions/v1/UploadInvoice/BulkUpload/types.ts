@@ -1,3 +1,4 @@
+import { User } from 'common/typings';
 import React from 'react';
 
 export type UploadConfigType = {
@@ -59,6 +60,7 @@ export interface DropScreenProps {
 
 export interface UploadResultProps {
   refreshList: () => void;
+  user: User;
 }
 
 export interface ModalContainerProps {

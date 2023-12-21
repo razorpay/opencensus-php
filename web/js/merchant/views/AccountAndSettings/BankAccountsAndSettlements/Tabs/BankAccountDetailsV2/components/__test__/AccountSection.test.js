@@ -7,6 +7,7 @@ import {
   PreviousAccountData,
 } from './mocks/fixtures/AccountSection';
 import { action } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/constants/data';
+import { getDefaultUserObj } from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/User';
 
 jest.mock(
   'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/BankDetails/BankDetails.tsx',
@@ -99,5 +100,40 @@ describe('BankAccountDetailsV2 - AccountSection', () => {
       });
       expect(screen.getByText('NO BANK ACCOUNT AVAILABLE')).toBeInTheDocument();
     });
+  });
+});
+
+describe('Update Bank Account CTA', () => {
+  test('should not show update bank account button for jpmc import merchants', () => {
+    const tags = ['enable_jpmc_import_flow'];
+    renderApp({
+      accountData: ActiveAccountDataOHS,
+      initialState: {
+        session: {
+          user: getDefaultUserObj({ tags }),
+        },
+      },
+    });
+    expect(screen.queryByText('Change bank account')).not.toBeInTheDocument();
+  });
+
+  test('should not show update bank account button for opgsp import merchants', () => {
+    const tags = ['opgsp_import_flow'];
+    renderApp({
+      accountData: ActiveAccountDataOHS,
+      initialState: {
+        session: {
+          user: getDefaultUserObj({ tags }),
+        },
+      },
+    });
+    expect(screen.queryByText('Change bank account')).not.toBeInTheDocument();
+  });
+
+  test('should show update bank account button for other merchants', () => {
+    renderApp({
+      accountData: ActiveAccountDataOHS,
+    });
+    expect(screen.getByText('Change bank account')).toBeInTheDocument();
   });
 });

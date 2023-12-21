@@ -58,13 +58,15 @@ const BankAccountDetails = ({
   };
 
   /**
-   * if merchant has `opgsp_import_flow` feature enabled then disable Change bank account.
+   * if merchant has `opgsp_import_flow` or `enable_jpmc_import_flow` feature enabled then disable Change bank account.
    * Because Bank account for such merchants will be added during onboarding and
    * merchant is not allowed to update that. It can only be done via admin dashboard.
    */
   const isOpgspImportMerchant = useMemo(() => {
     return Array.isArray(user.tags)
-      ? user.tags.some((tag) => tag.toLowerCase() === 'opgsp_import_flow')
+      ? user.tags.some((tag) =>
+          ['opgsp_import_flow', 'enable_jpmc_import_flow'].includes(tag.toLowerCase()),
+        )
       : false;
   }, [user.tags]);
 

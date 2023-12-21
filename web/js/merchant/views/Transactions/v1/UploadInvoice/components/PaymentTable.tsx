@@ -132,7 +132,8 @@ const ListTable = ({
         type="file"
         ref={fileUploaderRef}
         className="invoice-file-uploader"
-        accept="image/jpeg, image/png, application/pdf"
+        accept="image/jpeg,image/png,application/pdf"
+        data-testid="opgsp-file-uploader"
         onChange={handleFileSelect}
       />
     </>
