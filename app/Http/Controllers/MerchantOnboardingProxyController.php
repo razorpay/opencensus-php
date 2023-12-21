@@ -226,7 +226,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::PGOS_FETCH_ALL_DEVICE_ORDER                   => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchAllOrdersForMerchant',
         self::MERCHANT_POS_PAYMENT_CALLBACK                 => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/MerchantDevicePaymentCallback',
         self::MERCHANT_POS_FETCH_LATEST_ORDER               => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchLatestOrder',
-
+        self::MERCHANT_FETCH_POS_ACTIVATION_FLOW            => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchPosActivationFlow',
+        self::PGOS_FETCH_PGOS_ACTIVATION_STATUS  =>  'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetPosActivationStatus',
         self::PGOS_UPDATE_PGOS_ACTIVATION_STATUS => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdatePosActivationStatus',
         self::UPDATE_ACTION_STATE                => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateState',
         self::FETCH_ACTION_STATE_COUNT           => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateCount',

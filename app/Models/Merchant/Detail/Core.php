@@ -162,6 +162,8 @@ use RZP\Models\Merchant\Website;
 use RZP\Models\Merchant\Detail\Factory as DetailFactory;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\AccountDetail as AccountDetailsSDKWrapper;
 
 class Core extends Base\Core
 {
@@ -11267,6 +11269,134 @@ class Core extends Base\Core
         }
 
         return  $shouldMerchantOnboardViaPGOS;
+    }
+
+    public function fetchAllVCIPEntity($input)
+    {
+        $bvsInput = [
+            'type' => DetailConstants::VKYC,
+            'id'   => $input['merchant_id'],
+        ];
+
+        $bvsResponse = $this->app['bvs_credence_check_manager']->getCredenceCheckDetailsByAccountID($bvsInput);
+
+        $bvsResponseData = $bvsResponse->getResponseData();
+
+        $results = $bvsResponseData['results'];
+
+        $count = 0;
+        $listofVCIPEntity = [];
+        try{
+            while($results[$count]!= null && !empty($results[$count]->getId()))
+            {
+                $response = [
+                    'id'            => $results[$count]->getId(),
+                    'details'       => json_decode($results[$count]->getDetails()->serializeToJsonString()),
+                    'status'        => $results[$count]->getStatus(),
+                    'created_at'    => $results[$count]->getCreatedAt(),
+                    'updated_at'    => $results[$count]->getUpdatedAt(),
+                ];
+                array_push($listofVCIPEntity,$response);
+                $count++;
+            }
+        }catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::BVS_GET_CREDENCE_DETAILS_BY_ACCOUNT_ID_ERROR,[
+                'error_code'    => $e->getCode(),
+                'error_message' => $e->getMessage()
+            ]);
+        }
+
+        return $listofVCIPEntity;
+    }
+
+    public function createVCIPEntity($input)
+    {
+        $actorDetails = $this->getActorDetails();
+
+        $merchantDetails = $this->repo->merchant_detail->getByMerchantId($input['merchant_id']);
+
+        if ($merchantDetails->getPromoterPanName() == null)
+        {
+            throw new \Exception("Promoter Pan Name is missing");
+        }
+
+        $bvsInput = [
+            'type'          => DetailConstants::VKYC,
+            'metadata'      => [
+                'platform'      => 'pg',
+                'created_by'    => $actorDetails['actor_name']
+            ],
+            'payload' => [
+                'account_details' => [
+                    'account_id'    => $input['merchant_id'],
+                    'name'          => $merchantDetails->getPromoterPanName()
+                ]
+            ]
+        ];
+
+        $bvsResponse = $this->app['bvs_credence_check_manager']->createCredenceCheck($bvsInput);
+
+        $response = [
+            'id'      => $bvsResponse->getId(),
+            'status'  => $bvsResponse->getStatus(),
+            'details' => json_decode($bvsResponse->getDetails()->serializeToJsonString())
+        ];
+
+        return $response;
+    }
+
+    public function getEDDStatus($input)
+    {
+        $fieldList = [
+            "account.account_detail.edd_verification_status"
+        ];
+
+        try 
+        {
+            $account = (new AccountSDKWrapper())->getAccountByIDAndFieldMask($input['merchant_id'], $fieldList);
+
+            $status = $account->getAccountDetail()->getEddVerificationStatusUnwrapped();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::ACCOUNT_SERVICE_GET_ENTITY_DETAILS_EXCEPTION,[
+                'error_code'    => $e->getCode(),
+                'error_message' => $e->getMessage(),
+            ]);
+        }
+
+        switch($status)
+        {
+            case DEConstants::VERIFIED:
+                $status = DEConstants::VERIFIED;
+                break;
+            case DEConstants::FAILED:
+                $status = DEConstants::REJECTED;
+                break;
+            default:
+                $status = DEConstants::NOT_VERIFIED;
+        }
+
+        return $status;
+    }
+
+    public function updateEDDStatus($input)
+    {
+        $accountDetailsInput['edd_verification_status'] = $input['status'];
+
+        $accountDetails = (new AccountDetailsSDKWrapper())->setAccountDetails($accountDetailsInput);
+
+        $fieldList = [
+            "account.account_detail.edd_verification_status"
+        ];
+
+        $accountId = (new AccountSDKWrapper())->saveAccount($input['merchant_id'], $accountDetails,$fieldList);
+
+        return [
+            "status"        => $input['status'],
+            "merchant_id"   => $accountId,
+        ];
     }
 }
 

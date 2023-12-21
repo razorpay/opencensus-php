@@ -138,6 +138,14 @@ class Route
         'merchant_autokyc_hard_limit'              => ['post',     'merchants/auto-kyc-cron/hard-limit',             'MerchantController@postHardLimitBreachOnAutoKYC'                 ],
         'merchant_autokyc_escalation'              => ['post',     'merchants/auto-kyc-cron/escalations',            'MerchantController@handleAutoKycEscalationCron'                  ],
 
+
+        //Merchant VCIP Flow
+        'merchant_vkyc_submit_admin'                     => ['post',      'merchant/{id}/vkyc',                                 'MerchantController@initiateVCIPForMerchant'                       ],
+        'merchant_vkyc_fetch_admin'                      => ['get',       'merchant/{id}/vkyc',                                 'MerchantController@getVCIPForMerchant'                       ],
+        'merchant_edd_details_fetch_admin'               => ['get',       'merchant/{id}/edd_details',                           'MerchantController@getEDDDetails'],
+        'merchant_edd_details_submit_admin'              => ['post',      'merchant/{id}/edd_details',                           'MerchantController@updateEDDDetails' ],
+
+
         'merchant_store_add'                       => ['post',     'merchants/config/store',                                'MerchantController@updateMerchantStore'   ],
         'merchant_store_fetch'                     => ['get',      'merchants/config/store',                                'MerchantController@fetchMerchantStore'    ],
         'merchant_activation_eligibilty'           => ['get',      'merchant/{id}/activation/eligibility',                  'MerchantController@getMerchantActivationEligibility'    ],
@@ -7686,6 +7694,10 @@ class Route
     public static $admin = [
         'merchant_activation_business_categories_adminV3',
         'merchant_activation_business_categories_admin_v3',
+        'merchant_vkyc_submit_admin',
+        'merchant_vkyc_fetch_admin',
+        'merchant_edd_details_fetch_admin',
+        'merchant_edd_details_submit_admin',
         'toggle_dashboard_captcha',
         'merchant_fetch_rm_details',
         'merchant_put_rm_details',
@@ -9083,6 +9095,10 @@ class Route
         'merchant_activation_business_categories_v3'       => Permission::VIEW_MERCHANT,
         'merchant_activation_business_categories_admin_v3' => Permission::VIEW_MERCHANT,
         'merchant_activation_business_categories_adminV3' => Permission::VIEW_MERCHANT,
+        'merchant_vkyc_submit_admin'                        => Permission::VIEW_ACTIVATION_FORM,
+        'merchant_vkyc_fetch_admin'                         => Permission::VIEW_ACTIVATION_FORM,
+        'merchant_edd_details_fetch_admin'                  => Permission::VIEW_ACTIVATION_FORM,
+        'merchant_edd_details_submit_admin'                 => Permission::VIEW_ACTIVATION_FORM,
         'qa_roast_get_token'                            => Permission::VIEW_MERCHANT,
         'merchant_activation_clarifications_fetch'      => Permission::VIEW_MERCHANT,
         'merchant_activation_clarifications_save'       => Permission::EDIT_MERCHANT,
@@ -13168,6 +13184,10 @@ class Route
             'shipping_provider_delete',
             'merchant_activation_business_categories_admin_v3',
             'merchant_activation_business_categories_adminV3',
+            'merchant_vkyc_submit_admin',
+            'merchant_vkyc_fetch_admin',
+            'merchant_edd_details_fetch_admin',
+            'merchant_edd_details_submit_admin',
             '1cc_merchant_file_upload_audit_list',
             '1cc_merchant_file_upload_audit_create',
             '1cc_merchant_order_review_automation_rule_configs_upsert',

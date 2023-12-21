@@ -802,6 +802,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerBvsLegalDocumentManager();
 
+        $this->registerBVSCredenceCheckManager();
+
         $this->registerInvoicePdfGenerator();
 
         $this->registerMerchantRiskAlertClient();
@@ -945,6 +947,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'bvs_http_client',
             'error_mapper',
             'bvs_legal_document_manager',
+            'bvs_credence_check_manager',
             'invoice_pdf_generator',
             'sms_sync',
             'cache',
@@ -2356,6 +2359,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('bvs_legal_document_manager', function($app)
         {
             return new Merchant\AutoKyc\Bvs\BvsClient\BvsLegalDocumentManagerClient();
+        });
+    }
+
+    public function registerBVSCredenceCheckManager()
+    {
+        $this->app->singleton('bvs_credence_check_manager', function($app)
+        {
+            return new Merchant\AutoKyc\Bvs\BvsClient\BvsCredenceCheckClient();
         });
     }
 

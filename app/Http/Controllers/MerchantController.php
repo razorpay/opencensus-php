@@ -4226,6 +4226,61 @@ class MerchantController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function initiateVCIPForMerchant($mid = null)
+    {
+        $input = Request::all();
+
+        if (isset($mid) === true)
+        {
+            $input['merchant_id'] = $mid;
+        }
+
+        $response = $this->service(E::MERCHANT_DETAIL)->initiateVCIPForMerchant($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getVCIPForMerchant($mid = null)
+    {
+        $input = Request::all();
+
+        if (isset($mid) === true)
+        {
+            $input['merchant_id'] = $mid;
+        }
+
+        $response = $this->service(E::MERCHANT_DETAIL)->getVCIPForMerchant($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getEDDDetails($mid = null)
+    {
+        $input = Request::all();
+
+        if (isset($mid) === true)
+        {
+            $input['merchant_id'] = $mid;
+        }
+
+        $response = $this->service(E::MERCHANT_DETAIL)->getEDDDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateEDDDetails($mid = null)
+    {
+        $input = Request::all();
+
+        if (isset($mid) === true)
+        {
+            $input['merchant_id'] = $mid;
+        }
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateEDDDetails($input);
+
+        return ApiResponse::json($response);
+    }
     /**
      * This API willbe used internally only.
      *

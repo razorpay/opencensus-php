@@ -17,6 +17,7 @@ class RouteTeamMap
     const TEAM_UNKNOWN                  = 'unknown_unknown';
     const TEAM_PAYMENTS_SETTLEMENTS     = 'payments_settlements';
     const TEAM_PAYMENTS_DOWNTIME        = 'payments_downtime';
+    const TEAM_PAYMENTS_CROSS_BORDER    = 'payments-cross-border';
     // cmma : sop and disputes team
     const TEAM_CMMA                    = 'cmma';
 
@@ -540,5 +541,10 @@ class RouteTeamMap
         'dispute_dcs_config_add'                          => [self::TEAM_CMMA],
         'dispute_dcs_config_get'                          => [self::TEAM_CMMA],
         'dispute_dcs_config_update'                       => [self::TEAM_CMMA],
+
+        'merchant_vkyc_submit_admin'                        => [self::TEAM_PAYMENTS_CROSS_BORDER],
+        'merchant_vkyc_fetch_admin'                         => [self::TEAM_PAYMENTS_CROSS_BORDER],
+        'merchant_edd_details_fetch_admin'                  => [self::TEAM_PAYMENTS_CROSS_BORDER],
+        'merchant_edd_details_submit_admin'                 => [self::TEAM_PAYMENTS_CROSS_BORDER],
     ];
 }

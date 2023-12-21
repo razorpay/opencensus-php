@@ -5100,4 +5100,70 @@ class Service extends Base\Service
 
         return false;
     }
+
+    public function initiateVCIPForMerchant($input)
+    {
+        (new Validator)->validateInput(__FUNCTION__, $input);
+
+        if($this->ba->isAdminAuth() === false and isset($input['merchant_id']) === false)
+        {
+            $input['merchant_id'] = $this->merchant->getId();
+        }
+
+        $vcipEntities = $this->core->fetchAllVCIPEntity($input);
+
+        if ((isset($vcipEntities[0]['status']) === true) and
+            ($vcipEntities[0]['status'] === DEConstants::INITIATED))
+        {
+            if(isset($vcipEntities[0]['details']->weblink_expiry))
+            {
+                $diff = intval($vcipEntities[0]['details']->weblink_expiry) - time();
+
+                if ($diff >= DEConstants::VKYC_CUT_OFF_DURATION)
+                {
+                    return $vcipEntities[0];
+                }
+            }
+        }
+        $vcipEntity = $this->core->createVCIPEntity($input);
+
+        return $vcipEntity;
+    }
+
+    public function getVCIPForMerchant($input)
+    {
+        (new Validator)->validateInput(__FUNCTION__, $input);
+
+        $VCIPEntities = $this->core->fetchAllVCIPEntity($input);
+
+        return $VCIPEntities;
+    }
+
+    public function updateEDDDetails($input)
+    {
+        (new Validator)->validateInput(__FUNCTION__, $input);
+
+        return $this->core->updateEDDStatus($input);
+    }
+
+    public function getEDDDetails($input)
+    {
+        (new Validator)->validateInput(__FUNCTION__, $input);
+
+        $VCIPEntities = $this->core->fetchAllVCIPEntity($input);
+
+        $eddStatus = $this->core->getEDDStatus($input);
+
+        $response = [
+            'status' => $eddStatus,
+            'details' => [
+                    [
+                        'type'   => DEConstants::VKYC,
+                        'status' => isset($VCIPEntities[0]['status']) ? $VCIPEntities[0]['status']: DEConstants::NOT_VERIFIED,
+                ]
+            ]
+        ];
+
+        return $response;
+    }
 }

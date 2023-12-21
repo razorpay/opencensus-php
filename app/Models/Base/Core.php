@@ -221,10 +221,12 @@ class Core
         $userId = null;
         $userEmail = null;
         $userType = 'user';
+        $userName = 'Razorpay';
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
             $userId = $this->app['basicauth']->getAdmin()->getId();
             $userEmail = $this->app['basicauth']->getAdmin()->getEmail();
+            $userName = $this->app['basicauth']->getAdmin()->getName();
             $userType = 'admin';
         }
         elseif (empty($this->app['basicauth']->getUser()) === false)
@@ -243,6 +245,7 @@ class Core
             'actor_id'      => $userId ?? '100000Razorpay',
             'actor_email'   => $userEmail ?? 'default@razorpay.in',
             'actor_type'    => $userType,
+            'actor_name' => $userName ?? 'Razorpay'
         ];
     }
 

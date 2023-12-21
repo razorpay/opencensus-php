@@ -609,6 +609,23 @@ class Validator extends Base\Validator
       Entity::CONTACT_MOBILE                            => 'filled|unique:merchant_details',
     ];
 
+    protected static $updateEDDDetailsRules = [
+        Constants::MERCHANT_ID              => 'required|string|max:14',
+        Constants::STATUS                   => 'required|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+    ];
+
+    protected static $getEDDDetailsRules = [
+        Constants::MERCHANT_ID              => 'required|string|max:14',
+    ];
+
+    protected static $getVCIPForMerchantRules = [
+        Constants::MERCHANT_ID              => 'required|string|max:14',
+    ];
+
+    protected static $initiateVCIPForMerchantRules = [
+        Constants::MERCHANT_ID              => 'required|string|max:14',
+    ];
+
     /**
      * @param $input
      * @param $merchantId

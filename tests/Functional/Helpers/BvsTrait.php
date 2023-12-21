@@ -3,9 +3,15 @@
 
 namespace Functional\Helpers;
 
-
+use Google\Protobuf\Struct;
+use Platform\Bvs\Credencecheck\V1\CreateResponse;
+use Platform\Bvs\Credencecheck\V1\GetDetailsByAccountIdResponse;
+use Platform\Bvs\Credencecheck\V1\GetDetailsByIdResponse;
+use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsCredenceCheckClient;
+use RZP\Models\Merchant\Detail\Constants;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\BvsValidation\Entity;
+use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\CredenceCheckBaseResponse;
 
 trait BvsTrait
 {
@@ -73,5 +79,39 @@ trait BvsTrait
     {
         (new KafkaMessageProcessor())->process('api-bvs-validation-result-events',
             $bvsResponse, 'test');
+    }
+
+    public function mockCreateCredenceCheck($merchantId, $status, $type): \PHPUnit\Framework\MockObject\MockObject
+    {
+        $response = new CreateResponse();
+        $getAccountDetailResponse = new GetDetailsByAccountIdResponse();
+
+        $details = new Struct();
+
+        if ($type === Constants::VKYC)
+        {
+            $details->weblink = "https://capture.kyc.idfy.com/captures?t=6QSH24fkYekx";
+            $details->weblink_expiry = "1703358232";
+            $details->created_by = "rzptest@razorpay.com";
+        }
+
+        $response->setId('100000Razorpay');
+        $response->setStatus($status);
+        $response->setDetails($details);
+
+        $mock = $this->getMockBuilder(BvsCredenceCheckClient::class)
+            ->onlyMethods(['getCredenceCheckDetailsByAccountID', 'createCredenceCheck'])
+            ->getMock();
+
+        $mock->method('getCredenceCheckDetailsByAccountID')
+            ->willReturn(new CredenceCheckBaseResponse($getAccountDetailResponse));
+
+        $mock->method('createCredenceCheck')
+            ->willReturn($response);
+
+        $this->app->instance('bvs_credence_check_manager', $mock);
+
+        return $mock;
+
     }
 }

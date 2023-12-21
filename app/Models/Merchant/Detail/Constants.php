@@ -34,6 +34,8 @@ class Constants
     const NEEDS_CLARIFICATION_SOURCES = [self::ADMIN, self::SYSTEM];
     //verification retry constants
     const RETRY_DELAY_IN_SECONDS = 300;
+    // Cut off for Creating VCIP
+    const VKYC_CUT_OFF_DURATION = 1800; // 30 minutues (30*60)
 
     // Input params for fetchMerchantAccountRecovery
     const EMAIL = 'email';
@@ -80,6 +82,7 @@ class Constants
     const PENDING_SEEN  = 'pending_seen';
     const PENDING_ACK   = 'pending_ack';
     const NO_BANNER     = 'no_banner';
+    const APPROVED      = 'approved';
 
     const TOKEN = 'token';
     //token timeout duration in mins
@@ -156,6 +159,8 @@ class Constants
     const METHOD                 = 'method';
     const OCR_RESPONSE           = 'ocr_response';
     const VERIFICATION_RESULT    = 'verification_result';
+
+    const VKYC                   = 'vkyc';
 
     const ENTITY_NAME            = 'entity_name';
     const CASE_TYPE              = 'case_type';
