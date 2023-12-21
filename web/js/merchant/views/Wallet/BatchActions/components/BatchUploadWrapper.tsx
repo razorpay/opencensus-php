@@ -36,7 +36,7 @@ export const BatchUploadWrapper = ({
         validateBatch={validateBatch}
         displayMsgs={DISPLAY_MESSAGES}
         validateModalInfo={<InfoComponent sampleUrl={docUrl} points={points} />}
-        maxFileSize={10485760} // 10 MB
+        maxFileSize={52428800} // 50 MB
         batchListClass="rto-history-upload"
         docUrl={docUrl}
         createBatch={createBatch}
