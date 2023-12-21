@@ -311,6 +311,7 @@ class Validator extends Base\Validator
         Entity::IEC_CODE                                 => 'sometimes|string|max:20',
         BDConstants::CONSENT                             => 'sometimes|boolean',
         BDConstants::DOCUMENTS_DETAIL                    => 'sometimes|array',
+        Constants::POS_ACTIVATION_STATUS                 => 'sometimes|string|max:30',
 
         Entity::POI_VERIFICATION_STATUS                 => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
         Entity::POA_VERIFICATION_STATUS                 => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
@@ -391,7 +392,8 @@ class Validator extends Base\Validator
         Entity::ACTIVATION_STATUS               => 'required|string|max:30',
         Entity::CLARIFICATION_MODE              => 'filled|string|max:15',
         Entity::REJECTION_REASONS               => 'filled|array',
-        Entity::REJECTION_OPTION                => 'sometimes|string|max:30'
+        Entity::REJECTION_OPTION                => 'sometimes|string|max:30',
+        Constants::POS_ACTIVATION_STATUS        => 'sometimes|string|max:30'
     ];
 
     protected static $activationStatusInternalRules = [
@@ -400,6 +402,7 @@ class Validator extends Base\Validator
         Entity::REJECTION_REASONS               => 'filled|array',
         Entity::REJECTION_OPTION                => 'sometimes|string|max:30',
         Constants::WORKFLOW_MAKER_ADMIN_ID      => 'required|string|max:30',
+        Constants::POS_ACTIVATION_STATUS        => 'sometimes|string|max:30'
     ];
 
     protected static $merchantConsentRules = [
@@ -1897,5 +1900,25 @@ class Validator extends Base\Validator
             'variables'
         );
     }
+
+    public function validatePOSActivationStatusChange($currentStatus, string $newStatus)
+    {
+        if (empty($currentStatus) === true)
+        {
+            return;
+        }
+
+        $allowedNextPOSActivationStatusMapping = $this->getAllowedNextPOSActivationStatus($currentStatus);
+        if (in_array($newStatus, $allowedNextPOSActivationStatusMapping, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_CHANGE_MESSAGE);
+        }
+    }
+
+    public function getAllowedNextPOSActivationStatus(string $currentStatus): array
+    {
+        return Status::ALLOWED_NEXT_POS_ACTIVATION_STATUSES_MAPPING[$currentStatus];
+    }
+
 
 }

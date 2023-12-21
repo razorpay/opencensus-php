@@ -4,12 +4,13 @@ namespace RZP\Models\ClarificationDetail;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\Entity as DEntity;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
 
 class Service extends Base\Service
@@ -61,11 +62,17 @@ class Service extends Base\Service
         // this should not affect the current flow, hence wrapped in try catch
         try
         {
+            $onboardingType = $input[DEConstants::ONBOARDING_TYPE] ?? null;
+
             $pgosNCProxyController = new NeedsClarificationProxyController();
 
             $shouldMerchantOnboardViaPGOS = $pgosNCProxyController->shouldMerchantOnboardViaPGOS($merchantId);
 
             if ($shouldMerchantOnboardViaPGOS === true) {
+
+                if ($onboardingType === Constants::POS_ONBOARDING_TYPE) {
+                    $pgosInput[DEConstants::ONBOARDING_TYPE] = $onboardingType;
+                }
 
                 $pgosInput[DEntity::CLARIFICATION_REASONS] = $input[DEntity::CLARIFICATION_REASONS];
                 $pgosInput['merchant_id'] = $merchantId;
@@ -262,6 +269,9 @@ class Service extends Base\Service
 
             if ($shouldMerchantOnboardViaPGOS === true) {
 
+                $onboardingType = $input[DEConstants::ONBOARDING_TYPE];
+                unset($input[DEConstants::ONBOARDING_TYPE]);
+
                 $pgosInput['data'] = $input;
 
                 if ($input['submit'] == 1 or $input['submit'] == "1") {
@@ -269,7 +279,8 @@ class Service extends Base\Service
                     $pgosInput['submit'] = 1;
                 }
 
-                $pgosInput['merchant_id'] = $merchantId;
+                $pgosInput[DEConstants::MERCHANT_ID] = $merchantId;
+                $pgosInput[DEConstants::ONBOARDING_TYPE] = $onboardingType;
 
                 $merchant = $this->repo->merchant->findOrFail($merchantId);
 

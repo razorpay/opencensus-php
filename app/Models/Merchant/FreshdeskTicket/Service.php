@@ -666,6 +666,7 @@ class Service extends Base\Service
         $input = $this->addActivationStatusToInput($input, $fdInstance);
 
         unset($input[Constants::FD_INSTANCE]);
+        unset($input[Constants::ONBOARDING_TYPE]);
 
         $input = $this->addRemoveValuesBeforeTicketCreation($input, $fdInstance);
 
@@ -828,6 +829,19 @@ class Service extends Base\Service
 
     public function addActivationStatusToInput($input, $fdInstance): array
     {
+        /**
+         *  For POS ticket  we have to only set Pos activation status and return input back
+         */
+        if (empty($input[Constants::ONBOARDING_TYPE]) === false)
+        {
+            $cfOnboardingType =  $this->app['config']->get('app.freshdesk_onboarding_type_key');
+
+            $input[Constants::CUSTOM_FIELDS][$cfOnboardingType] = Constants::POS_ONBOARDING_TYPE;
+
+            return $input;
+        }
+
+
         if ($fdInstance === Constants::RZPIND)
         {
             $activationStatus = $this->merchant->merchantDetail->getActivationStatus();

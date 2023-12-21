@@ -36,4 +36,6 @@ class Constants
     const CLARIFICATION_REASONS     = 'clarification_reasons';
     const OLD_CLARIFICATION_REASONS = 'old_clarification_reasons';
     const MERCHANT                  = 'merchant';
+    const PHYSICAL_STORE            = 'physical_store';
+    const POS_ONBOARDING_TYPE       = "pos";
 }

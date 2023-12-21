@@ -80,6 +80,7 @@ class NeedsClarificationReasonsList
     //board resolution documents clarification reasons
     const AUTHORIZED_SIGNATORY_MISMATCH                           = 'authorized_signatory_mismatch';
     const PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT = 'provide_authorized_signatory_signed_and_sealed_document';
+    const STOCK_NOT_MATCHES_WITH_MCC_CODE                         = 'stock_not_matches_with_mcc_code';
 
     const REASON_DETAILS = [
         self::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST                                      => [
@@ -206,6 +207,8 @@ class NeedsClarificationReasonsList
             NeedsClarificationMetaData::DESCRIPTION => 'You have exhausted all your retry attempts, kindly share additional details to get your account reactivated.',],
         self::NO_DOC_KYC_FAILURE => [
             NeedsClarificationMetaData::DESCRIPTION => 'Your KYC details have failed internal checks. Please submit all the additional required details to get your account activated.',],
+        self::STOCK_NOT_MATCHES_WITH_MCC_CODE => [
+            NeedsClarificationMetaData::DESCRIPTION => 'The documents attached are not matching with provided mcc code.',],
     ];
 
 

@@ -208,6 +208,8 @@ class Core extends Base\Core
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
+        $this->unlockL3FormIfApplicable($merchant, $input);
+
         if ($validateLock === true)
         {
             $merchantDetails->getValidator()->validateIsNotLocked();
@@ -832,5 +834,21 @@ class Core extends Base\Core
                 }
             }
         }
+    }
+
+    private function unlockL3FormIfApplicable(Merchant\Entity $merchant, array $input)
+    {
+        if ($merchant->merchantDetail->isLocked() === false)
+        {
+            return;
+        }
+
+        $merchantDetailCore = new Detail\Core();
+
+        $input = [
+            'locked'  =>  false,
+        ];
+
+        $merchantDetailCore->editMerchantDetailFields($merchant, $input);
     }
 }

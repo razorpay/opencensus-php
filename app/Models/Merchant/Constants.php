@@ -1987,4 +1987,7 @@ final class Constants
     const EXPIRED_AT    = "expired_at";
     const CALLBACK_URL  = "callback_url";
     const CREDIT        = "credit";
+
+    const POS_CLARIFICATION_REASONS   = 'pos_clarification_reasons';
+    const ALLOWED_NEXT_POS_ACTIVATION_STATUS = "allowed_next_pos_activation_status";
 }

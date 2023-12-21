@@ -161,6 +161,7 @@ class DetailServiceTest extends TestCase
         $this->merchantEntityMock->shouldReceive('getOrgId')->withAnyArgs()->andReturn();
         $this->repoMock->shouldReceive('driver')->with('merchant_attribute')->andReturn($this->merchantAttributeRepoMock);
         $this->merchantAttributeRepoMock->shouldReceive('getKeyValues')->andReturn([]);
+        $this->merchantBusinessDetailEntityMock->shouldReceive('getWebsiteDetails')->withAnyArgs()->andReturn(null);
 
         $response = $this->merchantService->saveMerchantDetailForPreSignUp($merchantData);
 
@@ -212,6 +213,7 @@ class DetailServiceTest extends TestCase
         $this->merchantEntityMock->shouldReceive('isRouteNoDocKycEnabledForParentMerchant')->andReturn(false);
         $this->merchantDetailRepositoryMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantDetailEntityMock);
         $this->merchantEntityMock->shouldReceive('getOrgId')->withAnyArgs()->andReturn();
+        $this->merchantBusinessDetailEntityMock->shouldReceive('getWebsiteDetails')->withAnyArgs()->andReturn(null);
 
         $org = Mockery::mock('\RZP\Models\Admin\Org\Entity');
 

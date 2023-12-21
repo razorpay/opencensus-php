@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-
 use App;
 use Config;
 use DateTime;
@@ -563,6 +562,12 @@ class Service extends Base\Service
 
         $isPhantomOnboardingFlow = Merchant\PhantomUtility::validatePhantomOnBoarding($partnerId);
 
+        $merchantDetails = $merchant->merchantDetail;
+
+        $isPosDetailsSubmitted = $input[DEConstants::IS_POS_DETAILS_SUBMITTED] ?? false;
+
+        unset($input[DEConstants::IS_POS_DETAILS_SUBMITTED]);
+
         $this->saveMerchantEligibilityForCategoriesV3Revamp($merchantId, $input, $merchant);
 
         // check if merchant is to be onboarded via PGOS
@@ -572,13 +577,29 @@ class Service extends Base\Service
         {
             try
             {
+                if ($isPosDetailsSubmitted === true and  isset($merchantDetails) === true)
+                {
+                    $posActivationFlow = $this->core->fetchPosActivationFlow($merchant);
+
+                    if ($posActivationFlow !== DetailConstants::POS_BLACKLIST && $this->shouldMerchantOnboardForPOS($merchant)) {
+
+                        $this->core->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW]);
+
+                        $this->core()->pushKafkaEventOnActivationFormSubmit($merchantDetails, $merchant, DEConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA);
+                    }
+                }
+
                 $input['merchantId'] = $merchantId;
 
                 $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant, true);
 
+                $pgosResponse['activation_response'][DEConstants::IS_POS_DETAILS_SUBMITTED] = $isPosDetailsSubmitted;
+
                 $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
                     'response' => $pgosResponse
                 ]);
+
+                $pgosResponse[DEConstants::IS_POS_DETAILS_SUBMITTED] = $isPosDetailsSubmitted;
 
                 if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
                 {
@@ -721,6 +742,43 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function shouldMerchantOnboardForPOS(Merchant\Entity $merchant)
+    {
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $businessDetail = $merchantDetails->businessDetail;
+
+        if (empty($businessDetail) === false)
+        {
+            $isPosMerchant = (new Merchant\Detail\Core())->isPOSMerchant($businessDetail);
+
+            if ($isPosMerchant === true and $this->isPOSExperimentEnabledForCity($merchantDetails->getBusinessOperationCity()))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isPOSExperimentEnabledForCity(string $city): bool{
+
+        $properties = [
+            'request_data'  => "{\"city\": \"$city\"}",
+            'experiment_id' => $this->app['config']->get('app.enable_routes_for_pos_merchant_exp_id'),
+        ];
+
+        $isExpEnabled =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'allow omni onboarding');
+
+        if ($isExpEnabled === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private function allowEditingOfBusinessNameAndDBAKYC($merchant, $input)
@@ -1658,6 +1716,19 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
+        /**
+         *  In some cases where only pos activation status has to be updated and pg activation status
+         *  is empty in those cases we only have to update pos case and return response.
+         */
+        if (empty($input[DEConstants::POS_ACTIVATION_STATUS]) === false)
+        {
+            $merchantDetails = (new Core)->updatePosActivationStatus($merchant, $input);
+
+            if (empty($input[Entity::ACTIVATION_STATUS]) === true) {
+                return $merchantDetails->toArrayPublic();
+            }
+        }
+
         $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $admin);
 
         return $merchantDetails->toArrayPublic();
@@ -1686,11 +1757,24 @@ class Service extends Base\Service
 
         ]);
 
+        if (empty($input[DEConstants::POS_ACTIVATION_STATUS]) === false)
+        {
+           $merchantDetails = (new Core)->updatePosActivationStatus($merchant, $input);
+
+           if (empty($input[Entity::ACTIVATION_STATUS]) === true)
+           {
+               return $merchantDetails->toArrayPublic();
+           }
+        }
+
         $merchant->merchantDetail->getValidator()->validateInput('activationStatusInternal', $input);
 
         $maker = $this->repo->admin->findOrFailPublic( Admin\Admin\Entity::stripDefaultSign($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]));
 
-        unset($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]);
+        if (empty($input[DEConstants::POS_ACTIVATION_STATUS]) === true)
+        {
+            unset($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]);
+        }
 
         $this->app['workflow']->setMakerFromAuth(false);
         $this->app['workflow']->setWorkflowMaker($maker);

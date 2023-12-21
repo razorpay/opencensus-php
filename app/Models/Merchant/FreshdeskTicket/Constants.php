@@ -18,6 +18,7 @@ class Constants
     const DUE_BY = 'due_by';
 
     const DEFAULT_ACTIVATION_STATUS = 'undefined';
+    const DEFAULT_POS_ACTIVATION_STATUS = 'under_review';
 
     const CC_EMAILS    = 'cc_emails';
     const REQUESTER_ID = 'requester_id';
@@ -53,6 +54,7 @@ class Constants
     const CF_MULTIPRODUCT_USER_P0              = 'cf_multiproduct_user_p0';
 
     const MULTI_PRODUCT_USER                   = 'MP User P0';
+    const POS_ONBOARDING_TYPE                  = 'POS';
 
     const ID                                   = 'id';
     const CF_WEBSITE_URL                       = 'cf_website_url';
@@ -122,6 +124,7 @@ class Constants
     const RZPCAP = 'rzpcap';
     const RZPX   = 'rzpx';
     const URLX   = 'urlx';
+    const ONBOARDING_TYPE = "onboarding_type";
 
     const FRESHDESK_INSTANCES = [
         Type::SUPPORT_DASHBOARD_X => [self::RZPX   => self::URLX,

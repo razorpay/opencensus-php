@@ -36,7 +36,7 @@ class Constants
     const ADD_ADDITIONAL_WEBSITE_SELF_SERVE     = 'add_additional_website_self_serve';
 
     const APPROVED_TRANSACTION_LIMIT            = 'approved_transaction_limit';
-    
+
     const MERCHANT_INTERNATIONAL_ENABLEMENT_SUBMIT = 'merchant_international_enablement_submit';
 
     const APPROVE                               = 'approve';
@@ -80,7 +80,7 @@ class Constants
         self::MERCHANT_BANK_ACCOUNT_UPDATE              => MerchantSelfServeObserver::class,
 
         self::ADD_ADDITIONAL_WEBSITE_SELF_SERVE         => MerchantSelfServeObserver::class,
-  
+
         self::MERCHANT_INTERNATIONAL_ENABLEMENT_SUBMIT  => MerchantSelfServeObserver::class,
     ];
 
@@ -147,6 +147,7 @@ class Constants
     const EVENT_TYPE                = 'event_type';
     const CMMA_CASE_TYPE            = 'case_type';
     const CMMA_ACTIVATION_CASE_TYPE = 'activation';
+    const CMMA_POS_ACTIVATION_CASE_TYPE = 'activationPosv1';
 
     const CMMA_EVENT_WORKFLOW_STATUS_CHANGE = 'workflow_status_change';
 

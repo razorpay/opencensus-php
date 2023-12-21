@@ -7712,6 +7712,49 @@ class CoreTest extends TestCase
         $this->assertTrue($leadScore > 0);
     }
 
+    public function testSubmitMerchantInternalByOnboardngType()
+    {
+        $core = new DetailCore();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'               => $merchant->getId(),
+            //'company_pan'               => 'AAAPA1234J',
+            'gstin'                     => '29ABCDE1234L1Z1',
+            'business_website'          => 'www.test.com'
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id'               => $merchant->getId(),
+            'plugin_details'            => [
+                [
+                    'website'                   => "www.test.com",
+                    'merchant_selected_plugin'  => "shopify",
+                    'suggested_plugin'          => "whmcs",
+                    'ecommerce_plugin'          => true
+                ]
+            ],
+        ]);
+
+        //Mocking PGOS for Clearbit
+        $pgosProxyController = Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
+
+        $expectedPosActivationStatus = [
+            "pos_activation_status"                     => "under_review",
+        ];
+
+        $inputPayload =  [
+            "onboarding_type" => "pgAndPos"
+        ];
+
+        $pgosProxyController->shouldReceive('handlePGOSProxyRequests')->andReturn($expectedPosActivationStatus);
+
+        $merchant = $core->submitMerchantInternalByOnboardingType($inputPayload, $merchant);
+
+        $this->assertTrue($merchant != null);
+    }
+
     public function testGetApplicableActivationStatusMccAdditionalDocSplitzKqu()
     {
         Mail::fake();

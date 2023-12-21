@@ -3,16 +3,15 @@
 namespace RZP\Models\Merchant\Detail;
 
 
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
-use RZP\Models\Merchant\Website\Entity as WebsiteEntity;
-use RZP\Models\Merchant\Email\Entity as EmailEntity;
-use \RZP\Models\DeviceDetail\Constants as DDConstants;
-use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\Email\Entity as EmailEntity;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Website\Entity as WebsiteEntity;
 
 class Constants
 {
@@ -736,5 +735,43 @@ class Constants
 
     const VERSION                                 = 'version';
     const RESULTS                                 = 'results';
+
+    const POS_DETAILS_REQUIRED_STATUS          = 'pos_details_required_status';
+    const POS_ACTIVATION_FORM_SUBMISSION_KAFKA = 'pos_activation_form_submission_kafka_event';
+
+    const POS_ACTIVATION_STATUS    = 'pos_activation_status';
+    const IS_POS_DETAILS_SUBMITTED = 'is_pos_details_submitted';
+    const ONBOARDING_TYPE          = 'onboarding_type';
+
+    const SHOP_FRONT_IMAGE    = 'shop_front';
+    const SHOP_INTERIOR_IMAGE = 'shop_interior';
+
+    const VALID_POS_FIELDS = [
+        self::SHOP_INTERIOR_IMAGE,
+        self::SHOP_FRONT_IMAGE
+    ];
+
+    const CLARIFICATION_DETAILS = 'clarification_details';
+    const NC_COUNT              = 'nc_count';
+    const NC_SUBMISSION_DATE    = 'nc_submission_date';
+    const CLARIFICATION_REASONS = 'clarification_reasons';
+    const COMMENTS              = 'comments';
+
+    const FROM                             = 'from';
+    const IS_CURRENT                       = 'is_current';
+    const COMMENT_DATA                     = 'comment_data';
+    const TEXT                             = 'text';
+    const CREATED_AT                       = 'created_at';
+    const REASON_CODE                      = 'reason_code';
+    const REASON_TYPE                      = 'reason_type';
+    const POS_NC_COUNT                     = 'pos_nc_count';
+    const POS_BLACKLIST                    = 'blacklist';
+    const ONBOARDING_TYPE_POS              = 'pos';
+    const ONBOARDING_TYPE_PG_AND_POS       = 'pgAndPos';
+    const CMMA_POS_ACTIVATION_CASE_TYPE    = 'activationPosv1';
+    const CMMA_OPEN_CASE_TYPE              = 'open';
+    const WORKFLOW_STATUS_CHANGE_OPEN_TYPE = 'workflow_status_change';
+    const CMMA_CASE_STATUS_TYPE            = 'status';
+    const CMMA_POS_CASE_NC_EVENT_TYPE = "pos_nc_case_event_type";
 }
 

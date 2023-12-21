@@ -494,7 +494,7 @@ class Core extends Base\Core
 
         if ($isEligibleForFeeBasedGating === false)
         {
-            $this->pushKafkaEventOnActivationFormSubmit($oldMerchantDetails, $merchant);
+            $this->pushKafkaEventOnActivationFormSubmit($oldMerchantDetails, $merchant, DEConstants::ACTIVATION_FORM_SUBMISSION_KAFKA);
         }
 
         return $mutexTransactionData;
@@ -504,6 +504,8 @@ class Core extends Base\Core
     {
         $submit = $input[Entity::SUBMIT] ?? false;
 
+        $onboardingType = $input[DEConstants::ONBOARDING_TYPE] ?? "";
+
         $merchant = $merchantDetails->merchant;
 
         $originProduct = Product::PRIMARY;
@@ -512,7 +514,25 @@ class Core extends Base\Core
 
         $response = null;
 
-        if ($submit == 1)
+        $this->unlockL3FormIfApplicable($merchant);
+
+        /**
+         * To handle submit Merchant Internal for POS merchants in following conditions
+         *  1. If merchant only submitted pos details
+         * 2. If merchant submitting pos and pg clarifications.
+         * */
+        if ($onboardingType === DEConstants::ONBOARDING_TYPE_POS || $onboardingType === DEConstants::ONBOARDING_TYPE_PG_AND_POS)
+        {
+            $this->trace->info(TraceCode::SUBMIT_POS_NC_FLOW, [
+                "input"  => $input,
+                "merchant_id"  => $merchant->getId(),
+            ]);
+
+            $this->submitMerchantInternalByOnboardingType($input, $merchant);
+        }
+
+        // Ignoring PG clarifications submit if merchant only submit POS clarifications
+        if ($onboardingType !== DEConstants::ONBOARDING_TYPE_POS && $submit == 1)
         {
             $this->validateEmailVerificationIfApplicable($merchant);
 
@@ -550,6 +570,45 @@ class Core extends Base\Core
 
         return $response;
     }
+
+    public function submitMerchantInternalByOnboardingType($input, Merchant\Entity $merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
+
+        if ($this->isNcResponded($merchantPosActivationStatus, Status::UNDER_REVIEW ) === true)
+        {
+            $this->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW]);
+
+            $this->publishKakfaEventForPOSNeedsClarificationResponded($merchantDetails->getMerchantId());
+        }
+
+        return $merchant;
+    }
+
+    private function publishKakfaEventForPOSNeedsClarificationResponded($merchantId)
+    {
+        $cmmaCaseEventData = [
+            DEConstants::CMMA_CASE_STATUS_TYPE          => DEConstants::CMMA_OPEN_CASE_TYPE,
+            DifferEntity::ENTITY_ID                     => $merchantId,
+            DifferEntity::ENTITY_NAME                   => Constants::MERCHANT,
+            DEConstants::EVENT_TYPE                     => DEConstants::CMMA_POS_CASE_NC_EVENT_TYPE,
+            DEConstants::CASE_TYPE                      => DEConstants::CMMA_POS_ACTIVATION_CASE_TYPE,
+        ];
+
+        $cmmaCaseEventTopic = env(DetailConstants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
+
+        $this->app['trace']->info(TraceCode::POS_CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                                                                                  'data'        => $cmmaCaseEventData,
+                                                                                  'topic'       => $cmmaCaseEventTopic,
+                                                                                  'merchant_id' => $merchantId,
+                                                                              ]
+        );
+
+        (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
+    }
+
 
     public function sendOtpViaEmailPGOSInternal($merchantId, $input)
     {
@@ -637,18 +696,32 @@ class Core extends Base\Core
 
     }
 
-    private function pushKafkaEventOnActivationFormSubmit($oldMerchantDetail, $merchant)
+    public function pushKafkaEventOnActivationFormSubmit($oldMerchantDetail, $merchant, $eventType = null)
     {
         $merchantId = $merchant->getId();
 
         $newMerchantDetail = $this->repo->merchant_detail->findOrFailPublic($merchantId);
 
+        $merchantBusinessDetails = $oldMerchantDetail->businessDetail;
+        $posDetailsRequiredStatus = "false";
+
+        if (empty($merchantBusinessDetails) === false)
+        {
+            $isPosMerchant = $this->isPOSMerchant($merchantBusinessDetails);
+
+            if ($isPosMerchant === true)
+            {
+                $posDetailsRequiredStatus = "true";
+            }
+        }
+
         $kafkaActivationFormSubmissionEventData = [
-            DifferEntity::ENTITY_ID                => $merchantId,
-            DEConstants::OLD_ACTIVATION_DATA       => $oldMerchantDetail,
-            DEConstants::UPDATED_ACTIVATION_DATA   => $newMerchantDetail,
-            DifferEntity::ENTITY_NAME              => Constants::MERCHANT,
-            DEConstants::EVENT_TYPE                => DEConstants::ACTIVATION_FORM_SUBMISSION_KAFKA,
+            DifferEntity::ENTITY_ID                  => $merchantId,
+            DEConstants::OLD_ACTIVATION_DATA         => $oldMerchantDetail,
+            DEConstants::UPDATED_ACTIVATION_DATA     => $newMerchantDetail,
+            DifferEntity::ENTITY_NAME                => Constants::MERCHANT,
+            DEConstants::EVENT_TYPE                  => $eventType,
+            DEConstants::POS_DETAILS_REQUIRED_STATUS => $posDetailsRequiredStatus
         ];
 
         $activationFormSubmissionEventTopic = env(DEConstants::ACTIVATION_FORM_SUBMISSION_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
@@ -657,6 +730,7 @@ class Core extends Base\Core
                 'data'        => $kafkaActivationFormSubmissionEventData,
                 'topic'       => $activationFormSubmissionEventTopic,
                 'merchant_id' => $merchantId,
+                'event_type'  => $eventType
             ]
         );
 
@@ -4088,6 +4162,128 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    public function updatePosActivationStatus(Merchant\Entity $merchant, array $input): Entity
+    {
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
+        unset($input[Entity::ACTIVATION_STATUS]);
+
+        $merchantPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
+
+        if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::UNDER_REVIEW)
+        {
+            if (($merchantPosActivationStatus === Status::REJECTED) and
+                (($this->app['basicauth']->isAdminAuth()) === false))
+            {
+                throw new BadRequestValidationFailureException(
+                    'Rejected merchants are not allowed to submit activation form');
+            }
+        }
+
+        $merchantDetails->getValidator()
+                        ->validatePOSActivationStatusChange(
+                            $merchantPosActivationStatus,
+                            $input[DEConstants::POS_ACTIVATION_STATUS]);
+
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_POS_ACTIVATION_STATUS, [
+            'input'       => $input,
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $newMerchantDetails = clone $merchantDetails;
+
+        $oldMerchantDetails = clone $merchantDetails;
+
+        $rejectionReasons = [];
+
+        if (empty($input[Entity::REJECTION_REASONS]) === false)
+        {
+            $rejectionReasons = $input[Entity::REJECTION_REASONS];
+
+            unset($input[Entity::REJECTION_REASONS]);
+        }
+
+        $this->repo->transactionOnLiveAndTest(function() use (
+            $merchantDetails,
+            $oldMerchantDetails,
+            $newMerchantDetails,
+            $input, $merchant,
+            $merchantPosActivationStatus
+        ) {
+            $oldMerchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $input[DEConstants::POS_ACTIVATION_STATUS];
+            if (($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB))
+            {
+
+                $this->pgosProxyController->handlePGOSProxyRequests('pos_merchant_config', ["merchant_id" => $merchant->getId()], $merchant, true);
+
+                $this->app['workflow']
+                    ->setEntity($merchantDetails->getEntity())
+                    ->setOriginal($merchantDetails)
+                    ->setDirty($oldMerchantDetails)
+                    ->setRouteParams([Entity::ID => $merchant->getId()])
+                    ->setInput($input)
+                    ->setPermission(Permission\Name::POS_EDIT_ACTIVATE_MERCHANT);
+
+                $this->app['workflow']
+                    ->handle();
+            }
+
+            if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::REJECTED)
+            {
+                $this->app['workflow']
+                    ->setEntity($merchantDetails->getEntity())
+                    ->setOriginal($merchantDetails)
+                    ->setDirty($oldMerchantDetails)
+                    ->setRouteParams([Entity::ID => $merchant->getId()])
+                    ->setInput($input)
+                    ->setPermission(Permission\Name::POS_EDIT_ACTIVATE_MERCHANT);
+
+                $this->sendRejectionEmail($merchant);
+            }
+
+            if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
+            {
+                $merchantId = $newMerchantDetails->getMerchantId();
+
+                $posClarificationDetails = (new ClarificationDetailService())->getClarificationDetail($merchantDetails->getMerchantId());
+                if (empty($posClarificationDetails) === false)
+                {
+                    $this->trace->info(TraceCode::NC_EMAIL_INITIATED, [
+                        'merchant_id'                => $merchantId,
+                        'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
+                        'pos_activation_status'      => $merchantDetails->getActivationStatus()
+                    ]);
+
+                    $merchantDetails->setLocked(false);
+
+                    if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
+                        (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
+                    {
+                        $this->sendNeedsClarificationEmail($merchant);
+                    }
+
+                    $this->trace->info(TraceCode::POS_NC_EMAIL_SENT, [
+                        'merchant_id'           => $merchantId,
+                        'pos_activation_status' => $merchantPosActivationStatus,
+                    ]);
+                }
+            }
+
+            $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS]);
+
+            $stateData = [
+                "pos_state"       => $input[DEConstants::POS_ACTIVATION_STATUS],
+                "merchant_id"     => $merchantDetails->getMerchantId(),
+                "onboarding_type" => "pos"
+            ];
+
+            $this->pgosProxyController->handlePGOSProxyRequests('update_action_state', $stateData, $merchant, true);
+
+        });
+
+        return $merchantDetails;
+    }
+
     public function updateMerchantStoreInternal(string $merchantId, array $input): array
     {
         try
@@ -5065,6 +5261,22 @@ class Core extends Base\Core
         $merchant                = $merchantDetails->merchant;
         $merchantBusinessDetails = $merchantDetails->businessDetail;
 
+        $isPosMerchant = false;
+
+        if (empty($merchantBusinessDetails) === false)
+        {
+            $isPosMerchant = $this->isPOSMerchant($merchantBusinessDetails);
+        }
+
+        // Fetch pos activation status
+        if (isset($merchantBusinessDetails) === true and $isPosMerchant === true)
+        {
+
+            $merchantPosStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
+
+            $response[DetailConstants::POS_ACTIVATION_STATUS] = $merchantPosStatus;
+        }
+
         if ($merchant->isLinkedAccount() === true)
         {
             $parentMerchant = $merchant->parent;
@@ -5108,7 +5320,7 @@ class Core extends Base\Core
             return $response;
         });
 
-        $response = Tracer::inSpan(['name' => 'create_response.adding_relevant_entity_details'], function() use ($merchant, $merchantDetails, $response, $merchantBusinessDetails) {
+        $response = Tracer::inSpan(['name' => 'create_response.adding_relevant_entity_details'], function() use ($merchant, $merchantDetails, $response, $merchantBusinessDetails, $isPosMerchant, $merchantPosStatus) {
 
             $hardEscalationLevel4 = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchantAndTypeAndLevel
             ($merchant->getMerchantId(), Merchant\AutoKyc\Escalations\Constants::HARD_LIMIT, 4);
@@ -5156,15 +5368,29 @@ class Core extends Base\Core
             $response['isAutoKycDone']                                = $this->isAutoKycDone($merchantDetails);
             $response['isHardLimitReached']                           = empty($hardEscalationLevel4) ? false : true;
             $response['activationStatusChangeLogs']                   = $this->getStatusChangeLogs($merchant);
+            $response['posActivationStatusChangeLogs']                = $this->getPOSStatusChangeLogs($merchant);
             $response[Entity::MERCHANT_BUSINESS_DETAIL]               = $merchantBusinessDetails;
             $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = isset($merchantBusinessDetails) === true ? $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] : "";
             $response[Entity::PROMOTER_PAN_NAME_SUGGESTED]            = $merchantDetails->getPromoterPanNameSuggested();
             $response[Entity::BUSINESS_NAME_SUGGESTED]                = $merchantDetails->getBusinessNameSuggested();
             $response['business_registered_address_suggested']        = $addressSuggestedFromGSTIN;
+            $response[Constants::ALLOWED_NEXT_POS_ACTIVATION_STATUS]  = Status::ALLOWED_NEXT_POS_ACTIVATION_STATUSES_MAPPING[$merchantPosStatus];
+            $response["pos_activation_flow"]                          = $this->fetchPosActivationFlow($merchant);
+            $response["is_pgos_merchant"]                             = $this->isPGOSMerchant($merchant);
 
             if (empty($merchantDetails->getKycClarificationReasons()) === false)
             {
                 $response[Entity::KYC_CLARIFICATION_REASONS] = $this->getUpdatedKycClarificationReasons([], $merchantDetails->getMerchantId());
+            }
+
+            if (isset($merchantBusinessDetails) === true  and $isPosMerchant === true)
+            {
+                $posClarificationDetails = (new ClarificationDetailService())->getClarificationDetail( $merchantDetails->getMerchantId());
+
+                if (empty($posClarificationDetails) === false)
+                {
+                    $response[Constants::POS_CLARIFICATION_REASONS] = $this->getUpdatedPosClarificationResponse($posClarificationDetails);
+                }
             }
 
             return $response;
@@ -10747,6 +10973,237 @@ class Core extends Base\Core
         }
 
         $body['category_present'] = $isMerchantCategoryPresent;
+    }
+
+    public function getUpdatedPosClarificationResponse(array $input): array
+    {
+
+        $clarificationDetails = $input[DEConstants::CLARIFICATION_DETAILS];
+
+        $posClarificationReasons = [];
+
+        try
+        {
+            if (empty($clarificationDetails) === false)
+            {
+                $clarificationReasons = [];
+
+                $clarificationReasons[DEConstants::POS_NC_COUNT] = $clarificationDetails[DEConstants::POS_NC_COUNT];
+
+                foreach($clarificationDetails as $key => $value)
+                {
+
+                    if (in_array($key, DocumentType::VALID_POS_DOCUMENTS) === false)
+                    {
+                        continue;
+                    }
+
+                    $clarificationArray = [];
+                    $comments = $value[DEConstants::COMMENTS];
+
+                    if (empty($comments) === false)
+                    {
+                        foreach ($comments as $comment)
+                        {
+                            $clarification                           = [];
+                            $clarification[DEConstants::FROM]        = DEConstants::ADMIN;
+                            $clarification[DEConstants::NC_COUNT]    = $comment[DEConstants::NC_COUNT];
+                            $clarification[DEConstants::IS_CURRENT]  = true;
+                            $clarification[DEConstants::CREATED_AT]  = $comment[DEConstants::CREATED_AT];
+                            $clarification[DEConstants::REASON_CODE] = $comment[DEConstants::COMMENT_DATA][DEConstants::TEXT];
+                            $clarification[DEConstants::REASON_TYPE] = $comment[DEConstants::COMMENT_DATA][DEConstants::TYPE];
+
+                            array_push($clarificationArray, $clarification);
+                        }
+                        $clarificationReasons[$key] = $clarificationArray;
+                    }
+
+                }
+
+                $posClarificationReasons[DEConstants::CLARIFICATION_REASONS] =$clarificationReasons;
+
+            }
+        }
+        catch (\Exception $ex){
+            $this->trace->error(TraceCode::ERROR_PARSING_RESPONSE, ["error" => $ex]);
+        }
+
+        return $posClarificationReasons;
+    }
+
+    public function isPOSMerchant(BusinessDetailEntity $merchantBusinessDetails): bool
+    {
+
+        $isPhysicalStore = false;
+
+        if (empty($merchantBusinessDetails) == false)
+        {
+            $websiteDetails = $merchantBusinessDetails->getWebsiteDetails() ?? null;
+
+            if (empty($websiteDetails) === false and empty($websiteDetails[BusinessDetailConstants::PHYSICAL_STORE]) === false){
+                $isPhysicalStore = $websiteDetails[BusinessDetailConstants::PHYSICAL_STORE];
+            }
+
+        }
+
+        return $isPhysicalStore;
+    }
+
+    public function fetchMerchantPosActivationStatus(Entity $merchantDetails)
+    {
+
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantDetails->getMerchantId());
+
+        $merchantId = $merchantDetails->getMerchantId();
+
+        try
+        {
+            if ($shouldMerchantOnboardViaPGOS === true)
+            {
+
+                $payload = [
+                    "merchant_id"        => $merchantId
+                ];
+
+                $this->trace->info(TraceCode::PGOS_FETCH_POS_ACTIVATION_STATUS_REQUEST, [
+                    '$payload' => $payload,
+                ]);
+
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pgos_fetch_activation_status',
+                                                                                $payload, $merchantDetails->merchant, true);
+
+                $this->trace->info(TraceCode::PGOS_FETCH_POS_ACTIVATION_STATUS_RESPONSE, [
+                    'merchant_id' => $merchantId,
+                    'response'    => $response,
+                ]);
+
+                return $response[DetailConstants::POS_ACTIVATION_STATUS];
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id'   => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+
+        return null;
+    }
+
+    public function updateMerchantPosActivationStatus(Entity $merchantDetails, string $posActivationStatus)
+    {
+
+        $merchantId = $merchantDetails->getMerchantId();
+
+        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId);
+
+        try
+        {
+            if ($shouldMerchantOnboardViaPGOS === true)
+            {
+
+                $payload = [
+                    "merchant_id"        => $merchantId,
+                    "pos_activation_status" => $posActivationStatus
+                ];
+
+                $this->trace->info(TraceCode::PGOS_UPDATE_POS_ACTIVATION_STATUS_REQUEST, [
+                    '$payload' => $payload,
+                ]);
+
+                $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pgos_update_activation_status',
+                                                                                $payload, $merchantDetails->merchant, true);
+
+                $this->trace->info(TraceCode::PGOS_UPDATE_POS_ACTIVATION_STATUS_RESPONSE, [
+                    'merchant_id' => $merchantId,
+                    'response'    => $response,
+                ]);
+
+                return $response[DEConstants::POS_ACTIVATION_STATUS];
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id' => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+
+        return null;
+    }
+
+    private function getPOSStatusChangeLogs(Merchant\Entity $merchant)
+    {
+        $input["merchant_id"] = $merchant->getId();
+
+        $input["onboarding_type"] = DEConstants::ONBOARDING_TYPE_POS;
+
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_state_logs',$input, $merchant, true);
+
+        return $response["states"];
+    }
+
+    private function unlockL3FormIfApplicable(Merchant\Entity $merchant)
+    {
+        if ($merchant->merchantDetail->isLocked() === false)
+        {
+            return;
+        }
+
+        $merchantDetailCore = new Detail\Core();
+
+        $input = [
+            'locked'  =>  false,
+        ];
+
+        $merchantDetailCore->editMerchantDetailFields($merchant, $input);
+    }
+
+    public function fetchPosActivationFlow(Merchant\Entity $merchant)
+    {
+        $posActivationFlow = "whitelist";
+
+        try
+        {
+            $input['merchant_id'] = $merchant->getId();
+
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_fetch_pos_activation_flow',$input, $merchant, true);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_FETCH_POS_ACTIVATION_FLOW,
+                [
+                    'response'    => $response,
+                ]
+            );
+
+            $posActivationFlow =  $response["pos_activation_flow"];
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::ERROR_PARSING_RESPONSE, ["error" => $ex]);
+        }
+
+        return $posActivationFlow;
+    }
+
+    public function isPGOSMerchant(Merchant\Entity $merchant): bool
+    {
+        $shouldMerchantOnboardViaPGOS = false;
+
+        try
+        {
+            $shouldMerchantOnboardViaPGOS =  $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchant->getId(), $merchant->getCountry());
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::ERROR_PARSING_RESPONSE, ["error" => $ex]);
+        }
+
+        return  $shouldMerchantOnboardViaPGOS;
     }
 }
 

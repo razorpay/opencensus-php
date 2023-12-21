@@ -158,6 +158,9 @@ class Type
 
     const WEBSITE_SCREENSHOTS_ADDITIONAL     = 'website_screenshots_additional';
 
+    const SHOP_FRONT_IMAGE                  = 'shop_front';
+    const SHOP_INTERIOR_IMAGE               = 'shop_interior';
+
     const NC_ADDITIONAL_DOCUMENTS = [
 
         self::FSSAI_CERTIFICATE,
@@ -219,7 +222,9 @@ class Type
         self::CPV_REPORT,
         self::BAR_COUNCIL_CERTIFICATE,
         self::BOARD_RESOLUTION_LETTER,
-        self::WEBSITE_SCREENSHOTS_ADDITIONAL
+        self::WEBSITE_SCREENSHOTS_ADDITIONAL,
+        self::SHOP_FRONT_IMAGE,
+        self::SHOP_INTERIOR_IMAGE,
     ];
 
     const DOCUMENT_DESCRIPTION_MAP = [
@@ -435,7 +440,14 @@ class Type
         self::BAR_COUNCIL_CERTIFICATE,
         self::BOARD_RESOLUTION_LETTER,
         self::CPV_REPORT,
-        self::WEBSITE_SCREENSHOTS_ADDITIONAL
+        self::WEBSITE_SCREENSHOTS_ADDITIONAL,
+        self::SHOP_FRONT_IMAGE,
+        self::SHOP_INTERIOR_IMAGE,
+    ];
+
+    const VALID_POS_DOCUMENTS = [
+        self::SHOP_FRONT_IMAGE,
+        self::SHOP_INTERIOR_IMAGE,
     ];
 
     const DOCUMENT_TYPE_VALIDATIONS = [

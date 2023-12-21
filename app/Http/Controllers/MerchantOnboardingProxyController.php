@@ -13,9 +13,9 @@ use RZP\Models\Admin\Permission\Name;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
-use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 
 class MerchantOnboardingProxyController extends BaseProxyController
 {
@@ -67,14 +67,22 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const PROCESS_MERCHANT_IDENTITY_VERIFICATION             = 'process_merchant_identity_verification';
 
     // merchant_document routes
-    const SAVE_MERCHANT_DOCUMENT_DETAILS      = 'save_merchant_document';
-    const FETCH_MERCHANT_DOCUMENT_DETAILS     = 'fetch_merchant_document';
-    const MERCHANT_DOCUMENT_VALIDITY_CHECK    = 'merchant_document_validity_check';
+    const SAVE_MERCHANT_DOCUMENT_DETAILS   = 'save_merchant_document';
+    const FETCH_MERCHANT_DOCUMENT_DETAILS  = 'fetch_merchant_document';
+    const MERCHANT_DOCUMENT_VALIDITY_CHECK = 'merchant_document_validity_check';
 
     const PGOS_SHADOW_MODE_EXPERIMENT_ID = 'app.pgos_shadow_mode_experiment_id';
     const PGOS_LIVE_MODE_EXPERIMENT_ID   = 'app.pgos_live_mode_experiment_id';
     const ENABLE                         = 'enable';
     const LIVE                           = 'live';
+
+    const PGOS_FETCH_PGOS_ACTIVATION_STATUS  = 'merchant_pgos_fetch_activation_status';
+    const PGOS_UPDATE_PGOS_ACTIVATION_STATUS = 'merchant_pgos_update_activation_status';
+    const UPDATE_ACTION_STATE                = 'update_action_state';
+    const FETCH_ACTION_STATE_COUNT           = 'fetch_action_state_count';
+    const MERCHANT_POS_STATE_LOGS            = 'merchant_pos_state_logs';
+    const MERCHANT_FETCH_POS_ACTIVATION_FLOW = 'merchant_fetch_pos_activation_flow';
+    const POST_MERCHANT_CONFIG               = 'pos_merchant_config';
 
     const PGOS_OWNED_FIELDS = [
         'activation_form_milestone',
@@ -204,6 +212,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantCategoriesV3EligibilitySave',
         self::SEND_SMS_OTP      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendSMSOTP',
         self::VERIFY_OTP        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/VerifyOTP',
+        self::PGOS_FETCH_PGOS_ACTIVATION_STATUS  => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetPosActivationStatus',
+        self::PGOS_UPDATE_PGOS_ACTIVATION_STATUS => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdatePosActivationStatus',
+        self::UPDATE_ACTION_STATE                => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateState',
+        self::FETCH_ACTION_STATE_COUNT           => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateCount',
+        self::MERCHANT_POS_STATE_LOGS            => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateLogs',
+        self::MERCHANT_FETCH_POS_ACTIVATION_FLOW => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchPosActivationFlow',
+        self::POST_MERCHANT_CONFIG               => '/twirp/rzp.pg_onboarding.external.pos.v1.TerminalProcurementConsumerService/Consume',
     ];
 
     // timeout in seconds
