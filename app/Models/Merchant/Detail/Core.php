@@ -102,6 +102,7 @@ use RZP\Models\Key\Validator as KeyValidator;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
+use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Models\Merchant\BusinessDetail\Service;
 use RZP\Models\Comment\Entity as CommentEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
@@ -3620,6 +3621,40 @@ class Core extends Base\Core
         return true;
 
     }
+    /**
+     * This function is used for validating activation status update for
+     * fee based gating merchants
+     *
+     * @param Merchant\Entity $merchant
+     * @return bool
+     */
+
+    public function shouldTransitionToUnderReview(Merchant\Entity $merchant) : bool
+    {
+        /*
+         For merchants not Eligible for gating fee based gating response will be null hence it will not go inside
+         if condition and will always return true
+         */
+
+        $feeBasedGatingResponse = (new DetailCore())->fetchMerchantGatingDetails($merchant);
+
+        if (isset($feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING]) === true)
+        {
+            $isEligibleForFeeBasedGating = $feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING][DetailConstants::IS_ELIGIBLE] ?? false;
+
+            $paymentStatus = $feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING][DetailConstants::PAYMENT_STATUS] ?? DetailConstants::INITIATED;
+
+            if (($isEligibleForFeeBasedGating === true) and
+                ($paymentStatus === PaymentStatus::CAPTURED))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        return true;
+    }
 
     /**
      * This function is used for updating merchant activation status
@@ -3649,6 +3684,17 @@ class Core extends Base\Core
 
         if ($input[Entity::ACTIVATION_STATUS] === Status::UNDER_REVIEW)
         {
+            $statusChangeRequired = $this->shouldTransitionToUnderReview($merchant);
+
+            if ($statusChangeRequired === false)
+            {
+                $this->trace->info(TraceCode::FEE_BASED_GATING_MERCHANT_STATUS_UPDATE, [
+                    'isEligibleForStatusUpdate' => false
+                ]);
+
+                return $merchantDetails;
+            }
+
             // Locking the activation form when the merchant is moved to under review state
             $merchantDetails->setLocked(true);
 
@@ -10915,13 +10961,13 @@ class Core extends Base\Core
 
     public function preProcessGatingRequest(array &$body)
     {
-        $orderId       = $body['payload']['payment']['entity']['order_id'];
+        $orderId = $body['payload']['payment']['entity']['order_id'];
 
         $paymentStatus = $body['payload']['payment']['entity']['status'];
 
-        $amount        = $body['payload']['payment']['entity']['amount'];
+        $amount = $body['payload']['payment']['entity']['amount'];
 
-        $paymentId     = $body['payload']['payment']['entity']['id'];
+        $paymentId = $body['payload']['payment']['entity']['id'];
 
         $body = [
             'order_id'       => $orderId,
@@ -10934,6 +10980,23 @@ class Core extends Base\Core
             'route'        => 'FEE_BASED_GATING_WEBHOOK_PROCESSING',
             'request_body' => $body
         ]);
+    }
+
+    public function isGatingWebhookRequest(array $body) : bool
+    {
+        // If fee based description is set in the request , this means it is a gating request and return true, else false
+        $isFeeBasedGatingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::FEE_BASED_GATING_DESCRIPTION] ?? null;
+
+        $this->trace->info(TraceCode::FEE_BASED_GATING_WEBHOOK_PROCESSING, [
+            'isFeeBasedGatingHook' => $isFeeBasedGatingHook,
+        ]);
+
+        if (isset($isFeeBasedGatingHook) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function preProcessCreateOrderRequest(array &$body)

@@ -10278,7 +10278,7 @@ class CoreTest extends TestCase
         // because of the mock this merchant was becoming eligible for fee based gating hence the activation status
         // turned out to be under review , temp change.
 
-        $this->assertEquals(Status::UNDER_REVIEW, $merchantDetail[Entity::ACTIVATION_STATUS]);
+        $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $merchantDetail[Entity::ACTIVATION_STATUS]);
     }
 
     public function testUpdatePolicyPageWhenMerchantMovedToKQU()
@@ -10662,7 +10662,7 @@ class CoreTest extends TestCase
         // this merchant is getting applicable for fee based gating hence his activation status is not changing,
         // temp fix
 
-        $this->assertEquals(Status::UNDER_REVIEW, $merchantDetail[Entity::ACTIVATION_STATUS]);
+        $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $merchantDetail[Entity::ACTIVATION_STATUS]);
 
         $this->assertEquals([
                                 'terms'        =>  ['url' => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"],
@@ -12628,6 +12628,35 @@ class CoreTest extends TestCase
         $this->assertEquals(null, $merchantDetailsData['activation_status']);
 
         // activation status of the merchant should not change when merchant is eligible for fee based gating
+    }
+
+    public function testFeeBasedGatingEligibilityActivationStatusUpdateToUnderReview()
+    {
+        Mail::fake();
+
+        Config::set('pgos.proxy.request.mock', true);
+
+        // partnership business type
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_website'          => 'www.google.com',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+        ];
+
+        (new DetailCore())->updateActivationStatus($merchantDetails->merchant,$activationStatusData, $merchantDetails->merchant);
+
+        $this->assertEquals(null, $merchantDetails->getActivationStatus());
     }
 
     public function testisSubCategoryExcludedForAd_And_Marketing_SubcategoryWithRegistedBusinessType()

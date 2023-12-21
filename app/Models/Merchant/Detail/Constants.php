@@ -217,6 +217,7 @@ class Constants
     const FEE_BASED_GATING_ELIGIBILITY = 'feeBasedGatingEligibility';
     const PAYMENT_STATUS               = 'payment_status';
     const INVOICE_SENT                 = 'invoice_sent';
+    const FEE_BASED_GATING_DESCRIPTION = 'Fee for KYC verification request';
     // Default payment constants
     const DEFAULT_ELIGIBILITY_CRITERIA   = true;
     const DEFAULT_ORDER_ID               = "order_MblejZXmYhvaqK" ;

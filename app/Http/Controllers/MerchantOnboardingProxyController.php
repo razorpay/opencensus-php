@@ -448,6 +448,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         }
     }
 
+
     public function getTwirpRouteName($routeKey)
     {
         return self::MERCHANT_ROUTES[$routeKey];
@@ -641,6 +642,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
                         'error'     => $e->getMessage()
                     ]);
                 }
+            case self::PAYMENT_ORDER_WEBHOOK:
+               $response['validated'] = (new Merchant\Detail\Core())->isGatingWebhookRequest($body);
         }
 
         return $response;
