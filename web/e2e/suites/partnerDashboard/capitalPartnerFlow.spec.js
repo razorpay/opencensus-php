@@ -10,18 +10,11 @@ test.describe
     storageState: StorageStatePath.CAPITAL_RESELLER_PARTNER_TEST_LOGIN_STATE,
   });
 
-  // Temporarily skipping test cases till API changes are deployed.
-  test.skip('should load the capital Reseller Partner Dashboard @priority=critical', async ({
+  test('should load the capital Reseller Partner Dashboard @priority=critical', async ({
     page,
   }) => {
     await page.goto(routes.AFFILIATE_ACCOUNTS_CAPITAL);
     await page.waitForSelector('thead th:has-text("Account Name")');
-
-    await page.waitForSelector('div.typeform-sidetab-button-icon[data-testid="close-icon"]');
-    const closeButton = await page.$('div.typeform-sidetab-button-icon[data-testid="close-icon"]');
-    if (closeButton) {
-      await closeButton.click();
-    }
 
     // Create Bureau link
     await page.click('a:has-text("shwt")');
