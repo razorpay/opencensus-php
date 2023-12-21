@@ -2551,6 +2551,10 @@ class BankingAccountTest extends TestCase
 
         $this->setMozartMockResponse($mozartResponse);
 
+        $this->bankingAccountServiceMock->shouldReceive('rblMigrationBas')->withArgs([[
+            'banking_account_ids' => [$bankingAccount->getId()]
+        ]])->andReturn($this->bankingAccountServiceMock->rblMigrationBas([]));
+
         $this->ba->adminAuth();
 
         $timeBeforeActivation = Carbon::now(Timezone::IST);

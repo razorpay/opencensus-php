@@ -700,6 +700,26 @@ class Service extends Base\Service
             $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount->toArray());
         }
 
+        // if activated RBL CA, migrate account to BAS
+        if ($bankingAccount->getChannel() === Channel::RBL &&
+            $bankingAccount->getAccountType() === AccountType::CURRENT &&
+            $bankingAccount->getStatus() === Status::ACTIVATED)
+        {
+            $id = $this->repo->banking_account->verifyIdAndStripSign($id);
+
+            $migrationResponse = $this->bankingAccountService->rblMigrationBas([
+                Constants::BANKING_ACCOUNT_IDS   => [$id]
+            ]);
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_RBL_MIGRATION_RESPONSE,
+                [
+                    Entity::MERCHANT_ID         => $bankingAccount->getMerchantId(),
+                    Entity::BANKING_ACCOUNT_ID  => $id,
+                    Constants::RESPONSE         => $migrationResponse[$id],
+                ]);
+        }
+
         return $bankingAccount->toArrayPublic();
     }
 

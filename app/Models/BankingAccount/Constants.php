@@ -88,4 +88,7 @@ class Constants
     const COUNT = 'count';
     const MERCHANT_IDS = 'merchant_ids';
     const IS_PRIORITY_BALANCE_UPDATE = 'is_priority_balance_update';
+    const BANKING_ACCOUNT_IDS = 'banking_account_ids';
+
+    const RESPONSE = 'response';
 }
