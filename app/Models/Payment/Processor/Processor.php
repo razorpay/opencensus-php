@@ -9244,10 +9244,6 @@ class Processor
 
             $response['reason'] = Constants::ORDER_ALREADY_MARKED_PAID;
 
-            $payment->setRefundAt(Carbon::now()->getTimestamp());
-
-            $this->repo->saveOrFail($payment);
-
             return $response;
         }
 

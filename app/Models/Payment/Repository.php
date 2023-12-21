@@ -3050,17 +3050,19 @@ EOT;
         $paymentDisputed  = $this->dbColumn(Entity::DISPUTED);
         $paymentOrderId   = $this->dbColumn(Entity::ORDER_ID);
         $paymentAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
+        $paymentRecordSourceColumn = $this->dbColumn(Base\PublicEntity::RECORD_SOURCE);
 
         // For optimization purposes we only pick payments authorized in last 2 days. This picked
         // '2 days' is sufficient filter logically.
 
         $nowMinus2Days = Carbon::today(Timezone::IST)->subDays(2)->getTimestamp();
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN));
 
         return $query->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                      ->join($orderTable, $orderId, '=', $paymentOrderId)
                      ->select($paymentCols)
+                     ->where($paymentRecordSourceColumn, '=', Base\Constants::RECORD_SOURCE_API)
                      ->where($paymentAuthorizedAt, '>', $nowMinus2Days)
                      ->where($orderStatus, Order\Status::PAID)
                      ->where($paymentStatus, Status::AUTHORIZED)

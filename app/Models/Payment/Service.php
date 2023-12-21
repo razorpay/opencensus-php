@@ -3011,6 +3011,14 @@ class Service extends Base\Service
         foreach ($payments as $payment)
         {
             $this->repo->reload($payment);
+            //Add a check to double check in case of TIDB lag
+            if ($payment->getStatus() !== Status::AUTHORIZED) {
+                $this->trace->info(TraceCode::PAYMENT_NOT_IN_AUTHORIZED_STATE, [
+                    "payment_id" => $payment->getId(),
+                    "status" => $payment->getStatus()
+                ]);
+                continue;
+            }
 
             $paymentId = $payment->getId();
             $orderId   = $payment->getApiOrderId();
