@@ -122,7 +122,10 @@ const OffersForYou = ({
           size: 'xlarge',
           className: 'RXPayrollMoonshine--Modal',
         });
-      } else if (user.isProjectNitroEnabled || user.isICICILinkedCAFlowEnabled('offers-for-you')) {
+      } else if (
+        user.isProjectNitroEnabled ||
+        user?.isICICILinkedCAFlowEnabled?.('offers-for-you')
+      ) {
         openModals({
           component: (
             <RazorpayXNitroAnnouncement hideModal={closeModals} fromWhere="offers-for-you" />

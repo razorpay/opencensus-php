@@ -128,7 +128,7 @@ class NavFragment extends Component {
               showOFYNitroFlow ||
               canShowOnboardingOffers ||
               user.isProjectMoonshineEnabled ||
-              user.isICICILinkedCAFlowEnabled('offers-for-you') ||
+              user?.isICICILinkedCAFlowEnabled?.('offers-for-you') ||
               shouldShowGSExclusiveOffers
             }
           >

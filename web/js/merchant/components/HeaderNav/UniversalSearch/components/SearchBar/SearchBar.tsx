@@ -1,7 +1,6 @@
 import { Box, CloseIcon, Link, SearchIcon } from '@razorpay/blade/components';
 import { CommonStateProps } from 'merchant/components/HeaderNav/UniversalSearch/typings';
 import { trackSearchBarClicked } from 'merchant/components/HeaderNav/UniversalSearch/utils';
-import { hideFtux } from 'merchant/components/HeaderNav/UniversalSearch/utils/ftuxVisibility';
 import React, { forwardRef } from 'react';
 import { connect } from 'react-redux';
 import { CloseButton, StyledBaseInput, StyledInputBox } from './styled';
@@ -15,8 +14,7 @@ const SearchBar = forwardRef(
       isMobile,
       show,
       isDeviceInBreakpoint,
-      isFtuxVisible,
-    }: CommonStateProps & { searchQuery: string; isMobile: boolean; isFtuxVisible: boolean },
+    }: CommonStateProps & { searchQuery: string; isMobile: boolean },
     ref,
   ): JSX.Element => {
     const handleChange = (type, e): void => {
@@ -40,9 +38,6 @@ const SearchBar = forwardRef(
 
     const handleFocus = (): void => {
       setFocussed(true);
-      if (isFtuxVisible) {
-        hideFtux({ onFocus: true });
-      }
     };
 
     return (

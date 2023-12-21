@@ -2,7 +2,6 @@ import useOnClickOutside from 'common/hooks/useOnClickOutside';
 import { useResizeLayout } from 'common/hooks/useResizeLayout';
 import useDebounce from 'common/utils/useDebounce';
 import Fuse from 'fuse.js';
-import FtuxTooltip from 'merchant/components/HeaderNav/UniversalSearch/components/FtuxTooltip';
 import { fetchEnrollmentStatus as fetchEnrollmentStatusFn } from 'merchant/reducers/bundlePricing';
 import { fetchFeatureByName as fetchFeatureByNameFn } from 'merchant/reducers/config';
 import {
@@ -65,7 +64,6 @@ const UniversalSearch = ({
     products: POPULAR_PRODUCTS,
   });
   const [isFocussed, setIsFocussed] = useState<boolean>(false);
-  const [isFtuxVisible, setIsFtuxVisible] = useState<boolean>(false);
   const inputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const listingRef = useRef(null);
@@ -237,7 +235,7 @@ const UniversalSearch = ({
 
   return (
     <div ref={searchContainerRef}>
-      <SearchBar ref={inputRef} isFtuxVisible={isFtuxVisible} {...commonProps} />
+      <SearchBar ref={inputRef} {...commonProps} />
       <ProductListing
         ref={listingRef}
         history={history}
@@ -245,7 +243,6 @@ const UniversalSearch = ({
         searchResults={searchResults}
         {...commonProps}
       />
-      {!isFocussed && <FtuxTooltip setIsFtuxVisible={setIsFtuxVisible} />}
     </div>
   );
 };
