@@ -111,6 +111,11 @@ class EdgeThrottleController extends Controller
     {
         $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_CREATE);
 
+        $useRateLimiterService = $input['useRateLimiterService'] ?? "false";
+        if ($useRateLimiterService == "true") {
+            return (new RateLimiterController())->createRule();
+        }
+
         $path = $this->rulePathPrefix($input, true) . '/rate-limit-rules';
 
         unset($input['service_id']);
@@ -143,6 +148,12 @@ class EdgeThrottleController extends Controller
      */
     public function listRules()
     {
+        $input = Request::all();
+        $useRateLimiterService = $input['useRateLimiterService'] ?? "false";
+        if ($useRateLimiterService == "true") {
+            return (new RateLimiterController())->listRules();
+        }
+
         $request = Request::instance();
 
         $method = $request->method();
@@ -182,6 +193,11 @@ class EdgeThrottleController extends Controller
     public function updateRule($id)
     {
         $input = Request::all();
+
+        $useRateLimiterService = $input['useRateLimiterService'] ?? "false";
+        if ($useRateLimiterService == "true") {
+            return (new RateLimiterController())->updateRule($id);
+        }
 
         $path = $this->rulePathPrefix($input, true) . '/rate-limit-rules/' . $id;
 
@@ -223,6 +239,11 @@ class EdgeThrottleController extends Controller
     {
         $request = Request::all();
 
+        $useRateLimiterService = $request['useRateLimiterService'] ?? "false";
+        if ($useRateLimiterService == "true") {
+            return (new RateLimiterController())->deleteRule($id);
+        }
+
         $path = $this->rulePathPrefix($request, true) . '/rate-limit-rules/' . $id;
 
         $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_DELETE, $id, $this->getRule($path));
@@ -243,6 +264,11 @@ class EdgeThrottleController extends Controller
     public function createLimit($ruleId)
     {
         $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_CREATE);
+
+        $useRateLimiterService = $input['useRateLimiterService'] ?? "false";
+        if ($useRateLimiterService == "true") {
+            return (new RateLimiterController())->createLimit($ruleId);
+        }
 
         $request = Request::instance();
 
@@ -273,6 +299,7 @@ class EdgeThrottleController extends Controller
         unset($input['service_id']);
         unset($input['service_name']);
         unset($input['context']);
+        unset($input['rule_type_id']);
 
         $response = $this->request($method, $path, $input);
 
@@ -327,6 +354,12 @@ class EdgeThrottleController extends Controller
      */
     public function updateLimit($id)
     {
+        $input = Request::all();
+
+        $useRateLimiterService = $input['useRateLimiterService'] ?? "false";
+        if ($useRateLimiterService == "true") {
+            return (new RateLimiterController())->updateLimit($id);
+        }
         $path = '/rate-limits/' . $id;
 
         $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_UPDATE, $id, $this->getLimit($path));
@@ -338,6 +371,7 @@ class EdgeThrottleController extends Controller
         unset($input['service_id']);
         unset($input['service_name']);
         unset($input['context']);
+        unset($input['rule_type_id']);
 
         // if key is set in the request then convert the value to bool
         if (array_key_exists('strictly_consistent', $input['config']) === true)

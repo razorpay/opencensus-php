@@ -21,7 +21,7 @@ class RateLimiterController extends EdgeThrottleController
     protected $rateLimiterConfig;
 
     const LIMITS_ENDPOINT = "/limits";
-    
+
     public function __construct() {
         parent::__construct();
         $this->rateLimiterConfig = app('config')->get('services.rate_limiter_service');
@@ -34,7 +34,7 @@ class RateLimiterController extends EdgeThrottleController
      * @throws NotFoundException|InvalidArgumentException
      */
     public function listLimits()
-    {        
+    {
         $request = Request::instance();
         $method = $request->method();
         $path = self::LIMITS_ENDPOINT . '?'. http_build_query(Request::all());
@@ -52,6 +52,220 @@ class RateLimiterController extends EdgeThrottleController
     }
 
     /**
+     * Creates a rate limit on a rule id
+     *
+     * @param $ruleId
+     * @throws NotFoundException
+     * @throws BadRequestException|InvalidArgumentException
+     */
+    public function createLimit($ruleId)
+    {
+        $request = Request::instance();
+        $method = $request->method();
+        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_CREATE);
+
+        unset($input['context']);
+        unset($input['rule_name']);
+        unset($input['service_id']);
+        unset($input['service_name']);
+
+        $path = '/limit';
+
+        $response = $this->fetchResponse($method, $path, $input);
+
+        return $this->finalizeResponse($response, [
+            'id',
+            'rule_id',
+            'key',
+            'config',
+            'action',
+            'created_at',
+            'updated_at',
+        ]);
+    }
+
+    /**
+     * update the limit for the given id with the data provided in request body
+     *
+     * @param $id
+     * @return mixed
+     * @throws BadRequestException
+     * @throws NotFoundException|InvalidArgumentException
+     */
+    public function updateLimit($id)
+    {
+        $request = Request::instance();
+        $method = $request->method();
+        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_UPDATE, $id);
+        $path = '/limit/' . $id;
+
+        unset($input['rule_name']);
+        unset($input['service_id']);
+        unset($input['service_name']);
+        unset($input['context']);
+
+
+        $response = $this->fetchResponse($method, $path, $input);
+
+        return $this->finalizeResponse($response, [
+            'id',
+            'rule',
+            'enabled',
+            'priority',
+            'rule_type_id',
+            'created_at',
+            'updated_at',
+        ]);
+    }
+
+    /**
+     * deletes the limit configured which is identified by the id provided
+     *
+     * @param $id
+     * @return mixed
+     * @throws BadRequestException
+     * @throws NotFoundException|InvalidArgumentException
+     */
+    public function deleteLimit($id)
+    {
+        $request = Request::instance();
+        $method = $request->method();
+        $path = '/limit/' . $id;
+
+        $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_DELETE, $id, $this->getRateLimitRule($path));
+
+        $response = $this->fetchResponse($method, $path);
+
+        return $this->finalizeResponse($response, []);
+    }
+
+
+    /**
+     * Creates a rate limit rule on a service / route level
+     *
+     * @throws NotFoundException
+     * @throws BadRequestException|InvalidArgumentException
+     */
+    public function createRule()
+    {
+        $request = Request::instance();
+        $method = $request->method();
+        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_CREATE);
+        unset($input['context']);
+
+        $input['enabled'] = (empty($input['enabled']) === true) ? false : true;
+
+        $path = '/rule';
+
+        $response = $this->fetchResponse($method, $path, $input);
+
+        return $this->finalizeResponse($response, [
+            'id',
+            'rule',
+            'enabled',
+            'priority',
+            'rule_type_id',
+            'created_at',
+            'updated_at',
+        ]);
+    }
+
+    /**
+     * lists rate limit rules configured on a service/route.
+     *
+     * @throws BadRequestException
+     * @throws NotFoundException|InvalidArgumentException
+     */
+    public function listRules()
+    {
+        $request = Request::instance();
+        $method = $request->method();
+        $path = '/rules' . '?'. http_build_query(Request::all());
+        $response = $this->fetchResponse($method, $path);
+
+        return $this->finalizeResponse($response, [
+            'id',
+            'rule',
+            'enabled',
+            'priority',
+            'rule_type_id',
+            'created_at',
+            'updated_at',
+        ], true);
+    }
+
+    /**
+     * update the rule for the given id with the data provided in request body
+     *
+     * @param $id
+     * @return mixed
+     * @throws BadRequestException
+     * @throws NotFoundException|InvalidArgumentException
+     */
+    public function updateRule($id)
+    {
+        $path = '/rule/' . $id;
+        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_UPDATE, $id, $this->getRateLimitRule($path));
+
+        $response = $this->fetchResponse('PUT', $path, $input);
+
+
+        return $this->finalizeResponse($response, [
+            'id',
+            'rule',
+            'enabled',
+            'priority',
+            'rule_type_id',
+            'created_at',
+            'updated_at',
+        ]);
+    }
+
+    /**
+     * deletes the rule configured which is identified by the id provided
+     *
+     * @param $id
+     * @return mixed
+     * @throws BadRequestException
+     * @throws NotFoundException|InvalidArgumentException
+     */
+    public function deleteRule($id)
+    {
+        $request = Request::instance();
+        $method = $request->method();
+
+        $path = '/rule/' . $id;
+        $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_DELETE, $id, $this->getRateLimitRule($path));
+
+        $response = $this->fetchResponse($method, $path);
+
+        return $this->finalizeResponse($response, []);
+    }
+
+    /**
+     * lists rate limit rules configured on a service/route.
+     *
+     * @param string $path
+     * @return mixed
+     */
+    protected function getRateLimitRule(string $path)
+    {
+        $request = Request::instance();
+        $method = $request->method();
+
+        $response = $this->fetchResponse($method, $path);
+
+        $arrayResponse = json_decode($response->getBody()->getContents(), true);
+
+        return $this->extractKeys($arrayResponse, [
+            'id',
+            'rule_type_id',
+            'rule',
+            'enabled',
+        ]);
+    }
+
+    /**
      * makes rest call to rate limit service with given arguments
      * @param string $method
      * @param string $path
@@ -61,9 +275,11 @@ class RateLimiterController extends EdgeThrottleController
      */
     protected function fetchResponse(
         string $method,
-        string $path
+        string $path,
+        array $body = null
     ): ResponseInterface
     {
+        $streamFactory = Psr17FactoryDiscovery::findStreamFactory();
         $requestFactory = Psr17FactoryDiscovery::findRequestFactory();
         $username = $this->rateLimiterConfig['username'];
         $password = $this->rateLimiterConfig['password'];
@@ -73,9 +289,17 @@ class RateLimiterController extends EdgeThrottleController
                                   ->withHeader('Authorization', $authorization)
                                   ->withHeader('X-Razorpay-Request-ID', $this->app->request->getTaskId());
 
+        if ($body !== null)
+        {
+            $bodyStream = $streamFactory->createStream(json_encode($body, JSON_NUMERIC_CHECK));
+            $request = $request->withBody($bodyStream);
+        }
+
+
         $this->trace->info(TraceCode::RATE_LIMITER_SERVICE_REQUEST, [
             'method' => $method,
-            'url'    => $this->rateLimiterConfig['host'] . $path
+            'url'    => $this->rateLimiterConfig['host'] . $path,
+            'body'   => $body,
         ]);
 
         try
