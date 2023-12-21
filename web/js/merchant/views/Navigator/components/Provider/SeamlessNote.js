@@ -22,7 +22,13 @@ const InfoBlock = ({ list, stringReplacer }) => {
 };
 
 const ToggleListBlock = (props) => {
-  const { defaultOpen = false, deps = [], stringReplacer, buttonText, listPoints } = props;
+  const {
+    defaultOpen = false,
+    deps = [],
+    stringReplacer,
+    buttonText = null,
+    listPoints = null,
+  } = props;
   const [isOpen, setOpen] = useState(defaultOpen);
 
   const handleChange = () => setOpen(!isOpen);
@@ -80,8 +86,15 @@ const SeamlessNote = (props) => {
     });
   };
 
-  const { headerText, infoBlock, buttonText, listPoints, notePoints, footerLink, footerText } =
-    SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent] || {};
+  const {
+    headerText,
+    infoBlock,
+    buttonText,
+    listPoints,
+    notePoints,
+    footerLink = null,
+    footerText = null,
+  } = SEAMLESS_CONTENT?.[selectedProvider]?.[toggleContent] || {};
 
   return (
     <div className="feedback-card">
@@ -95,13 +108,15 @@ const SeamlessNote = (props) => {
         </div>
 
         <div className="seamless-how-to-block">
-          <ToggleListBlock
-            defaultOpen={true}
-            deps={[seamlessDisabled]}
-            stringReplacer={{ gatewayName }}
-            buttonText={buttonText}
-            listPoints={listPoints}
-          />
+          {buttonText ? (
+            <ToggleListBlock
+              defaultOpen={true}
+              deps={[seamlessDisabled]}
+              stringReplacer={{ gatewayName }}
+              buttonText={buttonText}
+              listPoints={listPoints}
+            />
+          ) : null}
 
           {notePoints?.length > 0 ? (
             <>

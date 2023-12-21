@@ -23,25 +23,29 @@ export const navigateToOptimizer = async (page) => {
 };
 
 export const searchGateway = async ({ page, text }) => {
+  const addProviderButton = page.getByRole('button', { name: 'Add Provider' });
+  await expect(addProviderButton).toBeVisible();
+  await addProviderButton.click();
+  expect(page.getByText('Add Provider')).toBeVisible();
+  expect(page.getByText('Close')).toBeVisible();
+  await expect(page.getByText('Select Gateway')).toBeVisible();
   const searchGatewayInput = page.getByPlaceholder('Search Gateway');
-  await expect(searchGatewayInput).toBeVisible();
+  expect(searchGatewayInput).toBeVisible();
   await searchGatewayInput.fill(text);
 };
 
-export const providerDetailsValidations = async ({ page, providerName, description }) => {
-  await expect(page.getByText('Provider Details')).toBeVisible();
-  await expect(
-    page.getByText('Add details and select Gateway of your payment provider.'),
-  ).toBeVisible();
+export const providerDetailsValidations = ({ page, providerName, description }) => {
+  expect(page.getByText('Provider Details')).toBeVisible();
+  expect(page.getByText('Add details and select Gateway of your payment provider.')).toBeVisible();
 
-  await expect(page.getByLabel('Provider Name')).toBeVisible();
+  expect(page.getByLabel('Provider Name')).toBeVisible();
   const providerNameInput = page.getByPlaceholder('Provider Name');
-  await expect(providerNameInput).toBeVisible();
+  expect(providerNameInput).toBeVisible();
   providerNameInput.fill(providerName);
 
-  await expect(page.getByLabel('Description')).toBeVisible();
+  expect(page.getByLabel('Description')).toBeVisible();
   const descriptionInput = page.getByPlaceholder('Description');
-  await expect(descriptionInput).toBeVisible();
+  expect(descriptionInput).toBeVisible();
   descriptionInput.fill(description);
 };
 
@@ -53,4 +57,28 @@ export const validateAndEnableMethods = async ({ page, methods = [] }) => {
     results.push(element.click());
   }
   await Promise.all(results);
+};
+
+export const razorpayProviderStep3Validations = async ({ page }) => {
+  expect(page.getByText('Razorpay Production API Details')).toBeVisible();
+  const submitButton = page.getByRole('button', { name: 'Submit' });
+  expect(submitButton).toBeDisabled();
+
+  expect(page.getByText('Key', { exact: true })).toBeVisible();
+  const keyInput = page.getByPlaceholder('key');
+  await expect(keyInput).toBeVisible();
+  keyInput.fill('jsadhy6h2');
+
+  expect(page.getByText('Secret', { exact: true })).toBeVisible();
+  const secretInput = page.getByPlaceholder('secret');
+  await expect(secretInput).toBeVisible();
+  secretInput.fill('ajhc6r');
+
+  await expect(page.getByText('Payment Methods', { exact: true })).toBeVisible();
+  await validateAndEnableMethods({
+    page,
+    methods: [METHODS.CARD, METHODS.UPI, METHODS.NETBANKING],
+  });
+
+  await expect(submitButton).not.toBeDisabled();
 };

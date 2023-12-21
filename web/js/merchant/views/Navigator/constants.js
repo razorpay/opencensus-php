@@ -1,4 +1,4 @@
-import { Link } from '@razorpay/blade/components';
+import { Link, ArrowUpRightIcon } from '@razorpay/blade/components';
 
 import { CommonPoints } from 'merchant/views/Navigator/components/Provider/SeamlessComponents/CommonPoints';
 
@@ -147,33 +147,26 @@ export const SEAMLESS_CONTENT = {
             This is a beta release and supports the following payment methods - Debit Cards, Credit
             Cards, UPI, Netbanking, Paytm Wallet.
           </p>
+          <p className="seamless-refund-enable-header">
+            Action Required: Please enable refunds API on your Paytm account.
+          </p>
+          <p>
+            Please reach out to the Paytm support team (pg.support@paytmpayments.com) and ask them
+            to enable refunds via API for your Paytm account. For a sample email template and other
+            details please refer to the &nbsp;
+            <Link
+              href="https://razorpay.com/docs/payments/optimizer/paytm-instant"
+              icon={ArrowUpRightIcon}
+              iconPosition="right"
+              rel="noreferrer noopener"
+              target="_blank"
+              variant="anchor"
+              size="small"
+            >
+              document
+            </Link>
+          </p>
         </div>
-      ),
-      buttonText: 'Please note that `Instant` integration mode does not support the following:',
-      listPoints: (
-        <ul>
-          <li>
-            <b>Refunds for Paytm payments</b>&nbsp;
-            <span>
-              - Refunds for Paytm PG payments will need to be processed from your Paytm dashboard.
-              Please visit &nbsp;
-              <a
-                href="https://dashboard.paytm.com/login/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                https://dashboard.paytm.com/login/
-              </a>
-            </span>
-          </li>
-        </ul>
-      ),
-      footerLink: 'https://razorpay.com/docs/payments/optimizer/paytm-instant',
-      footerText: (
-        <p>
-          If you are keen on offering all payment methods and supporting refunds from Razorpay
-          dashboard, please explore ‘Server-to-Server’ integration mode.
-        </p>
       ),
     },
     enable: {
