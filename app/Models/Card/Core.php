@@ -1062,7 +1062,7 @@ class Core extends Base\Core
         }
 
         if (empty($input['cvv']) && $card->getTrivia() === '1' &&
-            ($card->isVisa() === true || $card->isRuPay() === true || $card->isMasterCard() == true || $card->isAmex() == true))
+            ($card->isVisa() === true || $card->isRuPay() === true || $card->isMasterCard() == true || $card->isAmex() == true || $card->isDiners()))
         {
             $this->trace->info(
                 TraceCode::CVV_OPTIONAL, []);
@@ -1202,7 +1202,9 @@ class Core extends Base\Core
         }
 
         // make cvv field empty for mastercard
-        if (Card\Network::getFullName(Network::MC) === $card->getNetwork()
+        $network = $card->getNetwork();
+        if ((Card\Network::getFullName(Network::MC) === $card->getNetwork() ||
+            Card\Network::getFullName(Network::DICL) === $card->getNetwork())
             && boolval($input[Card\Entity::TOKENISED]) === true
             && empty($issCvvPresent) === true) {
 

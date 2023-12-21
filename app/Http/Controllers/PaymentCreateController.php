@@ -2445,7 +2445,7 @@ class PaymentCreateController extends Controller
     // set dummy card for amex and visa payments which do not have card object
     protected function  isCardAbsentforTokenisedPayment($token) : bool
     {
-        if(($token->card->isAmex() || $token->card->isVisa()) || $token->card->isRuPay() || $token->card->isMasterCard())
+        if(($token->card->isAmex() || $token->card->isVisa()) || $token->card->isRuPay() || $token->card->isMasterCard() || $token->card->isDiners())
         {
             return true;
         }

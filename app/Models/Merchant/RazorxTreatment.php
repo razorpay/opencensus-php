@@ -791,6 +791,8 @@ final class RazorxTreatment
     // Experiment to use cvv less payments for non rearch on mastercard
     const CVV_LESS_NON_REARCH_MC = 'cvv_less_non_rearch_mc';
 
+    const CVV_LESS_NON_REARCH = 'cvv_less_non_rearch';
+
     //Experiment to remove invalid filters in the terminals proxy calls
     const REMOVE_GET_TERMINALS_PROXY_INVALID_FILTERS = "remove_get_terminals_proxy_invalid_filters";
 

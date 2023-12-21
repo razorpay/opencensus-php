@@ -655,7 +655,18 @@ trait Authorize
 
         $gatewayAndGatewayAcquirer = $gateway . "_" . $gatewayAcquirer;
 
-        $variant = $this->app->razorx->getTreatment($gatewayAndGatewayAcquirer, Merchant\RazorxTreatment::CVV_LESS_NON_REARCH_MC, $this->mode);
+        $vaiant = 'off';
+
+        if ($payment->card->isMasterCard() === true)
+        {
+            $variant = $this->app->razorx->getTreatment($gatewayAndGatewayAcquirer, Merchant\RazorxTreatment::CVV_LESS_NON_REARCH_MC, $this->mode);
+        }
+        else {
+            $networkCode = $payment->card->getNetworkCode();
+            $exp = Merchant\RazorxTreatment::CVV_LESS_NON_REARCH . '_' . $networkCode . '_'. $gatewayAndGatewayAcquirer;
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $exp, $this->mode);
+        }
+
 
         if (strtolower($variant) !== 'on')
         {
@@ -766,7 +777,7 @@ trait Authorize
 
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
-            if($this->checkIfCardTokenisedPayment($payment) && $payment->card->isMasterCard() === true)
+            if($this->checkIfCardTokenisedPayment($payment) && ($payment->card->isMasterCard() === true || $payment->card->isDiners() === true))
             {
                 if($this->checkIfCvvlessApplicable($payment, $input, $gatewayInput) === false) {
                     throw new Exception\BadRequestException(
