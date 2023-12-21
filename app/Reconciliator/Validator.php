@@ -249,6 +249,18 @@ class Validator extends Base\Core
         'card'                          => 'sometimes'
     ];
 
+    const UPDATE_BANK_TRANSFER_RECON_DATA_RULES = [
+        'payment_id'                    => 'required|string|size:14',
+        'reconciled_type'               => 'required|string',
+        'amount'                        => 'required',
+        'reconciled_at'                 => 'required|filled|epoch',
+        'gateway_settled_at'            => 'sometimes|epoch',
+        'netbanking'                    => 'sometimes',
+        'wallet'                        => 'sometimes',
+        'card'                          => 'sometimes',
+        'upi'                           => 'sometimes',
+    ];
+
     const UPDATE_NETBANKING_RECON_DATA_RULES = [
         'payment_id'                                       => 'required|string|size:14',
         'netbanking'                                       => 'required|array',
@@ -1053,6 +1065,14 @@ class Validator extends Base\Core
     public function validateUpdateUpiReconData(array $input)
     {
         (new JitValidator)->rules(self::UPDATE_UPI_RECON_DATA_RULES)
+            ->caller($this)
+            ->input($input)
+            ->validate();
+    }
+
+    public function validateUpdateBankTransferReconData(array $input)
+    {
+        (new JitValidator)->rules(self::UPDATE_BANK_TRANSFER_RECON_DATA_RULES)
             ->caller($this)
             ->input($input)
             ->validate();

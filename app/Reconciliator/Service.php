@@ -800,6 +800,11 @@ class Service extends Base\Service
             return $this->updateCardReconciliationData($input, $payment);
         }
 
+       else if($payment->isBankTransfer() === true)
+       {
+           return $this->updateBankTransferReconciliationData($input, $payment);
+       }
+
         $this->trace->info(
             TraceCode::METHOD_NOT_SUPPORTED_FOR_RECON,
             $input
@@ -1040,6 +1045,68 @@ class Service extends Base\Service
     }
 
     /**
+     * Update post reconciliation data from ART
+     * @param array $input
+     * @return array
+     * @throws \Throwable
+     */
+    public function updateBankTransferReconciliationData(array $input, Payment\Entity $payment): array
+    {
+        (new Validator)->validateUpdateBankTransferReconData($input);
+
+        $paymentId = $input['payment_id'];
+
+        $transaction = $payment->transaction;
+
+        if ((empty($transaction) === false) and
+            ($transaction->isReconciled() === true))
+        {
+            return [
+                'success'        => false,
+                'gateway'        => $payment->getGateway(),
+                'error' => [
+                    'code'        => InfoCode::ALREADY_RECONCILED,
+                    'description' => 'Bank Transfer payment is already reconciled'
+                ],
+            ];
+        }
+        $this->trace->info(
+            TraceCode::RECON_UPDATE_RECONCILIATION_DATA_STARTED,
+            $input
+        );
+
+        try
+        {
+            $this->repo->transaction(function () use ($paymentId, $input, $payment)
+            {
+                $this->updateTransactionData($input, $payment);
+
+            });
+
+            $this->core->pushSuccessPaymentReconMetrics($payment,"art");
+
+            return [
+                'success'     => true,
+                'gateway'     => $payment->getGateway(),
+
+            ];
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::RECON_UPDATE_RECONCILIATION_DATA_FAILED,
+                [
+                    'paymentId' => $paymentId,
+                    'gateway'   => $payment->getGateway(),
+                ]
+            );
+            throw $ex;
+        }
+    }
+
+    /**
      * Retrive required field of UPS gateway entity
      * @param Payment\Entity $payment
      * @return array
@@ -1259,7 +1326,7 @@ class Service extends Base\Service
 
         $transaction->setReconciledType($input['reconciled_type']);
 
-        if (($payment->getMethod() === Payment\Method::UPI || $payment->getMethod() === Payment\Method::CARD) && isset($input['gateway_settled_at']) === true){
+        if (($payment->getMethod() === Payment\Method::UPI || $payment->getMethod() === Payment\Method::CARD || $payment->isBankTransfer() === true) && isset($input['gateway_settled_at']) === true){
 
             $transaction->setGatewaySettledAt($input['gateway_settled_at']);
 

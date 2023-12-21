@@ -3681,4 +3681,72 @@ class BankTransferTest extends TestCase
         $this->capturePayment($payment['id'], $payment['amount']);
     }
 
+    public function testBankTransferProcessUpdateTransactionPostRecon()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
+
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        $this->runBankTransferRequestAssertions(
+            true,
+            '',
+            [
+                'intended_virtual_account_id'   => $bankTransfer['virtual_account_id'],
+                'actual_virtual_account_id'     => $bankTransfer['virtual_account_id'],
+                'merchant_id'                   => $bankTransfer['merchant_id'],
+                'bank_transfer_id'              => $bankTransfer['id'],
+                'payment_id'                    => $bankTransfer['payment_id'],
+            ]
+        );
+
+        $paymentId = substr($payment["id"], 4);
+
+        // Assert Transaction is not reconciled
+        $transaction = $this->getDbLastEntity('transaction');
+        $this->assertNotNull($transaction);
+        $this->assertEquals($transaction["entity_id"], $paymentId);
+        $this->assertNull($transaction["reconciled_at"]);
+        $this->assertNull($transaction["reconciled_type"]);
+
+        // Send reconciliation request
+        $requestData = $this->testData["bankTransferArtReconPayload"];
+        $requestData["content"]["payment_id"] = $paymentId;
+        $requestData["content"]["amount"] = 500;
+        $reconTimestamp = strval(Carbon::now()->getTimestamp());
+        $requestData["content"]["reconciled_at"] = $reconTimestamp;
+        $requestData["content"]["gateway_settled_at"] = $reconTimestamp;
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($requestData);
+        $this->assertNotNull($response);
+        $this->assertTrue($response['success']);
+
+        // assert transaction is reconciled
+        $transaction->reload();
+        $this->assertEquals($transaction["reconciled_at"], $reconTimestamp);
+        $this->assertEquals($transaction["reconciled_type"], $requestData["content"]["reconciled_type"]);
+        $this->assertEquals($transaction["gateway_settled_at"], $requestData["content"]["gateway_settled_at"]);
+    }
+
 }

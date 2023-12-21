@@ -2210,6 +2210,22 @@ return [
         'content' => [],
     ],
 
+    'bankTransferArtReconPayload' => [
+        'url'       => '/reconciliate/data',
+        'method'    => 'post',
+        'content'   => [
+            'payment_id'         => '',
+            'amount'             => '',
+            'reconciled_at'      => '',
+            'reconciled_type'    => 'mis',
+            'gateway_settled_at' => '',
+            'upi'                => [],
+            'netbanking'         => [],
+            'wallet'             => [],
+            'card'               => []
+        ]
+    ],
+
     'createVAWithAllowedPayer' => [
         'content' => [
             'receivers'      => [
