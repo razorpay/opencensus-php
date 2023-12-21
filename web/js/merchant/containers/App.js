@@ -336,8 +336,8 @@ class App extends Component {
         //set graphql x-dashboard-user-id, x-dashboard-merchant-id
         /** gql.setHeader('x-dashboard-user-id', user.user.id ) */
         graphqlClient.setHeaders({
-          'x-dashboard-user-id': user.current,
-          'x-dashboard-merchant-id': user.merchant.id,
+          'x-dashboard-user-id': user.user.id,
+          'x-dashboard-merchant-id': user.current,
         });
 
         if (!currentMode) {
