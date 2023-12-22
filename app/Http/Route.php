@@ -2415,6 +2415,7 @@ class Route
         'fee_recovery_payout_schedule_task'        => ['post',     'schedules/tasks/fee_recovery',                   'ScheduleController@createFeeRecoveryScheduleTask'                  ],
         'fee_recovery_manual_update'               => ['post',     'payouts/fee_recovery/manual',                    'FeeRecoveryController@postManualRecovery'                          ],
         'fee_recovery_payout_manual_retry'         => ['post',     'payouts/fee_recovery_retry/manual',              'FeeRecoveryController@createRecoveryRetryPayoutManually'                        ],
+        'fee_recovery_low_balance_cron'            => ['post',     'fee_recovery_low_balance_cron',                  'FeeRecoveryController@processFeeRecoveryBalanceCron'],
 
         // Route APIs
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
@@ -6214,6 +6215,7 @@ class Route
         'payout_send_pending_approval_email',
         'payout_send_pending_approval_reminder',
         'payouts_pending_push_notification_cron',
+        'fee_recovery_low_balance_cron',
 
         'terminal_fill_enabled_wallets',
         'payment_update_reference6',
@@ -16136,6 +16138,7 @@ class Route
             'payout_send_pending_approval_email',
             'payout_send_pending_approval_reminder',
             'payouts_pending_push_notification_cron',
+            'fee_recovery_low_balance_cron',
             'terminal_fill_enabled_wallets',
             'refresh_payments_ongoing_downtimes_cron',
             'refresh_payments_resolved_downtimes_cron',

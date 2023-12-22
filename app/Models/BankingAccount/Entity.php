@@ -802,7 +802,7 @@ class Entity extends Base\PublicEntity
                         'fee_recovery'     => $this->feeRecoverySetFlag,
                     ]);
 
-                $outstandingAmount = $this->fetchOutstandingAmountToBeRecovered();
+                $outstandingAmount = $this->fetchOutstandingAmountToBeRecovered($this->getMerchantId(), $this->balance->getId());
 
                 $array[self::FEE_RECOVERY_DETAILS] = [
                     self::OUTSTANDING_AMOUNT => $outstandingAmount,
@@ -967,12 +967,13 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    protected function fetchOutstandingAmountToBeRecovered()
+    public function fetchOutstandingAmountToBeRecovered(string $merchantId, string $balanceId, string $connectionType = null)
     {
         $feeRecoveryRepo = new FeeRecovery\Repository;
 
-        $unrecoveredAmountForPayouts = $feeRecoveryRepo->fetchUnrecoveredAmountForPayouts($this->getMerchantId(),
-                                                                                          $this->balance->getId());
+        $unrecoveredAmountForPayouts = $feeRecoveryRepo->fetchUnrecoveredAmountForPayouts($merchantId,
+                                                                                          $balanceId,
+                                                                                          $connectionType);
 
         app('trace')->info(
             TraceCode::BANKING_ACCOUNT_OUTSTANDING_AMOUNT,
@@ -980,8 +981,9 @@ class Entity extends Base\PublicEntity
                 'unrecovered_amount_payouts'        => $unrecoveredAmountForPayouts->toArrayPublic(),
             ]);
 
-        $unrecoveredAmountForFailedPayouts = $feeRecoveryRepo->fetchUnrecoveredAmountForFailedPayouts($this->getMerchantId(),
-                                                                                          $this->balance->getId());
+        $unrecoveredAmountForFailedPayouts = $feeRecoveryRepo->fetchUnrecoveredAmountForFailedPayouts($merchantId,
+                                                                                                      $balanceId,
+                                                                                                      $connectionType);
 
         app('trace')->info(
             TraceCode::BANKING_ACCOUNT_OUTSTANDING_AMOUNT,
@@ -989,8 +991,9 @@ class Entity extends Base\PublicEntity
                 'unrecovered_amount_failed_payouts' => $unrecoveredAmountForFailedPayouts->toArrayPublic(),
             ]);
 
-        $unrecoveredAmountForReversals = $feeRecoveryRepo->fetchUnrecoveredAmountForReversals($this->getMerchantId(),
-                                                                                              $this->balance->getId());
+        $unrecoveredAmountForReversals = $feeRecoveryRepo->fetchUnrecoveredAmountForReversals($merchantId,
+                                                                                              $balanceId,
+                                                                                              $connectionType);
 
         app('trace')->info(
             TraceCode::BANKING_ACCOUNT_OUTSTANDING_AMOUNT,

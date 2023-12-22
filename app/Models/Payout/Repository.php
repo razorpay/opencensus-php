@@ -16,6 +16,7 @@ use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
+use RZP\Models\Feature;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -3119,6 +3120,87 @@ class Repository extends Base\Repository
             ->select($idColumn, $statusColumn, $amountColumn)
             ->where($payoutBatchIdColumn, '=', $batchId)
             ->get();
+    }
+
+    /**
+     * SELECT
+     * DISTINCT b.merchant_id, b.id as balance_id, b.account_number
+     * FROM payouts p
+     * INNER JOIN balance b ON b.id = p.balance_id
+     * WHERE p.purpose = 'rzp_fees' AND p.status = 'queued' AND b.merchant_id IN (
+     *      SELECT DISTINCT entity_id FROM features
+     *      WHERE name = 'payout' AND entity_type = 'merchant'
+     * )
+     * AND b.merchant_id NOT IN (
+     *      SELECT DISTINCT entity_id FROM features
+     *      WHERE name = 'excluded_from_ca_billing' AND entity_type = 'merchant'
+     * )
+     * AND b.type = 'banking'
+     * AND b.account_type = 'direct'
+     * AND b.account_number IS NOT NULL
+     * (optional) AND b.balance < $balanceAmount
+     *
+     * DBA: https://razorpay.atlassian.net/browse/DBOPS-3728
+     */
+    public function fetchEligibleBalancesForLowBalanceAlertAndBlocking($balanceAmount = null)
+    {
+        // balance columns
+        $balanceId              = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceMerchantId      = $this->repo->balance->dbColumn(Balance\Entity::MERCHANT_ID);
+        $balanceType            = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountType     = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+        $balanceAccountNumber   = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_NUMBER);
+        $balanceCol             = $this->repo->balance->dbColumn(Balance\Entity::BALANCE);
+
+        // payouts columns
+        $payoutPurpose     = $this->repo->payout->dbColumn(Payout\Entity::PURPOSE);
+        $payoutStatus      = $this->repo->payout->dbColumn(Payout\Entity::STATUS);
+        $payoutBalanceId   = $this->repo->payout->dbColumn(Payout\Entity::BALANCE_ID);
+
+        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+            ->join(Table::BALANCE, $balanceId, '=', $payoutBalanceId)
+            ->where($payoutPurpose, '=', Payout\Purpose::RZP_FEES)
+            ->where($payoutStatus, '=', Payout\Status::QUEUED)
+            ->whereIn($balanceMerchantId, function($query)
+            {
+                $query->select(Feature\Entity::ENTITY_ID)
+                    ->distinct()
+                    ->from(Table::FEATURE)
+                    ->where(Feature\Entity::NAME, '=', Feature\Constants::PAYOUT)
+                    ->where(Feature\Entity::ENTITY_TYPE, '=', Feature\Constants::MERCHANT);
+            })
+            ->whereNotIn($balanceMerchantId, function($query)
+            {
+                $query->select(Feature\Entity::ENTITY_ID)
+                    ->distinct()
+                    ->from(Table::FEATURE)
+                    ->where(Feature\Entity::NAME, '=', Feature\Constants::EXCLUDE_FROM_CA_BILLING)
+                    ->where(Feature\Entity::ENTITY_TYPE, '=', Feature\Constants::MERCHANT);
+            })
+            ->where($balanceType, '=', Balance\Type::BANKING)
+            ->where($balanceAccountType, '=', Balance\AccountType::DIRECT)
+            ->whereNotNull($balanceAccountNumber);
+
+        if (!empty($balanceAmount))
+        {
+            $query->where($balanceCol, '<', $balanceAmount);
+        }
+
+        return $query->select($balanceMerchantId, $balanceId . ' AS balance_id', $balanceAccountNumber . ' AS account_number')
+            ->distinct()
+            ->get();
+    }
+
+    // DBA: https://razorpay.atlassian.net/browse/DBOPS-3728
+    public function fetchSumQueuedFeeRecoveryPayoutsForMerchant(string $merchantId, string $balanceId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::BALANCE_ID, '=', $balanceId)
+            ->where(Entity::STATUS, '=', Status::QUEUED)
+            ->where(Entity::PURPOSE, '=', Purpose::RZP_FEES)
+            ->selectRaw('SUM(' . Entity::AMOUNT .') AS amount')
+            ->first();
     }
 
 }

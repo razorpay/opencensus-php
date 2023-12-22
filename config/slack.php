@@ -215,7 +215,9 @@ return array(
 
         'cb_invoice_verification_alerts' => 'C05BBKBHA67',
 
-        'cross_border_alerts' => 'C033XHUNAUW'
+        'cross_border_alerts' => 'C033XHUNAUW',
+
+        'x-acquisition-alerts'  => 'C03JZRN078C',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

@@ -2360,6 +2360,32 @@ class Service extends Base\Service
         return $decodedAccountNumber;
     }
 
+    /**
+     * Fetches fee-recovery metadata from BAS for a given list of account_numbers
+     *
+     * @param array $input
+     * @return mixed
+     * @throws \Throwable
+     */
+    public function fetchFeeRecoveryMetadata(array $input)
+    {
+        return $this->bankingAccountService->fetchFeeRecoveryMetadata($input);
+    }
+
+    /**
+     * Updates fee-recovery metadata on BAS
+     *
+     * @param string $businessId
+     * @param string $bankingAccountId
+     * @param array $input
+     * @return mixed
+     * @throws \Throwable
+     */
+    public function updateFeeRecoveryMetadata(string $businessId, string $bankingAccountId, array $input)
+    {
+        return $this->bankingAccountService->updateFeeRecoveryMetadata($businessId, $bankingAccountId, $input);
+    }
+
     private function removeBankingAccountIdPrefix(string $bankingAccountId): string
     {
         if (str_starts_with($bankingAccountId, "bacc_"))

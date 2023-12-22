@@ -1064,6 +1064,19 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
+    public function processFeeRecoveryBalanceCron()
+    {
+        $this->lowBalanceMerchantEmail();
+
+        $this->automatedMerchantBlockingAndUnblocking(Constants::AUTOMATED_BLOCKING);
+
+        $this->automatedMerchantBlockingAndUnblocking(Constants::AUTOMATED_UNBLOCKING);
+
+        return [
+            'success' => true,
+        ];
+    }
+
     protected function createAndUpdateFeeRecoveryEntityForManualRecovery($entityId,
                                                                          $entityType,
                                                                          $merchantId,
@@ -1266,5 +1279,134 @@ class Core extends Base\Core
     protected function sendSlackAlert($operation, $data)
     {
         (new SlackNotification)->send($operation, $data, null, 1, Entity::RX_CA_RBL_ALERTS);
+    }
+
+    private function lowBalanceMerchantEmail(): void
+    {
+        $eligibleList = $this->repo->payout->fetchEligibleBalancesForLowBalanceAlertAndBlocking(Constants::MIN_BALANCE_AMOUNT);
+
+        $accountNumberMap = [];
+
+        foreach($eligibleList as $item)
+        {
+            $accountNumberMap[$item->getAttribute(Constants::ACCOUNT_NUMBER)] = [
+                Entity::MERCHANT_ID => $item->getMerchantId(),
+                Entity::BALANCE_ID  => $item->getBalanceId(),
+            ];
+        }
+
+        // explicitly converting to strings since php converts numeric keys to int when possible
+        $accountNumbers = array_map('strval', array_keys($accountNumberMap));
+
+        if (empty($accountNumbers))
+        {
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_LOW_BALANCE_PROCESS_SKIPPED,
+                [
+                    'flow'      => Constants::LOW_BALANCE_ALERT,
+                    'reason'    => 'No eligible Account Numbers found'
+                ]);
+
+            return;
+        }
+
+        $basResponse = (new \RZP\Models\BankingAccountService\Service())->fetchFeeRecoveryMetadata([
+            Constants::ACCOUNT_NUMBERS => $accountNumbers
+        ]);
+
+        // sanity check: if there is some diff between account_number list sent back by BAS & original list, log here
+        // this can happen if some accounts are not yet migrated to BAS
+        if(!empty(array_diff($accountNumbers, array_pluck($basResponse, Constants::ACCOUNT_NUMBER))))
+        {
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_LOW_BALANCE_PROCESS_SKIPPED,
+                [
+                    'reason'    => 'There is a diff in original account_numbers & banking_account_service response'
+                ]);
+        }
+
+        foreach ($basResponse as $item)
+        {
+            $accountNumber = $item[Constants::ACCOUNT_NUMBER];
+
+            $feeRecoveryEmailLastSentAt = Carbon::createFromTimestamp($item[Constants::FEE_RECOVERY_EMAIL_SENT_AT] ?? 0);
+
+            $currentTime = Carbon::now(Timezone::IST);
+
+            if ($currentTime->diffInDays($feeRecoveryEmailLastSentAt) > 10)
+            {
+                Jobs\FeeRecoveryLowBalance::dispatch($this->mode, [
+                    Constants::ACTION               => Constants::LOW_BALANCE_ALERT,
+                    Constants::BUSINESS_ID          => $item[Constants::BUSINESS_ID],
+                    Constants::BANKING_ACCOUNT_ID   => $item[Constants::BANKING_ACCOUNT_ID],
+                    Constants::ACCOUNT_NUMBER       => $accountNumber,
+                    Constants::BALANCE_IDS          => [$accountNumberMap[$accountNumber][Entity::BALANCE_ID]],
+                    Entity::MERCHANT_ID             => $accountNumberMap[$accountNumber][Entity::MERCHANT_ID],
+                ]);
+            }
+        }
+    }
+
+    private function automatedMerchantBlockingAndUnblocking($action): void
+    {
+        $eligibleList = [];
+
+        if ($action === constants::AUTOMATED_BLOCKING)
+        {
+            $currentTime = Carbon::now(TimeZone::IST);
+
+            if ($currentTime->day != 1 || $currentTime->hour !== 12 || $currentTime->minute > 30)
+            {
+                // Don't proceed further if current time is not between 12:00 PM and 12:30 PM on 1st of Month for automated blocking
+                return;
+            }
+
+            $eligibleList = $this->repo->payout->fetchEligibleBalancesForLowBalanceAlertAndBlocking();
+        }
+        else
+        {
+            $eligibleList = $this->repo->balance->fetchMerchantsBlockedDueToLowBalanceWithBalanceId();
+        }
+
+        $merchantMap = [];
+
+        foreach ($eligibleList as $item)
+        {
+            $merchantMap[$item->getMerchantId()][] = $item->getAttribute(Entity::BALANCE_ID);
+        }
+
+        if (empty($merchantMap))
+        {
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_LOW_BALANCE_PROCESS_SKIPPED,
+                [
+                    'flow'      => $action,
+                    'reason'    => 'No eligible merchants found'
+                ]);
+
+            return;
+        }
+
+        $filteredMerchantIds = [];
+
+        if ($action === Constants::AUTOMATED_BLOCKING)
+        {
+            // For initial release, the automated blocking should be applicable only to those merchants have the automated blocking feature enabled.
+            // Once things are stabilized, this restriction will be lifted and made applicable to all merchants.
+            $filteredMerchantIds = $this->repo->feature->getMerchantIdsHavingFeature(\RZP\Models\Feature\Constants::AUTO_DISABLE_PAYOUTS, array_keys($merchantMap));
+        }
+        else
+        {
+            $filteredMerchantIds = array_keys($merchantMap);
+        }
+
+        foreach ($filteredMerchantIds as $merchantId)
+        {
+            Jobs\FeeRecoveryLowBalance::dispatch($this->mode, [
+                Constants::ACTION       => $action,
+                Constants::BALANCE_IDS  => $merchantMap[$merchantId],
+                Entity::MERCHANT_ID     => $merchantId
+            ]);
+        }
     }
 }

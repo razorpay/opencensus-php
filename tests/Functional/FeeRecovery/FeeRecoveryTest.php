@@ -4,7 +4,8 @@ namespace RZP\Tests\Functional\FeeRecovery;
 
 use Carbon\Carbon;
 
-use Queue;
+use RZP\Jobs\FeeRecoveryLowBalance;
+use RZP\Mail\FeeRecovery\LowBalanceAlert;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -14,6 +15,8 @@ use RZP\Models\FeeRecovery;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Balance\FreePayout;
@@ -3056,6 +3059,341 @@ class FeeRecoveryTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($data);
+    }
+
+    public function prepareEntitiesForFeeRecoveryLowBalanceAlert(string $accountNumber,
+                                                                 string $bankingAccountId,
+                                                                 int $balanceAmount,
+                                                                 int $payoutAmount,
+                                                                 array $features)
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'name'  => 'merchantName',
+            'email' => 'merchant@merchantMail.com'
+        ]);
+
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'       => $merchant->getId(),
+            'type'              => 'banking',
+            'account_type'      => 'direct',
+            'account_number'    => $accountNumber,
+            'balance'           => $balanceAmount,
+        ]);
+
+        $this->fixtures->create('banking_account', [
+            'account_type'      => 'current',
+            'merchant_id'       => $merchant->getId(),
+            'channel'           => 'rbl',
+            'status'            => 'activated',
+            'balance_id'        => $balance->getId(),
+            'account_number'    => $balance->getAccountNumber(),
+            'id'                => $bankingAccountId
+        ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            'merchant_id'       => $merchant->getId(),
+            'account_number'    => $balance->getAccountNumber(),
+            'balance_id'        => $balance->getId(),
+            'channel'           => 'rbl',
+            'status'            => 'active',
+        ]);
+
+        foreach ($features as $feature)
+        {
+            $this->fixtures->create('feature', [
+                'name'          => $feature,
+                'entity_id'     => $merchant->getId(),
+                'entity_type'   => 'merchant',
+            ]);
+        }
+
+        $payout = $this->fixtures->payout->createPayoutWithoutTransaction([
+            'merchant_id'   => $merchant->getId(),
+            'balance_id'    => $balance->getId(),
+            'purpose'       => 'salary',
+            'amount'        => $payoutAmount,
+            'fees'          => $payoutAmount,
+            'status'        => 'processed',
+        ]);
+
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payout->getId(),
+            'entity_type'       => 'payout',
+            'status'            => 'processing',
+            'attempt_number'    => 0,
+            'type'              => 'debit',
+        ]);
+
+        $this->fixtures->payout->createPayoutWithoutTransaction([
+            'merchant_id'   => $merchant->getId(),
+            'balance_id'    => $balance->getId(),
+            'purpose'       => 'rzp_fees',
+            'amount'        => $payoutAmount,
+            'status'        => 'queued',
+        ]);
+
+        return $merchant;
+    }
+
+    public function verifyFeeRecoveryLowBalanceAlert()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->app['config']->set('applications.dcs.mock', true);
+
+        $dateTime = Carbon::create(2023, 12, 07, 12, 00, 00, Timezone::IST);
+
+        Carbon::setTestNow($dateTime);
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFeeRecoveryLowBalanceAlert'];
+
+        $this->startTest();
+    }
+
+    public function testFeeRecoveryLowBalanceAlertMailQueued()
+    {
+        Mail::fake();
+
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905','randomBaAccId1', 5, 5001, [
+            Feature\Constants::PAYOUT
+        ]);
+
+        $this->verifyFeeRecoveryLowBalanceAlert();
+
+        Mail::assertQueued(LowBalanceAlert::class, function($mail) use ($merchant)
+        {
+            $mail->build();
+
+            $from = [
+                0   => [
+                    'name'    => 'Team RazorpayX',
+                    'address' => 'x.support@razorpay.com'
+                ],
+            ];
+
+            $to = [
+                0   => [
+                    'name'      => null,
+                    'address'   => $merchant->getEmail(),
+                ],
+            ];
+
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('Urgent: Low balance in your RazorpayX account could lead to Service Disruption', $mail->subject);
+
+            $this->assertEquals($from, $mail->from);
+
+            $this->assertEquals($from, $mail->replyTo);
+
+            $this->assertEquals($to, $mail->to);
+
+            $this->assertSame('emails.fee_recovery.low_balance_alert', $mail->view);
+
+            $this->assertEquals($merchant->getName(), $viewData['name']);
+
+            $this->assertEquals('5224440041626905', $viewData['account_number']);
+
+            $this->assertEquals($merchant->getId(), $viewData['merchant_id']);
+
+            return true;
+        });
+    }
+
+    public function testFeeRecoveryLowBalanceAlertSufficientBalanceOrExcluded()
+    {
+        Queue::fake();
+
+        Mail::fake();
+
+        $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 5001, [
+            Feature\Constants::PAYOUT
+        ]);
+
+        $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626906', 'randomBaAccId2', 5, 5001, [
+            Feature\Constants::PAYOUT, Feature\Constants::EXCLUDE_FROM_CA_BILLING
+        ]);
+
+        $this->verifyFeeRecoveryLowBalanceAlert();
+
+        Queue::assertNothingPushed();
+
+        Mail::assertNothingQueued();
+    }
+
+    public function testFeeRecoveryLowBalanceAlertInsufficientFeesAndBalance()
+    {
+        Queue::fake();
+
+        Mail::fake();
+
+        $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626906', 'randomBaAccId1', 4999, 5000, [
+            Feature\Constants::PAYOUT
+        ]);
+
+        $this->verifyFeeRecoveryLowBalanceAlert();
+
+        Queue::assertPushed(FeeRecoveryLowBalance::class);
+
+        Mail::assertNothingQueued();
+    }
+
+    public function verifyFeeRecoveryLowBalanceAutomatedBlocking()
+    {
+        Mail::fake();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->app['config']->set('applications.dcs.mock', true);
+
+        $this->app['config']->set('applications.slack.mock', true);
+
+        $this->testData[__FUNCTION__] = $this->testData['testFeeRecoveryLowBalanceAlert'];
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Mail::assertNothingQueued();
+    }
+
+    public function testFeeRecoveryLowBalanceAutomatedBlocking()
+    {
+        $dateTime = Carbon::create(2023, 12, 1, 12, 15, 00, Timezone::IST);
+
+        Carbon::setTestNow($dateTime);
+
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 5001, [
+            Feature\Constants::PAYOUT, Feature\Constants::AUTO_DISABLE_PAYOUTS,
+        ]);
+
+        $this->verifyFeeRecoveryLowBalanceAutomatedBlocking();
+
+        $merchant->reload();
+
+        $features = $merchant->getEnabledFeatures();
+
+        $this->assertContains(Feature\Constants::PAYOUT_LOW_BALANCE, $features);
+
+        $this->assertNotContains(Feature\Constants::PAYOUT, $features);
+    }
+
+    public function testFeeRecoveryLowBalanceNoAutomatedBlockingMissingFeatureOrLowFee()
+    {
+        $dateTime = Carbon::create(2023, 12, 1, 12, 15, 00, Timezone::IST);
+
+        Carbon::setTestNow($dateTime);
+
+        /** @var Merchant\Entity $merchant1 */
+        $merchant1 = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 5001, [
+            Feature\Constants::PAYOUT,
+        ]);
+
+        /** @var Merchant\Entity $merchant2 */
+        $merchant2 = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626906', 'randomBaAccId2', 5001, 4999, [
+            Feature\Constants::PAYOUT,
+        ]);
+
+        $this->verifyFeeRecoveryLowBalanceAutomatedBlocking();
+
+        $merchant1->reload();
+
+        $merchant2->reload();
+
+        $features = $merchant1->getEnabledFeatures();
+
+        $this->assertContains(Feature\Constants::PAYOUT, $features);
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_LOW_BALANCE, $features);
+
+        $features = $merchant2->getEnabledFeatures();
+
+        $this->assertContains(Feature\Constants::PAYOUT, $features);
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_LOW_BALANCE, $features);
+    }
+
+    public function testFeeRecoveryLowBalanceNoAutomatedBlockingInvalidDate()
+    {
+        $dateTime = Carbon::create(2023, 12, 1, 12, 31, 00, Timezone::IST);
+
+        Carbon::setTestNow($dateTime);
+
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 5001, [
+            Feature\Constants::PAYOUT,
+        ]);
+
+        $this->verifyFeeRecoveryLowBalanceAutomatedBlocking();
+
+        $merchant->reload();
+
+        $features = $merchant->getEnabledFeatures();
+
+        $this->assertContains(Feature\Constants::PAYOUT, $features);
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_LOW_BALANCE, $features);
+    }
+
+    public function verifyFeeRecoveryLowBalanceAutomatedUnblocking()
+    {
+        $dateTime = Carbon::create(2023, 12, 7, 12, 15, 00, Timezone::IST);
+
+        Carbon::setTestNow($dateTime);
+
+        Mail::fake();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->app['config']->set('applications.dcs.mock', true);
+
+        $this->testData[__FUNCTION__] = $this->testData['testFeeRecoveryLowBalanceAlert'];
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Mail::assertNothingQueued();
+    }
+
+    public function testFeeRecoveryLowBalanceAutomatedUnblocking()
+    {
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 4999, [
+            Feature\Constants::PAYOUT_LOW_BALANCE,
+        ]);
+
+        $this->verifyFeeRecoveryLowBalanceAutomatedUnblocking();
+
+        $merchant->reload();
+
+        $features = $merchant->getEnabledFeatures();
+
+        $this->assertContains(Feature\Constants::PAYOUT, $features);
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_LOW_BALANCE, $features);
+    }
+
+    public function testFeeRecoveryLowBalanceNoAutomatedUnblockingHighFee()
+    {
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905', 'randomBaAccId1', 5001, 5001, [
+            Feature\Constants::PAYOUT_LOW_BALANCE,
+        ]);
+
+        $this->verifyFeeRecoveryLowBalanceAutomatedUnblocking();
+
+        $merchant->reload();
+
+        $features = $merchant->getEnabledFeatures();
+
+        $this->assertContains(Feature\Constants::PAYOUT_LOW_BALANCE, $features);
+
+        $this->assertNotContains(Feature\Constants::PAYOUT, $features);
     }
 
     protected function mockRazorxFeeRecoveryRollout()

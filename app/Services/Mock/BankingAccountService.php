@@ -1416,4 +1416,28 @@ class BankingAccountService
             ]
         ];
     }
+
+    public function fetchFeeRecoveryMetadata(array $input)
+    {
+        $response = [];
+
+        foreach ($input['account_numbers'] as $accountNumber)
+        {
+            $response[] = [
+                'account_number'                => $accountNumber,
+                'fee_recovery_email_sent_at'    => 1601756894,
+                'banking_account_id'            => 'MawTpzj91O1n6L',
+                'business_id'                   => 'MawToUU2EyodPu',
+            ];
+        }
+
+        return $response;
+    }
+
+    public function updateFeeRecoveryMetadata(string $businessId, string $bankingAccountId, array $input)
+    {
+        return [
+            'success'   => true
+        ];
+    }
 }

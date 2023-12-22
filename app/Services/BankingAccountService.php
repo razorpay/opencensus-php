@@ -70,6 +70,10 @@ class BankingAccountService
     const GET_BANKING_ACCOUNT_DETAILS_BY_MERCHANT_ID_AND_ACCOUNT_NUMBER     = 'merchant/%s/banking_account_by_account_number/%s';
     const COMPOSITE_LIST_BANKING_ACCOUNTS                                   = 'merchant/%s/composite-banking-accounts';
 
+    // Fee-recovery related routes
+    const FETCH_FEE_RECOVERY_METADATA = 'fee_recovery_metadata';
+    const UPDATE_FEE_RECOVERY_METADATA = 'business/%s/banking_account/%s/fee_recovery_metadata';
+
     protected $baseUrl;
 
     protected $key;
@@ -1429,6 +1433,66 @@ class BankingAccountService
                                              'path'  => $path,
                                              'input' => $input,
                                          ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws \Throwable
+     */
+    public function fetchFeeRecoveryMetadata(array $input)
+    {
+        $path = self::FETCH_FEE_RECOVERY_METADATA;
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::POST, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                        Trace::ERROR,
+                                        TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                        [
+                                            'path'  => $path,
+                                            'input' => $input,
+                                        ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @param string $businessId
+     * @param string $bankingAccountId
+     * @param array $input
+     * @return mixed
+     * @throws \Throwable
+     */
+    public function updateFeeRecoveryMetadata(string $businessId, string $bankingAccountId, array $input)
+    {
+        $path = sprintf(self::UPDATE_FEE_RECOVERY_METADATA, $businessId, $bankingAccountId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::PATCH, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                        Trace::ERROR,
+                                        TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                        [
+                                            'path'  => $path,
+                                            'input' => $input,
+                                        ]);
 
             throw $e;
         }

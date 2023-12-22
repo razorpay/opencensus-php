@@ -139,7 +139,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchUnrecoveredAmountForPayouts(string $merchantId, string $balanceId)
+    public function fetchUnrecoveredAmountForPayouts(string $merchantId, string $balanceId, string $connectionType = null)
     {
         // payout columns
         $balanceIdColumn  = $this->repo->payout->dbColumn(Payout\Entity::BALANCE_ID);
@@ -152,7 +152,9 @@ class Repository extends Base\Repository
         $statusColumn   = $this->dbColumn(Entity::STATUS);
         $typeColumn     = $this->dbColumn(Entity::TYPE);
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $connection = empty($connectionType) ? $this->getSlaveConnection() : $this->getConnectionFromType($connectionType);
+
+        return $this->newQueryWithConnection($connection)
                     ->selectRaw(
                         'SUM(' . $feesColumn .') AS fees')
                     ->join(Table::PAYOUT, $idColumn, '=', $entityIdColumn)
@@ -163,7 +165,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchUnrecoveredAmountForFailedPayouts(string $merchantId, string $balanceId)
+    public function fetchUnrecoveredAmountForFailedPayouts(string $merchantId, string $balanceId, string $connectionType = null)
     {
         // payout columns
         $balanceIdColumn  = $this->repo->payout->dbColumn(Payout\Entity::BALANCE_ID);
@@ -176,7 +178,9 @@ class Repository extends Base\Repository
         $statusColumn     = $this->dbColumn(Entity::STATUS);
         $typeColumn       = $this->dbColumn(Entity::TYPE);
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $connection = empty($connectionType) ? $this->getSlaveConnection() : $this->getConnectionFromType($connectionType);
+
+        return $this->newQueryWithConnection($connection)
                     ->selectRaw(
                         'SUM(' . $feesColumn .') AS fees')
                     ->join(Table::PAYOUT, $idColumn, '=', $entityIdColumn)
@@ -187,7 +191,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchUnrecoveredAmountForReversals(string $merchantId, string $balanceId)
+    public function fetchUnrecoveredAmountForReversals(string $merchantId, string $balanceId, string $connectionType = null)
     {
         // reversal columns
         $balanceIdColumn        = $this->repo->reversal->dbColumn(Reversal\Entity::BALANCE_ID);
@@ -204,7 +208,9 @@ class Repository extends Base\Repository
         $statusColumn     = $this->dbColumn(Entity::STATUS);
         $typeColumn       = $this->dbColumn(Entity::TYPE);
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $connection = empty($connectionType) ? $this->getSlaveConnection() : $this->getConnectionFromType($connectionType);
+
+        return $this->newQueryWithConnection($connection)
                     ->selectRaw(
                         'SUM(' . $feesColumn .') AS fees')
                     ->join(Table::REVERSAL, $reversalIdColumn, '=', $entityIdColumn)

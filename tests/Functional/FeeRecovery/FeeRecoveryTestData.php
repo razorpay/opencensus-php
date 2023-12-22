@@ -327,4 +327,17 @@ return [
             ],
         ],
     ],
+
+    'testFeeRecoveryLowBalanceAlert'   => [
+        'request'   => [
+            'url'       => '/fee_recovery_low_balance_cron',
+            'method'    => 'POST',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content'   => [
+                'success'   => true,
+            ]
+        ]
+    ]
 ];

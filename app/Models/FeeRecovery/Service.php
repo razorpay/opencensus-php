@@ -52,4 +52,9 @@ class Service extends Base\Service
             return $feeRecovery;
         }
     }
+
+    public function processFeeRecoveryBalanceCron()
+    {
+        return $this->core()->processFeeRecoveryBalanceCron();
+    }
 }

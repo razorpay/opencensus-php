@@ -42,4 +42,11 @@ class FeeRecoveryController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function processFeeRecoveryBalanceCron()
+    {
+        $response = $this->service()->processFeeRecoveryBalanceCron();
+
+        return ApiResponse::json($response);
+    }
 }

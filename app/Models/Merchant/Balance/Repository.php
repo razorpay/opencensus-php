@@ -574,7 +574,7 @@ class Repository extends Base\Repository
     }
 
     public function getBalanceEntityByMerchantIdAccountNumberChannel(
-        string $merchantId, 
+        string $merchantId,
         string $accountNumber,
         string $channel
     )
@@ -699,5 +699,47 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection($mode))
             ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
             ->first();
+    }
+
+    /**
+     * SELECT
+     * merchant_id, id as balance_id
+     * FROM
+     * balance
+     * WHERE type = 'banking' AND account_type = 'direct'
+     * AND merchant_id IN (
+     *      SELECT DISTINCT entity_id FROM features
+     *      WHERE name = 'payout_low_balance' AND entity_type = 'merchant'
+     * )
+     * AND merchant_id NOT IN (
+     *      SELECT DISTINCT entity_id FROM features
+     *      WHERE name = 'payout' AND entity_type = 'merchant'
+     * )
+     *
+     * DBA: https://razorpay.atlassian.net/browse/DBOPS-3728
+     */
+    public function fetchMerchantsBlockedDueToLowBalanceWithBalanceId()
+    {
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+            ->where(Entity::TYPE, '=', Type::BANKING)
+            ->where(Entity::ACCOUNT_TYPE, '=', AccountType::DIRECT)
+            ->whereIn(Entity::MERCHANT_ID, function($query)
+            {
+                $query->select(Feature\Entity::ENTITY_ID)
+                    ->distinct()
+                    ->from(Table::FEATURE)
+                    ->where(Feature\Entity::NAME, '=', Feature\Constants::PAYOUT_LOW_BALANCE)
+                    ->where(Feature\Entity::ENTITY_TYPE, '=', Feature\Constants::MERCHANT);
+            })
+            ->whereNotIn(Entity::MERCHANT_ID, function($query)
+            {
+                $query->select(Feature\Entity::ENTITY_ID)
+                    ->distinct()
+                    ->from(Table::FEATURE)
+                    ->where(Feature\Entity::NAME, '=', Feature\Constants::PAYOUT)
+                    ->where(Feature\Entity::ENTITY_TYPE, '=', Feature\Constants::MERCHANT);
+            })
+            ->select(Entity::MERCHANT_ID, Entity::ID . ' AS balance_id')
+            ->get();
     }
 }

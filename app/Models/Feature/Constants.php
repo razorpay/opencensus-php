@@ -1980,6 +1980,15 @@ class Constants
 
     const SOURCE_TO_PAY_PRO = 'source_to_pay_pro';
 
+    /**
+     * These 3 feature flags are used for sending low-balance alerts on X & blocking payouts for current-accounts
+     */
+    const EXCLUDE_FROM_CA_BILLING = 'exclude_from_ca_billing';
+
+    const AUTO_DISABLE_PAYOUTS = 'auto_disable_payouts';
+
+    const PAYOUT_LOW_BALANCE = 'payout_low_balance';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2751,7 +2760,10 @@ class Constants
         self::BANKING_PLUS_PRO                       => true,
         self::SOURCE_TO_PAY_CORE                     => true,
         self::SOURCE_TO_PAY_PRO                      => true,
-        self::REMOVE_EMANDATE_COOLOFF                => true
+        self::REMOVE_EMANDATE_COOLOFF                => true,
+        self::EXCLUDE_FROM_CA_BILLING                => true,
+        self::AUTO_DISABLE_PAYOUTS                   => true,
+        self::PAYOUT_LOW_BALANCE                     => true,
     ];
 
     // Entity type constants
@@ -3896,6 +3908,21 @@ class Constants
             'feature'       => self::SOURCE_TO_PAY_PRO,
             'display_name'  => 'Source to Pay Pro',
             'documentation' => 'To determine subscription tier for merchant on X dashboard'
+        ],
+        self::EXCLUDE_FROM_CA_BILLING  => [
+            'feature'       => self::EXCLUDE_FROM_CA_BILLING,
+            'display_name'  => 'Exclude from Current-Account Billing',
+            'documentation' => 'To determine if a merchant should be excluded from current-account billing'
+        ],
+        self::AUTO_DISABLE_PAYOUTS => [
+            'feature'       => self::AUTO_DISABLE_PAYOUTS,
+            'display_name'  => 'Automatically remove payouts access',
+            'documentation' => 'Removes payout access to merchant automatically if sufficient balance is not present in CA'
+        ],
+        self::PAYOUT_LOW_BALANCE => [
+            'feature'       => self::PAYOUT_LOW_BALANCE,
+            'display_name'  => 'Payouts disabled due to insufficient balance',
+            'documentation' => 'To determine if merchant is eligible to be automatically assigned payouts feature after sufficient balance is available in all CAs'
         ]
     ];
 
