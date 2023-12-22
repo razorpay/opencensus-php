@@ -279,14 +279,19 @@ class Core extends Base\Core
                 ->trigger();
 
             $this->trace->info(TraceCode::CREATE_RISK_ACTION,
-               [
-                   'merchant_id'    => $merchantId,
-                   'wf_action_id'   => $workflowAction['id'],
-               ]);
+                               [
+                                   'merchant_id'  => $merchantId,
+                                   'wf_action_id' => $workflowAction['id'],
+                               ]);
 
             $this->trackEvents($workflowAction, $merchant, $diffData, $settlementClearance);
 
-            return $workflowAction;
+
+            if($settlementClearance === false)
+            {
+                return $workflowAction;
+            }
+            $this->autoApproveSettlementClearanceWorkflow($merchantId, $maker, $diff);
         }
         catch (\Throwable $e)
         {
@@ -299,6 +304,72 @@ class Core extends Base\Core
                 ]);
 
             throw $e;
+        }
+    }
+
+    private  function autoApproveSettlementClearanceWorkflow($merchantId, $maker, $diff)
+    {
+        $openWorkflowActions = (new WorkflowAction\Core)->fetchOpenActionOnEntityOperation(
+            $merchantId, 'merchant', Permission\Name::$actionMap[$diff['new'][Constants::ACTION]]);
+
+        // note: sleep required because it can take upto 1 second for documents to become available for search in ES.
+        sleep(1);
+
+        foreach ($openWorkflowActions as $action)
+        {
+            try
+            {
+                (new WorkflowAction\Core)->approveActionForcefully($action, $maker);
+                (new WorkflowAction\Core)->executeAction($action, $maker, $maker->getSuperAdminRole());
+            }
+            catch (Exception\BadRequestValidationFailureException|Exception\BadRequestException $e)
+            {
+                $status = Constants::INVALIDATED;
+                $this->handleWorkflowException($e, $merchantId, $status, $action, $maker);
+            }
+            catch (\Throwable $e)
+            {
+                $status = Constants::FAILED;
+                $this->handleWorkflowException($e, $merchantId, $status, $action, $maker);
+            }
+        }
+    }
+    private function handleWorkflowException($execption, $merchantId, $status, $workflowAction, $maker)
+    {
+        $this->trace->traceException(
+            $execption,
+            Logger::ERROR,
+            TraceCode::RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+            [
+                'merchantId'       => $merchantId,
+                'execution_status' => $status,
+            ]);
+        if (isset($workflowAction) === true)
+        {
+            $this->closeSettlementWorkflowIfApplicable($workflowAction, $maker);
+        }
+    }
+    private function closeSettlementWorkflowIfApplicable($workflowAction, $riskWorkflowMaker)
+    {
+        try {
+            if (isset($workflowAction) === false)
+            {
+                return;
+            }
+            if ($workflowAction->isExecuted() === false)
+            {
+                (new WorkflowAction\Core())->close($workflowAction, $riskWorkflowMaker, true);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+                [
+                    'workflow_action_id'  => $workflowAction->getId(),
+                ]);
         }
     }
 

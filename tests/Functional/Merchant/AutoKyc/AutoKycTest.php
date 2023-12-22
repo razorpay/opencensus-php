@@ -3,7 +3,8 @@
 
 namespace Functional\Merchant\AutoKyc;
 
-
+use DB;
+use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
@@ -12,6 +13,8 @@ use RZP\Services\MerchantRiskClient;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Cron\Constants;
+use RZP\Models\RiskWorkflowAction\Core;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\POIStatus;
 use RZP\Models\State\Entity as StateEntity;
 use RZP\Models\Merchant\Detail\BusinessType;
@@ -28,6 +31,16 @@ use RZP\Models\Merchant\Cron\Collectors\PreActivationMerchantReleaseFundsDataCol
 
 class AutoKycTest extends TestCase
 {
+    use DbEntityFetchTrait;
+
+    protected $app;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->app = App::getFacadeRoot();
+        $this->repo = $this->app['repo'];
+    }
     public function testGetApplicableActivationStatusForMerchantNotYetRegistered()
     {
         $this->mockRazorxAndMerchantRiskClient();
@@ -848,5 +861,58 @@ class AutoKycTest extends TestCase
         $result = (new PreActivationMerchantReleaseFundsJob(['cron_name' => Constants::PRE_ACTIVATION_MERCHANT_RELEASE_FUNDS]))->process();
 
         $this->assertTrue($result);
+    }
+
+    public function testSettlementClearanceWorkflowExecution()
+    {
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'wf-admin@razorpay.com',
+            'org_id'              => Org::RZP_ORG,
+        ]);
+        $merchant = $this->fixtures->create('merchant', [
+            'hold_funds' => true
+        ]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'business_type'                    => 1,
+            'promoter_pan_name'                => 'pankaj kumar',
+            'poa_verification_status'          => 'verified',
+            'bank_details_verification_status' => 'verified']);
+        $riskWorkFlowActionCore = (new Core());
+        $input = ["merchant_id"=> $merchant->getId(),
+                  "action"=>"release_funds",
+                  "risk_attributes"=>[
+                      "clear_risk_tags"=>"0"
+                  ]
+        ];
+        $workflow = $this->fixtures->create('workflow', [
+            'name'   => 'release funds',
+            'org_id' => Org::RZP_ORG,
+        ]);
+
+
+
+
+        $permission = DB::table('permissions')->where('name','=',Permission::EDIT_MERCHANT_RELEASE_FUNDS)->first();
+
+        // Create new workflow having this permission
+        $workflow = $this->fixtures->create('workflow',
+                                            [
+                                                'org_id'        => Org::RZP_ORG,
+                                                'name'          => 'Test Workflow Z'
+                                            ]
+        );
+
+        // Insert rule with this workflow having edit_admin permission instead of create_payout permission
+        DB::table('workflow_permissions')->insert(
+            [
+                'workflow_id'      => $workflow->getId(),
+                'permission_id'    => $permission->id
+            ]);
+
+        $riskWorkFlowActionCore->createRiskWorkflowAction($input, $admin, null, true);
+        $merchant = $this->getDbLastEntity('merchant');
+        $this->assertTrue(!$merchant->getHoldFunds());
+
     }
 }
