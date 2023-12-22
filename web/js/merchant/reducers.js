@@ -153,6 +153,7 @@ import { reportsReducer as reportsCoreReducer } from 'merchant_common/views/Repo
 import { magicCODSettingsReducer } from 'merchant/reducers/magicCheckout/codEngine/reducer';
 import { shippingEngineReducer } from 'merchant/reducers/magicCheckout/shippingEngine/reducer';
 import paymentMetricsReducer from 'merchant/reducers/paymentMetrics';
+import genericFeatureReducer from 'merchant/reducers/genericFeature';
 
 export default combineReducers({
   modal: modalReducer,
@@ -301,4 +302,5 @@ export default combineReducers({
   newAuth: newAuthReducer,
   partnerDashboard: partnerReducer,
   paymentMetrics: paymentMetricsReducer,
+  genericFeature: genericFeatureReducer,
 });

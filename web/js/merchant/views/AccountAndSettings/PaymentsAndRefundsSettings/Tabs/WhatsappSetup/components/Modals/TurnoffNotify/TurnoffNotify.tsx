@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Box,
@@ -22,6 +22,7 @@ const TurnoffNotify = ({
   updateNotificationFeature,
 }): JSX.Element => {
   const isMobile = useMobile();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleDismiss = (): void => {
     if (isMobile) {
@@ -31,11 +32,12 @@ const TurnoffNotify = ({
   };
 
   const handleContinue = (): void => {
+    setIsLoading(true);
     whatsappAccountSetupAnalyticsTrack({
       objectName: 'WA Toggle All PLs to Whatsapp Confirm',
       actionName: 'Clicked',
     });
-    updateNotificationFeature(info.isChecked);
+    updateNotificationFeature(info.isChecked, true);
   };
 
   const { Modal, ModalHeader, ModalBody, ModalFooter } = isMobile
@@ -66,7 +68,7 @@ const TurnoffNotify = ({
           <Button variant="secondary" onClick={handleDismiss}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleContinue}>
+          <Button variant="primary" onClick={handleContinue} isLoading={isLoading}>
             Yes, I understand
           </Button>
         </Box>

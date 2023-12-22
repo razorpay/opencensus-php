@@ -48,7 +48,7 @@ export default class StandardForm extends React.Component {
       dynamicFields,
       disabled,
       user,
-      applications,
+      featureStatus,
     } = props;
 
     const content = (
@@ -102,7 +102,7 @@ export default class StandardForm extends React.Component {
           defaultContactValue={formData.sms_notify}
           defaultEmailValue={formData.email_notify}
           user={user}
-          applications={applications}
+          featureStatus={featureStatus}
         />
         <ReferenceId disabled={props.disabled} />
         <LinkExpiry

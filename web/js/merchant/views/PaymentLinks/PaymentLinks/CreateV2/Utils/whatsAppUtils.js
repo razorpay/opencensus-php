@@ -4,12 +4,14 @@ import {
 } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/constants';
 import { isWhatsAppAccountSetupEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
-export const getWhatsPLNotificationStatus = ({ user, splitz }) => {
+export const getWhatsPLNotificationStatus = ({ user, splitz, featureStatus = {} }) => {
   const { title } = BusinessServiceProvider[0];
-  const isNotificationEnabled = user.isFeatureEnabled(FEATURE_WHATSAPP_PL);
+  const { features = {}, loading: isFeatureLoading } = featureStatus;
   const isNotificationShow = isWhatsAppAccountSetupEnabled(user, splitz);
+  const isNotificationEnabled = !!features[FEATURE_WHATSAPP_PL];
 
   return {
+    isFeatureLoading,
     isNotificationShow,
     isNotificationEnabled,
     title: isNotificationEnabled

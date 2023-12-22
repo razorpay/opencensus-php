@@ -3,7 +3,10 @@ import ActiveSetup from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSet
 import React from 'react';
 import { render, screen, server, userEvent, waitFor } from 'test-utils';
 import { useMobile } from 'common/hooks/useMobile';
-import { getMerchantFeaturesHandler } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/__test__/mocks/handlers';
+import {
+  getMerchantFeaturesHandler,
+  getFeatureHandler,
+} from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/__test__/mocks/handlers';
 import { BusinessServiceProvider } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/constants';
 
 jest.mock(
@@ -36,13 +39,23 @@ jest.mock('common/hooks/useMobile', () => ({
 
 const businessProvider = BusinessServiceProvider[0];
 
+const intitialFeatureState = {
+  notify_via_whatsapp_plink: true,
+};
+
 describe('WhatsappSetup - ActiveSetup', () => {
   beforeEach(() => {
     (useMobile as jest.Mock).mockReset();
   });
 
-  const renderApp = (props = {}, user = {}, initialEntries = ['/']) => {
+  const renderApp = (
+    props = {},
+    user = {},
+    initialEntries = ['/'],
+    state = intitialFeatureState,
+  ) => {
     server.use(getMerchantFeaturesHandler());
+    server.use(getFeatureHandler());
     render(<ActiveSetup {...props} />, {
       initialState: {
         session: {
@@ -50,6 +63,9 @@ describe('WhatsappSetup - ActiveSetup', () => {
             isFeatureEnabled: () => true,
             ...user,
           },
+        },
+        genericFeature: {
+          features: state,
         },
       },
       initialEntries,
@@ -135,6 +151,7 @@ describe('WhatsappSetup - ActiveSetup', () => {
       ).toBeInTheDocument();
     });
   });
+
   test('should show toggle button but not open toggle modal if feature is not enabled', async () => {
     renderApp(
       {
@@ -142,6 +159,10 @@ describe('WhatsappSetup - ActiveSetup', () => {
       },
       {
         isFeatureEnabled: () => false,
+      },
+      ['/'],
+      {
+        notify_via_whatsapp_plink: false,
       },
     );
     const toggleBtn = screen.getByRole('switch', {

@@ -24,7 +24,7 @@ export default class UPIForm extends React.Component {
 
   render() {
     const { props } = this;
-    const { formData, dynamicFields, user, applications } = props;
+    const { formData, dynamicFields, user, featureStatus } = props;
 
     const content = (
       <FormWizard
@@ -66,7 +66,7 @@ export default class UPIForm extends React.Component {
           defaultContactValue={formData.sms_notify}
           defaultEmailValue={formData.email_notify}
           user={user}
-          applications={applications}
+          featureStatus={featureStatus}
         />
         <ReferenceId disabled={props.disabled} />
         <LinkExpiry

@@ -49,11 +49,12 @@ class Notify extends React.Component {
 
   render() {
     const { props } = this;
-    const { user, splitz } = props;
-    const { isNotificationShow, title, CtaText, businessProviderName } =
+    const { user, splitz, featureStatus } = props;
+    const { isFeatureLoading, isNotificationShow, title, CtaText, businessProviderName } =
       getWhatsPLNotificationStatus({
         user,
         splitz,
+        featureStatus,
       });
 
     return (
@@ -91,7 +92,7 @@ class Notify extends React.Component {
             />
           </ShowWhen>
         </Input.Group>
-        {isNotificationShow ? (
+        {!isFeatureLoading && isNotificationShow ? (
           <Alert
             title={title}
             marginTop="spacing.4"

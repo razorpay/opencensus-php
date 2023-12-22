@@ -7,10 +7,18 @@ import ActiveSetup from './components/ActiveSetup';
 import { fetchOauthConnectedApplications as fetchOauthConnectedApplicationsfn } from 'merchant/reducers/applications';
 import Shimmer from './components/Shimmer';
 import { getApplicationStatus, whatsappAccountSetupAnalyticsTrack } from './utils';
+import { fetchGenericFeatureStatus } from 'merchant/reducers/genericFeature';
+import { FEATURE_WHATSAPP_PL } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/constants';
 
-const WhatsAppSetup = ({ applications, fetchOauthConnectedApplications }): JSX.Element => {
+const WhatsAppSetup = ({
+  user,
+  applications,
+  fetchOauthConnectedApplications,
+  fetchGenericFeatureStatus,
+}): JSX.Element => {
   useEffect(() => {
     fetchOauthConnectedApplications();
+    fetchGenericFeatureStatus(user.id, FEATURE_WHATSAPP_PL);
     whatsappAccountSetupAnalyticsTrack({
       objectName: 'Whatsapp Account Setup Page',
       actionName: 'Displayed',
@@ -48,12 +56,16 @@ const WhatsAppSetup = ({ applications, fetchOauthConnectedApplications }): JSX.E
 };
 
 const mapStateToProps = (state) => ({
+  user: state.session.user,
   applications: state.applications,
 });
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
-    { fetchOauthConnectedApplications: fetchOauthConnectedApplicationsfn },
+    {
+      fetchOauthConnectedApplications: fetchOauthConnectedApplicationsfn,
+      fetchGenericFeatureStatus,
+    },
     dispatch,
   );
 };

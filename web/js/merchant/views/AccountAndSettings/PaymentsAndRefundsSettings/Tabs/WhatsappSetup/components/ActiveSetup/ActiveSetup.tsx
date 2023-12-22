@@ -10,6 +10,7 @@ import {
   Switch,
   Button,
   Badge,
+  Spinner,
 } from '@razorpay/blade/components';
 import { useSearchParams } from 'react-router-dom';
 import DeleteAccount from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/components/Modals/DeleteAccount';
@@ -19,8 +20,8 @@ import { useMobile } from 'common/hooks/useMobile';
 import { updateFeatures } from 'merchant/reducers/config';
 import { FEATURE_WHATSAPP_PL } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/constants';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
-import { updateUserFeatures } from 'merchant/reducers/session';
 import { whatsappAccountSetupAnalyticsTrack } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/utils';
+import { fetchGenericFeatureStatus } from 'merchant/reducers/genericFeature';
 
 const modalViewMap = {
   deleteAccount: DeleteAccount,
@@ -35,56 +36,54 @@ const Dot = (): JSX.Element => (
   </Text>
 );
 
+const SwitchWithLoader = ({
+  isChecked,
+  handleAction,
+  businessProvider,
+  isLoading,
+}): JSX.Element => {
+  if (isLoading) {
+    return <Spinner accessibilityLabel="notification-switch" />;
+  }
+  return (
+    <Switch
+      isChecked={isChecked}
+      onChange={(data) => {
+        whatsappAccountSetupAnalyticsTrack({
+          objectName: 'WA Toggle All PLs to Whatsapp',
+          actionName: 'Clicked',
+          properties: {
+            selectedBusinessAccount: businessProvider?.title,
+            toggleButton: data.isChecked,
+          },
+        });
+        handleAction({ action: 'toggleNotification', eventData: data });
+      }}
+      accessibilityLabel="Toggle notifications"
+    />
+  );
+};
+
 const ActiveSetup = ({
   businessProvider,
   user,
   updateFeatures,
   showNotification,
-  updateUserFeatures,
+  featureStatus,
+  fetchGenericFeatureStatus,
 }): JSX.Element => {
+  const { features = {}, loading: isFeatureLoading } = featureStatus;
   const isMobile = useMobile();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isUpdating, setIsUpdating] = useState(false);
   const [modalState, setModalState] = useState({
     activeView: 'close',
     isOpen: false,
     info: {},
   });
-  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState<boolean>(
-    user.isFeatureEnabled(FEATURE_WHATSAPP_PL),
-  );
+  const isNotificationsEnabled = !!features[FEATURE_WHATSAPP_PL];
 
-  const updateNotificationFeature = (action) => {
-    updateFeatures({
-      features: {
-        [FEATURE_WHATSAPP_PL]: Number(action),
-      },
-    })
-      .then(() => {
-        showNotification({
-          type: 'success',
-          message: `Whatsapp notifications ${action ? 'enabled' : 'disabled'} successfully`,
-        });
-        updateUserFeatures(FEATURE_WHATSAPP_PL, Boolean(action));
-      })
-      .catch(() => {
-        showNotification({
-          type: 'error',
-          message: 'Something went wrong in enabling Whatsapp notifications',
-        });
-      })
-      .finally(() => {
-        setIsNotificationsEnabled(user.isFeatureEnabled(FEATURE_WHATSAPP_PL));
-      });
-  };
-
-  const handleAction = ({ action, eventData }): void => {
-    if (action === 'toggleNotification') {
-      setIsNotificationsEnabled(eventData.isChecked);
-      if (eventData?.isChecked) {
-        updateNotificationFeature(eventData.isChecked);
-        return;
-      }
-    }
+  const updateModalState = ({ action, eventData }) => {
     setModalState((prevState) => ({
       ...prevState,
       activeView: action,
@@ -97,6 +96,44 @@ const ActiveSetup = ({
               ...eventData,
             },
     }));
+  };
+
+  const updateNotificationFeature = (action, isCloseModal = false) => {
+    setIsUpdating(true);
+    updateFeatures({
+      features: {
+        [FEATURE_WHATSAPP_PL]: Number(action),
+      },
+    })
+      .then(() => {
+        showNotification({
+          type: 'success',
+          message: `Whatsapp notifications ${action ? 'enabled' : 'disabled'} successfully`,
+        });
+        fetchGenericFeatureStatus(user.id, FEATURE_WHATSAPP_PL);
+      })
+      .catch(() => {
+        showNotification({
+          type: 'error',
+          message: 'Something went wrong in enabling Whatsapp notifications',
+        });
+      })
+      .finally(() => {
+        setIsUpdating(false);
+        if (isCloseModal) {
+          updateModalState({ action: 'close', eventData: {} });
+        }
+      });
+  };
+
+  const handleAction = ({ action, eventData }): void => {
+    if (action === 'toggleNotification') {
+      if (eventData?.isChecked) {
+        updateNotificationFeature(eventData.isChecked);
+        return;
+      }
+    }
+    updateModalState({ action, eventData });
   };
 
   useEffect(() => {
@@ -201,20 +238,11 @@ const ActiveSetup = ({
                   <Heading size="small" weight="bold">
                     Send all payment links on Whatsapp
                   </Heading>
-                  <Switch
+                  <SwitchWithLoader
                     isChecked={isNotificationsEnabled}
-                    onChange={(data) => {
-                      whatsappAccountSetupAnalyticsTrack({
-                        objectName: 'WA Toggle All PLs to Whatsapp',
-                        actionName: 'Clicked',
-                        properties: {
-                          selectedBusinessAccount: businessProvider?.title,
-                          toggleButton: data.isChecked,
-                        },
-                      });
-                      handleAction({ action: 'toggleNotification', eventData: data });
-                    }}
-                    accessibilityLabel="Toggle notifications"
+                    businessProvider={businessProvider}
+                    handleAction={handleAction}
+                    isLoading={isUpdating || isFeatureLoading}
                   />
                 </Box>
                 <Text size="medium" type="subtle">
@@ -231,20 +259,11 @@ const ActiveSetup = ({
                     Now, all customers will be notified about payments links over Whatsapp.
                   </Text>
                 </Box>
-                <Switch
+                <SwitchWithLoader
                   isChecked={isNotificationsEnabled}
-                  onChange={(data) => {
-                    whatsappAccountSetupAnalyticsTrack({
-                      objectName: 'WA Toggle All PLs to Whatsapp',
-                      actionName: 'Clicked',
-                      properties: {
-                        selectedBusinessAccount: businessProvider?.title,
-                        toggleButton: data.isChecked,
-                      },
-                    });
-                    handleAction({ action: 'toggleNotification', eventData: data });
-                  }}
-                  accessibilityLabel="Toggle notifications"
+                  businessProvider={businessProvider}
+                  handleAction={handleAction}
+                  isLoading={isUpdating || isFeatureLoading}
                 />
               </Box>
             )}
@@ -265,11 +284,12 @@ const ActiveSetup = ({
 const mapStateToProps = (state) => ({
   applications: state.applications,
   user: state.session.user,
+  featureStatus: state.genericFeature,
 });
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
-    { updateFeatures, updateUserFeatures, ...NotificationActions },
+    { updateFeatures, fetchGenericFeatureStatus, ...NotificationActions },
     dispatch,
   );
 };

@@ -40,6 +40,8 @@ import StandardForm from './Forms/StandardForm';
 import UPIForm from './Forms/UPIForm';
 import track from './track';
 import { getWhatsPLNotificationStatus } from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/Utils/whatsAppUtils';
+import { fetchGenericFeatureStatus } from 'merchant/reducers/genericFeature';
+import { FEATURE_WHATSAPP_PL } from 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings/Tabs/WhatsappSetup/constants';
 
 const PAYMENT_LINKS_TYPES = {
   BASE: 'base',
@@ -66,6 +68,7 @@ export const CONTACT_PLACEHOLDER = {
     reminders: state.reminders,
     isMobileResolution: state.app.isMobileResolution,
     paymentLinkRemindersConfig: state.reminders.product_configs.payment_link,
+    featureStatus: state.genericFeature,
   }),
   {
     luminateRow,
@@ -76,6 +79,7 @@ export const CONTACT_PLACEHOLDER = {
     updateUserFeatures,
     fetchReminders,
     fetchRemindersMerchantConfigs,
+    fetchGenericFeatureStatus,
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentLinkCreateV2'))
@@ -145,6 +149,11 @@ class PaymentLinkCreateV2 extends React.Component {
   }
 
   componentDidMount() {
+    const {
+      fetchGenericFeatureStatus,
+      user: { id },
+    } = this.props;
+    fetchGenericFeatureStatus(id, FEATURE_WHATSAPP_PL);
     this.prepareDataForPaymentLinkCreation()
       .then(() => {
         this.setState({ isLoading: false }, () => {
@@ -275,11 +284,12 @@ class PaymentLinkCreateV2 extends React.Component {
       isFormLocked: true,
     });
 
-    const { user, splitz } = this.props;
+    const { user, splitz, featureStatus } = this.props;
 
     const { isNotificationEnabled } = getWhatsPLNotificationStatus({
       user,
       splitz,
+      featureStatus,
     });
 
     let notificationMSG = 'Payment link created successfully.';
@@ -469,6 +479,7 @@ class PaymentLinkCreateV2 extends React.Component {
     const { linkType, dynamicFields } = state;
     const {
       user,
+      featureStatus,
       i18: { isConfigTagEnabled },
     } = props;
     const { merchant } = user;
@@ -511,6 +522,7 @@ class PaymentLinkCreateV2 extends React.Component {
             history={props.history}
             contactPlaceholder={CONTACT_PLACEHOLDER[merchant.country_code]}
             dynamicFields={dynamicFields}
+            featureStatus={featureStatus}
           />
         )}
       </div>
