@@ -3237,7 +3237,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
 
-        $this->assertNull($merchant->convertOnApi());
+        $this->assertFalse($merchant->convertOnApi());
     }
 
     public function testWhitelistInternationalForRiskyBusinessType()
@@ -3288,7 +3288,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
 
-        $this->assertNull($merchant->convertOnApi());
+        $this->assertFalse($merchant->convertOnApi());
     }
 
     public function testWhitelistInternationalWithNoWebsiteAlreadySet()
@@ -3307,7 +3307,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
 
-        $this->assertNull($merchant->convertOnApi());
+        $this->assertFalse($merchant->convertOnApi());
     }
 
     public function testBlacklistInternational()

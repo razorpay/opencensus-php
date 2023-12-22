@@ -185,8 +185,7 @@ class Activate extends Base\Core
 
         $merchantCore = new Core();
 
-        //Disabled as VCIP is needed for these merchants as per updated compliance requirements.
-        //$merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
+        $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
         $merchantBalance = $merchantCore->createBalance($merchant, 'live');
 
@@ -279,8 +278,7 @@ class Activate extends Base\Core
 
         $this->enableOneClickCheckoutIfApplicable($merchant);
 
-        //Disabled as VCIP is needed for these merchants as per updated compliance requirements.
-        //(new Merchant\Core)->updateInternationalIfApplicable($merchant, $merchantDetails);
+        (new Merchant\Core)->updateInternationalIfApplicable($merchant, $merchantDetails);
 
         $merchant->holdFunds();
 
@@ -387,8 +385,7 @@ class Activate extends Base\Core
 
         $merchantCore = new Merchant\Core;
 
-        //Disabled as VCIP is needed for these merchants as per updated compliance requirements.
-        //$merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
+        $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
         $this->updateLedger($merchant);
 
