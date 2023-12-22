@@ -3325,9 +3325,9 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $this->service(E::MERCHANT_DETAIL)->postSaveBusinessWebsite($urlType, $input);
+        $response = $this->service(E::MERCHANT_DETAIL)->postSaveBusinessWebsite($urlType, $input);
 
-        return ApiResponse::json([]);
+        return ApiResponse::json($response);
     }
 
     /**

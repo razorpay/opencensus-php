@@ -1965,6 +1965,10 @@ class Constants
      */
     const LRSTravelFlow = 'lrs_travel_flow';
 
+
+    // Feature flag business website validation bvs and mcc automation
+    const WEBSITE_AUTOMATED_CHECKS_FEATURE = 'website_automated_checks';
+
     /**
      * The 4 feature flags below correspond to the subscription tier on RazorpayX dashboard
      */
@@ -2572,6 +2576,7 @@ class Constants
         self::DYNAMIC_PL_OFFSET                            => true,
         self::ENABLE_PAYMENT_LINK_SIGN                     => true,
         self::NOTIFY_VIA_WHATSAPP_PLINK                    => true,
+        self::WEBSITE_AUTOMATED_CHECKS_FEATURE             => true,
         self::ENABLE_CREATE_OWN_TEMPLATE                   => true,
         self::ENABLE_CUSTOMER_AMOUNT                       => true,
         self::FILE_UPLOAD_PP                               => true,
@@ -3867,6 +3872,11 @@ class Constants
             'display_name'  => 'Feature to enable the merchant for notifying payment link via whatsapp ',
             'documentation' => '',
         ],
+        self::WEBSITE_AUTOMATED_CHECKS_FEATURE => [
+            'feature'       => self::WEBSITE_AUTOMATED_CHECKS_FEATURE,
+            'display_name'  => 'Feature to track website update automation validation progress',
+            'documentation' => '',
+        ],
         self::BANKING_PLUS_CORE => [
             'feature'       => self::BANKING_PLUS_CORE,
             'display_name'  => 'Banking Plus Core',
@@ -3943,6 +3953,7 @@ class Constants
         self::SKIP_APPROVAL_FOR_CREATOR,
         self::NOTIFY_VIA_WHATSAPP_PLINK,
         self::DISABLE_WORKFLOW_CONFIG_DIMENSIONS_S2P,
+        self::WEBSITE_AUTOMATED_CHECKS_FEATURE,
     ];
 
     /*

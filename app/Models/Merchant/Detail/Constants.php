@@ -547,6 +547,8 @@ class Constants
 
     const MERCHANT_BUSINESS_WEBSITE_COMMENT = ' main_page : %s,      about_us : %s,      contact_us : %s,        pricing_details : %s,       privacy_policy : %s,        tnc : %s,       refund_policy : %s,     dedupe_flagged_MIDs : %s';
 
+    const MERCHANT_BUSINESS_WEBSITE_V2_COMMENT = ' main_page : %s,      contact_us : %s,        privacy_policy : %s,        tnc : %s,       refund_policy : %s,    shipping_policy : %s,   dedupe_flagged_MIDs : %s';
+
     const MERCHANT_WEBSITE_TEST_CREDENTIAL_COMMENT = " website_username : %s,       website_username's_password : %s,";
 
     const MERCHANT_APP_TEST_CREDENTIAL_COMMENT = " app_username : %s,       app_username's_password : %s,";
@@ -560,10 +562,17 @@ class Constants
     const BUSINESS_WEBSITE_REFUND_POLICY   = 'business_website_refund_policy';
     const BUSINESS_WEBSITE_USERNAME        = 'business_website_username';
     const BUSINESS_WEBSITE_PASSWORD        = 'business_website_password';
+    const BUSINESS_WEBSITE_SHIPPING_POLICY = 'business_website_shipping_policy';
 
     const URL_TYPE = 'url_type';
 
     const VERIFICATION_TYPE = 'verification_type';
+
+    const API_VERSION = 'version';
+
+    const WEBSITE_VERSION_V1 = 'v1';
+
+    const WEBSITE_VERSION_V2 = 'v2';
 
     const BUSINESS_APP_URL      = 'business_app_url';
     const BUSINESS_APP_USERNAME = 'business_app_username';

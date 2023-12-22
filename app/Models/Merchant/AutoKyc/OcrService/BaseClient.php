@@ -36,7 +36,7 @@ class BaseClient
      */
     protected $merchant;
 
-    function __construct($merchant = null)
+    function __construct($merchant = null, string $serviceConfig = 'ocr_service')
     {
         $app = App::getFacadeRoot();
 
@@ -44,7 +44,7 @@ class BaseClient
 
         $this->trace = $app['trace'];
 
-        $this->config = $app['config']['services.ocr_service'];
+        $this->config = $app['config']['services.'.$serviceConfig];
 
         $this->host = $this->config['host'];
 

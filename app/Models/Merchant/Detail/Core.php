@@ -162,6 +162,10 @@ use RZP\Models\Merchant\Website;
 use RZP\Models\Merchant\Detail\Factory as DetailFactory;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
+use RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\WebsiteIndividualLinkClient as WebsiteIndividualLinkClient;
+use RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\Constants as OcrServiceConstants;
+use RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClient as MccCategorisationClient;
+use RZP\Jobs\PaymentPageProcessor;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\AccountDetail as AccountDetailsSDKWrapper;
 
@@ -8864,6 +8868,49 @@ class Core extends Base\Core
         return $commonFields;
     }
 
+    public function getWebsiteVersion(array $input) 
+    {
+        if(
+            isset($input[DetailConstants::API_VERSION]) &&
+            $input[DetailConstants::API_VERSION] === DetailConstants::WEBSITE_VERSION_V2
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    private function prepareWebsiteLinksComment(string $dedupeFlaggedMIDs, array $input)
+    {
+        $isVersionV2 = $this->getWebsiteVersion($input);
+
+        if ($isVersionV2)
+        {
+            return sprintf(
+                DetailConstants::MERCHANT_BUSINESS_WEBSITE_V2_COMMENT,
+                $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE],
+                $input[DetailConstants::BUSINESS_WEBSITE_CONTACT_US],
+                $input[DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY],
+                $input[DetailConstants::BUSINESS_WEBSITE_TNC],
+                $input[DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY],
+                $input[DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY],
+                $dedupeFlaggedMIDs
+            );
+        }
+
+        return sprintf(
+            DetailConstants::MERCHANT_BUSINESS_WEBSITE_COMMENT,
+            $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE],
+            $input[DetailConstants::BUSINESS_WEBSITE_ABOUT_US],
+            $input[DetailConstants::BUSINESS_WEBSITE_CONTACT_US],
+            $input[DetailConstants::BUSINESS_WEBSITE_PRICING_DETAILS],
+            $input[DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY],
+            $input[DetailConstants::BUSINESS_WEBSITE_TNC],
+            $input[DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY],
+            $dedupeFlaggedMIDs
+        );
+    }
+
+
     private function addCommentForBusinessWebsiteSave(string $urlType, string $permissionName, Entity $merchantDetails, string $dedupeFlaggedMIDs, array $input)
     {
         $businessDetailsComment = '';
@@ -8872,16 +8919,7 @@ class Core extends Base\Core
 
         if ($urlType === DetailConstants::URL_TYPE_WEBSITE)
         {
-            $businessDetailsComment = sprintf(DetailConstants::MERCHANT_BUSINESS_WEBSITE_COMMENT,
-                                              $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE],
-                                              $input[DetailConstants::BUSINESS_WEBSITE_ABOUT_US],
-                                              $input[DetailConstants::BUSINESS_WEBSITE_CONTACT_US],
-                                              $input[DetailConstants::BUSINESS_WEBSITE_PRICING_DETAILS],
-                                              $input[DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY],
-                                              $input[DetailConstants::BUSINESS_WEBSITE_TNC],
-                                              $input[DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY],
-                                              $dedupeFlaggedMIDs
-            );
+            $businessDetailsComment = $this->prepareWebsiteLinksComment($dedupeFlaggedMIDs, $input);
 
             if ((empty($input[DetailConstants::BUSINESS_WEBSITE_USERNAME]) === false) and
                 (empty($input[DetailConstants::BUSINESS_WEBSITE_PASSWORD]) === false))
@@ -9086,41 +9124,188 @@ class Core extends Base\Core
     }
 
     /**
-     * This function is used for add/edit merchant website details
+     * This function is used get permission name for website update detail action
      *
+     * @return string $permissionName
+     */
+    public function getWebsiteUpdatePermissionName()
+    {
+        $isRequestToUpdateWebsite = !empty($this->merchant->merchantDetail->getWebsite());
+
+        $permissionName = Permission\Name::EDIT_MERCHANT_WEBSITE_DETAIL;
+
+        if ($isRequestToUpdateWebsite === true)
+        {
+            $permissionName = Permission\Name::UPDATE_MERCHANT_WEBSITE;
+        }
+
+        return $permissionName;
+    }
+
+    /**
+     * Get MCC Categorisation and Website Validation.
+     *
+     * @param string $mccServiceId
+     * @param string $individualLinkRequestId
+     * @return array
+     */
+    public function getMccCategorisationAndWebsiteValidation(string $mccServiceId, string $individualLinkRequestId): array
+    {
+        $response = [];
+
+        if (empty($this->mccCategorisationClient)) {
+            $this->mccCategorisationClient = $this->getMccCategorisationClient(OcrServiceConstants::OCR_CONFIG_KEY);
+        }
+
+        if (empty($this->websiteIndividualClient)) {
+            $this->websiteIndividualClient = $this->getWebsiteIndividualLinkClient(OcrServiceConstants::OCR_CONFIG_KEY);
+        }
+
+        // Get MCC Categorisation
+        $mccResponse = $this->mccCategorisationClient->getCategorisation(['id' => $mccServiceId]);
+
+        if (empty($mccResponse)) {
+            if ($mccResponse !== null) {
+                return ['incomplete' => true];
+            }
+            return ['error' => true];
+        }
+
+        $websiteCategorisation = $mccResponse['website_categorisation'] ?? null;
+
+        if(empty($websiteCategorisation) === true || $websiteCategorisation['status'] !== 'completed')
+        {
+            return ['error' => true];
+        }
+
+        $response['mccValidation'] = $websiteCategorisation;
+
+        // Get Website Verification Result
+        $websiteResponse = $this->websiteIndividualClient->getWebsiteVerificationResult([
+            'website_verification_id' => $individualLinkRequestId
+        ]);
+
+        if (empty($websiteResponse) || !isset($websiteResponse['status']))
+        {
+            return ['error' => true];
+        }
+
+        switch ($websiteResponse['status']) {
+            case 'failed':
+                return ['error' => true];
+            case 'completed':
+                $response['websiteLinkValidation'] = $websiteResponse['result'];
+                break;
+            default:
+                return ['incomplete' => true];
+                break;
+        }
+
+        $response['success'] = true;
+        return $response;
+    }
+
+    /**
+     * Check if the website link analysis is successful.
+     *
+     * @param array $websiteLinkValidation
+     *
+     * @return bool
+     *   True if analysis is successful; otherwise, false.
+     */
+    private function isWebsiteLinkAnalysisSucceed(array $websiteLinkValidation): bool
+    {
+        $keysToCheck = ['terms', 'refund', 'privacy', 'shipping', 'contact_us'];
+
+        foreach ($keysToCheck as $key) {
+            if (
+                !isset($websiteLinkValidation[$key]) ||
+                !isset($websiteLinkValidation[$key]['analysis_result']['confidence_score']) ||
+                $websiteLinkValidation[$key]['analysis_result']['confidence_score'] < 0.9
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if the mcc categorisation analysis is successful.
+     *
+     * @param array $mccValidation
+     *
+     * @return bool
+     *   True if analysis is successful; otherwise, false.
+     */
+    private function isMccCategorisationAnalysisSucceed(array $mccValidation): bool
+    {
+        $merchantMccCode = $this->merchant->getCategory();
+
+        if (
+            $merchantMccCode &&
+            isset($mccValidation['predicted_mcc']) &&
+            $merchantMccCode == $mccValidation['predicted_mcc'] &&
+            isset($mccValidation['confidence_score']) &&
+            $mccValidation['confidence_score'] >= 0.9
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Update website details after validation.
+     *
+     * @param array $payload
+     *   An array containing the payload data.
+     */
+    public function updateWebsiteDetailAfterValidation($payload)
+    {
+        $validationResponse = $payload['validationResponse'] ?? [];
+
+        if($this->merchant->isFeatureEnabled(Feature\Constants::WEBSITE_AUTOMATED_CHECKS_FEATURE) === true)
+        {
+            $features = [
+                'features' => [
+                    Feature\Constants::WEBSITE_AUTOMATED_CHECKS_FEATURE => 0
+                ],
+                Feature\Entity::SHOULD_SYNC => true,
+            ];
+
+            (new Merchant\Service)->addOrRemoveMerchantFeatures($features);
+        }
+
+        if(
+            !empty($validationResponse['success']) &&
+            $validationResponse['success'] === true &&
+            $this->isWebsiteLinkAnalysisSucceed($validationResponse['websiteLinkValidation'] ?? []) &&
+            $this->isMccCategorisationAnalysisSucceed($validationResponse['mccValidation'] ?? [])
+        ){
+            (new Detail\Service())->putBusinessWebsiteUpdatePostWorkflow($payload['input']);
+
+            return;
+        }
+
+        $this->postBusinessWebsiteViaWorkflow($payload['urlType'], $payload['input']);
+    }
+
+
+    /**
+     * This function is used for edit/update business website details with workflow
      * @param Entity $merchantDetails
      * @param array  $input
      *
      * @return array
      * @throws \Throwable
      */
-    public function postSaveBusinessWebsite(string $urlType, array $input)
+    public function postBusinessWebsiteViaWorkflow(string $urlType, array $input)
     {
-        $this->trace->info(
-            TraceCode::MERCHANT_SAVE_BUSINESS_WEBSITE,
-            ['input' => $input]);
-
-        $isRequestToUpdateWebsite = !empty($this->merchant->merchantDetail->getWebsite());
-
-        $input = array_merge($input, [DetailConstants::URL_TYPE => $urlType]);
-
-        if ($urlType === DetailConstants::URL_TYPE_WEBSITE)
-        {
-            $this->merchant->merchantDetail->getValidator()->validateInput('business_websites_check', $input);
-        }
-        else
-        {
-            $this->merchant->merchantDetail->getValidator()->validateInput('business_app_url_check', $input);
-        }
-
-        $permissionName = Permission\Name::EDIT_MERCHANT_WEBSITE_DETAIL;
+        $permissionName = $this->getWebsiteUpdatePermissionName();
 
         $newUrl = ($urlType === DetailConstants::URL_TYPE_WEBSITE) ? $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE] : $input[DetailConstants::BUSINESS_APP_URL];
-
-        if ($isRequestToUpdateWebsite === true)
-        {
-            $permissionName = Permission\Name::UPDATE_MERCHANT_WEBSITE;
-        }
 
         $originalMerchantDetails = [DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE => $this->merchant->merchantDetail->getWebsite()];
 
@@ -9142,6 +9327,180 @@ class Core extends Base\Core
             ->handle($originalMerchantDetails, $dirtyMerchantDetails, true);
 
         $this->addCommentForBusinessWebsiteSave($urlType, $permissionName, $this->merchant->merchantDetail, $dedupeFlaggedMIDs, $input);
+
+        return [];
+    }
+
+    /**
+     * Create payload for website link client validation
+     * @return array $payload
+     *
+     * @param array $input
+     */
+    public function createWebsiteLinkClientPayload(array $input)
+    {
+        $payload = [
+            'website_url' => $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE],
+            'addition_request' => true,
+            'additional_request_data' => []
+        ];
+
+        $payload['additional_request_data']['user_entered_links'] = [
+            'privacy_link' => $input[DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY],
+            'terms_condition_link' => $input[DetailConstants::BUSINESS_WEBSITE_TNC],
+            'refund_link' => $input[DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY],
+            'contact_link' => $input[DetailConstants::BUSINESS_WEBSITE_CONTACT_US],
+            'shipping_link' => $input[DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY],
+        ];
+
+        return $payload;
+    }
+
+    /**
+     * Validate individual link for business website
+     * @return string $validationId
+     *
+     * @param array $input
+     * @throws BadRequestException
+     */
+    public function validateIndividualLink(array $input)
+    {
+        $this->websiteIndividualClient = $this->getWebsiteIndividualLinkClient(OcrServiceConstants::OCR_CONFIG_KEY);
+        $payload = $this->createWebsiteLinkClientPayload($input);
+
+        $validation = $this->websiteIndividualClient->createWebsiteVerificationJob($payload);
+
+        if(empty($validation) === true or empty($validation['website_verification_id']) === true or empty($validation['status']) === true)
+        {
+            $this->trace->error(TraceCode::FETCH_WEBSITE_INDIVIDUAL_LINK_VALIDATION_FAILURE, [
+                'error_message' => $validation['error_reason'] ?? 'fetch website link api failure',
+            ]);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        return $validation['website_verification_id'];
+    }
+
+    /**
+     * Validate MCC for business website
+     * @return string $validationId
+     *
+     * @param array $input
+     * @throws BadRequestException
+     */
+    public function validateMCC(array $input)
+    {
+        $this->mccCategorisationClient = $this->getMccCategorisationClient(OcrServiceConstants::OCR_CONFIG_KEY);
+
+        $payload = [
+            'website_url'=> $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE]
+        ];
+
+        $validation = $this->mccCategorisationClient->createCategorisationJob($payload);
+
+        if ($validation === null or $validation['id'] === null or $validation['status'] === null)
+        {
+            $this->trace->error(TraceCode::FETCH_MCC_CATEGORY_VALIDATION_FAILURE, [
+                'error_message' => $validation['error_reason'] ?? 'fetch mcc categorisation api failure',
+            ]);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        return $validation['id'];
+    }
+
+
+    /**
+     * This function is used for edit/update business website details after BVS and MCC validation
+     * @param Entity $merchantDetails
+     * @param array  $input
+     *
+     * @return array
+     * @throws \Throwable
+     */
+    public function postBusinessWebsiteBVSValidation(string $urlType, array $input)
+    {
+
+        $mccRequestId = $this->validateMCC($input);
+
+        $individualLinkRequestId = $this->validateIndividualLink($input);
+
+        try
+        {
+            $this->dispatchOCRValidationJob($mccRequestId, $individualLinkRequestId, $input, $urlType);
+        }
+        catch (\Throwable $e)
+        {
+
+            $this->trace->error(TraceCode::OCR_SERVICE_VALIDATION_JOB_DISPATCH_ERROR, [
+                'merchantId'     => $this->merchant->getId(),
+                'message'        => $e->getMessage(),
+                'mccRequestId' => $mccRequestId,
+                'individualLinkRequestId' => $individualLinkRequestId,
+            ]);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        if($this->merchant->isFeatureEnabled(Feature\Constants::WEBSITE_AUTOMATED_CHECKS_FEATURE) === false)
+        {
+            $features = [
+                'features' => [
+                    Feature\Constants::WEBSITE_AUTOMATED_CHECKS_FEATURE => 1,
+                ],
+                Feature\Entity::SHOULD_SYNC => true,
+            ];
+            $this->addOrRemoveMerchantFeatures($features);
+        }
+
+        return [
+            'bvs_validation' => true,
+            'mccRequestId' => $mccRequestId,
+            'individualLinkRequestId' => $individualLinkRequestId,
+        ];
+
+    }
+
+    /**
+     * This function is used for add/edit merchant website details
+     *
+     * @param Entity $merchantDetails
+     * @param array  $input
+     *
+     * @return array
+     * @throws \Throwable
+     */
+    public function postSaveBusinessWebsite(string $urlType, array $input)
+    {
+        $isVersionV2 = $this->getWebsiteVersion($input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_SAVE_BUSINESS_WEBSITE,
+            [
+                'input' => $input,
+                'isVersionV2' => $isVersionV2
+            ]
+        );
+
+        $input = array_merge($input, [DetailConstants::URL_TYPE => $urlType]);
+
+        $validationType = 'business_app_url_check';
+
+        if ($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        {
+            $validationType = $isVersionV2 ? 'business_websites_v2_check' : 'business_websites_check';
+        }
+
+        $this->validatePostSaveBusinessWebsiteRequest($validationType, $input);
+
+        if($urlType === DetailConstants::URL_TYPE_WEBSITE && $isVersionV2)
+        {
+            return $this->postBusinessWebsiteBVSValidation($urlType, $input);
+        }
+
+        return $this->postBusinessWebsiteViaWorkflow($urlType, $input);
     }
 
     public function updateBusinessWebsite(Merchant\Entity $merchant, string $newUrl)
@@ -11046,6 +11405,65 @@ class Core extends Base\Core
         }
 
         $body['category_present'] = $isMerchantCategoryPresent;
+    }
+
+    /**
+     * @param string  $mccRequestId
+     * @param string $individualLinkRequestId
+     * @param array  $input
+     * @param string $urlType
+     * @return void
+     */
+    protected function dispatchOCRValidationJob(string $mccRequestId, string $individualLinkRequestId, array $input,
+string $urlType): void
+    {
+        // Temporary arrange ment to using payment page queue
+        // TODO: decomp this queue to service with dedicated self serve queue
+        PaymentPageProcessor::dispatch($this->mode, [
+            'event' => PaymentPageProcessor::OCR_SERVICE_VALIDATION_EVENT,
+            'mccRequestId' => $mccRequestId,
+            'individualLinkRequestId' => $individualLinkRequestId,
+            'input' => $input,
+            'urlType' => $urlType,
+            'start_time' => millitime(),
+        ]);
+    }
+
+    /**
+     * @param array $features
+     *
+     * @return void
+     */
+    protected function addOrRemoveMerchantFeatures(array $features): void
+    {
+        (new Merchant\Service)->addOrRemoveMerchantFeatures($features);
+    }
+
+    /**
+     * @return \RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClient
+     */
+    protected function getMccCategorisationClient(?string $svcKey = null): MccCategorisationClient
+    {
+        return new MccCategorisationClient($this->merchant, $svcKey);
+    }
+
+    /**
+    * @return \RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\WebsiteIndividualLinkClient
+     */
+    protected function getWebsiteIndividualLinkClient(?string $svcKey = null): WebsiteIndividualLinkClient
+    {
+        return new WebsiteIndividualLinkClient($this->merchant, $svcKey);
+    }
+
+    /**
+     * @param string $validationType
+     * @param array  $input
+     *
+     * @return void
+     */
+    protected function validatePostSaveBusinessWebsiteRequest(string $validationType, array $input): void
+    {
+        $this->merchant->merchantDetail->getValidator()->validateInput($validationType, $input);
     }
 
     public function getUpdatedPosClarificationResponse(array $input): array

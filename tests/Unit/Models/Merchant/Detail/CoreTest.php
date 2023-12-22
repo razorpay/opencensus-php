@@ -11,14 +11,18 @@ use Carbon\Carbon;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Services\Stork;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Store;
 use RZP\Models\Coupon\Constants;
+use RZP\Jobs\PaymentPageProcessor;
 use RZP\Jobs\UpdateMerchantContext;
+use Illuminate\Support\Facades\Bus;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Services\KafkaProducerClient;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Services\Mock\ApachePinotClient;
+use RZP\Models\Merchant\Detail\Validator;
 use RZP\Models\ClarificationDetail\Service;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
@@ -13109,5 +13113,333 @@ class CoreTest extends TestCase
 
         $this->assertEquals(false, $res);
 
+    }
+
+    /**
+     * @group web_update
+     */
+    public function testGetWebsiteVersion()
+    {
+        $core = new Core();
+
+        $input = [DetailConstant::API_VERSION => DetailConstant::WEBSITE_VERSION_V2];
+        $this->assertTrue($core->getWebsiteVersion($input));
+        $input = [];
+        $this->assertFalse($core->getWebsiteVersion($input));
+        $input = [DetailConstant::API_VERSION => DetailConstant::WEBSITE_VERSION_V1];
+        $this->assertFalse($core->getWebsiteVersion($input));
+    }
+
+    public function getValidateBusinessWebsitesCheckRulesWithVersionData(): array
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/CoreTestData.php';
+        $this->loadTestData();
+        return $this->testData['testValidateBusinessWebsitesCheckRulesWithVersion'];
+    }
+
+    public function getValidateBusinessWebsitesV2CheckRulesWithVersionData(): array
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/CoreTestData.php';
+        $this->loadTestData();
+        return $this->testData['testValidateBusinessWebsitesV2CheckRulesWithVersion'];
+    }
+
+    /**
+     * @group web_update
+     * @dataProvider getValidateBusinessWebsitesCheckRulesWithVersionData
+     */
+    public function testValidateBusinessWebsitesCheckRulesWithVersion($data, $exceptionClass=null, $exceptionMessage=null)
+    {
+        $validator = new Validator();
+
+        if (! empty ($exceptionClass))
+        {
+            $this->expectException($exceptionClass);
+        }
+
+        if (empty($exceptionMessage) === false)
+        {
+            $this->expectExceptionMessage($exceptionMessage);
+        }
+
+        $data = $data + [
+                DetailConstant::BUSINESS_WEBSITE_MAIN_PAGE          => 'https://razorpay.com',
+                DetailConstant::BUSINESS_WEBSITE_ABOUT_US           => 'https://razorpay.com/docs',
+                DetailConstant::BUSINESS_WEBSITE_CONTACT_US         => 'https://razorpay.com/docs',
+                DetailConstant::BUSINESS_WEBSITE_PRICING_DETAILS    => 'https://razorpay.com/docs',
+                DetailConstant::BUSINESS_WEBSITE_PRIVACY_POLICY     => 'https://razorpay.com/docs',
+                DetailConstant::BUSINESS_WEBSITE_TNC                => 'https://razorpay.com/docs',
+                DetailConstant::BUSINESS_WEBSITE_REFUND_POLICY      => 'https://razorpay.com/docs',
+            ];
+
+        $this->assertNull($validator->validateInput("business_websites_check", $data));
+    }
+
+    /**
+     * @group web_update
+     * @dataProvider getValidateBusinessWebsitesV2CheckRulesWithVersionData
+     */
+    public function testValidateBusinessWebsitesV2CheckRulesWithVersion($data, $exceptionClass=null,
+    $exceptionMessage=null)
+    {
+        $validator = new Validator();
+
+        if (! empty ($exceptionClass))
+        {
+            $this->expectException($exceptionClass);
+        }
+
+        if (empty($exceptionMessage) === false)
+        {
+            $this->expectExceptionMessage($exceptionMessage);
+        }
+
+        $this->assertNull($validator->validateInput("business_websites_v2_check", $data));
+    }
+
+    /**
+     * @group web_update
+     */
+    public function testPostBusinessWebsiteBVSValidation()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+        $mockedCore->shouldReceive("validateMCC")->andReturn("randomRequestId");
+        $mockedCore->shouldReceive("validateIndividualLink")->andReturn("individualLinkRequestId");
+        $mockedCore->shouldReceive("dispatchOCRValidationJob")->andReturn(null);
+
+        $mockedMerchant = \Mockery::mock('RZP\Models\Merchant\Entity')->makePartial();
+        $mockedMerchant->shouldAllowMockingProtectedMethods();
+        $mockedMerchant->shouldReceive("isFeatureEnabled")->andReturn(true);
+        $this->assignValueThroughReflection($mockedCore, $mockedMerchant, 'merchant');
+        $op = $mockedCore->postBusinessWebsiteBVSValidation(DetailConstant::URL_TYPE_WEBSITE, []);
+        $this->assertNotEmpty($op);
+        $this->assertTrue($op["bvs_validation"]);
+        $this->assertEquals($op["mccRequestId"], "randomRequestId");
+        $this->assertEquals($op["individualLinkRequestId"], "individualLinkRequestId");
+    }
+
+    /**
+     * @group web_update
+     */
+    public function testPostBusinessWebsiteBVSValidationDispatchJobFailure()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+        $mockedCore->shouldReceive("validateMCC")->andReturn("randomRequestId");
+        $mockedCore->shouldReceive("validateIndividualLink")->andReturn("individualLinkRequestId");
+        $mockedCore->shouldReceive("addOrRemoveMerchantFeatures")->andReturn(null);
+
+        $traceMock = \Mockery::mock('\Razorpay\Trace\Logger')->makePartial();
+        $traceMock->shouldReceive('error')->andReturn(null);
+        $this->assignValueThroughReflection($mockedCore, $traceMock, 'trace');
+
+        $mockedMerchant = \Mockery::mock('RZP\Models\Merchant\Entity')->makePartial();
+        $mockedMerchant->shouldAllowMockingProtectedMethods();
+        $mockedMerchant->shouldReceive("getId")->andReturn("TESTMID");
+        $this->assignValueThroughReflection($mockedCore, $mockedMerchant, 'merchant');
+
+        $mockedCore->shouldReceive("dispatchOCRValidationJob")->andThrow(new  BadRequestException(
+            ErrorCode::BAD_REQUEST_ERROR,
+            null,
+            [],
+            "failed to push to queue"
+        ));
+
+        $this->expectException(BadRequestException::class);
+        $op = $mockedCore->postBusinessWebsiteBVSValidation(DetailConstant::URL_TYPE_WEBSITE, []);
+        $this->assertEmpty($op);
+    }
+
+    /**
+     * @group web_update
+     */
+    public function testvalidateMCC()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $mockedMccCatClient = \Mockery::mock('RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClient')->makePartial();
+        $mockedMccCatClient->shouldAllowMockingProtectedMethods();
+        $mockedMccCatClient->shouldReceive('createCategorisationJob')->andReturn([
+            "id"        => "SOMEVALIDATIONID",
+            "status"    => "completed",
+        ]);
+
+        $mockedCore->shouldReceive("getMccCategorisationClient")->andReturn($mockedMccCatClient);
+
+        $op = $mockedCore->validateMCC([]);
+        $this->assertEquals("SOMEVALIDATIONID", $op);
+    }
+
+    /**
+     * @group web_update
+     */
+    public function testvalidateMCCClientError()
+    {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $mockedMccCatClient = \Mockery::mock('RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClient')->makePartial();
+        $mockedMccCatClient->shouldAllowMockingProtectedMethods();
+        $mockedMccCatClient->shouldReceive('createCategorisationJob')->andReturn(["id" => null]);
+
+        $mockedCore->shouldReceive("getMccCategorisationClient")->andReturn($mockedMccCatClient);
+
+        $traceMock = \Mockery::mock('\Razorpay\Trace\Logger')->makePartial();
+        $traceMock->shouldReceive('error')->andReturn(null);
+        $this->assignValueThroughReflection($mockedCore, $traceMock, 'trace');
+
+        $this->expectException(BadRequestException::class);
+
+        $op = $mockedCore->validateMCC([]);
+        $this->assertNull($op);
+    }
+
+    /**
+     * @group web_update
+     */
+    public function testvalidateIndividualLink()
+    {
+        $input = [
+            DetailConstant::BUSINESS_WEBSITE_MAIN_PAGE         => 'https://razorpay.com',
+            DetailConstant::BUSINESS_WEBSITE_CONTACT_US        => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_PRIVACY_POLICY    => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_TNC               => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_REFUND_POLICY     => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_SHIPPING_POLICY   => 'https://razorpay.com/docs',
+            DetailConstant::URL_TYPE                           => DetailConstant::URL_TYPE_WEBSITE,
+            DetailConstant::API_VERSION                        => DetailConstant::WEBSITE_VERSION_V1,
+            DetailConstant::BUSINESS_WEBSITE_USERNAME          => "SOMEUSERNAME",
+            DetailConstant::BUSINESS_WEBSITE_PASSWORD          => "SOMEPASSWORD",
+        ];
+
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $mockedClient = \Mockery::mock('RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\WebsiteIndividualLinkClient')->makePartial();
+        $mockedClient->shouldAllowMockingProtectedMethods();
+
+        $mockedClient->shouldReceive('createWebsiteVerificationJob')->andReturn([
+            "website_verification_id"   => "SOMEID",
+            "status"                    => "completed"
+        ]);
+
+        $mockedCore->shouldReceive("getWebsiteIndividualLinkClient")->andReturn($mockedClient);
+
+        $op = $mockedCore->validateIndividualLink($input);
+
+        $this->assertEquals("SOMEID", $op);
+    }
+
+    /**
+     * @group web_update
+     */
+    public function testvalidateIndividualLinkError()
+    {
+        $input = [
+            DetailConstant::BUSINESS_WEBSITE_MAIN_PAGE         => 'https://razorpay.com',
+            DetailConstant::BUSINESS_WEBSITE_CONTACT_US        => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_PRIVACY_POLICY    => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_TNC               => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_REFUND_POLICY     => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_SHIPPING_POLICY   => 'https://razorpay.com/docs',
+            DetailConstant::URL_TYPE                           => DetailConstant::URL_TYPE_WEBSITE,
+            DetailConstant::API_VERSION                        => DetailConstant::WEBSITE_VERSION_V1,
+            DetailConstant::BUSINESS_WEBSITE_USERNAME          => "SOMEUSERNAME",
+            DetailConstant::BUSINESS_WEBSITE_PASSWORD          => "SOMEPASSWORD",
+        ];
+
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $mockedClient = \Mockery::mock('RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\WebsiteIndividualLinkClient')->makePartial();
+        $mockedClient->shouldAllowMockingProtectedMethods();
+
+        $mockedClient->shouldReceive('createWebsiteVerificationJob')->andReturn([]);
+
+        $mockedCore->shouldReceive("getWebsiteIndividualLinkClient")->andReturn($mockedClient);
+
+        $traceMock = \Mockery::mock('\Razorpay\Trace\Logger')->makePartial();
+        $traceMock->shouldReceive('error')->andReturn(null);
+        $this->assignValueThroughReflection($mockedCore, $traceMock, 'trace');
+
+        $this->expectException(BadRequestException::class);
+
+        $op = $mockedCore->validateIndividualLink($input);
+
+        $this->assertEquals("SOMEID", $op);
+    }
+
+    /**
+     * @group web_update
+     */
+    public function testpostSaveBusinessWebsiteV1()
+    {
+        $input = [
+            DetailConstant::BUSINESS_WEBSITE_MAIN_PAGE         => 'https://razorpay.com',
+            DetailConstant::BUSINESS_WEBSITE_CONTACT_US        => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_PRIVACY_POLICY    => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_TNC               => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_REFUND_POLICY     => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_SHIPPING_POLICY   => 'https://razorpay.com/docs',
+            DetailConstant::URL_TYPE                           => DetailConstant::URL_TYPE_WEBSITE,
+            DetailConstant::API_VERSION                        => DetailConstant::WEBSITE_VERSION_V1,
+            DetailConstant::BUSINESS_WEBSITE_USERNAME          => "SOMEUSERNAME",
+            DetailConstant::BUSINESS_WEBSITE_PASSWORD          => "SOMEPASSWORD",
+        ];
+
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $traceMock = \Mockery::mock('\Razorpay\Trace\Logger')->makePartial();
+        $traceMock->shouldReceive('info')->andReturn(null);
+        $this->assignValueThroughReflection($mockedCore, $traceMock, 'trace');
+        $mockedCore->shouldReceive('validatePostSaveBusinessWebsiteRequest')->andReturn(null);
+        $mockedCore->shouldReceive('postBusinessWebsiteViaWorkflow')->andReturn("RAMDOMID");
+
+        $op = $mockedCore->postSaveBusinessWebsite(DetailConstant::URL_TYPE_WEBSITE, $input);
+
+        $this->assertEquals("RAMDOMID", $op);
+    }
+
+    /**
+     * @group web_update
+     */
+    public function testpostSaveBusinessWebsiteV2()
+    {
+        $input = [
+            DetailConstant::BUSINESS_WEBSITE_MAIN_PAGE         => 'https://razorpay.com',
+            DetailConstant::BUSINESS_WEBSITE_CONTACT_US        => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_PRIVACY_POLICY    => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_TNC               => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_REFUND_POLICY     => 'https://razorpay.com/docs',
+            DetailConstant::BUSINESS_WEBSITE_SHIPPING_POLICY   => 'https://razorpay.com/docs',
+            DetailConstant::URL_TYPE                           => DetailConstant::URL_TYPE_WEBSITE,
+            DetailConstant::API_VERSION                        => DetailConstant::WEBSITE_VERSION_V2,
+            DetailConstant::BUSINESS_WEBSITE_USERNAME          => "SOMEUSERNAME",
+            DetailConstant::BUSINESS_WEBSITE_PASSWORD          => "SOMEPASSWORD",
+        ];
+
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $traceMock = \Mockery::mock('\Razorpay\Trace\Logger')->makePartial();
+        $traceMock->shouldReceive('info')->andReturn(null);
+        $this->assignValueThroughReflection($mockedCore, $traceMock, 'trace');
+        $mockedCore->shouldReceive('validatePostSaveBusinessWebsiteRequest')->andReturn(null);
+        $mockedCore->shouldReceive('postBusinessWebsiteBVSValidation')->andReturn("RAMDOMID");
+
+        $op = $mockedCore->postSaveBusinessWebsite(DetailConstant::URL_TYPE_WEBSITE, $input);
+
+        $this->assertEquals("RAMDOMID", $op);
+    }
+
+    protected function assignValueThroughReflection($core, $merchant, $key): void
+    {
+        $reflector = new \ReflectionClass($core);
+        $property = $reflector->getProperty($key);
+        $property->setAccessible( true );
+        $property->setValue($core, $merchant);
     }
 }

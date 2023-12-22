@@ -149,6 +149,14 @@ return [
         'client_id'    => env('OCR_CLIENT_ID', 'PG')
     ],
 
+    'ocr_service_self_serve' => [
+        'mock'         => env('OCR_MOCK', false),
+        'host'         => env('OCR_HOST', 'https://ocr.razorpay.com'),
+        'user'         => env('OCR_SELFSERVE_USER'),
+        'password'     => env('OCR_SELFSERVE_PASSWORD'),
+        'client_id'    => env('OCR_SELFSERVE_CLIENT_ID', 'SELFSERVE')
+    ],
+
     'segment_analytics' => [
         'url'                => env('SEGMENT_ANALYTICS_URL'),
         'mock'               => env('SEGMENT_ANALYTICS_MOCK', false),

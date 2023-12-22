@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
 use Rzp\Models\PaymentLink\CustomDomain\Plans as CDSPlan;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
+
 
 /**
  * - Asynchronously update payment page, generate receipt etc after a successful payment
@@ -29,6 +31,12 @@ class PaymentPageProcessor extends Job
 
     const CDS_UPDATE_PLAN_IDS_FOR_MERCHANTS  = 'CDS_UPDATE_PLAN_IDS_FOR_MERCHANTS';
     const CDS_PLANS_BILLING_DATE_UPDATE      = 'CDS_PLANS_BILLING_DATE_UPDATE';
+
+    // Configuration for ocr service validation 
+    // TODO: Move this to care service in future
+    const OCR_SERVICE_RETRY_DELAY = 50;
+    const OCR_SERVICE_MAX_RETRY_ATTEMPTS = 10;
+    const OCR_SERVICE_VALIDATION_EVENT = 'OCR_SERVICE_VALIDATION_EVENT';
 
     // Once all slugs are migrated this const will be removed
     const NOCODE_CUSTOM_URL_UPSERT_FROM_HOSTED_FLOW = 'NOCODE_CUSTOM_URL_UPSERT_FROM_HOSTED_FLOW';
@@ -491,10 +499,10 @@ class PaymentPageProcessor extends Job
         $this->app['basicauth']->setMerchant($merchant);
     }
 
-    protected function retry(int $delay)
+    protected function retry(int $delay, int $attempts = self::MAX_RETRY_ATTEMPTS)
     {
         // if the max attempt is not exhausted then release the job for retry
-        if ($this->attempts() <= self::MAX_RETRY_ATTEMPTS)
+        if ($this->attempts() <= $attempts)
         {
             $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_RETRY_COUNT, $this->context);
 
@@ -506,7 +514,7 @@ class PaymentPageProcessor extends Job
         $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
 
         $this->trace->error(TraceCode::PAYMENT_LINK_POST_PROCESSOR_FAILED, $this->context + [
-            "reason"    => "Max retries of " . self::MAX_RETRY_ATTEMPTS . " exhausted.",
+            "reason"    => "Max retries of " . $attempts . " exhausted.",
         ]);
 
         $this->delete();
@@ -549,6 +557,80 @@ class PaymentPageProcessor extends Job
         catch(\Throwable $e)
         {
             $this->trace->traceException($e, null, TraceCode::CDS_PLAN_BILLING_DATE_UPDATE_FAILED);
+        }
+
+        $this->delete();
+    }
+
+    // Queue Handler for OCR service validation
+    // TODO: Move this to care service in future
+    protected function handleOcrServiceValidationEvent()
+    {
+        $this->trace->info(TraceCode::OCR_SERVICE_VALIDATION_EVENT_RECEIVED, $this->context);
+
+        $mccRequestId  = $this->params->get('mccRequestId');
+
+        $individualLinkRequestId  = $this->params->get('individualLinkRequestId');
+
+        if(empty($mccRequestId) === true || empty($individualLinkRequestId) === true)
+        {
+            $this->delete();
+            
+            $this->trace->info(TraceCode::OCR_SERVICE_REQUEST_ID_NOT_FOUND, $this->context);
+
+            return;
+        }
+
+        $this->merchantDetailCore = new MerchantDetailCore();
+
+        $validationResponse = null;
+
+        try
+        {
+            $validationResponse = $this->merchantDetailCore->getMccCategorisationAndWebsiteValidation($mccRequestId, $individualLinkRequestId);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::OCR_SERVICE_VALIDATION_RESPONSE_NOT_FOUND
+            );
+        }
+
+        if($validationResponse && $validationResponse['incomplete'] == true){
+            $this->retry(
+                $this->attempts() * self::OCR_SERVICE_RETRY_DELAY, self::OCR_SERVICE_MAX_RETRY_ATTEMPTS
+            );
+    
+            $this->trace->info(TraceCode::OCR_SERVICE_WEBSITE_UPDATE_RETRY, [
+                "attempt"   => $this->attempts(),
+                "mccRequestId" => $mccRequestId,
+                "individualLinkRequestId" => $individualLinkRequestId,
+            ]);
+    
+            return;
+        }
+
+        $traceContext = [
+            'validationResponse' => $validationResponse,
+            'mccRequestId' => $mccRequestId,
+            'individualLinkRequestId' => $individualLinkRequestId,
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::WEBSITE_UPDATE_OCR_SERVICE_QUEUE_RESOLVE, $traceContext);
+
+            $this->merchantDetailCore->updateWebsiteDetailAfterValidation([
+                'validationResponse' => $validationResponse,
+                'input' => $this->params->get('input'),
+                'urlType' => $this->params->get('urlType'),
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, null, $traceContext);
         }
 
         $this->delete();

@@ -570,6 +570,20 @@ class Validator extends Base\Validator
         DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY     => 'required|max:255|custom:active_url',
         DetailConstants::BUSINESS_WEBSITE_TNC                => 'required|max:255|custom:active_url',
         DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY      => 'required|max:255|custom:active_url',
+        DetailConstants::API_VERSION                         => 'sometimes|string|in:'.DetailConstants::WEBSITE_VERSION_V1.','.DetailConstants::WEBSITE_VERSION_V2,
+        DetailConstants::BUSINESS_WEBSITE_USERNAME           => 'sometimes|string|max:50',
+        DetailConstants::BUSINESS_WEBSITE_PASSWORD           => 'sometimes|string|max:50',
+        DetailConstants::URL_TYPE                            => 'required|string|in:'.DetailConstants::URL_TYPE_WEBSITE,
+    ];
+
+    protected static $businessWebsitesV2CheckRules = [
+        DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE          => 'required|max:255|custom:active_url',
+        DetailConstants::BUSINESS_WEBSITE_CONTACT_US         => 'required|max:255|custom:active_url',
+        DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY     => 'required|max:255|custom:active_url',
+        DetailConstants::BUSINESS_WEBSITE_TNC                => 'required|max:255|custom:active_url',
+        DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY      => 'required|max:255|custom:active_url',
+        DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY    => 'required|max:255|custom:active_url',
+        DetailConstants::API_VERSION                         => 'sometimes|string|in:'.DetailConstants::WEBSITE_VERSION_V1.','.DetailConstants::WEBSITE_VERSION_V2,
         DetailConstants::BUSINESS_WEBSITE_USERNAME           => 'sometimes|string|max:50',
         DetailConstants::BUSINESS_WEBSITE_PASSWORD           => 'sometimes|string|max:50',
         DetailConstants::URL_TYPE                            => 'required|string|in:'.DetailConstants::URL_TYPE_WEBSITE,
@@ -580,6 +594,7 @@ class Validator extends Base\Validator
         DetailConstants::BUSINESS_APP_USERNAME      => 'sometimes|string|max:50',
         DetailConstants::BUSINESS_APP_PASSWORD      => 'sometimes|string|max:50',
         DetailConstants::URL_TYPE                   => 'required|string|in:'.DetailConstants::URL_TYPE_APP,
+        DetailConstants::API_VERSION                => 'sometimes|string|in:'.DetailConstants::WEBSITE_VERSION_V1.','.DetailConstants::WEBSITE_VERSION_V2,
     ];
 
     protected static $additionalWebsiteCheckRules = [
