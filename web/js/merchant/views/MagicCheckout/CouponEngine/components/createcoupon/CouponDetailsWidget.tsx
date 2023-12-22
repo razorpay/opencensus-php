@@ -89,7 +89,7 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'creat
               }}
             />
             <p className="error-message">{errorStates.couponDetails.description}</p>
-            {flow !== 'edit' && (
+            {flow === 'edit' && widgetsData.status !== 'created' ? null : (
               <CheckboxGroup>
                 <Input.Check
                   checked={widgetsData.couponDetails.display}
@@ -101,7 +101,6 @@ const CouponDetails: React.FC<CouponDetailsProps> = ({ couponName, flow = 'creat
                 <span>Display this coupon at checkout</span>
               </CheckboxGroup>
             )}
-
             <CheckboxGroup>
               <Input.Check
                 checked={widgetsData.couponDetails.prepaidMethodsOnly}
