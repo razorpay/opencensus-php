@@ -7776,12 +7776,12 @@ class Service extends Base\Service
 
         $startTime = millitime();
 
-        $result = Tracer::inspan(['name' => HyperTrace::LIST_SUBMERCHANTS_CORE], function () use ($partner, $input, $isExpEnabled) {
+        $result = Tracer::inspan(['name' => HyperTrace::LIST_SUBMERCHANTS_CORE], function () use ($partner, $input) {
 
             return $this->core()->listSubmerchantsV2($partner, $input);
         });
 
-        $response = $isExpEnabled ? $result[0]->toListSubmerchantsArray() : $result[0]->toArrayPartner();
+        $response = $result[0]->toListSubmerchantsArray();
         if (array_key_exists(self::OFFSET, $result) === true)
         {
             $response[self::OFFSET] = $result[self::OFFSET];

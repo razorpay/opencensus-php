@@ -643,7 +643,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'               => 'acc_NewSubmerchant',
+                'id'               => 'NewSubmerchant',
                 'name'             => 'Submerchant',
                 'email'            => 'testsub@razorpay.com',
                 'details'          => [

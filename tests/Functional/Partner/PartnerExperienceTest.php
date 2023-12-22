@@ -818,8 +818,52 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchPartnerCapitalSubmerchantsProductCapital()
+    {
+        $this->createResellerPartnerSubmerchant(false, false, Product::CAPITAL);
 
-    public function testFetchPartnerSubmerchantsPOS()
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerCapitalSubmerchantsProductBanking()
+    {
+        $this->createResellerPartnerSubmerchant(false, false, Product::CAPITAL);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerCapitalSubmerchantsProductPrimary()
+    {
+        $this->createResellerPartnerSubmerchant(false, false, Product::CAPITAL);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+
+    public function testFetchPartnerPOSSubmerchantsProductPOS()
+    {
+        $this->createResellerPartnerSubmerchant(false, false, Product::POS);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerPOSSubmerchantsProductPrimary()
     {
         $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
 
@@ -2743,12 +2787,33 @@ class PartnerExperienceTest extends OAuthTestCase
             'contact_email'    => 'test@example.com',
         ]);
 
+        $userProduct = $product;
+
+        if ($product == Product::POS)
+        {
+            $userProduct = Product::PRIMARY;
+        }
+        elseif ($product == Product::CAPITAL)
+        {
+            $userProduct = Product::BANKING;
+        }
+
         $this->fixtures->on('live')->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2, 'activation_status' => 'activated', 'contact_mobile'=> '9123456788']);
         $this->fixtures->on('test')->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2, 'activation_status' => 'activated', 'contact_mobile'=> '9123456788']);
 
         $this->fixtures->on('test')->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['name' => 'submerchant']);
         $this->fixtures->on('live')->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['name' => 'submerchant']);
-        $this->fixtures->on('test')->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, ['email' => 'testing@example.com','contact_mobile'=> '9123456788', 'contact_mobile_verified' => $isContactMobileVerified]);
+        $this->fixtures->on('test')->user->createUserForMerchant(
+            self::DEFAULT_SUBMERCHANT_ID,
+            [
+                'email'                     => 'testing@example.com',
+                'contact_mobile'            => '9123456788',
+                'contact_mobile_verified'   => $isContactMobileVerified,
+            ],
+            'owner',
+            'test',
+            $userProduct,
+        );
 
         $this->createMerchantAccessMap($app->getId(), self::DEFAULT_SUBMERCHANT_ID);
 
@@ -2774,8 +2839,19 @@ class PartnerExperienceTest extends OAuthTestCase
 
         if ($product === ProductConstants::POS)
         {
-            // POS subMs will be assinged with the pos partnerships tag.
-            (new Merchant\Core())->appendTag($subMerchant, 'pos-sub-'.self::DEFAULT_MERCHANT_ID);
+            // POS subMs will be assigned with the pos partnerships tag.
+            (new Merchant\Core())->appendTag(
+                $subMerchant,
+                MerchantConstants::POS_PARTNERSHIP_TAG_PREFIX.self::DEFAULT_MERCHANT_ID,
+            );
+        }
+        elseif ($product == Product::CAPITAL)
+        {
+            // POS subMs will be assigned with the pos partnerships tag.
+            (new Merchant\Core())->appendTag(
+                $subMerchant,
+                MerchantConstants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX.self::DEFAULT_MERCHANT_ID,
+            );
         }
     }
 

@@ -815,7 +815,6 @@ return [
                     ],
                     [
                         'id'               => 'acc_10000000000011',
-                        'entity'           => 'merchant',
                         'user'             => [],
                         'details'          => [
                             'activation_status' => 'activated',
@@ -827,8 +826,59 @@ return [
         ],
     ],
 
+    'testFetchPartnerCapitalSubmerchantsProductCapital' => [
+        'request'  => [
+            'url'     => '/submerchants?product=capital',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'user'             => null,
+                        'details'          => [
+                            'activation_status' => 'activated',
+                        ],
+                        'dashboard_access' => false,
+                    ]
+                ],
+            ],
+        ],
+    ],
 
-    'testFetchPartnerSubmerchantsPOS' => [
+    'testFetchPartnerCapitalSubmerchantsProductBanking' => [
+        'request'  => [
+            'url'     => '/submerchants?product=banking',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerCapitalSubmerchantsProductPrimary' => [
+        'request'  => [
+            'url'     => '/submerchants?product=primary',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
+
+    'testFetchPartnerPOSSubmerchantsProductPOS' => [
         'request'  => [
             'url'     => '/submerchants?product=pos',
             'method'  => 'GET',
@@ -847,6 +897,20 @@ return [
                         'dashboard_access' => false,
                     ]
                 ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerPOSSubmerchantsProductPrimary' => [
+        'request'  => [
+            'url'     => '/submerchants?product=primary',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
             ],
         ],
     ],
@@ -1175,7 +1239,6 @@ return [
                 'items'  => [
                     [
                         'id'               => 'acc_10000000000009',
-                        'entity'           => 'merchant',
                         'user'             => [],
                         'name'             => 'random_name_1',
                         'details'          => [

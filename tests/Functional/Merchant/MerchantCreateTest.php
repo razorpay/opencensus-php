@@ -3695,7 +3695,7 @@ class MerchantCreateTest extends TestCase
 
         $response = $this->startTest($testData);
 
-        $merchantId = $response['id'];
+        $merchantId = 'acc_' . $response['id'];
 
         \RZP\Models\Merchant\Account\Entity::verifyIdAndStripSign($merchantId);
 

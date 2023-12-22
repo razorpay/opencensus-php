@@ -5506,20 +5506,10 @@ class Core extends Base\Core
     {
         $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
 
-        $experimentEnable = false;
-
-        if ($product === Product::CAPITAL)
-        {
-            $experimentEnable = $this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId());
-            $params[ENTITY::PRODUCT] = Product::BANKING;
-            $params[Constants::TAGS] = [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
-        }
-        else if($product === Product::POS)
-        {
-            $experimentEnable = (new Partner\Core())->isPOSEnabledForPartner($partner->getId());
-            $params[ENTITY::PRODUCT] = Product::PRIMARY;
-            $params[Constants::TAGS] = [Constants::POS_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
-        }
+        $experimentEnable = (
+            $this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId())
+            or (new Partner\Core())->isPOSEnabledForPartner($partner->getId())
+        );
 
         if ($experimentEnable === true)
         {
@@ -5814,7 +5804,7 @@ class Core extends Base\Core
         }
 
         return Tracer::inspan( ['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function() use (
-            $submerchants, $partnerUser, $accessRequests, $dashboardAccesses, $product, $partner, $isExpEnabled
+            $submerchants, $partnerUser, $accessRequests, $dashboardAccesses, $product, $partner
         ) {
             foreach ($submerchants as $submerchant)
             {

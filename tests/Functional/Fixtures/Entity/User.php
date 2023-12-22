@@ -77,18 +77,25 @@ class User extends Base
         ], $mode);
     }
 
-    public function createUserForMerchant(string $merchantId = '10000000000000',
-                                          array $attributes = [],
-                                          $role = 'owner',
-                                          $mode = 'test')
+    public function createUserForMerchant(
+        string $merchantId = '10000000000000',
+        array $attributes = [],
+        $role = 'owner',
+        $mode = 'test',
+        $product = 'primary',
+    )
     {
         $user = $this->createEntityInTestAndLive('user', $attributes);
 
-        $this->createUserMerchantMapping([
-                                             'merchant_id' => $merchantId,
-                                             'user_id'     => $user['id'],
-                                             'role'        => $role,
-                                         ], $mode);
+        $this->createUserMerchantMapping(
+            [
+                'merchant_id' => $merchantId,
+                'user_id'     => $user['id'],
+                'role'        => $role,
+                'product'     => $product,
+            ],
+            $mode,
+        );
 
         return $user;
     }
