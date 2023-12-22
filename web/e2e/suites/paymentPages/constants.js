@@ -44,4 +44,7 @@ export const batchPaymentPageData = {
   detailsPage: {
     paymentLinkId: 'pl_NBIHnwkjVUIseX',
   },
+  page_title: 'Batch PP title',
+  support_email: 'test@razorpay.com',
+  support_contact: '12232323232',
 };

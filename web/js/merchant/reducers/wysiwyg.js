@@ -1,5 +1,3 @@
-import store from 'merchant/store';
-
 import {
   set,
   merge,
@@ -9,18 +7,18 @@ import {
   push,
   deepMerge,
 } from 'common/utils/immutable';
-
 import { arrayMove, i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
+import store from 'merchant/store';
+import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
+import { isFormItemOfTypeLateFee } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+// TODO: Remove dependency from here
+import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
+import { transfeeRuleToNormalFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
 import {
   fetchPaymentPageEntity,
   fetchCustomDomain,
   fetchCustomDomainCurrentPlan,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
-import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
-import { transfeeRuleToNormalFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
-
-// TODO: Remove dependency from here
-import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
 
 const INIT_DEFAULT_FORM_ITEMS = 'INIT_DEFAULT_FORM_ITEMS';
 const FETCH_ENTITY = 'FETCH_ENTITY';
@@ -277,6 +275,12 @@ export default (state = initialState, action) => {
 
       // 4.
       entityData.payment_page_items.forEach((pi) => {
+        const isLateFeeField = isFormItemOfTypeLateFee(pi);
+
+        if (isLateFeeField && typeof pi.settings?.late_fee_config === 'string') {
+          pi.settings.late_fee_config = JSON.parse(pi.settings.late_fee_config);
+        }
+
         // While creation/editing, all amounts are converted to Paisa (or smaller unit)
 
         if (pi.item.amount) {

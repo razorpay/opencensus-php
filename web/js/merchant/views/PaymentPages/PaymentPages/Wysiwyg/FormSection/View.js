@@ -1,12 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
-import AmountDisplayField from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/AmountDisplayField';
-import UDFDisplayField from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/UDFDisplayField';
-import AddUDFButton from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/AddUDFButton';
-import AddAmountButton from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/AddAmountButton';
-import FormFooter from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FormFooter';
+import RTracking from 'react-tracking';
+
+import { isMobileDevice } from 'merchant/components/Home/data';
 import {
   updateData,
   deleteInFormItems,
@@ -15,28 +12,36 @@ import {
   updateReceiptDetails,
   updateMagicData,
 } from 'merchant/reducers/wysiwyg';
+import AddAmountButton from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/AddAmountButton';
+import AmountDisplayField from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/AmountDisplayField';
+import AddLateFeeButton from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/LateFee/AddLateFeeButton';
+import DisplayField from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/LateFee/DisplayField';
+import {
+  constructAmountField,
+  isFormItemOfTypeAmount,
+  isFormItemOfTypeLateFee,
+  isFormItemOfTypeLateFeeDueDate,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import FormFooter from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FormFooter';
+import AddUDFButton from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/AddUDFButton';
+import UDFDisplayField from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/UDFDisplayField';
 import {
   checkIsMagicCheckoutField,
   checkIsShiprocketField,
   constructFieldSchema,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
-import {
-  constructAmountField,
-  isFormItemOfTypeAmount,
-} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
-
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
+import { getTotalPriceItems } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/helpers';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
-import { isMobileDevice } from 'merchant/components/Home/data';
 import {
   SEC_REF_ID,
   SEC_REF_ID_MAX_ERROR,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
-
-import { FIXED_FIELDS } from './UDF/helpers/preAddedFields';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const SortableUDFDisplayField = sortableElement(UDFDisplayField);
 const SortableAmountDisplayField = sortableElement(AmountDisplayField);
+const SortableLateFeeField = sortableElement(DisplayField);
 
 @sortableContainer
 class SortableFormItemsList extends React.Component {
@@ -57,15 +62,35 @@ class SortableFormItemsList extends React.Component {
       isBatchPaymentPages,
       countryCode,
       isPIDSIDLabelDisabled,
+      updateData,
     } = this.props;
 
     // disable sorting in mobile view
     const isSortingDisabled = isMobileDevice();
 
     return (
-      <div class="FormItems">
+      <div className="FormItems">
         {FORM_ITEMS.map((fi, idx) => {
-          if (isFormItemOfTypeAmount(fi)) {
+          if (isFormItemOfTypeLateFee(fi)) {
+            return (
+              <SortableLateFeeField
+                key={fi.item.name}
+                index={idx}
+                indexInRenderOrder={idx}
+                field={fi}
+                countryCode={countryCode}
+                currency={currency}
+                isListSorting={isListSorting}
+                updateData={updateData}
+                onDeleteFormItem={onDeleteAmountItem}
+                onSubmitAmountField={onSubmitAmountField}
+                validateSameTitleExists={validateSameTitleExists}
+                isPaymentPageEditMode={isPaymentPageEditMode}
+                disabled={isSortingDisabled}
+                isBatchPaymentPages={isBatchPaymentPages}
+              />
+            );
+          } else if (isFormItemOfTypeAmount(fi)) {
             return (
               <SortableAmountDisplayField
                 key={fi.item.name}
@@ -84,6 +109,9 @@ class SortableFormItemsList extends React.Component {
                 isBatchPaymentPages={isBatchPaymentPages}
               />
             );
+          } else if (isFormItemOfTypeLateFeeDueDate(fi)) {
+            // Need to not render anything for due date field, so returning null.
+            return null;
           } else {
             return (
               <SortableUDFDisplayField
@@ -125,7 +153,21 @@ export default class View extends React.Component {
   state = {
     isListSorting: false,
     totalAmountItems: null,
+    totalLateFeeItems: 0,
   };
+
+  componentDidMount() {
+    const { paymentPageEntity } = this.props;
+
+    // Adding a check in mount as well to count the number of amount items, as sometimes api resolves quickly and only mounts runs and not update.
+    if (paymentPageEntity?.payment_page_items) {
+      const { totalAmountItems, totalLateFeeItems } = getTotalPriceItems(
+        paymentPageEntity.payment_page_items,
+      );
+
+      this.setState({ totalAmountItems, totalLateFeeItems });
+    }
+  }
 
   componentDidUpdate(prevProps) {
     const { paymentPageEntity: prevPaymentPageEntity } = prevProps;
@@ -143,10 +185,11 @@ export default class View extends React.Component {
       (isPageNavigatedToOtherId || isSamePageButDataFetchedAfterwards) &&
       curPaymentPageEntity.payment_page_items
     ) {
-      // eslint-disable-next-line react/no-did-update-set-state
-      this.setState({
-        totalAmountItems: curPaymentPageEntity.payment_page_items.length,
-      });
+      const { totalAmountItems, totalLateFeeItems } = getTotalPriceItems(
+        curPaymentPageEntity.payment_page_items,
+      );
+
+      this.setState({ totalAmountItems, totalLateFeeItems });
     }
 
     // Perform sanity check for input field in Receipt settings
@@ -181,13 +224,28 @@ export default class View extends React.Component {
     }
   }
 
+  updateTotalItems = (isLateFeeField, sign) => {
+    let { totalAmountItems, totalLateFeeItems } = this.state;
+
+    if (isLateFeeField) {
+      totalLateFeeItems += 1 * sign;
+    } else {
+      totalAmountItems += 1 * sign;
+    }
+
+    this.setState({ totalAmountItems, totalLateFeeItems });
+  };
+
   onSubmitAmountField = (formData, indexInFormItems) => {
     const amountItem = constructAmountField(formData);
+    const isLateFeeField = isFormItemOfTypeLateFee(formData);
 
     this.props.updateInFormItems({
       formItem: amountItem,
       index: indexInFormItems,
     });
+
+    this.updateTotalItems(isLateFeeField, 1);
 
     this.setState((prevState) => ({
       totalAmountItems: prevState.totalAmountItems + 1,
@@ -195,11 +253,21 @@ export default class View extends React.Component {
   };
 
   onDeleteAmountItem = (indexInFormItems) => {
-    this.props.deleteInFormItems(indexInFormItems);
+    const { FORM_ITEMS, deleteInFormItems } = this.props;
+    const isLateFeeField = isFormItemOfTypeLateFee(FORM_ITEMS[indexInFormItems]);
 
-    this.setState((prevState) => ({
-      totalAmountItems: prevState.totalAmountItems - 1,
-    }));
+    deleteInFormItems(indexInFormItems);
+
+    // Need to remove due date as well when deleting late fee price field.
+    if (isLateFeeField) {
+      const dueDateIndex = FORM_ITEMS.findIndex((fi) => isFormItemOfTypeLateFeeDueDate(fi));
+
+      if (dueDateIndex > -1) {
+        deleteInFormItems(dueDateIndex);
+      }
+    }
+
+    this.updateTotalItems(isLateFeeField, -1);
   };
 
   onDeleteUDFItem = (indexInFormItems) => {
@@ -331,7 +399,11 @@ export default class View extends React.Component {
       org,
       isBatchPaymentPages,
       isPIDSIDLabelDisabled,
+      updateData,
     } = this.props;
+
+    const { totalLateFeeItems } = this.state;
+
     let _hideDynamicPriceField = user?.hideDynamicPriceFieldPP;
 
     if (!paymentPageEntity) {
@@ -436,6 +508,17 @@ export default class View extends React.Component {
               isBatchPaymentPages={isBatchPaymentPages}
               countryCode={user.merchant.country_code}
             />
+
+            {isBatchPaymentPages && totalLateFeeItems === 0 && (
+              <AddLateFeeButton
+                currency={paymentPageEntity.currency}
+                updateData={updateData}
+                onDeleteFormItem={this.onDeleteAmountItem}
+                onSubmitAmountField={this.onSubmitAmountField}
+                validateSameTitleExists={this.validateSameTitleExists}
+                isBatchPaymentPages={isBatchPaymentPages}
+              />
+            )}
           </div>
         </div>
 

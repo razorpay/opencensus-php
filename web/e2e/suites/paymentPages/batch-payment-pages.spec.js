@@ -1,10 +1,14 @@
 import { test } from '@playwright/test';
 
 import { batchPaymentPageData } from './constants';
-import { validateBatchPaymentPageDetails, validateDownloadSampleFile } from './utils';
+import {
+  validateBatchPaymentPageDetails,
+  validateDownloadSampleFile,
+  createBatchPaymentPageWithLateFee,
+  clickSkipAndStartBtn,
+} from './utils';
 import { switchToTestMode } from '../../utils';
 import { routes, StorageStatePath } from '../../utils/constants';
-import { clickSkipAndStartBtn } from '../paymentsLinks/utils';
 
 test.setTimeout(2 * 60 * 1000);
 
@@ -16,8 +20,9 @@ test.describe
 
   test.beforeEach(async ({ page }) => {
     await switchToTestMode({ page });
-    await page.goto(routes.BATCH_PAYMENT_PAGES);
+    await page.goto(routes.PAYMENT_PAGES);
     await clickSkipAndStartBtn({ page });
+    await page.goto(routes.BATCH_PAYMENT_PAGES);
   });
 
   test.skip('should validate batch PP details page', async ({ page }) => {
@@ -29,6 +34,15 @@ test.describe
 
   test.skip('should validate download sample file on the batch details page', async ({ page }) => {
     await validateDownloadSampleFile({
+      page,
+      productData: batchPaymentPageData,
+    });
+  });
+
+  test('should throw mandatory amount field error while creating batch PP with late fee', async ({
+    page,
+  }) => {
+    await createBatchPaymentPageWithLateFee({
       page,
       productData: batchPaymentPageData,
     });

@@ -1,3 +1,5 @@
+import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
+
 import FIELD_TYPES_MAP from './fieldTypes';
 
 // Note: mapFieldToIndex is prone to error if the position of items is changed in FIELD_TYPES
@@ -158,3 +160,11 @@ export function toggleMandatoryForPriceField(priceField, forceMandatory) {
     }
   }
 }
+
+export const isFormItemOfTypeLateFee = (formItem) => {
+  return formItem?.settings?.late_fee_config ?? false;
+};
+
+export const isFormItemOfTypeLateFeeDueDate = (formItem) => {
+  return formItem?.name === FIXED_FIELDS.lateFeeDueDate?.name;
+};

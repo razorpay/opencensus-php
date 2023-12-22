@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 
 import { PAYMENT_PAGES_TYPES } from './constants';
-import { SELECTORS } from './selectors';
+import { SELECTORS, BATCH_PP_SELECTORS } from './selectors';
 import { routes } from '../../utils/constants';
 
 export const createPaymentPage = async ({ page, productData, type }) => {
@@ -105,5 +105,57 @@ export const validateDownloadSampleFile = async ({ page, productData }) => {
     }
   } catch (e) {
     // continue regardless of error
+  }
+};
+
+export const createBatchPaymentPageWithLateFee = async ({ page, productData }) => {
+  const createButton = page.locator('.cta-container');
+  await expect(createButton).toBeVisible();
+  await createButton.click();
+  await expect(page).toHaveURL(`${routes.BATCH_PAYMENT_PAGES}/new`);
+  await expect(page.getByText('Create New Payment Page (Step 1/2)')).toBeVisible();
+  await expect(page.getByTestId('Primary Reference ID')).toBeVisible();
+  await expect(page.getByTestId('Secondary Reference ID')).toBeVisible();
+  await expect(page.getByTestId('Email')).toBeVisible();
+  await expect(page.getByTestId('Phone')).toBeVisible();
+  await expect(page.getByText('Enable Late Payment Charge')).toBeVisible();
+  await page.locator(BATCH_PP_SELECTORS.pageTitle).fill(productData.page_title);
+  await page.locator(BATCH_PP_SELECTORS.supportEmail).fill(productData.support_email);
+  await page.locator(BATCH_PP_SELECTORS.supportContact).fill(productData.support_contact);
+  await page.getByRole('button', { name: 'Price field' }).first().click();
+  await page.locator(BATCH_PP_SELECTORS.amountFieldOptions).click();
+  // todo unable to make price filed mandatory as click is not working. Will add the postive flow later
+  // await page.getByTestId('tick-icon-visible').click();
+  await page.locator(BATCH_PP_SELECTORS.saveButton).click();
+  await page.getByText('Enable Late Payment Charge').click();
+  await page.getByText('Flat Fee').click();
+  await page.locator(BATCH_PP_SELECTORS.saveButton).click();
+  await page.getByRole('button', { name: 'Save and Proceed to Next Step' }).click();
+  await expect(
+    page.getByText(
+      '1 : Please add at least 1 Price field with ‘Make it Optional Item’ not selected.',
+    ),
+  ).toBeVisible();
+};
+
+export const clickSkipAndStartBtn = async ({ page }) => {
+  try {
+    const skipAndStartedButton = await page.waitForSelector(
+      'button:has-text("Skip And Get Started")',
+      {
+        timeout: 7000,
+      },
+    );
+
+    await skipAndStartedButton.click();
+    await page.waitForTimeout(1000);
+    await expect(page.getByText('Select page of your choice')).toBeVisible();
+    const choiceCloseButton = await page.waitForSelector('span.close-icon', {
+      timeout: 3000,
+    });
+    await choiceCloseButton.click();
+    await page.waitForTimeout(1000);
+  } catch (e) {
+    // continue as skip & mandatory will not be visible always
   }
 };

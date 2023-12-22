@@ -67,6 +67,26 @@ const FIELD_TYPES_MAP = {
 
 export default FIELD_TYPES_MAP;
 
+export const LATE_FEE_FIELD_TYPES = {
+  flat_fee: {
+    label: 'Flat Fee',
+    key: 'flat_fee',
+    icon: 'fixed_price',
+    type: 'flat_late_fee',
+  },
+  per_day_fee: {
+    label: 'Per Day Fee',
+    key: 'per_day_fee',
+    icon: 'fixed_price',
+    type: 'per_day_late_fee',
+  },
+};
+
+export const LATE_FEE_TYPES_MAP = {
+  [LATE_FEE_FIELD_TYPES.flat_fee.type]: 'Total fee',
+  [LATE_FEE_FIELD_TYPES.per_day_fee.type]: 'Per day fee',
+};
+
 //////////////////////////////////////////////
 /*
  * Below schemas are just blueprints and not having exact values for their keys. Check fn. getBaseFieldForAmountFieldType.

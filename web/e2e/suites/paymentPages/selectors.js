@@ -8,3 +8,12 @@ export const SELECTORS = {
   units: 'input[name=units]',
   description: 'textarea[name=description]',
 };
+
+export const BATCH_PP_SELECTORS = {
+  pageTitle: 'textarea[name=title]',
+  supportEmail: 'input[name=support_email]',
+  supportContact: 'input[name=support_contact]',
+  amountFieldOptions: '.OptionsDropdown.FieldOptionsDropdown',
+  optionalMark: '.i.i-optional_mark',
+  saveButton: '.icon.i-check',
+};

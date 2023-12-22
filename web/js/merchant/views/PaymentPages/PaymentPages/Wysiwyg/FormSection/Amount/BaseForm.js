@@ -2,31 +2,30 @@ import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
+import Button from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import Button from 'common/new-ui/Button';
-import { classList, i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
-import { isMandatoryToBool } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
-import FIELD_TYPES_MAP from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
-import FieldOptionsDropdownWrapper, {
-  OptionsItem,
-} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
-// eslint-disable-next-line import/no-named-as-default
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-
 import { getCurrency } from 'common/ui/Amount';
-import { validateAmount } from 'common/utils/validators';
-
 import ModalHeader from 'common/ui/ModalHeader';
-import ShowWhen from 'merchant/components/ShowWhen';
-
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { classList, i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
+import { validateAmount } from 'common/utils/validators';
+import {
+  isMandatoryToBool,
+  isFormItemOfTypeLateFee,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import FIELD_TYPES_MAP, {
+  LATE_FEE_FIELD_TYPES,
+  LATE_FEE_TYPES_MAP,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
-
 import {
   BATCH_UPLOAD_MSG,
   FILLED_BY_CUSTOMER,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+
+import AdditionalOptions from './AdditionalOptions';
 
 @connect((state) => ({ countryCode: state.session.user.merchant.country_code }), {
   openModal,
@@ -47,6 +46,7 @@ export default class BaseForm extends React.PureComponent {
       hasDescription,
       mirrorDisplayName: name || '',
       isMandatory: isMandatoryToBool(field.mandatory),
+      selectedLateFeeType: field?.settings?.late_fee_config?.late_fee_type || '',
     };
   }
 
@@ -79,7 +79,8 @@ export default class BaseForm extends React.PureComponent {
   };
 
   onSaveForm = (formData) => {
-    const { name, description, amount, ...restFormData } = formData;
+    const { onSaveForm, field } = this.props;
+    const { name, description, amount, lateFeeType, ...restFormData } = formData;
 
     // Normalize data as per amount field's blueprint
     const baseFormData = {
@@ -88,10 +89,18 @@ export default class BaseForm extends React.PureComponent {
         description,
         amount,
       },
+      settings: {},
       ...restFormData,
     };
 
-    this.props.onSaveForm(baseFormData);
+    if (isFormItemOfTypeLateFee(field)) {
+      baseFormData.settings.late_fee_config = {
+        ...field?.settings?.late_fee_config,
+        late_fee_type: lateFeeType,
+      };
+    }
+
+    onSaveForm(baseFormData);
   };
 
   toggleDescriptionField = (_) => {
@@ -108,6 +117,10 @@ export default class BaseForm extends React.PureComponent {
     }));
 
     this.props.onChangeIsMandatory(isMandatory);
+  };
+
+  setLateFeeType = (lateFeeType) => {
+    this.setState({ selectedLateFeeType: lateFeeType });
   };
 
   onInputName = ({ target }) => {
@@ -130,7 +143,7 @@ export default class BaseForm extends React.PureComponent {
 
             <div class="modal-body">
               <div>
-                You're changing currency from <b>{this.props.currency}</b> to{' '}
+                You&apos;re changing currency from <b>{this.props.currency}</b> to{' '}
                 <b>{selectedCurrency.name}</b>.
               </div>
               <div>On saving this item, this currency will apply to all items on this page.</div>
@@ -255,6 +268,8 @@ export default class BaseForm extends React.PureComponent {
           </React.Fragment>
         );
 
+      case LATE_FEE_FIELD_TYPES.flat_fee.key:
+      case LATE_FEE_FIELD_TYPES.per_day_fee.key:
       case FIELD_TYPES.dynamic_price.key:
         return this.getREP_Amount(true);
 
@@ -312,14 +327,22 @@ export default class BaseForm extends React.PureComponent {
       onCloseForm,
       onDeleteField,
       isBatchPaymentPages,
+      onUpdateImage,
+      openImageCropper,
+      openAdvancedForm,
     } = this.props;
 
-    const { hasDescription, disableSubmit, mirrorDisplayName, isMandatory } = this.state;
+    const { hasDescription, disableSubmit, mirrorDisplayName, isMandatory, selectedLateFeeType } =
+      this.state;
 
     return (
       <Form setRef={this.setRefForm} onChange={this.onChange} onSubmit={this.onSaveForm}>
         {/* This will automatically be controlled by both initial field and on re-render on save of Advanced Form */}
         <input name="mandatory" value={Number(isMandatory)} readOnly hidden />
+
+        {isFormItemOfTypeLateFee(field) && (
+          <input name="lateFeeType" value={selectedLateFeeType} readOnly hidden />
+        )}
 
         <Input.TextareaAutoResize
           class="Input--title"
@@ -352,7 +375,14 @@ export default class BaseForm extends React.PureComponent {
         >
           <div class={classList('Field Field--mirrorDisplay', isMandatory && 'Field--required')}>
             <span class="mirror-title">{mirrorDisplayName}</span>
-            {mirrorDisplayName && !isMandatory && <div class="text-optional">(Optional)</div>}
+
+            <div className="text-optional-wrap">
+              {mirrorDisplayName && !isMandatory && <div className="text-optional">(Optional)</div>}
+
+              {mirrorDisplayName && isFormItemOfTypeLateFee(field) && (
+                <div className="text-optional">{`(${LATE_FEE_TYPES_MAP[selectedLateFeeType]})`}</div>
+              )}
+            </div>
           </div>
         </Input.TextareaAutoResize>
 
@@ -375,80 +405,24 @@ export default class BaseForm extends React.PureComponent {
             />
           )}
         </div>
-        <FieldOptionsDropdownWrapper
-          trigger={
-            <Button.Transparent>
-              <i class="i i-ellipsis-v" />
-            </Button.Transparent>
-          }
-        >
-          <ShowWhen additionalCondition={() => !isBatchPaymentPages}>
-            <OptionsItem>
-              <div
-                onClick={
-                  !!field.image_url
-                    ? (_) => this.props.onUpdateImage(null)
-                    : this.props.openImageCropper
-                }
-              >
-                <i class="i i-add_image" />
-                {field.image_url ? 'Remove Image' : 'Add Image'}
-              </div>
-            </OptionsItem>
-          </ShowWhen>
 
-          <OptionsItem isSelected={!!this.state.hasDescription}>
-            <div onClick={this.toggleDescriptionField}>
-              <i class="i i-sort i-fix-sort" />
-              {this.state.hasDescription ? 'Remove Description' : 'Add Description'}
-            </div>
-          </OptionsItem>
-
-          <OptionsItem isSelected={!this.state.isMandatory}>
-            <div onClick={this.toggleIsMandatory}>
-              <i class="i i-optional_mark" />
-              {!this.state.isMandatory ? 'Optional Item' : 'Make it Optional Item'}
-            </div>
-          </OptionsItem>
-          <ShowWhen additionalCondition={() => !isBatchPaymentPages}>
-            <OptionsItem>
-              <div onClick={this.props.openAdvancedForm}>
-                <i class="i i-options" />
-                <div>
-                  Advanced Options
-                  <div class="subOption">Add quantity, define rules around quantity, etc.</div>
-                </div>
-              </div>
-            </OptionsItem>
-          </ShowWhen>
-
-          {typeof selfIndex !== 'undefined' && onDeleteField && (
-            <OptionsItem>
-              <div class="OptionsDropdown-item--delete" onClick={onDeleteField}>
-                <i class="i i-delete" />
-                <div>Delete Field</div>
-              </div>
-            </OptionsItem>
-          )}
-        </FieldOptionsDropdownWrapper>
-
-        <Button.Transparent
-          class="base-form-side-btn base-form-cancel"
-          type="button"
-          onClick={onCloseForm}
-        >
-          <span>&times;</span>
-          Cancel
-        </Button.Transparent>
-
-        <Button.Transparent
-          class="base-form-side-btn base-form-save"
-          type="submit"
-          disabled={disableSubmit}
-        >
-          <span class="icon i-check" />
-          Save
-        </Button.Transparent>
+        <AdditionalOptions
+          isBatchPaymentPages={isBatchPaymentPages}
+          field={field}
+          disableSubmit={disableSubmit}
+          hasDescription={hasDescription}
+          isMandatory={isMandatory}
+          selectedLateFeeType={selectedLateFeeType}
+          selfIndex={selfIndex}
+          openImageCropper={openImageCropper}
+          onUpdateImage={onUpdateImage}
+          onCloseForm={onCloseForm}
+          openAdvancedForm={openAdvancedForm}
+          onDeleteField={onDeleteField}
+          setLateFeeType={this.setLateFeeType}
+          toggleDescriptionField={this.toggleDescriptionField}
+          toggleIsMandatory={this.toggleIsMandatory}
+        />
       </Form>
     );
   }

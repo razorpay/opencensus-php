@@ -120,14 +120,16 @@
   .CreatorManager
     position: relative
 
+  .Field-add-new .Field-content
+    display: flex
+    gap: 8px
+    flex-wrap: wrap
+
    // For handling Button as a CreatorManager (new field)
   .Field-content
     & > .CreatorManager
       display: inline-block
       position: unset
-
-      &:not(:first-child)
-        margin-left: 16px
 
 
   .CreatorModal-BaseForm
@@ -278,6 +280,9 @@
       animation: modalAppearIn 0.35s cubic-bezier(0.53, 1.78, 1, 1) // modalAppearIn 0.4s cubic-bezier(0.29, 1.75, 1, 1)
       transform-origin: center
       border-radius: 2px
+
+    .text-optional-wrap
+      display: flex
 
     .text-optional
       margin-top: 4px

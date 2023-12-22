@@ -92,4 +92,13 @@ export const FIXED_FIELDS = {
       ...fUnits.alphanumeric.schema,
     };
   },
+
+  get lateFeeDueDate() {
+    return {
+      name: 'late__fee__due__date_1',
+      title: 'Late Payment Due Date',
+      required: true,
+      ...fUnits.date.schema,
+    };
+  },
 };

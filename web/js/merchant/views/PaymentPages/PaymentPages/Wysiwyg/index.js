@@ -40,6 +40,7 @@ import FormSection from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSe
 import {
   convertSinglePriceFieldToMandatory,
   isFormItemOfTypeAmount,
+  isFormItemOfTypeLateFee,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import {
   validateUISchema,
@@ -73,6 +74,8 @@ import {
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { formatFormItems } from './helpers';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
 
@@ -551,8 +554,13 @@ class PaymentPagesWysiwyg extends React.PureComponent {
     const udf_schema = [];
     let paymentPageItems = [];
 
+    /**
+     * Construct new form items and check for late fee amount field and add due date field because we are not explicitly adding it in the UI.
+     */
+    const newFormItems = formatFormItems(FORM_ITEMS);
+
     // Separate UDF and amount fields from FORM ITEMS.
-    FORM_ITEMS.forEach((fi, ix) => {
+    newFormItems.forEach((fi, ix) => {
       fi.settings = fi.settings || {};
       fi.settings.position = ix; // Updating the position of each item (both udf and amount fields)
 
@@ -611,6 +619,15 @@ class PaymentPagesWysiwyg extends React.PureComponent {
           prunedFi.min_amount = null;
         }
 
+        const isLateFeeField = isFormItemOfTypeLateFee(prunedFi);
+
+        if (isLateFeeField) {
+          const { late_fee_config } = prunedFi.settings || {};
+
+          prunedFi.settings.late_fee_config =
+            typeof late_fee_config === 'string' ? late_fee_config : JSON.stringify(late_fee_config);
+        }
+
         /*
          * NOTE: Since payment_page_items are not shareable items with other payment pages, therefore, currency of payment_page entity is used as single source of truth .
          * Currency of each payment_page_item is ignored in general, and is being added here only for the reason that blueprint of line_items of invoices is reused for PP in BE.
@@ -623,12 +640,14 @@ class PaymentPagesWysiwyg extends React.PureComponent {
     });
 
     if (isBatchPaymentPages) {
+      // Filter out only the price field items i.e not late fee price field.
+      const priceItems = paymentPageItems.filter((item) => !isFormItemOfTypeLateFee(item));
       const errorMessages = [];
 
-      if (!paymentPageItems.length) {
+      if (!priceItems.length) {
         errorMessages.push(`${errorMessages.length + 1} : Add at least 1 Price field`);
       } else {
-        const mandatoryPriceFeilds = paymentPageItems?.filter((item) => item?.mandatory);
+        const mandatoryPriceFeilds = priceItems?.filter((item) => item?.mandatory);
 
         if (mandatoryPriceFeilds.length === 0) {
           errorMessages.push(
@@ -639,12 +658,12 @@ class PaymentPagesWysiwyg extends React.PureComponent {
         }
       }
 
-      const primaryRefIdFields = FORM_ITEMS?.filter(
+      const primaryRefIdFields = newFormItems?.filter(
         (item) =>
           item?.name === FIXED_FIELDS.primaryRefId.name &&
           item?.pattern === FIXED_FIELDS.primaryRefId.pattern,
       );
-      const secondaryRefIdFields = FORM_ITEMS.filter((item) => item?.name?.includes(SEC_REF_ID));
+      const secondaryRefIdFields = newFormItems.filter((item) => item?.name?.includes(SEC_REF_ID));
 
       if (primaryRefIdFields.length === 0) {
         errorMessages.push(`${errorMessages.length + 1} : Add 1 Primary reference ID field`);
