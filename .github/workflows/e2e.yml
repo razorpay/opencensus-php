@@ -6,8 +6,6 @@ on:
   issue_comment:
     types:
       - created
-  pull_request_review:
-    types: [submitted]
 
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,8 +27,7 @@ jobs:
     name: Run E2E Tests on PR Comment or PR approval or on master merge
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')) ||
-      (github.ref == 'refs/heads/master' && !github.event.comment.body) ||
-      (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
+      (github.ref == 'refs/heads/master' && !github.event.comment.body)
     timeout-minutes: 60
     runs-on: [cache-3]
     steps:
@@ -54,13 +51,6 @@ jobs:
           echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
         env:
           COMMIT_ID: ${{ github.sha }}
-
-      - name: Set Commit ID if it's a PR approval
-        if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
-        run: |
-          echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
-        env:
-          COMMIT_ID: ${{ github.event.pull_request.head.sha }}
 
       - name: Echo COMMIT_ID for changes
         run: |
