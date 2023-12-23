@@ -1,9 +1,11 @@
+import { Button, Tooltip } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
-import { Button } from '@razorpay/blade/components';
-import Instrument from './Instrument';
+
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import ErrorContainer from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer/ErrorContainer';
 import { GREYED, REQUESTABLE } from 'merchant/views/Settings/PaymentMethods/constants';
+
+import Instrument from './Instrument';
 import './InstrumentList.styl';
 
 /*
@@ -27,6 +29,8 @@ const InstrumentContainer = (props) => {
     onButtonClick,
     instrumentRow,
     isActivating = false,
+    requestTooltipText,
+    isRequestButtonDisabled = false,
     error,
   } = props;
   const { listHeader, listDescription, list } = leafList;
@@ -47,15 +51,31 @@ const InstrumentContainer = (props) => {
           {showAction &&
             ([REQUESTABLE, GREYED].includes(containerStatus) ? (
               <div className="request-cta">
-                <Button
-                  variant="primary"
-                  isLoading={isActivating}
-                  size="small"
-                  isFullWidth
-                  onClick={onRequest}
-                >
-                  {buttonText}
-                </Button>
+                {requestTooltipText ? (
+                  <Tooltip content={requestTooltipText} position="top">
+                    <Button
+                      variant="primary"
+                      isLoading={isActivating}
+                      size="small"
+                      isFullWidth
+                      onClick={onRequest}
+                      isDisabled={isRequestButtonDisabled}
+                    >
+                      {buttonText}
+                    </Button>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    variant="primary"
+                    isLoading={isActivating}
+                    size="small"
+                    isFullWidth
+                    onClick={onRequest}
+                    isDisabled={isRequestButtonDisabled}
+                  >
+                    {buttonText}
+                  </Button>
+                )}
               </div>
             ) : (
               <InternationalStatusLabel status={containerStatus} />

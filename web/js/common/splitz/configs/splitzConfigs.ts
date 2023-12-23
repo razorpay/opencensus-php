@@ -704,5 +704,26 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: ['/payment-methods/international-payments'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'disableInternationalPaymentMethods',
+          experimentId: {
+            beta: 'NEZeS5Hfnzxzcx',
+            production: 'NFK2nqlt1QFfC1',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

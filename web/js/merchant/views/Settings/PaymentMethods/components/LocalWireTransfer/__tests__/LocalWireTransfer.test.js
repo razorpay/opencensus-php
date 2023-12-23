@@ -1,18 +1,20 @@
-import { render, screen, waitFor, userEvent } from 'test-utils';
+import { useSplitzService } from 'common/splitz';
+import { titleCase } from 'common/utils/rzp-utils';
+import * as b2bActions from 'merchant/reducers/b2bExports/actions';
+import * as purposeCodeActions from 'merchant/reducers/profile';
+import LocalWireTransfer from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer';
 import {
   getLeafListData,
   getAccounts,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/__tests__/mocks/fixtures';
-
-import { GREYED, ACTION_REQUIRED } from 'merchant/views/Settings/PaymentMethods/constants';
-
+import {
+  GREYED,
+  ACTION_REQUIRED,
+  ACTIVATED,
+} from 'merchant/views/Settings/PaymentMethods/constants';
 import * as modalActions from 'merchant_common/reducers/modals';
-import * as b2bActions from 'merchant/reducers/b2bExports/actions';
 import * as notifications from 'merchant_common/reducers/notifications';
-import * as purposeCodeActions from 'merchant/reducers/profile';
-import { titleCase } from 'common/utils/rzp-utils';
-
-import LocalWireTransfer from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer';
+import { render, screen, waitFor, userEvent } from 'test-utils';
 
 jest.mock('merchant/reducers/b2bExports/actions', () => ({
   fetchB2bAccounts: jest.fn(() => (dispatch) => {
@@ -23,6 +25,18 @@ jest.mock('merchant/reducers/b2bExports/actions', () => ({
       }),
     );
   }),
+}));
+
+jest.mock('common/splitz', () => ({
+  useSplitzService: jest.fn(() => ({
+    abExperiments: {
+      disableInternationalPaymentMethods: {
+        variables: {
+          result: 'off',
+        },
+      },
+    },
+  })),
 }));
 
 const renderComponent = (props = {}, initialState = {}) => {
@@ -111,6 +125,50 @@ describe('When LocalWireTransfer is shown for the first time', () => {
       screen.queryByText('Purpose code is required for activating', { exact: false }),
     ).not.toBeInTheDocument();
     expect(screen.getByText('Request')).toBeInTheDocument();
+  });
+
+  test('should show request button if disableInternationalPaymentMethods exp is enabled', () => {
+    useSplitzService.mockImplementation(() => ({
+      abExperiments: {
+        disableInternationalPaymentMethods: {
+          variables: {
+            result: 'on',
+          },
+        },
+      },
+    }));
+
+    renderComponent(
+      { leafList },
+      {
+        profile: { fircDetails: { data: { purpose_code: '12121' } } },
+        session: { user: { promoter_pan_name: 'sanchit' } },
+      },
+    );
+
+    expect(screen.getByText('Request')).toBeInTheDocument();
+  });
+
+  test('should show activated if is accounts are activated and disableInternationalPaymentMethods exp is enabled', () => {
+    useSplitzService.mockImplementation(() => ({
+      abExperiments: {
+        disableInternationalPaymentMethods: {
+          variables: {
+            result: 'on',
+          },
+        },
+      },
+    }));
+
+    renderComponent(
+      { leafList: getLeafListData(ACTIVATED) },
+      {
+        profile: { fircDetails: { data: { purpose_code: '12121' } } },
+        session: { user: { promoter_pan_name: 'sanchit' } },
+      },
+    );
+
+    expect(screen.getByText('Activated')).toBeInTheDocument();
   });
 });
 

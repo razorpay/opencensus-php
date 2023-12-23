@@ -15,6 +15,7 @@ import {
   showProductsModal,
   hideProductsModal as hideProductsModalAction,
 } from 'merchant/reducers/home';
+import { handleFeeBasedGatingNavigation } from 'merchant/utils/feeBasedGatingUtils';
 
 const initialState = {
   status: null,
@@ -510,6 +511,25 @@ class ActivationCard extends Component {
               settlement schedule
             </a>
           </div>
+        );
+        break;
+      }
+
+      case 'fee_based_gating': {
+        title = 'KYC Verification Pending';
+        status = possibleStatuses.active;
+        content = (
+          <span>
+            Get your business KYC verified to start collecting payments
+            <br />
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => handleFeeBasedGatingNavigation({ ctaLocation: 'Activation Card' })}
+            >
+              Get KYC Verified
+            </button>
+          </span>
         );
         break;
       }

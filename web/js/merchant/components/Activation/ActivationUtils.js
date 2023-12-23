@@ -11,6 +11,7 @@ import {
   BUSINESS_PROOF_TYPE_DOCS,
 } from './Constants';
 import { convertUnixToDate } from 'common/utils/rzp-utils';
+import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
 
 const PRIVATE_LIMITED = 4,
   PUBLIC_LIMITED = 5,
@@ -587,6 +588,8 @@ function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEli
       activationState = 'rejected';
     } else if (merchant.hold_funds && isHardLimitReached) {
       activationState = 'funds_on_hold';
+    } else if (checkEligibilityForFeeBasedGating(activationData)) {
+      activationState = 'fee_based_gating';
     }
   }
 

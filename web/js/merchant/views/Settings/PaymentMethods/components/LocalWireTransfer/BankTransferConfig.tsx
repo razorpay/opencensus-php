@@ -1,27 +1,22 @@
 import React, { useMemo } from 'react';
-
-import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
-//redux helpers
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-//redux actions
-import { openModal } from 'merchant_common/reducers/modals';
-import { openSupport } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/utils';
-
-//types and constants
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { useSplitzService } from 'common/splitz';
+import lazy from 'merchant/routes/LazyLoader';
+import {
+  VA_USD,
+  DEACTIVATED,
+} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 import {
   ContainerErrorType,
   BankTransferConfigType,
   BankTransferConfigInterface,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
+import { openSupport } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/utils';
 import { GREYED, ACTION_REQUIRED } from 'merchant/views/Settings/PaymentMethods/constants';
-import {
-  VA_USD,
-  DEACTIVATED,
-} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
+import { openModal } from 'merchant_common/reducers/modals';
 
 const FircFormModal = lazy(
   () =>
@@ -43,16 +38,30 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
   }) => {
     const promoterPan = user?.promoter_pan_name;
     const purposeCode = fircData?.data?.purpose_code;
+    const {
+      abExperiments: { disableInternationalPaymentMethods },
+    } = useSplitzService();
+
+    const isDisableInternationalPaymentMethods =
+      disableInternationalPaymentMethods.variables.result === 'on' &&
+      !isFetching &&
+      !accounts.length;
+
     const containerStatus = useMemo(() => {
-      if (!purposeCode || !promoterPan) {
-        return ACTION_REQUIRED;
-      }
       if (accountsDeactivated) {
         return DEACTIVATED;
       }
+
+      if (isDisableInternationalPaymentMethods) {
+        return GREYED;
+      }
+
+      if (!purposeCode || !promoterPan) {
+        return ACTION_REQUIRED;
+      }
       return GREYED;
-    }, [purposeCode, promoterPan, accountsDeactivated]);
-    const shouldShowAction = containerStatus !== GREYED;
+    }, [purposeCode, promoterPan, accountsDeactivated, isDisableInternationalPaymentMethods]);
+    const shouldShowAction = containerStatus !== GREYED && !isDisableInternationalPaymentMethods;
     const shouldShowListAction = containerStatus === GREYED && !isFetching;
 
     const addPurposeCode = () => {
@@ -67,6 +76,10 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
     };
 
     const getContainerError = (): ContainerErrorType | boolean => {
+      if (isDisableInternationalPaymentMethods) {
+        return false;
+      }
+
       if (accountsDeactivated) {
         return {
           message: reason,
@@ -106,6 +119,7 @@ const withBankTransferConfig = (Component, method = VA_USD) => {
       shouldShowListAction,
       containerStatus,
       containerError: getContainerError(),
+      isRequestButtonDisabled: isDisableInternationalPaymentMethods,
     };
 
     return <Component {...props} purposeCode={purposeCode} config={config} />;

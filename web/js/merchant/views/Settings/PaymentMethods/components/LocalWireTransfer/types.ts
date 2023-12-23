@@ -53,6 +53,7 @@ export type BankTransferConfigType = {
   shouldShowListAction: boolean;
   containerStatus: string;
   containerError: ContainerErrorType | boolean;
+  isRequestButtonDisabled: boolean;
 };
 
 export interface LocalWireTransferPropsInterface {

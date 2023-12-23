@@ -11,7 +11,10 @@ import InstrumentContainer from 'merchant/views/Settings/PaymentMethods/componen
 import withBankTransferConfig from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/BankTransferConfig';
 import InstrumentRow from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/InstrumentRow';
 import { trackTandCPopupOpened } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
-import { VA_USD } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
+import {
+  VA_USD,
+  DISABLE_REQUEST_TOOLTIP,
+} from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 import { LocalWireTransferPropsInterface } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -45,8 +48,14 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
   openModal,
   ...data
 }) => {
-  const { containerStatus, containerError, accounts, shouldShowAction, shouldShowListAction } =
-    config;
+  const {
+    containerStatus,
+    containerError,
+    accounts,
+    shouldShowAction,
+    shouldShowListAction,
+    isRequestButtonDisabled,
+  } = config;
 
   const [isOpen, setIsOpen] = useState<boolean | string>(false);
 
@@ -116,6 +125,8 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         error={containerError}
+        isRequestButtonDisabled={isRequestButtonDisabled}
+        requestTooltipText={isRequestButtonDisabled ? DISABLE_REQUEST_TOOLTIP : ''}
         {...data}
       />
     </ErrorBoundary>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { Button as AsyncButton, Tooltip } from '@razorpay/blade/components';
+
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
-import { Button as AsyncButton } from '@razorpay/blade/components';
 import { getIcon } from 'merchant/views/Settings/PaymentMethods/components/InstrumentIcons';
 import { REQUESTABLE, GREYED, REQUESTED } from 'merchant/views/Settings/PaymentMethods/constants';
 /*
@@ -17,6 +18,8 @@ const Instrument = ({
   leafInstrument,
   instrumentsTat,
   showTat = true,
+  isRequestButtonDisabled = false,
+  requestTooltipText,
 }) => {
   const { icon, name, description, status = GREYED, slug = '' } = data;
   const tat = instrumentsTat?.[`pg.${leafInstrument?.slug ?? ''}.${slug}`];
@@ -40,15 +43,31 @@ const Instrument = ({
       {showInstrumentAction && !rightButton ? (
         [REQUESTABLE, GREYED].includes(status) ? (
           <div className="request-cta">
-            <AsyncButton
-              variant="primary"
-              isLoading={isLoading}
-              size="small"
-              isFullWidth
-              onClick={onButtonClick}
-            >
-              Request
-            </AsyncButton>
+            {requestTooltipText ? (
+              <Tooltip content={requestTooltipText} position="top">
+                <AsyncButton
+                  variant="primary"
+                  isLoading={isLoading}
+                  size="small"
+                  isFullWidth
+                  onClick={onButtonClick}
+                  isDisabled={isRequestButtonDisabled}
+                >
+                  Request
+                </AsyncButton>
+              </Tooltip>
+            ) : (
+              <AsyncButton
+                variant="primary"
+                isLoading={isLoading}
+                size="small"
+                isFullWidth
+                onClick={onButtonClick}
+                isDisabled={isRequestButtonDisabled}
+              >
+                Request
+              </AsyncButton>
+            )}
           </div>
         ) : (
           <div className="status-wrapper">

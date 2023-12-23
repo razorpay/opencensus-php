@@ -48,7 +48,7 @@ export const getActionStatus = ({
     // Form is unfilled and Not submitted
     status = 'Submit Form';
   }
-  if (user.isInstantActivationEnabled) {
+  if (!isEligibleForFeeBasedGating && user.isInstantActivationEnabled) {
     if (activationState === 'account_activated') {
       status = 'Account Activated';
     } else {

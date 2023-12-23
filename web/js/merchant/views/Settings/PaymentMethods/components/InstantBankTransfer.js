@@ -1,33 +1,29 @@
 import { useEffect } from 'react';
-import { withRouter } from 'common/deprecated/withRouter';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
-//Redux actions
-import { openModal } from 'merchant_common/reducers/modals';
-import { setFormData, setFormError, setFormFetching } from 'merchant/reducers/apmForm/actions';
-
-//analytics
+import { withRouter } from 'common/deprecated/withRouter';
+import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { useSplitzService } from 'common/splitz';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
-//Helper function
-import { saveForm, fetchFormData } from './ApmOnboarding/services';
-import { refreshEntries } from './ApmOnboarding/utils';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { INSTRUMENTS, tabs } from './ApmOnboarding/constants';
+import { setFormData, setFormError, setFormFetching } from 'merchant/reducers/apmForm/actions';
+import { DISABLE_REQUEST_TOOLTIP } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 import { REQUESTABLE, GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
+import { openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-//Components
-import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import ApmOnboarding from './ApmOnboarding';
-import InstrumentContainer from './InstrumentContainer/index';
 import {
   trackInstrumentsRequested,
   trackDataSaving,
   trackDataSaveError,
   trackDataSaveSuccess,
 } from './ApmOnboarding/analytics';
+import { INSTRUMENTS, tabs } from './ApmOnboarding/constants';
+import { saveForm, fetchFormData } from './ApmOnboarding/services';
+import { refreshEntries } from './ApmOnboarding/utils';
+import InstrumentContainer from './InstrumentContainer/index';
 
 //Functions
 const track = ({ properties, ...args }) => {
@@ -54,6 +50,13 @@ const InstantBankTransfer = ({
   showNotification,
 }) => {
   const isSubmitted = formData?.submitted === '1' || formData?.submitted === true;
+
+  const {
+    abExperiments: { disableInternationalPaymentMethods },
+  } = useSplitzService();
+
+  const isDisableInternationalPaymentMethods =
+    disableInternationalPaymentMethods.variables.result === 'on';
 
   const trackActivateClicked = (formSubmitted, containerButtonClicked, listButtonClicked) => {
     track({
@@ -129,7 +132,7 @@ const InstantBankTransfer = ({
   const showRequestButton = () => {
     let showButton = false;
     let someRequestable = false;
-    if (isSubmitted) {
+    if (isSubmitted && !isDisableInternationalPaymentMethods) {
       showButton = false;
     } else {
       leafList.list.forEach((instrument) => {
@@ -139,7 +142,7 @@ const InstantBankTransfer = ({
       });
       showButton = someRequestable;
     }
-    return showButton;
+    return !isDisableInternationalPaymentMethods ? showButton : true;
   };
 
   const showListAction = () => {
@@ -170,6 +173,8 @@ const InstantBankTransfer = ({
           leafList={leafList}
           showListAction={showListAction()}
           onInstrumentRequest={onInstrumentButtonClick}
+          isRequestButtonDisabled={isDisableInternationalPaymentMethods}
+          requestTooltipText={isDisableInternationalPaymentMethods ? DISABLE_REQUEST_TOOLTIP : ''}
         />
       </div>
     </ErrorBoundary>

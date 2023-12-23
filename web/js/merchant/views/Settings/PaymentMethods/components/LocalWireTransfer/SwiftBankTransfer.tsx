@@ -13,6 +13,7 @@ import { trackTandCPopupOpened } from 'merchant/views/Settings/PaymentMethods/co
 import {
   VA_USD,
   VA_SWIFT,
+  DISABLE_REQUEST_TOOLTIP,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 import { openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -28,8 +29,14 @@ const AcknowledgementPopup = lazy(
 );
 
 const SwiftBankTransfer = ({ leafList, config, showNotification, openModal, ...data }) => {
-  const { containerStatus, containerError, accounts, shouldShowAction, shouldShowListAction } =
-    config;
+  const {
+    containerStatus,
+    containerError,
+    accounts,
+    shouldShowAction,
+    shouldShowListAction,
+    isRequestButtonDisabled,
+  } = config;
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -62,6 +69,8 @@ const SwiftBankTransfer = ({ leafList, config, showNotification, openModal, ...d
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         error={containerError}
+        isRequestButtonDisabled={isRequestButtonDisabled}
+        requestTooltipText={isRequestButtonDisabled ? DISABLE_REQUEST_TOOLTIP : ''}
         {...data}
       />
     </ErrorBoundary>

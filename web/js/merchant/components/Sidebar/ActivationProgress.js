@@ -58,7 +58,7 @@ function ActivationProgress(props) {
     user.activation_progress === 90 &&
     user.activation_status === 'activated_mcc_pending';
 
-  if (user.isInstantActivationEnabled) {
+  if (!isEligibleForFeeBasedGating && user.isInstantActivationEnabled) {
     if (activationState === 'account_activated') {
       actionCopy = 'Account Activated';
     } else {

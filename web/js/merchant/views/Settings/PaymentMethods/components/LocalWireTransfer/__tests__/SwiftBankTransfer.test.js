@@ -31,6 +31,18 @@ jest.mock('merchant/reducers/b2bExports/actions', () => ({
 
 jest.mock('merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services');
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: jest.fn(() => ({
+    abExperiments: {
+      disableInternationalPaymentMethods: {
+        variables: {
+          result: 'off',
+        },
+      },
+    },
+  })),
+}));
+
 const renderComponent = (props = {}, initialState = {}) => {
   return render(<SwiftBankTransfer {...props} />, { initialState });
 };
