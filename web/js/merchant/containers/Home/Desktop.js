@@ -103,6 +103,7 @@ import {
   trackSettlementsClick,
 } from './ga';
 import { IsOutsideDateRangeForHPAnalytics } from './utils';
+import { checkEligibilityForFeeBasedGating } from 'merchant/utils/feeBasedGatingUtils';
 
 const TerminalStatus = lazy(() =>
   import(
@@ -401,9 +402,11 @@ class AnalyticsDesktop extends Component {
       limitBreach,
     } = this.props;
 
+    const isEligibleForFeeBasedGating = checkEligibilityForFeeBasedGating(user);
+
     const onboardingCard = (
       <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
-        {showOnboardingBanner && (
+        {showOnboardingBanner || isEligibleForFeeBasedGating ? (
           <NewUserOnboardingCard
             payments={payments}
             onClose={onHideOnboardingBanner}
@@ -412,7 +415,7 @@ class AnalyticsDesktop extends Component {
             showInstantActivation={showInstantActivation}
             limitBreach={limitBreach}
           />
-        )}
+        ) : null}
       </div>
     );
 
