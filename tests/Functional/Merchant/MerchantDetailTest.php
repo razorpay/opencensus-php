@@ -11263,6 +11263,14 @@ We look forward to transacting with you!
             'merchant_id' => '10000000000000',
         ]);
 
+        $this->fixtures->on('live')->create('merchant_attribute', [
+            'merchant_id'    =>  '10000000000000',
+            'type'           =>  'X',
+            'value'          =>  'true',
+            'group'          =>  'products_enabled',
+            'product'        =>  'banking',
+        ]);
+
         $testData = & $this->testData['testPgKycActivation'];
 
         $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";

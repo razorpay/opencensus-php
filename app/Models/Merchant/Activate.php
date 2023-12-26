@@ -1160,7 +1160,7 @@ class Activate extends Base\Core
     {
         $vaActivated = (new Merchant\Core())->isXVaActivated($merchant);
 
-        return ((($merchant->isActivated() === true) || ($vaActivated === true)) and
+        return (($vaActivated === true) and
             (empty($merchant->getEmail()) === false));
         // This was done for YesBank moratorium. Not required now.
         // and ($this->blockRxActivationIfApplicable($merchant) === false));

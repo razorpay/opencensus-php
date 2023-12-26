@@ -593,6 +593,14 @@ class UserTest extends TestCase
             '10000000000000',
             ['activated' => true, 'business_banking' => false,'email' => null, 'signup_source' => 'primary']);
 
+        $this->fixtures->on('live')->create('merchant_attribute', [
+            'merchant_id'    =>  '10000000000000',
+            'type'           =>  'X',
+            'value'          =>  'true',
+            'group'          =>  'products_enabled',
+            'product'        =>  'banking',
+        ]);
+
         $liveBankingAccount = $this->getDbEntity('banking_account',
             [
                 'merchant_id' => '10000000000000',
@@ -952,6 +960,14 @@ class UserTest extends TestCase
             ->where('merchant_id', '=', $user->merchants()->get()[0]->getId())
             ->where('product', '=', 'banking')
             ->pluck('user_id','merchant_id', 'product');
+
+        $this->fixtures->on('live')->create('merchant_attribute', [
+            'merchant_id'    =>  $merchantDetail->getId(),
+            'type'           =>  'X',
+            'value'          =>  'true',
+            'group'          =>  'products_enabled',
+            'product'        =>  'banking',
+        ]);
 
         $this->assertEquals(count($bankingMerchant), 0);
 
