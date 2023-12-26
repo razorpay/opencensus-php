@@ -21,7 +21,7 @@ const WalletsMultiSelect = (props) => {
       </Box>
       {isFormEdit ? (
         <Box minWidth="280px">
-          <Dropdown selectionType="multiple">
+          <Dropdown selectionType="multiple" testID="wallet-select">
             <SelectInput
               placeholder="Select Wallets"
               name="wallets"

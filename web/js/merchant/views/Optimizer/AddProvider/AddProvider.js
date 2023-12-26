@@ -780,8 +780,6 @@ class AddProvider extends React.Component {
                 hasSeamlessOption={hasSeamlessOption}
                 selectProvider={this.selectProvider}
                 changeGateway={this.changeGateway}
-                validateStep={this.disableStep}
-                onNextClick={this.goNext}
                 onEditClick={this.onEditClick}
               />
             )}

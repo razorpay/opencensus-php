@@ -264,7 +264,11 @@ const ProviderConfiguration = (props) => {
                     <Box display="flex" alignItems="center">
                       <Text>{label}</Text>
                       <Box display="flex" alignItems="center" marginLeft="spacing.2">
-                        <HelpCircleIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                        <HelpCircleIcon
+                          testID="tpv-info-icon"
+                          size="medium"
+                          color="feedback.icon.neutral.lowContrast"
+                        />
                         <Popover theme="dark" align="right">
                           <PopoverBody>
                             Third-Party Validation (TPV) of your customer’s bank accounts in

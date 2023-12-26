@@ -39,8 +39,6 @@ const SelectGateway = (props) => {
     hasSeamlessOption,
     selectProvider,
     changeGateway,
-    validateStep,
-    onNextClick,
   } = props;
   const [searchValue, setSearchValue] = useState('');
   const [filteredProviders, setFilteredProviders] = useState(categorizedProviders);
@@ -273,16 +271,6 @@ const SelectGateway = (props) => {
         </Box>
       ) : (
         renderProvidersList()
-      )}
-
-      {isFormEdit && (
-        <Box display="flex" justifyContent="end">
-          <Box display="flex" alignItems="center" gap="spacing.7">
-            <Button isDisabled={validateStep(1)} onClick={onNextClick}>
-              Next
-            </Button>
-          </Box>
-        </Box>
       )}
     </Box>
   );
