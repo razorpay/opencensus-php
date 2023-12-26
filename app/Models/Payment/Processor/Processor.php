@@ -995,6 +995,19 @@ class Processor
                     }
                 }
 
+                if (empty($order) === false and $order->getProductType() === ProductType::PAYMENT_LINK_V2)
+                {
+                    // Added the experiment back to stop PL traffic for MIDs on cards re-arch.
+                    // JIRA: https://razorpay.atlassian.net/browse/CARDREARCH-195
+                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "payment_link_v2",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+
+                    return ($result === 'on');
+                }
+
                 if (empty($order) === false and ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or
                     ($order->invoice !== null))
                 {
@@ -1340,15 +1353,6 @@ class Processor
             if ($merchant->isFeatureEnabled('openwallet') === true)
             {
                 return true;
-            }
-
-            if (empty($order) === false and $order->getProductType() === ProductType::PAYMENT_LINK_V2)
-            {
-                // Added the experiment back to stop PL traffic for MIDs on cards re-arch.
-                // JIRA: https://razorpay.atlassian.net/browse/CARDREARCH-195
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
             }
 
             if ($merchant->isFeatureEnabled('raas') === true)
