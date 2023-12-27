@@ -376,8 +376,7 @@ class Processor extends Base\Core
 
         if ($this->qrCode->getRequestSource() === NonVirtualAccountQrCode\RequestSource::EZETAP)
         {
-            $paymentArray[Payment\Entity::NOTES] = array_merge($paymentArray[Payment\Entity::NOTES],
-                [QrConstants::PAYMENT_TYPE_KEY => QrConstants::PAYMENT_TYPE_OFFLINE]);
+            $paymentArray[Payment\Entity::SOURCE_CHANNEL] = QrConstants::PAYMENT_TYPE_IN_PERSON;
         }
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);

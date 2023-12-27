@@ -451,6 +451,11 @@ class Service extends Base\Service
             unset($input['payment']['card']);
         }
 
+        if (isset($input['payment']['source_channel']) === true)
+        {
+            $payment->setSourceChannel($input['payment']['source_channel']);
+        }
+
         $payment->forceFill($input['payment']);
 
         if ($payment->isFeeBearerCustomer() === false)

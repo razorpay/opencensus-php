@@ -1474,6 +1474,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
             'plan_id'             => 'TestPlan1',
             'plan_name'           => 'TestMerchantPosUPIPricingPlan1',
             'payment_method'      => 'upi',
+            'channel'             => 'in_person',
             'org_id'              => '100000razorpay',
             'type'                => 'pricing',
             'feature'             => 'payment',
@@ -1566,6 +1567,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(Account::TEST_ACCOUNT, $payment->getMerchantId());
         $this->assertEquals(100000, $payment->getAmount());
         $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals("in_person", $payment->getSourceChannel());
         // Ensure Default POS UPI Fees is Charged i.e. 0
         $this->assertEquals(0, $payment->getFee());
         $this->assertEquals(0, $payment->getTax());
@@ -1668,6 +1670,23 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testPaymentEntityInQrCodeWithEzetapRequestSource()
     {
+        // add pos qr_code pricing plan
+        $posQRPricingPlan = [
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'TestMerchantPosUPIPricingPlan1',
+            'payment_method'      => 'upi',
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'feature'             => 'payment',
+            'receiver_type'       => 'offline',
+            'fee_bearer'          => 'platform',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+            'channel'             => 'in_person',
+        ];
+
+        $this->fixtures->create('pricing', $posQRPricingPlan);
+
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer', headers: ['X-Razorpay-Request-Source' => 'ezetap']);
 
         $qrCodeId = $qrCode['id'];
@@ -1691,7 +1710,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($qrCode['request_source'], 'ezetap');
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
-        $this->assertEquals('offline', $payment['notes']['receiver_type']);
+        $this->assertEquals('in_person', $payment['reference13']);
     }
 
 

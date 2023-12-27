@@ -157,7 +157,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
     const GATEWAY_PROVIDER      = 'gateway_provider';
-    const SOURCE_CHANNEL        = 'source_channel';
     const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
@@ -167,8 +166,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const IS_PUSHED_TO_KAFKA    = 'reference6';
     const CONVENIENCE_FEE       = 'reference9';
     const FEE_BEARER            = 'fee_bearer';
-    //Reference13 has been used to store detailed error fields of combination of source, step and reason.
-    const REFERENCE13           = 'reference13';
+    //Reference13 is repurposed to store source channel for online and in person payments [possible values : online and in_person]
+    const SOURCE_CHANNEL        = 'reference13';
     // Reference14 has been used to store razorpay wallet user id
     const REFERENCE14           = 'reference14';
     // From 15 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
@@ -417,6 +416,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::RECURRING_TYPE,
         self::AUTHENTICATION_GATEWAY,
         self::FEE_BEARER,
+        self::SOURCE_CHANNEL,
     ];
 
     protected $visible = [
@@ -509,7 +509,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
         self::FEE_BEARER,
-        self::REFERENCE13,
+        self::SOURCE_CHANNEL,
         self::UPI,
         self::PROVIDER,
         self::UPI_METADATA,
@@ -773,6 +773,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $defaults = [
         self::STATUS               => Status::CREATED,
         self::REFUND_STATUS        => RefundStatus::NULL,
+        self::SOURCE_CHANNEL       => PAYMENT\Constant::ONLINE,
         self::NOTES                => [],
         self::DESCRIPTION          => null,
         self::AMOUNT_REFUNDED      => 0,
@@ -1334,8 +1335,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $error->setDetailedError($code, $method);
 
         $this->setAttribute(self::ERROR_DESCRIPTION,$error->getEnglishDescription());
-
-        //$this->setAttribute(self::REFERENCE13, $error->getAttributes(Error::REASON_CODE));
     }
 
     public function setEmandateErrorDesc($errorDesc)
@@ -1534,7 +1533,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::ERROR_CODE, null);
         $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
-        $this->setAttribute(self::REFERENCE13, null);
 
         // reset gateway error code and description in reference17.
         if (empty($this->getReference17()) === false)
@@ -1858,6 +1856,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setReceiverType(string $receiverType)
     {
         $this->setAttribute(self::RECEIVER_TYPE, $receiverType);
+    }
+
+    public function setSourceChannel(string $sourceChannel)
+    {
+        $this->setAttribute(self::SOURCE_CHANNEL, $sourceChannel);
     }
 
     public function setSubscriptionId(string $subscriptionId)
@@ -2297,6 +2300,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getReceiverType()
     {
         return $this->getAttribute(self::RECEIVER_TYPE);
+    }
+
+    public function getSourceChannel()
+    {
+        return $this->getAttribute(self::SOURCE_CHANNEL);
     }
 
     /**
@@ -3525,10 +3533,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::GATEWAY_TXN_ID);
     }
 
-    public function getSourceChannel()
-    {
-        return $this->getAttribute(self::SOURCE_CHANNEL);
-    }
 
     /**
      * Gets adjusted amount with respect to customer fee bearer merchants.
@@ -3853,10 +3857,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return $this->getAttribute(self::REFERENCE2);
     }
-
+    // Keeping the method to not break test flows
     public function getReference13()
     {
-        return $this->getAttribute(self::REFERENCE13);
+        return $this->getAttribute(self::SOURCE_CHANNEL);
     }
 
     public function getReference16()
@@ -5528,6 +5532,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             self::GATEWAY,
             self::RECEIVER_ID,
             self::RECEIVER_TYPE,
+            self::SOURCE_CHANNEL,
             self::VERIFY_AT,
             self::VERIFY_BUCKET,
         ];
@@ -6177,6 +6182,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::RECEIVER_TYPE] = $this->getReceiverType();
         }
 
+        if ($this->merchant->isOmniEnabled() === true)
+        {
+            $data[Payment\Constant::SOURCE_CHANNEL] = $this->getSourceChannel();
+        }
+
         if($this->isB2BExportCurrencyCloudPayment() === true){
             $data[self::B2BExportInvoice] = $this->getReference2();
         }
@@ -6250,6 +6260,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($merchantCore->isShowReceiverTypeFeatureEnabled($this->merchant) === true)
         {
             $data[self::RECEIVER_TYPE] = $this->getReceiverType();
+        }
+
+        if ($this->merchant->isOmniEnabled() === true)
+        {
+            $data[Payment\Constant::SOURCE_CHANNEL] = $this->getSourceChannel();
         }
 
         if($this->isB2BExportCurrencyCloudPayment() === true){

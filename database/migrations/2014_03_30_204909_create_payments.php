@@ -280,7 +280,7 @@ class CreatePayments extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->char(Payment::REFERENCE13, Payment::ID_LENGTH)
+            $table->char(Payment::SOURCE_CHANNEL, Payment::ID_LENGTH)
                   ->nullable();
 
             $table->char(Payment::REFERENCE14, Payment::ID_LENGTH)

@@ -569,6 +569,12 @@ class PGRouter
                     $response['body']['data']['payment']['acquirer_data']['auth_code'];
             }
 
+            if (isset($response['body']['data']['payment']['source_channel']) === true)
+            {
+                $response['body']['data']['payment']['reference13'] =
+                    $response['body']['data']['payment']['source_channel'];
+            }
+
             if (isset($response['body']['data']['payment']['card']) === true)
             {
                 $response['body']['data']['payment']['card']['id'] = $response['body']['data']['payment']['id'];

@@ -100,6 +100,7 @@ class Validator extends Base\Validator
         'subscription_id'               => 'sometimes|public_id',
         'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer,offline|associative_array|filled|custom',
         'receiver.type'                 => 'required_with:receiver|filled|string',
+        'reference13'                   => 'sometimes|string',
         'receiver.id'                   => 'required_if:receiver,vpa,qr_code,bank_transfer|filled|public_id',
         'payment_link_id'               => 'sometimes|public_id|size:17',
         'token'                         => 'sometimes|string',
