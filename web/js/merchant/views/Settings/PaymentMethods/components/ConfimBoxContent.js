@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { STANDARD_PRICING_URL } from 'merchant/views/Settings/PaymentMethods/constants';
 import Input from 'common/new-ui/Input';
 import { AsyncButton } from 'react-async-button';
 
@@ -10,13 +9,8 @@ const renderConfirmMessage = (instrumentSlug, numberOfDays) => {
 
   return (
     <>
-      This instrument will be enabled for you using &nbsp;
-      <span className="toggler-btn">
-        <a href={STANDARD_PRICING_URL} target="_blank" rel="noopener noreferrer">
-          Standard Pricing <i className="i i-external-link" />
-        </a>
-      </span>
-      . Processing the request roughly takes {numberOfDays} working days.
+      Your business category will undergo additional scrutiny by our banking partners which will
+      take approximately {numberOfDays} working days.
     </>
   );
 };
