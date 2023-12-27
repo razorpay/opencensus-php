@@ -87,6 +87,7 @@ class Repository extends Base\Repository
                          SUM(' . Entity::FEES . ') AS fee')
                     ->merchantId($merchantId)
                     ->where($favsBalanceIdColumn, $balanceId)
+                    ->where(Entity::STATUS, '=', Status::COMPLETED)
                     ->whereBetween($favsCreatedAtColumn, [$startTime, $endTime])
                     ->first();
     }

@@ -697,8 +697,8 @@ return [
 
     'testBankingInvoiceWithFailedPayoutsInGivenMonthAndYear' => [
         'rx_transactions' => [
-            'amount' => 2009,
-            'tax'    => 362,
+            'amount' => 2000,
+            'tax'    => 360,
         ],
         'rx_adjustments' => [
             'amount' => 500,
