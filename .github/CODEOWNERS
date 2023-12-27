@@ -52,6 +52,7 @@ app/Models/Reversal/                                   @razorpay/Payouts-core
 app/Models/Terminal/Sorters/                           @razorpay/TechRulesRouting
 app/Models/Terminal/AuthSelector.php                   @razorpay/TechRulesRouting
 app/Models/Terminal/Selector.php                       @razorpay/TechRulesRouting
+app/Models/Terminal/                                   @razorpay/TechOnlinePaymentsOnboarding
 app/Models/Transfer/                                   @razorpay/enterprise-apps
 app/Models/TrustedBadge                                @razorpay/checkout-backend-leads
 app/Models/FundTransfer/M2P/M2PConfigs.php             chirag.chiranjib@razorpay.com
