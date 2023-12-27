@@ -292,6 +292,12 @@ class PGRouter
 
         $output = $this->sendRequest($url, Requests::POST, $captureParams, $throwExceptionOnFailure, 90);
 
+        if ((isset($output['body']['data']['payment']['method'])) &&
+            ($output['body']['data']['payment']['method'] === Payment\Method::UPI))
+        {
+            (new Payment\Entity)->modifyInput($output['body']['data']['payment']);
+        }
+
         return $output['body']['data']['payment'];
     }
 
