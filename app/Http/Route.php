@@ -15716,6 +15716,8 @@ class Route
             'edit_country_dashboard_config',
             'get_country_dashboard_config',
             'get_all_country_dashboard_config',
+            'get_mozart_audit_logs',
+            'get_mozart_audit_logs_by_params',
             'fetch_device_config',
             'pos_payment_callback',
             'pos_create_order',
