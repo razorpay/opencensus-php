@@ -505,6 +505,7 @@ class ProviderCode
         ProviderPsp::SAMSUNG_PAY,
         ProviderPsp::YESPAY_NEXT,
         ProviderPsp::KOTAK_BANK_APP,
+        ProviderPsp::AXIS_BANK,
     ];
 
     /**
@@ -566,6 +567,7 @@ class ProviderCode
         self::YESPAY       => ProviderPsp::YESPAY_NEXT,
         self::KOTAK        => ProviderPsp::KOTAK_BANK_APP,
         self::KOTAK811     => ProviderPsp::KOTAK_BANK_APP,
+        self::AXISB     => ProviderPsp::AXIS_BANK,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
