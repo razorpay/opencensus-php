@@ -120,6 +120,30 @@ class UpiMandateTransformer extends UpiTransformer
 
     protected function processResponseForAuthorize()
     {
+        if (($this->input['payment']['recurring_type'] === 'initial') and
+            (in_array($this->input['payment']['gateway'], RecurringTrait::$optimizerUpiRecurringGateway) === true) and
+            ($this->context->getAction() === Action::CALLBACK))
+        {
+            $this->item->setStatus(Status::CREATED);
+
+            if ($this->isSuccess() === true)
+            {
+                $this->item->setStatus(Status::CONFIRMED);
+                $this->item->setUmn($this->input['gateway']['mihpayid']);
+
+            }
+            else
+            {
+                $internalErrorCode = $this->exception->getError()->getInternalErrorCode();
+
+                // If the mandate is rejected by user, update mandate status as rejected.
+                if ($internalErrorCode === ErrorCode::BAD_REQUEST_PAYMENT_UPI_MANDATE_REJECTED)
+                {
+                    $this->item->setStatus(Status::REJECTED);
+                }
+            }
+
+        }
 
     }
 

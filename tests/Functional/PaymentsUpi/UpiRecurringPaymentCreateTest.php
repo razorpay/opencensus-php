@@ -1,9 +1,10 @@
 <?php
 
 use Carbon\Carbon;
-
+use RZP\Constants\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -318,6 +319,221 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
                     return strtolower($defaultBehaviour);
                 }));
+    }
+
+    public function testPayuUpiAutopayCallbackSuccess()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $terminal = $this->fixtures->create('terminal:payu_upi_recurring_terminal');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->getDefaultUpiRecurringPaymentArray(),
+        ];
+
+        $request['content']['force_terminal_id'] = 'term_' . $terminal->getId();
+
+        $request['content']['order_id'] = $orderId;
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === "allow_optimizer_upi_recurring")
+            {
+                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
+            }
+
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
+
+        $request['content']['description'] = 'success_recurring_collect';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['payment_id'] ?? null);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $input = [
+            'description' => '',
+        ];
+
+        $this->fixtures->base->editEntity(Entity::PAYMENT, $payment['id'], $input);
+
+        $txnid = substr($payment['id'], 4);
+
+        // Immediate webhooks are rejected, add buffer
+        $testTime = Carbon::now()->addMinutes(4);
+        Carbon::setTestNow($testTime);
+
+        $response = $this->mockWebhookFromGateway($txnid, ['old_callback' => true]);
+        $this->assertEquals(true, $response['success']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $this->assertEquals('captured', $payment[Payment::STATUS]);
+        $this->assertTrue($payment[Payment::CAPTURED]);
+
+        $upi_mandate = $this->getLastEntity(Entity::UPI_MANDATE, true);
+        $this->assertEquals('confirmed', $upi_mandate['status']);
+    }
+
+    public function testPayuUpiAutopayCallbackAmountMismatch()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $terminal = $this->fixtures->create('terminal:payu_upi_recurring_terminal');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->getDefaultUpiRecurringPaymentArray(),
+        ];
+
+        $request['content']['force_terminal_id'] = 'term_' . $terminal->getId();
+
+        $request['content']['order_id'] = $orderId;
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === "allow_optimizer_upi_recurring")
+            {
+                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
+            }
+
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
+
+        $request['content']['description'] = 'success_recurring_collect';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['payment_id'] ?? null);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $input = [
+            'description' => 'paymentAmountFailed',
+        ];
+
+        $this->fixtures->base->editEntity(Entity::PAYMENT, $payment['id'], $input);
+
+        $txnid = substr($payment['id'], 4);
+
+        // Immediate webhooks are rejected, add buffer
+        $testTime = Carbon::now()->addMinutes(4);
+        Carbon::setTestNow($testTime);
+
+        $response = $this->mockWebhookFromGateway($txnid, ['old_callback' => true]);
+        $this->assertEquals(false, $response['success']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $this->assertEquals('failed', $payment[Payment::STATUS]);
+
+        $upi_mandate = $this->getLastEntity(Entity::UPI_MANDATE, true);
+        $this->assertEquals('created', $upi_mandate['status']);
+    }
+
+    public function testPayuUpiAutopayCallbackFailure()
+    {
+        $orderId = $this->createUpiRecurringOrder();
+
+        $terminal = $this->fixtures->create('terminal:payu_upi_recurring_terminal');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->getDefaultUpiRecurringPaymentArray(),
+        ];
+
+        $request['content']['force_terminal_id'] = 'term_' . $terminal->getId();
+
+        $request['content']['order_id'] = $orderId;
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === "allow_optimizer_upi_recurring")
+            {
+                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
+            }
+
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
+
+        $request['content']['description'] = 'success_recurring_collect';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['payment_id'] ?? null);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $input = [
+            'description' => 'paymentCreateFailed',
+        ];
+
+        $this->fixtures->base->editEntity(Entity::PAYMENT, $payment['id'], $input);
+
+        $txnid = substr($payment['id'], 4);
+
+        // Immediate webhooks are rejected, add buffer
+        $testTime = Carbon::now()->addMinutes(4);
+        Carbon::setTestNow($testTime);
+
+        $response = $this->mockWebhookFromGateway($txnid, ['old_callback' => true]);
+        $this->assertEquals(false, $response['success']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $this->assertEquals('failed', $payment[Payment::STATUS]);
+
+        $upi_mandate = $this->getLastEntity(Entity::UPI_MANDATE, true);
+        $this->assertEquals('created', $upi_mandate['status']);
+    }
+
+    protected function mockWebhookFromGateway($paymentId, $details = [], $recurring = false)
+    {
+        $content = [
+            'mihpayid' => '403993715527148090',
+            'mode' => 'UPI',
+            'status' => 'success',
+            'key' => '4039937',
+            'txnid' => $paymentId,
+            'amount' => '10.00',
+            'productinfo' => 'abcd',
+            'email' => '',
+            'phone' => 'ENACH514668605404891575',
+            'hash' => '2451471f3b2e8cf5fbebf255b0034cd433274ab1fba20bebcb34c7d36d060d82d37327eae07c7eff7141d470f00aeb142987ac5746087de01a2d692a953da0e7',
+            'error' => 'E000',
+            'bankcode' => 'hdfc',
+            'bank_ref_num' => 'ENACH514668605404891575',
+            'payment_source' => 'sist',
+        ];
+
+        if ($recurring == true)
+        {
+            $content['payment_source'] = 'sist';
+            $content['amount'] = $details['amount'] ?? $content['amount'];
+        }
+
+        $request = [
+            'content' => $content,
+            'url' => '/callback/payu',
+            'method' => 'post'
+        ];
+
+        return $this->makeRequestAndGetContent($request);
     }
 
 

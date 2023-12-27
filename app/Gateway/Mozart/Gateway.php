@@ -894,7 +894,9 @@ class Gateway extends Base\Gateway
         }
 
         // Some how auth verify is expecting the gateway data in redirect field
-        $input['gateway']['redirect'] = array_pull($input, 'gateway');
+        if (in_array($input['payment']['gateway'], RecurringTrait::$optimizerUpiRecurringGateway) === false) {
+            $input['gateway']['redirect'] = array_pull($input, 'gateway');
+        }
 
         $traceReq = TraceCode::GATEWAY_SUPPORT_REQUEST;
         $traceRes = TraceCode::GATEWAY_SUPPORT_RESPONSE;
@@ -2843,6 +2845,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_SBI,
             Payment\Gateway::NETBANKING_KVB,
             Payment\Gateway::CRED,
+            Payment\Gateway::PAYU
         ];
 
         return in_array($gateway, $formattedAmountGateways, true);

@@ -1594,7 +1594,12 @@ trait UpiRecurring
 
         // Mandate just got recently confirmed from created state
         // this is rather critical check which is why we are not directly relying to gateway status
-        if ($confirmed === true)
+        if (($confirmed === true) and
+            (in_array($payment->getGateway(), RecurringTrait::$optimizerUpiRecurringGateway, true) === true))
+        {
+            $newStatus = UpiMetadata\InternalStatus::AUTHORIZED;
+        }
+        else if ($confirmed === true)
         {
             $newStatus = UpiMetadata\InternalStatus::PENDING_FOR_AUTHORIZE;
         }

@@ -97,6 +97,12 @@ class Gateway extends Base\Gateway
 
         if ($method === Payment\Method::UPI)
         {
+            if ($input['payment']['recurring'] === true)
+            {
+                $input['action'] = ACTION::AUTHORIZE;
+                return $this->processRecurringCallback($input);
+            }
+
             $mozart = $this->getUpiMozartGatewayWithModeSet();
 
             $result = $mozart->sendUpiMozartRequest($input, TraceCode::GATEWAY_PAYMENT_CALLBACK, 'pay_verify');
@@ -140,6 +146,11 @@ class Gateway extends Base\Gateway
         return $response[Fields::TXNID];
     }
 
+    protected function getActualPaymentIdFromServerCallback(array $response)
+    {
+        return $response[Fields::TXNID];
+    }
+
     public function postProcessServerCallback($input, $exception = null)
     {
         if ($exception === null)
@@ -177,6 +188,12 @@ class Gateway extends Base\Gateway
         if ($method === Payment\Method::UPI)
         {
             parent::verify($input);
+
+            if (($this->isFirstRecurringPayment($input) === true) or
+                ($this->isSecondRecurringPayment($input) === true))
+            {
+                return $this->recurringPaymentVerify($input);
+            }
 
             $verify = new Verify($this->gateway, $input);
 

@@ -539,6 +539,58 @@ class PayVerifyData extends Base\Mock\Server
 
         if ($method === Payment\Method::UPI)
         {
+            if ($entities['payment']['recurring'] === true) {
+                $response = [
+                    'data' =>
+                        [
+                            'paymentId' => $entities['payment']['id'],
+                            'amount' => $entities['payment']['amount']/100,
+                            'status' => 'register_verify_success',
+                            'payment' => [
+                                'amount_authorized' => $entities['payment']['amount']/100,
+                                'currency' => 'INR',
+                            ],
+                            'terminal' => [
+                                'gateway' => 'payu',
+                                'gateway_merchant_id' => 'test_merchant_id',
+                            ],
+                            'upi' => [
+                                'gateway_data' => [
+                                    'id'=> $entities['payment']['id'],
+                                ],
+                                'upi_mandate' => [
+                                    'status'=> 'confirmed',
+                                ],
+                                'gateway_payment_id' => '12965951609',
+                                'merchant_reference' => 'test-collect-1',
+                                'npci_reference_id' => '113116977715',
+                                'npci_txn_id' => 'HDFEDED9',
+                                'vpa' => '9557147404@apl',
+                            ],
+                            'version'=> 'v2',
+                        ],
+                    'error' => NULL,
+                    'external_trace_id' => 'DUMMY_REQUEST_ID',
+                    'mozart_id' => 'DUMMY_MOZART_ID',
+                    'next' => [],
+                    'success' => true,
+                ];
+
+                switch ($entities['payment']['description']) {
+
+                    case 'paymentAmountFailed':
+                        $response['data']['amount'] = $entities['payment']['amount'];
+                        break;
+
+                    case 'paymentCreateFailed':
+                        $response['success'] = false;
+                        $response['data']['upi_mandate']['status'] = 'rejected';
+                        $response['error']['internal_error_code'] = 'GATEWAY_ERROR_REQUEST_ERROR';
+                        break;
+                }
+                return $response;
+            }
+
             if ($this->isV2Mock($entities['payment']['description']) === true)
             {
                 return $this->upiMozartV2($entities);

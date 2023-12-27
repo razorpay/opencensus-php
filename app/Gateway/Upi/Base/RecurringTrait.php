@@ -352,9 +352,15 @@ trait RecurringTrait
 
     protected function processRecurringCallback(array $input)
     {
-        $details = $this->getRecurringDetailsFromServerCallback($input['gateway']);
+        if (in_array($input['payment']['gateway'],self::$optimizerUpiRecurringGateway, true))
+        {
+            $upi = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], $input['action']);
+        }
+        else {
+            $details = $this->getRecurringDetailsFromServerCallback($input['gateway']);
 
-        $upi = $this->repo->findByPaymentIdAndActionOrFail($details[Entity::PAYMENT_ID], $details[Entity::ACTION]);
+            $upi = $this->repo->findByPaymentIdAndActionOrFail($details[Entity::PAYMENT_ID], $details[Entity::ACTION]);
+        }
 
         $this->setRequestDataForUpiRecurring($input, $upi);
 
