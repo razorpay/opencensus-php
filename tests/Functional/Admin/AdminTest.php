@@ -1470,6 +1470,31 @@ class AdminTest extends TestCase
         $this->assertContains('payment', array_keys($result['entities']));
     }
 
+    public function testAdminAllEntitiesApiWithCapitalTenantRole()
+    {
+        $store = Cache::store('redis');
+
+        Cache::shouldReceive('store')
+            ->withAnyArgs()
+            ->andReturn($store);
+
+        Cache::shouldReceive('get')
+            ->once()
+            ->with(ConfigKey::TENANT_ROLES_ENTITY)
+            ->andReturn([E::PAYMENT => [TenantRoles::ENTITY_CAPITAL]]);
+
+        $token = $this->createRazorpayOrgAdminForTenantRoleChecks([Permission::VIEW_ALL_ENTITY], [TenantRoles::ENTITY_CAPITAL]);
+        $this->ba->adminAuth('test', $token);
+
+        $result = $this->startTest();
+
+        $this->assertCount(11, $result['fields']);
+
+        $this->assertGreaterThan(351, $result['entities']);
+
+        $this->assertContains('capital', array_keys($result['entities']));
+    }
+
     public function testFetchSoftDeletedEntityForAdmin()
     {
         $org = $this->fixtures

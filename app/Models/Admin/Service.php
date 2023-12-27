@@ -559,15 +559,6 @@ class Service extends Base\Service
             $this->validateInputForExternalAdminFetchMultipleEntities($entityType, $input);
         }
 
-        $entities = $this->handleExternalEntity($entity, $input);
-
-        if ($entities !== null)
-        {
-            return $entities;
-        }
-
-        Entity::validateEntityOrFailPublic($entity);
-
         // Run tenant role-based validation for Razorpay org admins only
         /** @var BasicAuth $basicAuth */
         $basicAuth  = app('basicauth');
@@ -576,6 +567,15 @@ class Service extends Base\Service
         {
             $this->validateEntityAccess($entity);
         }
+
+        $entities = $this->handleExternalEntity($entity, $input);
+
+        if ($entities !== null)
+        {
+            return $entities;
+        }
+
+        Entity::validateEntityOrFailPublic($entity);
 
         if ($isWhatsappInfra === true)
         {

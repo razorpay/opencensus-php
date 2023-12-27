@@ -437,6 +437,10 @@ class Reporting implements ExternalService
                 {
                     $tenantRole = TenantRoles::ENTITY_BANKING;
                 }
+                elseif (in_array(TenantRoles::ENTITY_CAPITAL, $adminRoles) === true)
+                {
+                    $tenantRole = TenantRoles::ENTITY_CAPITAL;
+                }
 
                 $this->headers[self::TENANT_ROLE] = $tenantRole;
             }
