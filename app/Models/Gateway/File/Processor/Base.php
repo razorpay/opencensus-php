@@ -47,6 +47,12 @@ abstract class Base extends Core
      */
     const UPS_FETCH_ENTITY_COUNT = 1000;
 
+    const ESCALATION_MATRIX = [
+        'l1' => 'finances.recon@razorpay.com / ramachandra.hk@razorpay.com',
+        'l2' => 'gurpreet.bhasin@razorpay.com',
+        'l3' => 'shashank.tiwari@razorpay.com'
+    ];
+
     protected $mutex;
 
     /**
@@ -342,7 +348,7 @@ abstract class Base extends Core
             ($beamResponse['failed'] !== null))
         {
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
-            
+
             $this->trace->info(
                 TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
@@ -412,19 +418,19 @@ abstract class Base extends Core
         foreach ($fileList as $index => $file)
         {
             $fileStatus = $file->getComments() ?? null;
-            
+
             if (in_array($fileStatus, $fileStatusList, true))
             {
                 $statusFiles[] = $this->getSingleFileName($file);
 
                 unset($fileList[$index]);
-                
+
                 $this->trace->info(TraceCode::GATEWAY_FILTERED_FILE,
                     [
                         "fileId"        => $file->getId(),
                         'fileStatus'    => $fileStatus
                     ]);
-                
+
             }
         }
     }
@@ -467,7 +473,7 @@ abstract class Base extends Core
                                 ]);
         }
     }
-    
+
     /**
      * This metrics were pushed during emandate file generation, presently for every metric we push 5 times as default
      * @param string $metricName
@@ -482,7 +488,7 @@ abstract class Base extends Core
             $this->generateMetric($metricName, $metricDimensions);
         }
     }
-    
+
     /**
      * General Metric which use some default dimensions and push it vajra
      * @param string $metricName
@@ -492,7 +498,7 @@ abstract class Base extends Core
     public function generateMetric(string $metricName, array $metricDimensions=[]): void
     {
         $metricDimensions = $this->getMetricDimensions($metricDimensions);
-        
+
         try
         {
             $this->trace->count($metricName, $metricDimensions);

@@ -76,6 +76,7 @@ class Dlb extends Base
             'refundsFile' => $refundsFile,
             'emails'      => $this->gatewayFile->getRecipients(),
             'account'     => $account,
+            'esc_matrix'  => self::ESCALATION_MATRIX,
         ];
     }
 

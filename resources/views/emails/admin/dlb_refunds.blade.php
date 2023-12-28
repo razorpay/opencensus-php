@@ -65,10 +65,9 @@
                 <p>For any transaction related issue, please write to finops@razorpay.com </p><br>
 
                 <p>For any escalation, please write to</p><br>
-                <p>1st Level:- finances.recon@razorpay.com</p><br>
-                <p>2nd Level:- amit.mohanty@razorpay.com</p><br>
-                <p>In case of any Reconciliation file & fund related issue, please write finances.recon@razorpay.com</p> <br>
-
+                <p>1st Level:- {{{$esc_matrix['l1']}}}</p><br>
+                <p>2nd Level:- {{{$esc_matrix['l2']}}}</p><br>
+                <p>3rd Level:- {{{$esc_matrix['l3']}}}</p><br>
                 <p>Thanks & Regards</p>
                 <p>Financial Operations</p>
                 <p>Razorpay Payments Private Limited</p>

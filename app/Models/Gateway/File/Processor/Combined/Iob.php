@@ -72,13 +72,6 @@ class Iob extends Base
             'bankName'      => 'Axis Bank Ltd',
         ];
 
-        $emailIds = [
-            'recon'         => 'finances.recon@razorpay.com, amit.mohanty@razorpay.com',
-            'l1'            => 'settlements@razorpay.com',
-            'l2'            => 'chandrababu.g@razorpay.com',
-            'transaction'   => 'support@razorpay.com'
-        ];
-
         return [
             'bankName'      => self::BANK_NAME,
             'amount'        => $amount,
@@ -88,7 +81,7 @@ class Iob extends Base
             'from'          => $fromDate,
             'to'            => $toDate,
             'account'       => $account,
-            'rzpEmailId'    => $emailIds,
+            'esc_matrix'    => self::ESCALATION_MATRIX,
             'emails'        => $this->gatewayFile->getRecipients(),
         ];
     }

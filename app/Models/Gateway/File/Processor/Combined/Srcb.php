@@ -82,6 +82,7 @@ class Srcb extends Base
             'refundsFile' => $refundsFile,
             'claimsFile'  => $claimsFile,
             'emails'      => $this->gatewayFile->getRecipients(),
+            'esc_matrix' => self::ESCALATION_MATRIX,
             'account'     => $account,
         ];
     }

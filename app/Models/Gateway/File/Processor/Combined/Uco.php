@@ -73,14 +73,6 @@ class Uco extends Base
             'bank'          => 'Axis Bank Limited',
         ];
 
-        $emailIds = [
-            'recon'       => 'finances.recon@razorpay.com, amit.mohanty@razorpay.com',
-            'l1'          => 'settlements@razorpay.com',
-            'l2'          => 'chandrababu.g@razorpay.com',
-            'transaction' => 'support@razorpay.com'
-        ];
-
-
         return [
             'bankName'    => self::BANK_NAME,
             'amount'      => $amount,
@@ -89,7 +81,7 @@ class Uco extends Base
             'date'        => $date,
             'from'        => $fromDate,
             'to'          => $toDate,
-            'rzpEmailId'  => $emailIds,
+            'esc_matrix' => self::ESCALATION_MATRIX,
             'emails'      => $this->gatewayFile->getRecipients(),
             'account'     => $account,
         ];

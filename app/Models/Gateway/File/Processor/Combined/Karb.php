@@ -75,6 +75,7 @@ class Karb extends Base
             'date'        => $date,
             'refundsFile' => $refundsFile,
             'emails'      => $this->gatewayFile->getRecipients(),
+            'esc_matrix'  => self::ESCALATION_MATRIX,
             'account'     => $account,
         ];
     }

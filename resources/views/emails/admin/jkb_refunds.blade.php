@@ -63,13 +63,10 @@
                                 </tbody>
                             </table>
                             <p>
-                                For any transaction related issue, please write to {{{$rzpEmailId['transaction']}}}<br>
                                 For any escalation, please write to <br>
-                                1st Level:- {{{$rzpEmailId['l1']}}}<br>
-                                2nd Level:- {{{$rzpEmailId['l2']}}}<br>
-                            </p>
-                            <p>
-                                In case of any Reconciliation file & fund related issue, please write to – {{{$rzpEmailId['recon']}}}”
+                                1st Level:- {{{$esc_matrix['l1']}}}<br>
+                                2nd Level:- {{{$esc_matrix['l2']}}}<br>
+                                3rd Level:- {{{$esc_matrix['l3']}}}<br>
                             </p>
                         </td>
                     </tr></table>
