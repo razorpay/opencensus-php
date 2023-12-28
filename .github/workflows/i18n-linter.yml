@@ -1,0 +1,193 @@
+name: I18n Linter
+on:
+  pull_request:
+    types:
+      [
+        edited,
+        opened,
+        synchronize,
+        reopened,
+        assigned,
+        labeled,
+        unlabeled
+      ]
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+  APP_NAME: dashboard
+  HOME: /actions-runner/_work
+
+jobs:
+  verify:
+    runs-on: [self-hosted]
+    name: Check Linter Ignore Label
+    outputs:
+      has_ignore_label: ${{ steps.check-ignore-label.outputs.label_found }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+
+      - name: Check for ignore-i18n-linter label
+        id: check-ignore-label
+        run: ./scripts/linter/check-label.sh
+
+  linter:
+    runs-on: [self-hosted]
+    name: I18n Linter
+    needs: verify
+    if: needs.verify.outputs.has_ignore_label == 'false'
+    outputs:
+      has_error: ${{ steps.linter-check.outputs.hardcoding_found }}
+      linter_metrics: ${{ steps.linter-metrics.outputs.i18n_errors_metrics }}
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v9.3
+        with:
+          files: |
+            .(js|jsx|ts|tsx)$
+
+      - name: Use Node v18.12.1
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies with caching
+        uses: ./.github/actions
+        with:
+          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: I18n Rules Check
+        run: |
+          npx eslint \
+          --output-file errors_report.json \
+          --no-error-on-unmatched-pattern \
+          --format json \
+          ${{ steps.changed-files.outputs.all_modified_files }}
+        continue-on-error: true
+
+      - name: Filter I18n Errors
+        run: ./scripts/linter/filter-errors.sh
+
+      - name: Check ESLint Report for i18n Errors
+        id: linter-check
+        run: ./scripts/linter/check-errors.sh
+
+      - name: Calculate i18n Linter Metrics
+        id: linter-metrics
+        run: ./scripts/linter/error-metrics.sh
+
+      - name: Annotate ES lint issues
+        uses: ataylorme/eslint-annotate-action@v2
+        id: eslint-annotator
+        with:
+          report-json: "eslint_report.json"
+          check-name: "Eslint Report"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  slackNotification:
+    name: Slack Notification
+    runs-on: [self-hosted]
+    needs: linter
+    if: failure() && needs.linter.outputs.has_error == 'true'
+    steps:
+      - name: Send a slack alert to I18N team
+        id: slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          # For posting a rich message using Block Kit
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":error: *I18n Violations!* :error:"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":exclamation: *Pull Request:* ${{ github.event.pull_request.title }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":bust_in_silhouette: *Author:* *<${{ github.event.pull_request.user.html_url }}|${{ github.event.pull_request.user.login }}>*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":construction: *Status:* Open"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":fire: *Message:*\n Some errors has been found, requesting a review from @internationalization-fe"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":link: *PR URL:* <${{ github.event.pull_request.html_url || github.event.head_commit.url }}>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*i18n Linter Metrics*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Total Errors:*\n${{ fromJson(needs.linter.outputs.linter_metrics).totalFoundErrors }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Region-Specific Errors:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noRegionSpecificKeywordErrors }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Href Hardcoding Errors:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noHrefHardcodingErrors }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Currency Hardcoding Errors:*\n${{ fromJson(needs.linter.outputs.linter_metrics).noCurrencyHardcodingErrors }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.LINTER_ALERTS_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

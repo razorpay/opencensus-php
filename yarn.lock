@@ -7032,6 +7032,9 @@ eslint-plugin-flowtype@2.50.3:
   dependencies:
     lodash "^4.17.10"
 
+"eslint-plugin-i18n-rules@file:./plugins/i18n-rules":
+  version "1.0.0"
+
 eslint-plugin-import@^2.18.2, eslint-plugin-import@^2.22.0:
   version "2.27.5"
   resolved "https://registry.npmjs.org/eslint-plugin-import/-/eslint-plugin-import-2.27.5.tgz#876a6d03f52608a3e5bb439c2550588e51dd6c65"

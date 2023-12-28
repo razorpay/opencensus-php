@@ -6,6 +6,7 @@ RUN mkdir web
 
 # Copy dependencies files so we can have better caching as these don't change often
 COPY --chown=node:node .npmrc package.json yarn.lock ./
+COPY --chown=node:node ./plugins ./plugins
 
 # Copy dependencies files so we can have better caching as these don't change often
 COPY --chown=node:node ./web/.npmrc ./web/package.json ./web/yarn.lock ./web

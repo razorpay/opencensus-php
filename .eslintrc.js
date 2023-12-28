@@ -8,7 +8,7 @@ module.exports = {
     'plugin:json/recommended-with-comments',
     'plugin:yml/standard',
   ],
-  plugins: ['no-relative-import-paths'],
+  plugins: ['no-relative-import-paths', 'i18n-rules'],
   ignorePatterns: ['.eslintrc.js'],
   rules: {
     'no-shadow': 'off',
@@ -66,6 +66,9 @@ module.exports = {
         ],
       },
     ],
+    'i18n-rules/no-region-specific-keyword': 'warn',
+    'i18n-rules/no-currency-hardcoding': 'warn',
+    'i18n-rules/no-href-hardcoding': 'warn',
   },
   env: {
     browser: true,
@@ -181,6 +184,14 @@ module.exports = {
       files: ['./web/js/merchant_common/views/Reports/**', ''],
       rules: {
         'import/no-restricted-paths': 'off',
+      },
+    },
+    {
+      files: ['./web/**/__test__/**/*.+(js|ts|tsx|jsx)', './web/**/*.test.*'],
+      rules: {
+        'i18n-rules/no-region-specific-keyword': 'off',
+        'i18n-rules/no-currency-hardcoding': 'off',
+        'i18n-rules/no-href-hardcoding': 'off',
       },
     },
   ],
