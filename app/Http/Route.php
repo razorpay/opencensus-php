@@ -3197,6 +3197,7 @@ class Route
         // growth service internal routes
         'growth_pricing_bundle_email'              => ['post',     'growth/pricing_bundle/send_email',         'GrowthInternalController@sendPricingBundleEmail'                         ],
         'growth_pricing_bundle_add_amount_credits' => ['post',     'growth/pricing_bundle/add_amount_credits', 'GrowthInternalController@addAmountCredits'                         ],
+        'growth_pricing_bundle_edit_amount_credits' => ['post',     'growth/pricing_bundle/edit_amount_credits', 'GrowthInternalController@editAmountCredits'                         ],
         'growth_pricing_bundle_create_transaction' => ['post',     'growth/pricing_bundle/internal_transaction', 'GrowthInternalController@createBundleFeeTransaction'],
         'growth_pricing_bundle_assign_pricing_rule' => ['post', 'growth/pricing_bundle/assign_pricing_rule', 'GrowthInternalController@assignPricingRuleToMerchant'],
 
@@ -5527,6 +5528,7 @@ class Route
         // growth routes
         'growth_pricing_bundle_email',
         'growth_pricing_bundle_add_amount_credits',
+        'growth_pricing_bundle_edit_amount_credits',
         'growth_pricing_bundle_create_transaction',
         'growth_pricing_bundle_assign_pricing_rule',
 
@@ -17054,6 +17056,7 @@ class Route
         'growth_internal' => [
             'growth_pricing_bundle_email',
             'growth_pricing_bundle_add_amount_credits',
+            'growth_pricing_bundle_edit_amount_credits',
             'growth_pricing_bundle_create_transaction',
             'growth_pricing_bundle_assign_pricing_rule',
         ],

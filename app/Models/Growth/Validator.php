@@ -22,6 +22,12 @@ class Validator extends Base\Validator
         Constants::EXPIRED_AT => 'required|integer'
     ];
 
+    protected static $editAmountCreditsRules = [
+        Constants::ID => 'required|string|size:14',
+        Constants::MERCHANT_ID => 'required|string|size:14',
+        Constants::AMOUNT => 'required|integer',
+    ];
+
     protected static $createInternalTransactionRules = [
         Constants::MERCHANT_ID   => 'required|string|size:14',
         Constants::TRANSACTOR_ID => 'required|string',

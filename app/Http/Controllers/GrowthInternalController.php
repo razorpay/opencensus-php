@@ -31,6 +31,15 @@ class GrowthInternalController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function editAmountCredits()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editAmountCredits($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createBundleFeeTransaction()
     {
         $input = Request::all();

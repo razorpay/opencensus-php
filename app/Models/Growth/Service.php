@@ -131,6 +131,13 @@ class Service extends Base\Service
         ]);
     }
 
+    public function editAmountCredits(array $input)
+    {
+        (new Validator)->validateInput('edit_amount_credits', $input);
+
+        return (new Credits\Service)->updateCreditsLog($input[Constants::MERCHANT_ID], $input[Constants::ID], ['value' => $input[Constants::AMOUNT]]);
+    }
+
     /**
      * @throws BadRequestException
      */

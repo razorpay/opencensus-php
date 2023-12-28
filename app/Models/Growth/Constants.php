@@ -10,6 +10,7 @@ class Constants
     const MESSAGE     = 'message';
     const RESPONSE    = 'response';
     const MERCHANT_ID = 'merchant_id';
+    const ID          = 'id';
 
     const TRANSACTOR_ID = 'transactor_id';
     const JOURNAL_ID    = 'journal_id';
