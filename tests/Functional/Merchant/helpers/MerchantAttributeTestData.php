@@ -866,7 +866,7 @@ return [
         'response' => [
             'content' => [
                 "status" => "successful",
-                "total_merchant_ids" => 1,
+                "total_merchant_ids" => 0,
             ]
         ],
     ],

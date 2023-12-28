@@ -278,7 +278,7 @@ class Repository extends Base\Repository
 
     public function findAllMerchantsAndDistinctDatedDocumentsAddedInRangeWithDocumentType(string $documentType,string $from, string $to)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->select(Entity::MERCHANT_ID,Entity::DOCUMENT_DATE)
             ->distinct()
             ->where(Entity::DOCUMENT_TYPE, $documentType)
@@ -289,7 +289,7 @@ class Repository extends Base\Repository
 
     public function findLatestDocumentForMerchantIdAndDocumentTypeInRange(string $merchantId, string $documentType, string $from, string $to)
     {
-        return $this->newQueryOnSlave()
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::DOCUMENT_TYPE, $documentType)
             ->whereBetween(Entity::DOCUMENT_DATE, [$from, $to])

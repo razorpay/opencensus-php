@@ -533,16 +533,12 @@ class Service extends Base\Service
 
     public function onboardMerchantOnNetworkBulk($input)
     {
-        $limit = isset($input['limit']) ? $input['limit'] : 1000;
         $merchantIds = [];
 
         $this->app['rzp.mode']=Mode::LIVE;
 
-        if(!isset($input['merchant_ids']))
+        if(isset($input['merchant_ids']))
         {
-            $merchantIds = $this->repo->merchant->fetchMerchantsWithNotOnboardedOnNetworks(Product::PRIMARY,Merchant\Constants::listOfNetworksSupportedOn3ds2,$limit);
-        }
-        else{
             $merchantIds = $input['merchant_ids'];
         }
 
@@ -578,7 +574,7 @@ class Service extends Base\Service
         $this->core->updateOrCreateAttribute($merchantId, Product::BANKING, Group::PRODUCTS_ENABLED, Type::X, 'true');
     }
 
-    public function upsertMerchantDeactivatedAttribute(string $merchantId) 
+    public function upsertMerchantDeactivatedAttribute(string $merchantId)
     {
         $this->core->updateOrCreateAttribute($merchantId, Product::PRIMARY, Group::ACTIVATION, Type::DEACTIVATED_AT, time());
     }
