@@ -20,7 +20,7 @@ const defaultProps = {
       first_submerchant_accept_payments: true,
     },
   },
-  user: { activation_status: 'activated', partner_type: 'reseller' },
+  user: { activation_status: 'activated', partner_type: 'reseller', isPartner: jest.fn() },
   partnerName: 'partner name',
   tracking: {
     trackEvent: jest.fn(),

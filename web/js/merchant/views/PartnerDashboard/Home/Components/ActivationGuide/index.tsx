@@ -1,4 +1,8 @@
 import React from 'react';
+import { History } from 'history';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
 import ProductShimmer from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/shimmer';
 import {
   ActivationStatesT,
@@ -13,11 +17,9 @@ import {
   CommissionStep,
 } from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide/ActivationStepVariants';
 import { withRouter } from 'common/deprecated/withRouter';
-import { History } from 'history';
-import rTracking from 'react-tracking';
-import { compose } from 'redux';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
+import { getItem } from 'common/utils/localStorage';
 
 interface ActivationGuideT {
   fuxStatus: FUXStatusStateT;
@@ -39,8 +41,11 @@ const ActivationGuide = ({
 }: ActivationGuideT): JSX.Element | null => {
   const cdnBase = `${window.cdnBaseUrl}/static/assets/partner-dashboard/fux-cards/activation-guide`;
   const activationTitleIcon = `${cdnBase}/activation-title-icon.svg`;
-
-  const activation_status = user.activation_status as ActivationStatesT;
+  const isPartnerKYCActivated = user?.current && getItem(`is_partner_activated--${user?.current}`);
+  const activation_status =
+    user.isPartner?.('reseller') && isPartnerKYCActivated
+      ? 'activated'
+      : (user.activation_status as ActivationStatesT);
   const isFirstInvoiceGen = fuxStatus.value?.first_commission_payout === true;
   const orgName = org?.business_name || 'Razorpay';
 

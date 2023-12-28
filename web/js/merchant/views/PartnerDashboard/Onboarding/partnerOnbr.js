@@ -143,12 +143,16 @@ class BaseScreen extends React.Component {
       .then(() => {
         this.props.updateSession({ user: userval });
         this.props.history.push('partners');
+
         this.props.closeModal();
 
         // fire tracking events after successful partner signup
         if (url === 'merchant/partner_type') {
           this.trackSignupSuccessEvents();
         }
+
+        // reloading the page because window object was not getting updated
+        window.location.reload();
       })
       .catch(({ errors }) => {
         this.props.closeModal();
