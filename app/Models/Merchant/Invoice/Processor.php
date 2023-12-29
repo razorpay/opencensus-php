@@ -856,7 +856,7 @@ class Processor extends Base\Core
             {
                 $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-                $feeBasedGatingResponse = (new Merchant\Detail\Core())->fetchMerchantGatingDetails($merchant);
+                $feeBasedGatingResponse = (new Merchant\Detail\Core())->fetchMerchantGatingDetailsForInvoicing($merchant);
 
                 if (isset($feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING]) === true)
                 {

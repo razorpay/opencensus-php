@@ -4714,7 +4714,7 @@ class CoreTest extends TestCase
             BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::PROOF,
             BVSEntity::VALIDATION_STATUS => BvsValidationConstants::FAILED,
             BVSEntity::ERROR_CODE => 'NO_PROVIDER_ERROR',
-            BVSEntity::ERROR_DESCRIPTION => 'input document does not match  AadhaarBack document'
+            BVSEntity::ERROR_DESCRIPTION => 'input document does not match AadhaarBack document'
         ]);
         $merchantDetail = $fixtures['merchant_detail'];
         $merchantId = $merchantDetail->getMerchantId();
@@ -12276,6 +12276,277 @@ class CoreTest extends TestCase
         $this->assertEquals(null, $merchantDetails->getActivationStatus());
     }
 
+    public function testFeeBasedGatingEligibilityFetchGatingDetailsInvoice()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $response = (new DetailCore())->fetchMerchantGatingDetailsForInvoicing($merchantDetails->merchant);
+
+        $this->assertEquals(null, $response);
+    }
+
+    public function testFeeBasedGatingEligibilityWhileL2SubmitMerchantInNeedsClarification()
+    {
+
+        $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone', 'canSubmit'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(false);
+        $detailCoreMock->expects($this->exactly(2))
+                       ->method('canSubmit')
+                       ->willReturn(true);
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'submitted'                 => true,
+            'activation_status'         => 'needs_clarification'
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $merchantId = $merchantDetails->getId();
+
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'category'             => '5945',
+        ]);
+        $input = [
+            'activation_form_milestone' => 'L2'
+        ];
+
+        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $this->ba->proxyAuth($merchantDetails->getId());
+
+        $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantDetails->getId()]);
+
+        $this->assertEquals(null, $response['fee_based_gating']['is_eligible']);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $merchantDetails->getActivationStatus());
+    }
+
+    public function testFeeBasedGatingEligibilityWhileL2SubmitMerchantEligibleSplitzOnWebsiteMerchant()
+    {
+
+        Config::set('pgos.proxy.request.mock', true);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(false);
+
+        $detailCoreMock->expects($this->exactly(2))
+                       ->method('canSubmit')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_subcategory'      => null,
+            'business_website'          => 'www.google.com',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        // update activation status will not be called
+        $detailCoreMock->expects($this->never())
+                       ->method('updateActivationStatus')
+                       ->willReturn($merchantDetails);
+
+        $merchantId = $merchantDetails->getId();
+
+        $inputNoWebsite = [
+            "experiment_id" => "MSoDYcZPGfjERB",
+            "id"            => $merchantId
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($inputNoWebsite, $output);
+
+        $inputWebsite = [
+            "experiment_id" => "NFTSZXG1J3mryZ",
+            "id"            => $merchantId
+        ];
+
+        $this->mockSplitzTreatment($inputWebsite, $output);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'category'             => '5945',
+        ]);
+
+        $input = [
+            'activation_form_milestone' => 'L2'
+        ];
+
+        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantDetails->getId()]);
+
+        $this->ba->proxyAuth($merchantDetails->getId());
+
+        $this->assertEquals(true, $response['fee_based_gating']['is_eligible']);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $this->assertEquals(null, $merchantDetails->getActivationStatus());
+    }
+
+    public function testFeeBasedGatingEligibilityWhileL2SubmitMerchantEligibleSplitzOffWebsiteMerchant()
+    {
+        $this->app['rzp.mode'] = 'test';
+
+        $feeBasedGatingResponse = [
+            "fee_based_gating" => [
+                "is_eligible"    => false,
+                "order_id"       => DetailConstant::DEFAULT_ORDER_ID,
+                "payment_status" => "captured",
+                "invoice_sent"   => false
+            ]
+        ];
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone', 'canSubmit', 'fetchMerchantGatingDetails'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(false);
+
+        $detailCoreMock->expects($this->exactly(2))
+                       ->method('canSubmit')
+                       ->willReturn(true);
+
+        $detailCoreMock->expects($this->once())
+                       ->method('fetchMerchantGatingDetails')
+                       ->willReturn($feeBasedGatingResponse);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_subcategory'      => null,
+            'business_website'          => 'www.google.com',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $merchantId = $merchantDetails->getId();
+
+        $inputNoWebsite = [
+            "experiment_id" => "MSoDYcZPGfjERB",
+            "id"            => $merchantId
+        ];
+
+        $outputNoWebsite = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($inputNoWebsite, $outputNoWebsite);
+
+        $inputWebsite = [
+            "experiment_id" => "NFTSZXG1J3mryZ",
+            "id"            => $merchantId
+        ];
+
+        $outputWebsite = [
+            "response" => [
+                "variant" => [
+                    "name" => 'false',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($inputWebsite, $outputWebsite);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'category'             => '5945',
+        ]);
+
+        $input = [
+            'activation_form_milestone' => 'L2'
+        ];
+
+        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantDetails->getId()]);
+
+        $this->ba->proxyAuth($merchantDetails->getId());
+
+        $this->assertEquals(false, $response['fee_based_gating']['is_eligible']);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $this->assertEquals(Status::UNDER_REVIEW, $merchantDetails->getActivationStatus());
+    }
+
     public function testFeeBasedGatingEligibilityWhileL2SubmitMerchantEligibleSplitzOnPhantomOnboarding()
     {
         Mail::fake();
@@ -12661,6 +12932,302 @@ class CoreTest extends TestCase
         (new DetailCore())->updateActivationStatus($merchantDetails->merchant,$activationStatusData, $merchantDetails->merchant);
 
         $this->assertEquals(null, $merchantDetails->getActivationStatus());
+    }
+
+    public function testFeeBasedGatingEligibilityFetchGatingDetailsSplitzWebsiteOn()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_website'          => 'www.google.com',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $response = (new DetailCore())->fetchMerchantGatingDetails($merchantDetails->merchant);
+
+        $this->assertNotNull($response);
+    }
+
+    public function testFeeBasedGatingEligibilityFetchGatingDetailsSplitzNoWebsiteOn()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_website'          => 'www.google.com',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $response = (new DetailCore())->fetchMerchantGatingDetails($merchantDetails->merchant);
+
+        $this->assertNotNull($response);
+    }
+
+    public function testFeeBasedGatingEligibilityFetchGatingDetailsSplitzWebsiteOff()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_website'          => 'www.google.com',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $input = [
+            "experiment_id" => "MSoDYcZPGfjERB",
+            "id"            => $merchantDetails->getId()
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            "experiment_id" => "NFTSZXG1J3mryZ",
+            "id"            => $merchantDetails->getId()
+        ];
+
+        $outputWebsite = [
+            "response" => [
+                "variant" => [
+                    "name" => 'false',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $outputWebsite);
+
+        $response = (new DetailCore())->fetchMerchantGatingDetails($merchantDetails->merchant);
+
+        $this->assertEquals(null, $response);
+    }
+
+    public function testFeeBasedGatingEligibilityFetchGatingDetailsSplitzNoWebsiteOff()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_website'          => 'www.google.com',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetails->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $input = [
+            "experiment_id" => "MSoDYcZPGfjERB",
+            "id"            => $merchantDetails->getId()
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'false',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $response = (new DetailCore())->fetchMerchantGatingDetails($merchantDetails->merchant);
+
+        $this->assertEquals(null, $response);
+    }
+
+    public function testFeeBasedGatingEligibilityActivationStatusUpdateToUnderReviewWebsiteMerchant()
+    {
+        $this->app['rzp.mode'] = 'test';
+
+        $feeBasedGatingResponse = [
+            "fee_based_gating" => [
+                "is_eligible"    => false,
+                "order_id"       => DetailConstant::DEFAULT_ORDER_ID,
+                "payment_status" => "captured",
+                "invoice_sent"   => false
+            ]
+        ];
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['fetchMerchantGatingDetails'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->once())
+                       ->method('fetchMerchantGatingDetails')
+                       ->willReturn($feeBasedGatingResponse);
+
+        // partnership business type
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_website'          => 'www.google.com',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+        ];
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant,$activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantDetails->getId()]);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $merchantDetails->getActivationStatus());
+    }
+
+    public function testFeeBasedGatingEligibilityActivationStatusUpdateToUnderReviewSplitzOff()
+    {
+        $this->app['rzp.mode'] = 'test';
+
+        // partnership business type
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_website'          => 'www.google.com',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+        ];
+
+        $input = [
+            "experiment_id" => "MSoDYcZPGfjERB",
+            "id"            => $merchantDetails->getId()
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'false',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        (new DetailCore())->updateActivationStatus($merchantDetails->merchant,$activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantDetails->getId()]);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $merchantDetails->getActivationStatus());
+    }
+
+    public function testFeeBasedGatingEligibilityActivationStatusUpdateToUnderReviewNoWebsiteMerchant()
+    {
+        $this->app['rzp.mode'] = 'test';
+
+        $feeBasedGatingResponse = [
+            "fee_based_gating" => [
+                "is_eligible"    => false,
+                "order_id"       => DetailConstant::DEFAULT_ORDER_ID,
+                "payment_status" => "captured",
+                "invoice_sent"   => false
+            ]
+        ];
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['fetchMerchantGatingDetails'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->once())
+                       ->method('fetchMerchantGatingDetails')
+                       ->willReturn($feeBasedGatingResponse);
+
+        // partnership business type
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'business_category'         => 'others',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => null,
+            'submitted'                 => true,
+        ]);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+        ];
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant,$activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantDetails->getId()]);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $merchantDetails->getActivationStatus());
     }
 
     public function testisSubCategoryExcludedForAd_And_Marketing_SubcategoryWithRegistedBusinessType()

@@ -144,6 +144,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantBusinessDetailEntityMock->shouldReceive('setBlacklistedProductsCategory');
 
+        $this->merchantBusinessDetailEntityMock->shouldReceive('getBusinessDetailsForMerchantId')->andReturn();;
+
         $this->merchantBusinessDetailEntityMock->shouldReceive('getBlacklistedProductsCategory');
 
         $this->merchantEntityMock->shouldReceive('isSignupCampaignAnyOf')->andReturn(false);
@@ -151,6 +153,7 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailValidator->shouldReceive('validateBusinessSubcategoryForCategoryForEasyOnboarding');
 
         $this->merchantDetailEntityMock->shouldReceive('getBankDetailsVerificationStatus')->andReturn();
+        $this->merchantDetailEntityMock->shouldReceive('getActivationStatus')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
         $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
@@ -200,12 +203,15 @@ class DetailServiceTest extends TestCase
 
         $this->merchantBusinessDetailEntityMock->shouldReceive('getBlacklistedProductsCategory');
 
+        $this->merchantBusinessDetailEntityMock->shouldReceive('getBusinessDetailsForMerchantId')->andReturn();
+
         $this->merchantEntityMock->shouldReceive('isSignupCampaignAnyOf')->andReturn(false);
 
         $this->merchantDetailValidator->shouldReceive('validateBusinessSubcategoryForCategoryForEasyOnboarding');
 
         $this->merchantDetailEntityMock->shouldReceive('getBankDetailsVerificationStatus')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
+        $this->merchantDetailEntityMock->shouldReceive('getActivationStatus')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('isLocked')->andReturn();
