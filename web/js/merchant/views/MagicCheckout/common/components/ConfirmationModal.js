@@ -22,7 +22,7 @@ const ConfirmationModal = (props) => {
     onAffirm();
   };
 
-  const handleClick = () => (typeof onAbort === 'function' ? onAbort : closeModal);
+  const handleClick = () => (typeof onAbort === 'function' ? onAbort() : closeModal());
 
   return (
     <div className="confirmation-modal">

@@ -88,15 +88,12 @@ const CODSettingsTab = ({
     const enableEngineConfigPromise = (params) =>
       new Promise((resolve) => {
         if (fee_rules.length && zones.length) {
-          updateSettings(params, false);
+          setEditMode(true);
           updateEngineConfig(params);
           resolve();
         } else {
           if (rcodEnabled) {
             // in rcod, we don't let user add zones
-            if (fee_rules.length) {
-              updateSettings(params, false);
-            }
             params.rcod = true;
           }
           updateEngineConfig(params);
