@@ -67,7 +67,8 @@ class SalesforceClientTest extends TestCase
             'merchant_id'    => $merchant->getId(),
             'business_name'  => 'Dummy Business Name',
             'contact_name'   => 'Dummy contact Name',
-            'contact_mobile' => 'Dummy contact mobile'
+            'contact_mobile' => 'Dummy contact mobile',
+            'gstin'          => 'Dummy gstin number'
         ]);
 
         $this->fixtures->create('merchant_attribute',
@@ -82,6 +83,8 @@ class SalesforceClientTest extends TestCase
         $payload = $this->salesforceClient->payloadGenerationForInterestOfPrimaryMerchantInBanking($merchant);
 
         $this->assertEquals('Dummycontactmobile', $payload[0]['contact_mobile']);
+
+        $this->assertEquals('Dummy gstin number', $payload[0]['GSTIN']);
 
         $this->assertBooleanValuesAsInt($payload);
     }

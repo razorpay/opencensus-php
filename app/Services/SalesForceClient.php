@@ -477,11 +477,22 @@ class SalesForceClient
             ]
         ];
 
-        $contact = $merchant->merchantDetail->getContactMobile();
+        /** @var Merchant\Detail\Entity $merchantDetail */
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $contact = $merchantDetail->getContactMobile();
+
+        $gstin = $merchantDetail->getGstin();
 
         if (empty($contact) === false)
         {
             $payLoad[0]['contact_mobile'] = $contact;
+        }
+
+        if (!empty($gstin))
+        {
+            $payLoad[0]['GSTIN'] = $gstin;
         }
 
         return $payLoad;
