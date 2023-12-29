@@ -1,4 +1,7 @@
 import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+
+import { openModal } from 'merchant_common/reducers/modals';
 import {
   Button,
   ReportModal,
@@ -9,16 +12,19 @@ import {
   ActionListItem,
   DownloadIcon,
 } from 'merchant_common/views/Reports/components';
-import { ControlPanel, DownloadsWrapper, DropdownWrapper } from './style';
-import { DownloadsPropsType } from './types';
-import { DownloadsTable } from './components/DownloadsTable';
-import { connect } from 'react-redux';
-import { downloadsFilterDropdown } from 'merchant_common/views/Reports/features/Downloads/constants/dropdownOptions';
-import { handleLogsFilter } from 'merchant_common/views/Reports/redux/reducer';
-import { openModal } from 'merchant_common/reducers/modals';
-import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
-import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { trackDownloadsSection } from 'merchant_common/views/Reports/configs/analytics.config';
+import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
+import { downloadsFilterDropdown } from 'merchant_common/views/Reports/features/Downloads/constants/dropdownOptions';
+import { useTheme } from 'merchant_common/views/Reports/hooks';
+import { handleLogsFilter } from 'merchant_common/views/Reports/redux/reducer';
+
+import { DownloadsTable } from 'merchant_common/views/Reports/features/Downloads/components/DownloadsTable';
+import {
+  ControlPanel,
+  DownloadsWrapper,
+  DropdownWrapper,
+} from 'merchant_common/views/Reports/features/Downloads/style';
+import { DownloadsPropsType } from 'merchant_common/views/Reports/features/Downloads/types';
 
 const mapStateToProps = ({ reportsCore }, { dashboardType }) => {
   const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
@@ -46,6 +52,7 @@ const DownloadsSection = connect(
     logTableFilterType,
     openModal,
     handleLogsTableFilterChange,
+    headers,
   }: DownloadsPropsType): JSX.Element => {
     const { theme } = useTheme();
 
@@ -57,8 +64,9 @@ const DownloadsSection = connect(
             params={{
               startPollOnSubmit: false,
             }}
-            type={'download_report'}
+            type="download_report"
             dashboardType={dashboardType}
+            headers={headers}
           />
         ),
         size: 'custom',
@@ -126,7 +134,7 @@ const DownloadsSection = connect(
             </Dropdown>
           </DropdownWrapper>
         </ControlPanel>
-        <DownloadsTable />
+        <DownloadsTable headers={headers} />
       </DownloadsWrapper>
     );
   },

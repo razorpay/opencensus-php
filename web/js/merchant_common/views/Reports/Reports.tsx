@@ -1,27 +1,27 @@
-import DashboardBanner from 'common/ui/DashboardBanner';
 import React, { useEffect, useMemo } from 'react';
-import ShowWhen from 'merchant/components/ShowWhen';
-import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
-import { Downloads } from './features/Downloads';
-import { OverView } from './features/Overview';
-import { ReportSectionProps } from './types';
-import { Tabs } from './components/Tabs';
 import { connect } from 'react-redux';
-import { getConfigs } from './api/overview';
+import { withRouter } from 'common/deprecated/withRouter';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import { getItem } from 'common/utils/localStorage';
 import { pickProps } from 'common/utils/rzp-utils';
-import { withRouter } from 'common/deprecated/withRouter';
+import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { Tabs } from 'merchant_common/views/Reports/components/Tabs';
+import { getReportsDashboardConfig } from 'merchant_common/views/Reports/configs/refDashboard.config';
+import { Downloads } from 'merchant_common/views/Reports/features/Downloads';
+import { OverView } from 'merchant_common/views/Reports/features/Overview';
+import { Schedules } from 'merchant_common/views/Reports/features/Schedules';
+import { useReportsSplitzExperiments } from 'merchant_common/views/Reports/hooks';
+import { useFetchReportingConfig } from 'merchant_common/views/Reports/hooks/useFetchReportingConfig';
 import {
   fetchReportsConfigsFailed,
   fetchReportsConfigsSuccess,
   handleOverviewLoading,
 } from './redux/reducer';
-import { getReportsDashboardConfig } from './configs/refDashboard.config';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
-import { trackReportsSection } from './configs/analytics.config';
-import { Schedules } from './features/Schedules';
-import { useReportsSplitzExperiments } from './hooks';
+import { ReportSectionProps } from './types';
 
 // Features Of Reports
 const getReportsFeatures = (isSchedulesEnabled: boolean) => {
@@ -84,48 +84,25 @@ export const ReportsSection = connect(
 )(
   ({
     user,
-    allReportConfigs,
     refDashboardConfig: { basePath, headers, parseConfigs },
     handleOverviewLoading,
     fetchReportsConfigsSuccess,
     fetchReportsConfigsFailed,
-    showNotification,
     fetchAccounts,
     dashboardType,
   }: ReportSectionProps): JSX.Element => {
+    useFetchReportingConfig({
+      handleOverviewLoading,
+      headers,
+      fetchReportsConfigsSuccess,
+      fetchReportsConfigsFailed,
+      dashboardType,
+      parseConfigs,
+    });
     const { isSchedulesEnabled } = useReportsSplitzExperiments();
     const features = useMemo(() => getReportsFeatures(isSchedulesEnabled), []);
 
-    const handleAllConfigsFetch = async (validationCheck = true) => {
-      try {
-        if (validationCheck) {
-          handleOverviewLoading({
-            key: 'allConfigs',
-            state: true,
-          });
-          const configs = await getConfigs(headers);
-          if (configs?.data?.items) {
-            fetchReportsConfigsSuccess({
-              configs: parseConfigs(configs.data.items),
-            });
-          } else {
-            trackReportsSection({
-              actionName: 'Configs Fetch Failed',
-              dashboardType,
-            });
-          }
-        }
-      } catch (err) {
-        showNotification({
-          type: 'error',
-          message: 'Unable to fetch reports at this moment, please try again later.',
-        });
-        fetchReportsConfigsFailed();
-      }
-    };
-
     useEffect(() => {
-      handleAllConfigsFetch(!allReportConfigs.length);
       fetchAccounts();
     }, []);
 

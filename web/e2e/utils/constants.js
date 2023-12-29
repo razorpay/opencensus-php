@@ -7,8 +7,6 @@ const StorageStatePath = {
   TRANSACTIONS_LOGIN_STATE: `${BASE_PATH}/desktop-transactions-login.json`,
   SETTLEMENTS_LOGIN_STATE: `${BASE_PATH}/desktop-settlement-login.json`,
   INTERNATIONAL_LOGIN_STATE: `${BASE_PATH}/desktop-international-login.json`,
-  MOBILE_TEST_LOGIN_STATE: `${BASE_PATH}/mobile-test-mode-login.json`,
-  MOBILE_LIVE_LOGIN_STATE: `${BASE_PATH}/mobile-live-mode-login.json`,
   ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
   CAPITAL_RESELLER_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/capital-reseller-partner-desktop-test-mode-login.json`,
   MAGIC_CHECKOUT_STATE: `${BASE_PATH}/magic-checkout.json`,
@@ -18,6 +16,7 @@ const StorageStatePath = {
   OPTIMIZER_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-login.json`,
   OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
   INTERNATIONAL_ACTIVATION_STATE: `${BASE_PATH}/international-activation.json`,
+  WALLET_REPORTS_LOGIN_STATE: `${BASE_PATH}/mobile-wallet-reports-login.json`,
 };
 
 const routes = {
@@ -61,6 +60,7 @@ const routes = {
   WHATSAPP_ACCOUNT_SETUP: 'app/payments-and-refunds-settings/whatsapp-account-setup',
   PAYMENT_METRICS: '/app/payment-metrics',
   INTERNATIONAL_PAYMENTS: '/app/payment-methods/international-payments',
+  WALLET_REPORTS: '/app/wallet/reports',
 };
 
 const EmailCredentials = [
@@ -140,18 +140,9 @@ const EmailCredentials = [
 
 const MobileCredentials = [
   {
-    type: 'mobile-test-mode-login.json',
-    username: ENV.MOBILE_TEST_MODE_USERNAME,
-    password: ENV.MOBILE_TEST_MODE_PASSWORD,
-    mobile: ENV.MOBILE_TEST_MODE_MOBILE,
-    storagePath: StorageStatePath.MOBILE_TEST_LOGIN_STATE,
-  },
-  {
-    type: 'mobile-live-mode-login.json',
-    username: ENV.MOBILE_LIVE_MODE_USERNAME,
-    password: ENV.MOBILE_LIVE_MODE_PASSWORD,
-    mobile: ENV.MOBILE_LIVE_MODE_MOBILE,
-    storagePath: StorageStatePath.MOBILE_LIVE_LOGIN_STATE,
+    type: 'mobile-wallet-reports-login.json',
+    mobile: ENV.MOBILE_WALLET_REPORTS_MOBILE,
+    storagePath: StorageStatePath.WALLET_REPORTS_LOGIN_STATE,
   },
 ];
 

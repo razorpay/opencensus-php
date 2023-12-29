@@ -31,7 +31,8 @@ export interface DownloadReportModalPropsType {
   showNotification: ShowNotificationType;
   startLogsPoll: () => void;
   stopLogsPoll: () => void;
-  headers: Record<string, string>;
+  headers?: Record<string, string>;
+  defaultHeaders: Record<string, string>;
   generatedBy: string;
   customConfigs?: CustomConfigType[];
   sessionMode?: string;

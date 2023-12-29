@@ -149,6 +149,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: [/\/wallet\/(.*)/],
+      abExperiments: [
+        {
+          uniqueHashKey: 'wallet_reports_experiment',
+          experimentId: {
+            beta: 'NEv2F6lXjGQ6rv',
+            production: 'NEv4UKJo6oOzGK',
+          },
+          defaultVariant: {
+            name: 'variant_off',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: [`${PAYMENTS}/*`, `${REFUNDS}/*`],
       abExperiments: [
         {

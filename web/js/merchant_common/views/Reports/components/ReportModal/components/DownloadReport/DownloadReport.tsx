@@ -97,6 +97,7 @@ export const DownloadReportModal = ({
   startLogsPoll,
   stopLogsPoll,
   headers,
+  defaultHeaders,
   generatedBy,
   dashboardType,
   parsePayloadBeforeSubmit,
@@ -216,7 +217,7 @@ export const DownloadReportModal = ({
 
       downloadNewReport({
         generatedBy,
-        headers,
+        headers: headers ?? defaultHeaders,
         payload: parsedPayload,
         accountId:
           selectedConfig &&

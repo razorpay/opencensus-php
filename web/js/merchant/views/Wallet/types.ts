@@ -1,3 +1,5 @@
+import { BaseConfigType } from 'merchant_common/views/Reports/types/config';
+
 import type { ModeT } from 'common/services/mode';
 
 enum AccountStatus {
@@ -186,4 +188,83 @@ export interface AppliedFilters {
     from?: number;
     to?: number;
   };
+}
+
+export interface ReportConfig {
+  id: string;
+  consumer: string;
+  report_type: string;
+  type: string;
+  scheduled: boolean;
+  name: string;
+  description: string;
+  template: [];
+  sftp_job_name: null;
+  pipeline_params: null;
+  emails: [];
+  created_by: string;
+  status: null;
+  source: string;
+  created_at: number;
+  updated_at: number;
+  feature_names: [];
+  query_meta: null;
+  type_title: string;
+}
+
+export interface WalletReportLog {
+  id: string;
+  consumer: string;
+  config_id: string;
+  file_id: string | null;
+  mode: string;
+  status: string;
+  generated_by: string;
+  generated_at: number;
+  emails: string | null;
+  send_email: boolean;
+  template_overrides: {
+    filters: {
+      paymentlinksv2: {
+        mode: {
+          op: string;
+          values: Array<string>;
+        };
+      };
+    };
+    file_meta: {
+      filename: string;
+      delimiter: string;
+      extension: string;
+    };
+  };
+  start_time: number;
+  end_time: number;
+  schedule_id: string | null;
+  created_at: number;
+  updated_at: number;
+  is_already_present: null;
+  report_type: string;
+  name: string;
+  extension: string;
+  all_emails: [];
+  batch_id: null;
+  sub_merchant_ids: null;
+}
+
+export interface WalletReportLogsResponse {
+  entity: string;
+  count: number;
+  items: Array<WalletReportLog>;
+}
+
+export interface WalletReportLogsParams {
+  mode: ModeT;
+}
+
+export interface ReportsProps {
+  handleOverviewLoading: (x: { key: string; state: boolean }) => void;
+  fetchReportsConfigsSuccess: (x: { configs: BaseConfigType[] }) => void;
+  fetchReportsConfigsFailed: () => void;
+  showNotification: (x: unknown) => void;
 }

@@ -72,10 +72,11 @@ const DownloadsTableComponent = connect(
     dashboardType,
     showNotification,
     startLogsPoll,
+    headers,
   }: DownloadsTablePropsType): JSX.Element => {
     // will hold abort fn of presently ongoing poll
     const abortPresentlyActivePoll = useRef<any>();
-    const { headers } = getReportsDashboardConfig(dashboardType);
+    const { headers: defaultHeaders } = getReportsDashboardConfig(dashboardType);
 
     useEffect(() => {
       // abort present poll.
@@ -90,7 +91,7 @@ const DownloadsTableComponent = connect(
             filter,
             page: pageTrack,
           },
-          headers,
+          headers: headers ?? defaultHeaders,
           pollResSuccessCallback: (data) => {
             if (data) {
               const { total_count, items } = data;

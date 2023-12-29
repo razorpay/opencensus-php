@@ -24,6 +24,7 @@ export interface BaseReportModalPropsType {
   } & ConfirmModalParams;
   dashboardType: DashboardType;
   ariaLabelBy?: string;
+  headers?: Record<string, string>;
 }
 
 export interface ModalProps extends BaseReportModalPropsType {

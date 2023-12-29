@@ -37,12 +37,13 @@ const Modal = connect(
     closeModal,
     dashboardType,
     ariaLabelBy,
+    headers,
   }: ModalProps): JSX.Element => {
     const commonProps = {
       dashboardType,
       params,
+      headers,
     };
-
     const onClose = () => {
       onCloseCallback();
       closeModal();

@@ -32,7 +32,7 @@ const mapStateToProps = ({ reportsCore, accounts, session }, { dashboardType, i1
   const generatedBy = user.current;
 
   return {
-    headers,
+    defaultHeaders: headers,
     allReportConfigs: allConfigs.data,
     availableEmails,
     availableAccounts,

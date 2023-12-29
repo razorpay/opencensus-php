@@ -88,3 +88,13 @@ export interface QueryStringParams {
   skip?: number;
   count?: number;
 }
+
+export interface fetchReportingConfigProps {
+  headers: Record<string, string>;
+  allReportConfigs?: BaseConfigType[];
+  dashboardType: DashboardType;
+  handleOverviewLoading: (x: { key: string; state: boolean }) => void;
+  fetchReportsConfigsSuccess: (x: { configs: BaseConfigType[] }) => void;
+  fetchReportsConfigsFailed: () => void;
+  parseConfigs?: (x: BaseConfigType[]) => BaseConfigType[];
+}

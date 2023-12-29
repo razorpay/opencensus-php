@@ -7,8 +7,13 @@ export const walletPaths = {
   funds: '/wallet/funds',
   payments: '/wallet/payments',
   loads: '/wallet/loads',
+  reports: '/wallet/reports',
 };
 
 export const WALLET_BASE_PATH = 'wallet/proxy/issuing';
 
 export const TIME_RANGE_FILTER = ['from', 'to'];
+
+export const walletReportHeaders = {
+  'X-Report-Type': 'wallet',
+};

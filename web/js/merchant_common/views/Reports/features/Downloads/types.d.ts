@@ -21,6 +21,7 @@ export interface DownloadsPropsType {
   handleLogsTableFilterChange: (x: string) => void;
   dashboardType: DashboardType;
   isAllConfigLoaded: boolean;
+  headers: Record<string, string>;
 }
 export interface DownloadsTablePropsType {
   isLogsLoaded: boolean;
@@ -37,4 +38,5 @@ export interface DownloadsTablePropsType {
   totalCount: number;
   dashboardType: DashboardType;
   showNotification: ShowNotificationType;
+  headers: Record<string, string>;
 }
