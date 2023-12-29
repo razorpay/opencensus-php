@@ -3,7 +3,6 @@
 namespace Functional\QrCode;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Pricing\Fee;
@@ -706,5 +705,32 @@ class UpiMindgateQRCodeTest extends TestCase
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
         $this->assertEquals('captured', $response['payment']['status']);
     }
+
+    public function testSingleUseQrCodeWithCloseByForEzetap()
+    {
+        $days =1;
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::HDFC_QR_EXPIRY => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+        $this->fixtures->on('live')->merchant->addFeatures([FeatureConstants::CLOSE_QR_ON_DEMAND], 'LiveAccountMer');
+        $qrCode = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                'close_by'       => Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60),
+            ],
+            'live',
+            'LiveAccountMer',
+            [
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+        $this->runEntityAssertionsForDedicatedTerminalQr();
+    }
+
 
 }

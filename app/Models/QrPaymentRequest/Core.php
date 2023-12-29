@@ -92,9 +92,18 @@ class Core extends Base\Core
 
         $terminal = (new Generator())->fetchDedicatedTerminalFromQrString($qrCode);
 
+        if ($terminal->getGateway() === \RZP\Models\Payment\Gateway::UPI_MINDGATE)
+        {
+            $terminalArray = $terminal->toArrayWithPassword();
+        }
+        else
+        {
+            $terminalArray = $terminal->toArray();
+        }
+
         $input = [
             EntityConstants::QR_CODE  => $qrCode->toArray(),
-            EntityConstants::TERMINAL => $terminal->toArray(),
+            EntityConstants::TERMINAL => $terminalArray,
             EntityConstants::MERCHANT => $qrCode->merchant,
         ];
 

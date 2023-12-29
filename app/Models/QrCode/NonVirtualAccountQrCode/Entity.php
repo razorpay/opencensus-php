@@ -416,6 +416,11 @@ class Entity extends QrCode\Entity
 
                 $vpa = (explode("@", $parsedQrString['pa']));
 
+                if(isset($vpa[1]) === true && ($vpa[1] === 'hdfcbank'))
+                {
+                    return 'upi_mindgate';
+                }
+
                 return 'upi_' . $vpa[1];
             }
             else if ($this->getProvider() === Provider::BHARAT_QR)

@@ -5,7 +5,7 @@ namespace RZP\Gateway\Upi\Mindgate;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Monolog\Logger;
-
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Mode;
@@ -35,6 +35,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Merchant\Repository as MerchantRepository;
+use RZP\Gateway\Upi\Base\Constants;
 
 class Gateway extends Base\Gateway
 {
@@ -2470,6 +2471,75 @@ class Gateway extends Base\Gateway
           }
       }
 
+    }
+    public function getQrPaymentStatus($input)
+    {
+        $request = [
+            EntityConstants::PAYMENT => [
+                'gateway'  => $this->gateway,
+                'id'       => $input[EntityConstants::QR_CODE]['id'] . QrCode\Constants::QR_CODE_V2_TR_SUFFIX,
+                'amount'   => $input[EntityConstants::QR_CODE]['amount'],
+                'vpa'      => $input[EntityConstants::TERMINAL]['gateway_merchant_id2'],
+                'currency' => 'INR'
+            ],
+            EntityConstants::TERMINAL => $input[EntityConstants::TERMINAL],
+            EntityConstants::MERCHANT => [
+                'id' => $input[EntityConstants::MERCHANT]['id'],
+            ],
+            EntityConstants::UPI => [
+                'merchant_reference' =>$input[EntityConstants::QR_CODE]['id']
+            ],
+            Constants::QR_STATUS_CHECK => true
+        ];
+        $result = $this->upiSendGatewayRequest($request,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            Action::VERIFY
+        );
+
+        if ((isset($result['data']['meta']['response']['plain']) === true) and
+            (isset($result['data']['meta']['response']['plain']['status']) === true) and
+            ($result['data']['meta']['response']['plain']['status'] === Status::SUCCESS))
+        {
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_MOZART_RESPONSE, [
+                'gateway_response' => $result,
+                'gateway'          => $this->gateway
+            ]);
+
+            $response = [
+                'callbackData' => $this->parseMozartResp($result['data']),
+                'gateway'      => $this->gateway
+            ];
+
+            return $response;
+        }
+        else
+        {
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_INVALID_MOZART_RESPONSE, [
+                'response' => $result,
+                'gateway'  => $this->gateway
+            ]);
+
+            return null;
+        }
+    }
+
+    public function parseMozartResp($data)
+    {
+        $callbackData = [
+            'data' => [
+                    EntityConstants::TERMINAL => $data[EntityConstants::TERMINAL],
+                    EntityConstants::UPI      => $data[EntityConstants::UPI],
+                    EntityConstants::PAYMENT  => $data[EntityConstants::PAYMENT],
+                    'version'                 => 'v2',
+                    'status'                  => 'payment_successful'
+            ]
+        ];
+
+        $callbackData[Constants::QR_STATUS_CHECK] = true;
+        $callbackData['success'] = true;
+        $callbackData['error'] = null;
+
+        return $callbackData;
     }
 
     /**

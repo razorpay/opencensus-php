@@ -603,6 +603,65 @@ trait NonVirtualAccountQrCodeTrait
 
         return $content;
     }
+    public function getMockedUpiMindgateQrStatusCheckResponse($status, $qrCodeId, $rrn, $pgMerchantId, $gatewayPaymentId, $amount, $vpa)
+    {
+        if ($status === 'U30')
+        {
+            $statusMsg = 'FAILED';
+        }
+        elseif ($status === '01')
+        {
+            $statusMsg = 'PENDING';
+        }
+        elseif($status === '00')
+        {
+            $statusMsg = 'SUCCESS';
+        }
+        else
+        {
+            $statusMsg = 'FAILURE';
+        }
+        $content = [
+            'data'    => [
+                '_raw'     => 'raw_content',
+                'meta'     => [
+                    'request'  => [
+                        'content' => 'encrypted_request'
+                    ],
+                    'response' => [
+                        'plain' => [
+                              'status' => $statusMsg,
+                        ],
+                    ]
+                ],
+                'payment'  => [
+                    'amount_authorized'  => $amount,
+                    'currency'           => 'INR',
+                    'payer_account_type' => 'bank_account'
+                ],
+                'status'   => 'payment_successful',
+                'terminal' => [
+                    'gateway' => 'upi_mindgate',
+                    'gateway_merchant_id' => $pgMerchantId
+                ],
+                'upi'      => [
+                    'gateway' => 'upi_mindgate',
+                    'gateway_amount'     => $amount,
+                    'gateway_payment_id' => $gatewayPaymentId,
+                    'gateway_status_code'=> $status,
+                    'status_code'=> $status,
+                    'merchant_reference' => str_after($qrCodeId, 'qr_') . 'qrv2',
+                    'npci_reference_id'  => $rrn,
+                    'vpa'                => $vpa
+                ],
+                'version'  => 'v2'
+            ],
+            'error'   => null,
+            'success' => true
+        ];
+
+        return $content;
+    }
 
     public function runEntityAssertions($response)
     {
@@ -650,6 +709,26 @@ trait NonVirtualAccountQrCodeTrait
                     case "multiple_use":
                     {
                         $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
+                        $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+                        break;
+                    }
+                }
+                break;
+            }
+            case Gateway::UPI_MINDGATE:
+            {
+                $vpa = $terminal->getGatewayMerchantId2();
+                switch ($qrCodeEntity['usage'])
+                {
+                    case "single_use":
+                    {
+                        $tr = substr($response['id'], 3, 14) . 'qrv2';
+                        $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+                        break;
+                    }
+                    case "multiple_use":
+                    {
+                        $tr = 'STQ' . substr($response['id'], 3, 14) . 'qrv2';
                         $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
                         break;
                     }

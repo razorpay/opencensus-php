@@ -85,7 +85,8 @@ class Service extends QrCode\Service
         if (($qrCode->getUsageType() === UsageType::SINGLE_USE) and
             ($qrCode->getProvider() === QrCode\Type::UPI_QR) and
             (($gateway === \RZP\Models\Payment\Gateway::UPI_ICICI) or
-             ($gateway === \RZP\Models\Payment\Gateway::UPI_YESBANK)) and
+             ($gateway === \RZP\Models\Payment\Gateway::UPI_YESBANK) or
+             ($gateway === \RZP\Models\Payment\Gateway::UPI_MINDGATE)) and
             ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->getMerchantId()) === true))
         {
             $this->triggerQrStatusCheckPostCreate($qrCode);
@@ -789,7 +790,9 @@ class Service extends QrCode\Service
         }
 
         // If it has not yet been 3 minutes between QR Code create and now, don't dispatch for status check
-        if (abs((Carbon::now(Timezone::IST)->timestamp) - $qrCode->getCreatedAt()) <= 180)
+        // for ezetap Request, we will skip below restriction, as ezetap will call fetch api after around 30 sec of QR Generation
+        if (($qrCode->getRequestSource() !== RequestSource::EZETAP) and
+            (abs((Carbon::now(Timezone::IST)->timestamp) - $qrCode->getCreatedAt()) <= 180))
         {
             $this->trace->info(TraceCode::QR_CODE_STATUS_CHECK_TIME_TOO_EARLY, ['id' => $id]);
             return;
@@ -798,7 +801,8 @@ class Service extends QrCode\Service
         if (($qrCode->getUsageType() === UsageType::SINGLE_USE) and
             ($qrCode->getProvider() === QrCode\Type::UPI_QR) and
             (($qrCode->getGatewayFromQrString() === \RZP\Models\Payment\Gateway::UPI_ICICI) or
-             ($qrCode->getGatewayFromQrString() === \RZP\Models\Payment\Gateway::UPI_YESBANK)) and
+             ($qrCode->getGatewayFromQrString() === \RZP\Models\Payment\Gateway::UPI_YESBANK) or
+             ($qrCode->getGatewayFromQrString() === \RZP\Models\Payment\Gateway::UPI_MINDGATE)) and
             ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->getMerchantId()) === true))
         {
             // Find the env variable QR_CODE_STATUS_CHECK_SPLITZ_EXPERIMENT_ID to find experiment IDs for different envs
@@ -810,7 +814,7 @@ class Service extends QrCode\Service
             // After dispatch, when the worker picks the message up, the worker performs other validations too
             // Since the dispatch step has a unique job check, we won't be dispatching multiple messages for the same
             // QR code at once.
-            (new Core())->dispatchQrCodeToStatusCheckQueue($id);
+            (new Core())->dispatchQrCodeToStatusCheckQueue($id, $qrCode->getRequestSource());
         }
     }
 }

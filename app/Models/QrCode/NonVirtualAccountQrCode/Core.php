@@ -260,17 +260,21 @@ class Core extends QrCode\Core
      * @param string $id The ID of the QR code to be dispatched.
      * @return bool If the dispatch was successful or not.
      */
-    public function dispatchQrCodeToStatusCheckQueue(string $id): bool
+    public function dispatchQrCodeToStatusCheckQueue(string $id, string $requestSource = null): bool
     {
         $this->trace->info(TraceCode::QR_STATUS_CHECK_JOB_DISPATCH_INIT, ['id' => $id]);
 
         try
         {
-            $mutex         = $this->app['api.mutex'];
-            $mutexAcquired = $mutex->acquire("qr_status_check_" . $id,
-                                             self::QR_STATUS_CHECK_MUTEX_TIMEOUT, strict: true);
+            $mutexAcquired = false;
+            if($requestSource !== RequestSource::EZETAP)
+            {
+                $mutex         = $this->app['api.mutex'];
+                $mutexAcquired = $mutex->acquire("qr_status_check_" . $id,
+                    self::QR_STATUS_CHECK_MUTEX_TIMEOUT, strict: true);
+            }
 
-            if ($mutexAcquired === false)
+            if ($requestSource !== RequestSource::EZETAP and $mutexAcquired === false)
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,

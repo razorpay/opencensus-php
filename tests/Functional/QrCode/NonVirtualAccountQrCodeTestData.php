@@ -419,6 +419,19 @@ return [
         ],
     ],
 
+    'testStatusCheckApiSuccessResponseMultipleAttemptsForUpiMindgate' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testStatusCheckApiPendingResponse' => [
         'request' => [
             'method'  => 'POST',
@@ -433,6 +446,58 @@ return [
     ],
 
     'testStatusCheckApiSuccessResponse' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiSuccessResponseForUpiMindgate' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiPendingResponseForUpiMindgate' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiFailedResponseForUpiMindgate' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiRecordNotFoundResponseForUpiMindgate' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/reminders/send/live/qr_code/qr_code_payment_status/',
@@ -609,6 +674,114 @@ return [
                     [
                         'entity'            => 'payment',
                         'amount'            => 100,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'order_id'          => null,
+                        'invoice_id'        => null,
+                        'method'            => 'upi',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'QRv2 Payment',
+                        'email'             => null,
+                        'contact'           => null,
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ]
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiMindgate' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiMindgateWithEzetapSource' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiMindgate' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiMindgateWithEzetapRequestSource' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiVerifySuccessResponseForUpiMindgate' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testStatusCheckApiVerifyWhenPaymentIsAlreadyExistsForUpiMindgate' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payments/qr_codes/RandomQrCodeId/payments',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'            => 'payment',
+                        'amount'            => 300,
                         'currency'          => 'INR',
                         'status'            => 'captured',
                         'order_id'          => null,

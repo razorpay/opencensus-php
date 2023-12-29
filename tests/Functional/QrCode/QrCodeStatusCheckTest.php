@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Exception\LogicException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order;
 use RZP\Error\ErrorCode;
@@ -1443,4 +1444,704 @@ class QrCodeStatusCheckTest extends TestCase
         // Assert that only one job was pushed.
         Queue::assertPushed(QrStatusCheck::class, 1);
     }
+
+    public function testStatusCheckApiVerifySuccessResponseForUpiMindgate()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $days =1;
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::HDFC_QR_EXPIRY => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $this->mockSplitzTreatmentForStatusCheck();
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer',
+            [
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
+            = str_after($qrCode['id'], 'qr_');
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
+
+        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+        $this->startTest();
+        Queue::assertPushed(QrStatusCheck::class, 1);
+
+    }
+
+    public function testStatusCheckApiVerifyWhenPaymentIsAlreadyExistsForUpiMindgate()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $this->setMockRazorxTreatment(['api_upi_mindgate_pre_process_v1' => 'upi_mindgate']);
+
+
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $this->mockSplitzTreatmentForStatusCheck();
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 300,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
+        $response = $this->makeUpiMindgatePayment($qrCodeEntity, $terminal);
+
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true,'live');
+        $upi = $this->getLastEntity('upi', true,'live');
+        $payment   = $this->getDbLastEntity('payment', 'live');
+        $qrCodeId = $qrCode['id'];;
+
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(substr($qrCodeId, strlen('qr_')), $qrPayment['merchant_reference']);
+        $this->assertEquals(substr($qrCodeId, strlen('qr_')), $upi['merchant_reference']);
+
+        Queue::fake();
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
+            = str_after($qrCodeId, 'qr_');
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($qrPayment['id'], 'qp_');
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCodeId, $this->testData[__FUNCTION__]['request']['url']);
+        $this->createEsMockAndSetExpectations("testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments");
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+
+        $currentTime = Carbon::now();
+        Carbon::setTestNow($currentTime->addMinutes(4));
+        $this->startTest();
+        Queue::assertPushed(QrStatusCheck::class, 0);
+
+    }
+    public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiMindgateWithEzetapSource()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::HDFC_QR_EXPIRY => RazorxTreatment::RAZORX_VARIANT_ON,
+            ]
+        );
+
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $this->mockSplitzTreatmentForStatusCheck();
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer',
+            [
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
+            = str_after($qrCode['id'], 'qr_');
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
+
+        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+        $this->startTest();
+        Queue::assertPushed(QrStatusCheck::class, 1);
+    }
+    public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiMindgate()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+        $this->mockSplitzTreatmentForStatusCheck();
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
+            = str_after($qrCode['id'], 'qr_');
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
+
+        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+        $this->startTest();
+        Queue::assertPushed(QrStatusCheck::class, 0);
+    }
+
+    public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiMindgate()
+    {
+
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $currentTime = Carbon::now();
+
+        Carbon::setTestNow($currentTime);
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
+            = str_after($qrCode['id'], 'qr_');
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
+
+        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+
+        Carbon::setTestNow($currentTime->addSeconds(190));
+
+        $this->startTest();
+        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
+        Carbon::setTestNow($currentTime->addSeconds(30));
+        $this->startTest();
+
+        // Assert that only one job was pushed.
+        Queue::assertPushed(QrStatusCheck::class, 1);
+    }
+    public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiMindgateWithEzetapRequestSource()
+    {
+
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $currentTime = Carbon::now();
+
+        Carbon::setTestNow($currentTime);
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 10000,
+            ],
+            'live',
+            'LiveAccountMer',
+            [
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        Queue::fake();
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
+            = str_after($qrCode['id'], 'qr_');
+
+        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
+
+        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
+
+        $this->ba->privateAuth('rzp_live_LiveAccountMer');
+
+        Carbon::setTestNow($currentTime->addSeconds(190));
+
+        $this->startTest();
+        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
+        Carbon::setTestNow($currentTime->addSeconds(30));
+        $this->startTest();
+
+        // Its pushing one time only bcz of its QrStatusCheck implements ShouldBeUnique
+        Queue::assertPushed(QrStatusCheck::class, 1);
+    }
+
+    public function testStatusCheckApiSuccessResponseForUpiMindgate()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = '326414338959';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiMindgateQrStatusCheckResponse("00", $qrCodeId,
+                    $requestData['content']['BankRRN'],'HDFC12345POS','45678765','4000','ftfdtft@ybl');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runQrPaymentAssertions(str_after($qrCodeId, 'qr_'), $requestData, 'live');
+
+        $this->assertEquals(1, $reminderDeleteCallCount);
+
+    }
+    public function testStatusCheckApiPendingResponseForUpiMindgate()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = 'NA';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiMindgateQrStatusCheckResponse("01", $qrCodeId,
+                    $requestData['content']['BankRRN'],'HDFC12345POS','NA','00','NA');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runAssertionsForUpiMindgate();
+
+        $this->assertEquals(0, $reminderDeleteCallCount);
+
+    }
+
+    public function testStatusCheckApiFailedResponseForUpiMindgate()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = 'NA';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiMindgateQrStatusCheckResponse("U30", $qrCodeId,
+                    $requestData['content']['BankRRN'],'HDFC12345POS','NA','00','NA');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runAssertionsForUpiMindgate();
+        $this->assertEquals(0, $reminderDeleteCallCount);
+
+    }
+
+    public function testStatusCheckApiRecordNotFoundResponseForUpiMindgate()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $reminderDeleteCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount, false, $reminderDeleteCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $this->assertEquals(1, $remindersCallCount);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = 'NA';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiMindgateQrStatusCheckResponse("RNF", $qrCodeId,
+                    $requestData['content']['BankRRN'],'HDFC12345POS','NA','00','NA');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runAssertionsForUpiMindgate();
+
+        $this->assertEquals(0, $reminderDeleteCallCount);
+
+    }
+    public function testStatusCheckApiSuccessResponseMultipleAttemptsForUpiMindgate()
+    {
+        $this->config['gateway.mock_upi_mozart'] = true;
+        $terminal = $this->fixtures->create(
+            'terminal:dedicated_upi_mindgate_terminal',
+            [
+                'gateway_merchant_id2' => 'rzp.razorpay1234@hdfcbank',
+                'gateway_merchant_id'  => 'HDFC12345POS',
+                'gateway_terminal_id'  => '5411',
+            ]
+        );
+
+        $remindersCallCount = 0;
+        $this->mockRemindersRequestForStatusCheck($remindersCallCount);
+
+        $this->mockSplitzTreatmentForStatusCheck();
+
+        $previousCount = count($this->getDbEntities('qr_code', [], 'live'));
+        $qrCode        = $this->createQrCode(
+            [
+                'type'           => 'upi_qr',
+                'usage'          => 'multiple_use',
+                'fixed_amount'   => true,
+                'payment_amount' => 4000,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+        $newCount      = count($this->getDbEntities('qr_code', [], 'live'));
+        $this->assertEquals($previousCount + 1, $newCount);
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $qrCodeId;
+
+        $requestData['content']['BankRRN'] = '326414338959';
+        $requestData['content']['merchantTranId'] = str_after($qrCodeId, 'qr_');
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($qrCodeId, $requestData) {
+            if ($action === 'verify')
+            {
+                $content = $this->getMockedUpiMindgateQrStatusCheckResponse("00", $qrCodeId,
+                    $requestData['content']['BankRRN'],'HDFC12345POS','87654678898','4000','owiueh@axl');
+            }
+        }, 'upi_mozart');
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->runQrPaymentAssertions(str_after($qrCodeId, 'qr_'), $requestData, 'live');
+
+        $this->fixtures->edit('qr_code',str_after($qrCodeId, 'qr_'),['payments_received_count'=>0],'live');
+
+        $qrPaymentCount = count($this->getDbEntities('qr_payment', [],'live'));
+        $paymentCount = count($this->getDbEntities('payment', [],'live'));
+        $qrPaymentReqCount = count($this->getDbEntities('qr_payment_request', [],'live'));
+
+        $this->startTest();
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $this->assertEquals(0, $qrCodeEntity['payments_received_count']);
+        $this->assertEquals($qrPaymentCount, count($this->getDbEntities('qr_payment', [],'live')));
+        $this->assertEquals($paymentCount, count($this->getDbEntities('payment', [],'live')));
+        $this->assertEquals($qrPaymentReqCount + 1, count($this->getDbEntities('qr_payment_request', [],'live')));
+
+        $qrPaymentReqEntity = $this->getDbLastEntity('qr_payment_request', 'live');
+        $this->assertEquals("QR_PAYMENT_DUPLICATE_NOTIFICATION", $qrPaymentReqEntity['failure_reason']);
+
+    }
+
+    public function runAssertionsForUpiMindgate()
+    {
+        $qrPayment        = $this->getDbLastEntity('qr_payment', 'live');
+        $payment          = $this->getDbLastEntity('payment', 'live');
+        $qrPaymentRequest = $this->getDbLastEntity('qr_payment_request', 'live');
+        $upi              = $this->getDbLastEntity('upi', 'live');
+
+        $this->assertNull($qrPayment);
+        $this->assertNull($payment);
+        $this->assertNull($qrPaymentRequest);
+        $this->assertNull($upi);
+    }
+
 }
