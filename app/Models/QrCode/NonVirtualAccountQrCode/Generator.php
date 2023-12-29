@@ -335,9 +335,10 @@ class Generator extends QrCode\Generator
             {
                 $this->trace->traceException($ex,
                     Trace::ERROR,
-                    TraceCode::ICICI_QR_API_REF_ID_GENERATION_FAILED,
+                    TraceCode::QR_API_REF_ID_GENERATION_FAILED,
                     [
                         'qr_code' => $qrCode->getId(),
+                        'gateway' => $this->gateway,
                     ]
                 );
 
