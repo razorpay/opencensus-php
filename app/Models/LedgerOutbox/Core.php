@@ -972,63 +972,64 @@ class Core extends Base\Core
 
             $mutexConfig = Transfer\AbstractTransfer::fetchTransferProcessMutexConfig();
 
-            try {
-                $transferProcessStartTime = microtime(true);
+            $transferProcessStartTime = microtime(true);
 
-                $txn = $this->repo->transaction(function () use ($mutexConfig, $mutexResource, $transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source)
-                {
-                    if($transfer->getStatus() !== Transfer\Status::PROCESSED)
+            try
+            {
+                $this->mutex->acquireAndRelease(
+                    $mutexResource . $sourcePayment->getPublicId(),
+                    function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source)
                     {
-                        // set transfer as processed
-                        $transfer->setProcessed();
-
-                        $transfer->setErrorCode(null);
-
-                        $transferProcessor->setSettlementStatus($transfer);
-
-                        $totalTransferAmount = $transfer->getAmount();
-
-                        $this->mutex->acquireAndRelease(
-                            $mutexResource . $sourcePayment->getPublicId(),
-                            function () use ($totalTransferAmount, $sourcePayment, $transferCore)
+                        $this->repo->transaction(function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source)
+                        {
+                            if($transfer->getStatus() !== Transfer\Status::PROCESSED)
                             {
+                                // set transfer as processed
+                                $transfer->setProcessed();
+
+                                $transfer->setErrorCode(null);
+
+                                $transferProcessor->setSettlementStatus($transfer);
+
+                                $totalTransferAmount = $transfer->getAmount();
+
                                 $transferCore->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
-                            },
-                            $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_LOCK_TIMEOUT_SEC_KEY],
-                            ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_PROCESS_IN_PROGRESS,
-                            $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_NUM_RETRIES_KEY],
-                            $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_MIN_RETRY_DELAY_MS_KEY],
-                            $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_MAX_RETRY_DELAY_MS_KEY], true);
 
-                        $this->repo->saveOrFail($transfer);
+                                $this->repo->saveOrFail($transfer);
 
-                        $transferMetric->pushTransferProcessSuccessMetrics();
+                                $transferMetric->pushTransferProcessSuccessMetrics();
 
-                        $transferProcessor->fireTransferProcessedWebhookIfApplicable($transfer);
+                                $transferProcessor->fireTransferProcessedWebhookIfApplicable($transfer);
 
-                        // in txn creation - check if transfer has txn created, duplicate txn check
-                    }
+                                // in txn creation - check if transfer has txn created, duplicate txn check
+                            }
 
-                    $input = [
-                        LedgerConstants::DEBIT_TRANSACTION_ID  => $debitJournalId,
-                        LedgerConstants::CREDIT_TRANSACTION_ID => $creditJournalId,
-                        LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
-                        LedgerConstants::SOURCE                => $source,
-                    ];
+                            $input = [
+                                LedgerConstants::DEBIT_TRANSACTION_ID  => $debitJournalId,
+                                LedgerConstants::CREDIT_TRANSACTION_ID => $creditJournalId,
+                                LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
+                                LedgerConstants::SOURCE                => $source,
+                            ];
 
-                    // dispatch to queue again for txn creation
-                    $transferCore->dispatchForTransferProcessing($transfer->getSourceType(), $sourcePayment, 30, true, $input);
+                            // dispatch to queue again for txn creation
+                            $transferCore->dispatchForTransferProcessing($transfer->getSourceType(), $sourcePayment, 30, true, $input);
 
-                    $this->trace->info(
-                        TraceCode::TRANSFER_PROCCESSED_SUCCESSFULLY_IN_REVERSE_SHADOW,
-                        [
-                            LedgerConstants::TRANSFER_ID  => $transfer->getPublicId(),
-                            'transfer_input_to_queue'     => $input
-                        ]);
+                            $this->trace->info(
+                                TraceCode::TRANSFER_PROCCESSED_SUCCESSFULLY_IN_REVERSE_SHADOW,
+                                [
+                                    LedgerConstants::TRANSFER_ID  => $transfer->getPublicId(),
+                                    'transfer_input_to_queue'     => $input
+                                ]);
 
-                    // transfer transactions created via queue in async
-                    return null;
-                });
+                            // transfer transactions created via queue in async
+                            return null;
+                        });
+                    },
+                    $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_LOCK_TIMEOUT_SEC_KEY],
+                    ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_PROCESS_IN_PROGRESS,
+                    $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_NUM_RETRIES_KEY],
+                    $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_MIN_RETRY_DELAY_MS_KEY],
+                    $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_MAX_RETRY_DELAY_MS_KEY], true);
             }
             catch (\Exception $ex)
             {
