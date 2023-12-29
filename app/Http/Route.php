@@ -4571,6 +4571,10 @@ class Route
         '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                            'OneClickCheckoutController@shopifyOAuthRedirect'                ],
         '1cc_shopify_oauth_callback'                => ['get',        '1cc/shopify/oauth/callback',                            'OneClickCheckoutController@shopifyOAuthRedirect'                ],
         '1cc_shopify_order'                         => ['post',       '1cc/shopify/order',                                     'OneClickCheckoutController@createOrderAndGetPreferences'                ],
+        // one_cc_shopify_order_for_mcs is a replica of 1cc_shopify_order and will be used by
+        // magic-checkout-service to decompose the above API out of API Monolith.
+        // Target state is to move all logic from 1cc_shopify_order to MCS and remove both these routes.
+        'one_cc_shopify_order_for_mcs'              => ['post',       'internal/mcs/shopify/order',                            'OneClickCheckoutController@createOrderAndGetPreferencesForMCS'          ],
         '1cc_process_webhooks'                      => ['post',       '1cc/process_webhooks/{platform}',                                   'OneClickCheckoutController@processWebhook'              ],
         'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                           'MerchantController@updateShopify1ccConfig'                   ],
         '1cc_fetch_analytics'                       => ['post',       '1cc/analytics/shopify',                                 'OneClickCheckoutController@getOrderAnalytics'                   ],
@@ -6347,7 +6351,7 @@ class Route
         'customer_one_cc_get_or_create_global',
         'customer_fetch_by_id_global',
         '1cc_shopify_order',
-
+        'one_cc_shopify_order_for_mcs',
 
         'role_list_admins_internal',
 
@@ -17157,6 +17161,7 @@ class Route
             '1cc_internal_fetch_global_addresses',
             'payment_fetch_by_id_internal',
             'fetch_1cc_customer_consent_internal',
+            'one_cc_shopify_order_for_mcs',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',

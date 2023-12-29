@@ -86,6 +86,39 @@ class OneClickCheckoutController extends Controller
         }
     }
 
+    /**
+     * This is a deliberate replica of createOrderAndGetPreferences()
+     * This will be called from magic-checkout-service & will be used for decomposing
+     * of create order & get preferences logic from API Monolith to MCS.
+     *
+     * @return mixed
+     * @throws BaseException
+     */
+    public function createOrderAndGetPreferencesForMCS()
+    {
+        $input = Request::all();
+        $headers = Request::header();
+        try
+        {
+            $userAgent = $headers['x-user-agent'][0] ?? $headers['user-agent'][0] ?? null;
+            // todo: this will be done in FE for now we are doing it to unblock BE
+
+            $ga = $input['ga_id'] ?? '';
+            $parsedGa = explode(".", $ga);
+            $parsedGaId = array_slice($parsedGa, -2);
+            $gaId = join(".", $parsedGaId);
+
+            $fbAnalytics = $input['fb_analytics'] ?? array();
+
+            $customerInfo = ['user_agent' => $userAgent, 'ga_id' => $gaId, 'fb_analytics' => $fbAnalytics];
+            $result = (new Shopify\Service())->createOrderAndGetPreferencesForMCS($input, $customerInfo);
+
+            return ApiResponse::json($result, 200);
+        } catch (\Throwable $e) {
+            return $this->handleError($e);
+        }
+    }
+
     public function getCheckoutOptions()
     {
         $input = Request::all();

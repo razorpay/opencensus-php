@@ -330,6 +330,56 @@ class Service extends Base\Service
         ];
     }
 
+    /**
+     * This is a replica of createOrderAndGetPreferences() which will be used by MCS for decomp.
+     * Creates a razorpay order for a given shopify checkout and returns order_id, preferences
+     *
+     * @param array $input
+     * @param array $customerInfo
+     * @return array
+     * @throws \Exception
+     */
+    public function createOrderAndGetPreferencesForMCS(array $input, array $customerInfo): array
+    {
+        unset($input['ga_id'], $input['fb_analytics']);
+
+        // capture utm parameters
+        $utmParameters =(array)$input[Order1cc\Fields::UTM_PARAMETERS];
+        unset($input[Order1cc\Fields::UTM_PARAMETERS]);
+
+        // To support backward compatibility of Shopify API version update from 2022-01 to 2022-10
+        $input = $this->versionBasedInput($input);
+
+        (new Validator())->validateInput('createShopifyOrderAndPreferences', $input);
+
+        // Set Merchant basic auth
+        $merchantId = $input['merchant_id'];
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        $checkout = $input['checkout'];
+        $cart = $input['cart'];
+        $preferenceParams = $input['preference_params'];
+
+        $response = $this->createOrderAndGetCheckoutPreferencesForMCS(
+            $checkout,
+            $cart,
+            $preferenceParams,
+            $customerInfo,
+            $utmParameters,
+            $input['breakpoints'] ?? [],
+        );
+
+        $emptyObject = new \stdClass();
+
+        return [
+            'order_id'   => $response['order_id'] ?? '',
+            'preferences' => $response['preferences'] ?? $emptyObject,
+            'order_create_payload' => $response['order_create_payload'] ?? $emptyObject,
+        ];
+    }
+
     protected function versionBasedInput(array $input)
     {
         if(isset($input['checkout']['totalPriceV2']) === true)
@@ -474,6 +524,131 @@ class Service extends Base\Service
         (new RzpOrders)->updateUtmParameters( $order->getPublicId(),$utmParameters);
 
         (new Analytics)->storeAnalyticsCustomerInfoInCache($checkoutParams['order_id'], json_encode($customerInfo));
+
+        return $checkoutParams;
+    }
+
+    /**
+     * This is a replica of createOrderAndGetCheckoutPreferences() which will be used by MCS for decomp.
+     * ToDo: After decomp. both these methods need to be removed.
+     *
+     * @param array $checkout
+     * @param array $cart
+     * @param array $preferenceParams
+     * @param array $customerInfo
+     * @param array $utmParameters
+     * @param array $breakpoints
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
+    protected function createOrderAndGetCheckoutPreferencesForMCS(
+        array $checkout,
+        array $cart,
+        array  $preferenceParams,
+        array $customerInfo,
+        array $utmParameters=[],
+        array $breakpoints = [],
+    ): array {
+        $cartId = $cart['token'];
+
+        $checkoutAmount = round(floatval($checkout['totalPrice']['amount']) * 100);
+
+        $isAutoDiscountApplied = $this->isScriptDiscountApplied($cart);
+
+        // Construct map from sku to product_type to support new product category based shipping config
+        $productTypeMap = $this->getProductTypesFromCart($cart);
+
+        $is3rdPartyPluginDiscountEnabled = $this->is3rdPartyPluginDiscountEnabled($cart);
+
+        if ($isAutoDiscountApplied) {
+            $cartPrice = (int)(floatval($cart['total_price']));
+
+            $scriptData = $this->getScriptData($cart, $cartPrice, $checkout, $productTypeMap);
+
+            $amount = $scriptData['amount'];
+
+            $lineItemsData = $scriptData['lineItemsData'];
+
+            $orderNotes = $scriptData['orderNotes'];
+        } else if ($is3rdPartyPluginDiscountEnabled) {
+            $cartLineItemsData = $this->fetch3rdPartyPluginCartLineItems($cartId, $cart, $checkout, $productTypeMap);
+
+            $isAutoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
+
+            $lineItemsData = $cartLineItemsData['cart_line_items'];
+
+            $amount = $cartLineItemsData['amount'];
+
+            $orderNotes = $cartLineItemsData['order_notes'];
+        } else {
+            $cartLineItemsData = $this->shopifyCartLineItems($checkout, $productTypeMap, $cart);
+
+            $isAutoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
+            $discountSource = $cartLineItemsData['discount_source'];
+
+            $lineItemsData = $cartLineItemsData['cart_line_items'];
+
+            $amount = $checkoutAmount;
+
+            $orderNotes = (new Checkout())->getNotesForCheckout($checkout, $cartId, $cart, $isAutoDiscountApplied, $discountSource);
+        }
+        // For now we generate a random UUID for product_id as it is a compulsory field with product_type.
+        // This id will be changed once decomp from order meta is completed.
+        $magicProductId = UniqueIdEntity::generateUniqueId();
+        $orderPayload = [
+            'receipt'          => OneClickCheckout\Constants::SHOPIFY_TEMP_RECEIPT,
+            'amount'           => $amount,
+            'currency'         => $checkout['totalPrice']['currencyCode'] ?? 'INR',
+            'payment_capture'  => 1,
+            'line_items_total' => $amount,
+            'notes'            => $orderNotes,
+            'line_items'       => $lineItemsData,
+        ];
+        // product_type field is set only via internal API calls. This function is
+        // not exposed to merchants and is in turn called by Magic Checkout svc.
+        $orderPayloadWithProductType = array_merge($orderPayload, [
+            'product_type' => OrderProductType::MAGIC_CHECKOUT,
+            'product_id'   => $magicProductId,
+        ]);
+
+        if (!empty($breakpoints['skip_order_create'])) {
+            return [
+                'order_create_payload' => $orderPayloadWithProductType,
+            ];
+        }
+        // Hacky way to ensure backward compatibility with PG Router in case any
+        // revert occurs in their system.
+        try {
+            $order = (new RzpOrders())->createOrder($orderPayloadWithProductType);
+        } catch (\Throwable $e) {
+            $order = (new RzpOrders())->createOrder($orderPayload);
+        }
+
+        $orderPublicId = $order->getPublicId();
+
+        (new Analytics())->storeAnalyticsCustomerInfoInCache($orderPublicId, json_encode($customerInfo));
+
+        $this->updateTaxDetails($order, $checkout);
+
+        (new RzpOrders())->updateUtmParameters($orderPublicId,$utmParameters);
+
+        $checkoutParams = [
+            'order_id'              => $orderPublicId,
+            'currency'              => $checkout['totalPrice']['currencyCode'] ?? 'INR',
+            'name'                  => $this->merchant->getBillingLabel(),
+            'one_click_checkout'    => true,
+            'customer_cart'         => (new Pixels())->getDataForFbPixels($checkout),
+            'script_coupon_applied' => $isAutoDiscountApplied,
+        ];
+
+        if (empty($breakpoints['skip_preferences']) && !empty($preferenceParams['send_preferences'])) {
+            unset($preferenceParams['send_preferences']);
+            $preferenceParams['order_id'] = $orderPublicId;
+            $preferences = $this->getPreferences($preferenceParams);
+            $checkoutParams = array_merge($checkoutParams, ['preferences' => $preferences]);
+        }
 
         return $checkoutParams;
     }
