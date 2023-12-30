@@ -117,6 +117,7 @@ class DualWritingTest extends TestCase
                 "country_code"       => null,
                 "business_details"   => [
                     "billing_label"               => "CHIZRINZ INFOWAY PRIVATE",
+                    "business_name"               => "CHIZRINZ INFOWAY PRIVATE",
                     "business_type"               => "llp",
                     "business_operation_address"  => null,
                     "business_registered_address" => null,
@@ -150,7 +151,7 @@ class DualWritingTest extends TestCase
         $merchant1 = (new \RZP\Models\Merchant\Repository)->find('KqsQEszAud2PqZ');
 
         $this->assertArraySubset(["id"            => "KqsQEszAud2PqZ",
-                                  "name"          => "",
+                                  "name"          => "CHIZRINZ INFOWAY PRIVATE",
                                   "email"         => "",
                                   "billing_label" => "CHIZRINZ INFOWAY PRIVATE"],
                                  $merchant1->toArray());

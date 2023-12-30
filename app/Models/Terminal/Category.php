@@ -56,6 +56,48 @@ class Category
     const FUEL_NON_GOVERNMENT     = 'fuel_nongovernment';
     const FUEL_HPCL               = 'fuel_hpcl';
 
+    // New category 2 addition as a part of the project reduce other category selection
+    const  MONEY_ORDER_TRAVELLER_CHEQUE                    = 'money_order_traveller_cheque';
+    const  LOAN_DEBT_REPAYMENT                             = 'loan_debt_repayment';
+    const  MANUAL_CASH_DISBURSEMENT                        = 'manual_cash_disbursement';
+    const  EMPLOYMENT_AGENCIES_TEMPORARY_HELP_SERVICES     = 'employment_agencies_temporary_help_services';
+    const  FINANCIAL_INSTITUTIONS_MERCHANDISE_AND_SERVICES = 'financial_institutions_merchandise_and_services';
+    const  HEALTH_BEAUTY_SPA                               = 'health_beauty_spa';
+    const  ELECTRICAL_PURPOSE_DISTILLED_WATER              = 'electrical_purpose_distilled_water';
+    const  AUTOMOBILE_GARAGE_PARKING_SPACE                 = 'automobile_garage_parking_space';
+    const  TECH_CONSULTING_AND_OUTSOURCING                 = 'tech_consulting_and_outsourcing';
+    const  BPO_KPO_LPO_RPO                                 = 'bpo_kpo_lpo_rpo';
+    const  ASTROLOGER                                      = 'astrologer';
+    const  TIMBER_STORES                                   = 'timber_stores';
+    const  FERTILIZER_DEALERS                              = 'fertilizer_dealers';
+    const  PESTICIDES_OR_INSECTICIDES                      = 'pesticides_or_insecticides';
+    const  SEEDS                                           = 'seeds';
+    const  ART_DEALERS_GALLERIES                           = 'art_dealers_galleries';
+    const  ANTIQUE_REPRODUCTION_STORES                     = 'antique_reproduction_stores';
+    const  REAL_ESTATE_AGENTS                              = 'real_estate_agents';
+    const  CHARITY_CROWDFUNDING                            = 'charity_crowdfunding';
+    const  AUTOMOTIVE_BODY_REPAIRS                         = 'automotive_body_repairs';
+    const  TATTOO_BODY_PIERCING_PET_GROOMING               = 'tattoo_body_piercing_pet_grooming';
+    const  CLEANING_MAINTENANCE_JANITORIAL_SERVICES        = 'cleaning_maintenance_janitorial_services';
+    const  PLUMBING_CONTRACTOR                             = 'plumbing_contractor';
+    const  AIR_CONDITIONING_HEATING_CONTRACTOR             = 'air_conditioning_heating_contractor';
+    const  USED_AUTOMOBILE_AND_TRUCK_DEALERS               = 'used_automobile_and_truck_dealers';
+    const  INTERMEDIARIES_FACILITATING_BUYING              = 'intermediaries_facilitating_buying';
+    const  WINE_PRODUCERS                                  = 'wine_producers';
+    const  CHAMPAGNE_PRODUCERS                             = 'champagne_producers';
+    const  ALCOHOLIC_BEVERAGE_WHOLESALERS                  = 'alcoholic_beverage_wholesalers';
+    const  DIGITAL_GOLD_PURCHASE                           = 'digital_gold_purchase';
+    const  CREDIT_CARD_BILL_PAYMENTS                       = 'credit_card_bill_payments';
+    const  LIC                                             = 'lic';
+    const  DEBIT_COLLECTION_CHARGES                        = 'debit_collection_charges';
+    const  BAIL_AND_BOND_PAYMENTS                          = 'bail_and_bond_payments';
+    const  WALLET_TOP_UP                                   = 'wallet_top_up';
+    const  DIRECT_MARKETING_CATALOGUE_RETAIL_MERCHANTS     = 'direct_marketing_catalogue_retail_merchants';
+    const  ELECTRICAL_VEHICLES_CHARGING_STATIONS_SERVICES  = 'electrical_vehicles_charging_stations_services';
+    const  STATIONERY_SUPPLIES                             = 'stationery_supplies';
+    const  AUTOMOBILE_AND_TRUCK_SERVICE_SHOP               = 'automobile_and_truck_service_shop';
+
+
     /**
      * Categories mapped to invalid will not find an
      * appropriate category to override. Only the category
@@ -102,6 +144,45 @@ class Category
         self::SERVICES,
         self::SOCIAL,
         self::TRANSPORT,
+        self::STATIONERY_SUPPLIES,
+        self::TIMBER_STORES,
+        self::FERTILIZER_DEALERS,
+        self::PESTICIDES_OR_INSECTICIDES,
+        self::SEEDS,
+        self::ART_DEALERS_GALLERIES,
+        self::ANTIQUE_REPRODUCTION_STORES,
+        self::MONEY_ORDER_TRAVELLER_CHEQUE,
+        self::LOAN_DEBT_REPAYMENT,
+        self::MANUAL_CASH_DISBURSEMENT,
+        self::EMPLOYMENT_AGENCIES_TEMPORARY_HELP_SERVICES,
+        self::FINANCIAL_INSTITUTIONS_MERCHANDISE_AND_SERVICES,
+        self::DIGITAL_GOLD_PURCHASE,
+        self::CREDIT_CARD_BILL_PAYMENTS,
+        self::LIC,
+        self::DEBIT_COLLECTION_CHARGES,
+        self::BAIL_AND_BOND_PAYMENTS,
+        self::WALLET_TOP_UP,
+        self::HEALTH_BEAUTY_SPA,
+        self::ELECTRICAL_PURPOSE_DISTILLED_WATER,
+        self::REAL_ESTATE_AGENTS,
+        self::TECH_CONSULTING_AND_OUTSOURCING,
+        self::BPO_KPO_LPO_RPO,
+        self::ASTROLOGER,
+        self::CHARITY_CROWDFUNDING,
+        self::AUTOMOTIVE_BODY_REPAIRS,
+        self::TATTOO_BODY_PIERCING_PET_GROOMING,
+        self::CLEANING_MAINTENANCE_JANITORIAL_SERVICES,
+        self::AUTOMOBILE_AND_TRUCK_SERVICE_SHOP,
+        self::PLUMBING_CONTRACTOR,
+        self::AIR_CONDITIONING_HEATING_CONTRACTOR,
+        self::USED_AUTOMOBILE_AND_TRUCK_DEALERS,
+        self::INTERMEDIARIES_FACILITATING_BUYING,
+        self::WINE_PRODUCERS,
+        self::CHAMPAGNE_PRODUCERS,
+        self::ALCOHOLIC_BEVERAGE_WHOLESALERS,
+        self::DIRECT_MARKETING_CATALOGUE_RETAIL_MERCHANTS,
+        self::ELECTRICAL_VEHICLES_CHARGING_STATIONS_SERVICES,
+        self::AUTOMOBILE_GARAGE_PARKING_SPACE
     ];
 
 

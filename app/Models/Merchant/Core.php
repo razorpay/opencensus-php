@@ -10299,6 +10299,24 @@ class Core extends Base\Core
             {
                 unset($data[Entity::ID]);
 
+                $businessType = $merchant->merchantDetail->getBusinessTypeValue();
+                $promoterPanName = $merchant->merchantDetail->getPromoterPanName();
+
+                $this->trace->info(TraceCode::PGOS_DUAL_WRITE_REQUEST, [
+                    'merchantId' => $merchant->getId(),
+                    '$businessType' => $businessType,
+                    '$promoterPanName' => $promoterPanName,
+                    '$data' => $data
+                ]);
+
+                if (($businessType == "11" or $businessType == "2") and $promoterPanName != "")
+                {
+                    // For Unregistered (11) and Individual (2) business types, Name in Merchant table is populated from Promoter Name field.
+                    // For all other cases, it's populated from businessName field as defined in the mapping.
+                    // This is needed as L2 submit workflow creation fails if name is not present in Merchant table.
+                    $data['name'] = $promoterPanName;
+                }
+
                 $merchant->edit($data);
 
                 $this->repo->saveOrFail($merchant);

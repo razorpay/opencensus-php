@@ -10901,6 +10901,24 @@ class Core extends Base\Core
             {
                 $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data['merchant_id']);
 
+                $businessType = $merchantDetails->getBusinessTypeValue();
+
+                // sync promoter_pan_name to business_name and business_dba
+                // if business_type is individual or not_yet_registered
+                if (isset($data[Entity::PROMOTER_PAN_NAME]) === true && $data[Entity::PROMOTER_PAN_NAME] != "" && ($businessType == "11" or $businessType == "2"))
+                {
+                    $businessDBA = $merchantDetails->getBusinessDba();
+
+                    // always sync promoter_pan_name to business_name
+                    $data[Entity::BUSINESS_NAME] = $data[Entity::PROMOTER_PAN_NAME];
+
+                    // only sync promoter_pan_name to business_dba if it is empty
+                    if(isset($data[Entity::BUSINESS_DBA]) === false and empty($businessDBA) === true)
+                    {
+                        $data[Entity::BUSINESS_DBA] = $data[Entity::PROMOTER_PAN_NAME];
+                    }
+                }
+
                 unset($data["merchant_id"]);
 
                 $this->trace->info(TraceCode::PGOS_DUAL_WRITE_REQUEST, [
