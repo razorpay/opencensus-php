@@ -69,6 +69,19 @@ class Core extends Base\Core
         return $creditBalance;
     }
 
+    public function fetchCreditBalanceOfMerchant(
+        Merchant\Entity $merchant,
+                        $type,
+                        $product)
+    {
+        $creditBalance = $this->repo->credit_balance->findMerchantCreditBalanceByTypeAndProduct(
+            $merchant->getId(),
+            $type,
+            $product);
+
+        return $creditBalance;
+    }
+
     public function getMerchantCreditBalanceAggregatedByProductForEveryType(string $merchantId, string $product)
     {
         $credits = $this->repo->credit_balance->getMerchantCreditBalanceAggregatedByProductForEveryType(

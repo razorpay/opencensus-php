@@ -22,6 +22,7 @@ class Validator extends Base\Validator
         Entity::NOTIFICATION_EMAILS => 'sometimes|string',
         Entity::TYPE                => 'sometimes|string|custom',
         Entity::AUTOLOAD_AMOUNT     => 'sometimes|integer|min:100|custom',
+        Entity::BALANCE_TYPE        => 'sometimes|string',
     ];
 
     protected static $notificationEmailsRules = [
@@ -34,6 +35,7 @@ class Validator extends Base\Validator
         Entity::NOTIFY_AFTER        => 'sometimes|integer|min:0',
         Entity::NOTIFICATION_EMAILS => 'sometimes|string',
         Entity::AUTOLOAD_AMOUNT     => 'sometimes|integer|min:100|custom',
+        Entity::BALANCE_TYPE        => 'sometimes|string'
     ];
 
     public static function validateNotificationEmailRules(array & $input)

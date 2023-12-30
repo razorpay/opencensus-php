@@ -81,6 +81,11 @@ class Entity extends Base\PublicEntity
 
     // --------------- Getters ---------------
 
+    public function getId()
+    {
+        return $this->getAttribute(self::ID);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

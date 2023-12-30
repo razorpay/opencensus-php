@@ -25,19 +25,19 @@ use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
 {
+    const BATCH_SIZE = 50000;
+
     const BULK_INSERT_SIZE = 1000;
 
     const INITIATE = 'initiate';
 
     const INTERMEDIATE = 'intermediate';
 
+    const FETCH = 'fetch';
+
     const INSERT = 'insert';
 
     const UPDATE = 'update';
-
-    const BATCH_SIZE = 50000;
-
-    const FETCH = 'fetch';
 
     /** @var \RZP\Services\Mutex $mutex */
     protected $mutex;
@@ -60,7 +60,7 @@ class Core extends Base\Core
      */
     public function createFeeRecoveryEntityForSource(Base\PublicEntity $entity, bool $skipDedupe = false)
     {
-        $this->mutex->acquireAndRelease(
+        return $this->mutex->acquireAndRelease(
             'fee_recovery_' . $entity->getId(),
             function () use ($entity, $skipDedupe)
             {
@@ -78,11 +78,11 @@ class Core extends Base\Core
 
                 if ($skipDedupe === false)
                 {
-                    $skipCreation = $this->skipIfExistingFeeRecoveryDataExists($feeRecoveryEntity);
+                    [$skipCreation, $existingFeeRecoveryEntity] = $this->skipIfExistingFeeRecoveryDataExists($feeRecoveryEntity);
 
                     if ($skipCreation === true)
                     {
-                        return;
+                        return $existingFeeRecoveryEntity;
                     }
                 }
 
@@ -95,9 +95,36 @@ class Core extends Base\Core
                         'source_type'     => $entity->getEntityName(),
                         'fee_recovery_id' => $feeRecoveryEntity->getId()
                     ]);
+
+                return $feeRecoveryEntity;
             },
             60,
             ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    public function recoverFeeRecoveryEntryViaFeeCredit($payout, $feeRecovery, $reversalId = null)
+    {
+        try
+        {
+            $this->repo->transaction(
+                function () use($payout, $feeRecovery)
+                {
+                    (new Merchant\Credits\Transaction\Core())->reverseCreditsForSource($payout->getId(),
+                        Entity::PAYOUT,
+                        $payout);
+
+                    $this->updateFeeRecoveryStatusForFeeCredit($feeRecovery, Status::RECOVERED);
+                });
+        }
+        catch(\throwable $ex)
+        {
+            $this->trace->error(TraceCode::FEE_RECOVERY_REVERSE_CREDITS_FAILED, [
+                'reverse_credits_error_message' => $ex->getMessage(),
+                'entity_id'                     => $reversalId === null ? $payout->getId() : $reversalId,
+                'fees'                          => $payout->getFees(),
+                'entity_type'                   => $reversalId === null ? Entity::PAYOUT : Entity::REVERSAL,
+            ]);
+        }
     }
 
     /**
@@ -124,11 +151,25 @@ class Core extends Base\Core
         // We shall make a new entry in the fee_recovery table of type credit when
         if ($payoutStatus === Payout\Status::FAILED)
         {
-            $this->createFeeRecoveryEntityForSource($payout);
+            $feeRecovery = $this->createFeeRecoveryEntityForSource($payout);
+
+            $featureEnabled = (new \RZP\Models\Merchant\Credits\Service())->isRzpxFeeCreditEnabledForMerchant($payout->merchant);
+
+            if($featureEnabled === true and $payout->getFeeType() === null)
+            {
+                $this->recoverFeeRecoveryEntryViaFeeCredit($payout, $feeRecovery);
+            }
         }
         else if ($payoutStatus === Payout\Status::REVERSED)
         {
-            $this->createFeeRecoveryEntityForSource($reversal);
+            $feeRecovery = $this->createFeeRecoveryEntityForSource($reversal);
+
+            $featureEnabled = (new \RZP\Models\Merchant\Credits\Service())->isRzpxFeeCreditEnabledForMerchant($payout->merchant);
+
+            if($featureEnabled === true and $payout->getFeeType() === null)
+            {
+                $this->recoverFeeRecoveryEntryViaFeeCredit($payout, $feeRecovery, $reversal->getId());
+            }
         }
 
         // If the payout is a fee_recovery payout, we need to update all the fee_recovery entries
@@ -395,7 +436,7 @@ class Core extends Base\Core
         return [$startTime, $endTime];
     }
 
-    protected function skipIfExistingFeeRecoveryDataExists(Entity $feeRecovery): bool
+    protected function skipIfExistingFeeRecoveryDataExists(Entity $feeRecovery)
     {
         /** @var Base\PublicEntity $source */
         $source = $feeRecovery->entity;
@@ -435,7 +476,7 @@ class Core extends Base\Core
                     'existing_fee_recovery_id'  => $existingData->first->getEntityId()
                 ]);
 
-            return true;
+            return [true, $existingData->first];
         }
 
         // In case of reversals, we also need to check for existing credit entry for a payout.
@@ -459,11 +500,11 @@ class Core extends Base\Core
                         'reversal_id' => $feeRecovery->getEntityId()
                     ]);
 
-                return true;
+                return [true, $existingData->first];
             }
         }
 
-        return false;
+        return [false, null];
     }
 
     protected function processFeeRecovery(Balance\Entity $balance,
@@ -1279,6 +1320,11 @@ class Core extends Base\Core
     protected function sendSlackAlert($operation, $data)
     {
         (new SlackNotification)->send($operation, $data, null, 1, Entity::RX_CA_RBL_ALERTS);
+    }
+
+    public function updateFeeRecoveryStatusForFeeCredit($feeRecovery, string $status)
+    {
+        $this->repo->fee_recovery->updateFeeRecoveryStatusById($feeRecovery->getId(), $status);
     }
 
     private function lowBalanceMerchantEmail(): void

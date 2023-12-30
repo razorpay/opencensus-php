@@ -7,10 +7,12 @@ use App;
 use Ramsey\Uuid\Uuid;
 use RZP\Constants\Metric;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Credits\Type;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Ledger as LedgerService;
@@ -770,7 +772,10 @@ class Core extends Base\Core
     public function constructCreditBalanceFromLedger(array &$creditBalances, array $ledgerResponse){
         foreach ($creditBalances as &$creditBalance)
         {
-            $creditBalance[CreditEntity::BALANCE] = (int) $ledgerResponse[self::REWARD_BALANCE][self::BALANCE];
+            if ($creditBalance[\RZP\Models\Merchant\Credits\Entity::TYPE] !== Type::FEE_CREDIT)
+            {
+                $creditBalance[CreditEntity::BALANCE] = (int) $ledgerResponse[self::REWARD_BALANCE][self::BALANCE];
+            }
         }
     }
 

@@ -15,6 +15,8 @@ use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
+    const FEE_CREDIT = 'fee_credit';
+
     public function create(Credits\Entity $credit, Transaction\Entity $txn, string $creditsUsed)
     {
         $creditTxn = new Entity;
@@ -462,7 +464,9 @@ class Core extends Base\Core
      * @param $amount
      * @param Base\PublicEntity $source
      * We will check if the merchant has credits available, if not we will
-     * return from there. If yes, we will lock all the credits and reload
+     * return from there, except for fee _credit
+     * (in that we create default fee_credit for which value becomes negative).
+     * If yes, we will lock all the credits and reload
      * the credits after locking.
      */
     public function subtractAndGetMerchantCreditsConsumed(
@@ -497,6 +501,24 @@ class Core extends Base\Core
 
         $credits = $this->repo->credits->getCreditsForMerchant($merchant->getId(), $product, $creditType);
 
+        if (count($credits) === 0 and $creditType === Credits\Type::FEE_CREDIT)
+        {
+            $input = [
+                Credits\Entity::TYPE        => self::FEE_CREDIT,
+                Credits\Entity::VALUE       => 0,
+                Credits\Entity::CAMPAIGN    => 'initial credits'
+            ];
+
+            $this->trace->info(TraceCode::CREDIT_BALANCE_CREATE_REQUEST,
+                [
+                    'input' => $input,
+                ]);
+
+            (new Credits\Core())->create($merchant, $input);
+
+            $credits = $this->repo->credits->getCreditsForMerchant($merchant->getId(), $product, $creditType);
+        }
+
         $validCreditIds = [];
 
         // sum of available credits before acquiring lock is calculated to avoid
@@ -515,7 +537,8 @@ class Core extends Base\Core
                 $creditsAvailableBeforeLockAcquisition += $unusedCredit;
 
                 // here the condition is not equal to zero because there can be negative credits as well.
-                if($unusedCredit !== 0)
+                // fee_credits will always be valid
+                if($unusedCredit !== 0 or $creditType === Credits\Type::FEE_CREDIT)
                 {
                     array_push($validCreditIds, $credit->getId());
                 }
@@ -531,8 +554,10 @@ class Core extends Base\Core
                     'amount'      => $amount,
                     'source_id'   => $source->getId(),
                 ]);
-
-            return $creditsConsumed;
+            if ($creditType !== self::FEE_CREDIT)
+            {
+                return $creditsConsumed;
+            }
         }
 
         // There is an outer db transaction which ensures that credits
@@ -565,9 +590,13 @@ class Core extends Base\Core
                     'amount'      => $amount,
                     'source_id'   => $source->getId(),
                 ]);
-
-            return $creditsConsumed;
+            if ($creditType !== self::FEE_CREDIT)
+            {
+                return $creditsConsumed;
+            }
         }
+
+        $lastAvailableCreditId = $credits[count($credits) - 1]->getId();
 
         foreach ($credits as $credit)
         {
@@ -577,9 +606,18 @@ class Core extends Base\Core
             }
 
             //check to only consume credits from rows having positive balance not from rows created as a part of data fix.
-            if ($credit->getValue() - $credit->getUsed() > 0)
+            //for fee credits we can use credits more than the value also
+            if ($credit->getValue() - $credit->getUsed() > 0 or $creditType == self::FEE_CREDIT)
             {
-                $creditsUsed = $this->getCreditsUsed($credit, $amount);
+                // Use all the credits from the last available credit
+                if ($creditType == self::FEE_CREDIT and $lastAvailableCreditId == $credit->getId())
+                {
+                    $creditsUsed = $amount;
+                }
+                else
+                {
+                    $creditsUsed = $this->getCreditsUsed($credit, $amount);
+                }
 
                 $creditsConsumed += $creditsUsed;
 

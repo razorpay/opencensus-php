@@ -42,15 +42,40 @@ class Core extends Base\Core
             ]
         );
 
+        $balanceType = null;
+
+        if (isset($input[Entity::BALANCE_TYPE]) === true)
+        {
+            $balanceType = $input[Entity::BALANCE_TYPE];
+        }
+
         // validations
 
         Validator::validateNotificationEmailRules($input);
 
-        Validator::validateAndTranslateAccountNumberForBanking($input, $merchant);
+        if ($balanceType === null)
+        {
+            Validator::validateAndTranslateAccountNumberForBanking($input, $merchant);
+        }
 
         $balanceId = $input[Entity::BALANCE_ID];
 
-        $balance = $this->repo->balance->findOrFailById($balanceId);
+        if ($balanceType === null)
+        {
+            $balance = $this->repo->balance->findOrFailById($balanceId);
+        }
+        else if($balanceType === \RZP\Models\Merchant\Credits\Type::FEE_CREDIT)
+        {
+            $balance = (new Merchant\Credits\Balance\Core())->createOrFetchCreditBalanceOfMerchant($merchant, 'fee_credit', 'banking');
+
+            $balanceId = $balance->getId();
+
+            array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
+
+            array_pull($input, Balance\Entity::MERCHANT_ID);
+
+            $input[Entity::BALANCE_ID] = $balanceId;
+        }
 
         $type = $input[Entity::TYPE] ?? Entity::NOTIFICATION;
 
@@ -64,7 +89,16 @@ class Core extends Base\Core
         // associations
         $lowBalanceConfig->merchant()->associate($merchant);
 
-        $lowBalanceConfig->balance()->associate($balance);
+        if ($balanceType !== null)
+        {
+            $lowBalanceConfig->setBalanceId($balanceId);
+
+            $lowBalanceConfig->setBalanceType($balanceType);
+        }
+        else
+        {
+            $lowBalanceConfig->balance()->associate($balance);
+        }
 
         $this->repo->saveOrFail($lowBalanceConfig);
 
@@ -440,17 +474,44 @@ class Core extends Base\Core
 
         $currentTime = Carbon::now()->getTimestamp();
 
-        $balanceEntity      = $lowBalanceConfigEntity->balance;
-        $balanceType        = $balanceEntity->getType();
-        $balanceAccountType = $balanceEntity->getAccountType();
-        $channel            = $balanceEntity->getChannel();
+        $configBalanceType = $lowBalanceConfigEntity->getBalanceType();
+
+        $balanceEntity = null;
+        $balanceType = null;
+        $balanceAccountType = null;
+        $channel = null;
+        $balanceId = null;
+
+        if ($configBalanceType === \RZP\Models\Merchant\Credits\Type::FEE_CREDIT)
+        {
+            $balanceId = $lowBalanceConfigEntity->getBalanceId();
+        }
+        else if($configBalanceType === null)
+        {
+            $balanceEntity      = $lowBalanceConfigEntity->balance;
+            $balanceType        = $balanceEntity->getType();
+            $balanceAccountType = $balanceEntity->getAccountType();
+            $channel            = $balanceEntity->getChannel();
+            $balanceId          = $balanceEntity->getId();
+        }
 
         $thresholdAmount    = $lowBalanceConfigEntity->getThresholdAmount();
 
-        $balanceAmount = $this->getBalanceDependingUponProductAccountTypeAndChannel($balanceEntity,
-                                                                                    $balanceAccountType,
-                                                                                    $channel,
-                                                                                    $balanceType);
+        $balanceAmount = 0;
+
+        if ($configBalanceType === null)
+        {
+            $balanceAmount = $this->getBalanceDependingUponProductAccountTypeAndChannel($balanceEntity,
+                $balanceAccountType,
+                $channel,
+                $balanceType);
+        }
+        else if($configBalanceType === \RZP\Models\Merchant\Credits\Type::FEE_CREDIT)
+        {
+            $balanceAmount = $this->repo->credits->getMerchantCreditsOfType($lowBalanceConfigEntity->getMerchantId(), \RZP\Models\Merchant\Credits\Type::FEE_CREDIT);
+
+            $balanceType = $lowBalanceConfigEntity->getBalanceType();
+        }
 
         $this->trace->info(
             TraceCode::LOW_BALANCE_CONFIG_ALERTS_JOB_DEBUG_DATA,
@@ -458,10 +519,11 @@ class Core extends Base\Core
                 'current_time'     => $currentTime,
                 'balance_amount'   => $balanceAmount,
                 'threshold_amount' => $thresholdAmount,
-                'balance_id'       => $balanceEntity->getId(),
+                'balance_id'       => $balanceId,
                 'notify_at'        => $lowBalanceConfigEntity->getNotifyAt(),
                 'type'             => $lowBalanceConfigEntity->getType(),
                 'autoload_amount'  => $lowBalanceConfigEntity->getAutoloadAmount(),
+                'balance_type'     => $lowBalanceConfigEntity->getBalanceType(),
             ]
         );
 
@@ -488,9 +550,11 @@ class Core extends Base\Core
         else
         {
             $this->sendLowBalanceNotificationEmails($lowBalanceConfigEntity,
-                $balanceEntity,
                 $balanceAmount,
-                $thresholdAmount);
+                $thresholdAmount,
+                $balanceId,
+                $balanceType,
+                $balanceEntity);
 
             $isEmailSent = true;
         }
@@ -587,23 +651,33 @@ class Core extends Base\Core
     }
 
     protected function sendLowBalanceNotificationEmails(Entity $lowBalanceConfigEntity,
-                                                        Balance\Entity $balanceEntity,
                                                         $balanceAmount,
-                                                        $thresholdAmount)
+                                                        $thresholdAmount,
+                                                        $balanceId,
+                                                        $balanceType,
+                                                        Balance\Entity $balanceEntity = null)
     {
         $notificationEmails = $lowBalanceConfigEntity->getNotificationEmails();
 
         // mailable emails are sent to multiple email addresses if passed an array.
         // hence converting comma separated emails to array
         $notificationEmails = explode(',', $notificationEmails);
+        $maskedAccountNumber = null;
+
+        if ($balanceType === null)
+        {
+            $maskedAccountNumber = mask_except_last4($balanceEntity->getAccountNumber());
+        }
 
         $data = [
             'emails'                => $notificationEmails,
-            'masked_account_number' => mask_except_last4($balanceEntity->getAccountNumber()),
+            'masked_account_number' => $maskedAccountNumber,
             'available_balance'     => (float) $balanceAmount / 100,
             'threshold'             => (float) $thresholdAmount / 100,
             'merchant_id'           => $lowBalanceConfigEntity->getMerchantId(),
             'business_name'         => $lowBalanceConfigEntity->merchant->merchantDetail->getBusinessName(),
+            'balance_id'            => $balanceId,
+            'balance_type'          => $balanceType
         ];
 
         $this->trace->info(

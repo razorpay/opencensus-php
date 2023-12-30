@@ -222,6 +222,17 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function updateFeeRecoveryStatusById($id, $status)
+    {
+        $idColumn     = $this->dbColumn(Entity::ID);
+
+        $dataToUpdate = [Entity::STATUS => $status];
+
+        return $this->newQuery()
+            ->where($idColumn, '=', $id)
+            ->update($dataToUpdate);
+    }
+
     public function updateBulkStatus($ids,
                                      $status)
     {

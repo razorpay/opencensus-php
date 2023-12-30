@@ -73,6 +73,11 @@ class Core extends Base\Core
 
     public function create($merchant, $input, $payment = null)
     {
+        if (isset($input['type']) and $input['type'] === Credits\Type::FEE_CREDIT)
+        {
+            $input['product'] = Product::BANKING;
+        }
+
         $creditsLog = (new Credits\Entity)->build($input);
 
         $creditsLog->getValidator()->validateCreditsValue($input);
@@ -81,14 +86,17 @@ class Core extends Base\Core
 
         $creditsLog->merchant()->associate($merchant);
 
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
+        if ($input['type'] !== Type::FEE_CREDIT)
+        {
+            $balance = $this->repo->balance->getMerchantBalance($merchant);
 
-        $creditsLog->getValidator()->validateCreditsType($balance, $creditsLog->getType());
+            $creditsLog->getValidator()->validateCreditsType($balance, $creditsLog->getType());
 
-        $currentMerchantCredits = $creditsLog->getMerchantCredits();
+            $currentMerchantCredits = $creditsLog->getMerchantCredits();
 
-        $creditsLog->getValidator()->validateBalanceCredits(
-            $creditsLog->getValue(), $currentMerchantCredits, $creditsLog->getType());
+            $creditsLog->getValidator()->validateBalanceCredits(
+                $creditsLog->getValue(), $currentMerchantCredits, $creditsLog->getType());
+        }
 
         $this->app['workflow']->handle((new \stdClass), $creditsLog);
 
@@ -151,6 +159,27 @@ class Core extends Base\Core
             $newCredits = $merchantRefundCredits + $credits;
 
             $this->repo->balance->editMerchantRefundCredits($merchant, $newCredits);
+        }
+        else if ($type === Credits\Type::FEE_CREDIT)
+        {
+            $merchantFeeCredit = (new Repository())->getMerchantCreditsOfType($merchant->getId(), Type::FEE_CREDIT);
+
+            $newCredits = $merchantFeeCredit + $credits;
+
+            $this->trace->info(
+                TraceCode::MERCHANT_FEE_CREDITS_LOADING_EVENT,
+                [
+                    'merchant'              => $merchant->getId(),
+                    'merchant_fee_credit'   => $merchantFeeCredit,
+                    'new_credit'            => $newCredits,
+                ]);
+
+            $creditBalance = (new Balance\Core)->createOrFetchCreditBalanceOfMerchant(
+                $merchant,
+                Credits\Type::FEE_CREDIT,
+                Product::BANKING);
+
+            $creditBalance->incrementBalance($credits);
         }
     }
 

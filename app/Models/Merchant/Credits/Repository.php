@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Credits;
 use Carbon\Carbon;
 
 use Illuminate\Database\Eloquent\Collection;
+use RZP\Base\Common;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -178,7 +179,21 @@ class Repository extends Base\Repository
 
     public function getMerchantCreditsOfType(string $merchantId, string $type): int
     {
-        if ($type === Type::REFUND)
+        if ($type === Type::REFUND or $type === Type::FEE_CREDIT)
+        {
+            $query = $this->newQuery()
+                ->selectRaw('SUM(value - used) as sum')
+                ->merchantId($merchantId)
+                ->where(function ($query)
+                {
+                    $query->where(Entity::EXPIRED_AT, '>', time())
+                        ->orWhereNull(Entity::EXPIRED_AT);
+                }
+                )
+                ->where(Entity::TYPE, '=', $type)
+                ->first();
+        }
+        else if($type === Type::FEE_CREDIT)
         {
             $query = $this->newQuery()
                 ->selectRaw('SUM(value - used) as sum')
@@ -520,11 +535,18 @@ class Repository extends Base\Repository
 
     public function getCreditsForMerchant(string $merchantId, string $product = null, string $type = null)
     {
-        return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->where(Entity::PRODUCT, $product)
-                    ->where(Entity::TYPE, $type)
-                    ->get();
+        $createdAtColumn = $this->dbColumn(Common::CREATED_AT);
+
+        $query = $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::PRODUCT, $product)
+            ->where(Entity::TYPE, $type);
+
+        if ($type === Type::FEE_CREDIT)
+        {
+            $query->orderBy($createdAtColumn, 'asc');
+        }
+        return $query->get();
     }
 
     protected function addQueryParamFetchExpired($query, $params)

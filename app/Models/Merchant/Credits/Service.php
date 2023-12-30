@@ -18,6 +18,8 @@ use RZP\Models\Merchant\Balance as MerchantBalance;
 
 class Service extends Base\Service
 {
+    const RZPX_FEE_CREDIT = 'rzpx_fee_credit';
+
     public function grantCreditsForMerchant($mid, array $input, $payment = null)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
@@ -258,5 +260,10 @@ class Service extends Base\Service
     public function expireAmountCreditsInPgLedger(array $input)
     {
         return (new Credits\Core)->registerReminderForExpiringAmountCredit($input);
+    }
+
+    public function isRzpxFeeCreditEnabledForMerchant(\RZP\Models\Merchant\Entity $merchant)
+    {
+        return $merchant->isFeatureEnabled(self::RZPX_FEE_CREDIT);
     }
 }

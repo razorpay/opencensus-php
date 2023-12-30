@@ -1989,6 +1989,12 @@ class Constants
 
     const PAYOUT_LOW_BALANCE = 'payout_low_balance';
 
+
+    /**
+     * Feature flag to enable merchants to use fee_credits for fee recovery
+     */
+    const RZPX_FEE_CREDIT = 'rzpx_fee_credit';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2764,6 +2770,8 @@ class Constants
         self::EXCLUDE_FROM_CA_BILLING                => true,
         self::AUTO_DISABLE_PAYOUTS                   => true,
         self::PAYOUT_LOW_BALANCE                     => true,
+        self::REMOVE_EMANDATE_COOLOFF                => true,
+        self::RZPX_FEE_CREDIT                        => true,
     ];
 
     // Entity type constants
@@ -3908,6 +3916,11 @@ class Constants
             'feature'       => self::SOURCE_TO_PAY_PRO,
             'display_name'  => 'Source to Pay Pro',
             'documentation' => 'To determine subscription tier for merchant on X dashboard'
+        ],
+        self::RZPX_FEE_CREDIT => [
+            'feature'       => self::RZPX_FEE_CREDIT,
+            'display_name'  => 'RazorpayX Fee Credit',
+            'documentation' => 'To use Fee Credits as fees for payouts'
         ],
         self::EXCLUDE_FROM_CA_BILLING  => [
             'feature'       => self::EXCLUDE_FROM_CA_BILLING,

@@ -8,4 +8,5 @@ class Type
     const FEE                = 'fee';
     const REFUND             = 'refund';
     const REWARD_FEE         = 'reward_fee';
+    const FEE_CREDIT         = 'fee_credit';
 }

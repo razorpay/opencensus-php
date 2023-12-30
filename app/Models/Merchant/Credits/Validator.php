@@ -22,7 +22,7 @@ class Validator extends Base\Validator
         Entity::CAMPAIGN                => 'required|string|max:255',
         # Value is in paise
         Entity::VALUE                   => 'required|integer',
-        Entity::TYPE                    => 'sometimes|filled|string|max:20|in:amount,fee,refund,reward_fee',
+        Entity::TYPE                    => 'sometimes|filled|string|max:20|in:amount,fee,refund,reward_fee,fee_credit',
         Entity::EXPIRED_AT              => 'sometimes|integer',
         Entity::PROMOTION_ID            => 'sometimes|alpha_num|max:14',
         Entity::PRODUCT                 => 'sometimes|in:banking',
@@ -42,7 +42,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID             => 'required|string|size:14',
         Entity::REMARKS                 => 'sometimes|nullable',
         Entity::IDEMPOTENCY_KEY         => 'required|string',
-        Entity::TYPE                    => 'required|string|max:20|in:reward_fee',
+        Entity::TYPE                    => 'required|string|max:20|in:reward_fee,fee_credit',
         Entity::PRODUCT                 => 'required|string|in:banking',
     ];
 

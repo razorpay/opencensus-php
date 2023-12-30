@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const ID                  = 'id';
     const MERCHANT_ID         = 'merchant_id';
     const BALANCE_ID          = 'balance_id';
+    const BALANCE_TYPE        = 'balance_type';
     const THRESHOLD_AMOUNT    = 'threshold_amount';
     const NOTIFICATION_EMAILS = 'notification_emails';
     const STATUS              = 'status';
@@ -181,6 +182,21 @@ class Entity extends Base\PublicEntity
     public function setNotifyAt(int $notifyAt)
     {
         $this->setAttribute(self::NOTIFY_AT, $notifyAt);
+    }
+
+    public function setBalanceId(string $balanceId)
+    {
+        $this->setAttribute(self::BALANCE_ID, $balanceId);
+    }
+
+    public function setBalanceType(string $balanceType)
+    {
+        $this->setAttribute(self::BALANCE_TYPE, $balanceType);
+    }
+
+    public function getBalanceType()
+    {
+        return $this->getAttribute(self::BALANCE_TYPE);
     }
 
     public function setType($type)

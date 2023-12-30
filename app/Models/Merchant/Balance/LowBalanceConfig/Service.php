@@ -6,6 +6,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Traits\ServiceHasCrudMethods;
+use RZP\Models\Merchant\Credits\Balance\Product;
+use RZP\Models\Merchant\Credits\Type;
 
 class Service extends Base\Service
 {
@@ -29,6 +31,30 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
+        if (isset($input[Entity::BALANCE_TYPE]) === true and $input[Entity::BALANCE_TYPE] === Type::FEE_CREDIT)
+        {
+            $creditBalance = (new \RZP\Models\Merchant\Credits\Balance\Core())->fetchCreditBalanceOfMerchant($this->merchant,
+                Type::FEE_CREDIT,
+                Product::BANKING);
+
+            if ($creditBalance === null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_INVALID_TYPE,
+                    null,
+                    [
+                        'input'    => $input
+                    ]);
+            }
+
+            $input[Entity::BALANCE_ID] = $creditBalance->getId();
+
+            $entities = $this->entityRepo->fetch($input, $this->merchant->getId());
+
+            return $entities->toArrayPublic();
+
+        }
+
         if (isset($input[Entity::ACCOUNT_NUMBER]) === true)
         {
             Validator::validateAndTranslateAccountNumberForBanking($input, $this->merchant);

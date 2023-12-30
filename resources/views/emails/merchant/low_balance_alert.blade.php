@@ -200,14 +200,22 @@
                                                             @endif
                                                         </div>
                                                         <div class="center-align font-size-medium font-color-secondary" style="text-align: center; font-size: 14px; line-height: 1.5; color: #bdbfC9; padding-bottom: 16px;">
-                                                            The balance in your RazorpayX Account {{ $masked_account_number }} is now lower than the amount of <strong>₹{{ $threshold }}</strong> set by you.
+                                                            @if(empty($balance_type))
+                                                                The balance in your RazorpayX Account {{ $masked_account_number }} is now lower than the amount of <strong>₹{{ $threshold }}</strong> set by you.
+                                                            @else
+                                                                The fee credit balance in your RazorpayX Account {{ $merchant_id }} is now lower than the amount of <strong>₹{{ $threshold }}</strong> set by you.
+                                                            @endif
                                                         </div>
                                                     </div>
                                                     <div class="content title highlight" style="border-top: 2px solid #528ff0; width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; background-color: #242b4d; padding-top: 16px; border-radius: 2px;"> </div>
                                                     <div class="card secondary title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-left: 24px; padding-right: 24px;">
                                                         <div class="description margin-bottom-24" style="text-align: left; color: #bdbfC9; font-size: 14px; line-height: 1.5;">
                                                             <div style="padding-bottom: 12px;">
-                                                                Present Account Balance: <strong>₹{{ $available_balance }}</strong>
+                                                                @if(empty($balance_type))
+                                                                    Present Account Balance: <strong>₹{{ $available_balance }}</strong>
+                                                                @else
+                                                                    Present Fee Account Balance: <strong>₹{{ $available_balance }}</strong>
+                                                                @endif
                                                             </div>
                                                             <div style="padding-bottom: 24px;">
                                                                 Please load funds in order to continue creating payouts. You will keep receiving the alerts until your balance is higher than <strong>₹{{ $threshold }}</strong>

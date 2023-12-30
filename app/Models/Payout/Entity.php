@@ -46,6 +46,7 @@ use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Tests\Functional\Fixtures\Entity\Credits;
 use RZP\Models\SubVirtualAccount\Core as SubVaCore;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Exception\UserWorkflowNotApplicableException;
@@ -313,6 +314,10 @@ class Entity extends Base\PublicEntity
 
     const COUNT = 'count';
     const DAYS  = 'days';
+
+    // Fee credit related constants
+    const BANKING    = 'banking';
+    const FEE_CREDIT = 'fee_credit';
 
     const SCHEDULED_PAYOUTS_SUMMARY = [
         self::TODAY,
@@ -1726,13 +1731,51 @@ class Entity extends Base\PublicEntity
         // We need to create a fee_recovery entity for every payout when it goes from created to initiated state.
         // Keeping this code here because this status change is allowed only once and there is no chance of this
         // getting triggered twice
+
         if (($currentStatus === Status::CREATED) and
             ($status === Status::INITIATED) and
             ($this->isBalanceAccountTypeDirect() === true) and
             ($this->getFeeType() !== Transaction\CreditType::REWARD_FEE) and
             ($this->getIsPayoutService() === false))
         {
-            (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($this, true);
+            $featureEnabled = (new \RZP\Models\Merchant\Credits\Service())->isRzpxFeeCreditEnabledForMerchant($this->merchant);
+
+            if ($featureEnabled === true and $this->getFeeType() === null)
+            {
+
+                $feeRecovery = (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($this);
+
+                if ($feeRecovery === null) {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID,
+                        null,
+                        [
+                            'entity_id' => $this->getId(),
+                            'entity_type' => 'payout'
+                        ]);
+                }
+
+                $fees = $this->getFees();
+
+                $app = App::getFacadeRoot();
+
+                $app['repo']->transaction(
+                    function () use($feeRecovery, $fees) {
+
+                        $feeCreditsConsumed = (new \RZP\Models\Merchant\Credits\Transaction\Core)->subtractAndGetMerchantCreditsConsumed($this->merchant, self::FEE_CREDIT, self::BANKING, $fees, $this);
+
+                        if ($feeCreditsConsumed !== 0 and $feeCreditsConsumed === $fees) {
+                            // We will set the payout_id in place of recovery payout_id.
+                            $feeRecovery->setRecoveryPayoutId($this->getId());
+
+                            (new FeeRecovery\Core)->updateFeeRecoveryStatusForFeeCredit($feeRecovery, FeeRecovery\Status::RECOVERED);
+                        }
+                    });
+            }
+            else
+            {
+                (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($this, true);
+            }
         }
 
         $this->setAttribute(self::STATUS, $status);

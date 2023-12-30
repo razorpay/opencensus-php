@@ -171,6 +171,118 @@ class FeeRecoveryTest extends TestCase
         $this->assertEquals(0, $payout['tax']);
     }
 
+    public function testCreateFeeRecoveryAtPayoutCreationWithFeeCredits()
+    {
+        Carbon::setTestNow(Carbon::now());
+
+        $timeStamp = Carbon::now()->getTimestamp();
+
+        $this->fixtures->create('feature', [
+            'name'          => 'rzpx_fee_credit',
+            'entity_id'     => '10000000000000',
+            'entity_type'   => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $contact = $this->createContact();
+
+        $fundAccount = $this->createFundAccountForContact($contact);
+
+        // Create a payout
+        $this->createPayoutForFundAccount($fundAccount, $this->balance);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['initiated_at' => $timeStamp]);
+
+        // Updating FTA and Payout status to initiated to allow transition to reversed
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $payout->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::INITIATED]);
+
+        $this->fixtures->edit('payout', $payout->getId(), ['status' => Payout\Status::INITIATED]);
+
+        $payout = $this->getDbLastEntity('payout')->toArray();
+
+        $feeRecovery = $this->getDbLastEntity('fee_recovery')->toArray();
+
+        $feeCredits = $this->getDbLastEntity('credits')->toArray();
+
+        $currentFeeCredits = (new \RZP\Models\Merchant\Credits\Repository())->getMerchantCreditsOfType($this->merchant->getId(), 'fee_credit');
+
+        $this->assertEquals(-590, $currentFeeCredits);
+
+        $this->assertEquals('fee_credit', $feeCredits['type']);
+        $this->assertEquals(0, $feeCredits['value']);
+        $this->assertEquals($payout['fees'], $feeCredits['used']);
+
+        $this->assertEquals($feeRecovery['entity_id'], $payout['id']);
+        $this->assertEquals(FeeRecovery\Status::RECOVERED, $feeRecovery['status']);
+        $this->assertEquals('debit', $feeRecovery['type']);
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+    }
+
+    public function testCreateFeeRecoveryAtPayoutCreationFailedWithFeeCredits()
+    {
+        $this->testCreateFeeRecoveryAtPayoutCreationWithFeeCredits();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // fail the payout
+        $this->updateFtaAndSource($payout, Payout\Status::FAILED,'944926344925');
+
+        $feeRecovery = $this->getDbLastEntity('fee_recovery')->toArray();
+
+        $feeCredits = $this->getDbLastEntity('credits')->toArray();
+
+        $currentFeeCredits = (new \RZP\Models\Merchant\Credits\Repository())->getMerchantCreditsOfType($this->merchant->getId(), 'fee_credit');
+
+        $this->assertEquals(0, $currentFeeCredits);
+
+        $this->assertEquals('fee_credit', $feeCredits['type']);
+        $this->assertEquals(0, $feeCredits['value']);
+        $this->assertEquals(0, $feeCredits['used']);
+
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecovery['type']);
+        $this->assertEquals($payout['id'], $feeRecovery['entity_id']);
+        $this->assertEquals(FeeRecovery\Entity::PAYOUT, $feeRecovery['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::RECOVERED, $feeRecovery['status']);
+    }
+
+    public function testCreateFeeRecoveryAtPayoutCreationReversedWithFeeCredits()
+    {
+        $this->testCreateFeeRecoveryAtPayoutCreationWithFeeCredits();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Reverse the payout
+        $this->updateFtaAndSource($payout, Payout\Status::REVERSED,'944926344925');
+
+        $reversal = $this->getDbLastEntity('reversal')->toArray();
+
+        $feeRecovery = $this->getDbLastEntity('fee_recovery')->toArray();
+
+        $feeCredits = $this->getDbLastEntity('credits')->toArray();
+
+        $currentFeeCredits = (new \RZP\Models\Merchant\Credits\Repository())->getMerchantCreditsOfType($this->merchant->getId(), 'fee_credit');
+
+        $this->assertEquals(0, $currentFeeCredits);
+
+        $this->assertEquals('fee_credit', $feeCredits['type']);
+        $this->assertEquals(0, $feeCredits['value']);
+        $this->assertEquals(0, $feeCredits['used']);
+
+        $this->assertEquals($payout->getId(), $reversal['entity_id']);
+
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecovery['type']);
+        $this->assertEquals($reversal['id'], $feeRecovery['entity_id']);
+        $this->assertEquals(FeeRecovery\Entity::REVERSAL, $feeRecovery['entity_type']);
+        $this->assertEquals(FeeRecovery\Status::RECOVERED, $feeRecovery['status']);
+    }
+
     public function testCreateFeeRecoveryAtPayoutCreationForRBLPayoutsReversedWithRewards()
     {
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee' , 'product' => 'banking']);
