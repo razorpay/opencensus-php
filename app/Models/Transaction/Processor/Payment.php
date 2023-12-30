@@ -21,6 +21,7 @@ use RZP\Models\Partner\Service as PartnerService;
 use RZP\Models\Schedule\Library as ScheduleLibrary;
 use RZP\Models\EntityOrigin\Constants as EntityOriginConstants;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantAppEntity;
+use function Symfony\Component\Translation\t;
 
 class Payment extends Base
 {
@@ -359,6 +360,20 @@ class Payment extends Base
         if (isset($merchantDetail) === false)
         {
             return false;
+        }
+
+        if ($merchant->isRazorpayOrgId() === true && $merchantDetail->isUnregisteredBusiness() === false)
+        {
+            if (isset($payment->card) === true and ($payment->card->isPrepaid() === true or $payment->card->isSubTypeBusiness() === true))
+            {
+                $this->trace->info(
+                    TraceCode::BLOCKING_AMOUNT_CREDIT_FOR_PAYMENTS,
+                    [
+                        'payment_id' => $payment->getId()
+                    ]);
+
+                return true;
+            }
         }
 
         if (($merchantDetail->isUnregisteredBusiness() === true)

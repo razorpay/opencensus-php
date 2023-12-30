@@ -10944,6 +10944,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMAIL_OPTIONAL_CHECK_FOR_PARNTER_FAILED              = "EMAIL_OPTIONAL_CHECK_FOR_PARNTER_FAILED";
     const EMAIL_OPTIONAL_FOR_PARTNER_EXP_RESULT                = "EMAIL_OPTIONAL_FOR_PARTNER_EXP_RESULT";
 
+    const BLOCKING_AMOUNT_CREDIT_FOR_PAYMENTS = 'BLOCKING_AMOUNT_CREDIT_FOR_PAYMENTS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

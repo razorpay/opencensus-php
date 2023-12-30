@@ -1364,6 +1364,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::PREPAID);
     }
 
+    public function isSubTypeBusiness(): bool
+    {
+        return ($this->getSubType() === SubType::BUSINESS);
+    }
+
     public function isRecurringSupported(bool $isInitial = true, bool $hasSubscription = false)
     {
         $iin = $this->iinRelation;
