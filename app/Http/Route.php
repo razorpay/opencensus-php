@@ -17162,6 +17162,7 @@ class Route
             'payment_fetch_by_id_internal',
             'fetch_1cc_customer_consent_internal',
             'one_cc_shopify_order_for_mcs',
+            'order_payments',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',
