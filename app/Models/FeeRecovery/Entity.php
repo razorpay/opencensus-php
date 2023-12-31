@@ -161,6 +161,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(ENTITY::ATTEMPT_NUMBER, $attemptNumber);
     }
 
+    public function setEntityId(string $entityId)
+    {
+        $this->setAttribute(ENTITY::ENTITY_ID, $entityId);
+    }
+
+    public function setEntityType(string $entityType)
+    {
+        $this->setAttribute(ENTITY::ENTITY_TYPE, $entityType);
+    }
+
     // --------------- End Setters ---------------
 
     // --------------- Relations ---------------

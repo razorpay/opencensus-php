@@ -327,13 +327,12 @@ class Core extends Base\Core
                                        'fee_recovery_payout_amount' =>  $newFeeRecoveryPayout->getAmount()
                                    ]
                 );
-
-                $newFeeRecoveryEntities = $this->getNewFeeRecoveryEntities($previousFeeRecoveryEntities, $newFeeRecoveryPayout);
-
                 $this->mutex->acquireAndRelease(
                     'recreate_fee_recovery_' . $previousRecoveryPayout->getId(),
-                    function () use ($newFeeRecoveryEntities, $previousFeeRecoveryEntities)
+                    function () use ($previousFeeRecoveryEntities, $newFeeRecoveryPayout)
                     {
+                        $newFeeRecoveryEntities = $this->getNewFeeRecoveryEntities($previousFeeRecoveryEntities, $newFeeRecoveryPayout);
+
                         $this->insertBulkFeeRecoveryEntitiesViaBatching($newFeeRecoveryEntities);
                         $this->updateBulkStatusViaBatching($previousFeeRecoveryEntities, Status::FAILED);
                     },
@@ -1223,7 +1222,9 @@ class Core extends Base\Core
                 $sourceEntity = $feeRecoverySourceEntity->payout;
             }
 
-            $newFeeRecovery->entity()->associate($sourceEntity);
+            $newFeeRecovery->setEntityType($feeRecoverySourceEntity->getEntityType());
+
+            $newFeeRecovery->setEntityId($sourceEntity->getId());
 
             $newFeeRecoveryEntities[] = $newFeeRecovery->toArray();
         }
