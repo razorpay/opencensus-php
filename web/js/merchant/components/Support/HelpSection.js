@@ -159,7 +159,7 @@ const HelpSection = ({ user, history, org, fetchTicketsRaisedByAgents: _fetchTic
           splitzHost={splitzHost}
           isDev={isDev}
           isPartnerDashboard={isPartnerDashboard}
-          hideTicketCreationCTA={checkEligibilityForFeeBasedGating(user)}
+          hideTicketCreationCTA={checkEligibilityForFeeBasedGating(user) || !user.activation_status}
         />
       </Suspense>
     </ErrorBoundary>
