@@ -38,6 +38,9 @@ class Channel
     // This channel is for malaysain merchant transaction
     const RHB = 'rhb';
 
+    // This channel is for in person transactions
+    const HDFC_POS = 'HDFC_POS';
+
     public static $gateways = [
         self::KOTAK => [
             Payment\Gateway::AMEX,
@@ -94,6 +97,7 @@ class Channel
             self::MCS,
             self::RHB,
             self::IDFC,
+            self::HDFC_POS
         ];
     }
 

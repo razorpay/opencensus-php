@@ -411,6 +411,49 @@ class Core extends Base\Core
             ];
         }
 
+        // For merchants who have omni feature enabled, settlements will be done separately for online
+        // and offline source_channel. To enable this, we will be passing omni meta details
+        // along with the transaction entity.
+        if($txn->merchant->isOmniEnabled() === true)
+        {
+            $payment = null;
+
+            if ($txn->isTypePayment() === true)
+            {
+                $payment = $txn->source;
+            }
+
+            if ($txn->isTypeAdjustment() === true)
+            {
+                $adjustment = $txn->source;
+
+                if(isset($adjustment) === true)
+                {
+                    if ($adjustment->getEntityType() === Transaction\Type::DISPUTE)
+                    {
+                        $payment = $adjustment->entity->payment;
+                    }
+
+                    if($adjustment->getEntityType() === Transaction\Type::PAYMENT)
+                    {
+                        $payment = $adjustment->entity;
+                    }
+                }
+            }
+
+            if(empty($meta) === true || isset($meta) === false)
+            {
+                $meta = [];
+            }
+
+            $meta += [
+                "omni_details" => [
+                    "enabled" => true,
+                    "source_channel" => $payment ? $payment->getSourceChannel(): "online"
+                ]
+            ];
+        }
+
         // Add meta details for refund type txn
         if (($txn->isTypeRefund() === true) || ($txn->isTypeTransfer() === true))
         {
@@ -424,7 +467,7 @@ class Core extends Base\Core
                 $meta = [];
             }
 
-            $meta = $this->getMetaforJpmcImportFlow($txn, $meta); 
+            $meta = $this->getMetaforJpmcImportFlow($txn, $meta);
         }
 
         $onHoldReason = ($txn->getOnHold() === true) ? 'created with transaction on hold' : '';
@@ -499,7 +542,7 @@ class Core extends Base\Core
         }
 
         if ((isset($merchantEntity) === false) ||
-            (isset($paymentEntity) === false) || 
+            (isset($paymentEntity) === false) ||
             (isset($orderEntity) === false) ||
             (empty($cartInfo) === true) ||
             (empty($notes) === true))
@@ -762,6 +805,16 @@ class Core extends Base\Core
             $meta += [
                 "settlement_by_currency" => true,
                 "payment_currency" => $metaSource->getCurrency()
+            ];
+        }
+
+        if($txn->merchant->isOmniEnabled() === true and $metaSource->getEntity() === Transaction\Type::PAYMENT)
+        {
+            $meta += [
+                "omni_details" => [
+                    "enabled" => true,
+                    "source_channel" => $metaSource->getSourceChannel()
+                ]
             ];
         }
 
