@@ -2268,4 +2268,32 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertStringContainsString('am=270.71', $qrCode['qr_string']);
     }
 
+    public function testFetchPaymentsForQrCodeFromDB()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::QR_FETCH_PAYMENT_FROM_DB => RazorxTreatment::RAZORX_VARIANT_ON]);
+
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ]
+        );
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+        $qrCodeId = str_after($qrCode['id'], 'qr_');
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantId'] = $terminal->getGatewayMerchantId();
+        $request['content']['merchantTranId'] = $qrCode['reference'] . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+        $expectedResponse = $this->testData['testFetchPaymentsForQrCode'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $this->fetchQrPayment('qr_' . $qrCodeId));
+    }
+
 }

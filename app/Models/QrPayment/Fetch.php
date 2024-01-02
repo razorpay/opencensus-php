@@ -40,7 +40,6 @@ class Fetch extends BaseFetch
         PaymentEntity::NOTES,
         PaymentEntity::STATUS,
         Entity::PAYMENT_ID,
-        Entity::QR_CODE_ID,
         Entity::PROVIDER_REFERENCE_ID,
         EsRepository::CUSTOMER_EMAIL,
         Entity::MERCHANT_ID,
@@ -52,5 +51,6 @@ class Fetch extends BaseFetch
     ];
 
     const COMMON_FIELDS = [
+        Entity::QR_CODE_ID,
     ];
 }

@@ -989,6 +989,7 @@ final class RazorxTreatment
      */
     const THREE_DECIMAL_CURRENCY_VALIDATION   = 'three_decimal_currency_validation';
 
+    const QR_FETCH_PAYMENT_FROM_DB = 'qr_fetch_payment_from_db';
     /**
      * Razorx flag to stop sending order data from API to PG-Router
      */

@@ -2,22 +2,23 @@
 
 namespace RZP\Models\QrPayment;
 
-use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\Cache;
+use Razorpay\Trace\Logger as Trace;
 
-use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Constants\Es;
-use RZP\Trace\Tracer;
+use RZP\Error\ErrorCode;
+use RZP\Models\Base;
+use RZP\Models\BharatQr;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
-use RZP\Models\BharatQr;
+use RZP\Trace\Tracer;
 use RZP\Models\BankTransfer;
 use RZP\Constants\HyperTrace;
 use RZP\Models\QrPaymentRequest;
 use RZP\Models\QrPaymentRequest\Type;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status as QrV2Status;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Service as QrV2Service;
@@ -65,15 +66,36 @@ class Service extends Base\Service
 
     public function fetchMultiplePayments($input)
     {
-        (new Fetch)->processFetchParams($input);
+        $routeName = $this->app['api.route']->getCurrentRouteName();
 
-        $qrPaymentIds = (new EsRepository('qr_payment'))->buildQueryAndSearch($input, $this->merchant->getId());
+        if (($routeName === 'qr_payment_fetch_for_qr_code') and
+            ($this->merchant->getId() !== null) and
+            ($this->checkIfExperimentEnabledtoFetchPaymentFromDB($this->merchant->getId()) === true))
+        {
+            $this->trace->info(TraceCode::QR_CODE_FETCH_PAYMENT_FROM_DB_REQUEST,
+                               [
+                                   'input'       => $input,
+                                   'merchant_id' => $this->merchant->getId(),
+                               ]);
+
+            $this->repo->qr_payment->setMerchantIdRequiredForMultipleFetch(false);
+
+            $paymentIds = $this->repo->qr_payment->fetch($input)->pluck(Entity::PAYMENT_ID)->toArray();
+
+            return $this->repo->payment->getPaymentsSortedByCreatedAt($paymentIds)->toArrayPublic();
+        }
+        else
+        {
+            (new Fetch)->processFetchParams($input);
+
+            $qrPaymentIds = (new EsRepository('qr_payment'))->buildQueryAndSearch($input, $this->merchant->getId());
 
             $qrPaymentIds = array_map(
-                                function($res) {
-                                    return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
-                                },
-                                $qrPaymentIds[ES::HITS][ES::HITS]);
+                function($res) {
+                    return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
+                },
+                $qrPaymentIds[ES::HITS][ES::HITS]);
+        }
 
         return Tracer::inspan(['name' => HyperTrace::QR_PAYMENT_FETCH_MULTIPLE_PAYMENTS], function () use ($qrPaymentIds) {
             return $this->fetchPaymentsForQrPaymentIds($qrPaymentIds);
@@ -294,4 +316,17 @@ class Service extends Base\Service
             );
         }
     }
+
+    public function checkIfExperimentEnabledtoFetchPaymentFromDB($mid)
+    {
+        $mode = $this->app['rzp.mode'];
+
+        $variant = $this->app['razorx']->getTreatment($mid,
+                                                      RazorxTreatment::QR_FETCH_PAYMENT_FROM_DB,
+                                                      $mode
+        );
+
+        return strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON;
+    }
+
 }
