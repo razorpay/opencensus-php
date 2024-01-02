@@ -83,6 +83,7 @@ class Tracing
             // s2s routes for payments
             'payment_create_private',
             'payment_create_private_json',
+            'payment_create_private_json_internal',
             'payment_create_checkout_json',
             'payment_create_private_old',
             'payment_create_upi',

@@ -17232,6 +17232,7 @@ class Route
 
     protected static $s2sJsonRoutes = [
         'payment_create_private_json',
+        'payment_create_private_json_internal',
         'payment_create_checkout_json',
     ];
 
@@ -17276,6 +17277,7 @@ class Route
         'payment_create_ajax',
         'payment_create_private_old',
         'payment_create_private_json',
+        'payment_create_private_json_internal',
         'payment_create_checkout',
     ];
 
@@ -17284,6 +17286,7 @@ class Route
         'payment_create_checkout',
         'payment_create_private_old',
         'payment_create_private_json',
+        'payment_create_private_json_internal',
     ];
 
     /**
@@ -17316,6 +17319,7 @@ class Route
         'payment_create_nach_register'         => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'           => [Feature::S2S],
         'payment_create_private_json'          => [Feature::S2S_JSON],
+        'payment_create_private_json_internal' => [Feature::S2S_JSON],
         'payment_create_checkout_json'         => [Feature::JSON_V2],
         'payment_charge_token'                 => [Feature::AUTH_SPLIT],
         'recurring_token_pre_debit_notify'     => [Feature::AUTH_SPLIT],
@@ -17627,6 +17631,7 @@ class Route
         'payment_create_nach_register',
         'payment_create_private_old',
         'payment_create_private_json',
+        'payment_create_private_json_internal',
         'payment_create_checkout',
         'payment_create_aeps',
         'payment_create_jsonp',
@@ -17666,6 +17671,7 @@ class Route
         'payment_create_private',
         'payment_create_private_old',
         'payment_create_private_json',
+        'payment_create_private_json_internal',
         'transaction_create',
         'payment_create_recurring',
         'payment_create_nach_register',

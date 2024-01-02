@@ -603,6 +603,7 @@ class Processor
         'payment_create_ajax',
         'payment_create_checkout',
         'payment_create_private_json',
+        'payment_create_private_json_internal',
         'payment_create_private_old'
     ];
 
@@ -1810,7 +1811,8 @@ class Processor
                         }
                     }
 
-                    if ($this->route->getCurrentRouteName() === "payment_create_private_json")
+                    if ($this->route->getCurrentRouteName() === "payment_create_private_json" ||
+                        $this->route->getCurrentRouteName() === "payment_create_private_json_internal")
                     {
                         // experiment for payment_create_private_json route on the basis of merchant ID
 
@@ -2686,6 +2688,7 @@ class Processor
                 $input['route_auth'] = $this->app['basicauth']->getAuthType();
                 return $this->app['pg_router']->validateAndCreatePaymentRedirect($input, true);
             case "payment_create_private_json":
+            case "payment_create_private_json_internal":
                 $input['route_auth'] = $this->app['basicauth']->getAuthType();
                 return $this->app['pg_router']->validateAndCreatePaymentJson($input, true);
             case "payment_create_checkout":
