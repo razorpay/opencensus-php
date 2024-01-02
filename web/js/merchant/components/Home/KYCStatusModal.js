@@ -78,6 +78,13 @@ const KYCStatusModal = ({
     });
   };
 
+  const onNcModalClose = () => {
+    const sessionExpired = window.session_id !== window.sessionStorage.getItem('isNewNc');
+    if (isNewNc && sessionExpired) {
+      window.sessionStorage.setItem('isNewNc', window.session_id);
+    }
+  };
+
   const goToNCOnEasy = () => {
     const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
     trackEvents({
@@ -95,6 +102,7 @@ const KYCStatusModal = ({
       },
     });
     onClose();
+    onNcModalClose();
     window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
   };
 
@@ -222,7 +230,7 @@ const KYCStatusModal = ({
     <>
       {isNewNc && !!content && sessionExpired ? (
         <ModalMask>
-          <Modal className="pan-status-modal nc-modal" onClose={() => onCloseModal()}>
+          <Modal className="pan-status-modal nc-modal" showCloseBtn={false}>
             <div className={`modal-header ${content.background}`}>
               <Image src={ImgNcKyc} alt="nc kyc" className="nc-img" />
             </div>
