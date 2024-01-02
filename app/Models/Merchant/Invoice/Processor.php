@@ -362,32 +362,47 @@ class Processor extends Base\Core
 
             foreach ($details as $type => $feeDetails)
             {
-                $params = [
-                    Entity::MONTH  => $this->month,
-                    Entity::YEAR   => $this->year,
-                    Entity::TYPE   => $type,
-                    Entity::GSTIN  => $this->gstin,
-                    Entity::AMOUNT => $feeDetails[Entity::AMOUNT],
-                    Entity::TAX    => $feeDetails[Entity::TAX],
-                ];
+                // charge collections handles collection for multiple products
+                if ($type == Type::CHARGE_COLLECTIONS)
+                {
+                    if ($this->isChargeCollectionsInvoicingExptEnabled() === true) {
+                        foreach ($feeDetails as $feeDetail) {
+                            $params = [
+                                Entity::MONTH => $this->month,
+                                Entity::YEAR => $this->year,
+                                Entity::TYPE => $type,
+                                Entity::GSTIN => $this->gstin,
+                                Entity::AMOUNT => $feeDetail[Entity::AMOUNT],
+                                Entity::TAX => $feeDetail[Entity::TAX],
+                                Entity::DESCRIPTION => $feeDetail[Entity::DESCRIPTION],
+                            ];
 
-                if (($balance->isTypePrimary() === true) and
-                    ($feeBearer === Merchant\FeeBearer::CUSTOMER)) {
-                    unset($params[Entity::GSTIN]);
+                            $params = $this->filterGSTParams($balance, $feeBearer, $params);
 
-                    $this->app['trace']->info(
-                        TraceCode::INVOICE_WITHOUT_GSTIN,
-                        [
-                            'gstin_no' => $this->gstin,
-                            'Merchant_id' => $this->merchantId,
-                        ]);
+                            $amount += $params[Entity::AMOUNT];
+                            $lineItem = (new Core)->create($params, $this->merchant, $balance);
+                            $invoiceBreakup->push($lineItem);
+                        }
+                    }
                 }
+                else {
+                    $params = [
+                        Entity::MONTH  => $this->month,
+                        Entity::YEAR   => $this->year,
+                        Entity::TYPE   => $type,
+                        Entity::GSTIN  => $this->gstin,
+                        Entity::AMOUNT => $feeDetails[Entity::AMOUNT],
+                        Entity::TAX    => $feeDetails[Entity::TAX],
+                    ];
 
-                $amount += $params[Entity::AMOUNT];
+                    $params = $this->filterGSTParams($balance, $feeBearer, $params);
 
-                $lineItem = (new Core)->create($params, $this->merchant, $balance);
+                    $amount += $params[Entity::AMOUNT];
 
-                $invoiceBreakup->push($lineItem);
+                    $lineItem = (new Core)->create($params, $this->merchant, $balance);
+
+                    $invoiceBreakup->push($lineItem);
+                }
             }
 
             return $invoiceBreakup;
@@ -449,6 +464,23 @@ class Processor extends Base\Core
         }
     }
 
+    private function filterGSTParams($balance, $feeBearer, $params)
+    {
+        if (($balance->isTypePrimary() === true) and
+            ($feeBearer === Merchant\FeeBearer::CUSTOMER)) {
+            unset($params[Entity::GSTIN]);
+
+            $this->app['trace']->info(
+                TraceCode::INVOICE_WITHOUT_GSTIN,
+                [
+                    'gstin_no' => $this->gstin,
+                    'Merchant_id' => $this->merchantId,
+                ]);
+        }
+
+        return $params;
+    }
+
     public static function hasTaxableAmount($invoiceBreakup) : bool
     {
         foreach ($invoiceBreakup as $index => $entity)
@@ -482,7 +514,16 @@ class Processor extends Base\Core
         // sum over fees & tax for different commission types
         foreach ($details as $type => $values)
         {
-            $details[$type] = $this->calculateFeesForInvoiceByTypeForPrimary($type, $balanceId);
+            if ($type === Type::CHARGE_COLLECTIONS)
+            {
+                if ($this->isChargeCollectionsInvoicingExptEnabled() === true) {
+                    $details[$type] = $this->calculateFeesForInvoiceFromChargeCollections($balanceId);
+                }
+            }
+            else
+            {
+                $details[$type] = $this->calculateFeesForInvoiceByTypeForPrimary($type, $balanceId);
+            }
         }
     }
 
@@ -583,6 +624,59 @@ class Processor extends Base\Core
         }
 
         return $formattedFeesForTypeAndBalance;
+    }
+
+    /**
+     * Populate the map of Type of Commission with its Amount and Tax values
+     *
+     * @param $balanceId
+     *
+     * @return array
+     */
+    public function calculateFeesForInvoiceFromChargeCollections($balanceId)
+    {
+        $type = Type::CHARGE_COLLECTIONS;
+        $chargeCollectionsFeeResponse = [];
+
+        $cacheKey = $this->getCacheKeyFromTypeAndTableName($type, 'charge_collections.receipts');
+
+        // fetching data from cache
+        $cacheResult = $this->fetchResultsFromCache($cacheKey);
+
+        if ($cacheResult != null)
+        {
+            $chargeCollectionsFeeResponse =  $cacheResult;
+        }
+        else {
+            // else running the query and storing in cache
+            $chargeCollectionsFeeResponse = $this->app->charge_collections->getReceiptForInvoice(['month' => $this->month, 'year' => $this->year, 'merchantId' => $this->merchantId]);
+
+            $this->storeResultsInCache($cacheKey, $chargeCollectionsFeeResponse);
+        }
+
+        $this->cacheKeyArr[$this->cacheTag][] = $cacheKey;
+
+        $this->logMerchantInvoiceResult(
+            $type,
+            'pg_invoice_' . $type,
+            'charge_collections_fee_amount',
+            $chargeCollectionsFeeResponse,
+            $balanceId);
+
+        // prepare response
+        $response = [];
+        // taxable type
+        foreach ($chargeCollectionsFeeResponse['items'] as $item)
+        {
+            $responseItem = [
+                Entity::DESCRIPTION => $item['name'],
+                Entity::AMOUNT => $item['amount'],
+                Entity::TAX => (int) round($item['amount'] * Constants::GST_PERCENTAGE),
+            ];
+            array_push($response, $responseItem);
+        }
+
+        return $response;
     }
 
     /**
@@ -1369,5 +1463,15 @@ class Processor extends Base\Core
 
             return false;
         }
+    }
+
+    private function isChargeCollectionsInvoicingExptEnabled(): bool
+    {
+        $properties = [
+            'id' => $this->merchantId,
+            'experiment_id' => $this->app['config']->get('app.charge_collections_invoicing_experiment_id'),
+            'request_data'  => json_encode(['mid' => $this->merchantId]),
+        ];
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 }

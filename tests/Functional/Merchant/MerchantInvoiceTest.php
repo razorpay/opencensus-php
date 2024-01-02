@@ -8,6 +8,7 @@ use Mockery;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -19,6 +20,7 @@ use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class MerchantInvoiceTest extends TestCase
 {
+    use MocksSplitz;
     use AttemptTrait;
     use HeimdallTrait;
     use DbEntityFetchTrait;
@@ -230,11 +232,13 @@ class MerchantInvoiceTest extends TestCase
             'method'  => 'POST',
         ];
 
+        $this->mockAllSplitzTreatment();
+
         $content = $this->makeRequestAndGetContent($request);
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(7, $entities['count']);
+        $this->assertEquals(9, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -256,6 +260,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
         $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
+        $this->assertArraySelectiveEquals($invoiceEntities['charge_collections'], $data['charge_collections']);
         $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
         $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
@@ -289,12 +294,14 @@ class MerchantInvoiceTest extends TestCase
             'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
         ];
 
+        $this->mockAllSplitzTreatment();
+
         $content = $this->makeRequestAndGetContent($request);
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because other merchants are inactive during this $oldDateTime
-        $this->assertEquals(8, $entities['count']);
+        $this->assertEquals(9, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -316,6 +323,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
         $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
+        $this->assertArraySelectiveEquals($invoiceEntities['charge_collections'], $data['charge_collections']);
         $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
         $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
@@ -349,11 +357,13 @@ class MerchantInvoiceTest extends TestCase
             'method'  => 'POST',
         ];
 
+        $this->mockAllSplitzTreatment();
+
         $this->makeRequestAndGetContent($request);
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(8, $entities['count']);
+        $this->assertEquals(9, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -375,6 +385,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
         $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
+        $this->assertArraySelectiveEquals($invoiceEntities['charge_collections'], $data['charge_collections']);
         $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
         $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
@@ -515,12 +526,14 @@ class MerchantInvoiceTest extends TestCase
             'content' => ['merchant_ids' => ['10000000000000']],
         ];
 
+        $this->mockAllSplitzTreatment();
+
         $content = $this->makeRequestAndGetContent($request);
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because invoice are generated only for one merchant
-        $this->assertEquals(8, $entities['count']);
+        $this->assertEquals(9, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -542,6 +555,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
         $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
+        $this->assertArraySelectiveEquals($invoiceEntities['charge_collections'], $data['charge_collections']);
         $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
         $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 
@@ -625,12 +639,14 @@ class MerchantInvoiceTest extends TestCase
             'content' => ['merchant_ids' => ['10000000000000']],
         ];
 
+        $this->mockAllSplitzTreatment();
+
         $content = $this->makeRequestAndGetContent($request);
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because invoice are generated only for one merchant
-        $this->assertEquals(8, $entities['count']);
+        $this->assertEquals(9, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -652,6 +668,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
         $this->assertArraySelectiveEquals($invoiceEntities['instant_refunds'], $data['instant_refunds']);
         $this->assertArraySelectiveEquals($invoiceEntities['pricing_bundle'], $data['pricing_bundle']);
+        $this->assertArraySelectiveEquals($invoiceEntities['charge_collections'], $data['charge_collections']);
         $this->assertArraySelectiveEquals($invoiceEntities['platform_fee'], $data['platform_fee']);
         $this->assertArraySelectiveEquals($invoiceEntities['fee_based_gating'], $data['fee_based_gating']);
 

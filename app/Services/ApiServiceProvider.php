@@ -868,6 +868,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerOffersEngineService();
 
+        $this->registerChargeCollectionsService();
+
         $this->registerMagicCheckoutPluginService();
 
         $this->registerSlackClient();
@@ -2690,6 +2692,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $mock = $app['config']->get('applications.offers_engine.mock');
 
             $implementation = $mock ? Mock\OffersEngine::class : OffersEngine::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerChargeCollectionsService(): void
+    {
+        $this->app->singleton('charge_collections', function($app)
+        {
+            $mock = $app['config']->get('applications.charge_collections.mock');
+
+            $implementation = $mock ? Mock\ChargeCollections::class : ChargeCollections::class;
 
             return new $implementation($app);
         });

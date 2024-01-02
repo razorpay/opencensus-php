@@ -25,6 +25,9 @@ class Type
     // Commission on Pricing Bundle fee charged
     const PRICING_BUNDLE        = 'pricing_bundle';
 
+    // Commission on fee charged by products onboarded on charge collections
+    const CHARGE_COLLECTIONS    = 'charge_collections';
+
     // Commission on Fee Based Gating fee charged
     const FEE_BASED_GATING      = 'fee_based_gating';
 
@@ -58,6 +61,7 @@ class Type
         self::ADJUSTMENT            => 997158,
         self::VALIDATION            => 997158,
         self::PRICING_BUNDLE        => 997158,
+        self::CHARGE_COLLECTIONS    => 997158,
         self::FEE_BASED_GATING      => 997158,
         self::PLATFORM_FEE          => 997158,
         self::RX_TRANSACTIONS       => 997158,
@@ -118,6 +122,7 @@ class Type
         self::OTHERS,
         self::VALIDATION,
         self::PRICING_BUNDLE,
+        self::CHARGE_COLLECTIONS,
         self::PLATFORM_FEE,
         self::FEE_BASED_GATING
     ];
@@ -131,6 +136,7 @@ class Type
             self::OTHERS,
             self::VALIDATION,
             self::PRICING_BUNDLE,
+            self::CHARGE_COLLECTIONS,
             self::PLATFORM_FEE,
             self::FEE_BASED_GATING
         ];

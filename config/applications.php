@@ -1912,6 +1912,23 @@ return [
         ]
     ],
 
+    'charge_collections' => [
+        'mock'                    => env('CHARGE_COLLECTIONS_MOCK', false),
+        'charge_collections_username'  => [
+            'test'      => env('CHARGE_COLLECTIONS_TEST_USERNAME'),
+            'live'      => env('CHARGE_COLLECTIONS_LIVE_USERNAME'),
+        ],
+        'charge_collections_password'  => [
+            'test'      => env('CHARGE_COLLECTIONS_TEST_PASSWORD'),
+            'live'      => env('CHARGE_COLLECTIONS_LIVE_PASSWORD'),
+        ],
+        'base_url'  => [
+            'test'  => env('CHARGE_COLLECTIONS_TEST_URL'),
+            'live'  => env('CHARGE_COLLECTIONS_LIVE_URL'),
+        ],
+        'request_timeout' => env('CHARGE_COLLECTIONS_REQUEST_TIMEOUT', 0.1),
+    ],
+
     'razorassist' => [
         'secret'    => env('APP_RAZORASSIST_SECRET')
     ],

@@ -49,7 +49,8 @@ class Type
         self::COMMISSION,
         self::BANK_TRANSFER,
         self::FUND_ACCOUNT_VALIDATION,
-        self::CREDIT_TRANSFER
+        self::CREDIT_TRANSFER,
+        self::PRICING_CHARGE
     ];
 
     const BANKING_TYPE = [

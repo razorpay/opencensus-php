@@ -600,6 +600,8 @@ return array(
 
     'pricing_fallback_standard_plan_experiment_id' => env('PRICING_FALLBACK_STANDARD_PLAN_EXPERIMENT_ID'),
 
+    'charge_collections_invoicing_experiment_id' => env('CHARGE_COLLECTIONS_INVOICING_EXPERIMENT_ID'),
+
     'ppi_wallet_on_upi_pricing_splitz_experiment_id' => env('PPI_WALLET_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
     'dcc_on_auto_subscription_payments_experiment_id' => env('DCC_ON_AUTO_SUBSCRIPTION_PAYMENTS_EXPERIMENT_ID'),

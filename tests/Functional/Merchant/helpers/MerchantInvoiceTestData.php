@@ -40,6 +40,11 @@ return [
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
         ],
+        'charge_collections' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
         'platform_fee' => [
             'amount'    => 0,
             'tax'       => 0,
@@ -83,6 +88,11 @@ return [
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
         ],
+        'charge_collections' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
         'platform_fee' => [
             'amount'    => 0,
             'tax'       => 0,
@@ -122,6 +132,11 @@ return [
             'gstin'     => '29kjsngjk213922',
         ],
         'pricing_bundle' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'charge_collections' => [
             'amount'    => 0,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
@@ -188,6 +203,11 @@ return [
             'gstin'     => '29kjsngjk213922',
         ],
         'pricing_bundle' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'charge_collections' => [
             'amount'    => 0,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
@@ -296,6 +316,11 @@ return [
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
         ],
+       'charge_collections' => [
+           'amount'    => 0,
+           'tax'       => 0,
+           'gstin'     => '29kjsngjk213922',
+       ],
        'platform_fee' => [
            'amount'    => 0,
            'tax'       => 0,
