@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Mail;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Exception\BadRequestException;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\Detail\Constants;
@@ -421,6 +422,125 @@ class MerchantDocumentTest Extends TestCase
         $this->ba->adminAuth('test');
 
         $this->startTest();
+    }
+
+    public function testFetchMerchantDocumentsByAdminForCommonMerchantId()
+    {
+        $document = $this->fixtures->on('live')->create(
+            'merchant_document',
+            [
+                'merchant_id'   => '1cXSLlUU8V9sXl',
+                'document_type' => 'Address_proof_url',
+                'file_store_id' => 'DM6dXJfU4WzeAF',
+                'entity_type'   => 'merchant'
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'merchant_document',
+            [
+                'merchant_id'   => '1cXSLlUU8V9sXl',
+                'document_type' => 'Aadhar_back',
+                'file_store_id' => 'DA6dXJfU4WzeAF',
+                'entity_type'   => 'merchant',
+                'source'        => Source::UFH,
+            ]
+        );
+
+        $merchant = $this->fixtures->create(
+            'merchant',
+            [   'id'    => '100000razorpay',
+            ]
+        );
+        $fileStore = $this->fixtures->on('test')->create('file_store', [
+            'id'          => 'DM6dXJfU4WzeAF',
+            'merchant_id' => '100000Razorpay',
+            'type'        => 'Address_proof_url',
+            'entity_type' => null,
+            'name'        => 'batch/validated/10000000000002',
+            'location'    => 'batch/validated/10000000000002.pdf',
+        ]);
+
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        // allow admin to access merchant
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth('test');
+
+        $response = $this->startTest();
+
+        foreach ($response as $documentType => $documents)
+        {
+            foreach ($documents as $document)
+            {
+
+                    $this->assertNotNull($document['signed_url']);
+
+            }
+        }
+
+
+    }
+
+    public function testFetchMerchantDocumentsByAdminForWrongMerchantId()
+    {
+        $document = $this->fixtures->on('live')->create(
+            'merchant_document',
+            [
+                'merchant_id'   => '1cXSLlUU8V9sXl',
+                'document_type' => 'Address_proof_url',
+                'file_store_id' => 'DM6dXJfU4WzeAF',
+                'entity_type'   => 'merchant'
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'merchant_document',
+            [
+                'merchant_id'   => '1cXSLlUU8V9sXl',
+                'document_type' => 'Aadhar_back',
+                'file_store_id' => 'DA6dXJfU4WzeAF',
+                'entity_type'   => 'merchant',
+                'source'        => Source::UFH,
+            ]
+        );
+
+        $merchant  = $this->fixtures->create(
+            'merchant',
+            ['id' => '1cXSLlUU8V9sXa',
+            ]
+        );
+        $fileStore = $this->fixtures->on('test')->create('file_store', [
+            'id'          => 'DM6dXJfU4WzeAF',
+            'merchant_id' => '1cXSLlUU8V9sXa',
+            'type'        => 'Address_proof_url',
+            'entity_type' => null,
+            'name'        => 'batch/validated/10000000000002',
+            'location'    => 'batch/validated/10000000000002.pdf',
+        ]);
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        // allow admin to access merchant
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth('test');
+        try
+        {
+            $this->startTest();
+        }
+        catch (\Throwable $ex)
+        {
+            $this->assertExceptionClass($ex, BadRequestException::class);
+        }
     }
 
     public function testUpdateDocumentVerifyPendingVerificationStatusForPersonalPan()

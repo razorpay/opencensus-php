@@ -129,6 +129,7 @@ class Service extends Base\Service
     use NotifyTrait;
 
     const PAYMENT_DATA_NOT_FOUND_ON_DRUID = 'payment data not found on druid';
+    const SHARED_MERCHANT_ID = '100000Razorpay';
 
     protected $core;
 
@@ -1639,8 +1640,25 @@ class Service extends Base\Service
         Document\Source::validateSource($source);
 
         $fileHandler = Document\FileHandler\Factory::getFileStoreHandler($source);
+        try
+        {
+            $response = $fileHandler->getSignedUrl($fileStoreId, $merchantId);
 
-        return $fileHandler->getSignedUrl($fileStoreId, $merchantId);
+            return $response;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->info(TraceCode::SIGNED_URL_NOT_FOUND, [
+                Document\Constants::FILE_ID => $fileStoreId,
+                Entity::MERCHANT_ID         => $merchantId
+            ]);
+
+            // This fallback is needed as for some of the PGOS merchants docs are stored behind shared MID due to bug. This is needed until datafix is done for all PGOS merchants.
+            return $fileHandler->getSignedUrl($fileStoreId, self::SHARED_MERCHANT_ID);
+
+
+        }
+
     }
 
     private function getFieldsToStepMap() : array

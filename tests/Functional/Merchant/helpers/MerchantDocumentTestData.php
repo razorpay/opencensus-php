@@ -366,6 +366,39 @@ return [
         ],
     ],
 
+    'testFetchMerchantDocumentsByAdminForCommonMerchantId' => [
+        'request'  => [
+            'url'    => '/merchant/documents/1cXSLlUU8V9sXl',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'Address_proof_url' => [
+                    [
+                        'file_store_id' => 'DM6dXJfU4WzeAF',
+                    ]
+                ],
+                'Aadhar_back'       => [
+                    [
+                        'file_store_id' => 'DA6dXJfU4WzeAF',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchMerchantDocumentsByAdminForWrongMerchantId' => [
+        'request'  => [
+            'url'    => '/merchant/documents/1cXSLlUU8V9sXl',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
     'testFetchFIRSDocuments' => [
         'request'  => [
             'url'       => '/merchant/firs?month=%s&year=%s',
