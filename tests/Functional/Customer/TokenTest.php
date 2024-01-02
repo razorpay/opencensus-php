@@ -78,7 +78,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2029', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $this->assertArrayNotHasKey('customer_id', $response);
 
@@ -432,7 +432,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2028', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $this->assertArrayNotHasKey('customer_id', $response);
 
@@ -509,7 +509,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2028', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
     }
 
     public function testGetAllCustomerTokensWithNetworkTokenizedFlag()
@@ -720,7 +720,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('12', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2023', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2028', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
         $this->assertEquals(true, $fetchResponse['compliant_with_tokenisation_guidelines']);
     }
 
@@ -745,7 +745,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2028', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
     }
 
     public function testTokenDelete()
@@ -1897,7 +1897,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals('12', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2023', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2028', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $this->assertNotNull($fetchResponse['service_provider_tokens']);
     }
@@ -2286,7 +2286,7 @@ class TokenTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals('12', $card['expiry_month']);
-        $this->assertEquals('2023', $card['expiry_year']);
+        $this->assertEquals('2028', $card['expiry_year']);
         $this->assertEquals('12', $card['token_expiry_month']);
         $this->assertEquals('2021', $card['token_expiry_year']);
     }

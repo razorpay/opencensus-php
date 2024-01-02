@@ -15,6 +15,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Mail\Invitation\Razorpayx\VendorPortalInvite;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Services\Mock\Raven;
 use RZP\Services\RazorXClient;
 use RZP\Services\VendorPortal\Service as VendorPortalService;
 use RZP\Tests\Functional\TestCase;

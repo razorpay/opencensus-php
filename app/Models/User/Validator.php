@@ -378,6 +378,7 @@ class Validator extends Base\Validator
                                  . 'verify_user,'
                                  . 'verify_email,'
                                  . 'x_verify_email,'
+                                 . 'x_login_otp,'
                                  . 'create_payout,'
                                  . 'create_composite_payout_with_otp,'
                                  . 'sub_virtual_account_transfer,'

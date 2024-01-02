@@ -12,7 +12,10 @@ return [
             'content' => [
                 'email'       => 'testnonexistentuserinvite@razorpay.com',
                 'role'        => 'admin',
-                'sender_name' => 'sender_name'
+                'sender_name' => 'sender_name',
+                'otp'         => '000007',
+                'token'       => '10000000000000',
+                'action'      => 'x_login_otp',
             ],
             'server'  => [
                 'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
@@ -34,7 +37,10 @@ return [
             'content' => [
                 'email'       => 'testnonexistentuserinvite@razorpay.com',
                 'role'        => 'chartered_accountant',
-                'sender_name' => 'sender_name'
+                'sender_name' => 'sender_name',
+                'otp'         => '000007',
+                'token'       => '10000000000000',
+                'action'      => 'x_login_otp',
             ],
             'server'  => [
                 'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
@@ -102,7 +108,10 @@ return [
             'content' => [
                 'email'       => 'testteamxinvite@razorpay.com',
                 'role'        => 'admin',
-                'sender_name' => 'sender_name'
+                'sender_name' => 'sender_name',
+                'otp'         => '000007',
+                'token'       => '10000000000000',
+                'action'      => 'x_login_otp',
             ],
             'server'  => [
                 'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
@@ -270,8 +279,8 @@ return [
             'method'  => 'POST',
             'content' => [
                 'email'       => 'testteaminvite@razorpay.com',
-                'role'        => 'manager',
                 'token'       => str_random(40),
+                'role'        => 'manager',
                 'sender_name' => 'sender_name'
             ]
         ],
@@ -1279,10 +1288,13 @@ return [
             'url'    => '/invitations',
             'method' => 'POST',
             'content' => [
-                'email'       => 'testteaminvite@razorpay.com',
-                'role'        => 'finance_l1',
-                'sender_name' => 'sender_name',
-                'invitation_type' => 'joining_integration_invitation'
+                'email'           => 'testteaminvite@razorpay.com',
+                'role'            => 'finance_l1',
+                'sender_name'     => 'sender_name',
+                'otp'             => '000007',
+                'token'           => '10000000000000',
+                'action'          => 'x_login_otp',
+                'invitation_type' => 'joining_integration_invitation',
             ],
             'server'  => [
                 'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
@@ -1302,9 +1314,12 @@ return [
             'url'    => '/invitations',
             'method' => 'POST',
             'content' => [
-                'email'       => 'testteaminvite@razorpay.com',
-                'sender_name' => 'sender_name',
-                'invitation_type' => 'integration_invitation'
+                'email'           => 'testteaminvite@razorpay.com',
+                'sender_name'     => 'sender_name',
+                'otp'             => '000007',
+                'token'           => '10000000000000',
+                'action'          => 'x_login_otp',
+                'invitation_type' => 'integration_invitation',
             ],
             'server'  => [
                 'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
@@ -1344,9 +1359,12 @@ return [
             'url'    => '/invitations',
             'method' => 'POST',
             'content' => [
-                'email'       => 'testteaminvite@razorpay.com',
-                'sender_name' => 'sender_name',
-                'invitation_type' => 'integration_invitation'
+                'email'           => 'testteaminvite@razorpay.com',
+                'sender_name'     => 'sender_name',
+                'otp'             => '000007',
+                'token'           => '10000000000000',
+                'action'          => 'x_login_otp',
+                'invitation_type' => 'integration_invitation',
             ],
             'server'  => [
                 'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
@@ -1372,8 +1390,11 @@ return [
             'url'    => '/invitations',
             'method' => 'POST',
             'content' => [
-                'email'       => 'testteaminvite@razorpay.com',
-                'sender_name' => 'sender_name',
+                'email'           => 'testteaminvite@razorpay.com',
+                'sender_name'     => 'sender_name',
+                'otp'             => '000007',
+                'token'           => '10000000000000',
+                'action'          => 'x_login_otp',
                 'invitation_type' => 'integration_invitation'
             ],
             'server'  => [

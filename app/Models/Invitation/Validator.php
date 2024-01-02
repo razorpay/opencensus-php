@@ -15,6 +15,7 @@ use RZP\Models\Admin\Role;
 class Validator extends Base\Validator
 {
     const CREATE_BANK_LMS_USER = 'createBankLmsUser';
+    const CREATE_INVITATION_VERIFY_OTP = 'createInvitationVerifyOtp';
 
     protected static $createRules = [
         Entity::ROLE        => 'required|string|custom',
@@ -24,6 +25,12 @@ class Validator extends Base\Validator
         Entity::PRODUCT     => 'sometimes|string|in:primary,banking',
         Entity::IS_DRAFT    => 'sometimes|boolean|',
         Entity::INVITATIONTYPE => 'sometimes|string',
+    ];
+
+    protected static $createInvitationVerifyOtpRules = [
+        'otp'    => 'required|filled|min:4',
+        'token'  => 'required|unsigned_id',
+        'action' => 'required|string',
     ];
 
     protected static $editRules = [

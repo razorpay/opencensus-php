@@ -3,7 +3,9 @@
 namespace RZP\Models\Invitation;
 
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\User;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Role;
 use RZP\Constants\Product;
@@ -22,6 +24,26 @@ class Service extends Base\Service
     public function create(array $input): array
     {
         $input[Entity::PRODUCT] = $this->auth->getRequestOriginProduct();
+
+        $properties = [
+            'id'            => $input[Entity::EMAIL],
+            'experiment_id' => $this->app['config']->get('app.invite_merchant_with_2FA_experiment_id'),
+        ];
+
+        $isOtpVerificationExperimentEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enabled');
+
+        if ($this->auth->getProduct() === Product::BANKING || $isOtpVerificationExperimentEnabled)
+        {
+            (new Validator())->setStrictFalse()->validateInput(Validator::CREATE_INVITATION_VERIFY_OTP, $input);
+            $userCore = new User\Core;
+
+            $userCore->verifyOtp($input + ['action' => $input['action']],
+                $this->merchant,
+                $this->user,
+                $this->mode === Mode::TEST);
+
+            $input = array_except($input, ['otp', 'token', 'action']);
+        }
 
         if (empty($input[Entity::INVITATIONTYPE]) === false && $input[Entity::INVITATIONTYPE] == 'integration_invitation')
         {

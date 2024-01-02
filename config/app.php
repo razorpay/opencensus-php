@@ -798,4 +798,7 @@ return array(
     'freshdesk_onboarding_type_key'     => env('FRESHDESK_ONBOARDING_TYPE_KEY'),
 
     'email_optional_partner_MIDs' => env('EMAIL_OPTIONAL_PARTNER_MIDS'),
+
+    'invite_merchant_with_2FA_experiment_id' => env('INVITE_MERCHANT_WITH_2FA_EXP_ID'),
+
 );
