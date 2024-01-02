@@ -378,6 +378,54 @@ class Holidays
                 25 => 'Christmas',
             ],
         ],
+        2024 => [
+            1 => [
+                26 => 'Republic Day',
+            ],
+            2 => [
+                19 => 'Chhatrapati Shivaji Maharaj Jayanti',
+            ],
+            3 => [
+                8  => 'Mahashivratri',
+                25 => 'Holi (Second Day) - Dhuleti/Dol Jatra',
+                29 => 'Good Friday',
+            ],
+            4 => [
+                1  => 'Banks to close their yearly accounts',
+                9  => 'Gudhi Padwa/Ugadi Festival/Telugu New Year Day/Sajibu Nongmapanba (Cheiraoba)/1st Navratra',
+                11 => 'Ramzan-Id (Id-Ul-Fitr)',
+                17 => 'Shree Ram Navami (Chaite Dasain)',
+            ],
+            5 => [
+                1  => 'Maharashtra Din/May Day',
+                23 => 'Buddha Purnima',
+            ],
+            6 => [
+                17 => 'Bakri Eid (Eid-Ul-Zuha)',
+            ],
+            7 => [
+                17 => 'Muharram/Ashoora',
+            ],
+            8 => [
+                15 => 'Independence Day',
+            ],
+            9 => [
+                7  => 'Ganesh Chaturthi/Samvatsari(Chaturthi Paksha)/Varasiddhi Vinayaka Vrata/Vinayakar Chathurthi',
+                16 => 'Milad-un-Nabi or Id-e Milad (Birthday of Prophet Mohammad) (bara vafat)',
+            ],
+            10 => [
+                2  => 'Mahatma Gandhi Jayanti',
+                12 => 'Dasara/Dussehra (Mahanavami/Vijayadashmi)/Durga Puja (Dasain)',
+            ],
+            11 => [
+                1  => 'Diwali Amavasya (Laxmi Pujan)/Deepawali/Kut/Kannada Rajyothsava',
+                2  => 'Diwali (Bali Pratipada)/Balipadyami/Laxmi Puja (Deepawali)/Govardhan Pooja/Vikram Samvant New Year Day',
+                15 => 'Guru Nanak Jayanti/Karthika Purnima',
+            ],
+            12 => [
+                25 => 'Christmas',
+            ],
+        ],
     ];
 
     /**
