@@ -52,6 +52,32 @@ describe('RL - Payment Details Form', () => {
     expect(screen.getByPlaceholderText(/max 200000/i)).toBeInTheDocument();
   });
 
+  test('Should render all the UPI TPV Form Fields', () => {
+    renderApp({ isUPIPayment: true, mandateMethod: 'upi', isTPVEnabledMerchant: true });
+
+    ['^UPI$', 'via upi mandate', 'authorisation amount'].forEach((fieldLabel) => {
+      expect(screen.getByText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole('link', {
+        name: /supported banks & upi apps/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/max 200000/i)).toBeInTheDocument();
+    [
+      '^bank details$',
+      'ifsc on the bank account',
+      'customer/beneficiary name on the account',
+      'bank account number',
+    ].forEach((fieldLabel) => {
+      expect(screen.getByText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
+    });
+
+    ['ifsc', 'beneficiary name', 'account number'].forEach((fieldLabel) => {
+      expect(screen.getByPlaceholderText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
+    });
+  });
+
   test('Should render all the Emandate Fields', () => {
     renderApp({ isEmandatePayment: true, mandateMethod: 'emandate' });
 

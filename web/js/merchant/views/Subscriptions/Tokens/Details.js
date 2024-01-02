@@ -72,7 +72,7 @@ class TokenDetailsContainer extends Component {
   }
 
   get isUPIMethod() {
-    return this.props.entity.method === 'upi' && this.props.user.isUPICAWEnabled;
+    return this.props.entity.method === 'upi';
   }
 
   UNSAFE_componentWillMount() {

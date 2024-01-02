@@ -19,12 +19,9 @@ export default function PaymentDetailsForm(props) {
   const {
     notes,
     amount,
-    showTPV,
     bankName,
-    handleTPV,
     accountType,
     avlblMethods,
-    isTPVEnabled,
     isUPIPayment,
     isCardPayment,
     mandateMethod,
@@ -92,10 +89,7 @@ export default function PaymentDetailsForm(props) {
       {isUPIPayment && (
         <UPI
           amount={amount}
-          showTPV={showTPV}
-          handleTPV={handleTPV}
           placeholder="Max 200000"
-          isTPVEnabled={isTPVEnabled}
           onBlurElement={onBlurElement}
           amountValidator={amountValidator}
           bankAccountIFSC={bankAccountIFSC}

@@ -153,7 +153,6 @@ class NewRegistrationLink extends React.Component {
       currentTab: 0,
       avlblMethods: [],
       emandateBanks: [],
-      isTPVEnabled: false,
       formFields: {
         hasNoExpiry: true,
         tokenHasNoExpiry: '1',
@@ -205,7 +204,7 @@ class NewRegistrationLink extends React.Component {
       DEFAULT_MAX_AMOUNT = DEFAULT_UPI_LIMIT;
     }
 
-    return isUPI && this.props.user.isUPICAWEnabled;
+    return isUPI;
   }
 
   get isTPVEnabledMerchant() {
@@ -309,12 +308,6 @@ class NewRegistrationLink extends React.Component {
     this.setFormFields(target.name, value);
   };
 
-  handleTPV = () => {
-    this.setState((preState) => ({
-      isTPVEnabled: !preState.isTPVEnabled,
-    }));
-  };
-
   onBlurElement = (event, dataName) => {
     const eventName = event ? event.target.getAttribute('data-name') : dataName;
 
@@ -389,7 +382,7 @@ class NewRegistrationLink extends React.Component {
 
         const avlblMethods = Object.keys(methods.recurring).filter((methodName) => {
           if (methodName === 'upi') {
-            return methods.recurring[methodName] && this.props.user.isUPICAWEnabled;
+            return methods.recurring[methodName];
           }
 
           return methods.recurring[methodName];
@@ -810,10 +803,7 @@ class NewRegistrationLink extends React.Component {
             formReference2={formFields.formReference2}
             onBlurElement={this.onBlurElement}
             handlePaymentMethod={this.handlePaymentMethod}
-            isTPVEnabled={this.state.isTPVEnabled}
-            showTPV={this.props.user.isCAWTPVEnabled}
             isTPVEnabledMerchant={this.isTPVEnabledMerchant}
-            handleTPV={this.handleTPV}
             notes={this.state.formFields.notes}
             isEsignEnabled={this.props.user.isEsignEnabled}
             currency={currency}

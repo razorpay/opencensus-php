@@ -1,15 +1,12 @@
 import React from 'react';
-import Input from 'common/new-ui/Input';
 
 import AmountScreen from './Amount';
-import { BankDetails, AccountDetails } from './commonFields';
+import { BankDetails } from './commonFields';
+import Input from 'common/new-ui/Input';
+import { validateBeneficiaryName } from 'common/utils/validators';
 
 export default function UPI({
   amount,
-  showTPV,
-  handleTPV,
-  accountType,
-  isTPVEnabled,
   onBlurElement,
   beneficiaryName,
   amountValidator,
@@ -26,38 +23,30 @@ export default function UPI({
         amountValidator={amountValidator}
       />
 
-      {showTPV && !isTPVEnabledMerchant && (
+      {/* IF Tpv feature is enabled, All UPI orders should have bank details associated with them */}
+      {isTPVEnabledMerchant && (
         <>
-          <Input.Check
-            fieldLabel="Enable Third Party Validation"
-            class="Input--vTop"
-            onChange={handleTPV}
-            checked={isTPVEnabled}
-          />
-
-          <BankDetails hideBankName disabled={!isTPVEnabled} bankAccountIFSC={bankAccountIFSC} />
-
+          <BankDetails hideBankName required bankAccountIFSC={bankAccountIFSC} />
           <Input
-            disabled={!isTPVEnabled}
             placeholder="Account Number"
             name="bankAccountNumber"
             data-name="account_number"
             value={bankAccountNumber}
             description="Bank Account Number"
+            onBlur={onBlurElement}
           />
-        </>
-      )}
-
-      {/* IF Tpv feature is enabled, All UPI orders should have bank details associated with them */}
-      {isTPVEnabledMerchant && (
-        <>
-          <BankDetails hideBankName required bankAccountIFSC={bankAccountIFSC} />
-          <AccountDetails
-            accountType={accountType}
-            beneficiaryName={beneficiaryName}
-            bankAccountNumber={bankAccountNumber}
-            onBlurElement={onBlurElement}
-            required
+          <Input
+            placeholder="Beneficiary Name"
+            name="beneficiaryName"
+            data-name="beneficiary_name"
+            value={beneficiaryName}
+            onBlur={onBlurElement}
+            description="Customer/Beneficiary Name on the Account"
+            validator={(value) =>
+              !validateBeneficiaryName(value)
+                ? 'Please enter a valid name as per your account'
+                : null
+            }
           />
         </>
       )}

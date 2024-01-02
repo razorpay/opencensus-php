@@ -815,7 +815,7 @@ export default class User {
   }
 
   get isTPVEnabled() {
-    return this.findTag('Tpv');
+    return this.isFeatureEnabled('tpv');
   }
 
   get isEsignEnabled() {
@@ -1328,10 +1328,6 @@ export default class User {
     return this.getExpStatus('subscription_expiry');
   }
 
-  get isCAWTPVEnabled() {
-    return this.getExpStatus('caw_tpv');
-  }
-
   get isBharatQREnabled() {
     return this.isFeatureEnabled('bharat_qr');
   }
@@ -1369,10 +1365,6 @@ export default class User {
 
   get isSubscriptionPauseAndResumeEnabled() {
     return this.getExpStatus('pause_resume_enabled');
-  }
-
-  get isUPICAWEnabled() {
-    return true;
   }
 
   get isPLSwitchEnabled() {
