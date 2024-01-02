@@ -257,7 +257,7 @@ export const splitzConfig: SplitzInitConfig = {
           uniqueHashKey: 'partnerships_oauth_phantom',
           experimentId: {
             beta: 'LoGdTEB7Wo0UuW',
-            production: 'LoGggyN9DVhO7A',
+            production: 'NHITocFEQvgrVs',
           },
           defaultVariant: {
             name: 'variables',
