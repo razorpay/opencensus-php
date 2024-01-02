@@ -29,12 +29,8 @@ test.describe.parallel('GST update @flow=account-settings @project=payments', ()
       await page.goto(routes.ACCOUNT_SETTINGS);
       await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
       await page.getByRole('button', { name: 'GST details' }).click();
-      await expect(page.getByText('GSTIN information')).toBeVisible();
-      await expect(
-        page.getByText(
-          'There is no GSTIN currently linked to your provided PAN number. Either link GSTIN to your PAN or Create a new Razorpay account with a GSTIN linked PAN',
-        ),
-      ).toBeVisible();
+      await expect(page.getByText('GST Number', { exact: true })).toBeVisible();
+      await expect(page.getByText('26AADCS0472N1Z4')).toBeVisible();
     });
   });
 });

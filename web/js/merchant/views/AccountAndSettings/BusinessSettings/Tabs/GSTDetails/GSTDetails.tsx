@@ -58,7 +58,7 @@ const GSTDetails = ({
     }
   }, []);
 
-  if (user.isUnregisteredBusiness || !gstList.length) {
+  if (user.isUnregisteredBusiness || (!gstList.length && !merchant_gst.gstin)) {
     return (
       <Box
         backgroundColor="surface.background.level2.lowContrast"
