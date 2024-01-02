@@ -520,6 +520,7 @@ return array(
     'send_weekly_activation_summary_to_partner_exp_id' => env('SEND_WEEKLY_ACTIVATION_SUMMARY_TO_PARTNER_EXP_ID'),
 
     'subm_unlinking_request_to_nss_exp_id'     => env('SUBM_UNLINKING_REQUEST_TO_NSS_EXP_ID'),
+    'partner_onboard_email_experiment_id'     => env('PARTNER_ONBOARD_EMAIL_EXPERIMENT_ID'),
     'magic_checkout' => [
         'magic_pg_order_mutex_ttl'     => env('MAGIC_PG_ORDER_MUTEX_TTL'),
         'magic_pg_order_call_ttl'      => env('MAGIC_PG_ORDER_CALL_TTL'),

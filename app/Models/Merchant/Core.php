@@ -4301,6 +4301,14 @@ class Core extends Base\Core
 
     protected function sendPartnerOnBoardedEmail(Entity $partner)
     {
+        $properties = [
+            'id'            => $partner->getId(),
+            'experiment_id' => $this->app['config']->get('app.partner_onboard_email_experiment_id')
+        ];
+        if ($partner->getCountry() == 'IN' && $this->isSplitzExperimentEnable($properties, 'enable') == false)
+        {
+            return;
+        }
         $data = [
             'name'         => $partner->getName(),
             'email'        => $partner->getEmail(),
