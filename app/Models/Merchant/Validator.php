@@ -3167,7 +3167,6 @@ class Validator extends Base\Validator
         $app = App::getFacadeRoot();
 
         if($paymentInput['amount'] !== $payment->getAmount() or
-            $paymentInput['fee'] !== $payment->getFee() or
             $payment->getStatus() !== Payment\Status::CAPTURED
         )
         {

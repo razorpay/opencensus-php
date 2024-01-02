@@ -794,7 +794,7 @@ class Core extends Base\Core
 
         $creditType = $this->getCreditType($creditType);
 
-        $amountAfterFee = $paymentInput['amount'] - $paymentInput['fee'];
+        $amountAfterFee = $paymentInput['amount'];
 
         $creditInput = [
             'type'     => $creditType,
@@ -1138,7 +1138,7 @@ class Core extends Base\Core
 
         (new Merchant\Validator())->validateIfReserveBalanceAlreadyAdded($description, $merchantId);
 
-        $amountAfterFee = $paymentInput['amount'] - $paymentInput['fee'];
+        $amountAfterFee = $paymentInput['amount'];
 
         $payment =  $this->repo->payment->findByPublicId($paymentInput['id']);
 
