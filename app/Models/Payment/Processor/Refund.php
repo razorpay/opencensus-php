@@ -1903,6 +1903,7 @@ trait Refund
                 else
                 {
                     $this->payment->setAttribute(RefundConstants::REFUND_AUTHORIZED_PAYMENT, $isRefundForAuthorizedPayment);
+                    $this->payment->setAttribute(RefundConstants::CAPTURE_REFUNDED_PAYMENT, true);
                 }
 
                 $this->trace->info(
@@ -2700,6 +2701,7 @@ trait Refund
             if ($this->payment->isExternal() === true)
             {
                 $this->payment->setAttribute(RefundConstants::REFUND_AUTHORIZED_PAYMENT, $isRefundForAuthorizedPayment);
+                $this->payment->setAttribute(RefundConstants::CAPTURE_REFUNDED_PAYMENT, true);
             }
             $this->repo->saveOrFail($this->payment);
 

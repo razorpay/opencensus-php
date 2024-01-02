@@ -271,6 +271,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const GATEWAY_ERROR_DESCRIPTION = 'gateway_error_description';
 
     const REFUND_AUTHORIZED_PAYMENT = 'refund_authorized_payment';
+    const CAPTURE_REFUNDED_PAYMENT  = 'capture_refunded_payment';
 
     const OPTIMIZER_PROVIDER = 'optimizer_provider';
     const WALLET_AMOUNT = 'wallet_amount';
@@ -514,6 +515,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::PROVIDER,
         self::UPI_METADATA,
         self::REFUND_AUTHORIZED_PAYMENT,
+        self::CAPTURE_REFUNDED_PAYMENT,
     ];
 
     protected $public = [

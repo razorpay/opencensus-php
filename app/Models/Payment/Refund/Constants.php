@@ -35,6 +35,7 @@ class Constants
     const REFUND_GATEWAY                       = 'refund_gateway';
     const UNDISPUTED_PAYMENT                   = 'undisputed_payment';
     const REFUND_AUTHORIZED_PAYMENT            = 'refund_authorized_payment';
+    const CAPTURE_REFUNDED_PAYMENT            = 'capture_refunded_payment';
 
     /**
      * We get the last 10 days refunds created of a gateway.
