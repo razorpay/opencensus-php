@@ -1,0 +1,31 @@
+# Managed by @pricing-team
+# In case of any issues or changes here, reach out to #platform_spine_pricing
+name: Notification for Pricing Module Changes
+on:
+  pull_request:
+    paths:
+      - 'app/Models/Pricing/**'
+
+jobs:
+  user-notify:
+    name: Notify change maker
+    runs-on:
+      - api-public
+      - X64
+    steps:
+      - uses: mshick/add-pr-comment@v1
+        with:
+          message: |
+            ### 💲 Pricing Module Changes Notification
+            > This notification is expected to be raised on any changes in API Pricing module.
+            In case, this is not related to your changes or you have any queries, please let us know at [#platform_spine_pricing](https://razorpay.enterprise.slack.com/archives/C024BAWN3U7)
+
+            #### It is the responsibility of PR owner to get the PR reviewed by Pricing team before merging to _master_. Teams are responsible for the changes made by them
+            You can raise this PR for review of pricing module changes on [#platform_spine_pricing](https://razorpay.enterprise.slack.com/archives/C024BAWN3U7)
+            #### As part of API Decomp, MDR pricing calculation is being moved to Pricing SDK using Governor as Rule-engine, this has to be in sync with any changes in API Pricing module
+            Currently UPI Pricing is being moved to Pricing SDK, so for any change related to upi pricing filtering, we will need to make corresponding changes in Pricing SDK's rule chain as well.
+            Please make changes in the following directory [Pricing SDK Rulechains](https://github.com/razorpay/charge-collections-sdk/blob/master/examples/README.md#upimethodrulechain)
+            and raise PR for review.
+            For any queries, please let us know at [#platform_spine_pricing](https://razorpay.enterprise.slack.com/archives/C024BAWN3U7)
+
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

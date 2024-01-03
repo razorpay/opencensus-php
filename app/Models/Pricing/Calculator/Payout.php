@@ -4,7 +4,6 @@ namespace RZP\Models\Pricing\Calculator;
 
 use RZP\Models\Pricing;
 use RZP\Http\BasicAuth;
-use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payout as PayoutModel;
 use RZP\Models\Merchant\Balance\Entity;
