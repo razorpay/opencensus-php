@@ -57,6 +57,7 @@ class RouteTeamMap
         'get_keys'                  => [self::TEAM_PAYMENTS_GROWTH],
         'keys_setup'                => [self::TEAM_PAYMENTS_GROWTH],
         'post_activation'           => [self::TEAM_PAYMENTS_GROWTH],
+        'get_support_chat_token'    => [self::TEAM_PAYMENTS_CARE],
     ];
 
     /**
