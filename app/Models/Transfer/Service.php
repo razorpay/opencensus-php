@@ -804,9 +804,13 @@ class Service extends Base\Service
     {
         $limit = (int) ($input['limit'] ?? 500);
 
-        $minutes = (int) ($input['time'] ?? 60);
+        $createdAtLessThanMinutes = (int) ($input['less_than'] ?? 60);
 
-        $transferIds = $this->repo->transfer->fetchTransfersToRetryCreatingTransaction($limit, $minutes);
+        $createdAtGreaterThanMinutes = (int) ($input['greater_than'] ?? 24*60);
+
+        $merchant_ids = $input['merchant_ids'] ?? [];
+
+        $transferIds = $this->repo->transfer->fetchTransfersToRetryCreatingTransaction($limit, $merchant_ids, $createdAtLessThanMinutes, $createdAtGreaterThanMinutes);
 
         $this->trace->info(
             TraceCode::FAILED_TRANSACTION_FOR_TRANSFERS,

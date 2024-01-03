@@ -297,25 +297,37 @@ class Repository extends Base\Repository
      * Query: SELECT trf.id FROM transfers trf
      * WHERE trf.status IN (‘processed’, ‘reversed’, ‘partially_reversed’)
      * AND trf.transaction_id IS NULL
-     * AND created_at <= current_time() - 3600s
+     * AND created_at <= current_time() - 60*60
+     * AND created_at >= current_time() - 24*60*60
      * LIMIT 500
      */
-    public function fetchTransfersToRetryCreatingTransaction(int $count, int $minutes)
+    public function fetchTransfersToRetryCreatingTransaction(int $count, array $merchant_ids, int $createdAtLessThan, int $createdAtGreaterThan)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->select(Entity::ID)
-                    ->whereIn(Entity::STATUS, Constant::FETCH_STATUS)
-                    ->whereNull(Entity::TRANSACTION_ID)
-                    ->where(
-                        Entity::CREATED_AT,
-                        '<=',
-                        Carbon::now(Timezone::IST)->subMinutes($minutes)->getTimestamp()
-                    )
-                    ->limit($count)
-                    ->distinct()
-                    ->get()
-                    ->pluck(Entity::ID)
-                    ->toArray();
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select(Entity::ID)
+                      ->whereIn(Entity::STATUS, Constant::FETCH_STATUS)
+                      ->whereNull(Entity::TRANSACTION_ID)
+                      ->where(
+                          Entity::CREATED_AT,
+                          '<=',
+                          Carbon::now(Timezone::IST)->subMinutes($createdAtLessThan)->getTimestamp()
+                      )
+                      ->where(
+                          Entity::CREATED_AT,
+                          '>=',
+                          Carbon::now(Timezone::IST)->subMinutes($createdAtGreaterThan)->getTimestamp()
+                      );
+
+        if (empty($merchant_ids) === false)
+        {
+            $query = $query->whereIn(Entity::MERCHANT_ID, $merchant_ids);
+        }
+
+        return  $query->limit($count)
+                      ->distinct()
+                      ->get()
+                      ->pluck(Entity::ID)
+                      ->toArray();
     }
 
     /**
