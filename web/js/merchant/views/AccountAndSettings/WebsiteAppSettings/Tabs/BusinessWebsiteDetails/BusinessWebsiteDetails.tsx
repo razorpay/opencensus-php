@@ -253,6 +253,22 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
     } = businessWebsiteWorkflow;
     const { data } = businessWebsiteAutomationStatus;
 
+    if (data?.status === true) {
+      return (
+        <Alert
+          contrast="low"
+          description={
+            user.has_key_access === true
+              ? 'Your request to update the website is under review.'
+              : "Our team will verify your website/app so that you can start collecting payments on it. We'll contact you via email if we need further information."
+          }
+          intent="notice"
+          isDismissible={false}
+          isFullWidth
+        />
+      );
+    }
+
     const respondedWorkflowStatus = ['open', 'approved'];
     const responseRequiredWorkflowStatus = ['open', 'approved'];
     const rejectedWorkflowStatus = ['rejected'];
@@ -312,7 +328,7 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
           contrast="low"
           description={rejection_reason_message}
           intent="negative"
-          isDismissible={false}
+          isDismissible={true}
           isFullWidth
         />
       );
@@ -324,20 +340,6 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
             user.has_key_access === true
               ? 'Your request to update the website is under review'
               : "Our team will verify your website/app so that you can start collecting payments on it. We'll contact you via email if we need further information"
-          }
-          intent="notice"
-          isDismissible={false}
-          isFullWidth
-        />
-      );
-    } else if (data?.status === true) {
-      return (
-        <Alert
-          contrast="low"
-          description={
-            user.has_key_access === true
-              ? 'Your request to update the website is under review.'
-              : "Our team will verify your website/app so that you can start collecting payments on it. We'll contact you via email if we need further information."
           }
           intent="notice"
           isDismissible={false}
@@ -460,7 +462,8 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
             </CardBody>
           </Card>
           {isWorkflowChangeAllowed(businessWebsiteWorkflow) &&
-          businessWebsiteAutomationStatus?.data?.status === false ? (
+          businessWebsiteAutomationStatus?.data?.status === false &&
+          user.role === 'admin' ? (
             <Box position="absolute" top={isMobile ? '12px' : '0px'} right="15px">
               {isMobile ? (
                 <BladeButton
