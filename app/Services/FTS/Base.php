@@ -106,6 +106,10 @@ class Base
 
     const MANUAL_OVERRIDE = '/channel_health_events/manual_override';
 
+    const CRON_JOBS_DASHBOARD = '/cron_jobs_dashboard/status_with_entity';
+
+    const MANUAL_QUERY = '/manual_queries/update';
+
     const SCHEDULE_GET_ROUTE = '/routing/schedules';
 
     const TRIGGER_STATUS_LOG_GET_ROUTE = '/routing/trigger_status_logs';

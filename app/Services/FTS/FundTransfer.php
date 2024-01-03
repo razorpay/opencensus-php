@@ -1762,6 +1762,26 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function cronJobsDashboard(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::CRON_JOBS_DASHBOARD,
+            Requests::GET,
+            $input);
+    }
+
+    public function manualquery(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::MANUAL_QUERY,
+            Requests::PATCH,
+            $input);
+    }
+
     public function createMerchantConfigurations(array $input)
     {
         $this->setAdminHeader();

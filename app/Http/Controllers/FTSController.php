@@ -249,6 +249,19 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function cronJobsDashboard()
+    {
+        $response = $this->app['fts_fund_transfer']->cronJobsDashboard($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function manualquery()
+    {
+        $response = $this->app['fts_fund_transfer']->manualquery($this->input);
+
+        return ApiResponse::json($response);
+    }
     public function createMerchantConfigurations()
     {
         $response = $this->app['fts_fund_transfer']->createMerchantConfigurations($this->input);
