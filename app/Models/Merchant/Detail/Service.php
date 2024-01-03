@@ -2316,7 +2316,16 @@ class Service extends Base\Service
             }
         });
 
-        // contact name is being sent via this field
+        // contact name is being sent via this api in easy flow
+        // due to a bug of google oAuth feature Non PGOS merchants are being redirected to PGOS hence we need to handle
+        // for following pre signup fields as well
+        //     const PRE_SIGNUP_FIELDS = [
+        //        Detail\Entity::BUSINESS_TYPE,
+        //        Detail\Entity::CONTACT_NAME,
+        //        Detail\Entity::BUSINESS_NAME
+        //        Detail\Entity::BUSINESS_WEBSITE,
+        //    ];
+
         try
         {
             $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
@@ -2324,6 +2333,9 @@ class Service extends Base\Service
             {
                 $body = [
                     'contact_name' => $input['contact_name'],
+                    'business_type' => $input['business_type'],
+                    'business_name' => $input['business_name'],
+                    'business_website' => $input['business_website'],
                     'merchantId' => $merchantId,
                 ];
 
