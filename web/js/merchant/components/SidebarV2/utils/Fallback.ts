@@ -21,13 +21,13 @@ export const FALLBACK_PRODUCTS = [
         title: SIDEEBAR_PRODUCTS_TITLES.payment_handle,
         product_id: 'payment_handle',
         category: 'most_used',
-        tags: ['NEW'],
+        tags: [],
       },
       {
         title: SIDEEBAR_PRODUCTS_TITLES.pos,
         product_id: 'pos',
-        category: '',
-        tags: [],
+        category: 'promoted',
+        tags: ['NEW'],
       },
       {
         title: SIDEEBAR_PRODUCTS_TITLES.invoices,
@@ -45,7 +45,7 @@ export const FALLBACK_PRODUCTS = [
         title: SIDEEBAR_PRODUCTS_TITLES.affordability,
         product_id: 'affordability',
         category: 'promoted',
-        tags: ['NEW'],
+        tags: [],
       },
       {
         title: SIDEEBAR_PRODUCTS_TITLES.qr_codes,

@@ -13,7 +13,7 @@ const { test, expect } = require('@playwright/test');
 const { getCredentials } = require('../utils/config');
 
 test.describe.parallel('Dashboard login flow @flow=auth', () => {
-  const { emailCred, activatedNotIe, mobileCred, magicCheckout } = getCredentials();
+  const { emailCred, activatedNotIe, mobileCred, magicCheckout, posCredentials } = getCredentials();
 
   // testing for multiple credentials using email login
   for (const cred of emailCred) {
@@ -115,6 +115,30 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
       await hideCustomerGluGame({ page });
       // show streak reward tiles in account page for e2e based in localStorage instead of experiment evaluation
       await showStreakRewardTileInAccountPage({ page });
+
+      // storing login state in context to re-use at other logins
+      await page.context().storageState({
+        path: cred.storagePath,
+      });
+    });
+  }
+
+  for (const cred of posCredentials) {
+    test(`should login with email in ${cred.type} mode: @priority=critical @duration=long`, async ({
+      page,
+    }) => {
+      await hideSearchFTUXBannerByLocalStorage({ page });
+      await page.goto(routes.SIGN_IN_PATH);
+      await expect(page).toHaveTitle(/Razorpay Dashboard/);
+
+      // applying login form with email and password
+      await loginByEmail({ page, cred });
+
+      // validating landing page url after login
+      await expect(page).toHaveURL(routes.DASHBOARD);
+
+      // hiding custom banner popups by udating local storage
+      await hideCustomBannersFromState({ page });
 
       // storing login state in context to re-use at other logins
       await page.context().storageState({

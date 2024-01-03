@@ -1684,9 +1684,6 @@ export const openTicketModal = (data = {}) => {
   window.rzpTicketSystem?.openModal(id, data);
 };
 
-export const isPosEnabled = (experimenets) =>
-  experimenets?.pos_onboarding?.variables.result === 'on';
-
 export function isConfigTagAPISupported(merchantCountryCode) {
   const SUPPORTED_COUNTRIES = ['MY'];
 

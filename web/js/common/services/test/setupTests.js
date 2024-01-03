@@ -37,6 +37,16 @@ jest.mock('common/utils/analytics', () => ({
   analyticsTrack: jest.fn(),
   analyticsTrackWithUserInfo: jest.fn(),
 }));
+jest.mock('@razorpay/universe-utils/analytics', () => {
+  const originalModule = jest.requireActual('@razorpay/universe-utils/analytics');
+  return {
+    __esModule: true,
+    ...originalModule,
+    default: {
+      track_EXPERIMENTAL: jest.fn(),
+    },
+  };
+});
 jest.mock('common/services/tracking/segment', () => ({
   ...jest.requireActual('common/services/tracking/segment'),
   analyticsTrack: jest.fn(),
@@ -51,6 +61,27 @@ jest.mock('merchant/views/Transactions/v1/AnalyticsTrack', () => ({
 //   ...jest.requireActual('merchant/views/Transactions/v2/common/utils'),
 //   isTransactionsV2Enabled: (_) => true,
 // }));
+
+jest.mock('merchant/views/POS/constants', () => {
+  const mockProduct = jest.requireActual(
+    'merchant/views/POS/__tests__/mocks/fixtures',
+  ).MOCK_PRODUCT;
+
+  const mockProductNew = {
+    ...mockProduct,
+    name: 'mock-product-new',
+    code: 'mock-product-new',
+    productTitle: 'Mock Product New',
+  };
+
+  return {
+    ...jest.requireActual('merchant/views/POS/constants'),
+    PRODUCT_DESCRIPTIONS: {
+      'mock-product': mockProduct,
+      'mock-product-new': mockProductNew,
+    },
+  };
+});
 
 jest.mock('common/i18', () => {
   return {

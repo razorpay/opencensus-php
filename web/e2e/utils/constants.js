@@ -14,6 +14,8 @@ const StorageStatePath = {
   AGGREGATOR_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/aggregator-partner-desktop-test-mode-login.json`,
   PLATFORM_PARTNER_TEST_LOGIN_STATE: `${BASE_PATH}/platform-partner-desktop-test-mode-login.json`,
   OPTIMIZER_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-login.json`,
+  POS_LOGIN_STATE: `${BASE_PATH}/pos-login.json`,
+  POS_ORDER_DETAILS_LOGIN_STATE: `${BASE_PATH}/pos-login-order-details.json`,
   OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
   INTERNATIONAL_ACTIVATION_STATE: `${BASE_PATH}/international-activation.json`,
   WALLET_REPORTS_LOGIN_STATE: `${BASE_PATH}/mobile-wallet-reports-login.json`,
@@ -56,6 +58,7 @@ const routes = {
   AFFILIATE_ACCOUNTS: '/app/partners/submerchants',
   AFFILIATE_ACCOUNTS_CAPITAL: '/app/partners/submerchants/capital',
   OPTIMIZER: 'app/optimizer/rules',
+  POS: '/app/pos',
   BATCH_PAYMENT_PAGES: '/app/paymentpages/batchpaymentpages',
   WHATSAPP_ACCOUNT_SETUP: 'app/payments-and-refunds-settings/whatsapp-account-setup',
   PAYMENT_METRICS: '/app/payment-metrics',
@@ -164,6 +167,21 @@ const MagicCheckoutCredentials = [
   },
 ];
 
+const PosCredentials = [
+  {
+    type: 'pos-login.json',
+    username: ENV.POS_USERNAME,
+    password: ENV.POS_PASSWORD,
+    storagePath: StorageStatePath.POS_LOGIN_STATE,
+  },
+  {
+    type: 'pos-login-order-details.json',
+    username: ENV.POS_ORDER_DETAILS_USERNAME,
+    password: ENV.POS_ORDER_DETAILS_PASSWORD,
+    storagePath: StorageStatePath.POS_ORDER_DETAILS_LOGIN_STATE,
+  },
+];
+
 module.exports = {
   routes,
   EmailCredentials,
@@ -171,4 +189,5 @@ module.exports = {
   ActivatedNotIECredentials,
   MagicCheckoutCredentials,
   StorageStatePath,
+  PosCredentials,
 };

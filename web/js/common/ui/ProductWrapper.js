@@ -1,7 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { classList } from 'common/utils/rzp-utils';
 
-const ProductWrapper = ({ children, extra, isMobile, tabsData }) => {
+const ProductWrapper = ({ children, extra, isMobile, tabsData, customHeaderRightClass }) => {
+  const headerRightClass = classList(
+    'header-right',
+    isMobile ? 'mobile' : '',
+    customHeaderRightClass,
+  );
+
   return (
     <tabbed-container class="updated">
       <header id="link-header">
@@ -10,7 +17,7 @@ const ProductWrapper = ({ children, extra, isMobile, tabsData }) => {
             (tab) =>
               !tab.hidden && (
                 <NavLink
-                  end
+                  end={!tab.isMatchStartsWith}
                   to={tab.url}
                   key={tab.title}
                   onClick={() => {
@@ -22,7 +29,7 @@ const ProductWrapper = ({ children, extra, isMobile, tabsData }) => {
               ),
           )}
         </div>
-        <div className={`header-right ${isMobile ? 'mobile' : ''}`}>{extra}</div>
+        <div className={headerRightClass}>{extra}</div>
       </header>
       {children}
     </tabbed-container>

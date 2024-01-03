@@ -16,6 +16,7 @@ export const USER_LOGOUT = 'USER_LOGOUT';
 const SHOW_HIDE_TOUR = 'SHOW_HIDE_TOUR';
 const UPDATE_USER_SEGMENT_DATA = 'UPDATE_USER_SEGMENT_DATA';
 const UPDATE_MERCHANT = 'UPDATE_MERCHANT';
+const TOGGLE_HELP_WIDGET = 'TOGGLE_HELP_WIDGET';
 
 const UPDATE_HIGHLIGHT_MODE = 'UPDATE_HIGHLIGHT_MODE';
 
@@ -152,6 +153,13 @@ export const updateUserSegmentData = (segmentData) => {
   };
 };
 
+export const toggleHelpWidget = ({ showWidget }) => {
+  return {
+    type: TOGGLE_HELP_WIDGET,
+    payload: showWidget,
+  };
+};
+
 export const initialState = {
   user: new User(),
   org: {
@@ -166,6 +174,7 @@ export const initialState = {
   isUsingPartnerMode: false,
   user_segment_data: null,
   isTagsLoaded: false,
+  isHelpWidgetVisible: true,
 };
 
 const updateOrg = (data) => {
@@ -283,6 +292,11 @@ export default function sessionReducer(state = initialState, action) {
         }),
       });
     }
+
+    case TOGGLE_HELP_WIDGET:
+      return merge(state, {
+        isHelpWidgetVisible: action.payload,
+      });
 
     default:
       return state;

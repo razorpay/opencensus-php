@@ -1,5 +1,3 @@
-import { useSplitzService } from 'common/splitz';
-
 export const getIsBankingEnabled = (currentUser = {}) => {
   return currentUser.isShowRazorpayXWidgetEnabled && currentUser.isOrgRZP;
 };
@@ -14,13 +12,3 @@ export const getIsShowAffordabilityWidget = (currentUser = {}) => {
 
 export const getIsCheckoutPaymentMetricsEnabled = (currentUser = {}) =>
   currentUser.isCheckoutAnalyticsEnabled && currentUser.isOrgRZP;
-
-export const usePosOnboardingExperiment = () => {
-  const {
-    abExperiments: { pos_onboarding },
-  } = useSplitzService();
-
-  return {
-    isPosOnboardingEnabled: pos_onboarding?.variables?.result === 'on',
-  };
-};

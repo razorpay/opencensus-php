@@ -31,7 +31,13 @@ const ErrorFallbackComponent = (props) => {
   );
 };
 
-const HelpSection = ({ user, history, org, fetchTicketsRaisedByAgents: _fetchTickets }) => {
+const HelpSection = ({
+  user,
+  history,
+  org,
+  fetchTicketsRaisedByAgents: _fetchTickets,
+  isHelpWidgetVisible,
+}) => {
   const handleError = ({ error = 'CARE ERROR', rank = Ranks.P2 } = {}) => {
     errorService.captureError(error, {
       tags: {
@@ -159,6 +165,7 @@ const HelpSection = ({ user, history, org, fetchTicketsRaisedByAgents: _fetchTic
           splitzHost={splitzHost}
           isDev={isDev}
           isPartnerDashboard={isPartnerDashboard}
+          hideSupportIcon={!isHelpWidgetVisible}
           hideTicketCreationCTA={checkEligibilityForFeeBasedGating(user) || !user.activation_status}
         />
       </Suspense>
@@ -172,6 +179,7 @@ export default withRouter(
       return {
         user: state.session.user,
         org: state.session.org,
+        isHelpWidgetVisible: state.session.isHelpWidgetVisible,
       };
     },
     {

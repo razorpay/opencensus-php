@@ -1,0 +1,129 @@
+import React from 'react';
+import {
+  Alert,
+  Amount,
+  Badge,
+  Box,
+  Button,
+  Divider,
+  Heading,
+  Text,
+} from '@razorpay/blade/components';
+import moment from 'moment';
+import { useNavigate } from 'react-router-dom';
+
+import OrderItem from 'merchant/views/POS/OrderSummary/OrderItems/OrderItem';
+import { getOrderStatus } from 'merchant/views/POS/helpers';
+import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { OrderDetailsItem, ProductPlans } from 'merchant/views/POS/types';
+
+type OrderListItemProps = {
+  orderListItem: OrderDetailsItem;
+};
+
+const OrderListItem = ({ orderListItem }: OrderListItemProps): JSX.Element | null => {
+  const { isMobile } = useBladeBreakpoints();
+  const navigate = useNavigate();
+  const { items } = orderListItem;
+  const { id, amount } = orderListItem;
+
+  const orderStatusMetaData = getOrderStatus(orderListItem);
+
+  const handleViewDetailsClick = ({ id }) => navigate(`/pos/orders/${id}`);
+
+  if ((items ?? []).length === 0 || !orderListItem) return null;
+
+  return (
+    <div onClick={() => isMobile && handleViewDetailsClick({ id: orderListItem.id })}>
+      <Box
+        borderWidth="thin"
+        borderColor="surface.border.normal.lowContrast"
+        borderRadius="medium"
+        marginBottom="spacing.5"
+      >
+        <Box
+          backgroundColor="surface.background.level3.lowContrast"
+          padding="spacing.5"
+          display="flex"
+        >
+          <Box>
+            <Text size="small" type="subtle" marginBottom="spacing.2">
+              Order Placed
+            </Text>
+            <Text weight="bold">
+              {moment.unix(orderListItem?.created_at).format('MMMM DD, YYYY')}
+            </Text>
+          </Box>
+          <Box marginX="spacing.9">
+            <Text size="small" type="subtle" marginBottom="spacing.2">
+              Total Amount
+            </Text>
+            <Text weight="bold" type="subtle">
+              <Amount
+                value={amount.total}
+                suffix="none"
+                isAffixSubtle={false}
+                size="body-medium-bold"
+              />
+            </Text>
+          </Box>
+          {!isMobile ? (
+            <Box marginLeft="auto" display="flex" flexDirection="column" alignItems="end">
+              <Text size="small" type="subtle" marginBottom="spacing.2">
+                Order ID: {id}
+              </Text>
+              <Badge variant={orderStatusMetaData.variant} icon={orderStatusMetaData.icon}>
+                {orderStatusMetaData.name}
+              </Badge>
+            </Box>
+          ) : null}
+        </Box>
+        <Divider />
+        <Box padding="spacing.5">
+          <Box
+            display={{ base: 'block', l: 'flex' }}
+            alignItems="center"
+            justifyContent="space-between"
+            marginBottom="spacing.4"
+          >
+            <Heading size="medium" marginBottom="spacing.4">
+              {orderStatusMetaData.statusTitle}{' '}
+              {moment.unix(orderStatusMetaData.statusDate).format('MMMM DD, YYYY')}
+            </Heading>
+            {!isMobile ? (
+              <Box>
+                <Button variant="secondary" onClick={() => handleViewDetailsClick({ id })}>
+                  View Order Details
+                </Button>
+              </Box>
+            ) : null}
+          </Box>
+          {items.map((orderItem) => (
+            <OrderItem
+              key={`${orderItem.code}-${orderItem.period}`}
+              orderItem={{
+                code: orderItem.code,
+                quantity: orderItem.count,
+                plan: orderItem.period as ProductPlans,
+              }}
+              isListItem={true}
+            />
+          ))}
+
+          <Box>
+            {orderStatusMetaData.key === 'ORDER_REJECTED' && orderListItem?.rejection_reasons ? (
+              <Alert
+                intent="negative"
+                description={orderListItem.rejection_reasons?.error_description}
+                isFullWidth
+                isDismissible={false}
+              />
+            ) : null}
+          </Box>
+        </Box>
+      </Box>
+    </div>
+  );
+};
+
+export default OrderListItem;

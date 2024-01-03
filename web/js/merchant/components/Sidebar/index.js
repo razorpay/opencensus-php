@@ -39,7 +39,6 @@ const SUBSCRIPTIONS_ROUTES_REGEX =
   /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks|registration_links)/;
 const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|commissions)/;
 const MAGIC_CHECKOUT_REGEX = /^\/(magic)/;
-const POS_ROUTES = /^\/pos(\/(catalog|dashboard))*/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
@@ -65,7 +64,6 @@ const BASE_ROUTES = {
   developersApis: '/developers/apis',
   developersWebhooks: '/developers/webhooks',
   paymentMetrics: '/payment-metrics',
-  pos: '/pos',
 };
 
 @withI18Service
@@ -155,8 +153,6 @@ class Sidebar extends Component {
     } else if (MAGIC_CHECKOUT_REGEX.test(pathname)) {
       routes.magicCheckout = pathname.match(MAGIC_CHECKOUT_REGEX)[0];
       this.prevRoute = 'magicCheckout';
-    } else if (POS_ROUTES.test(pathname)) {
-      routes.pos = pathname.match(POS_ROUTES)[0];
     }
 
     if (user.isRegistrationLinkBasedRole) {

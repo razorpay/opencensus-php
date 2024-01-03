@@ -746,5 +746,33 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: [/^\/pos.*/i],
+      abExperiments: [
+        {
+          uniqueHashKey: 'omniChannelGtm',
+          experimentId: {
+            beta: 'N4hyDcUWYc1G8p',
+            production: 'N6L7VhWOgGd1Jd',
+          },
+          requestData: (): Record<string, string> => ({
+            customData: 'getAllowedCities',
+          }),
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+              {
+                key: 'cities',
+                value: '',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

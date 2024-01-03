@@ -13,6 +13,7 @@ const prodCommitIdFetchURLMap = {
   // dashboard: 'https://dashboard.razorpay.com/commit.txt',
   // 'master-onboarding': 'https://master-onboarding.dev.razorpay.in/commit.txt',
   // 'banking-account': 'https://banking-account.dev.razorpay.in/commit.txt',
+  pgos: 'https://pgos.concierge.razorpay.com/commit.txt',
 };
 
 const fetchProdCommitId = async (serviceName) => {

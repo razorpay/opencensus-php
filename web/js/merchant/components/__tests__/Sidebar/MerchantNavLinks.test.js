@@ -28,9 +28,6 @@ const defaultProps = {
 };
 
 jest.mock('merchant/components/Sidebar/helpers', () => ({
-  usePosOnboardingExperiment: () => ({
-    isPosOnboardingEnabled: jest.fn(),
-  }),
   getIsBankingEnabled: jest.fn(),
 }));
 

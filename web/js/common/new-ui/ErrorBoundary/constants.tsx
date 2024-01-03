@@ -28,6 +28,7 @@ export enum Teams {
   MERCHANT_REPORTING = 'Merchant Reporting',
   MAGIC_CHECKOUT = 'Magic Checkout',
   RAZORPAY_WALLET = 'Razorpay Wallet',
+  OMNI_CHANNEL = 'OMNI_CHANNEL',
 }
 
 // Maintain this list in ascending order
@@ -222,6 +223,7 @@ export const RoutesConfig = {
   '/website-app-settings/webhooks': Teams.PG_DASHBOARD,
   '/website-app-settings/website-app': Teams.PG_DASHBOARD,
 
+  '/pos/catalog': Teams.OMNI_CHANNEL,
   '/payments/b2b-exports': Teams.CROSS_BORDER,
   '/international-settings/firs': Teams.CROSS_BORDER,
   '/international-settings/international-payment-codes': Teams.CROSS_BORDER,

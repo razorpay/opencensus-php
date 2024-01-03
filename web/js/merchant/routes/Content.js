@@ -39,7 +39,7 @@ import { NavLink, Navigate, Route, Routes, matchPath } from 'react-router-dom';
 import HandleIndex from './HandleIndex';
 import lazy from './LazyLoader';
 
-// import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
+import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { withI18Service } from 'common/i18';
 import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
@@ -465,7 +465,8 @@ const PaymentHandle = lazy(() =>
 );
 const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'merchant/views/Wallet'));
 
-// const POS = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
+const Pos = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
+
 const PaymentsDetailsV2 = lazy(() =>
   import(
     /* webpackChunkName: "PaymentsDetailsV2" */ 'merchant/views/Transactions/v2/Payments/components/PaymentsDetails'
@@ -1971,15 +1972,18 @@ class Content extends Component {
             }
           />
 
-          {/*
           <Route
-            path="/pos/:page?"
+            path="pos/*"
             element={
-              <RouteGuard additionalCondition={() => isPosExperimentEnabled(splitz)}>
-                <POS />
+              <RouteGuard
+                additionalCondition={(user) =>
+                  isPosExperimentEnabled({ user, abExperiments: this.props.splitz?.abExperiments })
+                }
+              >
+                <Pos />
               </RouteGuard>
             }
-          /> */}
+          />
 
           <Route
             path="reports/*"

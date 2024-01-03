@@ -77,6 +77,7 @@ type UserProperties = {
   current: string;
   email: string;
   contact_email: string;
+  contact_mobile: number;
   transaction_report_email: string;
   name: string;
   user: {
@@ -85,6 +86,7 @@ type UserProperties = {
     contact_mobile?: string;
   };
   merchant: {
+    id: string;
     hold_funds: boolean;
     max_payment_amount: number;
     currency: string;
@@ -92,7 +94,17 @@ type UserProperties = {
   business_type: string;
   business_subcategory: BUSINESS_SUBCATEGORIES | string;
   isTransacted: boolean;
+  pos_activation_status?: string;
+  pos_kyc_deadline_date?: number;
   isAllowedView: (args: string) => boolean;
+  documents: {
+    shop_front?: [];
+    shop_interior?: [];
+  };
+  created_at: number;
+  submitted: boolean;
+  pos_activation_flow: 'blacklist' | 'whitelist';
+  kyc_terms_and_conditions_checked?: boolean;
   business_registered_address?: string;
   business_registered_address_l2?: string;
   business_operation_city?: string;
@@ -100,7 +112,13 @@ type UserProperties = {
   business_registered_state?: string;
   business_registered_country?: string;
   business_registered_pin?: string;
+  merchant_business_detail: {
+    website_details: {
+      physical_store: boolean;
+    };
+  };
   tags: string[];
+  is_pgos_merchant: boolean;
 };
 
 // as user properties are not available initially

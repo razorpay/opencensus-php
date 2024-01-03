@@ -2,8 +2,8 @@ import { isMobileResolution } from 'common/utils/rzp-utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
-import { isExperimentEnabled } from 'common/splitz/utils';
 import { ConfigTagType } from 'merchant/constants/tags';
+import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 
 export type ExtraConfig = {
   abExperiments: any;
@@ -207,8 +207,8 @@ export const PRODUCTS_DATA = {
   },
   pos: {
     icon: 'i-pos',
-    additionalCondition: (_, { abExperiments }: ExtraConfig) => {
-      const isPosOnboardingEnabled = isExperimentEnabled(abExperiments.pos_onboarding);
+    additionalCondition: (user, { abExperiments }: ExtraConfig) => {
+      const isPosOnboardingEnabled = isPosExperimentEnabled({ user, abExperiments });
       return isPosOnboardingEnabled;
     },
   },

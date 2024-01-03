@@ -4,6 +4,7 @@ const {
   MobileCredentials,
   ActivatedNotIECredentials,
   MagicCheckoutCredentials,
+  PosCredentials,
 } = require('./constants');
 
 // use report portal for CI, and html for development
@@ -56,6 +57,7 @@ function getCredentials() {
     mobileCred: MobileCredentials,
     activatedNotIe: ActivatedNotIECredentials,
     magicCheckout: MagicCheckoutCredentials,
+    posCredentials: PosCredentials,
   };
 }
 
