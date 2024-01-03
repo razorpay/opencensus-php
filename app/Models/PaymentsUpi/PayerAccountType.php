@@ -12,6 +12,8 @@ class PayerAccountType
 
     const PAYER_ACCOUNT_TYPE_WALLET = 'wallet';
 
+    const PAYER_ACCOUNT_TYPE_CREDIT_LINE = 'credit_line';
+
     const PRICING_PLAN_RECEIVER_TYPE_CREDIT = 'credit';
 
     const PRICING_PLAN_RECEIVER_TYPE_WALLET = 'wallet';
@@ -20,6 +22,7 @@ class PayerAccountType
         self::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT,
         self::PAYER_ACCOUNT_TYPE_CREDIT,
         self::PAYER_ACCOUNT_TYPE_PPIWALLET,
-        self::PAYER_ACCOUNT_TYPE_WALLET
+        self::PAYER_ACCOUNT_TYPE_WALLET,
+        self::PAYER_ACCOUNT_TYPE_CREDIT_LINE
     ];
 }
