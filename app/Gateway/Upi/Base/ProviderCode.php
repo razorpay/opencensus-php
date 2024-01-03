@@ -121,6 +121,7 @@ class ProviderCode
     const OKICICI            = 'okicici';
     const OKSBI              = 'oksbi';
     const PAYTM              = 'paytm';
+    const PAYTMWALLET        = 'paytmwallet';
     const PAYZAPP            = 'payzapp';
     const PINGPAY            = 'pingpay';
     const PNB                = 'pnb';
@@ -164,6 +165,7 @@ class ProviderCode
     const YESBANK            = 'yesbank';
     const YESBANKLTD         = 'yesbankltd';
     const YESB               = 'yesb';
+    const YESPAY            = 'yespay';
     const NSDL               = 'nsdl';
     const TIMECOSMOS         = 'timecosmos';
     const TAPICICI           = 'tapicici';
@@ -193,7 +195,6 @@ class ProviderCode
     const SHRIRAMHDFCBANK    = 'shriramhdfcbank';
     const FINCAREBANK        = 'fincarebank';
     const INDIE              = 'indie';
-    const YESPAY             = 'yespay';
     const slice              = 'slice';
     const trio               = 'trio';
     const fifederal          = 'fifederal';
@@ -314,6 +315,7 @@ class ProviderCode
         self::OKSBI              => IFSC::SBIN,
         self::OMNI               => 'NPCI',
         self::PAYTM              => IFSC::PYTM,
+        self::PAYTMWALLET        => 'NPCI',
         self::PAYZAPP            => IFSC::HDFC,
         self::PINGPAY            => IFSC::UTIB,
         self::PNB                => IFSC::PUNB,
@@ -567,7 +569,8 @@ class ProviderCode
         self::YESPAY       => ProviderPsp::YESPAY_NEXT,
         self::KOTAK        => ProviderPsp::KOTAK_BANK_APP,
         self::KOTAK811     => ProviderPsp::KOTAK_BANK_APP,
-        self::AXISB     => ProviderPsp::AXIS_BANK,
+        self::AXISB        => ProviderPsp::AXIS_BANK,
+        self::PAYTMWALLET  => ProviderPsp::PAYTM,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
