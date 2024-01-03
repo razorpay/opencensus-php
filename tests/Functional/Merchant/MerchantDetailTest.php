@@ -11307,7 +11307,7 @@ We look forward to transacting with you!
 
         $this->assertBankingEntitiesNotNullInTestMode($merchantDetail);
 
-        $this->assertBankingEntitiesNotNullInLiveMode($merchantDetail);
+        $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
     }
 
     public function testVaActivationOnPgKycForUnregisteredBusinessXUser()

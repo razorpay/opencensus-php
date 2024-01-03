@@ -625,7 +625,7 @@ class UserTest extends TestCase
             ],
             'live');
 
-        $this->assertNotNull($liveBankingAccount);
+        $this->assertNull($liveBankingAccount);
     }
 
 
@@ -989,7 +989,7 @@ class UserTest extends TestCase
 
         $this->assertBankingEntitiesNotNullInTestMode($merchantDetail);
 
-        $this->assertBankingEntitiesNotNullInLiveMode($merchantDetail);
+        $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
     }
 
     public function testGetInXWhenUserOnPgAndAdminInX()

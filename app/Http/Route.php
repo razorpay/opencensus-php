@@ -17631,6 +17631,12 @@ class Route
         'payout_create_with_otp'
     ];
 
+    public static $routeAllowedForBankingVirtualAccountCreation = [
+        'proxy_for_activation_status',
+        'virtual_account_create_for_banking',
+        'virtual_account_bulk_create_for_banking'
+    ];
+
     // Sets TRACE level to CRITICAL for these routes
     const CRITICAL_ROUTES = [
         'payment_create',
@@ -19007,6 +19013,17 @@ class Route
     {
         if ((empty($route) === true) or
             (in_array($route, self::$routeEnabledForBankingSmartRouting, true) === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isBankingVirtualAccountCreationRoute($route = null)
+    {
+        if ((empty($route)) or
+            (in_array($route, self::$routeAllowedForBankingVirtualAccountCreation, true) === false))
         {
             return false;
         }

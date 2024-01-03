@@ -5773,6 +5773,8 @@ class Processor
 
         $mode = $this->mode;
 
+        $route = $this->app['request.ctx']->getRoute();
+
         if ($mode === Mode::TEST)
         {
             return;
@@ -5783,7 +5785,7 @@ class Processor
         {
             return;
         }
-        else if (($this->app['request.ctx']->getRoute() === 'proxy_for_activation_status') ||
+        else if (((\RZP\Http\Route::isBankingVirtualAccountCreationRoute($route))) ||
                  (($this->app['worker.ctx']->getJobName() === 'worker:fa_vpa_validation') &&
                   (new MerchantCore())->isXVaActivated($merchant)))
         {

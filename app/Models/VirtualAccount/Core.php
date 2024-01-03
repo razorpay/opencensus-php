@@ -351,6 +351,11 @@ class Core extends Base\Core
                 (new EntityOrigin\Core)->createEntityOrigin($virtualAccount);
             });
 
+            if ($virtualAccount->isBalanceTypeBanking())
+            {
+                (new \RZP\Models\Merchant\Attribute\Service())->upsertProductsEnabledMerchantAttributeForX($virtualAccount->getMerchantId());
+            }
+
             return $virtualAccount;
         });
 

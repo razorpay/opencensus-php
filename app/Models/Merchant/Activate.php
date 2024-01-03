@@ -1158,9 +1158,9 @@ class Activate extends Base\Core
 
     protected function onBoardMerchantOnRazorpayxInLiveMode(Entity $merchant)
     {
-        $vaActivated = (new Merchant\Core())->isXVaActivated($merchant);
+        $route = $this->app['request.ctx']->getRoute();
 
-        return (($vaActivated === true) and
+        return (\RZP\Http\Route::isBankingVirtualAccountCreationRoute($route) and
             (empty($merchant->getEmail()) === false));
         // This was done for YesBank moratorium. Not required now.
         // and ($this->blockRxActivationIfApplicable($merchant) === false));
