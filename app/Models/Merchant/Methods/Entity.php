@@ -69,13 +69,15 @@ class Entity extends Base\PublicEntity
     const HDFC_DEBIT_EMI    = 'hdfc_debit_emi';
     const COD               = 'cod';
     const FPX               = 'fpx';
-    const IN_APP            = 'in_app';
     const BAJAJPAY          = 'bajajpay';
     const GRABPAY           = 'grabpay';
     const TOUCHNGO          = 'touchngo';
     const BOOST             = 'boost';
     const MCASH             = 'mcash';
     const SODEXO            = 'sodexo';
+
+    const IN_APP             = 'in_app';
+    const IN_APP_CREDIT_CARD = 'in_app_credit_card';
 
     const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
     const CREDIT_EMI_PROVIDERS  = 'credit_emi_providers';
@@ -205,6 +207,7 @@ class Entity extends Base\PublicEntity
         self::OFFLINE,
         self::FPX,
         self::IN_APP,
+        self::IN_APP_CREDIT_CARD,
         self::BAJAJPAY,
         self::BOOST,
         self::MCASH,
@@ -265,6 +268,7 @@ class Entity extends Base\PublicEntity
         self::OFFLINE,
         self::FPX,
         self::IN_APP,
+        self::IN_APP_CREDIT_CARD,
         self::BAJAJPAY,
         self::BOOST,
         self::MCASH,
@@ -281,6 +285,7 @@ class Entity extends Base\PublicEntity
         self::PAYCASH,
         self::CITIBANKREWARDS,
         self::IN_APP,
+        self::IN_APP_CREDIT_CARD,
         self::CREDIT_EMI_PROVIDERS ,
         self::CARDLESS_EMI_PROVIDERS ,
         self::PAYLATER_PROVIDERS ,
@@ -439,7 +444,8 @@ class Entity extends Base\PublicEntity
 
     protected static $addon_methods_names = [
         self::UPI => [
-            self::IN_APP
+            self::IN_APP,
+            self::IN_APP_CREDIT_CARD,
         ],
         self::INTL_BANK_TRANSFER => [
             IntlBankTransfer::ACH,
@@ -907,14 +913,38 @@ class Entity extends Base\PublicEntity
         return $this->merchant->isLinkedAccount();
     }
 
-    public function isInAppEnabled() {
+    public function isInAppEnabled($payerAccountType = '')
+    {
         $addonMethods = $this->getAddonMethods();
 
-        if($addonMethods !== null && isset($addonMethods[self::UPI]) && isset($addonMethods[self::UPI][self::IN_APP]))
+        if ((empty($addonMethods) === true) or
+            (empty($addonMethods[self::UPI]) === true))
         {
-            return $addonMethods[self::UPI][self::IN_APP] === 1;
+            return null;
         }
-        return null;
+
+        $inAppPayerAccountType = self::IN_APP;
+
+        switch ($payerAccountType)
+        {
+            case ''            :
+            case 'bank_account':
+                break;
+
+            case self::CREDIT_CARD:
+                $inAppPayerAccountType .= '_' . self::CREDIT_CARD;
+                break;
+        }
+
+        return (
+            isset($addonMethods[self::UPI][$inAppPayerAccountType]) and
+            $addonMethods[self::UPI][$inAppPayerAccountType] === 1
+        );
+    }
+
+    public function isInAppCreditCardEnabled()
+    {
+        return $this->isInAppEnabled(self::CREDIT_CARD);
     }
 
     public function isSodexoEnabled(): bool
@@ -1234,6 +1264,23 @@ class Entity extends Base\PublicEntity
     public function getInAppAttribute()
     {
         return $this->getInApp();
+    }
+
+    public function getInAppCreditCard()
+    {
+        $addonMethods = $this->getAttribute(self::ADDON_METHODS);
+
+        if(isset($addonMethods[self::UPI]) and isset($addonMethods[self::UPI][self::IN_APP_CREDIT_CARD]))
+        {
+            return $addonMethods[self::UPI][self::IN_APP_CREDIT_CARD];
+        }
+
+        return 0;
+    }
+
+    public function getInAppCreditCardAttribute()
+    {
+        return $this->getInAppCreditCard();
     }
 
     public function getIntlBankTransferAttribute()

@@ -229,4 +229,19 @@ class Validator extends Base\Validator
                 'AmazonPay cannot be enabled for this MCC: '.$mcc);
         }
     }
+
+    public function validateCategoryForInAppCreditCard($mcc)
+    {
+        if (empty($mcc) === true)
+        {
+            return;
+        }
+
+        if (in_array($mcc, DefaultMethodsForCategory::CREDIT_CARD_ON_UPI_DISABLED_MCCS) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                Entity::IN_APP_CREDIT_CARD . ' cannot be enabled for this MCC: ' . $mcc
+            );
+        }
+    }
 }

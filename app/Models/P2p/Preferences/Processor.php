@@ -18,6 +18,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Services\Dcs\Configurations as DcsConfig;
+use RZP\Models\P2p\BankAccount\Type as AccountType;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -409,7 +410,7 @@ class Processor extends Base\Processor
         }
 
         $preferencesResponse[Constants::FEATURES][Constants::SUPPORTED_PAYER_ACCOUNT_TYPES]
-            = Constants::getSupportedPayerAccountTypes();
+            = $this->getSupportedPayerAccountTypesForMerchant();
     }
 
     private function setExperimentsInResponse(&$preferencesResponse)
@@ -428,5 +429,30 @@ class Processor extends Base\Processor
                 TraceCode::FAILED_TO_ADD_TURBO_METADATA
             );
         }
+    }
+
+    private function getSupportedPayerAccountTypesForMerchant(): array
+    {
+        $supportedPayerAccountTypes = Constants::getSupportedPayerAccountTypes();
+
+        try
+        {
+            $merchantMethods = $this->context()->getMerchant()->getMethods();
+
+            if ($merchantMethods->isInAppCreditCardEnabled() === true)
+            {
+                $supportedPayerAccountTypes[] = AccountType::CREDIT;
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace()->traceException(
+                $exception,
+                Logger::ERROR,
+                TraceCode::IN_APP_CREDIT_CARD_METHOD_ENABLED_CHECK_FAILED
+            );
+        }
+
+        return $supportedPayerAccountTypes;
     }
 }

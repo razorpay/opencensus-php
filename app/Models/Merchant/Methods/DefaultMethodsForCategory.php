@@ -145,6 +145,29 @@ class DefaultMethodsForCategory
             '7322',
         ];
 
+    /* Refer
+     * https://docs.google.com/document/d/1dCfJq9j8xw3g9dS1JfQx9nL6Hvd0r2zg_RY-pjvlgCM/edit#heading=h.opxu7ovhhz1j
+     * for the source of this list
+     */
+    const CREDIT_CARD_ON_UPI_DISABLED_MCCS = [
+        "6010",
+        "6012",
+        "6013",
+        "7407",
+        "7408",
+        "7409",
+        "6011",
+        "6051",
+        "6211",
+        "7322",
+        "7800",
+        "7801",
+        "7995",
+        "7802",
+        "9406",
+        "4829",
+    ];
+
         // map of category to auto prohibited methods i.e. methods which should not be enabled automatically by default
         // for the merchant belonging to that category, however can be enabled by admins
         // key is currently merchant category concatanated by category2, (in future business type etc can also come)

@@ -204,6 +204,11 @@ class Core extends Base\Core
             (new Validator)->validateCategoryForAmazonPay($mcc);
         }
 
+        if (isset($input[Entity::IN_APP]) or isset($input[Entity::IN_APP_CREDIT_CARD]))
+        {
+            $this->handleEnableDisableForInAppPaymentMethods($methods, $input, $mcc);
+        }
+
         if (isset($input[Methods\Entity::CARD_NETWORKS]) === true)
         {
             $inputCardNetworks = $input[Methods\Entity::CARD_NETWORKS];
@@ -1570,5 +1575,51 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    /**
+     * @param Entity $methods
+     * @param        $input
+     * @param        $mcc
+     * 1. Cannot disable in_app if in_app_credit_card is enabled
+     * 2. Cannot enable in_app_credit_card if in_app is not enabled
+     * @return void
+     */
+    private function handleEnableDisableForInAppPaymentMethods(Entity $methods, $input, $mcc)
+    {
+        $isInAppAlreadyEnabled = $methods->isInAppEnabled() === true;
+        $isInAppCreditCardAlreadyEnabled = $methods->isInAppCreditCardEnabled() === true;
+
+        // in_app cannot be disabled if in_app_credit_card is being enabled or already enabled
+        if (isset($input[Entity::IN_APP]) and
+            boolval($input[Entity::IN_APP]) === false)
+        {
+            if ((isset($input[Entity::IN_APP_CREDIT_CARD]) and
+                 boolval($input[Entity::IN_APP_CREDIT_CARD]) === true) or
+                $isInAppCreditCardAlreadyEnabled === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "in_app needs to be enabled (or already enabled) when in_app_credit_card is being enabled"
+                );
+            }
+        }
+
+        // in_app_credit_card cannot be enabled if in_app is not being enabled and not already enabled
+        if (isset($input[Entity::IN_APP_CREDIT_CARD]) and
+            boolval($input[Entity::IN_APP_CREDIT_CARD]) === true)
+        {
+            if (($isInAppAlreadyEnabled === false) and (!isset($input[Entity::IN_APP]) or (isset($input[Entity::IN_APP]) and boolval($input[Entity::IN_APP]) === false)))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "in_app_credit_card cannot be enabled if in_app is not being enabled and not already enabled"
+                );
+            }
+        }
+
+        if ((isset($input[Entity::IN_APP_CREDIT_CARD]) === true) and
+            ($input[Entity::IN_APP_CREDIT_CARD] === 1))
+        {
+            (new Validator)->validateCategoryForInAppCreditCard($mcc);
+        }
     }
 }

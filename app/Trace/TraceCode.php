@@ -10955,6 +10955,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BLOCKING_AMOUNT_CREDIT_FOR_PAYMENTS = 'BLOCKING_AMOUNT_CREDIT_FOR_PAYMENTS';
 
+    const IN_APP_CREDIT_CARD_METHOD_ENABLED_CHECK_FAILED       = 'IN_APP_CREDIT_CARD_METHOD_ENABLED_CHECK_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

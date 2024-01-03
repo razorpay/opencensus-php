@@ -6,6 +6,7 @@ class Type
 {
     const SAVINGS                = 'savings';
     const CURRENT                = 'current';
+    const CREDIT                 = 'credit';
     const SOD                    = 'SOD';
     const UOD                    = 'UOD';
 
