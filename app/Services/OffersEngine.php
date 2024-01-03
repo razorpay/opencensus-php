@@ -136,11 +136,6 @@ class OffersEngine
         $headers[self::CONTENT_TYPE]  = 'application/json';
         $headers[self::X_TASK_ID]     = $this->app['request']->getTaskId();
 
-        if ($this->auth->isAdminAuth() === false)
-        {
-            $headers[self::X_PASSPORT_JWT_V1] = $this->auth->getPassportJwt($this->baseUrl);
-        }
-
         $headers['X-User-Id'] = $this->merchantId;
 
         $headers['X-User-Type'] = 'advertiser';

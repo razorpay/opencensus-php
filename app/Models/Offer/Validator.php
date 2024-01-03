@@ -85,7 +85,7 @@ class Validator extends Base\Validator
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
         Entity::BLOCK               => 'required|boolean',
-        Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
+        Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer|min:1',
         Entity::DEFAULT_OFFER       => 'filled|boolean',
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
         Entity::TYPE                => 'required|in:instant,deferred,already_discounted',
