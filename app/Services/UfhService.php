@@ -7,6 +7,8 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use RZP\Exception;
+use Request;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -206,6 +208,11 @@ class UfhService
             ],
             'X-Merchant-Id' => $this->merchantId,
         ];
+
+        $isProd = app()->isEnvironmentProduction();
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER)) && !$isProd){
+            $config['headers'][RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
 
         return new UfhClient($config);
     }
