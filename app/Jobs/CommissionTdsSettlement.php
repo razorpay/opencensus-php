@@ -154,7 +154,7 @@ class CommissionTdsSettlement extends Job
 
                 if ($totalTds > 0)
                 {
-                    $core->createCommissionTds($partner, $totalTds, $this->invoiceId);
+                    $core->createCommissionTds($partner, $totalTds);
                 }
             }
 

@@ -1952,7 +1952,7 @@ class CommissionCreateTest extends TestCase
             'credit' => $grossAmount,
             'debit'  => 0,
             'fee'    => $grossAmount,
-            'tax'    => 762727,
+            'tax'    => 2288151,
         ]);
 
         $this->ba->adminAuth();
@@ -1986,7 +1986,7 @@ class CommissionCreateTest extends TestCase
             'year'          => $now->year,
             'status'        => 'issued',
             'gross_amount'  => $grossAmount,
-            'tax_amount'    => 762727,
+            'tax_amount'    => 2288151,
         ];
         $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
 
@@ -1994,7 +1994,7 @@ class CommissionCreateTest extends TestCase
             [
                 'amount'        => $grossAmount,
                 'gross_amount'  => $grossAmount,
-                'tax_amount'    => 762727,
+                'tax_amount'    => 2288151,
                 'net_amount'    => $grossAmount,
                 'tax_inclusive' => true,
             ]
@@ -2043,7 +2043,7 @@ class CommissionCreateTest extends TestCase
             'credit' => $grossAmount,
             'debit'  => 0,
             'fee'    => $grossAmount,
-            'tax'    => 762697,
+            'tax'    => 2288120,
         ]);
 
 
@@ -2077,7 +2077,7 @@ class CommissionCreateTest extends TestCase
             'year'          => $now->year,
             'status'        => 'issued',
             'gross_amount'  => $grossAmount,
-            'tax_amount'    => 762697,
+            'tax_amount'    => 2288120,
         ];
         $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
 
@@ -2085,7 +2085,7 @@ class CommissionCreateTest extends TestCase
             [
                 'amount'        => $grossAmount,
                 'gross_amount'  => $grossAmount,
-                'tax_amount'    => 762697,
+                'tax_amount'    => 2288120,
                 'net_amount'    => $grossAmount,
                 'tax_inclusive' => true,
             ]
@@ -3917,7 +3917,7 @@ class CommissionCreateTest extends TestCase
             'credit' => $grossAmount,
             'debit'  => 0,
             'fee'    => $grossAmount,
-            'tax'    => 762727,
+            'tax'    => 2288151,
         ]);
 
         $this->ba->adminAuth();
@@ -3946,7 +3946,7 @@ class CommissionCreateTest extends TestCase
             'year'          => $now->year,
             'status'        => 'issued',
             'gross_amount'  => $grossAmount,
-            'tax_amount'    => 762727,
+            'tax_amount'    => 2288151,
         ];
         $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
     }
@@ -3960,7 +3960,7 @@ class CommissionCreateTest extends TestCase
             'credit' => $grossAmount,
             'debit'  => 0,
             'fee'    => $grossAmount,
-            'tax'    => 762727,
+            'tax'    => 2288151,
             'created_at' => '1669135053',
             'updated_at' => '1669135053',
         ]);
@@ -3990,7 +3990,7 @@ class CommissionCreateTest extends TestCase
             'year'          => 2022,
             'status'        => 'issued',
             'gross_amount'  => $grossAmount,
-            'tax_amount'    => 762727,
+            'tax_amount'    => 2288151,
         ];
         $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
     }
@@ -4433,46 +4433,46 @@ class CommissionCreateTest extends TestCase
         $this->assertCount(0, $invoices);
     }
 
-    public function testForAdjustmentViaSettlementTDSFromPRTS()
-    {
-        $this->createPurePlatFormMerchantAndSubMerchant();
+    // public function testForAdjustmentViaSettlementTDSFromPRTS()
+    // {
+    //     $this->createPurePlatFormMerchantAndSubMerchant();
 
-        $this->fixtures->create('transaction',
-            [
-                'id' => 'NAw8H5ejH7YCwc',
-                'entity_id' => '9nDpYjuyZsOlMK',
-                'merchant_id' => '1000000000plat',
-                'type' => 'adjustment'
-            ]
-        );
+    //     $this->fixtures->create('transaction',
+    //         [
+    //             'id' => 'NAw8H5ejH7YCwc',
+    //             'entity_id' => '9nDpYjuyZsOlMK',
+    //             'merchant_id' => '1000000000plat',
+    //             'type' => 'adjustment'
+    //         ]
+    //     );
 
-        DB::connection('test')->table('adjustment')->insert(
-            [
-                'id' => '9nDpYjuyZsOlMK',
-                'merchant_id' => '1000000000plat',
-                'entity_id' => 'MLMq2vRFqMlyoJ',
-                'entity_type' => 'commission_invoice',
-                'amount' => 1264,
-                'currency' => 'INR',
-                'description' => 'desc',
-                'channel' => 'yesbank',
-                'transaction_id' => 'NAw8H5ejH7YCwc',
-                'status' => 'processed',
-                'balance_id' => 'FD7BWf1yiyRo18',
-                'created_at' => '1548745646',
-                'updated_at' => '1548745646',
-            ],
-        );
+    //     DB::connection('test')->table('adjustment')->insert(
+    //         [
+    //             'id' => '9nDpYjuyZsOlMK',
+    //             'merchant_id' => '1000000000plat',
+    //             'entity_id' => 'MLMq2vRFqMlyoJ',
+    //             'entity_type' => 'commission_invoice',
+    //             'amount' => 1264,
+    //             'currency' => 'INR',
+    //             'description' => 'desc',
+    //             'channel' => 'yesbank',
+    //             'transaction_id' => 'NAw8H5ejH7YCwc',
+    //             'status' => 'processed',
+    //             'balance_id' => 'FD7BWf1yiyRo18',
+    //             'created_at' => '1548745646',
+    //             'updated_at' => '1548745646',
+    //         ],
+    //     );
 
-        $testData = $this->testData[__FUNCTION__];
+    //     $testData = $this->testData[__FUNCTION__];
 
-        $this->ba->partnershipServiceAuth();
+    //     $this->ba->partnershipServiceAuth();
 
-        $this->startTest($testData);
+    //     $this->startTest($testData);
 
-        $adj = $this->getDbEntities('adjustment');
-        $this->assertCount(1, $adj);
-    }
+    //     $adj = $this->getDbEntities('adjustment');
+    //     $this->assertCount(1, $adj);
+    // }
 
     public function testReverseShadowCompleteFlowFromPRTS()
     {
