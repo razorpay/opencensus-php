@@ -199,7 +199,9 @@ class Validator extends Base\Validator
         {
             if (($transfer->getStatus() === Status::CREATED) or
                 ($transfer->getStatus() === Status::PENDING) or
-                ($transfer->getStatus() === Status::FAILED and $transfer->getAttempts() < Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS))
+                (($transfer->getStatus() === Status::FAILED) and
+                 ($transfer->getSourceType() === Constant::ORDER) and
+                 ($transfer->getAttempts() < Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)))
             {
                 $totalTransferUnprocessedAmount += $transfer->getAmount();
             }
