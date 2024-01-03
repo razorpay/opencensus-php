@@ -476,6 +476,15 @@ class Service extends Base\Service
 
             $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart, $isAutoDiscountApplied, $discountSource);
         }
+
+        /* There is a plugin called Growlytics that records and shows analytics dashboard on a separate platform.
+         * While creating a cart, we need a cart level property called growlytics_did to identify such customer.
+         */
+        if (isset($cart['attributes']) === true && isset($cart['attributes']['growlytics_did']) === true)
+        {
+            $orderNotes['growlytics_did'] = $cart['attributes']['growlytics_did'];
+        }
+
         // For now we generate a random UUID for product_id as it is a compulsory field with product_type.
         // This id will be changed once decomp from order meta is completed.
         $magicProductId = UniqueIdEntity::generateUniqueId();
@@ -597,6 +606,15 @@ class Service extends Base\Service
 
             $orderNotes = (new Checkout())->getNotesForCheckout($checkout, $cartId, $cart, $isAutoDiscountApplied, $discountSource);
         }
+
+        /* There is a plugin called Growlytics that records and shows analytics dashboard on a separate platform.
+         * While creating a cart, we need a cart level property called growlytics_did to identify such customer.
+         */
+        if (isset($cart['attributes']) === true && isset($cart['attributes']['growlytics_did']) === true)
+        {
+            $orderNotes['growlytics_did'] = $cart['attributes']['growlytics_did'];
+        }
+
         // For now we generate a random UUID for product_id as it is a compulsory field with product_type.
         // This id will be changed once decomp from order meta is completed.
         $magicProductId = UniqueIdEntity::generateUniqueId();

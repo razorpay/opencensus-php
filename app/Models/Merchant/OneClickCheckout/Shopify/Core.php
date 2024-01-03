@@ -1571,6 +1571,15 @@ class Core extends Base\Core
                 ]);
         }
 
+        if (empty($rzpOrder['notes']['growlytics_did']) === false)
+        {
+            array_push($noteAttributes,
+                [
+                    'name'  => 'growlytics_did',
+                    'value' => $rzpOrder['notes']['growlytics_did']
+                ]);
+        }
+
         $body['note_attributes'] = $noteAttributes;
 
         // We override the subtotal price to account for the Re 1 payment in case of 100% discount coupons
