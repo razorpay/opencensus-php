@@ -347,6 +347,9 @@ class Service extends Base\Service
         $utmParameters =(array)$input[Order1cc\Fields::UTM_PARAMETERS];
         unset($input[Order1cc\Fields::UTM_PARAMETERS]);
 
+        $breakpoints = $input['breakpoints'] ?? [];
+        unset($input['breakpoints']);
+
         // To support backward compatibility of Shopify API version update from 2022-01 to 2022-10
         $input = $this->versionBasedInput($input);
 
@@ -368,7 +371,7 @@ class Service extends Base\Service
             $preferenceParams,
             $customerInfo,
             $utmParameters,
-            $input['breakpoints'] ?? [],
+            $breakpoints,
         );
 
         $emptyObject = new \stdClass();
