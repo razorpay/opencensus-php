@@ -2193,6 +2193,65 @@ class TransferTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateDirectTransferWithPartnerAuthForMarketplaceWithInsufficientBalance()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;
+
+        $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . $subMerchantId;
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => '10000000000001',
+            ], 'test');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '0']);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->startTest();
+    }
+
+    public function testCreateDirectTransferWithPartnerAuthForMarketplaceWithInsufficientBalanceAndLowNegativeBalanceAllowed()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;
+
+        $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . $subMerchantId;
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => '10000000000001',
+            ], 'test');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '0']);
+
+        $this->fixtures->create('balance_config',
+            [
+                'id'                            => '100yz000yz00yz',
+                'balance_id'                    => $balance->getId(),
+                'type'                          => 'primary',
+                'negative_transaction_flows'    => ['adjustment'],
+                'negative_limit_auto'           => 50,
+                'negative_limit_manual'         => 50
+            ]
+        );
+
+        $this->mockAllSplitzTreatment();
+
+        $this->startTest();
+    }
+
     public function testCreateDirectTransferWithOAuthForMarketplace()
     {
         $this->setPurePlatformContext(Mode::TEST);

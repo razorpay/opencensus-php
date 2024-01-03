@@ -1112,7 +1112,7 @@ class Core extends Base\Core
             Adjustment\Entity::DESCRIPTION => 'Platform transfer TDS',
         ];
 
-        (new Adjustment\Core)->createAdjustmentForSource($input, $transferPayment);
+        (new Adjustment\Core)->createAdjustmentForSource($input, $transferPayment, Adjustment\Constants::PLATFORM_TRANSFER_TDS_ADJUSTMENT);
 
         $this->trace->info(
             TraceCode::ADJUSTMENT_CREATE_SUCCESS,

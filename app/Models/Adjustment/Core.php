@@ -260,7 +260,7 @@ class Core extends Base\Core
         }
     }
 
-    public function createAdjustmentForSource(array $input, Base\PublicEntity $source): Entity
+    public function createAdjustmentForSource(array $input, Base\PublicEntity $source, string $adjustmentType = null): Entity
     {
         $traceCode = Constants::getAdjustmentCreateRequestTraceCode($source->getEntityName());
 
@@ -271,7 +271,28 @@ class Core extends Base\Core
                 'merchant_id' => $source->getMerchantId()
             ]);
 
-        (new Validator)->validateMerchantBalance($source->merchant, $source, $input);
+        try
+        {
+            (new Validator)->validateMerchantBalance($source->merchant, $source, $input, $adjustmentType);
+        }
+        catch(\Exception $e)
+        {
+            // In case of platform transfers, we deduct a 5% TDS of the transfer amount. Though if account balance is insufficient,
+            // the TDS deduction would fail. Considering that the total balance will increase after transfer goes through,
+            // hence we are bypassing insufficient balance failures in case of Platform transfers TDS deduction.
+            // For other flows, we are just throwing the error.
+            if ($adjustmentType === Constants::PLATFORM_TRANSFER_TDS_ADJUSTMENT && $e->getCode() === ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::PLATFORM_TRANSFER_TDS_INSUFFICIENT_BALANCE_FAILURE_SKIPPED);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
 
         $adjustment = $this->createAdjustment($input, $source->merchant);
 

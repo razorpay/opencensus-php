@@ -15,6 +15,7 @@ class Constants
         Entity::PAYMENT  => TraceCode::ADJUSTMENT_CREATE_REQUEST,
     ];
 
+    const PLATFORM_TRANSFER_TDS_ADJUSTMENT = 'platform_transfer_tds_adjustment';
 
     public static function getAdjustmentCreateRequestTraceCode(string $source)
     {

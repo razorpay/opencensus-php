@@ -1004,6 +1004,67 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals($subMerchantId, $transfer->getMerchantId());
     }
 
+    public function testCreatePaymentTransferWithPartnerAuthForMarketplaceWithInsufficientBalance()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->setupMarketPlace($subMerchantId);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['items'][0]['id']);
+
+        $this->assertEquals($subMerchantId, $transfer->getMerchantId());
+    }
+
+    public function testCreatePaymentTransferWithPartnerAuthForMarketplaceWithInsufficientBalanceAndLowNegativeBalanceAllowed()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->setupMarketPlace($subMerchantId);
+
+        $testData = $this->testData['testCreatePaymentTransferWithPartnerAuthForMarketplaceWithInsufficientBalance'];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => '10000000000001',
+            ], 'test');
+
+        $this->fixtures->create('balance_config',
+            [
+                'balance_id'                    => $balance->getId(),
+                'type'                          => 'primary',
+                'negative_transaction_flows'    => ['adjustment'],
+                'negative_limit_auto'           => 50,
+                'negative_limit_manual'         => 50
+            ]
+        );
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['items'][0]['id']);
+
+        $this->assertEquals($subMerchantId, $transfer->getMerchantId());
+    }
+
     public function testCreatePaymentTransferWithOAuthForMarketplace()
     {
         $this->setPurePlatformContext(Mode::TEST);

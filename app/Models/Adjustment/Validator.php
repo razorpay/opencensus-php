@@ -160,7 +160,8 @@ class Validator extends Base\Validator
      */
     public function validateMerchantBalance(Merchant\Entity $merchant,
                                             PublicEntity $entity,
-                                            array $input)
+                                            array $input,
+                                            string $origin = null)
     {
         if($entity->getEntityName() === ConstantEntity::DISPUTE)
         {
@@ -177,8 +178,16 @@ class Validator extends Base\Validator
 
         try
         {
-            (new Merchant\Balance\Core)->checkMerchantBalance($merchant,
-                -1 * $amountToBeDeducted, Transaction\Type::DISPUTE);
+            // In case if the balance is checked for TDS deduction for Platform transfers,
+            // we will allow negative balance.
+            if ($origin === Constants::PLATFORM_TRANSFER_TDS_ADJUSTMENT)
+            {
+                (new Merchant\Balance\Core)->checkMerchantBalance($merchant,
+                    -1 * $amountToBeDeducted, Transaction\Type::PAYMENT, true);
+            } else {
+                (new Merchant\Balance\Core)->checkMerchantBalance($merchant,
+                    -1 * $amountToBeDeducted, Transaction\Type::DISPUTE);
+            }
         }
         catch (\Exception $e)
         {

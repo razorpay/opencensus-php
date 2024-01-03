@@ -932,6 +932,94 @@ return [
         ],
     ],
 
+    'testCreateDirectTransferWithPartnerAuthForMarketplaceWithInsufficientBalance' => [
+        'request'   => [
+            'method'   => 'POST',
+            'url'      => '/transfers',
+            'content'   => [
+                'account'       => 'acc_10000000000001',
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'notes'         => [
+                    'order_info'    => 'random_string',
+                    'version'       => 2,
+                    'roll_no'       => 'iec2011025',
+                    'student_name'  => 'student',
+                ],
+                'linked_account_notes' => ['roll_no', 'student_name'],
+                'on_hold'       => '1',
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+        'response'  =>  [
+            'content' => [
+                'entity' => 'transfer',
+                'status' => 'processed',
+                'source' => 'acc_10000000000000',
+                'recipient' => 'acc_10000000000001',
+                'amount' => 10000,
+                'currency' => 'INR',
+                'notes' =>  [
+                    'order_info' => 'random_string',
+                    'version' => 2,
+                    'roll_no' => 'iec2011025',
+                    'student_name' => 'student',
+                ],
+                'linked_account_notes' =>
+                    [
+                        'roll_no',
+                        'student_name',
+                    ],
+                'on_hold' => true,
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+    ],
+
+    'testCreateDirectTransferWithPartnerAuthForMarketplaceWithInsufficientBalanceAndLowNegativeBalanceAllowed' => [
+        'request'   => [
+            'method'   => 'POST',
+            'url'      => '/transfers',
+            'content'   => [
+                'account'       => 'acc_10000000000001',
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'notes'         => [
+                    'order_info'    => 'random_string',
+                    'version'       => 2,
+                    'roll_no'       => 'iec2011025',
+                    'student_name'  => 'student',
+                ],
+                'linked_account_notes' => ['roll_no', 'student_name'],
+                'on_hold'       => '1',
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+        'response'  =>  [
+            'content' => [
+                'entity' => 'transfer',
+                'status' => 'processed',
+                'source' => 'acc_10000000000000',
+                'recipient' => 'acc_10000000000001',
+                'amount' => 10000,
+                'currency' => 'INR',
+                'notes' =>  [
+                    'order_info' => 'random_string',
+                    'version' => 2,
+                    'roll_no' => 'iec2011025',
+                    'student_name' => 'student',
+                ],
+                'linked_account_notes' =>
+                    [
+                        'roll_no',
+                        'student_name',
+                    ],
+                'on_hold' => true,
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+    ],
+
     'testCreateDirectTransferWithOAuthForMarketplace' => [
         'request'   => [
             'method'   => 'POST',
