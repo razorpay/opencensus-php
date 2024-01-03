@@ -1790,6 +1790,145 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($payment['id'], $actualLedgerOutboxEntry['transactor_id']);
     }
 
+    public function testNormalPaymentCaptureWithPrepaidMerchantDFBAndPaymentCFBWithFeeCredits()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_bearer' => 'dynamic']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+            'fee_bearer' => 'customer'
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['pricing_plan_id' => $plan->getPlanId()]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "1000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+
+        $data = $this->createPaymentLinkAndOrderForThat();
+
+        $paymentLink = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment[Payment\Entity::AMOUNT] = $order->getAmount();
+
+        $fees = $this->createAndGetFeesForPayment($payment);
+        $fee  = $fees['input']['fee'];
+
+        $payment[Payment\Entity::PAYMENT_LINK_ID] = $paymentLink->getPublicId();
+        $payment[Payment\Entity::AMOUNT]          = $order->getAmount() + $fee;
+        $payment[Payment\Entity::FEE]             = $fee;
+        $payment[Payment\Entity::ORDER_ID]        = $order->getPublicId();
+
+        $this->doAuthAndGetPayment($payment, [
+            Payment\Entity::STATUS => Payment\Status::CAPTURED,
+            Payment\Entity::ORDER_ID => $order->getPublicId(),
+        ]);
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($order->getAmount() + $fee, $payment->getAmount());
+
+        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_",'',$payment['id'])]);
+        $this->assertNotNull($payment);
+        $payment->setFeeBearer('customer');
+        $payment->saveOrFail();
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_merchant_captured",
+            "money_params" => [
+                "base_amount" => '' . $payment->getAmount(),
+                "gmv_amount" => '' . $payment->getAmount(),
+                "merchant_balance_amount" => '' . ($payment->getAmount() - $fee),
+                "tax" => "0",
+                "commission" => '' . $fee,
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals('pay_'.$payment['id'], $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertEquals($expectedLedgerOutboxEntry['additional_params'], $actualLedgerOutboxEntry['additional_params']);
+        $this->assertEquals($expectedLedgerOutboxEntry['money_params'], $actualLedgerOutboxEntry['money_params']);
+    }
+
     public function testDSPaymentCaptureFeeCreditsDeduction()
     {
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
@@ -2643,6 +2782,24 @@ class PaymentLedgerTest extends TestCase
         return $payment;
     }
 
+    private function createAuthorisedPaymentInReverseShadow(){
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['amount'] = '2000';
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+
+        $paymentArray['billing_address'] = $billingAddressArray;
+
+        $payment = $this->doAuthAndGetPayment($paymentArray);
+
+        return $payment;
+    }
     private function createCreditLoadingPaymentInReverseShadow(){
         $this->app['config']->set('applications.ledger.enabled', true);
 
@@ -3251,11 +3408,11 @@ class PaymentLedgerTest extends TestCase
         ];
     }
 
-    public function testKafkaSuccessForPaymentGatewayCaptureEvent()
+    public function testKafkaSuccessForPaymentGatewayCaptureEventForAuthorisedPayment()
     {
         $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
 
-        $payment = $this->createPaymentInReverseShadow();
+        $payment = $this->createAuthorisedPaymentInReverseShadow();
 
         $paymentId = $payment['id'];
 
@@ -3269,7 +3426,23 @@ class PaymentLedgerTest extends TestCase
 
         $this->assertNotNull($txn);
 
+        $this->assertEmpty($txn['fee']);
+        $this->assertEmpty($txn['tax']);
+        $this->assertEmpty($txn['credit']);
+        $this->assertNull($txn['balance_id']);
+        $this->assertNull($txn['balance_updated']);
+
+        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_", "", $paymentId)]);
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals($payment['status'], 'authorized');
+        $this->assertEquals($payment['fee'], 0);
+        $this->assertEquals($payment['tax'], 0);
+
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_gateway_captured']);
+
+        $this->assertNotNull($ledgerOutboxEntity);
 
         $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
 
@@ -3299,6 +3472,13 @@ class PaymentLedgerTest extends TestCase
         $txn = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($txn);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals($payment['fee'], $txn['fee']);
+        $this->assertEquals($payment['tax'], $txn['tax']);
 
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_gateway_captured']);
 
@@ -3491,7 +3671,22 @@ class PaymentLedgerTest extends TestCase
 
         $txn = $this->getDbLastEntity('transaction');
 
+        $this->assertNotNull($txn);
+
+        $this->assertNotNull($txn['fee']);
+        $this->assertNotNull($txn['tax']);
+        $this->assertNotNull($txn['credit']);
+        $this->assertNotNull($txn['balance_id']);
         $this->assertTrue($txn->isBalanceUpdated());
+
+        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_", "", $paymentId)]);
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals($payment['fee'], $txn['fee']);
+        $this->assertEquals($payment['tax'], $txn['tax']);
+        $this->assertEquals($payment['amount']-$payment['fee'], $txn['credit']);
 
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
 

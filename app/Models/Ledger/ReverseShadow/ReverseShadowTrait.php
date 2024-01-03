@@ -59,13 +59,13 @@ trait ReverseShadowTrait
 
     protected function isPostPaidDynamicFeeBearerFlag(PaymentEntity $payment,$merchant)
     {
-        return (($this->isPostpaid($payment) === true) and ($merchant->isFeeBearerDynamic() === true));
+        return (($this->isPostpaid($payment) === true) and ($merchant->isFeeBearerDynamic() === true) and ($payment->isFeeBearerPlatform() === true));
     }
 
     protected function isPrepaidDynamicFeeBearerFlag(PaymentEntity $payment): bool
     {
         $merchant = $payment->merchant;
-        return ($this->isPostpaid($payment) === false) and ($merchant->isFeeBearerDynamic() === true);
+        return (($this->isPostpaid($payment) === false) and ($merchant->isFeeBearerDynamic() === true) and ($payment->isFeeBearerPlatform() === true));
     }
 
     protected function isFeeCredits($feeCredits ,$fee): bool
