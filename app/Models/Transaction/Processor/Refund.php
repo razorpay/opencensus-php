@@ -92,12 +92,12 @@ class Refund extends Base
 
         if ($payment->hasBeenCaptured())
         {
+            $paymentTxn = $payment->transaction;
             //Handle async transaction create
-            if ($payment->getTransactionId() === null)
+            if ($payment->getTransactionId() === null || $paymentTxn === null)
             {
                 return $nowTimestamp;
             }
-            $paymentTxn = $payment->transaction;
 
             // Setting current timestamp to refund settled_at when $paymentTxn->getSettledAt() is null to support async_txn_fill_details feature
             // Slack ref - https://razorpay.slack.com/archives/CNXC0JHQF/p1649241605237939?thread_ts=1648804095.677009&cid=CNXC0JHQF
