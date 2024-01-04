@@ -3112,17 +3112,17 @@ return [
             ],
         ],
         'response'  => [
-            'content'     => [
+            'status_code' => 400,
+            'content'   => [
                 'error' => [
-                    'code'        => PublicErrorCode::SERVER_ERROR,
-                    'description' => PublicErrorDescription::SERVER_ERROR_CACHE_DATA_MISSING_FOR_BANK_ACCOUNT_UPDATE,
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Cache data missing for Bank Account Update',
                 ],
             ],
-            'status_code' => 500,
         ],
         'exception' => [
-            'class'               => RZP\Exception\ServerErrorException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_CACHE_DATA_MISSING_FOR_BANK_ACCOUNT_UPDATE,
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
 
     ],

@@ -879,10 +879,10 @@ class Core extends Base\Core
 
         if ($data === null)
         {
-            throw new ServerErrorException(
-                'Cache data missing for Bank Account Update',
-                ErrorCode::SERVER_ERROR_CACHE_DATA_MISSING_FOR_BANK_ACCOUNT_UPDATE
-            );
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+              null,
+              null,
+              "Cache data missing for Bank Account Update");
         }
 
         $oldBankAccountFile = [];
