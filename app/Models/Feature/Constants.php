@@ -1989,11 +1989,15 @@ class Constants
 
     const PAYOUT_LOW_BALANCE = 'payout_low_balance';
 
-
     /**
      * Feature flag to enable merchants to use fee_credits for fee recovery
      */
     const RZPX_FEE_CREDIT = 'rzpx_fee_credit';
+  
+      /**
+     * Enable International Pricing For Amex International Payments
+     */
+    const ENABLE_INTL_PRICING_AMEX = 'enable_intl_pricing_amex';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -2772,6 +2776,7 @@ class Constants
         self::PAYOUT_LOW_BALANCE                     => true,
         self::REMOVE_EMANDATE_COOLOFF                => true,
         self::RZPX_FEE_CREDIT                        => true,
+        self::ENABLE_INTL_PRICING_AMEX               => true,
     ];
 
     // Entity type constants
@@ -3936,7 +3941,12 @@ class Constants
             'feature'       => self::PAYOUT_LOW_BALANCE,
             'display_name'  => 'Payouts disabled due to insufficient balance',
             'documentation' => 'To determine if merchant is eligible to be automatically assigned payouts feature after sufficient balance is available in all CAs'
-        ]
+        ],
+        self::ENABLE_INTL_PRICING_AMEX => [
+            'feature'       => self::ENABLE_INTL_PRICING_AMEX,
+            'display_name'  => 'Feature to enable Amex International Pricing',
+            'documentation' => '',
+        ],
     ];
 
     /**

@@ -7,8 +7,10 @@ use Mockery;
 use Illuminate\Support\Facades\App;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Feature\Constants;
 use RZP\Models\Payment;
 use RZP\Models\Address\Type;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
@@ -1363,9 +1365,9 @@ class CBPaymentCreateTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
 
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
-                'amount' => 1000, 
+                'amount' => 1000,
             ]);
 
         $payment = $this->getDefaultPaymentArray();
@@ -1411,9 +1413,9 @@ class CBPaymentCreateTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
 
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
-                'amount' => 1000, 
+                'amount' => 1000,
                 // 'customer_id' => 'cust_100000customer',
             ]);
 
@@ -1469,9 +1471,9 @@ class CBPaymentCreateTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
 
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
-                'amount' => 1000, 
+                'amount' => 1000,
                 'customer_id' => '100000customer',
             ]);
 
@@ -1536,7 +1538,7 @@ class CBPaymentCreateTest extends TestCase
             ],
         ]);
 
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
                 'amount' => 1000,
                 'currency' => 'AWG',
@@ -1625,7 +1627,7 @@ class CBPaymentCreateTest extends TestCase
             'merchant_id'   => $merchantId,
         ]);
 
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
                 'amount' => 1000,
                 'currency' => 'INR',
@@ -1696,7 +1698,7 @@ class CBPaymentCreateTest extends TestCase
         ]);
 
         // create order
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
                 'amount' => 1000,
                 'currency' => 'INR',
@@ -1816,7 +1818,7 @@ class CBPaymentCreateTest extends TestCase
             ],
         ]);
 
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
                 'amount' => 1000,
                 'currency' => 'USD',
@@ -1888,7 +1890,7 @@ class CBPaymentCreateTest extends TestCase
             ],
         ]);
 
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
                 'amount' => 1000,
                 'currency' => 'USD',
@@ -1962,7 +1964,7 @@ class CBPaymentCreateTest extends TestCase
         ]);
 
         // create order
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
                 'amount' => 1000,
                 'currency' => 'INR',
@@ -2084,7 +2086,7 @@ class CBPaymentCreateTest extends TestCase
         ]);
 
         // create order
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
                 'amount' => 1000,
                 'currency' => 'INR',
@@ -2201,7 +2203,7 @@ class CBPaymentCreateTest extends TestCase
             ],
         ]);
 
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
                 'amount' => 1000,
                 'currency' => 'INR',
@@ -2294,7 +2296,7 @@ class CBPaymentCreateTest extends TestCase
         ]);
 
         // create order
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
                 'amount' => 1000,
                 'currency' => 'INR',
@@ -2388,5 +2390,663 @@ class CBPaymentCreateTest extends TestCase
         $this->assertEquals('paid', $paymentInvoice['status']);
 
         Queue::assertPushed(CrossBorderCommonUseCases::class, 1);
+    }
+
+    public function testCapturePaymentWithAmexInternationalandDomesticCardWithInternationalPricingWithPlatformFeeBearer()
+    {
+        $plans = [
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlan',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 0,
+                'fee_bearer'    => 'platform',
+            ],
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlanInternational',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 1,
+                'fee_bearer'     => 'platform',
+            ],
+
+
+        ];
+
+        foreach ($plans as $plan)
+        {
+            $this->fixtures->create('pricing', $plan);
+        }
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'platform',
+            'pricing_plan_id'   => '1ycviEdCgurrFI',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s','enable_intl_pricing_amex']);
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->edit('merchant', '10000000000000', $merchantAttributes);
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'US',
+            'network' => 'American Express',
+        ]);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card'] = array(
+            'number'            => '5567630000002004',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '5666',
+        );
+        $payment['callback_url'] = $this->getLocalMerchantCallbackUrl();
+        $this->doAuthAndCapturePayment($payment);
+        $internationalTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($payment['amount'] * 0.03, $internationalTransaction['fee']);
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => '',
+            'network' => 'American Express',
+            'flows'   => [
+                '3ds'  => '1',
+                'headless_otp'  => '1',
+            ]
+        ]);
+        $domesticPayment = $this->getDefaultPaymentArray();
+        $domesticPayment['card'] = array(
+            'number'            => '4143667057540458',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '5666',
+        );
+        $domesticPayment['callback_url'] = $this->getLocalMerchantCallbackUrl();
+        $this->doAuthAndCapturePayment($domesticPayment);
+        $domesticTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($domesticPayment['amount'] * 0.02, $domesticTransaction['fee']);
+        $this->fixtures->iin->create([
+            'iin'     => '404464',
+            'country' => 'IN',
+            'network' => 'Visa',
+        ]);
+        $domesticMCPayment = $this->getDefaultPaymentArray();
+        $domesticMCPayment['card'] = array(
+            'number'            => '4044649165235890',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '566',
+        );
+        $this->doAuthAndCapturePayment($domesticMCPayment);
+        $domesticMCTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($domesticMCPayment['amount'] * 0.02, $domesticMCTransaction['fee']);
+    }
+
+    public function testCapturePaymentWithAmexInternationalAndDomesticCardWithDomesticPricingWithPlatformFeeBearer()
+    {
+        $plans = [
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlan',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 0,
+                'fee_bearer'    => 'platform',
+            ],
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlanInternational',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 1,
+                'fee_bearer'     => 'platform',
+            ],
+
+
+        ];
+
+        foreach ($plans as $plan)
+        {
+            $this->fixtures->create('pricing', $plan);
+        }
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'platform',
+            'pricing_plan_id'   => '1ycviEdCgurrFI',
+        ];
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->edit('merchant', '10000000000000', $merchantAttributes);
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'US',
+            'network' => 'American Express',
+        ]);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card'] = array(
+            'number'            => '5567630000002004',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '5666',
+        );
+        $payment['callback_url'] = $this->getLocalMerchantCallbackUrl();
+        $this->doAuthAndCapturePayment($payment);
+        $internationalTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($payment['amount'] * 0.02, $internationalTransaction['fee']);
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'American Express',
+            'flows'   => [
+                '3ds'  => '1',
+                'headless_otp'  => '1',
+            ]
+        ]);
+        $domesticPayment = $this->getDefaultPaymentArray();
+        $domesticPayment['card'] = array(
+            'number'            => '4143667057540458',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '5666',
+        );
+        $domesticPayment['callback_url'] = $this->getLocalMerchantCallbackUrl();
+        $this->doAuthAndCapturePayment($domesticPayment);
+        $domesticTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($domesticPayment['amount'] * 0.02, $domesticTransaction['fee']);
+        $this->fixtures->iin->create([
+            'iin'     => '404464',
+            'country' => 'IN',
+            'network' => 'Visa',
+        ]);
+        $domesticMCPayment = $this->getDefaultPaymentArray();
+        $domesticMCPayment['card'] = array(
+            'number'            => '4044649165235890',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '566',
+        );
+        $this->doAuthAndCapturePayment($domesticMCPayment);
+        $domesticMCTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($domesticMCPayment['amount'] * 0.02, $domesticMCTransaction['fee']);
+    }
+
+    public function testCapturePaymentWithAmexInternationalCardWithInternationalPricingWithCustomerFeeBearer()
+    {
+        $plans = [
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlanInternational',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 1,
+                'fee_bearer'     => FeeBearer::CUSTOMER,
+            ],
+        ];
+
+        foreach ($plans as $plan)
+        {
+            $this->fixtures->create('pricing', $plan);
+        }
+
+        $merchantAttributes = [
+            'fee_bearer'        => FeeBearer::CUSTOMER,
+            'pricing_plan_id'   => '1ycviEdCgurrFI',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['enable_intl_pricing_amex']);
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures([Constants::ALLOW_CFB_INTERNATIONAL]);
+        $this->fixtures->edit('merchant', '10000000000000', $merchantAttributes);
+        $amount = 600;
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'US',
+            'network' => 'American Express',
+        ]);
+
+        // CALLING FLOWS API TO FETCH DCC RATES AND CURRENCY REQUEST ID
+
+        $flowsRequest = [
+            'content' => ['amount' => $amount, 'currency' => 'INR', 'iin' => '556763'],
+            'method'  => 'GET',
+            'url'     => '/payment/flows',
+        ];
+
+        $flowsResponse = $this->makeRequestAndGetContent($flowsRequest);
+        $cardCurrency = $flowsResponse['card_currency'];
+        $currencyRequestId = $flowsResponse['currency_request_id'];
+
+        // CALLING CALCULATE FEES API TO VERIFY DISPLAY AMOUNTS AND DCC CALCULATIONS
+
+        $calculateFeesRequest = [
+            'url'     => '/payments/calculate/fees',
+            'method'  => 'POST',
+            'content' => [
+                'amount'                => $amount,
+                'currency'              => 'INR',
+                'method'                => 'card',
+                'email'                 => 'qa.testing@razorpay.com',
+                'contact'               => '+918888888888',
+                'card'                  => ['number' => '5567630000002004', 'cvv' => 5666, 'name' => 'Harshil', 'expiry_month' => 12, 'expiry_year' => 27],
+                'dcc_currency'          => $cardCurrency,
+                'currency_request_id'   => $currencyRequestId,
+            ],
+        ];
+
+        $calculateFeesResponse = $this->makeRequestAndGetContent($calculateFeesRequest);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['fee'] = $amount * 0.03;
+        $payment['amount'] = $amount + $payment['fee'];
+        $payment['card'] = array(
+            'number'            => '5567630000002004',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '5666',
+        );
+        $this->doAuthAndCapturePayment($payment, $amount);
+        $internationalTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($amount * 0.03, $internationalTransaction['fee']);
+        $this->assertEquals($amount * 0.03, $calculateFeesResponse['input']['fee']);
+    }
+    public function testCapturePaymentWithAmexDomesticCardWithDomesticPricingWithCustomerFeeBearer()
+    {
+        $plans = [
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlanDomestic',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 0,
+                'fee_bearer'     => FeeBearer::CUSTOMER,
+            ],
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlanInternational',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 1,
+                'fee_bearer'     => FeeBearer::CUSTOMER,
+            ],
+        ];
+
+        foreach ($plans as $plan)
+        {
+            $this->fixtures->create('pricing', $plan);
+        }
+
+        $merchantAttributes = [
+            'fee_bearer'        => FeeBearer::CUSTOMER,
+            'pricing_plan_id'   => '1ycviEdCgurrFI',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['enable_intl_pricing_amex']);
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures([Constants::ALLOW_CFB_INTERNATIONAL]);
+        $this->fixtures->edit('merchant', '10000000000000', $merchantAttributes);
+        $amount = 600;
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'network' => 'American Express',
+        ]);
+
+        // CALLING FLOWS API TO FETCH DCC RATES AND CURRENCY REQUEST ID
+
+        $flowsRequest = [
+            'content' => ['amount' => $amount, 'currency' => 'INR', 'iin' => '556763'],
+            'method'  => 'GET',
+            'url'     => '/payment/flows',
+        ];
+
+        $flowsResponse = $this->makeRequestAndGetContent($flowsRequest);
+        $cardCurrency = $flowsResponse['card_currency'];
+        $currencyRequestId = $flowsResponse['currency_request_id'];
+
+        // CALLING CALCULATE FEES API TO VERIFY DISPLAY AMOUNTS AND DCC CALCULATIONS
+
+        $calculateFeesRequest = [
+            'url'     => '/payments/calculate/fees',
+            'method'  => 'POST',
+            'content' => [
+                'amount'                => $amount,
+                'currency'              => 'INR',
+                'method'                => 'card',
+                'email'                 => 'qa.testing@razorpay.com',
+                'contact'               => '+918888888888',
+                'card'                  => ['number' => '4143667057540458', 'cvv' => 5666, 'name' => 'Harshil', 'expiry_month' => 12, 'expiry_year' => 27],
+                'dcc_currency'          => $cardCurrency,
+                'currency_request_id'   => $currencyRequestId,
+            ],
+        ];
+
+        $calculateFeesResponse = $this->makeRequestAndGetContent($calculateFeesRequest);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['fee'] = $amount * 0.02;
+        $payment['amount'] = $amount + $payment['fee'];
+        $payment['card'] = array(
+            'number'            => '4143667057540458',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '5666',
+        );
+        $this->doAuthAndCapturePayment($payment, $amount);
+        $internationalTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($amount * 0.02, $internationalTransaction['fee']);
+        $this->assertEquals($amount * 0.02, $calculateFeesResponse['input']['fee']);
+    }
+
+    public function testCapturePaymentWithAmexInternationalCardWithDisabledInternationalPricingWithCustomerFeeBearer()
+    {
+        $plans = [
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlan',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 0,
+                'fee_bearer'    => FeeBearer::CUSTOMER,
+            ],
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlanInternational',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 1,
+                'fee_bearer'     => FeeBearer::CUSTOMER,
+            ],
+        ];
+
+        foreach ($plans as $plan)
+        {
+            $this->fixtures->create('pricing', $plan);
+        }
+
+        $merchantAttributes = [
+            'fee_bearer'        => FeeBearer::CUSTOMER,
+            'pricing_plan_id'   => '1ycviEdCgurrFI',
+        ];
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures([Constants::ALLOW_CFB_INTERNATIONAL]);
+        $this->fixtures->edit('merchant', '10000000000000', $merchantAttributes);
+        $amount = 60000;
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'US',
+            'network' => 'American Express',
+        ]);
+
+        // CALLING FLOWS API TO FETCH DCC RATES AND CURRENCY REQUEST ID
+
+        $flowsRequest = [
+            'content' => ['amount' => $amount, 'currency' => 'INR', 'iin' => '556763'],
+            'method'  => 'GET',
+            'url'     => '/payment/flows',
+        ];
+
+        $flowsResponse = $this->makeRequestAndGetContent($flowsRequest);
+        $cardCurrency = $flowsResponse['card_currency'];
+        $currencyRequestId = $flowsResponse['currency_request_id'];
+
+        // CALLING CALCULATE FEES API TO VERIFY DISPLAY AMOUNTS AND DCC CALCULATIONS
+
+        $calculateFeesRequest = [
+            'url'     => '/payments/calculate/fees',
+            'method'  => 'POST',
+            'content' => [
+                'amount'                => $amount,
+                'currency'              => 'INR',
+                'method'                => 'card',
+                'email'                 => 'qa.testing@razorpay.com',
+                'contact'               => '+918888888888',
+                'card'                  => ['number' => '5567630000002004', 'cvv' => 5666, 'name' => 'Harshil', 'expiry_month' => 12, 'expiry_year' => 27],
+                'dcc_currency'          => $cardCurrency,
+                'currency_request_id'   => $currencyRequestId,
+            ],
+        ];
+
+        $calculateFeesResponse = $this->makeRequestAndGetContent($calculateFeesRequest);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['fee'] = $amount * 0.02;
+        $payment['amount'] = $amount + $payment['fee'];
+        $payment['card'] = array(
+            'number'            => '5567630000002004',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '5666',
+        );
+        $this->doAuthAndCapturePayment($payment, $amount);
+        $internationalTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($amount * 0.02, $internationalTransaction['fee']);
+        $this->assertEquals($amount * 0.02, $calculateFeesResponse['input']['fee']);
+    }
+
+    public function testCapturePaymentWithAmexDomesticCardWithDisabledInternationalPricingWithCustomerFeeBearer()
+    {
+        $plans = [
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlan',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 0,
+                'fee_bearer'    => FeeBearer::CUSTOMER,
+            ],
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlanInternational',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 1,
+                'fee_bearer'     => FeeBearer::CUSTOMER,
+            ],
+        ];
+
+        foreach ($plans as $plan)
+        {
+            $this->fixtures->create('pricing', $plan);
+        }
+
+        $merchantAttributes = [
+            'fee_bearer'        => FeeBearer::CUSTOMER,
+            'pricing_plan_id'   => '1ycviEdCgurrFI',
+        ];
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures([Constants::ALLOW_CFB_INTERNATIONAL]);
+        $this->fixtures->edit('merchant', '10000000000000', $merchantAttributes);
+        $amount = 60000;
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => '',
+            'network' => 'American Express',
+            'flows'   => [
+                '3ds'  => '1',
+                'headless_otp'  => '1',
+            ]
+        ]);
+        $flowsRequest = [
+            'content' => ['amount' => $amount, 'currency' => 'INR', 'iin' => '414366'],
+            'method'  => 'GET',
+            'url'     => '/payment/flows',
+        ];
+
+        $flowsResponse = $this->makeRequestAndGetContent($flowsRequest);
+        $cardCurrency = $flowsResponse['card_currency'];
+        $currencyRequestId = $flowsResponse['currency_request_id'];
+
+        // CALLING CALCULATE FEES API TO VERIFY DISPLAY AMOUNTS AND DCC CALCULATIONS
+
+        $calculateFeesRequest = [
+            'url'     => '/payments/calculate/fees',
+            'method'  => 'POST',
+            'content' => [
+                'amount'                => $amount,
+                'currency'              => 'INR',
+                'method'                => 'card',
+                'email'                 => 'qa.testing@razorpay.com',
+                'contact'               => '+918888888888',
+                'card'                  => ['number' => '4143667057540458', 'cvv' => 5666, 'name' => 'Harshil', 'expiry_month' => 12, 'expiry_year' => 27],
+                'dcc_currency'          => $cardCurrency,
+                'currency_request_id'   => $currencyRequestId,
+            ],
+        ];
+
+        $calculateFeesResponse = $this->makeRequestAndGetContent($calculateFeesRequest);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['fee'] = $amount * 0.02;
+        $payment['amount'] = $amount + $payment['fee'];
+        $payment['card'] = array(
+            'number'            => '4143667057540458',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '5666',
+        );
+        $this->doAuthAndCapturePayment($payment, $amount);
+        $internationalTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($amount * 0.02, $internationalTransaction['fee']);
+        $this->assertEquals($amount * 0.02, $calculateFeesResponse['input']['fee']);
+    }
+
+    public function testCapturePaymentWithVisaInternationalCardWithInternationalPricingWithCustomerFeeBearer()
+    {
+        $plans = [
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlan',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 200,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 0,
+                'fee_bearer'    => FeeBearer::CUSTOMER,
+            ],
+            [
+                'plan_id' => '1ycviEdCgurrFI',
+                'plan_name' => 'testFixturePlanInternational',
+                'feature' => 'payment',
+                'payment_method' => 'card',
+                'percent_rate' => 300,
+                'fixed_rate' => 0,
+                'org_id'    => '100000razorpay',
+                'international' => 1,
+                'fee_bearer'     => FeeBearer::CUSTOMER,
+            ],
+        ];
+
+        foreach ($plans as $plan)
+        {
+            $this->fixtures->create('pricing', $plan);
+        }
+
+        $merchantAttributes = [
+            'fee_bearer'        => FeeBearer::CUSTOMER,
+            'pricing_plan_id'   => '1ycviEdCgurrFI',
+        ];
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures([Constants::ALLOW_CFB_INTERNATIONAL]);
+        $this->fixtures->edit('merchant', '10000000000000', $merchantAttributes);
+        $amount = 600;
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'US',
+            'network' => 'VISA',
+        ]);
+
+        // CALLING FLOWS API TO FETCH DCC RATES AND CURRENCY REQUEST ID
+
+        $flowsRequest = [
+            'content' => ['amount' => $amount, 'currency' => 'INR', 'iin' => '414366'],
+            'method'  => 'GET',
+            'url'     => '/payment/flows',
+        ];
+
+        $flowsResponse = $this->makeRequestAndGetContent($flowsRequest);
+        $cardCurrency = $flowsResponse['card_currency'];
+        $currencyRequestId = $flowsResponse['currency_request_id'];
+
+        // CALLING CALCULATE FEES API TO VERIFY DISPLAY AMOUNTS AND DCC CALCULATIONS
+
+        $calculateFeesRequest = [
+            'url'     => '/payments/calculate/fees',
+            'method'  => 'POST',
+            'content' => [
+                'amount'                => $amount,
+                'currency'              => 'INR',
+                'method'                => 'card',
+                'email'                 => 'qa.testing@razorpay.com',
+                'contact'               => '+918888888888',
+                'card'                  => ['number' => '4143667057540458', 'cvv' => 566, 'name' => 'Harshil', 'expiry_month' => 12, 'expiry_year' => 27],
+                'dcc_currency'          => $cardCurrency,
+                'currency_request_id'   => $currencyRequestId,
+            ],
+        ];
+
+        $calculateFeesResponse = $this->makeRequestAndGetContent($calculateFeesRequest);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['fee'] = $amount * 0.03;
+        $payment['amount'] = $amount + $payment['fee'];
+        $payment['card'] = array(
+            'number'            => '4143667057540458',
+            'name'              => 'Test',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2027',
+            'cvv'               => '566',
+        );
+        $this->doAuthAndCapturePayment($payment, $amount);
+        $internationalTransaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($amount * 0.03, $internationalTransaction['fee']);
+        $this->assertEquals($amount * 0.03, $calculateFeesResponse['input']['fee']);
     }
 }

@@ -1282,6 +1282,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::OMNI_ENABLED) === true);
     }
 
+    public function isEnableInternationalPricingForAmexEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ENABLE_INTL_PRICING_AMEX) === true);
+    }
+
     /**
      * Get the non-pureplatform partner if it exists
      *

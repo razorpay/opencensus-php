@@ -266,6 +266,7 @@ class Constants
 
     const SourceToPayPro = 'source_to_pay_pro';
 
+    const EnableInternationalPricingForAmex = 'enable_international_pricing_for_amex';
     public static $validDcsKeys = [];
 
     /**
@@ -502,7 +503,8 @@ class Constants
         self::BankingPlusPro                              => 'rzp/x/merchant/onboarding/PricingTiers',
         self::SourceToPayCore                             => 'rzp/x/merchant/onboarding/PricingTiers',
         self::SourceToPayPro                              => 'rzp/x/merchant/onboarding/PricingTiers',
-        self::RemoveEmandateCooloff                       => 'rzp/pg/merchant/recurring/Emandate'
+        self::RemoveEmandateCooloff                       => 'rzp/pg/merchant/recurring/Emandate',
+        self::EnableInternationalPricingForAmex           => "rzp/pg/merchant/cross_border/india/Pricing"
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -753,7 +755,8 @@ class Constants
         APIFeaturesConstants::BANKING_PLUS_PRO                             => self::BankingPlusPro,
         APIFeaturesConstants::SOURCE_TO_PAY_CORE                           => self::SourceToPayCore,
         APIFeaturesConstants::SOURCE_TO_PAY_PRO                            => self::SourceToPayPro,
-        APIFeaturesConstants::REMOVE_EMANDATE_COOLOFF                      => self::RemoveEmandateCooloff
+        APIFeaturesConstants::REMOVE_EMANDATE_COOLOFF                      => self::RemoveEmandateCooloff,
+        APIFeaturesConstants::ENABLE_INTL_PRICING_AMEX                     => self::EnableInternationalPricingForAmex,
     ];
 
     /**

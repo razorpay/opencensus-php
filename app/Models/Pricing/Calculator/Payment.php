@@ -418,6 +418,28 @@ class Payment extends Base
 
         $international = $payment->isInternational();
 
+        try
+        {
+            if (!$international and $payment->card->isAmex() and $payment->merchant->isEnableInternationalPricingForAmexEnabled())
+            {
+                $isInternationalEnabled = $payment->merchant->isInternational();
+                $merchantCountry =  $payment->merchant->getCountry();
+                $cardCountry = $payment->card->getCountry();
+                if ($isInternationalEnabled and $cardCountry !== 'IN'  and $merchantCountry === 'IN')
+                {
+                    $international = true;
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::AMEX_INTERNATIONAL_PRICING_ERROR,[
+                'merchantId'  => $payment->merchant->getMerchantId(),
+                'error' => $e->getMessage()
+            ]);
+            $international = false;
+        }
+
         $receiverType = $payment->getReceiverType();
 
         $authType = $payment->getAuthType();
@@ -459,7 +481,7 @@ class Payment extends Base
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
 
-        if ($network === Card\Network::AMEX)
+        if ($network === Card\Network::AMEX && !$international)
         {
             return $this->validateAndGetOnePricingRule($rules);
         }
