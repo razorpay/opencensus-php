@@ -16,6 +16,7 @@ import {
   ACCOUNT_TYPE_OPTIONS,
   RAZORPAY_GATEWAY_KEY,
 } from 'merchant/views/Navigator/constants';
+import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 
 /**
  * Instant(beta) -> optimizer_seamless_disabled is true, which means seamless option is disabled
@@ -179,6 +180,14 @@ export const Step1 = (props) => {
     const isBankingVasAccountVal = target.value === 'true';
     setIsBankingVasAccount(isBankingVasAccountVal);
     const gatewayAcquirer = isBankingVasAccountVal ? '' : 'razorpay';
+    trackOptimizerEvents({
+      screen: `Optimizer ${isEdit ? 'Edit' : 'Add'} Provider`,
+      objectName: 'account type',
+      actionName: 'select',
+      properties: {
+        'Account Type': isBankingVasAccountVal ? 'Banking VAS' : 'Razorpay',
+      },
+    });
     changeGatewayDetails({
       target: { name: 'Gateway Acquirer', id: 'Gateway Acquirer', value: gatewayAcquirer },
     });
@@ -187,6 +196,14 @@ export const Step1 = (props) => {
   const changeBank = (value) => {
     setSelectedBank(value);
     const bankingVas = value[0].value;
+    trackOptimizerEvents({
+      screen: `Optimizer ${isEdit ? 'Edit' : 'Add'} Provider`,
+      objectName: 'bank',
+      actionName: 'select',
+      properties: {
+        Bank: bankingVas,
+      },
+    });
     changeGatewayDetails({
       target: { name: 'Gateway Acquirer', id: 'Gateway Acquirer', value: bankingVas },
     });

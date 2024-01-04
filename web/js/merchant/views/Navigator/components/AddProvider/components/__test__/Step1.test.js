@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 
 import { deepClone } from 'common/utils/rzp-utils';
 import { Step1 } from 'merchant/views/Navigator/components/AddProvider/components/Step1';
+import * as trackers from 'merchant/views/Navigator/track';
 
 describe('Step 1 Screen', () => {
   let mockProps;
@@ -198,11 +199,21 @@ describe('Step 1 Screen', () => {
       expect(getByText('Change Gateway')).toBeInTheDocument();
       expect(getByText(/Account type/)).toBeInTheDocument();
 
+      const trackOptimizerEventsMock = jest.spyOn(trackers, 'trackOptimizerEvents');
       const bankingVasRadio = screen.getByLabelText('Banking VAS');
       expect(bankingVasRadio).toBeInTheDocument();
 
       await act(async () => {
         await userEvent.click(bankingVasRadio);
+        expect(trackOptimizerEventsMock).toHaveBeenCalledTimes(1);
+        expect(trackOptimizerEventsMock).toHaveBeenCalledWith({
+          screen: 'Optimizer Add Provider',
+          objectName: 'account type',
+          actionName: 'select',
+          properties: {
+            'Account Type': 'Banking VAS',
+          },
+        });
       });
 
       await waitFor(() => {
@@ -219,6 +230,15 @@ describe('Step 1 Screen', () => {
       expect(axisBank).toBeInTheDocument();
       await act(async () => {
         await userEvent.click(axisBank);
+        expect(trackOptimizerEventsMock).toHaveBeenCalledTimes(2);
+        expect(trackOptimizerEventsMock).toHaveBeenCalledWith({
+          screen: 'Optimizer Add Provider',
+          objectName: 'bank',
+          actionName: 'select',
+          properties: {
+            Bank: 'axis_vas',
+          },
+        });
       });
 
       expect(bankList).toHaveValue('Axis Bank');
