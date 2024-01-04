@@ -111,6 +111,14 @@ class Gateway extends Base\Gateway
             'recurring'         => 0,
         ];
 
+        if (isset($input['payment']['currency']) === true &&
+            isset($input['payment']['international']) === true &&
+            $input['payment']['currency'] === 'MYR' &&
+            $input['payment']['international'] === false)
+        {
+            $content['payment_id'] = $input['payment']['public_id'];
+        }
+
         if (isset($input['payment']['auth_type']) === true)
         {
             $content['auth_type'] = $input['payment']['auth_type'];
