@@ -475,12 +475,17 @@ class GatewayController extends Controller
                 }
                 else
                 {
-                    if($this->isAxisOliveCallbackWithFailedPayment($input, $gatewayDriver)) 
+                    if($this->isAxisOliveCallback($gatewayDriver))
                     {
-                        $reference17 = json_decode($payment->getReference17(), true);
-                        if ($reference17 === null || $reference17['payer'] === null)
+                        $this->app['upi.payments']->turboPayerPayeeCallbackTimeDiffAnalysis($gatewayDriver, $gateway, 'payee',$input, $startTime);
+
+                        if($this->isAxisOliveFailedPaymentCallback($input, $gatewayDriver))
                         {
-                            return $this->holdTurboPayeeCallbackExecution($input, $mode, $startTime, $gatewayDriver);
+                            $reference17 = json_decode($payment->getReference17(), true);
+                            if ($reference17 === null || $reference17['payer'] === null)
+                            {
+                                return $this->holdTurboPayeeCallbackExecution($input, $mode, $startTime, $gatewayDriver);
+                            }
                         }
                     }
 
@@ -2203,15 +2208,24 @@ class GatewayController extends Controller
     }
 
     /**
-     * This function will return true if the callback is from upi_axisolive and the payment is failed
+     * This function will return true if the callback is from upi_axisolive
+     * otherwise, it return false
+     * @param $gatewayDriver string
+     * @return bool
+     */
+    private function isAxisOliveCallback(string $gatewayDriver) {
+        return $gatewayDriver === Gateway::UPI_AXISOLIVE;
+    }
+
+    /**
+     * This function will return true if the callback is for failed payment
      * otherwise, it return false
      * @param $input array
      * @param $gatewayDriver string
      * @return bool
      */
-    private function isAxisOliveCallbackWithFailedPayment(array $input, string $gatewayDriver) {
-        return ($gatewayDriver === Gateway::UPI_AXISOLIVE
-        && $input[AxisUpi\Constants::DATA] !== null
+    private function isAxisOliveFailedPaymentCallback(array $input, string $gatewayDriver) {
+        return ($input[AxisUpi\Constants::DATA] !== null
         && $input[AxisUpi\Constants::DATA][Payment\Entity::UPI] !== null
         && $input[AxisUpi\Constants::DATA][Payment\Entity::UPI][AxisUpi\Constants::STATUS_CODE] !== AxisUpi\Constants::PAYMENT_SUCCESS_STATUS_CODE);
     }
@@ -2445,6 +2459,8 @@ class GatewayController extends Controller
 
     public function callbackPayerUPIAxisOlive($gatewayDriver)
     {
+        $startTime = microtime(true);
+
         $content = Request::getContent();
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_PAYER_CALLBACK, [
@@ -2459,6 +2475,8 @@ class GatewayController extends Controller
         try
         {
             $payerCallBackDecrypted = $this->preProcessServerCallback($gateway, $content, $gatewayDriver);
+
+            $this->app['upi.payments']->turboPayerPayeeCallbackTimeDiffAnalysis($gatewayDriver, $gateway, 'payer', $payerCallBackDecrypted, $startTime);
         }
         catch (\Throwable $exception)
         {
@@ -2469,6 +2487,8 @@ class GatewayController extends Controller
         }
 
         $response = (new Payment\Service())->processGatewayPayerCallBack(Gateway::UPI_AXISOLIVE, $payerCallBackDecrypted);
+
+        $this->logCallbackResponseTime($startTime, $gatewayDriver);
 
         return ApiResponse::json($response);
     }

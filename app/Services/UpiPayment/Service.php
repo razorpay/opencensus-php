@@ -101,6 +101,8 @@ class Service
 
     const DASHBOARD_MULTIPLE_ENTITY_FETCH = 'dashboard_multiple_entity_fetch';
 
+    const TURBO_CALLBACK_RECEIVE_AT_ANALYSIS_REDIS_KEY = 'turbo_%s_callback_rec_at';
+
     /**
      * Initiates the app container, trace and UPS config
      */
@@ -1430,5 +1432,55 @@ class Service
         $response = $this->action(self::DASHBOARD_ENTITY_FETCH, $input, 'upi');
 
         return $response['entity'];
+    }
+
+    /**
+     * function to calculate and record the time difference between payer and payee callback of upi_axisolive
+     *
+     * @param string $gatewayDriver
+     * @param $gateway
+     * @param string $callbackFor
+     * @param array $callbackPayload
+     * @param float $receivedAt
+     */
+    public function turboPayerPayeeCallbackTimeDiffAnalysis(string $gatewayDriver, $gateway, string $callbackFor, array $callbackPayload, float $receivedAt) {
+        try
+        {
+            $redis = $this->app['redis']->connection();
+
+            $gatewayTransactionId = $gateway->getGatewayTransactionIdFromCallback($gatewayDriver, $callbackPayload);
+
+            $redisKey = sprintf(self::TURBO_CALLBACK_RECEIVE_AT_ANALYSIS_REDIS_KEY, $gatewayTransactionId);
+
+            $isSaved = $redis->set($redisKey, $receivedAt, 'ex', 600, 'nx');
+            if (!$isSaved)
+            {
+                $leadCallbackType = $callbackFor === 'payer' ? 'payee' : 'payer';
+
+                $dimensions = [
+                    "leadCallbackType" => $leadCallbackType,
+                ];
+
+                $leadCallbackRecAt = $redis->get($redisKey);
+
+                $difference = abs($receivedAt - $leadCallbackRecAt) * 1000;
+
+                $this->trace->info(TraceCode::PAYMENT_PAYER_PAYEE_CALLBACK_DELAY,
+                    [
+                        'transaction_id' => $gatewayTransactionId,
+                        'delay' => $difference,
+                        'leadCallbackType' => $leadCallbackType
+                    ]);
+
+                $this->trace->histogram(Payment\Metric::PAYMENT_UPI_PAYER_PAYEE_CALLBACK_DIFF, $difference, $dimensions);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->app['trace']->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PAYMENT_PAYER_PAYEE_CALLBACK_DELAY_FAILURE);
+        }
     }
 }

@@ -489,6 +489,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CALLBACK_RETRY                                = 'PAYMENT_CALLBACK_RETRY';
     const PAYMENT_CALLBACK_RETRY_SUCCESS                        = 'PAYMENT_CALLBACK_RETRY_SUCCESS';
     const PAYMENT_CALLBACK_PENDING                              = 'PAYMENT_CALLBACK_PENDING';
+    const PAYMENT_PAYER_PAYEE_CALLBACK_DELAY                    = 'PAYMENT_PAYER_PAYEE_CALLBACK_DELAY';
+    const PAYMENT_PAYER_PAYEE_CALLBACK_DELAY_FAILURE            = 'PAYMENT_PAYER_PAYEE_CALLBACK_DELAY_FAILURE';
     const PAYMENT_AUTHORIZE_FAILED                              = 'PAYMENT_AUTHORIZE_FAILED';
     const PAYMENT_AUTHORIZE_FAILED_FAILURE                      = 'PAYMENT_AUTHORIZE_FAILED_FAILURE';
     const PAYMENT_NOTIFY_FAILED                                 = 'PAYMENT_NOTIFY_FAILED';

@@ -56,27 +56,28 @@ class Metric extends Base\Core
 
 
     // Metric Names
-    const PAYMENT_CREATED                       = 'payment_created';
-    const PAYMENT_CREATED_PG_ROUTER             = 'payment_created_pg_router';
-    const PAYMENT_AUTHENTICATED                 = 'payment_authenticated';
-    const PAYMENT_AUTHORIZED                    = 'payment_authorized_v1';
-    const PAYMENT_CAPTURED                      = 'payment_captured_v1';
-    const PAYMENT_CAPTURE_QUEUE                 = 'payment_capture_queue';
-    const PAYMENT_CAPTURED_VERIFY               = 'payment_captured_verify';
-    const PAYMENT_CREATE_REQUEST_TIME           = 'payment_create_request_time';
-    const PAYMENT_CALLBACK_REQUEST_TIME         = 'payment_callback_request_time';
-    const PAYMENT_UPI_CALLBACK_REQUEST_TIME     = 'payment_upi_callback_request_time';
-    const PAYMENT_CREATE_REQUEST_TIME_PG_ROUTER = 'payment_create_request_time_pg_router';
-    const PAYMENT_FAILED                        = 'payment_failed';
-    const PAYMENT_FAILED_PG_ROUTER              = 'payment_failed_pg_router';
-    const PAYMENT_PROCESS_FAILED                = 'payment_process_failed';
-    const PAYMENT_CALLBACK_PROCESS_FAILED       = 'payment_callback_process_failed';
-    const PAYMENT_CAPTURE_FAILED                = 'payment_capture_failed';
-    const PAYMENT_REQUEST_ROUTE                 = 'payment_request_route';
-    const PAYMENT_CALLBACK_ROUTE                = 'payment_callback_route';
-    const SHIELD_FRAUD_DETECTION_FAILED         = 'shield_fraud_detection_failed';
-    const SHIELD_FRAUD_DETECTION_SKIPPED        = 'shield_fraud_detection_skipped';
-    const SHIELD_INTEGRATION_ERROR              = 'shield_integration_error';
+    const PAYMENT_CREATED                           = 'payment_created';
+    const PAYMENT_CREATED_PG_ROUTER                 = 'payment_created_pg_router';
+    const PAYMENT_AUTHENTICATED                     = 'payment_authenticated';
+    const PAYMENT_AUTHORIZED                        = 'payment_authorized_v1';
+    const PAYMENT_CAPTURED                          = 'payment_captured_v1';
+    const PAYMENT_CAPTURE_QUEUE                     = 'payment_capture_queue';
+    const PAYMENT_CAPTURED_VERIFY                   = 'payment_captured_verify';
+    const PAYMENT_CREATE_REQUEST_TIME               = 'payment_create_request_time';
+    const PAYMENT_CALLBACK_REQUEST_TIME             = 'payment_callback_request_time';
+    const PAYMENT_UPI_CALLBACK_REQUEST_TIME         = 'payment_upi_callback_request_time';
+    const PAYMENT_UPI_PAYER_PAYEE_CALLBACK_DIFF     = 'payment_upi_payer_payee_callback_diff';
+    const PAYMENT_CREATE_REQUEST_TIME_PG_ROUTER     = 'payment_create_request_time_pg_router';
+    const PAYMENT_FAILED                            = 'payment_failed';
+    const PAYMENT_FAILED_PG_ROUTER                  = 'payment_failed_pg_router';
+    const PAYMENT_PROCESS_FAILED                    = 'payment_process_failed';
+    const PAYMENT_CALLBACK_PROCESS_FAILED           = 'payment_callback_process_failed';
+    const PAYMENT_CAPTURE_FAILED                    = 'payment_capture_failed';
+    const PAYMENT_REQUEST_ROUTE                     = 'payment_request_route';
+    const PAYMENT_CALLBACK_ROUTE                    = 'payment_callback_route';
+    const SHIELD_FRAUD_DETECTION_FAILED             = 'shield_fraud_detection_failed';
+    const SHIELD_FRAUD_DETECTION_SKIPPED            = 'shield_fraud_detection_skipped';
+    const SHIELD_INTEGRATION_ERROR                  = 'shield_integration_error';
 
     const PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT = 'payment_creation_amount_validation_failure_count';
 

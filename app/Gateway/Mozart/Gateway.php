@@ -1268,6 +1268,18 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function getGatewayTransactionIdFromCallback($gateway, array $response)
+    {
+        switch ($gateway)
+        {
+            case Payment\Gateway::UPI_AXISOLIVE:
+                return $response['data']['upi']['npci_txn_id'];
+            default :
+                throw new Exception\LogicException(
+                    'Invalid gateway passed for getting gateway transaction id from S2S callback');
+        }
+    }
+
     public function refund(array $input)
     {
         parent::refund($input);
