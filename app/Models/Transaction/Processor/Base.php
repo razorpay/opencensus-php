@@ -675,7 +675,7 @@ abstract class Base extends BaseCore
             return false;
         }
 
-        if ($this->source->terminal->isDirectSettlement() === true)
+        if (($this->source->terminal != null) and ($this->source->terminal->isDirectSettlement() === true))
         {
             return true;
         }
