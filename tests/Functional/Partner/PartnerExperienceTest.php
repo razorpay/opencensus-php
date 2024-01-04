@@ -820,7 +820,7 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerCapitalSubmerchantsProductCapital()
     {
-        $this->createResellerPartnerSubmerchant(false, false, Product::CAPITAL);
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::CAPITAL);
 
         $this->mockAllSplitzTreatment();
 
@@ -831,7 +831,7 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerCapitalSubmerchantsProductBanking()
     {
-        $this->createResellerPartnerSubmerchant(false, false, Product::CAPITAL);
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::CAPITAL);
 
         $this->mockAllSplitzTreatment();
 
@@ -842,7 +842,7 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerCapitalSubmerchantsProductPrimary()
     {
-        $this->createResellerPartnerSubmerchant(false, false, Product::CAPITAL);
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::CAPITAL);
 
         $this->mockAllSplitzTreatment();
 
@@ -854,7 +854,7 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerPOSSubmerchantsProductPOS()
     {
-        $this->createResellerPartnerSubmerchant(false, false, Product::POS);
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
 
         $this->mockAllSplitzTreatment();
 
@@ -2789,13 +2789,13 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $userProduct = $product;
 
-        if ($product == Product::POS)
+        if ($product == ProductConstants::POS)
         {
-            $userProduct = Product::PRIMARY;
+            $userProduct = ProductConstants::PRIMARY;
         }
-        elseif ($product == Product::CAPITAL)
+        elseif ($product == ProductConstants::CAPITAL)
         {
-            $userProduct = Product::BANKING;
+            $userProduct = ProductConstants::BANKING;
         }
 
         $this->fixtures->on('live')->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2, 'activation_status' => 'activated', 'contact_mobile'=> '9123456788']);
@@ -2845,7 +2845,7 @@ class PartnerExperienceTest extends OAuthTestCase
                 MerchantConstants::POS_PARTNERSHIP_TAG_PREFIX.self::DEFAULT_MERCHANT_ID,
             );
         }
-        elseif ($product == Product::CAPITAL)
+        elseif ($product == ProductConstants::CAPITAL)
         {
             // POS subMs will be assigned with the pos partnerships tag.
             (new Merchant\Core())->appendTag(

@@ -116,7 +116,7 @@ class Service extends Base\Service
 
     public function captureByPartner(string $partnerId): int
     {
-        $variant = (new Core)->getCommissionExperimentMode($this->merchant->getId());
+        $variant = (new Core)->getCommissionExperimentMode($this->auth->getAdmin()->getId());
         if($variant == 'reverse-shadow' or $variant == 'cutoff')
         {
             $response = $this->app->partnerships->captureByPartner(['partner_id' => $partnerId]);
@@ -131,7 +131,7 @@ class Service extends Base\Service
 
     public function bulkCaptureByPartner(array $input): int
     {
-        $variant = (new Core)->getCommissionExperimentMode($this->merchant->getId());
+        $variant = (new Core)->getCommissionExperimentMode($this->auth->getAdmin()->getId());
         if($variant == 'reverse-shadow' or $variant == 'cutoff')
         {
             $response = $this->app->partnerships->bulkCaptureByPartner(['partner_ids' => $input[Constants::PARTNER_IDS]]);
@@ -143,7 +143,7 @@ class Service extends Base\Service
 
     public function capture(string $id): array
     {
-        $variant = (new Core)->getCommissionExperimentMode($this->merchant->getId());
+        $variant = (new Core)->getCommissionExperimentMode($this->auth->getAdmin()->getId());
         if($variant == 'reverse-shadow' or $variant == 'cutoff')
         {
             $response =  $this->app->partnerships->commissionCapture(['id'=> $id]);

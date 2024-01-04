@@ -4393,6 +4393,14 @@ class CommissionCreateTest extends TestCase
 
         $this->createTaxes();
 
+        $this->fixtures->create('balance',[
+            'type'           => 'commission',
+            'account_type'   => 'shared',
+            'account_number' => '2224440041626904',
+            'merchant_id'    => '1000000000plat',
+            'balance'        => 400000
+        ]);
+
         $testData = $this->testData[__FUNCTION__];
 
         $this->ba->partnershipServiceAuth();
@@ -4400,6 +4408,9 @@ class CommissionCreateTest extends TestCase
         $this->startTest($testData);
 
         $this->assertInvoiceEntityCreation('processed');
+
+        $adj = $this->getDbEntities('adjustment');
+        $this->assertCount(1, $adj);
     }
 
     public function testCreateFinanceWorkflowFromPRTS()
@@ -4423,6 +4434,14 @@ class CommissionCreateTest extends TestCase
     {
         $this->createPurePlatFormMerchantAndSubMerchant();
 
+        $this->fixtures->create('balance',[
+            'type'           => 'commission',
+            'account_type'   => 'shared',
+            'account_number' => '2224440041626904',
+            'merchant_id'    => '1000000000plat',
+            'balance'        => 400000
+        ]);
+
         $testData = $this->testData[__FUNCTION__];
 
         $this->ba->partnershipServiceAuth();
@@ -4431,6 +4450,9 @@ class CommissionCreateTest extends TestCase
 
         $invoices = $this->getDbEntities('commission_invoice');
         $this->assertCount(0, $invoices);
+
+        $adj = $this->getDbEntities('adjustment');
+        $this->assertCount(1, $adj);
     }
 
     // public function testForAdjustmentViaSettlementTDSFromPRTS()
@@ -4481,6 +4503,14 @@ class CommissionCreateTest extends TestCase
 
         $this->createTaxes();
 
+        $this->fixtures->create('balance',[
+            'type'           => 'commission',
+            'account_type'   => 'shared',
+            'account_number' => '2224440041626904',
+            'merchant_id'    => '1000000000plat',
+            'balance'        => 400000
+        ]);
+
         $testData = $this->testData['testCreateInvoiceIssuedFromPRTS'];
 
         $this->ba->partnershipServiceAuth();
@@ -4505,6 +4535,9 @@ class CommissionCreateTest extends TestCase
         $this->startTest($testData);
 
         $this->assertInvoiceEntityCreation('processed');
+
+        $adj = $this->getDbEntities('adjustment');
+        $this->assertCount(1, $adj);
     }
 
     private function createInvoice()
