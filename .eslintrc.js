@@ -53,15 +53,18 @@ module.exports = {
       { allowSameFolder: true, rootDir: 'web/js' },
     ],
     'no-restricted-imports': [
-      'error',
+      // todo: Change this to error when we modify Validate lint CI to run on only changed files
+      'warn',
       {
-        patterns: [
-          // Add your import pattern here
-          // 'common/ui/HeaderAction',
+        paths: [
           {
-            group: ['HeaderAction'],
+            name: 'common/ui/HeaderAction',
             message:
               'This component is deprecated. Please use ProductWrapper instead. Refer https://docs.google.com/document/d/1eTH_ZGSeHlgnMhAgTwf5S0eNpjQIpPH-z_RzYJo78aY/edit?usp=sharing',
+          },
+          {
+            name: 'common/deprecated/withRouter',
+            message: 'withRouter is not supported in React Router v6, please use hooks instead.',
           },
         ],
       },
