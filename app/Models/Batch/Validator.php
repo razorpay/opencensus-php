@@ -129,6 +129,13 @@ class Validator extends Base\Validator
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
+    protected static $altIdTerminalOnboardCreateRules = [
+        Entity::TYPE                 => 'required|in:alt_id_terminal_onboard',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
     protected static $ledgerOnboardOldAccountCreateRules = [
         Entity::TYPE                    => 'required|in:ledger_onboard_old_account',
         Entity::NAME                    => 'filled|string|max:255',

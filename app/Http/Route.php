@@ -4520,6 +4520,7 @@ class Route
         '1cc_update_shipping_provider_config'       => ['post',       '1cc/shipping-provider/configs',                           'MerchantController@updateShippingProviderConfig'],
         '1cc_get_shopify_configs'                   => ['get',        '1cc/merchant/shopify/configs',                            'MerchantController@getShopify1ccConfigs'],
         'internal_1cc_shopify_customer_addresses_get' => ['get',        'internal/1cc/shopify/merchants/{id}/customer_addresses',                   'MerchantController@getInternalShopifyCustomerAddresses'],
+        'automatic_onboarding_cron'                 => ['post',        'automaticOnboarding/cron',                               'MerchantController@automaticOnboardingcron'],
         'offers_fetch_for_order'                    => ['get',        'order/{id}/payment_offers',                               'OrderController@getOffersForOrder'],
 
         '1cc_shipping_service_merchant_config_create'               => ['post',      '1cc/shipping_service/merchant_config/create',                     'MerchantConfigController@create'],
@@ -4756,6 +4757,7 @@ class Route
     ];
 
     public static $public = [
+        'automatic_onboarding_cron',
         '1cc_methods_offers_preflight',
         '1cc_methods_offers',
         'test_mailgun',

@@ -122,7 +122,7 @@ final class Constants
     const SUBM_CREATE_ENTITIES_LOCK_TIME_OUT      = 600; //seconds
     const MERCHANT_ONBOARDING                     = 'merchant_onboarding';
     const SOURCE_DASHBOARD                        = 'dashboard';
-
+    const ALT_ID_TERMINAL_ONBOARD                 = 'alt_id_terminal_onboard';
     const AGGREGATOR_TO_RESELLER_UPDATE               = "aggregator_to_reseller_update";
     const AGGREGATOR_TO_RESELLER_UPDATE_LOCK_TIME_OUT = 30; //seconds
     const RESELLER_TO_AGGREGATOR_UPDATE               = "reseller_to_aggregator_update";

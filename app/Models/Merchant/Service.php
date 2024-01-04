@@ -16,6 +16,8 @@ use Mail;
 use Cache;
 use Config;
 use Request;
+use RZP\Models\Customer\Token\Constants as TokenConstants;
+use RZP\Models\Merchant\MerchantCsvCreateTrait;
 use RZP\Models\Merchant\OneClickCheckout\Constants as ShopifyConstants;
 
 use Illuminate\Support\Str;
@@ -48,6 +50,7 @@ use RZP\Models\User\Core as UserCore;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Website;
 use RZP\Services\Reporting;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -198,6 +201,7 @@ class Service extends Base\Service
 {
     use Notify;
     use SettlementTrait;
+    use MerchantCsvCreateTrait;
 
     const COUPON_RESPONSE               = 'apply_coupon';
     const OAUTH_MAIL                    = 'oauth_mail';
@@ -9055,6 +9059,81 @@ class Service extends Base\Service
         $response = $this->app['terminals_service']->initiateOnboarding($id, $input['gateway'], $identifiers, null, $currency, $input);
 
         return $response;
+    }
+
+    public function automaticOnboardingcron()
+    {
+        $file = $this->createCsvFileForOnboarding();
+
+        $params = [
+            'file'  => $file,
+            'type'  => Constants::ALT_ID_TERMINAL_ONBOARD,
+        ];
+
+        $batchResult = (new Batch\Core)->create($params, (new Merchant\Core())->get('100000Razorpay'));
+
+        return $batchResult;
+    }
+
+    public function createCsvFileForOnboarding()
+    {
+        $currentDate = Carbon::now(Timezone::IST)->format('Y-m-d');
+        $fileName = 'tokenhq_merchant_onboard' . '_' . $currentDate;
+        $dataLakeQuery1 = sprintf(TokenConstants::DATA_LAKE_TOKEN_HQ_ONBOARD_MERCHANT,$currentDate);
+        $dataLakeQuery2 = sprintf(TokenConstants::DATA_LAKE_TOKEN_HQ_PENDING_MERCHANT,$currentDate);
+
+        $merchantIds1 =[];
+        $merchantIds2 =[];
+        try {
+            $merchantIds1 = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery1);
+            $merchantIds2 = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery2);
+        }
+        catch (\Exception $e){
+            $this->trace->traceException(
+                $e,
+                TraceCode::TOKEN_HQ_MERCHANT_AUTOMATIC_ONBOARDING_QUERY_FAILED,
+                []);
+        }
+
+        $combinedMerchantIds = array_merge($merchantIds1, $merchantIds2);
+        $uniqueMerchantIds = collect($combinedMerchantIds)->unique('merchant_id')->toArray();
+        $additionalColumns = ['Gateway', 'Category', 'terminal_gateway', 'gateway_terminal_id', 'provider_name', 'provider_type'];
+        $tokenisationGateways = ['tokenisation_mastercard', 'tokenisation_visa', 'tokenisation_rupay'];
+        $tokenisationType = 'tokenisation';
+        $Category = 'live';
+
+        $resultWithAdditionalColumns = collect($uniqueMerchantIds)->flatMap(function ($item) use ($additionalColumns, $tokenisationGateways, $Category, $tokenisationType) {
+            return collect($tokenisationGateways)->map(function ($gateway) use ($item, $additionalColumns, $Category, $tokenisationType) {
+                $newItem = $item;
+                foreach ($additionalColumns as $column) {
+                    $newItem[$column] = null;
+                }
+                $newItem['Gateway'] = $gateway;
+                $newItem['Category'] = $Category;
+                $newItem['terminal_type'] = $tokenisationType;
+
+                return $newItem;
+            });
+        })->toArray();
+
+
+        $results = [];
+
+        foreach($resultWithAdditionalColumns as $record) {
+            $results[] = $record;
+        }
+
+        $url = $this->createCsvFile($results , $fileName, null, 'files/batch');
+
+        $uploadedFile = new UploadedFile(
+            $url,
+            $fileName.'csv',
+            'text/csv',
+            null,
+            true);
+
+        return $uploadedFile;
+
     }
 
     public function applyRestrictedSettings(array $input): array

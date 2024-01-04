@@ -378,6 +378,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function automaticOnboardingcron()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->automaticOnboardingcron($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getMerchants()
     {
         $input = Request::all();
