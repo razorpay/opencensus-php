@@ -25,24 +25,11 @@ env:
   HOME: /actions-runner/_work
 
 jobs:
-  verify:
-    runs-on: [self-hosted]
-    name: Check Linter Ignore Label
-    outputs:
-      has_ignore_label: ${{ steps.check-ignore-label.outputs.label_found }}
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v2
-
-      - name: Check for ignore-i18n-linter label
-        id: check-ignore-label
-        run: ./scripts/linter/check-label.sh
-
   linter:
     runs-on: [self-hosted]
     name: I18n Linter
-    needs: verify
-    if: needs.verify.outputs.has_ignore_label == 'false'
+    if: |
+      !contains(github.event.pull_request.labels.*.name, 'ignore-i18n-linter')
     outputs:
       has_error: ${{ steps.linter-check.outputs.hardcoding_found }}
       linter_metrics: ${{ steps.linter-metrics.outputs.i18n_errors_metrics }}
