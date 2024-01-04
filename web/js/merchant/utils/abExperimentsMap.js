@@ -8,6 +8,12 @@
   Feature name can be anything which you can use to get list of experiment IDs in the codebase.
 */
 
+/**
+ * IMPORTANT: This file is deprecated and not supposed to be used for new experiments.
+ * Refer the below guide for using Splitz on Dashboard:
+ * https://razorpay.slack.com/archives/C0156ULAEFQ/p1691498692775079
+ */
+
 export default {
   partnership_nps: [
     // beta experiment ids
