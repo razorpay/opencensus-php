@@ -37,6 +37,8 @@ class PaymentCreateAVSTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->merchant->addFeatures(['avs']);
+
+        $this->fixtures->merchant->addFeatures(['address_required']);
     }
 
     public function testPreferencesForFirstTimeAVSUser()
@@ -113,6 +115,8 @@ class PaymentCreateAVSTest extends TestCase
     public function testCreatePaymentAVSDisabled()
     {
         $this->fixtures->merchant->removeFeatures(['avs']);
+
+        $this->fixtures->merchant->removeFeatures(['address_required']);
 
         list($billingAddressArray, $paymentEntity) = $this->doAVSAuthPaymentAndFetchPayment(true, 1);
 
@@ -211,18 +215,18 @@ class PaymentCreateAVSTest extends TestCase
 
     public function testCreatePaymentAVSNotEnrolledCard()
     {
-        $billingAddressArray = $this->getDefaultBillingAddressArray();
+        $billingAddressArray = $this->getDefaultBillingAddressArray(true);
         $payment = $this->getPaymentArray($billingAddressArray, 1);
-        $payment['card']['number'] = '555555555555558';
+        $payment['card']['number'] = '4000020000000000';
         $payment['callback_url'] = $this->getLocalMerchantCallbackUrl();
         $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $this->fixtures->iin->create([
-            'iin' => '555555',
+            'iin' => '400002',
             'country' => 'US',
-            'network' => 'MasterCard',
+            'network' => 'Visa',
         ]);
-        $response = $this->doAuthPayment($payment);
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $paymentEntity = $this->getDbLastPayment();
 
@@ -256,7 +260,7 @@ class PaymentCreateAVSTest extends TestCase
         $payment = $this->getPaymentArray(null, 1);
         $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
         $this->fixtures->merchant->addFeatures(['disable_native_currency']);
-        $this->fixtures->merchant->addFeatures(['address_required']);
+        
         $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
@@ -294,6 +298,7 @@ class PaymentCreateAVSTest extends TestCase
         $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
         $this->fixtures->merchant->addFeatures(['disable_native_currency']);
         $this->fixtures->merchant->removeFeatures(['avs']);
+        $this->fixtures->merchant->removeFeatures(['address_required']);
 
         $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
 
@@ -329,7 +334,7 @@ class PaymentCreateAVSTest extends TestCase
         $payment = $this->getPaymentArray(null, 1);
         $this->fixtures->merchant->addFeatures(['s2s']);
         $this->fixtures->merchant->addFeatures(['disable_native_currency']);
-        $this->fixtures->merchant->addFeatures(['address_required']);
+        
 
         $this->doS2SPrivateAuthAndCapturePayment($payment);
 
@@ -349,6 +354,7 @@ class PaymentCreateAVSTest extends TestCase
         $this->fixtures->merchant->addFeatures(['s2s']);
         $this->fixtures->merchant->addFeatures(['disable_native_currency']);
         $this->fixtures->merchant->removeFeatures(['avs']);
+        $this->fixtures->merchant->removeFeatures(['address_required']);
 
         $this->doS2SPrivateAuthAndCapturePayment($payment);
 
@@ -394,7 +400,7 @@ class PaymentCreateAVSTest extends TestCase
         unset($payment['save']);
         $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::RAZORPAYJS;
 
-        $this->fixtures->merchant->addFeatures(['address_required']);
+        
         $this->fixtures->merchant->addFeatures(['disable_native_currency']);
 
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
@@ -417,6 +423,7 @@ class PaymentCreateAVSTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['disable_native_currency']);
         $this->fixtures->merchant->removeFeatures(['avs']);
+        $this->fixtures->merchant->removeFeatures(['address_required']);
 
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
         $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
@@ -432,7 +439,7 @@ class PaymentCreateAVSTest extends TestCase
         unset($payment['save']);
         $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::EMBEDDED;
 
-        $this->fixtures->merchant->addFeatures(['address_required']);
+        
         $this->fixtures->merchant->addFeatures(['disable_native_currency']);
 
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
@@ -455,6 +462,7 @@ class PaymentCreateAVSTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['disable_native_currency']);
         $this->fixtures->merchant->removeFeatures(['avs']);
+        $this->fixtures->merchant->removeFeatures(['address_required']);
 
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
         $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
@@ -469,7 +477,7 @@ class PaymentCreateAVSTest extends TestCase
         $payment = $this->getPaymentArray($this->getDefaultBillingAddressArray(true), 1);
         unset($payment['save']);
 
-        $this->fixtures->merchant->addFeatures(['address_required']);
+        
         $this->fixtures->merchant->addFeatures(['disable_native_currency']);
 
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
@@ -490,7 +498,7 @@ class PaymentCreateAVSTest extends TestCase
         unset($payment['save']);
         $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CUSTOM;
 
-        $this->fixtures->merchant->addFeatures(['address_required']);
+        
         $this->fixtures->merchant->addFeatures(['disable_native_currency']);
 
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
@@ -629,7 +637,7 @@ class PaymentCreateAVSTest extends TestCase
 
     public function testAddressRequiredForNonUSGBCACards()
     {
-        $this->fixtures->merchant->addFeatures(['address_required']);
+        
 
         $this->fixtures->iin->create([
                                          'iin' => '837413',
@@ -652,7 +660,7 @@ class PaymentCreateAVSTest extends TestCase
 
     public function testAddressRequiredForCardWithNoCountry()
     {
-        $this->fixtures->merchant->addFeatures(['address_required']);
+        
 
         $this->fixtures->iin->create([
                                          'iin' => '837413',
@@ -692,7 +700,7 @@ class PaymentCreateAVSTest extends TestCase
 
     public function testCreatePaymentAVSInvalidAddress()
     {
-        $this->fixtures->merchant->addFeatures(['address_required']);
+        
 
         $billingAddressArray = $this->getDefaultBillingAddressArray();
         unset($billingAddressArray['postal_code']);

@@ -2182,6 +2182,7 @@ class CardPaymentServiceTest extends TestCase
         $this->enableCpsConfig();
 
         $this->fixtures->merchant->addFeatures(['avs']);
+        $this->fixtures->merchant->addFeatures(['address_required']);
         $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -2192,6 +2193,7 @@ class CardPaymentServiceTest extends TestCase
         ]);
 
         $paymentArray = $this->getAVSPaymentArray();
+        $paymentArray['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
         $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
 
@@ -2258,6 +2260,7 @@ class CardPaymentServiceTest extends TestCase
         $this->enableCpsConfig();
 
         $this->fixtures->merchant->addFeatures(['avs']);
+        $this->fixtures->merchant->addFeatures(['address_required']);
         $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -2268,6 +2271,7 @@ class CardPaymentServiceTest extends TestCase
         ]);
 
         $paymentArray = $this->getAVSPaymentArray();
+        $paymentArray['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
         $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
 
@@ -2332,7 +2336,8 @@ class CardPaymentServiceTest extends TestCase
         ]);
 
         $paymentArray = $this->getDefaultPaymentArray();
-
+        $paymentArray['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+        
         $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
 
         $this->app->instance('card.payments', $cardService);

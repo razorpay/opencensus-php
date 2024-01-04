@@ -5112,7 +5112,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $data['dcc_mark_up_percent'] = floatval($this->paymentMeta->getDccMarkUpPercent() ?? null);
             }
 
-            if ($this->isAVSSupportedForPayment() === true)
+            if (($this->merchant->isAddressRequiredEnabledInternationalMerchant() === true) and
+                ($this->isInternational() === true))
             {
                 $billingAddressFromDb = $this->fetchBillingAddress();
 

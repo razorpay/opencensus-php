@@ -1181,6 +1181,11 @@ class Entity extends Base\PublicEntity
     {
         return ($this->isFeatureEnabled(Feature\Constants::ADDRESS_REQUIRED) === true);
     }
+    
+    public function isAddressRequiredEnabledInternationalMerchant(): bool
+    {
+        return ($this->isInternational() && $this->isAddressRequiredEnabled());
+    }
 
     public function isOpgspImportEnabled(): bool
     {
