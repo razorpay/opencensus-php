@@ -38,6 +38,11 @@ jobs:
         with:
           repo_token: ${{ env.GITHUB_ACCESS_TOKEN }}
 
+      - name: Preparing Workflow Link
+        id: e2e_github_workflow_action
+        run: |
+          echo "::set-output name=workflow_link::https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
       - name: Set Commit ID if its a PR comment
         if: ${{ github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')}}
         run: |
@@ -55,6 +60,15 @@ jobs:
       - name: Echo COMMIT_ID for changes
         run: |
           echo "COMMIT_ID: ${{ env.COMMIT_ID }}"
+
+      - name: Post workflow initiation notification
+        uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          message: |
+            `Frontend E2E Workflow docker build started` [Visit ongoing action](${{ steps.e2e_github_workflow_action.outputs.workflow_link }})
+          allow-repeats: true
 
       - name: Checkout Codebase
         uses: actions/checkout@v3
@@ -90,6 +104,7 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2
+
       - name: Build Docker Image
         uses: docker/build-push-action@v3
         with:
