@@ -122,6 +122,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/2fa', 'userController@post2faOtp')->name('user_2fa');
         Route::patch('/2fa/contact', 'UserController@postUpdate2faContact')->name('user_2fa_contact');
         Route::patch('/password', 'UserController@postSetPassword')->name('user_set_password');
+        Route::post('/exists', 'UserController@postUserExists')->name('user_exists');
+        Route::post('/email/send_otp', 'UserController@postSendEmailOtp')->name('user_send_email_otp');
+        Route::post('/email/verify_otp', 'UserController@postVerifyEmailOtp')->name('user_verify_email_otp');
         Route::post('/2fa/otp-resend', 'UserController@postResendOtp')->name('user_2fa_otp_resned');
         Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user'])->name('user_session');
         Route::get('/identifier/{client_id}', 'UserController@getIdentityToken')->middleware(['auth:user'])->name('user_identity');
@@ -137,7 +140,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/resend', 'MerchantController@postResendConfirmation')->name('user_resend_confirmation');
         Route::get('/keepalive', 'UserController@getKeepAlive')->name('user_keep_alive');
         Route::post('/logout', 'UserController@getLogout')->name('user_logout');
-
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2')->name('user_details'); //ePOS
         Route::get('/get-login-metadata', 'UserController@getLoginMetadata')->name('get_login_metadata');

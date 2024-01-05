@@ -542,6 +542,30 @@ class Service extends Base\Service
         return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
     }
 
+    public function postUserExists(array $input)
+    {
+        return $this->requestAPI($input,'users/exists', 'POST');
+    }
+
+    public function postSendEmailOtp(array $input)
+    {
+        return $this->requestAPI($input,'users/email/send_otp', 'POST');
+    }
+
+    public function postVerifyEmailOtp(array $input)
+    {
+        list($error, $data, $httpCode) = $this->requestAPI($input,'users/email/verify_otp', 'POST');
+
+        if (empty($error) === true)
+        {
+            $userId =  $data[Constants::USER_ID] ?? "";
+            Session::put('user_id', $userId);
+            Session::put('logged_in_via', Constants::EMAIL);
+        }
+
+        return [$error, [], $httpCode];
+    }
+
     public function postUserDetailsToSalesforce(array $input)
     {
         return $this->requestAPI($input,'users/salesforce_event', 'POST');

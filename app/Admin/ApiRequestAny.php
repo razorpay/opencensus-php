@@ -86,6 +86,7 @@ class ApiRequestAny
         'BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED',
         'BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED',
         'BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED',
+        'BAD_REQUEST_EMAIL_OTP_VERIFICATION_THRESHOLD_EXHAUSTED',
         'BAD_REQUEST_EMAIL_NOT_VERIFIED',
         'BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED',
         'BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED',
@@ -190,7 +191,7 @@ class ApiRequestAny
         if (empty(Request::header('ledger-tenant')) === false) {
             $headers['ledger-tenant'] = Request::header('ledger-tenant'); // only add the header if it exists
         }
-        
+
         if (empty(Request::header(Headers::X_SPLITZ_PROJECT)) === false) {
             $headers[Headers::X_SPLITZ_PROJECT] = Request::header(Headers::X_SPLITZ_PROJECT);
         }

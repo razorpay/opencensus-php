@@ -163,7 +163,7 @@ class UserController extends Controller
                     'api_host'        => $data['api_host'] ?? null,
                     'session_id'      => $data['session_id'] ?? null
                 ]);
-    
+
                 $id = $details['id'] ?? null;
                 $userId = $details['user']['id'] ?? null;
 
@@ -215,7 +215,7 @@ class UserController extends Controller
 
                 $id = $details['id'] ?? null;
                 $userId = $details['user']['id'] ?? null;
-                
+
                 Cookie::queue('rzp_merchant_id',$id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
                 Cookie::queue('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
             }
@@ -296,7 +296,7 @@ class UserController extends Controller
                 $data['pl_customized_form_fields'] = null;
                 $data['is_pl_customer_name_field_enabled'] = null;
             }
-            
+
             $data['is_banking_request'] = json_encode(ApiUrl::isBankingOriginRequest());
 
             // If a user accesses PG dashboard using X demo account, then we log out and redirect to sign-in
@@ -416,7 +416,7 @@ class UserController extends Controller
         }
     }
 
-    private function isSplitzCachingEnabled(): bool 
+    private function isSplitzCachingEnabled(): bool
     {
         $experimentId = config('splitz.experiments')[Constants::SPLITZ_API_CACHING_ENABLED];
 
@@ -632,10 +632,10 @@ class UserController extends Controller
         {
             return true;
         }
-    
+
         $submitted = $details['submitted'] ?? null;
         $activationStatus = $details['activation_status'] ?? null;
-        
+
 //      WEBSITE_COMPLIANCE_FLOW_EXP is true
         if (($activationFormMilestone === 'L1' or $activationFormMilestone === 'L2' or $submitted === 1) and $activationStatus !== 'activated') {
             return true;
@@ -1349,6 +1349,33 @@ class UserController extends Controller
         list($error, $data) = (new User\Service)->postSetPassword($input);
 
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postUserExists()
+    {
+        $input = Input::all();
+
+        list($error, $data, $httpCode) = (new User\Service)->postUserExists($input);
+
+        return AppResponse::jsonResponse($error, $data, $httpCode);
+    }
+
+    public function postSendEmailOtp()
+    {
+        $input = Input::all();
+
+        list($error, $data, $httpCode) = (new User\Service)->postSendEmailOtp($input);
+
+        return AppResponse::jsonResponse($error, $data, $httpCode);
+    }
+
+    public function postVerifyEmailOtp()
+    {
+        $input = Input::all();
+
+        list($error, $data, $httpCode) = (new User\Service)->postVerifyEmailOtp($input);
+
+        return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
     public function postUserDetailsToSalesforce()
