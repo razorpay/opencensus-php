@@ -4269,19 +4269,15 @@ class Core extends Base\Core
                 $oldMerchantDetails[DEConstants::POS_ACTIVATION_STATUS] = $input[DEConstants::POS_ACTIVATION_STATUS];
                 if (($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB))
                 {
-
-                    $this->pgosProxyController->handlePGOSProxyRequests('pos_merchant_config', ["merchant_id" => $merchant->getId()], $merchant, true);
-
                     $this->app['workflow']
                         ->setEntity($merchantDetails->getEntity())
                         ->setOriginal($merchantDetails)
-                        ->setDirty($oldMerchantDetails)
-                        ->setRouteParams([Entity::ID => $merchant->getId()])
-                        ->setInput($input)
-                        ->setPermission(Permission\Name::POS_EDIT_ACTIVATE_MERCHANT);
+                        ->setDirty($oldMerchantDetails);
 
                     $this->app['workflow']
                         ->handle();
+
+                    $this->pgosProxyController->handlePGOSProxyRequests('pos_merchant_config', ["merchant_id" => $merchant->getId()], $merchant, true);
                 }
 
                 if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::REJECTED)
@@ -4289,10 +4285,10 @@ class Core extends Base\Core
                     $this->app['workflow']
                         ->setEntity($merchantDetails->getEntity())
                         ->setOriginal($merchantDetails)
-                        ->setDirty($oldMerchantDetails)
-                        ->setRouteParams([Entity::ID => $merchant->getId()])
-                        ->setInput($input)
-                        ->setPermission(Permission\Name::POS_EDIT_ACTIVATE_MERCHANT);
+                        ->setDirty($oldMerchantDetails);
+
+                    $this->app['workflow']
+                        ->handle();
 
                     $this->sendRejectionEmail($merchant);
                 }
@@ -11713,7 +11709,7 @@ string $urlType): void
 
             $input["onboarding_type"] = DEConstants::ONBOARDING_TYPE_POS;
 
-            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_state_logs',$input, $merchant, true);
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_state_logs',$input, $merchant );
 
             $states = $response["states"];
 
@@ -11750,7 +11746,7 @@ string $urlType): void
         {
             $input['merchant_id'] = $merchant->getId();
 
-            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_fetch_pos_activation_flow',$input, $merchant, true);
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_fetch_pos_activation_flow',$input, $merchant );
 
             $this->trace->info(
                 TraceCode::MERCHANT_FETCH_POS_ACTIVATION_FLOW,

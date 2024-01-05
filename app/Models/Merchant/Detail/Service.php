@@ -1776,8 +1776,17 @@ class Service extends Base\Service
 
         ]);
 
+        $maker = $this->repo->admin->findOrFailPublic( Admin\Admin\Entity::stripDefaultSign($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]));
+
+        $this->app['workflow']->setMakerFromAuth(false);
+        $this->app['workflow']->setWorkflowMaker($maker);
+        $this->app['workflow']->setWorkflowMakerType(MakerType::ADMIN);
+
+        $this->app['basicauth']->setOrgId($merchant->getOrgId());
+
         if (empty($input[DEConstants::POS_ACTIVATION_STATUS]) === false)
         {
+            $this->app['workflow']->setPermission(PermissionName::POS_EDIT_ACTIVATE_MERCHANT);
            $merchantDetails = (new Core)->updatePosActivationStatus($merchant, $input);
 
            if (empty($input[Entity::ACTIVATION_STATUS]) === true)
@@ -1788,20 +1797,12 @@ class Service extends Base\Service
 
         $merchant->merchantDetail->getValidator()->validateInput('activationStatusInternal', $input);
 
-        $maker = $this->repo->admin->findOrFailPublic( Admin\Admin\Entity::stripDefaultSign($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]));
-
         if (empty($input[DEConstants::POS_ACTIVATION_STATUS]) === true)
         {
             unset($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]);
         }
 
-        $this->app['workflow']->setMakerFromAuth(false);
-        $this->app['workflow']->setWorkflowMaker($maker);
-        $this->app['workflow']->setWorkflowMakerType(MakerType::ADMIN);
-
         $this->app['workflow']->setPermission(PermissionName::EDIT_ACTIVATE_MERCHANT);
-
-        $this->app['basicauth']->setOrgId($merchant->getOrgId());
 
         $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $maker);
 

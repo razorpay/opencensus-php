@@ -236,7 +236,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::UPDATE_ACTION_STATE                => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateState',
         self::FETCH_ACTION_STATE_COUNT           => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateCount',
         self::MERCHANT_POS_STATE_LOGS            => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateLogs',
-        self::POST_MERCHANT_CONFIG               => '/twirp/rzp.pg_onboarding.external.pos.v1.TerminalProcurementConsumerService/Consume',
+        self::POST_MERCHANT_CONFIG               => '/twirp/rzp.pg_onboarding.external.pos.v1.TerminalProcurementConsumerService/Onboard',
     ];
 
     // timeout in seconds
@@ -366,7 +366,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
             $ignoreRoutingConditions = true;
         }
 
-        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()) or $this->shouldMerchantOnboardForPOS($merchant))
+        if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()))
         {
             // get path from defined route url map
             $twirpPath = self::ROUTES_URL_MAP[$routeKey];

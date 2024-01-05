@@ -12982,7 +12982,7 @@ class Service extends Base\Service
         $payload = ["merchant_id" => "10000razorpay"];
 
         // routing condition is ignored as all POS requests have to be driven thorugh PGOS
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_fetch_device_config', $payload, $merchant, true);
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_fetch_device_config', $payload, $merchant);
 
         $this->trace->info(
             TraceCode::MERCHANT_DEVICE_CONFIG,
@@ -13001,7 +13001,7 @@ class Service extends Base\Service
 
         $input["merchant_id"] = $merchant->getId();
 
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_create_order', $input, $merchant, true);
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_create_order', $input, $merchant);
 
         $this->trace->info(
             TraceCode::MERCHANT_CREATE_DEVICE_ORDER,
@@ -13018,7 +13018,7 @@ class Service extends Base\Service
         // Experiment enable.
         $merchant = $this->merchant;
 
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_update_order', $input, $merchant, true);
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_update_order', $input, $merchant );
 
         $this->trace->info(
             TraceCode::MERCHANT_UPDATE_DEVICE_ORDER,
@@ -13036,7 +13036,7 @@ class Service extends Base\Service
 
         $input['device_order_id'] = $deviceOrderId;
 
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_order', $input, $merchant, true);
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_order', $input, $merchant);
 
         $this->trace->info(
             TraceCode::MERCHANT_FETCH_DEVICE_ORDER,
@@ -13054,7 +13054,7 @@ class Service extends Base\Service
 
         $input['merchant_id'] = $merchant->getId();
 
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_all_order', $input, $merchant, true);
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_all_order', $input, $merchant);
 
         $this->trace->info(
             TraceCode::MERCHANT_FETCH_ALL_DEVICE_ORDER,
@@ -13084,7 +13084,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_payment_callback', $callBackObj, $merchant, true);
+        $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_payment_callback', $callBackObj, $merchant);
     }
 
     public function posFetchLatestOrder($input)
@@ -13093,7 +13093,7 @@ class Service extends Base\Service
 
         $input['merchant_id'] = $merchant->getId();
 
-        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_latest_order', $input, $merchant, true);
+        $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_fetch_latest_order', $input, $merchant);
 
         if ($response === null) {
             throw new Exception\ServerErrorException( "failed to execute fetch latest order request",
