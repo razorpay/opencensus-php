@@ -175,7 +175,9 @@ class DEventsKafkaConsumer extends Command
 
             $conf->set('group.id', $consumerGroup);
 
-            $conf->set('session.timeout.ms', env('PG_LEDGER_ACK_WORKER_SESSION_TIMEOUT'));
+            $conf->set('session.timeout.ms', 120000);
+
+            $conf->set('heartbeat.interval.ms', 30000);
 
             $conf->set('auto.offset.reset', 'largest');
         }

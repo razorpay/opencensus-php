@@ -902,7 +902,28 @@ class Core extends Base\Core
                 {
                     $sourceOrderId = $transfer->getSourceId();
 
-                    $sourcePayment = $this->repo->payment->getCapturedRearchAndNonrearchPaymentForOrder($sourceOrderId);
+                    $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($sourceOrderId, $transfer->getMerchantId());
+
+                    $rearchPayments = $this->app['pg_router']->fetchOrderPayments($sourceOrderId, $transfer->getMerchantId());
+
+                    $allPayments = $apiPayments->merge($rearchPayments);
+
+                    $sourcePayment = null;
+
+                    foreach ($allPayments as $singlePayment)
+                    {
+                        if ($singlePayment->getStatus() === Payment\Status::CAPTURED)
+                        {
+                            $sourcePayment = $singlePayment;
+
+                            break;
+                        }
+                    }
+
+                    if ($sourcePayment === null)
+                    {
+                        return null;
+                    }
 
                     // fetching payment again to get from sources configured for archived entity
                     // As of now, archived payment fetch with findOrFail happens on fallback replica
