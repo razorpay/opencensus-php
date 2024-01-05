@@ -266,6 +266,9 @@ function PaymentDetails(props) {
   const isOptimizerView =
     user?.isSingleReconEnabled && user?.isOptimizerEnabled && !!payment?.optimizer_provider;
 
+  const blockTransfer =
+    user?.isOptimizerEnabled && !!payment?.optimizer_provider && payment.settled_by !== 'Razorpay';
+
   return (
     <div
       className="content-wrapper content-sm txn-details"
@@ -405,6 +408,7 @@ function PaymentDetails(props) {
                     <PaymentTransfers
                       payment={payment}
                       transfers={transfers}
+                      blockTransfer={blockTransfer}
                       onCreateTransfer={onCreateTransfer}
                     />
                   </EntityDetailRow>

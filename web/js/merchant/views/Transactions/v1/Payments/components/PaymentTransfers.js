@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+
 import Amount from 'common/ui/Amount';
-import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
-import DataTable from 'common/ui/Table/DataTable';
 import LoaderDots from 'common/ui/LoaderDots';
+import DataTable from 'common/ui/Table/DataTable';
+import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import { transferId, amount, createdAt } from 'common/ui/item/pair';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -77,7 +78,7 @@ const CreateTransferBtn = ({ onClick, text = 'Create Transfer' }) => (
   </button>
 );
 
-export default ({ payment, transfers, onCreateTransfer }) => {
+export default ({ payment, transfers, blockTransfer, onCreateTransfer }) => {
   const amountTransferred = payment.amount_transferred;
   const paymentStatus = payment.status;
 
@@ -94,7 +95,9 @@ export default ({ payment, transfers, onCreateTransfer }) => {
     return (
       <div>
         <p>No transfers created{`${payment.status === 'captured' ? ' yet' : ''}`}</p>
-        <ShowWhen additionalCondition={(user) => user.isAllowedEdit('marketplace')}>
+        <ShowWhen
+          additionalCondition={(user) => user.isAllowedEdit('marketplace') && !blockTransfer}
+        >
           {payment.status === 'captured' && <CreateTransferBtn onClick={onCreateTransfer} />}
         </ShowWhen>
       </div>

@@ -1,9 +1,10 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
+import cloneDeep from 'lodash/cloneDeep';
+
+import store from 'merchant/store';
 import PaymentTransfers from 'merchant/views/Transactions/v1/Payments/components/PaymentTransfers';
 import { render, screen, userEvent } from 'test-utils';
-import store from 'merchant/store';
-import cloneDeep from 'lodash/cloneDeep';
 
 describe('PaymentTransfers', () => {
   const storeData = store.getState();
@@ -96,5 +97,14 @@ describe('PaymentTransfers', () => {
       expect(screen.getByText('Only captured payments can be transferred.')).toBeInTheDocument();
       unmount();
     });
+  });
+
+  test('should not render create transfer button when blocktransfer is true', () => {
+    renderApp({
+      props: {
+        blockTransfer: true,
+      },
+    });
+    expect(screen.queryByText('Create Transfer')).not.toBeInTheDocument();
   });
 });
