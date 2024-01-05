@@ -141,6 +141,8 @@ function PaymentDetailsTimeline({
       objectName: 'Issue Refund',
       properties: {
         latestTransactionStatus: _payment.status,
+        method: _payment.method,
+        paymentId: _payment.id,
       },
     });
 

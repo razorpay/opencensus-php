@@ -26,6 +26,7 @@ import {
   fetchRefunds,
   fetchTransfers,
 } from 'merchant/reducers/payments/details';
+import { trackRefundError } from 'merchant/views/Transactions/v1/Payments/track';
 import { closeModal } from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
@@ -145,6 +146,7 @@ class RefundModal extends Component {
         screen: 'home page',
         properties: {
           paymentId: payment.id,
+          paymentMethod: payment.method,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
@@ -210,6 +212,11 @@ class RefundModal extends Component {
           objectName: 'issue refund',
           actionName: 'clicked',
           screen: 'transactions',
+          properties: {
+            paymentId: payment.id,
+            paymentMethod: payment.method,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
         });
         this.props
           .refundPayment(payment, data)
@@ -276,6 +283,12 @@ class RefundModal extends Component {
           })
           .catch(
             /* istanbul ignore next */ ({ errors }) => {
+              trackRefundError({
+                paymentMethod: payment.method,
+                paymentId: payment.id,
+                error: Array.isArray(errors) ? errors.join(',') : JSON.stringify(errors),
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              });
               if (errors)
                 this.props.showNotification({
                   type: 'error',

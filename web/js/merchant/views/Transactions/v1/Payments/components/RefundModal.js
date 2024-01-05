@@ -176,6 +176,7 @@ class RefundModal extends Component {
         screen: 'home page',
         properties: {
           paymentId: payment.id,
+          paymentMethod: payment.method,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
@@ -256,6 +257,11 @@ class RefundModal extends Component {
           objectName: 'issue refund',
           actionName: 'clicked',
           screen: 'transactions',
+          properties: {
+            paymentId: payment.id,
+            paymentMethod: payment.method,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
         });
 
         const refundPayment = paymentByCardOffline
@@ -267,7 +273,12 @@ class RefundModal extends Component {
         refundPayment(payment, data)
           .then((response) => {
             if (paymentByCardOffline && !response?.data?.success) {
-              trackRefundError(response?.data?.errorMessage, payment.method);
+              trackRefundError({
+                paymentMethod: payment.method,
+                paymentId: payment.id,
+                error: response?.data?.errorMessage,
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              });
               this.props.showNotification({
                 type: 'error',
                 message: response?.data?.errorMessage || 'Something Went Wrong',
@@ -348,10 +359,12 @@ class RefundModal extends Component {
           })
           .catch(
             /* istanbul ignore next */ ({ errors }) => {
-              trackRefundError(
-                Array.isArray(errors) ? errors.join(',') : JSON.stringify(errors),
-                payment.method,
-              );
+              trackRefundError({
+                paymentMethod: payment.method,
+                paymentId: payment.id,
+                error: Array.isArray(errors) ? errors.join(',') : JSON.stringify(errors),
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              });
               if (errors)
                 this.props.showNotification({
                   type: 'error',

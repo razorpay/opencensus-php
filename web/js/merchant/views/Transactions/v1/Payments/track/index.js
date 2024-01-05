@@ -76,16 +76,15 @@ function _track() {
   };
 }
 
-export const trackRefundError = (error, method) => {
+export const trackRefundError = (properties = {}) => {
   analyticsTrack({
     objectName: 'issue refund',
     actionName: 'response',
     screen: 'payments',
     toLumberjack: true,
     properties: {
-      method,
       status: 'error',
-      error,
+      ...properties,
     },
   });
 };
