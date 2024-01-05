@@ -10,11 +10,16 @@ use RZP\Models\Merchant;
 use RZP\Models\Batch\Header;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Upload\Constants as UConstants;
+use Lib\Gstin;
 
 
 class Validator extends Base\Validator
 {
     const HTTPS_RULE = '/^https(.)+$/';
+    const COMPANY_CIN_REGEX = '/^[ulUL]{1}[0-9]{5}[A-Z|a-z]{2}[0-9]{4}[A-Z|a-z]{3}[0-9]{6}$/';
+    const COMPANY_LLPIN_REGEX = '/^[A-Z|a-z]{3}[0-9]{4}$/';
+    const PERSONAL_PAN_NUMBER_REGEX = '/^[A-Za-z]{3}[Pp][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
+    const COMPANY_PAN_NUMBER_REGEX  = '/^[A-Za-z]{3}[CcHhFfAaTtBbLlJjGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
 
     public function __construct($entity = null)
     {
@@ -29,8 +34,8 @@ class Validator extends Base\Validator
     ];
 
     protected static array $uploadMiqBatchRules = [
-        Header::MIQ_MERCHANT_NAME                    => 'required|regex:/^[a-zA-Z$@]+( [a-zA-Z$@]+)+?$/|max:255',
-        Header::MIQ_DBA_NAME                         => 'required|regex:/^[a-zA-Z$@]+( [a-zA-Z$@]+)+?$/|max:255',
+        Header::MIQ_MERCHANT_NAME                    => 'required',
+        Header::MIQ_DBA_NAME                         => 'required',
         Header::MIQ_WEBSITE                          => 'sometimes|nullable|max:255|custom:website',
         Header::MIQ_WEBSITE_ABOUT_US                 => 'required_with:'.Header::MIQ_WEBSITE.'|max:255|custom:website',
         Header::MIQ_WEBSITE_TERMS_CONDITIONS         => 'required_with:'.Header::MIQ_WEBSITE.'|max:255|custom:website',
@@ -43,57 +48,57 @@ class Validator extends Base\Validator
         Header::MIQ_CONTACT_NAME                     => 'required|alpha_space|max:255',
         Header::MIQ_CONTACT_EMAIL                    => 'required|email|max:255',
         Header::MIQ_TXN_REPORT_EMAIL                 => 'required|email|max:255',
-        Header::MIQ_ADDRESS                          => 'required|max:255',
-        Header::MIQ_CITY                             => 'required|alpha_space_num|max:255',
-        Header::MIQ_PIN_CODE                         => 'required|alpha_space_num|max:255',
-        Header::MIQ_STATE                            => 'required',
+        Header::MIQ_ADDRESS                          => 'required|max:255|custom:naValue',
+        Header::MIQ_CITY                             => 'required|max:255|custom:naValue',
+        Header::MIQ_PIN_CODE                         => 'required|numeric|custom:naValue',
+        Header::MIQ_STATE                            => 'required|max:255|custom:naValue',
         Header::MIQ_CONTACT_NUMBER                   => 'required|min:10|max:15|contact_syntax',
-        Header::MIQ_CIN                              => 'filled|companyCin',
+        Header::MIQ_CIN                              => 'sometimes',
         Header::MIQ_BUSINESS_TYPE                    => 'required|custom:businessType',
-        Header::MIQ_BUSINESS_PAN                     => 'required|companyPan',
+        Header::MIQ_BUSINESS_PAN                     => 'sometimes',
         Header::MIQ_BUSINESS_NAME                    => 'required|max:255',
         Header::MIQ_AUTHORISED_SIGNATORY_PAN         => 'filled|personalPan',
         Header::MIQ_PAN_OWNER_NAME                   => 'required|max:255',
         Header::MIQ_BUSINESS_CATEGORY                => 'required|custom:businessCategory',
         Header::MIQ_SUB_CATEGORY                     => 'required|custom:businessSubCategory',
-        Header::MIQ_GSTIN                            => 'sometimes',
+        Header::MIQ_GSTIN                            => 'sometimes|custom:miqGstin',
         Header::MIQ_BUSINESS_DESCRIPTION             => 'required|max:255',
         Header::MIQ_ESTD_DATE                        => 'required|before:"today"',
         Header::MIQ_FEE_MODEL                        => 'required|custom:feeModel',
         Header::MIQ_UPI_FEE_TYPE                     => 'required|custom:feeType',
-        Header::MIQ_UPI_FEE_BEARER                   => 'sometimes|nullable|custom:feeBearer',
-        Header::MIQ_UPI                              => 'sometimes|nullable|numeric',
+        Header::MIQ_UPI_FEE_BEARER                   => 'sometimes',
+        Header::MIQ_UPI                              => 'sometimes',
         Header::MIQ_NB_FEE_TYPE                      => 'required|custom:feeType',
-        Header::MIQ_NB_FEE_BEARER                    => 'sometimes|nullable|custom:feeBearer',
-        Header::MIQ_AXIS                             => 'sometimes|nullable|numeric',
-        Header::MIQ_HDFC                             => 'sometimes|nullable|numeric',
-        Header::MIQ_ICICI                            => 'sometimes|nullable|numeric',
-        Header::MIQ_SBI                              => 'sometimes|nullable|numeric',
-        Header::MIQ_YES                              => 'sometimes|nullable|numeric',
-        Header::MIQ_NB_ANY                           => 'sometimes|nullable|numeric',
+        Header::MIQ_NB_FEE_BEARER                    => 'sometimes',
+        Header::MIQ_AXIS                             => 'sometimes',
+        Header::MIQ_HDFC                             => 'sometimes',
+        Header::MIQ_ICICI                            => 'sometimes',
+        Header::MIQ_SBI                              => 'sometimes',
+        Header::MIQ_YES                              => 'sometimes',
+        Header::MIQ_NB_ANY                           => 'sometimes',
         Header::MIQ_WALLETS_FEE_TYPE                 => 'required|custom:feeType',
-        Header::MIQ_WALLETS_FEE_BEARER               => 'sometimes|nullable|custom:feeBearer',
-        Header::MIQ_WALLETS_FREECHARGE               => 'sometimes|nullable|numeric',
-        Header::MIQ_WALLETS_ANY                      => 'sometimes|nullable|numeric',
+        Header::MIQ_WALLETS_FEE_BEARER               => 'sometimes',
+        Header::MIQ_WALLETS_FREECHARGE               => 'sometimes',
+        Header::MIQ_WALLETS_ANY                      => 'sometimes',
         Header::MIQ_DEBIT_CARD_FEE_TYPE              => 'required|custom:feeType',
-        Header::MIQ_DEBIT_CARD_FEE_BEARER            => 'sometimes|nullable|custom:feeBearer',
+        Header::MIQ_DEBIT_CARD_FEE_BEARER            => 'sometimes',
         Header::MIQ_DEBIT_CARD_0_2K                  => 'sometimes|nullable|numeric',
         Header::MIQ_DEBIT_CARD_2K_1CR                => 'sometimes|nullable|numeric',
         Header::MIQ_RUPAY_FEE_TYPE                   => 'required|custom:feeType',
-        Header::MIQ_RUPAY_FEE_BEARER                 => 'sometimes|nullable|custom:feeBearer',
-        Header::MIQ_RUPAY_0_2K                       => 'sometimes|nullable|numeric',
-        Header::MIQ_RUPAY_2K_1CR                     => 'sometimes|nullable|numeric',
+        Header::MIQ_RUPAY_FEE_BEARER                 => 'sometimes',
+        Header::MIQ_RUPAY_0_2K                       => 'sometimes',
+        Header::MIQ_RUPAY_2K_1CR                     => 'sometimes',
         Header::MIQ_CREDIT_CARD_FEE_TYPE             => 'required|custom:feeType',
-        Header::MIQ_CREDIT_CARD_FEE_BEARER           => 'sometimes|nullable|custom:feeBearer',
-        Header::MIQ_CREDIT_CARD_0_2K                 => 'sometimes|nullable|numeric',
-        Header::MIQ_CREDIT_CARD_2K_1CR               => 'sometimes|nullable|numeric',
+        Header::MIQ_CREDIT_CARD_FEE_BEARER           => 'sometimes',
+        Header::MIQ_CREDIT_CARD_0_2K                 => 'sometimes',
+        Header::MIQ_CREDIT_CARD_2K_1CR               => 'sometimes',
         Header::MIQ_INTERNATIONAL                    => 'required|string',
         Header::MIQ_INTL_CARD_FEE_TYPE               => 'required|custom:feeType',
-        Header::MIQ_INTL_CARD_FEE_BEARER             => 'sometimes|nullable|custom:feeBearer',
-        Header::MIQ_INTERNATIONAL_CARD               => 'sometimes|nullable|numeric',
+        Header::MIQ_INTL_CARD_FEE_BEARER             => 'sometimes',
+        Header::MIQ_INTERNATIONAL_CARD               => 'sometimes',
         Header::MIQ_BUSINESS_FEE_TYPE                => 'required|custom:feeType',
-        Header::MIQ_BUSINESS_FEE_BEARER              => 'sometimes|nullable|custom:feeBearer',
-        Header::MIQ_BUSINESS                         => 'sometimes|nullable|numeric',
+        Header::MIQ_BUSINESS_FEE_BEARER              => 'sometimes',
+        Header::MIQ_BUSINESS                         => 'sometimes',
         Header::MIQ_BANK_ACC_NUMBER                  => 'required',
         Header::MIQ_BENEFICIARY_NAME                 => 'required|string|min:4|max:120',
         Header::MIQ_BRANCH_IFSC_CODE                 => 'required|alpha_num|max:11',
@@ -119,25 +124,47 @@ class Validator extends Base\Validator
 
         $businessType = strtolower($entry[Header::MIQ_BUSINESS_TYPE]);
 
-        if($businessType === Merchant\Detail\BusinessType::PUBLIC_LIMITED && empty($entry[Header::MIQ_CIN]) === true)
+        if($businessType === Merchant\Detail\BusinessType::PUBLIC_LIMITED)
         {
-            throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is required");
+            if(empty($entry[Header::MIQ_CIN]) === true){
+                throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is required");
+            }else if((preg_match(self::COMPANY_CIN_REGEX, $entry[Header::MIQ_CIN]) === 0)){
+                 throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is invalid");
+            }
+        }else if($businessType === Merchant\Detail\BusinessType::LLP){
+             if(empty($entry[Header::MIQ_CIN]) === true){
+                throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is required");
+            }else if((preg_match(self::COMPANY_LLPIN_REGEX, $entry[Header::MIQ_CIN]) === 0)){
+                 throw new BadRequestValidationFailureException("The ".Header::MIQ_CIN. " is invalid");
+            }
         }
 
-        if(empty($entry[Header::MIQ_BUSINESS_PAN]) === true)
-        {
-            $businessTypesRequiringPan = [
+         $businessTypesRequiringBusinessPan = [
                 Merchant\Detail\BusinessType::LLP, Merchant\Detail\BusinessType::NGO,
                 Merchant\Detail\BusinessType::SOCIETY,Merchant\Detail\BusinessType::HUF,
                 Merchant\Detail\BusinessType::PARTNERSHIP, Merchant\Detail\BusinessType::TRUST,
                 Merchant\Detail\BusinessType::PUBLIC_LIMITED, Merchant\Detail\BusinessType::PRIVATE_LIMITED,
             ];
 
-            if(in_array($businessType, $businessTypesRequiringPan) === true)
-            {
-                throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is required");
+        if(in_array($businessType, $businessTypesRequiringBusinessPan) === true){
+            if(empty($entry[Header::MIQ_BUSINESS_PAN]) === true){
+                 throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is required");
+            }else if(preg_match(self::COMPANY_PAN_NUMBER_REGEX, $entry[Header::MIQ_BUSINESS_PAN]) === 0){
+                 throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is invalid");
             }
-        }
+         }
+
+         $businessTypesRequiringPersonalPan = [
+                Merchant\Detail\BusinessType::NOT_YET_REGISTERED, Merchant\Detail\BusinessType::PROPRIETORSHIP,
+            ];
+
+         if(in_array($businessType, $businessTypesRequiringPersonalPan) === true){
+            if(empty($entry[Header::MIQ_BUSINESS_PAN]) === false){
+                if(preg_match(self::PERSONAL_PAN_NUMBER_REGEX, $entry[Header::MIQ_BUSINESS_PAN]) === 0){
+                 throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS_PAN. " is invalid");
+            }
+            }
+         }
 
         if($businessType !== Merchant\Detail\BusinessType::PROPRIETORSHIP and empty($entry[Header::MIQ_BUSINESS_NAME]))
         {
@@ -155,42 +182,182 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestValidationFailureException("The ".Header::MIQ_PAN_OWNER_NAME. " is required");
             }
-        }
+        }      
 
-        if(empty($entry[Header::MIQ_GSTIN]))
+        $validFeeTypes = [
+            Header::MIQ_UPI_FEE_TYPE => Header::MIQ_UPI_FEE_BEARER,
+            Header::MIQ_NB_FEE_TYPE => Header::MIQ_NB_FEE_BEARER,
+            Header::MIQ_WALLETS_FEE_TYPE => Header::MIQ_WALLETS_FEE_BEARER,
+            Header::MIQ_DEBIT_CARD_FEE_TYPE => Header::MIQ_DEBIT_CARD_FEE_BEARER,
+            Header::MIQ_RUPAY_FEE_TYPE => Header::MIQ_RUPAY_FEE_BEARER,
+            Header::MIQ_CREDIT_CARD_FEE_TYPE => Header::MIQ_CREDIT_CARD_FEE_BEARER,
+            Header::MIQ_INTL_CARD_FEE_TYPE => Header::MIQ_INTL_CARD_FEE_BEARER,
+            Header::MIQ_BUSINESS_FEE_TYPE => Header::MIQ_BUSINESS_FEE_BEARER
+        ];
+
+        foreach ($validFeeTypes as $feeType => $feeBearer)
         {
-            $categoryNotRequiringGSTIN = [
-                Merchant\Detail\BusinessCategoriesV2\BusinessCategory::EDUCATION,
-                Merchant\Detail\BusinessCategoriesV2\BusinessCategory::GOVERNMENT,
-                Merchant\Detail\BusinessCategoriesV2\BusinessCategory::NOT_FOR_PROFIT,
-            ];
-
-            if(!in_array(strtolower($entry[Header::MIQ_BUSINESS_CATEGORY]), $categoryNotRequiringGSTIN))
+            if(strtolower($entry[$feeType]) !== UConstants::FEE_TYPE_NA)
             {
-                throw new BadRequestValidationFailureException("The ".Header::MIQ_GSTIN. " is required");
+                $validTypes = [
+                    Merchant\FeeBearer::PLATFORM,
+                    Merchant\FeeBearer::CUSTOMER
+                ];
+        
+                if (!in_array(strtolower($entry[$feeBearer]), $validTypes, true))
+                {
+                    throw new BadRequestValidationFailureException('Invalid ' . $feeBearer);
+                }
+
+                // net banking validations
+                if($feeType === Header::MIQ_NB_FEE_TYPE){
+                    $netBankingTypes = [
+                        Header::MIQ_AXIS,    
+                        Header::MIQ_HDFC, 
+                        Header::MIQ_ICICI, 
+                        Header::MIQ_SBI, 
+                        Header::MIQ_YES, 
+                        Header::MIQ_NB_ANY, 
+                    ];
+
+                    foreach ($netBankingTypes as $index => $value){
+                        if(empty($entry[$value]) === true)
+                        {
+                                throw new BadRequestValidationFailureException("The ".$value. " is required");
+                        }
+                    }
+                }
+
+                // debit card validations
+                if($feeType === Header::MIQ_DEBIT_CARD_FEE_TYPE)
+                {
+                    $cardTypes = [
+                        Header::MIQ_DEBIT_CARD_0_2K,  
+                        Header::MIQ_DEBIT_CARD_2K_1CR 
+                      ];
+                       
+                    foreach ($cardTypes as $index => $value){
+                        if(empty($entry[$value]) === true)
+                        {
+                                throw new BadRequestValidationFailureException("The ".$value. " is required");
+                        }
+                    }
+                }
+
+                // rupey validations
+                if($feeType === Header::MIQ_RUPAY_FEE_TYPE)
+                {
+                    $cardTypes = [
+                        Header::MIQ_RUPAY_0_2K,  
+                        Header::MIQ_RUPAY_2K_1CR 
+                      ];
+
+                    foreach ($cardTypes as $index => $value){
+                        if(empty($entry[$value]) === true)
+                        {
+                            throw new BadRequestValidationFailureException("The ".$value. " is required");
+                        }
+                    }
+                }
+
+                // UPI validations
+                if($feeType === Header::MIQ_UPI_FEE_TYPE)
+                {
+                    if(empty($entry[Header::MIQ_UPI]) === true)
+                    {
+                        throw new BadRequestValidationFailureException("The ".Header::MIQ_UPI. " is required");
+                    }
+                }
+
+                // Wallets validations
+                if($feeType === Header::MIQ_WALLETS_FEE_TYPE)
+                {
+                    $walletTypes = [
+                        Header::MIQ_WALLETS_FREECHARGE,  
+                        Header::MIQ_WALLETS_ANY 
+                    ];
+                       
+                    foreach ($walletTypes as $index => $value){
+                        if(empty($entry[$value]) === true)
+                        {
+                            throw new BadRequestValidationFailureException("The ".$value. " is required");
+                        }
+                    }
+                }
+
+                // Credit card validations
+                if($feeType === Header::MIQ_CREDIT_CARD_FEE_TYPE)
+                {
+                    $creditCardTypes = [
+                        Header::MIQ_CREDIT_CARD_0_2K,  
+                        Header::MIQ_CREDIT_CARD_2K_1CR 
+                    ];
+                       
+                    foreach ($creditCardTypes as $index => $value){
+                        if(empty($entry[$value]) === true)
+                        {
+                            throw new BadRequestValidationFailureException("The ".$value. " is required");
+                        }
+                    }
+                }
+
+                // International Cards validations
+                if($feeType === Header::MIQ_INTL_CARD_FEE_TYPE && strtolower($entry[Header::MIQ_INTERNATIONAL]) !== 'no')
+                {
+                    if(empty($entry[Header::MIQ_INTERNATIONAL_CARD]) === true)
+                    {
+                        throw new BadRequestValidationFailureException("The ".Header::MIQ_INTERNATIONAL_CARD. " is required");
+                    }
+                }
+
+                // Business validations
+                if($feeType === Header::MIQ_BUSINESS_FEE_TYPE)
+                {
+                    if(empty($entry[Header::MIQ_BUSINESS]) === true)
+                    {
+                        throw new BadRequestValidationFailureException("The ".Header::MIQ_BUSINESS. " is required");
+                    }
+                }
+
+            }  
+        }
+    }
+
+
+    protected function validateMiqGstin($attribute, $value)
+    {
+        if(empty($value) === false){
+            $isValidGstin = Gstin::isValid($value);
+
+            if ($isValidGstin === false)
+            {
+                throw new BadRequestValidationFailureException('Invalid ' . $attribute);
             }
         }
     }
 
-    /**
-     * Validate the fee bearer
+      /**
+     * Validate the NA/na
      *
      * @param $attribute
      * @param $value
      * @return void
      * @throws BadRequestValidationFailureException
      */
-    protected function validateFeeBearer($attribute, $value): void
+    protected function validateNaValue($attribute, $value): void
     {
-        $validTypes = [
-            Merchant\FeeBearer::PLATFORM,
-            Merchant\FeeBearer::CUSTOMER
+
+        $validHeader = [
+            Header::MIQ_ADDRESS,Header::MIQ_CITY,Header::MIQ_PIN_CODE,Header::MIQ_STATE, 
         ];
 
-        if (!in_array(strtolower($value), $validTypes, true))
+        if (in_array($attribute, $validHeader, true) === true)
         {
-            throw new BadRequestValidationFailureException('Invalid ' . $attribute);
-        }
+            if ((strtolower($value) === 'na'))
+            {
+                throw new BadRequestValidationFailureException('Invalid ' . $attribute);
+            }
+        }  
     }
 
     /**

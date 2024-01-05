@@ -7436,6 +7436,11 @@ class Core extends Base\Core
 
         if (count($requiredFields) > 0)
         {
+            // allow activation(ex business type "ngo") for the MIQ flow. As we are validating header earlier. 
+            if($this->shouldSkipKycDocuments($merchantDetails) === true)
+            {
+                return true;
+            }
             return false;
         }
 

@@ -313,7 +313,7 @@ class BulkUploadMIQParser
             {
                 $rule = $input;
 
-                if ($entry[$key] !='' and ($feeBearerType === UConstants::FEE_TYPE_FLAT  or
+                if (strtolower($entry[$key]) !== UConstants::FEE_TYPE_NA and ($feeBearerType === UConstants::FEE_TYPE_FLAT  or
                         $feeBearerType=== UConstants::FEE_TYPE_PERCENT))
                 {
                     if($feeBearerType === UConstants::FEE_TYPE_PERCENT)
@@ -357,7 +357,7 @@ class BulkUploadMIQParser
 
             $input[PricingEntity::FEE_BEARER] = $feeBearer ?? MFeeBearer::PLATFORM;
 
-            if ($entry[Header::MIQ_UPI] !='' and ($feeBearerType === UConstants::FEE_TYPE_PERCENT
+            if ((strtolower($entry[Header::MIQ_UPI]) !== UConstants::FEE_TYPE_NA) and ($feeBearerType === UConstants::FEE_TYPE_PERCENT
                     or $feeBearerType === UConstants::FEE_TYPE_FLAT))
             {
                 $rule = $input; // copying here to create concrete rule input array.
@@ -397,7 +397,7 @@ class BulkUploadMIQParser
 
             foreach (self::$walletPricingMapping as $key => $value)
             {
-                if ($entry[$key] !='' and ($feeBearerType === UConstants::FEE_TYPE_PERCENT or $feeBearerType === UConstants::FEE_TYPE_FLAT))
+                if ((strtolower($entry[$key]) !== UConstants::FEE_TYPE_NA) and ($feeBearerType === UConstants::FEE_TYPE_PERCENT or $feeBearerType === UConstants::FEE_TYPE_FLAT))
                 {
                     $rule = $input; // copying here to create concrete rule input array.
 
@@ -456,7 +456,7 @@ class BulkUploadMIQParser
 
                 foreach ($value[UConstants::PRICING_AMOUNT_RANGES] as $rangeHeader => $rangeValues)
                 {
-                    if($entry[$rangeHeader] != '')
+                    if(strtolower($entry[$rangeHeader]) !== UConstants::FEE_TYPE_NA)
                     {
                         $rule = $input; // copying here to create concrete rule input array.
 

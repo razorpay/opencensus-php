@@ -535,7 +535,26 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
     protected function validateCompanyPan($attribute, $value)
     {
-        return (preg_match(self::COMPANY_PAN_NUMBER_REGEX, $value) === 1);
+        $app = \App::getFacadeRoot();
+        if ($app['api.route']->getCurrentRouteName() === 'merchant_upload_miq_admin')
+        {
+            // accept personal PAN if business type is 'not_yet_registered/proprietorship'
+            if(empty($value) === false)
+            {
+                return (preg_match(self::COMPANY_PAN_NUMBER_REGEX, $value) === 1 or preg_match(self::PERSONAL_PAN_NUMBER_REGEX, $value) === 1);
+            }
+            return true;
+        }
+        else
+        {   
+            if((empty($value) === false) and (is_null($value) === false))
+            {
+                return (preg_match(self::COMPANY_PAN_NUMBER_REGEX, $value) === 1);
+            }else
+            {
+                throw new BadRequestValidationFailureException("The company pan field is required.");
+            }      
+        }
     }
 
     protected function validatePersonalPan($attribute, $value)
@@ -545,7 +564,24 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
     protected function validateCompanyCin($attribute, $value)
     {
-        return (preg_match(self::COMPANY_CIN_REGEX, $value) === 1);
+        $app = \App::getFacadeRoot();
+        if ($app['api.route']->getCurrentRouteName() === 'merchant_upload_miq_admin')
+        {
+            if(empty($value) === false)
+            {
+                return (preg_match(self::COMPANY_CIN_REGEX, $value) === 1);
+            }
+            return true;
+        }else 
+        {   
+            if((empty($value) === false) and (is_null($value) === false))
+            {
+                return (preg_match(self::COMPANY_CIN_REGEX, $value) === 1);
+            }else
+            {
+                throw new BadRequestValidationFailureException("The company cin field is required.");
+            }      
+        } 
     }
 
     /**

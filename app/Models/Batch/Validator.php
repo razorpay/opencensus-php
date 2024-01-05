@@ -1186,7 +1186,7 @@ class Validator extends Base\Validator
         Header::MIQ_CONTACT_NUMBER                   => 'required',
         Header::MIQ_CIN                              => 'sometimes',
         Header::MIQ_BUSINESS_TYPE                    => 'required',
-        Header::MIQ_BUSINESS_PAN                     => 'required',
+        Header::MIQ_BUSINESS_PAN                     => 'sometimes',
         Header::MIQ_BUSINESS_NAME                    => 'required',
         Header::MIQ_AUTHORISED_SIGNATORY_PAN         => 'sometimes',
         Header::MIQ_PAN_OWNER_NAME                   => 'required',
