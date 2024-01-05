@@ -1055,6 +1055,173 @@ return [
         ],
     ],
 
+    'testUserExistWithContactMobileSuccess' => [
+        'request' => [
+            'url'     => '/users/exists',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'user_exists' => true,
+            ],
+        ],
+    ],
+
+    'testUserExistWithContactMobileFailure' => [
+        'request' => [
+            'url'     => '/users/exists',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'user_exists' => false,
+            ],
+        ],
+    ],
+
+    'testUserExistWithEmailSuccess' => [
+        'request' => [
+            'url'     => '/users/exists',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'user_exists' => true,
+                'is_password_set' => true
+            ],
+        ],
+    ],
+
+    'testUserExistWithEmailFailure' => [
+        'request' => [
+            'url'     => '/users/exists',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'user_exists' => false,
+            ],
+        ],
+    ],
+
+    'testUserExistWithEmailSuccessWithNoPassword' => [
+        'request' => [
+            'url'     => '/users/exists',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'user_exists' => true,
+                'is_password_set' => false
+            ],
+        ],
+    ],
+
+    'testSendEmailOTPToUserWithNoPassword' => [
+        'request' => [
+            'url'     => '/users/email/send_otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testSendEmailOTPToInvalidUser' => [
+        'request' => [
+            'url'     => '/users/email/send_otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testSendEmailOTPToUserWithPassword'  => [
+        'request' => [
+            'url'     => '/users/email/send_otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
+        ],
+    ],
+
+    'testVerifyEmailOTPToUserWithNoPasswordWithCorrectOTP' => [
+        'request' => [
+            'url'     => '/users/email/verify_otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testVerifyEmailOTPToUserWithNoPasswordWithIncorrectOTP' => [
+        'request' => [
+            'url'     => '/users/email/verify_otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
+    'testVerifyEmailOTPToInvalidUser' => [
+        'request' => [
+            'url'     => '/users/email/verify_otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
+    'testVerifyEmailOTPToUserWithPassword' => [
+        'request' => [
+            'url'     => '/users/email/verify_otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
+        ],
+    ],
+
     'testMobileOtpLoginSkipVerificationLimitOnStage' => [
         'request' => [
             'url'     => '/users/login/otp',

@@ -2365,6 +2365,232 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testUserExistWithContactMobileSuccess()
+    {
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '9012345678',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserExistWithContactMobileFailure()
+    {
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'contact_mobile'        => '9012347678',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserExistWithEmailSuccess()
+    {
+
+        $user = $this->fixtures->create('user', ['email' => 'hello123@gmail.com', 'password' => 'hello123']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'hello123@gmail.com',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserExistWithEmailFailure()
+    {
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'hello123@gmail.com',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserExistWithEmailSuccessWithNoPassword()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'hello123s@gmail.com', 'confirm_token' => '732575']);
+        $user->setPasswordNull();
+        $user->save();
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'hello123s@gmail.com',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendEmailOTPToUserWithNoPassword() {
+        Mail::fake();
+        $user = $this->fixtures->create('user', ['email' => 'hello123s@gmail.com', 'confirm_token' => '732575']);
+        $user->setPasswordNull();
+        $user->save();
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'hello123s@gmail.com',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('verify_email', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.otp_email_verify', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testSendEmailOTPToInvalidUser() {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'hello123s@gmail.com',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testSendEmailOTPToUserWithPassword() {
+        $user = $this->fixtures->create('user', ['email' => 'hello123s@gmail.com', 'password' => 'hello123', 'confirm_token' => '732575']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'hello123s@gmail.com',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testVerifyEmailOTPToUserWithNoPasswordWithCorrectOTP()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'hello123s@gmail.com', 'confirm_token' => '732575']);
+        $user->setPasswordNull();
+        $user->save();
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'hello123s@gmail.com',
+            'otp'          =>  '000007',
+            'token'        =>  'NJnJp0YefqNv4y'
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testVerifyEmailOTPToUserWithNoPasswordWithIncorrectOTP()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'hello123s@gmail.com', 'confirm_token' => '732575']);
+        $user->setPasswordNull();
+        $user->save();
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'hello123s@gmail.com',
+            'otp'          =>  '000006',
+            'token'        =>  'NJnJp0YefqNv4y'
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testVerifyEmailOTPToInvalidUser()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'hello123s@gmail.com',
+            'otp'          =>  '000007',
+            'token'        =>  'NJnJp0YefqNv4y'
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testVerifyEmailOTPToUserWithPassword()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'hello123@gmail.com', 'password' => 'hello123', 'confirm_token' => '732575']);
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'        => 'hello123@gmail.com',
+            'otp'          =>  '000006',
+            'token'        =>  'NJnJp0YefqNv4y'
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testMobileOtpLoginMultipleAccountsAssociatedWithCountryCode()
     {
         $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);

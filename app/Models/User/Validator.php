@@ -98,6 +98,22 @@ class Validator extends Base\Validator
         Entity::CAPTCHA                         => 'required|string',
     ];
 
+    protected static $checkUserExistsRules = [
+        Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
+        Entity::EMAIL                           => 'required_without:contact_mobile|email',
+    ];
+
+    protected static $sendEmailOtpRules = [
+        Entity::EMAIL                           => 'required|email',
+        Entity::TOKEN                           => 'sometimes|string',
+    ];
+
+    protected static $verifyEmailOtpRules = [
+        Entity::EMAIL                           => 'required|email',
+        Entity::TOKEN                           => 'required|string',
+        Entity::OTP                           => 'required|string',
+    ];
+
     protected static $verifySignupOtpRules = [
         Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
         Entity::EMAIL                           => 'required_without:contact_mobile|email',
@@ -112,7 +128,7 @@ class Validator extends Base\Validator
         BDConstants::WEBSITE_OR_APP             => 'sometimes|boolean',
         BDConstants::OTHERS                     => 'sometimes|string',
         Merchant\Entity::SIGNUP_SOURCE          => 'sometimes|string',
-        Merchant\Entity::COUNTRY_CODE           => 'sometimes|string',
+        Merchant\Entity::COUNTRY_CODE           => 'sometimes|string|max:2|in:IN,MY',
         Entity::SKIP_SMS_REQUEST                => 'sometimes|boolean',
     ];
 
@@ -258,6 +274,10 @@ class Validator extends Base\Validator
     protected static $resetIncorrectPasswordCountRules = [
         'emails'   => 'required|array|max:500',
         'emails.*' => 'required|email',
+    ];
+
+    protected static $countryCodeRules = [
+        Merchant\Entity::COUNTRY_CODE           => 'sometimes|string|max:2|in:IN,MY',
     ];
 
     protected static $confirmRules = [

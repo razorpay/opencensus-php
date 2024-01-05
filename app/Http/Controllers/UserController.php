@@ -207,6 +207,33 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function checkUserExists()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->checkUserExists($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function sendEmailOtp()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendEmailOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyEmailOtp()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyEmailOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function loginUserWithOtp()
     {
         $input = Request::all();
@@ -692,10 +719,10 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse The JSON response containing the result of the username change operation.
     */
-    public function postUpdateUserName() 
+    public function postUpdateUserName()
     {
         $input = Request::all();
-        
+
         $response = $this->service()->postUpdateUserName($input);
 
         return APIResponse::json($response);
@@ -705,7 +732,7 @@ class UserController extends Controller
      * Returns the requested token.
      * Warning: This is a QA only API.
      *
-     * @return 
+     * @return
     */
     public function qaGetTokenForRoast(string $type)
     {

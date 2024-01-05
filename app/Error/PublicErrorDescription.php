@@ -717,6 +717,7 @@ class PublicErrorDescription
     const SERVER_ERROR_EMAIL_VERIFICATION_OTP_REDIS_ERROR                       = 'An error occurred with redis during email verification otp flow.';
     const BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED                  = 'Email OTP could not be sent because threshold has been reached. Please try again later.';
     const BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED           = 'Email Verification OTP could not be sent because threshold has been reached. Please try again later.';
+    const BAD_REQUEST_EMAIL_OTP_VERIFICATION_THRESHOLD_EXHAUSTED                = 'Email Verification OTP could not be verified because threshold has been reached. Please try again later.';
 
     const BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED                = 'Login OTP verification attempt limit reached. Your account has been locked. Please contact support.';
     const SERVER_ERROR_LOGIN_OTP_VERIFICATION_REDIS_ERROR                       = 'An error occurred with redis during login otp verification flow.';

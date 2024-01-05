@@ -412,6 +412,147 @@ class Core extends Base\Core
         return array_only($otp, 'token');
     }
 
+    public function checkUserExists(array $input)
+    {
+        $this->getUserEntity()->getValidator()->validateInput('checkUserExists', $input);
+
+        $response = [
+            'user_exists' => false,
+        ];
+
+        if(empty($input[Entity::CONTACT_MOBILE]) === false)
+        {
+            $mobile = $input[Entity::CONTACT_MOBILE];
+            $validMobileNumberFormats = (new PhoneBook($mobile))->getMobileNumberFormats();
+
+            foreach ($validMobileNumberFormats as $mobileNumber) {
+                $users = $this->repo->user->findByMobile($mobileNumber);
+                if($users->count() > 0)
+                {
+                    $response['user_exists'] = true;
+                }
+            }
+        } else {
+            $email = $input[Entity::EMAIL];
+            $user = null;
+            try
+            {
+                $user = $this->repo->user->findByEmail($email);
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                $this->trace->info(TraceCode::USER_NOT_FOUND,
+                    [
+                        'email' => mask_email($email),
+                    ]);
+            }
+
+            if($user != null) {
+                $response['user_exists'] = true;
+                $response['is_password_set'] = $user->getPassword() !== null;
+            }
+        }
+
+        return $response;
+    }
+
+    public function sendEmailOtp($input)
+    {
+        $this->getUserEntity()->getValidator()->validateInput('sendEmailOtp', $input);
+
+        $email = $input[Entity::EMAIL];
+
+        try
+        {
+            $user = $this->repo->user->findByEmail($email);
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            switch($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND:
+                    return [
+                        "token"=>$input['token'] ?? Entity::generateUniqueId()
+                    ];
+                default:
+                    throw $e;
+            }
+        }
+
+        if($user->getPassword() !== null) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
+                null,
+                [
+                    'internal_error_code'    => ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
+                ]);
+        }
+
+        $input = [
+            'action' => 'verify_email',
+            'token'  => $input['token'] ?? null,
+        ];
+
+        LoginSignupRateLimit::validateKeyLimitExceeded(
+            $user->getId(),
+            Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX,
+            Constants::EMAIL_VERIFICATION_OTP_SEND_TTL,
+            Constants::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD
+        );
+
+        $resp = $this->sendOtpViaEmail($input, null, $user);
+
+        return [
+            'token' => $resp['token']
+        ];
+    }
+
+    public function verifyEmailOtp(array $input)
+    {
+        $this->getUserEntity()->getValidator()->validateInput('verifyEmailOtp', $input);
+
+        $email = $input[Entity::EMAIL];
+
+        try
+        {
+            $user = $this->repo->user->findByEmail($email);
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            switch($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INCORRECT_OTP
+                    );
+                default:
+                    throw $e;
+            }
+        }
+
+        if($user->getPassword() !== null) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
+                null,
+                [
+                    'internal_error_code'    => ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
+                ]);
+        }
+
+        $action =  'verify_email';
+
+        LoginSignupRateLimit::validateKeyLimitExceeded(
+            $user->getId(),
+            Constants::VERIFY_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX,
+            Constants::EMAIL_VERIFICATION_OTP_VERIFY_TTL,
+            Constants::EMAIL_VERIFICATION_OTP_VERIFY_THRESHOLD
+        );
+
+        $this->verifyOtp($input + ['action' => $action], null, $user);
+
+        LoginSignupRateLimit::resetKey($user->getId(), Constants::VERIFY_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
+
+        return [ "user_id" => $user->getId() ];
+    }
+
     public function verifySalesforceOtp(array $input) : bool
     {
         if(!isset($input["otp"]) || !isset($input["token"]) || (!isset($input["contact_mobile"]) && !isset($input["Phone"])) ) {
@@ -4808,7 +4949,12 @@ class Core extends Base\Core
 
         $payload = $input + $this->getExtraRavenSmsPayload($input, $merchant);
 
-        $directMailEnabled = $this->isDirectSendMailEnabled($merchant->getId());
+        $directMailEnabled = false;
+
+        if(empty($merchant) === false)
+        {
+            $directMailEnabled  = $this->isDirectSendMailEnabled($merchant->getId());
+        }
 
         if($directMailEnabled === true)
         {

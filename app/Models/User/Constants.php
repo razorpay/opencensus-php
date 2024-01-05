@@ -124,6 +124,10 @@ class Constants
     const EMAIL_VERIFICATION_OTP_SEND_TTL = 1800; // 30 mins
     const EMAIL_VERIFICATION_OTP_SEND_THRESHOLD = 5; // 5 times in 30 mins
 
+    // email verification otp send ttl and threshold
+    const EMAIL_VERIFICATION_OTP_VERIFY_TTL = 1800; // 30 mins
+    const EMAIL_VERIFICATION_OTP_VERIFY_THRESHOLD = 9; // 9 times in 30 mins
+
     // verification otp verification ttl and threshold
     const VERIFICATION_OTP_VERIFICATION_TTL = 1800; // 30 mins
     const VERIFICATION_OTP_VERIFICATION_THRESHOLD = 9; // 9 times in 30 mins
@@ -349,6 +353,7 @@ class Constants
     const VERIFY_LOGIN_OTP_RATE_LIMIT_SUFFIX        =  '_login_otp_verification_count';
     const VERIFY_OTP_VERIFICATION_RATE_LIMIT_SUFFIX = '_verification_otp_verification_count';
     const SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX   = '_verification_otp_send_count';
+    const VERIFY_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX   = '_verification_otp_verify_count';
 
     const THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX       = 'update_contact_mobile_attempts_%s';
     const THROTTLE_UPDATE_CONTACT_MOBILE_LIMIT                  = 3;
@@ -427,6 +432,13 @@ class Constants
             "redisTraceCode"            => TraceCode::RESET_PASSWORD_REDIS_ERROR,
             "redisErrorCode"            => ErrorCode::SERVER_ERROR_RESET_PASSWORD_REDIS_ERROR,
             "redisErrorDescription"     => "An error occurred while interacting with redis while resetting the password.",
+        ],
+        self::VERIFY_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX => [
+            "thresholdTraceCode"        => TraceCode::EMAIL_VERIFICATION_OTP_VERIFY_THRESHOLD_EXHAUSTED,
+            "thresholdErrorCode"        => ErrorCode::BAD_REQUEST_EMAIL_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+            "redisTraceCode"            => TraceCode::EMAIL_VERIFICATION_OTP_REDIS_ERROR,
+            "redisErrorCode"            => ErrorCode::SERVER_ERROR_EMAIL_VERIFICATION_OTP_REDIS_ERROR,
+            "redisErrorDescription"     => "'An error occurred while interacting with redis on email otp verify route.'",
         ],
         "default" => [
             "thresholdTraceCode"        => TraceCode::REDIS_KEY_THRESHOLD_EXCEEDED,

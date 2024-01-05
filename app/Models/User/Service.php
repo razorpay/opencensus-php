@@ -16,6 +16,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Diag\EventCode;
+use RZP\Models\User\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -24,7 +25,6 @@ use RZP\Constants\Product;
 use RZP\Models\OAuthToken;
 use RZP\Models\Invitation;
 use Razorpay\Trace\Logger;
-use RZP\Models\User\Entity;
 use RZP\Models\Admin\Admin;
 use RZP\Constants\Timezone;
 use RZP\Http\RequestHeader;
@@ -121,6 +121,8 @@ class Service extends Base\Service
 
     public function register(array $input, string $operation = 'create', bool $sendConfirmation = true): array
     {
+        (new Entity)->getValidator()->setStrictFalse()->validateInput('country_code', $input);
+
         $this->traceRegisterInput($input);
 
         $m2mReferralInput = $this->m2mReferralService->extractFriendBuyParams($input);
@@ -635,6 +637,21 @@ class Service extends Base\Service
         return $this->core->sendOtpSalesforce($input);
     }
 
+    public function checkUserExists($input)
+    {
+        return $this->core->checkUserExists($input);
+    }
+
+    public function sendEmailOtp($input)
+    {
+        return $this->core->sendEmailOtp($input);
+    }
+
+    public function verifyEmailOtp($input)
+    {
+        return $this->core->verifyEmailOtp($input);
+    }
+
     public function verifyOtpSalesforce(array $input): array
     {
         $verifySuccess = $this->core->verifySalesforceOtp($input);
@@ -652,6 +669,8 @@ class Service extends Base\Service
 
     public function verifySignupOtp(array $input, string $operation = 'createOTPSignup'): array
     {
+        (new Entity)->getValidator()->setStrictFalse()->validateInput('country_code', $input);
+
         $response = [];
         $this->trace->count(Merchant\Metric::SIGNUP_TOTAL);
 
@@ -1492,9 +1511,7 @@ class Service extends Base\Service
     {
         $user = $this->auth->getUser();
 
-        $setPassword = $this->core->checkUserHasSetPassword($user);
-
-        if($setPassword[Constants::SET_PASSWORD] === true)
+        if($user->getPassword() !== null)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
             null,
