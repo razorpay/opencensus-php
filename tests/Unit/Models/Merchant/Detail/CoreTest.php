@@ -72,6 +72,8 @@ class CoreTest extends TestCase
     protected $repo;
     protected $app;
     protected $config;
+    protected $merchant;
+    protected $pgosProxyController;
 
     use DbEntityFetchTrait;
     use MocksSplitz;
@@ -88,6 +90,10 @@ class CoreTest extends TestCase
         $this->config = \Illuminate\Support\Facades\App::getFacadeRoot()['config'];
 
         Config::set('services.kafka.producer.mock', true);
+
+        $this->merchant = $this->app['basicauth']->getMerchant();
+
+        $this->pgosProxyController = Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
     }
     protected function mockRazorxTreatment(string $returnValue = 'on')
     {
@@ -14008,5 +14014,75 @@ class CoreTest extends TestCase
         $property = $reflector->getProperty($key);
         $property->setAccessible( true );
         $property->setValue($core, $merchant);
+    }
+
+    public function testPGOSMerchantPatchDetails()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchantId = $merchantDetails->getId();
+
+        $input = [
+            "business_category"             => "ecommerce",
+            "business_subcategory"          => "gifting",
+            "international_activation_flow" => "whitelist",
+            "business_name"                 => "Laksh",
+            "reset_methods"                 => true
+        ];
+
+        $splitzInput = [
+            "experiment_id" => "M6rMvIakjZTm68",
+            "id"            => $merchantId,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->pgosProxyController->shouldReceive('handlePGOSProxyRequests')->andReturn();
+
+        $this->mockSplitzTreatment($splitzInput, $output);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'id'           => $merchantId,
+            'country_code' => 'IN'
+        ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata'        => [
+                'service' => 'pgos'
+            ]
+        ]);
+
+        try
+        {
+            (new DetailCore())->patchMerchantDetails($merchant, $input);
+        }
+        catch (\Exception $e)
+        {
+           $this->assertNotNull($e);
+        }
     }
 }

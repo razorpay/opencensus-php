@@ -2607,32 +2607,32 @@ class Core extends Base\Core
             {
                 $input['merchant_id'] = $merchant->getMerchantId();
 
-                $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_details_patch', $input, $this->merchant, true);
+                $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests('merchant_details_patch', $input, $this->merchant, true);
 
                 $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
                     'response' => $pgosResponse
                 ]);
 
-                if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                if (isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
                 {
                     throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
                 }
 
+                $this->pgosProxyController->errorHandler($pgosResponse);
+
                 $merchantDetails = $this->getMerchantDetails($merchant);
+
                 return $merchantDetails;
             }
             catch (\Throwable $exception)
             {
-                // this should not introduce error counts as it is running in shadow mode
                 $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'route'         => 'merchant_details_patch',
                     'merchant_id'   => $merchant->getMerchantId(),
                     'error_message' => $exception->getMessage()
                 ]);
 
-                throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
-                    'error description' => 'submitted data could not be processed'
-                ]);
-
+                throw $exception;
             }
         }
 

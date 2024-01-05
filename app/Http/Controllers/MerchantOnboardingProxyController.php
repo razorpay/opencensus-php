@@ -746,7 +746,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
         {
             case "invalid_argument":
                 throw new Exception\BadRequestValidationFailureException($error_message);
-                return;
             case "bad_request":
             case "invalid_data":
                 throw new Exception\BadRequestException($error_message);
@@ -756,7 +755,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
                 throw new ServerErrorException(
                     $error_message,
                     ErrorCode::SERVER_ERROR,
-                    );
+                );
                 return;
         }
     }
