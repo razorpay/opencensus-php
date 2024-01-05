@@ -212,12 +212,19 @@ class Core extends Base\Core
 
         $producerKey = $payment->getId() . '_' . Constants::REGISTER_PAYMENT_IN_SCHEDULER;
 
+        $terminal = $payment->terminal()->first();
+
         if($isReminderVerifyPayment === true)
         {
             // for gpay, namespace would be provider_action
             if (empty($payment->getGooglePayMethods()) === false)
             {
                 $namespace = Payment\Entity::GOOGLE_PAY . '_verify';
+            }
+            else if ($payment->getMethod() == Method::UPI && $payment->getGateway() == Gateway::PAYTM
+                && $payment->hasTerminal() && $terminal->isOptimizerInstantOnboarding())
+            {
+                $namespace = $payment->getMethod() . '_' . $payment->getGateway() . '_instant_verify';
             }
             else
             {

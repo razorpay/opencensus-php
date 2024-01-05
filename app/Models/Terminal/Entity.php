@@ -1859,6 +1859,16 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(TYPE::DISABLE_OPTIMISER_REFUNDS) === true);
     }
 
+    public function isOptimizerInstantOnboarding()
+    {
+        $notes = $this->getNotes();
+
+        $notesArray = json_decode($notes, true);
+
+        // Check if 'optimizer_instant_onboarding' exists in the notes and is set to true
+        return isset($notesArray['optimizer_instant_onboarding']) && $notesArray['optimizer_instant_onboarding'] === true;
+    }
+
     public function isEnableAutoDebit()
     {
         return ($this->isTypeApplicable(TYPE::ENABLE_AUTO_DEBIT) === true);
