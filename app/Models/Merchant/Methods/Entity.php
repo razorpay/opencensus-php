@@ -972,6 +972,11 @@ class Entity extends Base\PublicEntity
         return in_array($method, [self::UPI, self::NETBANKING], true);
     }
 
+    public static function shouldAcceptSubMethods(string $method): bool
+    {
+        return in_array($method, [self::UPI], true);
+    }
+
     // ----------------------- Getters --------------------------------------------
     protected function setCardSubTypeAttribute($subtypes)
     {
@@ -1360,7 +1365,7 @@ class Entity extends Base\PublicEntity
         {
             foreach ($sub_methods as $sub_method)
             {
-                if (isset($input[$sub_method]) === true)
+                if ($this->shouldAcceptSubMethods($method) and isset($input[$sub_method]) === true)
                 {
                     if(isset($addon_methods[$method]) === false)
                     {
