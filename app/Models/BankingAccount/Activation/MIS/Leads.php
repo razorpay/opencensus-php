@@ -271,12 +271,33 @@ class Leads extends Base
      */
     protected function convertToYesNo($value, $truthy = true, $falsy = false)
     {
-        if ($value === $truthy)
+        if (is_array($truthy) == true)
+        {
+            foreach ($truthy as $yesValue)
+            {
+                if ($yesValue === $value)
+                {
+                    return 'Yes';
+                }
+            }
+        }
+        else if ($value === $truthy)
         {
             return 'Yes';
         }
 
-        if ($value === $falsy)
+        if (is_array($falsy) == true)
+        {
+            // Not using in_array as we need strict equal check null == 0
+            foreach ($falsy as $noValue)
+            {
+                if ($noValue === $value)
+                {
+                    return 'No';
+                }
+            }
+        }
+        else if ($value === $falsy)
         {
             return 'No';
         }
@@ -512,7 +533,7 @@ class Leads extends Base
             self::SR_NO                             => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::SR_NUMBER),
             self::ACCOUNT_OPEN_DATE                 => $this->convertEpochToDateFormat($accountOpeningDate),
             self::ACCOUNT_IR_CLOSED_DATE            => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPEN_DATE]),
-            self::AO_FTNR                           => $this->convertToYesNo($bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPENING_FTNR], 1, 0),
+            self::AO_FTNR                           => $this->convertToYesNo($bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPENING_FTNR], [1, true], [0, false]),
             self::AO_FTNR_REASONS                   => $bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPENING_FTNR_REASONS],
             self::AO_TAT_EXCEPTION                  => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::ACCOUNT_OPENING_TAT_EXCEPTION)),
             self::AO_TAT_EXCEPTION_REASON           => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::ACCOUNT_OPENING_TAT_EXCEPTION_REASON),
@@ -522,7 +543,7 @@ class Leads extends Base
             self::API_REQUEST_TAT                   => $apiRequestTAT,
             self::API_IR_CLOSED_DATE                => $this->convertEpochToDateFormat($apiIRClosedDate),
             self::API_REQUEST_PROCESSING_TAT        => $apiRequestProcessingTAT,
-            self::API_FTNR                          => $this->convertToYesNo($bankingAccountActivationDetails[ActivationDetail\Entity::API_ONBOARDING_FTNR], 1, 0),
+            self::API_FTNR                          => $this->convertToYesNo($bankingAccountActivationDetails[ActivationDetail\Entity::API_ONBOARDING_FTNR], [1, true], [0, false]),
             self::API_FTNR_REASONS                  => $bankingAccountActivationDetails[ActivationDetail\Entity::API_ONBOARDING_FTNR_REASONS],
             self::API_TAT_EXCEPTION                 => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_ONBOARDING_TAT_EXCEPTION)),
             self::API_TAT_EXCEPTION_REASON          => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_ONBOARDING_TAT_EXCEPTION_REASON),

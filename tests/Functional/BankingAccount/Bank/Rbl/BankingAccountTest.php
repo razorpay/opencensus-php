@@ -8721,7 +8721,7 @@ class BankingAccountTest extends TestCase
             'additional_details' => [
                 'green_channel' => false,
                 'feet_on_street' => true,
-            ]
+            ],
         ]);
 
         $createdAt = Carbon::now()->timestamp;
@@ -11685,7 +11685,7 @@ class BankingAccountTest extends TestCase
             Leads::SR_NO                                 => 'SR_NUMBER',
             Leads::ACCOUNT_OPEN_DATE                     => '2023-03-15',
             Leads::ACCOUNT_IR_CLOSED_DATE                => '',
-            Leads::AO_FTNR                               => '',
+            Leads::AO_FTNR                               => 'Yes',
             Leads::AO_FTNR_REASONS                       => 'AO Negative List/Compliance/Legal/CIBIL',
             Leads::AO_TAT_EXCEPTION                      => 'No',
             Leads::AO_TAT_EXCEPTION_REASON               => 'compliance Issue',
@@ -11695,7 +11695,7 @@ class BankingAccountTest extends TestCase
             Leads::API_REQUEST_TAT                       => null,
             Leads::API_IR_CLOSED_DATE                    => '2023-03-09',
             Leads::API_REQUEST_PROCESSING_TAT            => null,
-            Leads::API_FTNR                              => '',
+            Leads::API_FTNR                              => 'Yes',
             Leads::API_FTNR_REASONS                      => 'Reason 1, Reason 2',
             Leads::API_TAT_EXCEPTION                     => 'No',
             Leads::API_TAT_EXCEPTION_REASON              => 'This time for Africa',
