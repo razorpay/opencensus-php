@@ -10,7 +10,7 @@ module.exports = {
   globalSetup: './e2e/setup/globalSetup',
   retries: isCI ? 2 : 0,
   timeout: 6 * 60 * 1000,
-  workers: isCI ? 1 : 4,
+  workers: isCI ? 2 : 4,
   reporter: getReporter(),
   expect: {
     timeout: 30 * 1000,

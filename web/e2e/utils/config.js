@@ -64,6 +64,7 @@ function getCredentials() {
 export function getProjects() {
   const grep = process.env.INCLUDE_GROUPS;
   let grepInvert = process.env.EXCLUDE_GROUPS;
+  console.log('grep', grep, 'grepInvert', grepInvert);
 
   // when both values are empty, run non-auth flows (usually happens when run locally)
   if (!grep && !grepInvert) {
@@ -88,12 +89,12 @@ export function getProjects() {
         name: 'Custom flow',
         use: browser,
         dependencies: [`Login:${browser.defaultBrowserType}`],
-        grep: new RegExp(grep),
-        // grepInvert: new RegExp(grepInvert),
+        grep: grep ? new RegExp(grep) : undefined,
+        grepInvert: grepInvert ? new RegExp(grepInvert) : undefined,
       },
     );
   });
-
+  console.log('projects', projects);
   return projects;
 }
 

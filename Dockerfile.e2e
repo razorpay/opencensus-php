@@ -1,5 +1,11 @@
 FROM mcr.microsoft.com/playwright:v1.31.1-focal
 
+ARG INCLUDE_GROUPS
+ARG EXCLUDE_GROUPS
+
+ENV INCLUDE_GROUPS=$INCLUDE_GROUPS
+ENV EXCLUDE_GROUPS=$EXCLUDE_GROUPS
+
 WORKDIR /app
 
 RUN mkdir web
@@ -32,6 +38,4 @@ COPY . .
 RUN rm -f .npmrc && \
   rm -f ./web/.npmrc
 
-RUN chmod +x /app/run-e2e.sh
-
-ENTRYPOINT ["/app/run-e2e.sh"]
+CMD cd web && INCLUDE_GROUPS=$INCLUDE_GROUPS EXCLUDE_GROUPS=$EXCLUDE_GROUPS yarn test:e2e
