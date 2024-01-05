@@ -28,6 +28,7 @@ class Repository extends Base\Repository
             ->where(Entity::ARTEFACT_TYPE, '=', $artefactType)
             ->where(Entity::ARTEFACT_IDENTIFIER, '=', $artefactIdentifier)
             ->where(Entity::MERCHANT_ID, '=', $mid)
+            ->orderBy(Entity::CREATED_AT, 'desc')
             ->first();
     }
 

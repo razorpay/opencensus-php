@@ -13,9 +13,12 @@ use RZP\Models\Admin\Permission\Name;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
-use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
+use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstants;
+use RZP\Models\Merchant\Website\Constants as WebsiteConstants;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 
 class MerchantOnboardingProxyController extends BaseProxyController
 {
@@ -640,8 +643,26 @@ class MerchantOnboardingProxyController extends BaseProxyController
                     if (empty($policyEligibility) === false) {
                         $response['validated'] = false;
                         $response['policy_eligibility'] = $policyEligibility;
-                    }
 
+                        // if policy eligibility is not v1 or not_eligible, then send website_policy_verification_status in response
+                        // v1 or not_eligible doesn't consume it, hence need not be sent for them
+                        $excludedEligibilities = [ WebsiteConstants::POLICY_WIZARD_V1, WebsiteConstants::NOT_ELIGIBLE ];
+
+                        if (!in_array($policyEligibility, $excludedEligibilities)) {
+                            $ba = $this->app['basicauth'];
+                            $mid = $ba->getMerchant()->getId();
+
+                            $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+                                $mid,
+                                BvsConstants::WEBSITE_POLICY,
+                                MVD\Constants::NUMBER
+                            );
+
+                            if (empty($verificationDetail) === false) {
+                                $response['website_policy_verification_status'] = $verificationDetail->getStatus();
+                            }
+                        }
+                    }
                 } catch (\Throwable $e)
                 {
                     $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
