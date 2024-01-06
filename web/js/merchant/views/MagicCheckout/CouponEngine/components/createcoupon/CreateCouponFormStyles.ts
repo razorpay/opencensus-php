@@ -380,8 +380,6 @@ export const HorizontalRadioButtons = styled.div`
 `;
 
 export const CollectionsList = styled(HorizontalRadioButtons)`
-  margin-top: 24px;
-
   label:first-child {
     border-top: none;
   }

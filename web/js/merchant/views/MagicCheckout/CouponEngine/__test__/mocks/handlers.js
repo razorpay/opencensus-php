@@ -24,4 +24,23 @@ export const magicCouponEngineHandler = [
         }),
       ),
   ),
+  rest.get('*/1cc/magic/platform/products/collections/search', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        data: {
+          collections: [
+            {
+              id: '1',
+              title: 'test1',
+            },
+            {
+              id: '2',
+              title: 'test2',
+            },
+          ],
+        },
+      }),
+    );
+  }),
 ];

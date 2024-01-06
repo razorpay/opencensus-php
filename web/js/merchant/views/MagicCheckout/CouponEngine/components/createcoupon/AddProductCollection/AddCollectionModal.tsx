@@ -15,6 +15,10 @@ import {
   ModalCtaWrapper,
   CollectionsList,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/CreateCouponFormStyles';
+import {
+  SearchBox,
+  SearchInput,
+} from 'merchant/views/MagicCheckout/CouponEngine/styles/AddProductModal';
 
 // helpers imports
 import { closeModal } from 'merchant_common/reducers/modals';
@@ -35,8 +39,9 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
   const [formattedDataForRadioButton, setFormattedDataForRadioButton] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedCollection, setSelectedCollection] = useState<any>({});
-  const [page, setPage] = useState(1);
+  const [nextPageCursor, setNextPageCursor] = useState<string>('');
   const [hasMore, setHasMore] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleConfirm = () => {
     handleDiscountedItems(selectedCollection);
@@ -53,26 +58,20 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
     setSelectedCollection(selectedCollection);
   };
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop - 2 <= clientHeight && !isLoading && hasMore) {
-      setPage((prevPage) => prevPage + 1);
-    }
-  };
+  const fetchCollectionsData = async (resetCursor = false) => {
+    const updatedNextPageCursor = resetCursor ? '' : nextPageCursor;
 
-  const fetchCollectionsData = async () => {
     try {
       setIsLoading(true);
-      const limit = 15;
-      const offset = (page - 1) * limit;
-      const res = await getCollections(limit, offset);
-      const options = res.data.collections.map(({ title, id }: any) => ({
+      const { data: collectionList } = await getCollections(15, updatedNextPageCursor, searchTerm);
+      const options = collectionList.collections.map(({ title, id }: any) => ({
         label: title,
         value: id,
       }));
-      setApiData((prev) => [...prev, ...res.data.collections]);
+      setApiData((prev) => [...prev, ...collectionList.collections]);
       setFormattedDataForRadioButton((prev) => [...prev, ...options]);
-      setHasMore(res.data.collections.length > 0 && res.data.collections.length === limit);
+      setNextPageCursor(collectionList.cursor);
+      setHasMore(collectionList.hasNextPage);
     } catch (err) {
       showNotification({
         type: 'error',
@@ -83,9 +82,38 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
     }
   };
 
+  function searchCollection() {
+    setApiData([]);
+    setFormattedDataForRadioButton([]);
+    setHasMore(true);
+    fetchCollectionsData(true);
+  }
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop - 2 <= clientHeight && !isLoading && hasMore) {
+      if (hasMore) {
+        fetchCollectionsData();
+      }
+    }
+  };
+
   useEffect(() => {
     fetchCollectionsData();
-  }, [page]);
+  }, []);
+
+  useEffect(() => {
+    let debounceTimer;
+
+    if (searchTerm) {
+      debounceTimer = setTimeout(() => {
+        searchCollection();
+      }, 1000);
+    }
+    return () => {
+      clearTimeout(debounceTimer);
+    };
+  }, [searchTerm]);
 
   return (
     <div>
@@ -97,6 +125,16 @@ const AddCollectionModal: React.FC<AddCollectionModalProps> = ({
           </div>
         </ModalHeader>
         <div>
+          <SearchBox>
+            <SearchInput
+              type="text"
+              placeholder="Search collections"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+              }}
+            />
+          </SearchBox>
           <CollectionsList className="scroll" onScroll={handleScroll}>
             <div className="form-input">
               <Input.Radio

@@ -90,9 +90,9 @@ export const createCoupon = (data: any): any => {
 };
 
 // Products and Collections
-export const getCollections = (limit = 10, offset = 0): any => {
+export const getCollections = (limit = 15, cursor = '', searchTerm = ''): any => {
   return merchantFetch({
-    url: `1cc/magic/platform/products/collections/search?count=${limit}&skip=${offset}`,
+    url: `1cc/magic/platform/products/collections/search?skip=0&count=${limit}&cursor=${cursor}&query=${searchTerm}`,
     method: 'get',
   });
 };

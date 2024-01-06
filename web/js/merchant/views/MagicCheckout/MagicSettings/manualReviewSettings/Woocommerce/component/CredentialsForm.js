@@ -32,7 +32,7 @@ const CredentialsForm = ({
     setIsCtaEnabled(false);
     submitCredentials({
       api_key: consumerKey,
-      access_token: consumerSecret,
+      api_secret: consumerSecret,
     });
   }, [platform, consumerSecret, consumerKey, setIsCtaEnabled, submitCredentials]);
 
