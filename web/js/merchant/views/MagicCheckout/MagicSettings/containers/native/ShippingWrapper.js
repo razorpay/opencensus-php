@@ -33,6 +33,7 @@ const NativeShippingTabWrapper = ({ settings, updateSettings }) => {
     setView(shipping_source);
     const payload = {
       shipping_source,
+      platform: 'native',
     };
     updateSettings(payload, false);
   };
