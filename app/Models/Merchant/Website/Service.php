@@ -426,7 +426,8 @@ class Service extends Base\Service
 
             } catch (\Throwable $e) {
                 throw new ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
-                    'error description' => $e
+                    'error_message' => $e->getMessage(),
+                    'error_trace' => $e->getTrace(),
                 ]);
             }
         }
