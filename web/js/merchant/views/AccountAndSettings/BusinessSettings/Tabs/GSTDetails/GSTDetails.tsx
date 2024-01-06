@@ -19,6 +19,8 @@ import { useMobile } from 'common/hooks/useMobile';
 import Header from './components/Header';
 import { AlertStatus, AlertType, GSTDetailsProps } from './types';
 import { fetchGSTList } from './model';
+import { track } from './tracking';
+import { GSTInErrors } from './constant';
 
 const Item = ({ children }: { children: React.ReactNode }) => (
   <Box display="flex" flexDirection="column" gap="spacing.2">
@@ -36,6 +38,7 @@ const GSTDetails = ({
   const isMobile = useMobile();
   const [gstList, setGSTList] = useState<string[]>([]);
   const [alertStatus, setAlertStatus] = useState<AlertStatus>();
+  const [gstInError, setGstInError] = useState<string | null>(null);
 
   const getGSTList = async () => {
     try {
@@ -58,7 +61,29 @@ const GSTDetails = ({
     }
   }, []);
 
-  if (user.isUnregisteredBusiness || (!gstList.length && !merchant_gst.gstin)) {
+  useEffect(() => {
+    if (user.isUnregisteredBusiness) {
+      setGstInError(GSTInErrors.businessUnregistered);
+    } else if (!gstList.length && !merchant_gst.gstin) {
+      setGstInError(GSTInErrors.gstInNotLinkedToPan);
+    } else {
+      setGstInError(null);
+    }
+  }, [user.isUnregisteredBusiness, gstList.length, merchant_gst.gstin]);
+
+  useEffect(() => {
+    if (gstInError) {
+      track({
+        objectName: 'update gst not editable',
+        actionName: 'message displayed',
+        properties: {
+          error: gstInError,
+        },
+      });
+    }
+  }, [gstInError]);
+
+  if (gstInError) {
     return (
       <Box
         backgroundColor="surface.background.level2.lowContrast"
@@ -70,11 +95,7 @@ const GSTDetails = ({
           isDismissible={false}
           isFullWidth={true}
           title="GSTIN information"
-          description={
-            user.isUnregisteredBusiness
-              ? 'GST addition is not supported for your business type. You can create a new Razorpay Account as a Non- Individual business type and link GST to it.'
-              : 'There is no GSTIN currently linked to your provided PAN number. Either link GSTIN to your PAN or Create a new Razorpay account with a GSTIN linked PAN.'
-          }
+          description={gstInError}
         />
       </Box>
     );
