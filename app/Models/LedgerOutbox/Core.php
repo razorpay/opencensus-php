@@ -757,7 +757,9 @@ class Core extends Base\Core
                 }
                 else
                 {
-                    $txn = $this->createTransactionFromCapturedPaymentInReverseShadow($payment, $journalId, $transactorEvent);
+                    $apiTransactionId = $this->getAPITransactionId($transactorPublicId, $payment);
+
+                    $txn = $this->createTransactionFromCapturedPaymentInReverseShadow($payment, $apiTransactionId, $transactorEvent);
                 }
             }
 
@@ -1039,39 +1041,39 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function() use ($payment, $journalId, $transactorEvent)
         {
-            $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
-
-            if ((isset($txn) === true) and
-                ($txn->isBalanceUpdated() === true))
-            {
-                return $txn;
-            }
-
-            if ((isset($txn) === true) and
-                ($transactorEvent === LedgerConstants::MERCHANT_CAPTURED) and
-                ($txn->getId() !== $journalId))
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
-            }
-
-            if ((isset($txn) === true) and
-                ($transactorEvent === LedgerConstants::GATEWAY_CAPTURED))
-            {
-                $apiTransactionId = $this->getAPITransactionId($payment->getPublicId(), $payment);
-                if($txn->getId() !== $apiTransactionId)
-                {
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
-                }
-            }
-
             $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
             $resource = $this->getTransactionMutexresource($payment);
 
             list($txn, $merchantBalance) = $this->mutex->acquireAndRelease(
                 $resource,
-                function () use ($payment, $journalId, $paymentProcessor)
+                function () use ($payment, $journalId, $paymentProcessor, $transactorEvent)
                 {
+                    $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+
+                    if ((isset($txn) === true) and
+                        ($txn->isBalanceUpdated() === true))
+                    {
+                        return $txn;
+                    }
+
+                    if ((isset($txn) === true) and
+                        ($transactorEvent === LedgerConstants::MERCHANT_CAPTURED) and
+                        ($txn->getId() !== $journalId))
+                    {
+                        throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
+                    }
+
+                    if ((isset($txn) === true) and
+                        ($transactorEvent === LedgerConstants::GATEWAY_CAPTURED))
+                    {
+                        $apiTransactionId = $this->getAPITransactionId($payment->getPublicId(), $payment);
+                        if($txn->getId() !== $apiTransactionId)
+                        {
+                            throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
+                        }
+                    }
+
                     return $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);
                 },
                 self::PAYMENT_TRANSACTION_CREATION_MUTEX_TTL,
