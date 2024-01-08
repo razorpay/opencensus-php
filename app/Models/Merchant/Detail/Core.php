@@ -8,6 +8,7 @@ use Queue;
 use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\User;
 use RZP\Constants\Mode;
 use Razorpay\Trace\Logger;
@@ -160,7 +161,6 @@ use RZP\Models\ClarificationDetail\Service as ClarificationDetailService;
 use RZP\Models\ClarificationDetail\Core as ClarificationDetailCore;
 use RZP\Models\Merchant\Website;
 use RZP\Models\Merchant\Detail\Factory as DetailFactory;
-use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\WebsiteIndividualLinkClient as WebsiteIndividualLinkClient;
 use RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\Constants as OcrServiceConstants;
@@ -707,9 +707,22 @@ class Core extends Base\Core
     {
         $merchantId = $merchant->getId();
 
-        $newMerchantDetail = $this->repo->merchant_detail->findOrFailPublic($merchantId);
+        $newMerchantDetail       = $this->repo->merchant_detail->findOrFailPublic($merchantId);
+        $currentActivationStatus = $newMerchantDetail->getActivationStatus();
 
-        $merchantBusinessDetails = $oldMerchantDetail->businessDetail;
+        if ($currentActivationStatus !== Status::UNDER_REVIEW and
+            $currentActivationStatus !== Status::ACTIVATED_MCC_PENDING)
+        {
+            return;
+        }
+
+        $processTimestamp = Carbon::now()->getTimestamp();
+        if ($this->shouldAddDelayInProcessing($merchantId) === true)
+        {
+            $processTimestamp = Carbon::now()->getTimestamp() + DEConstants::CASE_CREATION_DELAY_SECONDS;
+        }
+
+        $merchantBusinessDetails  = $oldMerchantDetail->businessDetail;
         $posDetailsRequiredStatus = "false";
 
         if (empty($merchantBusinessDetails) === false)
@@ -728,17 +741,18 @@ class Core extends Base\Core
             DEConstants::UPDATED_ACTIVATION_DATA     => $newMerchantDetail,
             DifferEntity::ENTITY_NAME                => Constants::MERCHANT,
             DEConstants::EVENT_TYPE                  => $eventType,
-            DEConstants::POS_DETAILS_REQUIRED_STATUS => $posDetailsRequiredStatus
+            DEConstants::POS_DETAILS_REQUIRED_STATUS => $posDetailsRequiredStatus,
+            DEConstants::PROCESS_TIMESTAMP           => $processTimestamp,
         ];
 
         $activationFormSubmissionEventTopic = env(DEConstants::ACTIVATION_FORM_SUBMISSION_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
 
         $this->app['trace']->info(TraceCode::ACTIVATION_FORM_SUBMISSION_EVENT_KAFKA_PUBLISH, [
-                'data'        => $kafkaActivationFormSubmissionEventData,
-                'topic'       => $activationFormSubmissionEventTopic,
-                'merchant_id' => $merchantId,
-                'event_type'  => $eventType
-            ]
+                                                                                               'data'        => $kafkaActivationFormSubmissionEventData,
+                                                                                               'topic'       => $activationFormSubmissionEventTopic,
+                                                                                               'merchant_id' => $merchantId,
+                                                                                               'event_type'  => $eventType
+                                                                                           ]
         );
 
         try
@@ -746,9 +760,9 @@ class Core extends Base\Core
             (new KafkaProducer($activationFormSubmissionEventTopic, stringify($kafkaActivationFormSubmissionEventData)))->Produce();
 
             $this->app['trace']->info(TraceCode::ACTIVATION_FORM_SUBMISSION_EVENT_KAFKA_PUBLISH, [
-                    'data'        => "event got published",
-                    'merchant_id' => $merchantId,
-                ]
+                                                                                                   'data'        => "event got published",
+                                                                                                   'merchant_id' => $merchantId,
+                                                                                               ]
             );
         }
         catch (\Exception $ex)
@@ -761,6 +775,7 @@ class Core extends Base\Core
                     "topic" => $activationFormSubmissionEventTopic,
                 ]);
         }
+
 
     }
 
@@ -4442,6 +4457,26 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function shouldAddDelayInProcessing($merchantId)
+    {
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.add_delay_timestamp_for_kafka_event'),
+            ],
+            'enable'
+        );
+
+
+          if (App::environment('testing') === true){
+            $isExpEnabled = false;
+        }
+
+       return $isExpEnabled;
+    }
+
+
 
     public function getNCAdditionalDocuments() : array
     {

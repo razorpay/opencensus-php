@@ -689,6 +689,8 @@ return array(
 
     'enable_document_expiry_check_for_activation' => env('ENABLE_DOCUMENT_EXPIRY_CHECK_FOR_ACTIVATION_EXP_ID'),
 
+    'add_delay_timestamp_for_kafka_event' => env('ADD_DELAY_TIMESTAMP_FOR_KAFKA_EVENT'),
+
     'enable_unverified_email_check_for_easy_onboarding' => env('ENABLE_UNVERIFIED_EMAIL_CHECK_FOR_EASY_ONBOARDING_EXP_ID'),
 
 

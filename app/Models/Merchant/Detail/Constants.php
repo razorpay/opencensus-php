@@ -37,6 +37,9 @@ class Constants
     // Cut off for Creating VCIP
     const VKYC_CUT_OFF_DURATION = 1800; // 30 minutues (30*60)
 
+
+    const CASE_CREATION_DELAY_SECONDS = 300;
+
     // Input params for fetchMerchantAccountRecovery
     const EMAIL = 'email';
     const PHONE = 'phone';
@@ -761,6 +764,8 @@ class Constants
 
     const POS_DETAILS_REQUIRED_STATUS          = 'pos_details_required_status';
     const POS_ACTIVATION_FORM_SUBMISSION_KAFKA = 'pos_activation_form_submission_kafka_event';
+
+    const PROCESS_TIMESTAMP         = 'process_timestamp';
 
     const POS_ACTIVATION_STATUS    = 'pos_activation_status';
     const IS_POS_DETAILS_SUBMITTED = 'is_pos_details_submitted';
