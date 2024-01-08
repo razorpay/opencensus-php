@@ -14203,7 +14203,8 @@ class CoreTest extends TestCase
         $mockedCore->shouldReceive("validateMCC")->andReturn("randomRequestId");
         $mockedCore->shouldReceive("validateIndividualLink")->andReturn("individualLinkRequestId");
         $mockedCore->shouldReceive("dispatchOCRValidationJob")->andReturn(null);
-
+        $mockedCore->shouldReceive("saveMerchantWebsiteAutomatedOcrCheckDataInCache")->andReturn(null);
+        
         $mockedMerchant = \Mockery::mock('RZP\Models\Merchant\Entity')->makePartial();
         $mockedMerchant->shouldAllowMockingProtectedMethods();
         $mockedMerchant->shouldReceive("isFeatureEnabled")->andReturn(true);

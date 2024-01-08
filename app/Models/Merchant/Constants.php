@@ -1989,4 +1989,7 @@ final class Constants
 
     const POS_CLARIFICATION_REASONS   = 'pos_clarification_reasons';
     const ALLOWED_NEXT_POS_ACTIVATION_STATUS = "allowed_next_pos_activation_status";
+    const MERCHANT_WEBSITE_AUTOMATED_OCR_CHECKS_CACHE_KEY = 'website_automated_ocr_check_%s';
+    const MERCHANT_WEBSITE_AUTOMATED_OCR_CHECKS_TTL = 45 * 60; // in seconds
+    const OCR_AUTOMATED_CHECK_ENABLE = 'ocr_automated_check_enable';
 }

@@ -8975,7 +8975,7 @@ class Core extends Base\Core
                 $input[DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY],
                 $input[DetailConstants::BUSINESS_WEBSITE_TNC],
                 $input[DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY],
-                $input[DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY],
+                array_get($input, DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY, ''),
                 $dedupeFlaggedMIDs
             );
         }
@@ -9035,9 +9035,10 @@ class Core extends Base\Core
             'business_details_comment' => $businessDetailsComment,
         ]);
 
-        $workFlowAction = (new ActionCore())->fetchOpenActionOnEntityOperation($merchantDetails->getId(),
-                                                                               $merchantDetails->getEntity(),
-                                                                               $permissionName
+        $workFlowAction = (new ActionCore())->fetchOpenActionOnEntityOperation(
+            $merchantDetails->getId(),
+            $merchantDetails->getEntity(),
+            $permissionName
         )->first();
 
         $businessDetailsCommentEntity = (new CommentCore())->create([
@@ -9224,31 +9225,38 @@ class Core extends Base\Core
 
         return $permissionName;
     }
-
+    
     /**
      * Get MCC Categorisation and Website Validation.
      *
      * @param string $mccServiceId
      * @param string $individualLinkRequestId
      * @return array
+     * @throws \Exception
      */
-    public function getMccCategorisationAndWebsiteValidation(string $mccServiceId, string $individualLinkRequestId): array
+    public function getMccCategorisationAndWebsiteValidation(string $mccServiceId, string $individualLinkRequestId, Merchant\Entity $merchant): array
     {
         $response = [];
-
-        if (empty($this->mccCategorisationClient)) {
+        
+        $this->merchant = $merchant;
+        
+        if (empty($this->mccCategorisationClient))
+        {
             $this->mccCategorisationClient = $this->getMccCategorisationClient(OcrServiceConstants::OCR_CONFIG_KEY);
         }
 
-        if (empty($this->websiteIndividualClient)) {
-            $this->websiteIndividualClient = $this->getWebsiteIndividualLinkClient(OcrServiceConstants::OCR_CONFIG_KEY);
+        if (empty($this->websiteIndividualClient))
+        {
+            $this->websiteIndividualClient = $this->getWebsiteIndividualLinkClient( OcrServiceConstants::OCR_CONFIG_KEY);
         }
 
         // Get MCC Categorisation
         $mccResponse = $this->mccCategorisationClient->getCategorisation(['id' => $mccServiceId]);
 
-        if (empty($mccResponse)) {
-            if ($mccResponse !== null) {
+        if (empty($mccResponse))
+        {
+            if ($mccResponse !== null)
+            {
                 return ['incomplete' => true];
             }
             return ['error' => true];
@@ -9298,13 +9306,25 @@ class Core extends Base\Core
      */
     private function isWebsiteLinkAnalysisSucceed(array $websiteLinkValidation): bool
     {
-        $keysToCheck = ['terms', 'refund', 'privacy', 'shipping', 'contact_us'];
+        $MandatorykeysToCheck = ['terms', 'refund', 'privacy', 'contact_us'];
 
-        foreach ($keysToCheck as $key) {
+        foreach ($MandatorykeysToCheck as $Mandatorykey) {
             if (
-                !isset($websiteLinkValidation[$key]) ||
-                !isset($websiteLinkValidation[$key]['analysis_result']['confidence_score']) ||
-                $websiteLinkValidation[$key]['analysis_result']['confidence_score'] < 0.9
+                !isset($websiteLinkValidation[$Mandatorykey]) ||
+                !isset($websiteLinkValidation[$Mandatorykey]['analysis_result']['confidence_score']) ||
+                $websiteLinkValidation[$Mandatorykey]['analysis_result']['confidence_score'] < 0.9
+            ) {
+                return false;
+            }
+        }
+
+        $OptionalkeysToCheck = ['shipping'];
+
+        foreach ($MandatorykeysToCheck as $Optionalkey) {
+            if (
+                isset($websiteLinkValidation[$Optionalkey]) &&
+                isset($websiteLinkValidation[$Optionalkey]['analysis_result']['confidence_score']) && 
+                $websiteLinkValidation[$Optionalkey]['analysis_result']['confidence_score'] < 0.9
             ) {
                 return false;
             }
@@ -9337,37 +9357,44 @@ class Core extends Base\Core
 
         return false;
     }
+    
+    public function getMerchantWebsiteAutomatedOcrCheckCacheData(Merchant\Entity $merchant)
+    {
+        $cacheKey = $this->getMerchantWebsiteAutomatedOcrCheckCacheKey($merchant);
 
-
+        $data = $this->app['cache']->get($cacheKey);
+        
+        return $data;
+    }
+    
+    protected function deleteMerchantWebsiteAutomatedOcrCheckCacheData(Merchant\Entity $merchant)
+    {
+        $cacheKey = $this->getMerchantWebsiteAutomatedOcrCheckCacheKey($merchant);
+    
+        $this->app['cache']->delete($cacheKey);
+    }
+    
     /**
      * Update website details after validation.
      *
      * @param array $payload
      *   An array containing the payload data.
+     * @throws \Exception
      */
-    public function updateWebsiteDetailAfterValidation($payload)
+    public function updateWebsiteDetailAfterValidation(array $payload)
     {
         $validationResponse = $payload['validationResponse'] ?? [];
-
-        if($this->merchant->isFeatureEnabled(Feature\Constants::WEBSITE_AUTOMATED_CHECKS_FEATURE) === true)
-        {
-            $features = [
-                'features' => [
-                    Feature\Constants::WEBSITE_AUTOMATED_CHECKS_FEATURE => 0
-                ],
-                Feature\Entity::SHOULD_SYNC => true,
-            ];
-
-            (new Merchant\Service)->addOrRemoveMerchantFeatures($features);
-        }
+        
+        $this->deleteMerchantWebsiteAutomatedOcrCheckCacheData($this->merchant);
 
         if(
             !empty($validationResponse['success']) &&
             $validationResponse['success'] === true &&
             $this->isWebsiteLinkAnalysisSucceed($validationResponse['websiteLinkValidation'] ?? []) &&
             $this->isMccCategorisationAnalysisSucceed($validationResponse['mccValidation'] ?? [])
-        ){
-            (new Detail\Service())->putBusinessWebsiteUpdatePostWorkflow($payload['input']);
+        )
+        {
+            (new Detail\Service())->putBusinessWebsiteUpdatePostWorkflow($payload['input'], $this->merchant);
 
             return;
         }
@@ -9433,8 +9460,12 @@ class Core extends Base\Core
             'terms_condition_link' => $input[DetailConstants::BUSINESS_WEBSITE_TNC],
             'refund_link' => $input[DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY],
             'contact_link' => $input[DetailConstants::BUSINESS_WEBSITE_CONTACT_US],
-            'shipping_link' => $input[DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY],
         ];
+
+        if(isset($input[DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY]))
+        {
+            $payload['additional_request_data']['user_entered_links']['shipping_link'] = $input[DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY];
+        }
 
         return $payload;
     }
@@ -9449,6 +9480,7 @@ class Core extends Base\Core
     public function validateIndividualLink(array $input)
     {
         $this->websiteIndividualClient = $this->getWebsiteIndividualLinkClient(OcrServiceConstants::OCR_CONFIG_KEY);
+        
         $payload = $this->createWebsiteLinkClientPayload($input);
 
         $validation = $this->websiteIndividualClient->createWebsiteVerificationJob($payload);
@@ -9493,6 +9525,18 @@ class Core extends Base\Core
 
         return $validation['id'];
     }
+    
+    protected function getMerchantWebsiteAutomatedOcrCheckCacheKey(Merchant\Entity $merchant)
+    {
+        return sprintf(Constants::MERCHANT_WEBSITE_AUTOMATED_OCR_CHECKS_CACHE_KEY, $merchant->getId());
+    }
+    
+    protected function saveMerchantWebsiteAutomatedOcrCheckDataInCache(Merchant\Entity $merchant, array $data)
+    {
+        $cacheKey = $this->getMerchantWebsiteAutomatedOcrCheckCacheKey($merchant);
+    
+        $this->app['cache']->put($cacheKey, $data, Constants::MERCHANT_WEBSITE_AUTOMATED_OCR_CHECKS_TTL);
+    }
 
 
     /**
@@ -9505,11 +9549,10 @@ class Core extends Base\Core
      */
     public function postBusinessWebsiteBVSValidation(string $urlType, array $input)
     {
-
         $mccRequestId = $this->validateMCC($input);
 
         $individualLinkRequestId = $this->validateIndividualLink($input);
-
+        
         try
         {
             $this->dispatchOCRValidationJob($mccRequestId, $individualLinkRequestId, $input, $urlType);
@@ -9527,17 +9570,9 @@ class Core extends Base\Core
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
 
-        if($this->merchant->isFeatureEnabled(Feature\Constants::WEBSITE_AUTOMATED_CHECKS_FEATURE) === false)
-        {
-            $features = [
-                'features' => [
-                    Feature\Constants::WEBSITE_AUTOMATED_CHECKS_FEATURE => 1,
-                ],
-                Feature\Entity::SHOULD_SYNC => true,
-            ];
-            $this->addOrRemoveMerchantFeatures($features);
-        }
-
+        $data[Constants::OCR_AUTOMATED_CHECK_ENABLE] = true;
+        $this->saveMerchantWebsiteAutomatedOcrCheckDataInCache($this->merchant, $data);
+        
         return [
             'bvs_validation' => true,
             'mccRequestId' => $mccRequestId,
@@ -11575,18 +11610,22 @@ class Core extends Base\Core
      * @param string $urlType
      * @return void
      */
-    protected function dispatchOCRValidationJob(string $mccRequestId, string $individualLinkRequestId, array $input,
-string $urlType): void
+    protected function dispatchOCRValidationJob(
+      string $mccRequestId,
+      string $individualLinkRequestId,
+      array $input,
+      string $urlType): void
     {
         // Temporary arrange ment to using payment page queue
         // TODO: decomp this queue to service with dedicated self serve queue
         PaymentPageProcessor::dispatch($this->mode, [
-            'event' => PaymentPageProcessor::OCR_SERVICE_VALIDATION_EVENT,
-            'mccRequestId' => $mccRequestId,
-            'individualLinkRequestId' => $individualLinkRequestId,
-            'input' => $input,
-            'urlType' => $urlType,
-            'start_time' => millitime(),
+            'event'                     => PaymentPageProcessor::OCR_SERVICE_VALIDATION_EVENT,
+            'mccRequestId'              => $mccRequestId,
+            'individualLinkRequestId'   => $individualLinkRequestId,
+            'merchantId'                => $this->merchant->getId(),
+            'input'                     => $input,
+            'urlType'                   => $urlType,
+            'start_time'                => millitime(),
         ]);
     }
 

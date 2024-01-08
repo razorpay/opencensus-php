@@ -900,7 +900,7 @@ return [
             "exceptionClass"    => \RZP\Exception\BadRequestValidationFailureException::class,
             "exceptionMessage"  => "The business website refund policy field is required.",
         ],
-        "shipping policy required" => [
+        "shipping policy not required" => [
             "input" => [
                 DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE         => 'https://razorpay.com',
                 DetailConstants::BUSINESS_WEBSITE_CONTACT_US        => 'https://razorpay.com/docs',
@@ -911,9 +911,7 @@ return [
                 DetailConstants::API_VERSION                        => DetailConstants::WEBSITE_VERSION_V1,
                 DetailConstants::BUSINESS_WEBSITE_USERNAME          => "SOMEUSERNAME",
                 DetailConstants::BUSINESS_WEBSITE_PASSWORD          => "SOMEPASSWORD",
-            ],
-            "exceptionClass"    => \RZP\Exception\BadRequestValidationFailureException::class,
-            "exceptionMessage"  => "The business website shipping policy field is required.",
+            ]
         ],
         "main page valid url" => [
             "input" => [

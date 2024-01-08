@@ -11198,7 +11198,7 @@ class Service extends Base\Service
 
         $needsClarification =  (new WorkFlowActionCore())->getNeedsClarificationBodyFromWorkflowComment($action);
 
-        $this->addCustomKeysInWorkflowDetailsResponse($response, $workflowType, $permission);
+        $this->addCustomKeysInWorkflowDetailsResponse($response, $workflowType, $permission, $merchantId);
 
         return array_merge($response, [
             'needs_clarification'      => $needsClarification,
@@ -11208,8 +11208,17 @@ class Service extends Base\Service
         ]);
     }
 
-    protected function addCustomKeysInWorkflowDetailsResponse(array & $response, string $workflowType, $permission)
+    protected function addCustomKeysInWorkflowDetailsResponse(array & $response, string $workflowType, $permission, $merchantId = null)
     {
+        if ($merchantId !== null)
+        {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+        else
+        {
+            $merchant = $this->merchant;
+        }
+        
         if (($workflowType === Constants::BANK_DETAIL_UPDATE) and
             ($permission === Permission::EDIT_MERCHANT_BANK_DETAIL))
         {
@@ -11219,6 +11228,17 @@ class Service extends Base\Service
                 ($careResponse[Constants::BANK_ACCOUNT_ID] !== ""))
             {
                 $response[Constants::BANK_ACCOUNT_ID] = $careResponse[Constants::BANK_ACCOUNT_ID];
+            }
+        }
+        
+        if ($workflowType == Constants::ADDITIONAL_WEBSITE)
+        {
+            $merchantDetailCore = (new Detail\Core);
+            $cacheDataResponse = $merchantDetailCore->getMerchantWebsiteAutomatedOcrCheckCacheData($merchant);
+    
+            if ($cacheDataResponse !== null)
+            {
+                $response[Constants::OCR_AUTOMATED_CHECK_ENABLE] =  $cacheDataResponse[Constants::OCR_AUTOMATED_CHECK_ENABLE];
             }
         }
     }

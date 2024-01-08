@@ -1868,18 +1868,20 @@ class Service extends Base\Service
 
     }
 
-    public function putBusinessWebsiteUpdatePostWorkflow(array $input)
+    public function putBusinessWebsiteUpdatePostWorkflow(array $input, ?Merchant\Entity $merchant = null)
     {
-        $previousWebsite = $this->merchant->merchantDetail->getWebsite();
+        $merchant = $merchant ?? $this->merchant;
+        
+        $previousWebsite = $merchant->merchantDetail->getWebsite();
 
         $newUrl = $input[DetailConstants::URL_TYPE] === DEConstants::URL_TYPE_WEBSITE ?  $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE] : $input[DetailConstants::BUSINESS_APP_URL];
 
-        $this->core()->updateBusinessWebsite($this->merchant , $newUrl);
+        $this->core()->updateBusinessWebsite($merchant , $newUrl);
 
         $event = $previousWebsite ? DashboardEvents::MERCHANT_BUSINESS_WEBSITE_UPDATE : DashboardEvents::MERCHANT_BUSINESS_WEBSITE_ADD;
 
         $args = [
-            Constants::MERCHANT         => $this->merchant,
+            Constants::MERCHANT         => $merchant,
             DashboardEvents::EVENT      => $event,
             Constants::PARAMS           => [
                 DashboardNotificationConstants::UPDATED_BUSINESS_WEBSITE   => $newUrl

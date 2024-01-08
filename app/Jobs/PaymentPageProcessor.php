@@ -572,6 +572,12 @@ class PaymentPageProcessor extends Job
 
         $individualLinkRequestId  = $this->params->get('individualLinkRequestId');
 
+        $merchantId  = $this->params->get('merchantId');
+    
+        $merchant = $this->repoManager->merchant->findByPublicId($merchantId);
+    
+        $this->setMerchant($merchant);
+        
         if(empty($mccRequestId) === true || empty($individualLinkRequestId) === true)
         {
             $this->delete();
@@ -587,7 +593,7 @@ class PaymentPageProcessor extends Job
 
         try
         {
-            $validationResponse = $this->merchantDetailCore->getMccCategorisationAndWebsiteValidation($mccRequestId, $individualLinkRequestId);
+            $validationResponse = $this->merchantDetailCore->getMccCategorisationAndWebsiteValidation($mccRequestId, $individualLinkRequestId, $merchant);
         }
         catch (\Throwable $exception)
         {
@@ -598,7 +604,9 @@ class PaymentPageProcessor extends Job
             );
         }
 
-        if($validationResponse && $validationResponse['incomplete'] == true){
+        if((empty($validationResponse) === false) &&
+           (array_get($validationResponse, 'incomplete', false)))
+        {
             $this->retry(
                 $this->attempts() * self::OCR_SERVICE_RETRY_DELAY, self::OCR_SERVICE_MAX_RETRY_ATTEMPTS
             );
@@ -625,7 +633,7 @@ class PaymentPageProcessor extends Job
             $this->merchantDetailCore->updateWebsiteDetailAfterValidation([
                 'validationResponse' => $validationResponse,
                 'input' => $this->params->get('input'),
-                'urlType' => $this->params->get('urlType'),
+                'urlType' => $this->params->get('urlType')
             ]);
         }
         catch (\Throwable $e)

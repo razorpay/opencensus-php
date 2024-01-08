@@ -10361,6 +10361,11 @@ You can now start accepting payments from https://www.example.com.
 
     public function testGetMerchantWorkflowDetailsByInternalAuth()
     {
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+        $data['ocr_automated_check_enable'] = true;
+        $mockedCore->shouldReceive("getMerchantWebsiteAutomatedOcrCheckCacheData")->andReturn($data);
+        
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         $testData = $this->testData['testGetMerchantWorkflowDetailsByInternalAuth'];
