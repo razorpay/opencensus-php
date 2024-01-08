@@ -4712,56 +4712,56 @@ trait Refund
                 $results = $this->repo->transaction(function () use ($input, $processReversals, &$response, $payment)
                 {
                     $results = [];
+                    $atomicJournalPayload = [];
 
                     if ($processReversals === true)
                     {
                         list($results, $atomicJournalPayload) = $this->processRefundWithTransfers($input, $payment, true);
+                    }
 
+                    if($payment->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true)
+                    {
                         $customerRefundInput = $input['transaction_create_input'];
 
                         // creates virtual customer refund entity from input
                         $customerRefund = $this->createVirtualRefundEntity($payment, $customerRefundInput);
-
-                        if($payment->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true)
+    
+                        $compenstatePayment = false;
+                        try
                         {
-                            $compenstatePayment = false;
+                            $this->setPayment($payment);
+
+                            //handle payment update for source payment
+                            $this->handlePaymentUpdate($payment, $customerRefund->getId(), $customerRefund->getAmount(), $customerRefund->getBaseAmount(), false);
+
                             try
                             {
-                                $this->setPayment($payment);
-
-                                //handle payment update for source payment
-                                $this->handlePaymentUpdate($payment, $customerRefund->getId(), $customerRefund->getAmount(), $customerRefund->getBaseAmount(), false);
-
-                                try
-                                {
-                                    $reversalAndRefundJournalIds = (new ReverseShadowTransferReversalCore())->createReverseShadowLedgerEntriesForTransferReversalBulk($atomicJournalPayload, $customerRefund, $results, true);
-                                }
-                                catch(\Throwable $e)
-                                {
-                                    if ($payment->isExternal() === true)
-                                    {
-                                        $compenstatePayment = true;
-                                    }
-                                    throw $e;
-                                }
-
-                                $transactionCreateResponse = RefundHelpers::getScroogeRefundTransactionCreateResponse(null, false, $reversalAndRefundJournalIds['customer_refund_journal_id']);
-
-                                $transactionCreateResponse['reversal_and_refund_journal_ids'] = $reversalAndRefundJournalIds['reversals'];
-
-                                $response['transaction_create_response'] = $transactionCreateResponse;
-
+                                $reversalAndRefundJournalIds = (new ReverseShadowTransferReversalCore())->createReverseShadowLedgerEntriesForTransferReversalBulk($atomicJournalPayload, $customerRefund, $results, true);
                             }
-                            catch(\Exception $e)
+                            catch(\Throwable $e)
                             {
-                                $transactionCreateResponse = RefundHelpers::getScroogeRefundTransactionCreateResponse($e, $compenstatePayment, null);
-
-                                $response['transaction_create_response'] = $transactionCreateResponse;
-
+                                if ($payment->isExternal() === true)
+                                {
+                                    $compenstatePayment = true;
+                                }
                                 throw $e;
                             }
-                        }
 
+                            $transactionCreateResponse = RefundHelpers::getScroogeRefundTransactionCreateResponse(null, false, $reversalAndRefundJournalIds['customer_refund_journal_id']);
+
+                            $transactionCreateResponse['reversal_and_refund_journal_ids'] = $reversalAndRefundJournalIds['reversals'];
+
+                            $response['transaction_create_response'] = $transactionCreateResponse;
+
+                        }
+                        catch(\Exception $e)
+                        {
+                            $transactionCreateResponse = RefundHelpers::getScroogeRefundTransactionCreateResponse($e, $compenstatePayment, null);
+
+                            $response['transaction_create_response'] = $transactionCreateResponse;
+
+                            throw $e;
+                        }
                     }
 
                     if($payment->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false)
