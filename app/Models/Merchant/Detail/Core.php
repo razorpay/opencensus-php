@@ -1494,6 +1494,12 @@ class Core extends Base\Core
                 Entity::ACTIVATION_STATUS => $statusToBeUpdated,
             ];
 
+            // prefill policy links in admin section at time activation by submitting l2 activation form.
+            if (in_array($statusToBeUpdated, [Status::ACTIVATED, Status::ACTIVATED_MCC_PENDING, Status::KYC_QUALIFIED_UNACTIVATED]) === true)
+            {
+                $this->prefillSystemUrlsInAdminWebisteDetails($merchantDetails);
+            }
+
             $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
         }
 
@@ -7436,7 +7442,7 @@ class Core extends Base\Core
 
         if (count($requiredFields) > 0)
         {
-            // allow activation(ex business type "ngo") for the MIQ flow. As we are validating header earlier. 
+            // allow activation(ex business type "ngo") for the MIQ flow. As we are validating header earlier.
             if($this->shouldSkipKycDocuments($merchantDetails) === true)
             {
                 return true;
@@ -11264,7 +11270,10 @@ class Core extends Base\Core
 
         foreach ($websitePolicyResult as $policy => $value)
         {
-            if (empty($value['analysis_result']['links_found'][0]) === false and !in_array($policy, ['about_us', 'pricing']))
+            if (empty($value['analysis_result']['links_found'][0]) === false and
+                isset($value['analysis_result']['validation_result']) === true and
+                $value['analysis_result']['validation_result'] === true and
+                !in_array($policy, ['about_us', 'pricing']))
             {
                 if ($policy === 'refund' and isset($websitePolicyLinks['cancellation']) === false)
                 {
