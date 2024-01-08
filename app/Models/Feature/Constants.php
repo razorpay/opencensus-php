@@ -1571,6 +1571,11 @@ class Constants
     const AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED = 'aff_wgt_discnt_whp_enbld';
 
     /**
+     * Feature to enable RiskBandFetch for merchant via TrustScanAPI
+     */
+    const CREDIT_RISK_BAND_ENABLED = 'credit_risk_band_enabled';
+
+    /**
      * Feature flag to allow the transition from older flow to newer flow
      * for payouts to cards tokenisation
      */
@@ -2777,6 +2782,7 @@ class Constants
         self::REMOVE_EMANDATE_COOLOFF                => true,
         self::RZPX_FEE_CREDIT                        => true,
         self::ENABLE_INTL_PRICING_AMEX               => true,
+        self::CREDIT_RISK_BAND_ENABLED               => true,
     ];
 
     // Entity type constants
@@ -3945,6 +3951,11 @@ class Constants
         self::ENABLE_INTL_PRICING_AMEX => [
             'feature'       => self::ENABLE_INTL_PRICING_AMEX,
             'display_name'  => 'Feature to enable Amex International Pricing',
+            'documentation' => '',
+        ],
+        self::CREDIT_RISK_BAND_ENABLED => [
+            'feature'       => self::CREDIT_RISK_BAND_ENABLED,
+            'display_name'  => 'Feature to enable Credit RiskBand fetch for merchant',
             'documentation' => '',
         ],
     ];

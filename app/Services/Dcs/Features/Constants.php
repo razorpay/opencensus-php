@@ -19,6 +19,7 @@ class Constants
     const EligibilityEnabled                         = 'eligibility_enabled';
     const EligibilityCheckDecline                    = 'eligibility_check_decline';
     const WidgetEligibilityEnabled                   = 'widget_eligibility_enabled';
+    const CreditRiskBandEnabled                      = 'credit_risk_band_enabled';
     const AffWidgetCheckoutEnabled                   = 'affordability_widget_checkout_enabled';
     const AffWidgetV3DesignDisabled                  = 'affordability_widget_v3_design_disabled';
     const AffWidgetDiscountWhispererEnabled          = 'affordability_widget_discount_whisperer_enabled';
@@ -294,6 +295,7 @@ class Constants
         self::DisableAutoRefund                           => "example/pg/merchant/refund/Features",
         self::EligibilityEnabled                          => "rzp/pg/merchant/affordability/EligibilityFeatures",
         self::EligibilityCheckDecline                     => "rzp/pg/merchant/affordability/EligibilityFeatures",
+        self::CreditRiskBandEnabled                       => "rzp/pg/merchant/risk/TrustScan",
         self::WidgetEligibilityEnabled                    => "rzp/pg/merchant/affordability/Widget",
         self::AffWidgetCheckoutEnabled                    => "rzp/pg/merchant/affordability/Widget",
         self::AffWidgetV3DesignDisabled                   => "rzp/pg/merchant/affordability/Widget",
@@ -531,6 +533,7 @@ class Constants
         self::RefundEnabled                                                => self::RefundEnabled,
         self::DisableAutoRefund                                            => self::DisableAutoRefund,
         self::EligibilityEnabled                                           => self::EligibilityEnabled,
+        APIFeaturesConstants::CREDIT_RISK_BAND_ENABLED                     => self::CreditRiskBandEnabled,
         self::EligibilityCheckDecline                                      => self::EligibilityCheckDecline,
         APIFeaturesConstants::WIDGET_ELIGIBILITY_ENABLED                   => self::WidgetEligibilityEnabled,
         APIFeaturesConstants::AFF_WIDGET_V3_DESIGN_DISABLED                => self::AffWidgetV3DesignDisabled,
@@ -768,6 +771,7 @@ class Constants
         self::EligibilityEnabled                      => 'client',
         self::EligibilityCheckDecline                 => 'client',
         self::WidgetEligibilityEnabled                => 'client',
+        self::CreditRiskBandEnabled                   => 'client',
         self::AffWidgetDiscountWhispererEnabled       => 'client',
         self::AffWidgetCheckoutEnabled                => 'client',
         self::AffWidgetV3DesignDisabled               => 'client',
@@ -827,6 +831,7 @@ class Constants
         "merchant" => [
             "eligibility_enabled"                             => "client",
             "eligibility_check_decline"                       => "client",
+            "credit_risk_band_enabled"                        => "client",
             "auto_comm_inv_disabled"                          => "direct",
             "affordability_widget_set"                        => "client",
             "enable_customer_amount"                          => "direct",
