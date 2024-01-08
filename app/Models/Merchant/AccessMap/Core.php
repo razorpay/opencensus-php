@@ -569,6 +569,40 @@ class Core extends Base\Core
     }
 
     /**
+     * This function validates if a merchant is a capital LOC submerchant of a partner.
+     *
+     * @param string $subMerchantId
+     * @param string $partnerId
+     * @param string $appId
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsCapitalLocSubmerchant(string $subMerchantId, string $partnerId, string $appId): void
+    {
+        $isMapped = $this->isMerchantMappedToApplication($subMerchantId, $appId);
+
+        if ($isMapped === true)
+        {
+            $subMerchant = $this->repo->merchant->findOrFailPublic($subMerchantId);
+
+            $tag = Merchant\Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partnerId;
+
+            if($subMerchant->isTagAdded($tag) === true)
+            {
+                return;
+            }
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
+            null,
+            [
+                'submerchant_id' => $subMerchantId,
+                'partner_id'     => $partnerId,
+            ]);
+    }
+
+    /**
      * @param Merchant\Entity $partner
      * @param Merchant\Entity $merchant
      * @param string $appType

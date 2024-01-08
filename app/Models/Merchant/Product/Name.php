@@ -12,6 +12,8 @@ class Name
 
     const ROUTE         = 'route';
 
+    const LINE_OF_CREDIT = 'line_of_credit';
+
     const ADMIN_ENABLED = [
         self::ALL
     ];
@@ -20,6 +22,7 @@ class Name
         self::PAYMENT_GATEWAY,
         self::PAYMENT_LINKS,
         self::ROUTE,
+        self::LINE_OF_CREDIT,
     ];
 
 }

@@ -19,7 +19,10 @@ class ProductResponseHandler
                 $response = self::getPaymentGatewayResponse($merchantProduct, $response);
 
                 break;
-
+            case Product\Name::LINE_OF_CREDIT:
+                $response = self::getPaymentGatewayResponse($merchantProduct, $response);
+                $response = self::overrideResponseForLOCProduct($response);
+                break;
         }
 
         return $response;
@@ -65,6 +68,25 @@ class ProductResponseHandler
 
         $response[Constants::ACTIVE_CONFIGURATION]    = array_merge($response[Constants::ACTIVE_CONFIGURATION], $activeConfig);
         $response[Constants::REQUESTED_CONFIGURATION] = array_merge($response[Constants::REQUESTED_CONFIGURATION], $pendingConfig);
+
+        return $response;
+    }
+
+    /**
+     * While onboarding a merchant to LOC, the 'activation_status' field (in Product config API response) isn't applicable.
+     * Instead, the LOC application state matters. Hence, for now we are unsetting 'activation_status' field
+     * from Product config API response.
+     *
+     * @param array $response
+     *
+     * @return array
+     */
+    private static function overrideResponseForLOCProduct(array $response): array
+    {
+        if (isset($response[Product\Entity::ACTIVATION_STATUS]) === true)
+        {
+            unset($response[Product\Entity::ACTIVATION_STATUS]);
+        }
 
         return $response;
     }

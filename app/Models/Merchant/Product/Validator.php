@@ -17,6 +17,10 @@ class Validator extends Base\Validator
         'ip'           => 'sometimes|ip',
     ];
 
+    protected static $createLocRules = [
+        'product_name' => 'required|string',
+    ];
+
     protected static $createValidators = [
         'tnc_input_check'
         ];
@@ -32,6 +36,10 @@ class Validator extends Base\Validator
 
     public function validateProductName($attribute, $value)
     {
+        $app = App::getFacadeRoot();
+
+        $partner = $app['basicauth']->getPartnerMerchant();
+
         $validProductName = (in_array($value, Name::ENABLED, true) === true);
 
         if ($validProductName === false)
@@ -41,6 +49,13 @@ class Validator extends Base\Validator
 
         if (($this->merchant->isLinkedAccount() === true) and
             ($value !== Name::ROUTE))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PRODUCT_NAME);
+        }
+
+        if($partner !== null
+            && (($value === Name::LINE_OF_CREDIT && $partner->isResellerPartner() === false)
+                or ($partner->isResellerPartner() === true && $value !== Name::LINE_OF_CREDIT)))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PRODUCT_NAME);
         }
@@ -54,8 +69,12 @@ class Validator extends Base\Validator
 
         $isExpEnabled = (new TncMap\Acceptance\Core())->isPartnerExcludedFromProvidingSubmerchantIp($partnerId);
 
-        // for no doc merchants and for (non-LinkedAccount (route) and non whitelisted partner's submerchants) ip and tnc are required to be passed together
-        if($this->merchant->isNoDocOnboardingEnabled() === true or ($this->merchant->isLinkedAccount() === false and $isExpEnabled === false))
+        if($input[Constants::PRODUCT_NAME] === Name::LINE_OF_CREDIT)
+        {
+            // No other field except 'product_name' is allowed when LOC product is requested.
+            $this->validateInput('create_loc', $input);
+        }// for no doc merchants and for (non-LinkedAccount (route) and non whitelisted partner's submerchants) ip and tnc are required to be passed together
+        else if($this->merchant->isNoDocOnboardingEnabled() === true or ($this->merchant->isLinkedAccount() === false and $isExpEnabled === false))
         {
             if((isset($input[Constants::IP]) === true and isset($input[Constants::TNC_ACCEPTED]) === false) or (isset($input[Constants::IP]) === false and isset($input[Constants::TNC_ACCEPTED]) === true))
             {

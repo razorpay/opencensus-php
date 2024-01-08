@@ -42,6 +42,8 @@ class DefaultConfigurationHelper
             case Name::ROUTE:
                 $data = Defaults::ROUTE;
                 break;
+            case Name::LINE_OF_CREDIT:
+                break;
         }
 
         return $data;

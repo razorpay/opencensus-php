@@ -473,6 +473,8 @@ class Constants
     const NC_WHATSAPP_OPT_OUT             = 'nc_whatsapp_opt_out';
     const PP_SUBM_DASHBOARD_ACCESS        = 'pp_subm_dashboard_access';
 
+    const LOC_SUBM_ONBOARDING_API         = 'loc_subm_onboarding_api';
+
     /**
      * Feature flag to decide whether commission payout should happen
      * manually via ops or automatically
@@ -936,8 +938,8 @@ class Constants
      */
     const ORG_SECOND_FACTOR_AUTH = 'second_factor_auth';
 
-     /* Org level features for featured route access
-     */
+    /* Org level features for featured route access
+    */
     const ORG_BANK_ACCOUNT_UPDATE_SS         = 'bank_account_update_ss';
     const ORG_FRESHDESK_CREATE_TICKET        = 'freshdesk_create_ticket';
     const ORG_SUB_MERCHANT_CREATE            = 'sub_merchant_create';
@@ -1157,7 +1159,7 @@ class Constants
     const SKIP_EXPOSE_FEE_RECOVERY = 'skip_expose_fee_recovery';
 
     /**
-    * Merchant feature used to control visibility of dcc markup on frontend
+     * Merchant feature used to control visibility of dcc markup on frontend
      */
     const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
 
@@ -1391,8 +1393,8 @@ class Constants
      */
     const ISSUER_TOKENIZATION_LIVE = 'issuer_tokenization_live';
 
-     /**
-      * Feature flag to allow network tokens in response
+    /**
+     * Feature flag to allow network tokens in response
      */
     const ALLOW_NETWORK_TOKENS = 'allow_network_tokens';
 
@@ -1441,12 +1443,12 @@ class Constants
      */
     const ASYNC_TOKENISATION_RECUR = 'async_tokenisation_recur';
 
-     /* Feature flag to enable consent collection screen on custom checkout
-     * merchants in the scenario where Razorpay would collect consent
-     * on-behalf of the merchant.
-     *
-     * @see https://razorpay.com/docs/payments/payment-gateway/web-integration/custom/features/saved-cards/scenario-2/
-     */
+    /* Feature flag to enable consent collection screen on custom checkout
+    * merchants in the scenario where Razorpay would collect consent
+    * on-behalf of the merchant.
+    *
+    * @see https://razorpay.com/docs/payments/payment-gateway/web-integration/custom/features/saved-cards/scenario-2/
+    */
     const CUSTOM_CHECKOUT_CONSENT_SCREEN = 'cust_checkout_cnsnt_scrn';
 
 
@@ -1517,7 +1519,7 @@ class Constants
      */
     const ONE_CC_MANDATORY_LOGIN = 'one_cc_mandatory_login';
 
-     /**
+    /**
      * Currently to support the RazorpayX slack app use case this feature is added.
      * It is used to create exception for private auth request and makes some public setters behave like proxy auth.
      * This feature enables accessing payouts.fund_accounts, payouts.workflow_history via private auth,
@@ -1691,7 +1693,7 @@ class Constants
      */
     const ORG_DISABLE_DEF_EMAIL_RECEIPT = 'disable_def_email_receipt';
 
-     /** Feature flag to skip email notifications to merchants on processed and reversed payouts
+    /** Feature flag to skip email notifications to merchants on processed and reversed payouts
      * @see shouldNotifyTxnViaEmail function in Payouts\Enity.php
      */
     const SKIP_PAYOUT_EMAIL = 'skip_payout_email';
@@ -1783,12 +1785,12 @@ class Constants
      */
     const INTER_ACCOUNT_TEST_PAYOUT = 'inter_account_test_payout';
 
-     /**
+    /**
      * Feature flag to allow token interoperabilty between partner's sub merchant for saved card
      */
     const TOKEN_INTEROPERABILITY = 'token_interoperability';
 
-      /**
+    /**
      * Feature flag to configure report for KFIN
      */
     const KFIN_MERCHANT_REPORT = 'kfin_merchant_report';
@@ -1809,12 +1811,12 @@ class Constants
      */
     const NETBANKING_CORPORATE_DELAY_REFUND = 'nb_corporate_delay_refund';
 
-     /**
+    /**
      * Feature flag to configure report for CAMS
      */
     const CAMS_MERCHANT_REPORT = 'cams_merchant_report';
 
-     /**
+    /**
      * Feature flag to configure report for BSE
      */
     const BSE_MERCHANT_REPORT = 'bse_merchant_report';
@@ -1839,7 +1841,7 @@ class Constants
      */
     const EXPOSE_RRN = 'expose_rrn';
 
-     /**
+    /**
      * Feature flag to configure report for NIUM
      */
     const IMPORT_FLOW_OPEX_REPORT = 'import_flow_opex_report';
@@ -1860,7 +1862,7 @@ class Constants
     const SUB_VA_FOR_DIRECT_BANKING = 'sub_va_for_direct_banking';
 
     /**
-     Feature Flag to enable auto debit (link and pay) wallet flow for merchants. The customers paying to the merchant can
+    Feature Flag to enable auto debit (link and pay) wallet flow for merchants. The customers paying to the merchant can
      * save their paytm wallets during the fisrt time payment later on they can make a payment with single click.
      **/
 
@@ -2300,6 +2302,7 @@ class Constants
         self::NO_COMM_WITH_SUBMERCHANTS                    => true,
         self::PARTNER_SUB_KYC_ACCESS                       => true,
         self::PP_SUBM_DASHBOARD_ACCESS                     => true,
+        self::LOC_SUBM_ONBOARDING_API                      => true,
         self::SUBMERCHANT_ONBOARDING                       => true,
         self::SUBMERCHANT_ONBOARDING_V2                    => true,
         self::EXPOSE_FA_VALIDATION_UTR                     => true,
@@ -3560,9 +3563,9 @@ class Constants
             'documentation' => '',
         ],
         self::PARTNER_SUB_KYC_ACCESS => [
-          'feature'       => self::PARTNER_SUB_KYC_ACCESS,
-          'display_name'  => 'Skip approval workflow to access submerchant Kyc',
-          'documentation' => '',
+            'feature'       => self::PARTNER_SUB_KYC_ACCESS,
+            'display_name'  => 'Skip approval workflow to access submerchant Kyc',
+            'documentation' => '',
         ],
         self::AUTHORIZE_VIA_AUTHZ => [
             'feature'       => self::AUTHORIZE_VIA_AUTHZ,

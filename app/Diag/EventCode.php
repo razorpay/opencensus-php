@@ -1490,4 +1490,14 @@ class EventCode
         'group' => 'onboarding',
         'name'  => 'partnerships.capital.bulk.submerchant_with_existing_application',
     ];
+
+    const PARTNERSHIPS_CAPITAL_PARTNERS_CONSUMING_ONBOARDING_APIS  = [
+        'group' => 'onboarding',
+        'name'  => 'partnerships.capital.onboarding_api.active_partner',
+    ];
+
+    const PARTNERSHIPS_CAPITAL_SUBMERCHANT_CREATED_VIA_ONBOARDING_APIS  = [
+        'group' => 'onboarding',
+        'name'  => 'partnerships.capital.onboarding_api.submerchant_created',
+    ];
 }

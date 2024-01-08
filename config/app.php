@@ -655,8 +655,6 @@ return array(
 
     'easy_kyc_access_referral_experiment_id' => env('EASY_KYC_ACCESS_REFERRAL_EXP_ID'),
 
-    'capital_invite_existing_merchant_via_batch_experiment_id' => env('CAPITAL_INVITE_EXISTING_MERCHANT_VIA_BATCH_EXPERIMENT_ID'),
-
     '1cc_enable_v165_splitz_experiment_id' => env('MAGIC_CHECKOUT_ENABLE_V165_EXP_ID'),
 
     '1cc_coupons_with_se_splitz_experiment_id' => env('MAGIC_CHECKOUT_COUPONS_WITH_SCRIPT_EDITOR_EXP_ID'),

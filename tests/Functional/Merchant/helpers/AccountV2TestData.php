@@ -792,6 +792,56 @@ return [
         ],
     ],
 
+    'testCreateAccountV2ForMandatoryFilledByCapitalPartner' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email'               => 'testcreateaccountaa@razorpay.com',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'phone'               => '9999999999',
+                'contact_name'        => 'contactname',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'                => 'standard',
+                'status'              => 'created',
+                'email'               => 'testcreateaccountaa@razorpay.com',
+                'phone'               => '+919999999999',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name'   => 'Acme Corp Pvt Ltd',
+                'contact_name'        => 'contactname',
+            ],
+        ],
+    ],
+
+    'testCreateAccountV2ByCapitalPartnerFailed' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email'               => 'testcreateaccountaa@razorpay.com',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'phone'               => '9999999999',
+                'contact_name'        => 'contactname',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid partner action'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
     'testUpdateAccountV2InvalidAccId' => [
         'request' => [
             'url'    => '/v2/accounts/acc_Mk5x3fAOuOoRk4',

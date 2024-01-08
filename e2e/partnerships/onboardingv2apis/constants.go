@@ -2,6 +2,7 @@ package e2e
 
 const (
 	TagOnboardingApi                         = "onboardingapi"
+	TagCapitalLeadsApi                       = "CapitalLeadsApi"
 	ActivatedKycPending                      = "activated_kyc_pending"
 	UnderReview                              = "under_review"
 	NeedsClarification                       = "needs_clarification"

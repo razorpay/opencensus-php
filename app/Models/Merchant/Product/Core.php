@@ -2,21 +2,29 @@
 
 namespace RZP\Models\Merchant\Product;
 
+use Throwable;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Models\Merchant\Detail;
+use Illuminate\Http\JsonResponse;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Jobs\MerchantProductsConfig;
-use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Product\Util;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\IntegrationException;
+use RZP\Exception\ServerErrorException;
 use RZP\Constants\Entity as EntityName;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Product\Requirements;
 use RZP\Models\Merchant\Detail\NeedsClarification;
+use RZP\Models\Merchant\CapitalSubmerchantUtility;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Product\Config\PaymentMethods;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Merchant\Product\Status as ProductStatus;
@@ -48,6 +56,11 @@ class Core extends Base\Core
     private $tncCore;
 
     private $otpCore;
+
+    /**
+     * @var CapitalSubmerchantUtility
+     */
+    protected CapitalSubmerchantUtility $capitalSubmerchantUtility;
 
     public function __construct()
     {
@@ -96,6 +109,12 @@ class Core extends Base\Core
                 }
                 break;
             }
+            case Name::LINE_OF_CREDIT:
+            {
+                $response = $this->createLocConfig($merchant);
+
+                break;
+            }
         }
 
         return $response;
@@ -115,6 +134,8 @@ class Core extends Base\Core
                 break;
             case Name::ROUTE:
                 $response = $this->getRouteProductConfig($merchant, $merchantProduct);
+                break;
+            case Name::LINE_OF_CREDIT:
                 break;
         }
 
@@ -753,6 +774,63 @@ class Core extends Base\Core
         return $response;
     }
 
+    /**
+     * @throws Throwable
+     * @throws IntegrationException
+     * @throws BadRequestException
+     */
+    private function createLocConfig(Merchant\Entity $merchant): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_PRODUCT_CREATE_REQUEST,
+            [
+                'merchant_id'         => $merchant->getId(),
+                'requested_product'   => 'Line of Credit',
+            ]);
+
+        try
+        {
+            $productIds = CapitalSubmerchantUtility::getLOSProductIds();
+
+            $locProductId = $productIds[Merchant\Constants::CAPITAL_LOC_EMI_PRODUCT_NAME];
+
+            $applicationResponse = new JsonResponse($this->capitalSubmerchantUtility()->fetchApplicationsForSubmerchantsForProduct(
+                [$merchant->getId()],
+                $locProductId
+            ));
+
+            $applicationResponse = $applicationResponse->getData(true);
+
+            //If LOC application doesn't exist already for the merchant, then request for it.
+            // This check is applicable for cases where application already exist but LOC product was never requested
+            // via product config API.
+            if(isset($applicationResponse['original']['response'][$merchant->getId()]) === false)
+            {
+                $partner = $this->app['basicauth']->getPartnerMerchant();
+
+                CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant($merchant, $partner, [
+                    Merchant\Constants::LEAD_SOURCE     => "Partner",
+                    Merchant\Constants::LEAD_SOURCE_ID  => $partner->getId(),
+                    Merchant\Constants::SOURCE_DETAILS  => $partner->getName(),
+                    Merchant\Constants::PRODUCT_ID      => $locProductId
+                ],
+                    PartnerConstants::ADD_ACCOUNT_V2_ONBOARDING_API);
+            }
+
+            return [];
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::MERCHANT_PRODUCT_CREATE_REQUEST_FAILED);
+
+            throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::SERVER_ERROR);
+        }
+    }
+
     private function createOrFetchOtpVerificationLog(Merchant\Entity $merchant,  array & $input )
     {
         if (isset($input[Util\Constants::OTP]) === true)
@@ -861,5 +939,18 @@ class Core extends Base\Core
         );
 
         return $merchantProduct;
+    }
+
+    /**
+     * @return CapitalSubmerchantUtility
+     */
+    protected function capitalSubmerchantUtility(): CapitalSubmerchantUtility
+    {
+        if(empty($this->capitalSubmerchantUtility) === true)
+        {
+            $this->capitalSubmerchantUtility = new CapitalSubmerchantUtility();
+        }
+
+        return $this->capitalSubmerchantUtility;
     }
 }

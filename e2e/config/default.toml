@@ -53,6 +53,10 @@
     username = "rzp_live_partner_LdXSPcmuVH7rLq"
     password = "9dLdThIWVhvxGGPncR5v7KOR"
 
+[leadsapispartner]
+    username = "rzp_test_utRkTnpowRijtP"
+    password = "cgBu0aWpm5GBn2NEMBqHWspz"
+
 [adminconfig]
     username = "rzp_test"
     password = "RANDOM_DASH_PASSWORD"

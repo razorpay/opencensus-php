@@ -122,7 +122,7 @@ class CapitalSubmerchantUtility
                     Constants::PRODUCT_ID => $productId,
                 ],
                 [
-                    'X-Service-Name' => $this->app['basicauth']->getInternalApp() ?? '',
+                    'X-Service-Name' => $this->app['basicauth']->getInternalApp() ?? 'api',
                     'X-Auth-Type'    => 'internal',
                 ]
             );
@@ -379,6 +379,27 @@ class CapitalSubmerchantUtility
         app('diag')->trackOnboardingEvent(EventCode::PARTNERSHIPS_CAPITAL_INVITE_EXISTING_SUBMERCHANT_LINKED, $partner, null, $properties);
     }
 
+    public function trackCapitalPartnerUsingOnboardingAPIsEvent(Entity $partner, string $source)
+    {
+        $properties = [
+            "source"         => $source,
+            "partner_id"     => $partner->getId()
+        ];
+
+        app('diag')->trackOnboardingEvent(EventCode::PARTNERSHIPS_CAPITAL_PARTNERS_CONSUMING_ONBOARDING_APIS, $partner, null, $properties);
+    }
+
+    public function trackCreateCapitalSubmerchantViaOnboardingAPIsEvent(Entity $partner, string $merchantId, string $source)
+    {
+        $properties = [
+            "source"         => $source,
+            "partner_id"     => $partner->getId(),
+            "merchant_id"    => $merchantId
+        ];
+
+        app('diag')->trackOnboardingEvent(EventCode::PARTNERSHIPS_CAPITAL_SUBMERCHANT_CREATED_VIA_ONBOARDING_APIS, $partner, null, $properties);
+    }
+
     /**
      * Checks if the partner is whitelisted under capital_partnership experiment
      *
@@ -480,7 +501,7 @@ class CapitalSubmerchantUtility
     static function getLOSProductIds(): array
     {
         $headers = [
-            'X-Service-Name' => app('basicauth')->getInternalApp() ?? '',
+            'X-Service-Name' => app('basicauth')->getInternalApp() ?? 'api',
             'X-Auth-Type'    => 'internal',
         ];
 

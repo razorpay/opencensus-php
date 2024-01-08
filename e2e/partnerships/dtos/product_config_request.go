@@ -2,7 +2,7 @@ package dtos
 
 type ProductConfigCreateRequest struct {
 	ProductName string `json:"product_name"`
-	TncAccepted bool   `json:"tnc_accepted"`
+	TncAccepted bool   `json:"tnc_accepted,omitempty"`
 	Ip          string `json:"ip,omitempty"`
 }
 

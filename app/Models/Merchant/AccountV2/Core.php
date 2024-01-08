@@ -19,6 +19,8 @@ use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Constants\Product as ProductConstants;
+use RZP\Models\Merchant\CapitalSubmerchantUtility;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -38,7 +40,24 @@ class Core extends Merchant\Core
 
         $accountCoreV1->validatePartnerAccess($partner,null, $accountType);
 
-        (new Validator)->validateInput('create_account', $input);
+        $requestedProduct = ProductConstants::PRIMARY;
+
+        $isLocOnboardingEnabled = $accountCoreV1->isPartnerAllowedToOnboardLOCMerchantViaOnboardingAPIs($partner);
+
+        if($accountType === null && $isLocOnboardingEnabled)
+        {
+            $this->capitalSubmerchantUtility()->trackCapitalPartnerUsingOnboardingAPIsEvent($partner, PartnerConstants::ADD_ACCOUNT_V2_ONBOARDING_API);
+
+            $requestedProduct = ProductConstants::CAPITAL;
+        }
+
+        (new Validator)->validateCreateAccount($input, $requestedProduct);
+
+        if($requestedProduct === ProductConstants::CAPITAL)
+        {
+            $input[Merchant\Entity::PRODUCT]  = ProductConstants::BANKING;
+            $input[Constants::ACTUAL_PRODUCT] = ProductConstants::CAPITAL;
+        }
 
         $this->executeTosAcceptanceExperiment($input, $partner);
 
@@ -49,11 +68,18 @@ class Core extends Merchant\Core
         (new Merchant\Validator())->validateInput('edit_config', $subMerchantInput);
         (new Detail\Validator())->validateInput('edit', $detailInput);
 
-        $account = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_ENTITIES], function () use ($input, $partner) {
+        $account = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_ENTITIES], function () use ($input, $partner, $isLocOnboardingEnabled) {
 
-        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
+        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $isLocOnboardingEnabled)
         {
             $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
+
+            if($isLocOnboardingEnabled)
+            {
+                CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner->getId(), $subMerchant);
+
+                $this->capitalSubmerchantUtility()->trackCreateCapitalSubmerchantViaOnboardingAPIsEvent($partner, $subMerchant->getId(), PartnerConstants::ADD_ACCOUNT_V2_ONBOARDING_API);
+            }
 
             unset($input[Constants::IS_IGNORE_TOS_ACCEPTANCE]);
             return $subMerchant;

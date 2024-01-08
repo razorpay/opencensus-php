@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Partner;
 
 use Mockery;
+use ApiResponse;
 use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Models\User\Role;
@@ -139,10 +140,8 @@ trait PartnerTrait
                 Mockery::type('array')
             )->andReturnUsing(
                 function() use ($payload) {
-                    $resp              = new Response;
-                    $resp->success     = true;
-                    $resp->status_code = 200;
-                    $resp->body        = json_encode(
+                    $statusCode = 200;
+                    $body        = json_encode(
                         [
                             "applications"  => [
                                 $payload
@@ -150,7 +149,47 @@ trait PartnerTrait
                         ]
                     );
 
+                    return ApiResponse::json($body, $statusCode);
+                }
+            );
+    }
+
+    public function mockGetNoApplicationBulkRequestOnLOSService($mockLOSService): void
+    {
+        $mockLOSService->shouldReceive('sendRequest')
+            ->atLeast()
+            ->once()
+            ->with(
+                MerchantConstants::GET_CAPITAL_APPLICATIONS_BULK_URL,
+                Mockery::type('array'),
+                Mockery::type('array')
+            )->andReturnUsing(
+                function() {
+                    $resp              = new Response;
+                    $resp->success     = true;
+                    $resp->status_code = 200;
+                    $resp->body        = json_encode(
+                        [
+                            "response"  => []
+                        ]
+                    );
+
                     return $resp;
+                }
+            );
+
+        $mockLOSService->shouldReceive('parseResponse')
+            ->once()
+            ->andReturnUsing(
+                function() {
+
+                    $body = json_encode(
+                        [
+                            "response"  => []
+                        ]
+                    );
+
+                    return ApiResponse::json($body, 200);
                 }
             );
     }
@@ -772,7 +811,7 @@ trait PartnerTrait
         return $client;
     }
 
-    public function setUpPartnerWithKycHandled()
+    public function setUpPartnerWithKycHandled(string $partnerType = MerchantConstants::AGGREGATOR)
     {
         $features = [
             FName::NO_COMM_WITH_SUBMERCHANTS,
@@ -782,7 +821,7 @@ trait PartnerTrait
 
         $this->fixtures->merchant->addFeatures($features);
 
-        return $this->setUpNonPurePlatformPartner();
+        return $this->setUpNonPurePlatformPartner($partnerType);
     }
 
     public function setUpPartnerWithKycNotHandled()
@@ -798,9 +837,9 @@ trait PartnerTrait
         return $this->setUpNonPurePlatformPartner();
     }
 
-    public function setUpNonPurePlatformPartner()
+    public function setUpNonPurePlatformPartner(string $partnerType = MerchantConstants::AGGREGATOR)
     {
-        $client = $this->markMerchantAsNonPurePlatformPartner('10000000000000', MerchantConstants::AGGREGATOR);
+        $client = $this->markMerchantAsNonPurePlatformPartner('10000000000000', $partnerType);
 
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::OWNER, Mode::LIVE);
 

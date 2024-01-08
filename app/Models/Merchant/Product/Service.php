@@ -142,15 +142,18 @@ class Service extends Base\Service
                 return $this->getProductConfigPayload($payload, $productName, $merchant);
             });
 
-            $isExpEnabled = (new Merchant\Core())->isExpEnabledForProductConfigIssue($partner);
+            Tracer::inspan(['name' => HyperTrace::SET_DEFAULT_METHODS], function () use ($merchant, $partner, $productName) {
 
-            Tracer::inspan(['name' => HyperTrace::SET_DEFAULT_METHODS], function () use ($merchant, $partner, $isExpEnabled) {
+                if($productName !== Name::LINE_OF_CREDIT)
+                {
+                    $isExpEnabled = (new Merchant\Core())->isExpEnabledForProductConfigIssue($partner);
 
-                if($isExpEnabled === true) {
-                    (new Methods\Core())->setMethods($merchant, $partner);
-                }
-                else {
-                    (new Methods\Core())->setDefaultMethods($merchant, $partner);
+                    if($isExpEnabled === true) {
+                        (new Methods\Core())->setMethods($merchant, $partner);
+                    }
+                    else {
+                        (new Methods\Core())->setDefaultMethods($merchant, $partner);
+                    }
                 }
             });
 

@@ -5,6 +5,8 @@ namespace Functional\Merchant;
 use Mail;
 
 use RZP\Constants\Mode;
+use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForLOC;
+use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantPartner as CreateSubMerchantPartnerForLOC;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
@@ -41,6 +43,7 @@ class AccountV2Test extends TestCase
     use RequestResponseFlowTrait;
 
     const RZP_ORG = '100000razorpay';
+    const DEFAULT_MERCHANT_ID = '10000000000000';
 
     protected function setUp(): void
     {
@@ -687,6 +690,59 @@ class AccountV2Test extends TestCase
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID);
 
         $testData['request']['url'] = '/v2/accounts/acc_' . Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID;
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateAccountV2ForMandatoryFilledByCapitalPartner()
+    {
+        $this->fixtures->merchant->addFeatures(['loc_subm_onboarding_api']);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->setUpPartnerWithKycHandled(MerchantConstants::RESELLER);
+
+        $response = $this->startTest();
+
+        $accountId = $response['id'];
+
+        $this->validateSubMerchantTagging($accountId, '10000000000000');
+
+        $this->validateSupportingEntitiesCreation($accountId);
+    }
+
+    public function testCreateAccountV2ByCapitalPartnerButFeatureDisabled()
+    {
+        $this->setUpPartnerWithKycHandled(MerchantConstants::RESELLER);
+
+        $testData = $this->testData['testCreateAccountV2ByCapitalPartnerFailed'];
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateAccountV2ByCapitalPartnerButCapitalExpDisabled()
+    {
+        $this->fixtures->merchant->addFeatures(['loc_subm_onboarding_api']);
+
+        $this->setUpPartnerWithKycHandled(MerchantConstants::RESELLER);
+
+        $testData = $this->testData['testCreateAccountV2ByCapitalPartnerFailed'];
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchAccountV2ByCapitalPartner()
+    {
+        $this->fixtures->merchant->addFeatures(['loc_subm_onboarding_api']);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->setUpPartnerWithKycHandled(MerchantConstants::RESELLER);
+
+        $testData = $this->testData['testCreateAccountV2ByCapitalPartnerFailed'];
+
+        $testData['request']['method'] = 'GET';
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
 
         $this->startTest($testData);
     }

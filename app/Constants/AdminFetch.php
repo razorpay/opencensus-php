@@ -4272,6 +4272,7 @@ class AdminFetch
                         Product\Name::PAYMENT_GATEWAY,
                         Product\Name::PAYMENT_LINKS,
                         Product\Name::ROUTE,
+                        Product\Name::LINE_OF_CREDIT,
                     ]
                 ]
             ],

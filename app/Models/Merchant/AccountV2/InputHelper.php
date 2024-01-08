@@ -39,6 +39,16 @@ class InputHelper
             $data[Constants::ACCOUNT] = true;
         }
 
+        if (isset($input[Entity::PRODUCT]) === true)
+        {
+            $data[Entity::PRODUCT] = $input[Entity::PRODUCT];
+        }
+
+        if (isset($input[Constants::ACTUAL_PRODUCT]) === true)
+        {
+            $data[Constants::ACTUAL_PRODUCT] = $input[Constants::ACTUAL_PRODUCT];
+        }
+
         return $data;
     }
 

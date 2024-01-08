@@ -261,6 +261,18 @@ class Core extends Merchant\Core
                         (new Merchant\AccessMap\Core())->validateMerchantMappedToApplication($accountId, $this->app['basicauth']->getOAuthApplicationId());
                     }
                 }
+                else if ($this->isPartnerAllowedToOnboardLOCMerchantViaOnboardingAPIs($partner)
+                    && $this->isOnboardingV2ApiRouteEnabledForLOCOnboarding() === true)
+                {
+                    if($this->app['request.ctx']->getRoute() !== 'account_create_v2')
+                    {
+                        Entity::verifyIdAndSilentlyStripSign($accountId);
+
+                        $referredApp = (new Merchant\Core())->fetchPartnerApplication($partner);
+
+                        (new Merchant\AccessMap\Core())->validateIsCapitalLocSubmerchant($accountId, $partner->getId(), $referredApp->getId());
+                    }
+                }
                 else
                 {
                     $partner->getValidator()->validateIsAggregatorPartner($partner);
@@ -293,6 +305,44 @@ class Core extends Merchant\Core
         $route = $this->app['request.ctx']->getRoute() ?? null;
 
         if (in_array($route, Constants::V2_ONBOARDING_APIS_LIST))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * This function checks if a partner can onboard merchants to LOC via Onboarding APIs. It must satisfy 3 conditions:
+     * 1. Partner must be a reseller.
+     * 2. Partner must have 'loc_invite_onboarding_api' feature flag enabled.
+     * 3. Partner must have the Capital LOC invite experiment enabled.
+     *
+     * @param Entity $partner
+     * @return bool
+     */
+    public function isPartnerAllowedToOnboardLOCMerchantViaOnboardingAPIs(Merchant\Entity $partner): bool
+    {
+        if($partner->isResellerPartner() === true
+            && $partner->isLOCSubmerchantOnboardingApiFeatureEnabled() === true
+            && $this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId()) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * This function returns true if the Onboarding API route in request has the LOC onboarding enabled
+     *
+     * @return bool
+     */
+    public function isOnboardingV2ApiRouteEnabledForLOCOnboarding(): bool
+    {
+        $route = $this->app['request.ctx']->getRoute() ?? null;
+
+        if(in_array($route, Constants::LOC_SUBM_ONBOARDING_APIS_LIST))
         {
             return true;
         }

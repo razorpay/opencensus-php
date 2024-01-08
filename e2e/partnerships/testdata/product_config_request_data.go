@@ -28,6 +28,12 @@ var CreateProductConfigTestCases = map[string]CreateProductConfigTestCase{
 			Ip:          "223.233.71.29",
 		},
 	},
+	"Request_LOC_Product": {
+		Description: "Create Product config request with accept product tnc",
+		Req: dtos.ProductConfigCreateRequest{
+			ProductName: "line_of_credit",
+		},
+	},
 }
 
 var UpdateProductConfigTestCases = map[string]ProductConfigTestCase{

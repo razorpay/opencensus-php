@@ -140,6 +140,8 @@ class Constants
     const STANDARD            = 'standard';
     const MERCHANT_IDS        = 'merchant_ids';
 
+    const ACTUAL_PRODUCT      = 'actual_product';
+
     const CUSTOMER_FACING_BUSINESS_NAME = 'customer_facing_business_name';
 
 
@@ -213,5 +215,12 @@ class Constants
         'onboarding_webhook_fetch_all',
         'onboarding_webhook_update',
         'onboarding_webhook_delete'
+    ];
+
+    const LOC_SUBM_ONBOARDING_APIS_LIST = [
+        'account_create_v2',
+        'account_fetch_v2',
+        'product_config_create_v2',
+        'product_config_fetch_v2',
     ];
 }

@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Account\Constants;
+use RZP\Constants\Product as ProductConstants;
 use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -45,6 +46,22 @@ class Validator extends Merchant\Validator
         Constants::APPS                            => 'sometimes|array',
         Constants::BRAND                           => 'sometimes|array',
         Constants::TOS_ACCEPTANCE                  => 'sometimes|array',
+        Constants::NOTES                           => 'sometimes|notes',
+    ];
+
+    protected static $createCapitalAccountRules = [
+        Constants::REFERENCE_ID                    => 'sometimes',
+        Constants::EMAIL                           => 'required|email',
+        Constants::PHONE                           => 'required|regex:/^\+?[1-9]{1}[0-9]{7,14}$/u',
+        Constants::CONTACT_NAME                    =>  array ('required','max:255','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
+        Constants::LEGAL_BUSINESS_NAME             => 'required|string',
+        Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'filled|string',
+        Constants::BUSINESS_TYPE                   => 'sometimes|string',
+        Constants::PROFILE                         => 'sometimes|array',
+        Constants::LEGAL_INFO                      => 'sometimes|array',
+        Constants::CONTACT_INFO                    => 'sometimes|array',
+        Constants::APPS                            => 'sometimes|array',
+        Constants::BRAND                           => 'sometimes|array',
         Constants::NOTES                           => 'sometimes|notes',
     ];
 
@@ -159,6 +176,20 @@ class Validator extends Merchant\Validator
     protected static $editAddressTypeValidators = [
         'edit_address_check'
     ];
+
+    public function validateCreateAccount(array $input, string $product)
+    {
+        switch ($product)
+        {
+            case ProductConstants::PRIMARY:
+                $this->validateInput('create_account', $input);
+                break;
+
+            case ProductConstants::CAPITAL:
+                $this->validateInput('create_capital_account', $input);
+                break;
+        }
+    }
 
     protected function validateAddressCheck(array $input)
     {

@@ -1181,7 +1181,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->isFeatureEnabled(Feature\Constants::ADDRESS_REQUIRED) === true);
     }
-    
+
     public function isAddressRequiredEnabledInternationalMerchant(): bool
     {
         return ($this->isInternational() && $this->isAddressRequiredEnabled());
@@ -4054,6 +4054,11 @@ class Entity extends Base\PublicEntity
     public function isRestrictPIIDataEnabled(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::RESTRICT_PII_DATA);
+    }
+
+    public function isLOCSubmerchantOnboardingApiFeatureEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::LOC_SUBM_ONBOARDING_API);
     }
 
     public function isFieldHasValue($field): bool

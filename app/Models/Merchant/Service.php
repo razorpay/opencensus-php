@@ -400,6 +400,11 @@ class Service extends Base\Service
 
         if ($isCapitalSubmerchant === true)
         {
+            if (empty($input[Entity::EMAIL]) === false)
+            {
+                $input[Entity::EMAIL] = mb_strtolower($input[Entity::EMAIL]);
+            }
+
             $subMerchantsCount = $this->repo->merchant->fetchByEmailAndOrgId($input[Entity::EMAIL])->count();
 
             // If email provided in input has an existing account linked, we will not consume input provided by partner to update merchant details
@@ -626,14 +631,9 @@ class Service extends Base\Service
 
             $merchantAlreadyExist = false;
 
-            $properties = [
-                'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.capital_invite_existing_merchant_via_batch_experiment_id'),
-            ];
+            $allowInviteExistingCapitalMerchant = $this->isInviteExistingMerchantForLocEnabled();
 
-            $isExpEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
-
-            if(empty($input['actual_product']) == false && $input['actual_product'] === Product::CAPITAL && $isExpEnabled === true)
+            if(empty($input['actual_product']) == false && $input['actual_product'] === Product::CAPITAL && $allowInviteExistingCapitalMerchant === true)
             {
                 $subMerchantsCount = $this->repo->merchant->fetchByEmailAndOrgId($input[Entity::EMAIL])->count();
 
@@ -749,6 +749,21 @@ class Service extends Base\Service
             }
             throw $e;
         }
+    }
+
+    /*
+     * For capital LOC invite, we are allowing existing merchants to be invited for LOC via batch flow only.
+     * Onboarding APIs as well uses same function to create an account, but we will not allow linking of
+     * existing merchant using account_create_v2 route.
+     * */
+    public function isInviteExistingMerchantForLocEnabled()
+    {
+        if($this->app['request.ctx']->getRoute() === 'account_create_v2')
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function invalidateAffectedOwnersCache(string $merchantId)

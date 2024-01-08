@@ -189,7 +189,7 @@ class Core extends Base\Core
     /**
      * @return CapitalSubmerchantUtility
      */
-    protected function capitalSubmerchantUtility(): CapitalSubmerchantUtility
+    public function capitalSubmerchantUtility(): CapitalSubmerchantUtility
     {
         if(empty($this->capitalSubmerchantUtility) === true)
         {
