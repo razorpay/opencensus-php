@@ -1566,7 +1566,7 @@ class Constants
 
     const AFF_WIDGET_CHECKOUT_ENABLED =  'aff_widget_checkout_enbld';
 
-    const AFF_WIDGET_V3_DESIGN_ENABLED =  'aff_wgt_v3_design_enbld';
+    const AFF_WIDGET_V3_DESIGN_DISABLED =  'aff_wgt_v3_design_disbld';
 
     const AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED = 'aff_wgt_discnt_whp_enbld';
 
@@ -2687,7 +2687,7 @@ class Constants
         DcsConstants::EligibilityEnabled                   => true,
         DcsConstants::EligibilityCheckDecline              => true,
         self::AFF_WIDGET_DISCOUNT_WHISPERER_ENABLED        => true,
-        self::AFF_WIDGET_V3_DESIGN_ENABLED                 => true,
+        self::AFF_WIDGET_V3_DESIGN_DISABLED                => true,
         self::AFF_WIDGET_CHECKOUT_ENABLED                  => true,
         DcsConstants::EmailOptionalOnCheckout              => true,
         DcsConstants::ShowEmailOnCheckout                  => true,
@@ -3877,9 +3877,9 @@ class Constants
             'display_name'  => 'Feature to enable direct fee on merchant for liquiloan payments',
             'documentation' => '',
         ],
-        self::AFF_WIDGET_V3_DESIGN_ENABLED => [
-            'feature'       => self::AFF_WIDGET_V3_DESIGN_ENABLED,
-            'display_name'  => 'Feature flag enables the V3 design of Affordability widget',
+        self::AFF_WIDGET_V3_DESIGN_DISABLED => [
+            'feature'       => self::AFF_WIDGET_V3_DESIGN_DISABLED,
+            'display_name'  => 'Feature flag disables the V3 design of Affordability widget',
             'documentation' => '',
         ],
         self::AFF_WIDGET_CHECKOUT_ENABLED => [
