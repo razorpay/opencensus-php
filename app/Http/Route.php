@@ -16846,6 +16846,7 @@ class Route
             'internal_create_order_relations',
             'internal_order_relations_fetch',
             'payment_create_private_json_internal',
+            'payment_create_upi',
             'internal_create_order_bank_account',
             'recon_update_data',
             'internal_payment_pricing',
@@ -19734,6 +19735,7 @@ class Route
      */
     public static $internalAuthWithPassportRoutes = [
         'payment_create_private_json_internal',
+        'payment_create_upi',
     ];
 
 
