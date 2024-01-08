@@ -359,6 +359,9 @@ class Core extends Base\Core
             {
                 $action = 'transaction_upsert';
 
+                // send payment status in upsert request
+                $data['transaction']['payment_status'] = $payment->getStatus();
+
                 $this->app['upi.payments']->action($action, $data, $payment->getGateway());
             }
         }
