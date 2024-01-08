@@ -39,7 +39,7 @@ class Channel
     const RHB = 'rhb';
 
     // This channel is for in person transactions
-    const HDFC_POS = 'HDFC_POS';
+    const HDFC_POS = 'hdfc_pos';
 
     public static $gateways = [
         self::KOTAK => [
