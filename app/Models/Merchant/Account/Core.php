@@ -16,6 +16,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AccountV2\Type;
 use RZP\Jobs\Transfers\AutoLinkedAccountCreation;
 use RZP\Models\Merchant\LinkedAccountReferenceData;
+use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Validator as MerchantValidator;
 
@@ -228,8 +229,13 @@ class Core extends Merchant\Core
         return $account;
     }
 
-    public function validatePartnerAccess(Merchant\Entity $partner, $accountId = null, $accountType = Type::STANDARD)
+    public function validatePartnerAccess(Merchant\Entity $partner, $accountId = null, $accountType = Type::STANDARD, $checkApiAccess = true)
     {
+        if ($checkApiAccess)
+        {
+            (new PartnerValidator())->validateOnboardingApisAccess($partner->getId());
+        }
+
         $isRouteAccount = $this->checkIfRouteAccount($accountId, $accountType);
 
         // As part of making Partnership APIs available for Route product, for linked accounts don't want to check
@@ -286,7 +292,7 @@ class Core extends Merchant\Core
     {
         $route = $this->app['request.ctx']->getRoute() ?? null;
 
-        if(in_array($route, Constants::V2_ONBOARDING_APIS_LIST))
+        if (in_array($route, Constants::V2_ONBOARDING_APIS_LIST))
         {
             return true;
         }

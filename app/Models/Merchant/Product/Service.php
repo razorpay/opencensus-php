@@ -3,24 +3,25 @@
 namespace RZP\Models\Merchant\Product;
 
 use App;
-use RZP\Constants\HyperTrace;
+
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product\Config;
-use RZP\Models\Merchant\Product\TncMap\Acceptance\Service as Tnc;
+use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\Product\Util\ProductRequestHandler;
 use RZP\Models\Merchant\Product\Util\ProductResponseHandler;
-use RZP\Trace\Tracer;
+use RZP\Models\Merchant\Product\TncMap\Acceptance\Service as Tnc;
 
 class Service extends Base\Service
 {
-
     public function getConfig(string $merchantId, string $merchantProductConfigId)
     {
         $timeStarted = millitime();
@@ -30,6 +31,8 @@ class Service extends Base\Service
         Entity::verifyIdAndStripSign($merchantProductConfigId);
 
         $merchantProduct = $this->validateAndGetMerchantProduct($merchant->getId(), $merchantProductConfigId);
+
+        (new PartnerValidator())->validateOnboardingApisAccess($partner->getId() ?? $merchant->getId(), $merchantProduct->getProduct());
 
         $response = Tracer::inspan(['name' => HyperTrace::GET_PRODUCT_CONFIG_CORE], function () use ($merchant, $merchantProduct) {
 
@@ -55,6 +58,8 @@ class Service extends Base\Service
         $merchantProduct = $this->validateAndGetMerchantProduct($merchant->getId(), $merchantProductConfigId);
 
         $productName = $merchantProduct->getProduct();
+
+        (new PartnerValidator())->validateOnboardingApisAccess($partner->getId() ?? $merchant->getId(), $productName);
 
         $isPaymentMethodConfigUpdateExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
             $partner->getId(),
@@ -90,6 +95,8 @@ class Service extends Base\Service
         $merchantProductInput = $this->getMerchantProductInput($payload);
 
         $productName = $merchantProductInput[Entity::PRODUCT_NAME];
+
+        (new PartnerValidator())->validateOnboardingApisAccess($partner->getId() ?? $merchant->getId(), $productName);
 
         $payload = Tracer::inspan(['name' => HyperTrace::ACCEPT_PRODUCT_TNC], function () use ($payload, $productName, $merchant) {
 
@@ -234,15 +241,16 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $partner = null;
+
         // This means auth can be private auth of partner or partner auth of partner without X-Account-Id
         if($this->merchant->getId() !== $merchantId)
         {
             $partner = $this->merchant;
 
-            (new Account\Core)->validatePartnerAccess($this->merchant, $merchantId);
+            // don't check API access here as product info is not available
+            (new Account\Core)->validatePartnerAccess($this->merchant, $merchantId, Merchant\AccountV2\Type::STANDARD, false);
 
             $this->app['basicauth']->setPartnerMerchantId($this->merchant->getId());
-
         }
 
         $this->app['basicauth']->setMerchant($merchant);

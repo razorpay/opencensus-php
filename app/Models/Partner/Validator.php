@@ -2,14 +2,16 @@
 
 namespace RZP\Models\Partner;
 
-use RZP\Base;
+use App;
 
+use RZP\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
@@ -173,6 +175,28 @@ class Validator extends Base\Validator
                 $partner->getId(),
                 [MerchantApplicationsEntity::APPLICATION_ID => $oauthApplicationId]
             );
+        }
+    }
+
+    public function validateOnboardingApisAccess(?string $partnerId, ?string $product = null)
+    {
+        if (empty($partnerId) === true or
+            (new Merchant\Account\Core())->isOnboardingV2ApiRoute() === false or
+            (empty($product) === false and $product !== Merchant\Product\Name::PAYMENT_GATEWAY))
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $app['config']->get('app.enable_onboarding_apis_access_exp_id')
+        ];
+
+        if ((new MerchantCore())->isSplitzExperimentEnable($properties, 'enable') !== true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED, null, ['partner_id' => $partnerId]);
         }
     }
 }

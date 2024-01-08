@@ -2940,4 +2940,66 @@ return [
             ],
         ]
     ],
+
+    'testCreatePaymentGatewayConfigWithAccessDenied' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'product_name' => 'payment_gateway'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testUpdatePaymentGatewayConfigWithAccessDenied' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'notifications'   => [
+                    'sms' => true,
+                    'whatsapp' => true
+                ],
+                'settlements'     => [
+                    'account_number' => '051610100039258',
+                    'ifsc_code'      => 'UBIN0805165'
+                ],
+                'checkout'        => [
+                    'flash_checkout' => false,
+                    'logo'           => __DIR__ . '/sample_valid_logo.jpg'
+                ],
+                'payment_methods' => [
+                    'wallet' => [
+                        'instrument' => ['airtelmoney']
+                    ]
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
 ];

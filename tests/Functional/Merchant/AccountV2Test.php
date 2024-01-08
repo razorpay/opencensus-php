@@ -1457,7 +1457,7 @@ class AccountV2Test extends TestCase
         $response = $this->startTest();
 
         $merchantId = $response['id'];
-        
+
         try
         {
             Account\Entity::verifyIdAndStripSign($merchantId);
@@ -1675,5 +1675,33 @@ class AccountV2Test extends TestCase
         $this->app->instance('razorx', $razorxMock);
         $this->app->razorx->method('getTreatment')
                           ->willReturn($returnValue);
+    }
+
+    public function testCreateAccountWithAccessBlocked()
+    {
+        $this->setUpNonPurePlatformPartner();
+
+        $this->blockOnboardingApisAccess();
+
+        $this->startTest();
+    }
+
+    public function testUpdateAccountWithAccessBlocked()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $this->allowOnboardingApisAccess();
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->blockOnboardingApisAccess();
+
+        $this->startTest();
     }
 }

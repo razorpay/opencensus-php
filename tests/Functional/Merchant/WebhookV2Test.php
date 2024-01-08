@@ -36,8 +36,6 @@ class WebhookV2Test extends TestCase
 
         parent::setUp();
 
-
-
         $this->ba->proxyAuth();
 
         $this->fixtures->merchant->addFeatures(['payout']);
@@ -694,7 +692,7 @@ class WebhookV2Test extends TestCase
         ];
     }
 
-    public function testCreateOnboardingWebhookForPureplatform()
+    public function testCreateOnboardingWebhookForPurePlatform()
     {
         $this->setPurePlatformContext();
 
@@ -846,6 +844,55 @@ class WebhookV2Test extends TestCase
         $events = array_intersect($response, $accountStatusEvents);
 
         self::assertCount(6, $events);
+    }
+
+    public function testCreateOnboardingWebhookWithAccessDenied()
+    {
+        $this->setPurePlatformContext();
+
+        $testData = $this->testData['testCreateOnboardingWebhookForPurePlatform'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/webhooks';
+
+        $this->expectStorkServiceRequestForAction('createWebhookForOnboardingForPurePlatform');
+
+        $this->blockOnboardingApisAccess('1000000000plat');
+
+        // creating a sub-merchant webhook
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateOnboardingWebhookWithAccessDenied()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $key = 'rzp_live_' . $key->getKey();
+
+        $this->ba->privateAuth($key);
+
+        $testData = $this->testData['testCreateOnboardingWebhook'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/webhooks';
+
+        $this->expectStorkServiceRequestForAction('createWebhookForOnboarding');
+
+        // creating a sub-merchant webhook
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
+
+        $this->expectStorkServiceRequestForAction('updateWebhookForOnboarding');
+
+        $this->blockOnboardingApisAccess($partner->getId());
+
+        // updating a sub-merchant webhook
+        $this->runRequestResponseFlow($testData);
     }
 
     private function setPurePlatformContext(): void

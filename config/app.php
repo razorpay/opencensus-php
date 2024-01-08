@@ -804,4 +804,5 @@ return array(
 
     'invite_merchant_with_2FA_experiment_id' => env('INVITE_MERCHANT_WITH_2FA_EXP_ID'),
 
+    'enable_onboarding_apis_access_exp_id' => env('ENABLE_ONBOARDING_APIS_ACCESS_EXP_ID')
 );

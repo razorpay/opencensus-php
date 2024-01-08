@@ -293,4 +293,47 @@ return [
             'content' => []
         ],
     ],
+
+    'testUploadAccDocsWithAccessDenied' => [
+        'request'  => [
+            'url'    => '/v2/accounts/{accountId}/documents',
+            'method' => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testUploadStakeholderDocsWithAccessDenied' => [
+        'request'   => [
+            'url'     => '/v2/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'document_type'   => 'aadhar_front',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ]
 ];

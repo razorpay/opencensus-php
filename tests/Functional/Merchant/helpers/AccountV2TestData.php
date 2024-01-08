@@ -2424,5 +2424,59 @@ return [
                 ],
             ],
         ],
-    ]
+    ],
+
+    'testCreateAccountWithAccessBlocked' => [
+        'request' => [
+            'url'    => '/v2/accounts',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => ErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testUpdateAccountWithAccessBlocked' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'profile' => [
+                    'addresses'      => [
+                        'registered' => [
+                            'street1'     => '507, Malad 1st block',
+                            'street2'     => 'SV Road',
+                            'city'        => 'Mumbai',
+                            'state'       => 'Maharashtra',
+                            'postal_code' => 400064,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => ErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
 ];

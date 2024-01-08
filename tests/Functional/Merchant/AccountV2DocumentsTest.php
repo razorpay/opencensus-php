@@ -426,6 +426,40 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $this->assertEquals($testData['request']['content']['document_type'], $insertedDocument['document_type']);
     }
 
+    public function testUploadAccDocsWithAccessDenied()
+    {
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $testData    = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/documents';
+
+        $this->blockOnboardingApisAccess($partner->getId());
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUploadStakeholderDocsWithAccessDenied()
+    {
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $testData    = $this->testData[__FUNCTION__];
+
+        $stakeholder = $this->fixtures->create('stakeholder', [
+            'merchant_id' => $subMerchant->getId()
+        ]);
+
+        $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/stakeholders/sth_' . $stakeholder->getId() . '/documents';
+
+        $this->blockOnboardingApisAccess($partner->getId());
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function setupPrivateAuthForPartner()
     {
         list($partner, $app) = $this->createPartnerAndApplication();

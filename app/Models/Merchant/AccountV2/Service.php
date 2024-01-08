@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
-use RZP\Constants\HyperTrace;
+use RZP\Trace\Tracer;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Account\Action;
 use RZP\Models\Merchant\Account\Entity;
-use RZP\Trace\TraceCode;
-use RZP\Trace\Tracer;
 
 class Service extends Merchant\Service
 {

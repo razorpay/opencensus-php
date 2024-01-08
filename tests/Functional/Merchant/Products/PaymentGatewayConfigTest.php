@@ -1557,7 +1557,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($expected, $merchantProductRequest->toArrayPublic());
     }
 
-    protected function setupPrivateAuthForPartner()
+    protected function setupPrivateAuthForPartner(): string
     {
         list($partner, $app) = $this->createPartnerAndApplication();
         $this->fixtures->merchant->activate($partner->getId());
@@ -2410,6 +2410,62 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCreatePaymentGatewayConfigWithAccessDenied()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->allowOnboardingApisAccess("DefaultPartner");
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->blockOnboardingApisAccess("DefaultPartner");
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdatePaymentGatewayConfigWithAccessDenied()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfigWithAccessDenied'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->blockOnboardingApisAccess();
 
         $this->runRequestResponseFlow($testData);
     }

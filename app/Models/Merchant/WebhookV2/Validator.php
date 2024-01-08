@@ -10,6 +10,7 @@ use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\MerchantApplications;
+use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 
 use Razorpay\OAuth\Application\Repository as OauthAppRepository;
@@ -210,6 +211,8 @@ class Validator extends \RZP\Base\Validator
      */
     public function validateOnboardingWkAction(string &$accountId, Merchant\Entity $partner)
     {
+        (new PartnerValidator())->validateOnboardingApisAccess($partner->getId());
+
         $accountId = AccountEntity::verifyIdAndStripSign($accountId);
 
         $subMerchant = (new Merchant\Repository())->findOrFailPublic($accountId);

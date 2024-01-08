@@ -38,6 +38,7 @@ trait PartnerTrait
                 ]
             ]
         ];
+
         $this->mockSplitzTreatment($input, $output);
     }
 
@@ -55,6 +56,7 @@ trait PartnerTrait
                 ]
             ]
         ];
+
         $this->mockSplitzTreatment($input, $output);
     }
 
@@ -897,6 +899,50 @@ trait PartnerTrait
         $this->fixtures->create('merchant_access_map', $accessMapData);
 
         return $partnerId;
+    }
+
+    public function allowOnboardingApisAccess(string $merchantId = "10000000000000"): void
+    {
+        $input = [
+            "experiment_id" => "NI6yG7xTin7jgY", // exp to block onboarding apis access
+            "id"            => $merchantId
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => "enable"
+                ]
+            ]
+        ];
+
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->once()
+             ->with($input)
+             ->andReturn($output);
+    }
+
+    public function blockOnboardingApisAccess(string $merchantId = "10000000000000"): void
+    {
+        $input = [
+            "experiment_id" => "NI6yG7xTin7jgY", // exp to block onboarding apis access
+            "id" => $merchantId
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => "disable"
+                ]
+            ]
+        ];
+
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->once()
+             ->with($input)
+             ->andReturn($output);
     }
 
     protected function allowAdminToAccessMerchant(string $merchantId)

@@ -237,6 +237,50 @@ class StakeholderTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testCreateStakeholderWithAccessDenied()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $liveKey = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $liveKey = 'rzp_live_' . $liveKey->getKey();
+
+        $this->ba->privateAuth($liveKey);
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
+
+        $this->blockOnboardingApisAccess($partner->id);
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateStakeholderWithAccessDenied()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $subMerchantDetails = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'business_type' => 2,
+            'business_category' => 'financial_services',
+            'business_subcategory' => 'mutual_fund',
+        ];
+
+        $this->fixtures->merchant_detail->createMerchantDetail($subMerchantDetails);
+
+        $testData = $this->testData['testCreateStakeholderForCompletelyFilledRequest'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/stakeholders';
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/stakeholders/'. $response['id'];
+        $this->blockOnboardingApisAccess('1000000000plat');
+        $this->runRequestResponseFlow($testData);
+    }
+
     private function getStakeholderMetricData($partner): array
     {
         return [

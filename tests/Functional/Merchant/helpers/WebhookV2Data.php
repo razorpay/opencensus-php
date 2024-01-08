@@ -1705,5 +1705,47 @@ return [
             ]
         ]
     ],
+
+    'testCreateOnboardingWebhookWithAccessDenied' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks',
+            'method' => 'POST',
+            'content' => $sampleApiWebhookRequestForOnboardingPurePlatform,
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testUpdateOnboardingWebhookWithAccessDenied' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks/{wk_id}',
+            'method'  => 'PATCH',
+            'content' => array_merge($sampleApiWebhookRequestForOnboarding, ['alert_email' => 'newalertemail@gmail.com', 'secret' => 'yyyyy'])
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
 ];
 
