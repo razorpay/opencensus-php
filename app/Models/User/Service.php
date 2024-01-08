@@ -8,6 +8,7 @@ use Cache;
 use Config;
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs\LinkSubMerchant;
 use RZP\Jobs\NotifyRas;
 use RZP\Models\Base\PublicEntity;
@@ -1433,6 +1434,29 @@ class Service extends Base\Service
      */
     public function editSelf(array $input): array
     {
+        /* @var BasicAuth $ba */
+        $ba = $this->app['basicauth'];
+        $routeName = $this->app['request.ctx']->getRoute() ?? null;
+        $user = $ba->getUser();
+
+        // if it's a RX dashboard user, and mobile is either not set or not verified, then verify otp via email
+        // before updating mobile number (hotfix)
+        if ($ba->getProduct() === Product::BANKING
+            && $ba->isProxyAuth()
+            && isset($input[Entity::CONTACT_MOBILE])
+            && (empty($user->getContactMobile()) === true or $user->isContactMobileVerified() === false))
+        {
+            (new Validator())->setStrictFalse()->validateInput(Validator::UPDATE_UNVERIFIED_MOBILE_NUMBER_OTP, $input);
+            $userCore = new Core;
+
+            $userCore->verifyOtp($input + ['action' => $input['action'], 'medium' => 'email'],
+                                 $ba->getMerchant(),
+                                 $user,
+                                 $this->mode === Mode::TEST);
+
+            $input = array_except($input, ['otp', 'token', 'action']);
+        }
+
         $this->core()->edit($this->user, $input);
 
         return $this->user->toArrayPublic();

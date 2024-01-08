@@ -4642,6 +4642,21 @@ class Core extends Base\Core
             return [];
         }
 
+        if ($input[Entity::ACTION] === 'second_factor_auth'
+            && $user->isContactMobileVerified() === false
+            && $this->app['basicauth']->getProduct() === Product::BANKING)
+        {
+            $this->trace->info(
+                TraceCode::SKIPPING_SENDING_OTP_VIA_SMS_FOR_UNVERIFIED_MOBILE_NUMBER_RX,
+                [
+                    'user_id' => $user->getId(),
+                    'action'  => $input[Entity::ACTION],
+                ]
+            );
+
+            return [];
+        }
+
         // Optimization: Do just one call to raven when input.medium = sms.
         $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
 

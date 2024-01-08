@@ -39,6 +39,7 @@ class Validator extends Base\Validator
     const DISABLE_CAPTCHA_SECRET                 = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
     const CAPTCHA_MODE_HEADER                    = 'X-RECAPTCHA-MODE';
     const MAX_ALLOWED_CAPTCHA_REQUEST_ATTEMPTS   =  3;
+    const UPDATE_UNVERIFIED_MOBILE_NUMBER_OTP   =  'updateUnverifiedMobileNumberOtp';
 
     const CREATE_COMMON_RULES = [
         Entity::ID                              => 'sometimes|max:14',
@@ -388,6 +389,12 @@ class Validator extends Base\Validator
 
     protected static $createMobileUniqueRules = [
         Entity::CONTACT_MOBILE => 'required|max:15|contact_syntax|unique:users,contact_mobile',
+    ];
+
+    protected static $updateUnverifiedMobileNumberOtpRules = [
+        'otp'    => 'required|filled|min:4',
+        'token'  => 'required|unsigned_id',
+        'action' => 'required|string',
     ];
 
     protected static $createOtpRules = [
