@@ -2642,6 +2642,45 @@ class Core extends Base\Core
             }
         }
 
+        // This is to save merchant_categories_v3_eligibility on PGOS and save Business parent category as null
+        if (isset($input["m2_migrated_merchant"]) === true and $input["m2_migrated_merchant"] === true)
+        {
+            try
+            {
+                $input['merchant_id'] = $merchant->getMerchantId();
+
+                $pgosResponse =  $this->pgosProxyController->handlePGOSProxyRequests('merchant_categories_v3_eligibility_save', $input, $this->merchant, true);
+
+                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                    'response' => $pgosResponse
+                ]);
+
+                if(isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                }
+
+                $businessDetailsInput = [BusinessDetail\Entity::BUSINESS_PARENT_CATEGORY => null];
+
+                (new BusinessDetail\Service())->saveBusinessDetailsForMerchant($merchant->getMerchantId(), $businessDetailsInput);
+
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id'   => $merchant->getMerchantId(),
+                    'error_message' => $exception->getMessage()
+                ]);
+
+                throw new Exception\ServerErrorException(ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, ErrorCode::SERVER_ERROR_PGOS_PROCESSNG_FAILED, [
+                    'error description' => 'submitted data could not be processed'
+                ]);
+            }
+        }
+
+        unset($input['merchant_id']);
+        unset($input['m2_migrated_merchant']);
+
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
         $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
