@@ -2178,6 +2178,7 @@ EOT;
         $data = $query
                      ->where(Payment\Entity::ON_HOLD, true)
                      ->where(Payment\Entity::ON_HOLD_UNTIL, '<', $timestamp)
+                     ->where(Payment\Entity::TRANSACTION_ID, '!=', null)
                      ->with('transfer')
                      ->limit(500)
                      ->get();

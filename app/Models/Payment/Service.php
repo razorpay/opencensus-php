@@ -3966,7 +3966,7 @@ class Service extends Base\Service
                     (new Transaction\Core)->dispatchForSettlementBucketing($txn);
                 }
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $cronSummary['failed_ids'][] = $payment->getId();
 
