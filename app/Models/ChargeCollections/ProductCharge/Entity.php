@@ -1,12 +1,13 @@
 <?php
 
-namespace RZP\Models\ChargeCollections\PricingCharge;
+namespace RZP\Models\ChargeCollections\ProductCharge;
 
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    protected $entity = 'pricing_charge';
+    protected static $sign = 'chrg';
+    protected $entity = 'product_charge';
 
     const ID                     = 'id';
     const MERCHANT_ID            = 'merchant_id';

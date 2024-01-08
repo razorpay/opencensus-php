@@ -29,7 +29,7 @@ class Type
     const INTEREST_WAIVER         = 'interest_waiver';
     const CREDIT_TRANSFER         = 'credit_transfer';
     const BUNDLE_FEE              = 'bundle_fee';
-    const PRICING_CHARGE          = 'pricing_charge';
+    const PRODUCT_CHARGE          = 'product_charge';
 
     //
     // These entities from transaction will not be considered for merchant invoice as we wont charge on these entities
@@ -50,7 +50,7 @@ class Type
         self::BANK_TRANSFER,
         self::FUND_ACCOUNT_VALIDATION,
         self::CREDIT_TRANSFER,
-        self::PRICING_CHARGE
+        self::PRODUCT_CHARGE
     ];
 
     const BANKING_TYPE = [

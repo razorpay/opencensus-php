@@ -5,11 +5,8 @@ namespace RZP\Models\ChargeCollections;
 use RZP\Trace\TraceCode;
 
 use RZP\Models\Base;
-use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
-use RZP\Exception\BadRequestException;
-use RZP\Models\ChargeCollections\PricingCharge\Entity;
-use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\ChargeCollections\ProductCharge\Entity;
 
 class Service extends Base\Service
 {

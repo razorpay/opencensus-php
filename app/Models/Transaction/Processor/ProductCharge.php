@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 
-class PricingCharge extends Base
+class ProductCharge extends Base
 {
     protected function setTransactionForSource($txnId = null)
     {
