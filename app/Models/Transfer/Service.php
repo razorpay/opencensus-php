@@ -760,9 +760,7 @@ class Service extends Base\Service
 
                 $payment = $this->repo->payment->findOrFail($paymentId);
 
-                $transfer = new Transfer\PaymentTransfer($payment);
-
-                $transfer->process();
+                (new TransferProcess($this->mode, $payment->getId(), Constant::PAYMENT))->handle();
 
                 array_push($payments, $paymentId);
 
@@ -965,9 +963,7 @@ class Service extends Base\Service
             ]
         );
 
-        $transfer = new Transfer\OrderTransfer($payment);
-
-        $transfer->process();
+        (new TransferProcess($this->mode, $payment->getId(), Constant::ORDER))->handle();
     }
 
     protected function processOrderTransferAsync(Payment\Entity $payment)

@@ -294,8 +294,6 @@ abstract class AbstractTransfer
                     });
                 }
 
-                $transferPayment = $this->createTransferredEntity($transfer, $payment);
-
                 if ($processViaReverseShadow === true)
                 {
                     $payloadName = $this->getPayloadName($transfer->getPublicId(), LedgerConstants::TRANSFER);
@@ -304,12 +302,16 @@ abstract class AbstractTransfer
 
                     if (count($outboxEntries) === 0)
                     {
+                        $transferPayment = $this->createTransferredEntity($transfer, $payment);
+
                         $transfer = $core->createReverseShadowLedgerEntriesForOrderAndPaymentTransfer($transfer, $transferPayment);
                     }
                 }
 
                 if ($processViaReverseShadow === false)
                 {
+                    $transferPayment = $this->createTransferredEntity($transfer, $payment);
+
                     $transfer->setProcessed();
 
                     $transfer->setErrorCode(null);
