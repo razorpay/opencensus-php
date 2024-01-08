@@ -144,7 +144,7 @@ class Webhooks extends Base\Core
         if (empty($txn) === true)
         {
             $this->trace->count(
-                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                Metric::SHOPIFY_1CC_WEBHOOK_CANCELLATION_COUNT,
                 [
                     'status' => 'not_applicable',
                     'reason' => 'cod_transaction',
@@ -152,13 +152,14 @@ class Webhooks extends Base\Core
             return;
         }
 
+
         $keys = explode('|', $txn['authorization']);
 
         // Structure for all 1cc Razorpay payments
         if (count($keys) !== 2)
         {
             $this->trace->count(
-                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                Metric::SHOPIFY_1CC_WEBHOOK_CANCELLATION_COUNT,
                 [
                     'status' => 'not_applicable',
                     'reason' => 'non_rzp_order',
