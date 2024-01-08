@@ -2238,6 +2238,28 @@ class Repository extends Base\Repository
                      ->get();
     }
 
+    public function getScheduledPayoutsToBeProcessedForMerchants($merchantIdList, $status = Status::SCHEDULED, $limit = self::SCHEDULED_PAYOUTS_FETCH_LIMIT)
+    {
+        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $payoutsIdColumn               = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutAmountColumn            = $this->repo->payout->dbColumn(Entity::AMOUNT);
+        $payoutStatusColumn            = $this->repo->payout->dbColumn(Entity::STATUS);
+        $payoutsBalanceIdColumn        = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutsScheduledAtColumn      = $this->repo->payout->dbColumn(Entity::SCHEDULED_AT);
+        $payoutsIsPayoutServiceColumn  = $this->repo->payout->dbColumn(Entity::IS_PAYOUT_SERVICE);
+        $payoutsMerchantIdColumn       = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select($payoutsBalanceIdColumn, $payoutStatusColumn, $payoutsIdColumn, $payoutAmountColumn, $payoutsIsPayoutServiceColumn,$payoutsMerchantIdColumn)
+                      ->where($payoutsScheduledAtColumn, '<', $currentTimeStamp)
+                      ->where($payoutStatusColumn, '=', $status)
+                      ->whereIn($payoutsMerchantIdColumn, $merchantIdList);
+
+        return $query->limit($limit)
+                     ->get();
+    }
+
     public function fetchPayoutsPurposeToTrim($merchantIds,
                                               $from,
                                               $to,

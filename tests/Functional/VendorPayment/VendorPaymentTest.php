@@ -1189,7 +1189,7 @@ class VendorPaymentTest extends TestCase
 
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 
-        $vpMock->shouldReceive('gstrGenerateOtp')->andReturn([
+        $vpMock->shouldReceive('gstInputCreditGenerateOtp')->andReturn([
             'success' => true
         ]);
 
@@ -1197,7 +1197,7 @@ class VendorPaymentTest extends TestCase
 
         $this->startTest();
 
-        $vpMock->shouldHaveReceived('gstrGenerateOtp');
+        $vpMock->shouldHaveReceived('gstInputCreditGenerateOtp');
     }
 
     public function testGstInputCreditVerifyOtp()
@@ -1206,7 +1206,7 @@ class VendorPaymentTest extends TestCase
 
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 
-        $vpMock->shouldReceive('gstrVerifyOtp')->andReturn([
+        $vpMock->shouldReceive('gstInputCreditVerifyOtp')->andReturn([
             'success' => true
         ]);
 
@@ -1214,16 +1214,16 @@ class VendorPaymentTest extends TestCase
 
         $this->startTest();
 
-        $vpMock->shouldHaveReceived('gstrVerifyOtp');
+        $vpMock->shouldHaveReceived('gstInputCreditVerifyOtp');
     }
 
-    public function testGstInputCreditIntegrationStatus()
+    public function testGstInputCreditIntegrationSummary()
     {
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 
-        $vpMock->shouldReceive('gstrIntegrationStatus')->andReturn([
+        $vpMock->shouldReceive('gstInputCreditIntegrationSummary')->andReturn([
             [
                 'gstin' => 'SOMEGSTIN01',
                 'integration_expire_by' => 1694760623,
@@ -1240,7 +1240,7 @@ class VendorPaymentTest extends TestCase
 
         $this->startTest();
 
-        $vpMock->shouldHaveReceived('gstrIntegrationStatus');
+        $vpMock->shouldHaveReceived('gstInputCreditIntegrationSummary');
     }
 
     public function testGstInputCreditSync()
@@ -1249,7 +1249,7 @@ class VendorPaymentTest extends TestCase
 
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 
-        $vpMock->shouldReceive('gstrSync')->andReturn([
+        $vpMock->shouldReceive('gstInputCreditSync')->andReturn([
             'success' => true
         ]);
 
@@ -1257,7 +1257,7 @@ class VendorPaymentTest extends TestCase
 
         $this->startTest();
 
-        $vpMock->shouldHaveReceived('gstrSync');
+        $vpMock->shouldHaveReceived('gstInputCreditSync');
     }
 
     public function testGstInputCreditSyncCron()
@@ -1266,7 +1266,7 @@ class VendorPaymentTest extends TestCase
 
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 
-        $vpMock->shouldReceive('gstrSyncCron')->andReturn([
+        $vpMock->shouldReceive('gstInputCreditSyncCron')->andReturn([
             'success' => true
         ]);
 
@@ -1274,7 +1274,7 @@ class VendorPaymentTest extends TestCase
 
         $this->startTest();
 
-        $vpMock->shouldHaveReceived('gstrSyncCron');
+        $vpMock->shouldHaveReceived('gstInputCreditSyncCron');
     }
 
     public function testGstInputCreditDisableIntegration()

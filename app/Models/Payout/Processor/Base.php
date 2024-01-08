@@ -1738,7 +1738,7 @@ class Base extends BaseCore
                         }
                     }
 
-                    if ($payout->isStatusOnHold() === true)
+                    if ($payout->isStatusOnHold() === true or $payout->isStatusQueued() === true)
                     {
                         $this->repo->saveOrFail($payout);
 

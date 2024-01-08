@@ -518,6 +518,7 @@ class Validator extends Base\Validator
     protected static $processScheduledPayoutsRules = [
         Entity::BALANCE_IDS     => 'sometimes|array',
         Entity::BALANCE_IDS_NOT => 'sometimes|array',
+        Entity::DISPATCH_PAYOUTS_SCHEDULED_POST_APPROVAL => 'sometimes|boolean'
     ];
 
     protected static $payoutStatusManualRules = [

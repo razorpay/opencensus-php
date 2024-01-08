@@ -22748,4 +22748,23 @@ return [
             ],
         ],
     ],
+
+    'testPayoutScheduledAfterApprovalForEnabledP2PMerchants' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'url'     => '/payouts_internal/{id}/approve',
+            'content' => [
+                'queue_if_low_balance'  => true,
+                'type' => 'workflow_callbacks_approved',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "payout",
+            ],
+        ],
+    ],
 ];

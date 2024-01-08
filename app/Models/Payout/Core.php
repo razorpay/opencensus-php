@@ -218,6 +218,8 @@ class Core extends Base\Core
 
     const IS_DUPLICATE = "is_duplicate";
 
+    const SCHEDULE_PAYOUT_POST_APPROVAL_VALUE_IN_MINUTES = 15;
+
     /**
      * @var Mutex
      */
@@ -2120,6 +2122,16 @@ class Core extends Base\Core
                         ]);
 
                     return $payout;
+                }
+
+                if ($this->isPayoutApplicableForP2PDelay($payout) === true)
+                {
+                    $payoutsDetails = $payout->payoutsDetails;
+
+                    if ($payoutsDetails != null and $payoutsDetails->getQueueIfLowBalanceFlag() === true)
+                    {
+                        $payout->setQueueFlag(true);
+                    }
                 }
 
                 if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
@@ -10467,5 +10479,35 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function isPayoutApplicableForP2PDelay(Entity $payout): bool
+    {
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::ENABLE_APPROVAL_VIA_OAUTH) === false)
+        {
+            return false;
+        }
+
+        $p2pSchedulePostApprovalList = (new Admin\Service)->getConfigKey([
+            'key' => Admin\ConfigKey::P2P_SCHEDULE_POST_APPROVAL_MERCHANT_LIST
+        ]);
+
+        if (in_array($payout->getMerchantId(), $p2pSchedulePostApprovalList) == false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function schedulePayoutPostApproval(Entity $payout)
+    {
+        $scheduledAtTimestamp = Carbon::now(Timezone::IST)->addMinutes(self::SCHEDULE_PAYOUT_POST_APPROVAL_VALUE_IN_MINUTES)->getTimestamp();
+
+        $payout->setScheduledAt($scheduledAtTimestamp);
+
+        $payout->setStatus(Status::SCHEDULED);
+
+        $this->repo->saveOrFail($payout);
     }
 }

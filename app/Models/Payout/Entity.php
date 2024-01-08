@@ -387,6 +387,9 @@ class Entity extends Base\PublicEntity
     const PREVIOUS_STATUS = 'previous_status';
     const EXPECTED_CURRENT_STATUS = 'expected_current_status';
 
+    // constant for dispatching payouts that were scheduled post approval (delayed approval for p2p)
+    const DISPATCH_PAYOUTS_SCHEDULED_POST_APPROVAL = 'dispatch_payouts_scheduled_post_approval';
+
     protected $queueFlag = false;
 
     protected $statusDetails = [

@@ -38409,5 +38409,137 @@ class PayoutTest extends OAuthTestCase
         $reversal = $this->getLastEntity('reversal', true);
         $this->assertEquals(2000000, $reversal['amount']);
     }
+
+    public function testPayoutScheduledAfterApprovalForEnabledP2PMerchants()
+    {
+        Carbon::setTestNow(Carbon::create(2022, 5, 7, 12, 00, 00, Timezone::IST));
+
+        $this->liveSetUp();
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::ENABLE_APPROVAL_VIA_OAUTH]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::P2P_SCHEDULE_POST_APPROVAL_MERCHANT_LIST => ['10000000000000']]);
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->create(Constants\Entity::PAYOUTS_DETAILS, [
+            'payout_id'                 => substr($payout["id"], 5),
+            'queue_if_low_balance_flag' => 1
+        ]);
+
+        // Approve with Owner role user
+        $this->ba->appAuthLive($this->config['applications.workflows.secret']);
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/approve';
+
+        $this->startTest();
+
+        $existingPayout = $this->getDbLastEntity('payout', 'live');
+
+        // Assert that the payout is in scheduled state after approval
+        $this->assertEquals(Status::SCHEDULED, $existingPayout->getStatus());
+        $this->assertEquals(1651905900, $existingPayout->getScheduledAt());
+
+        Carbon::setTestNow(Carbon::create(2022, 5, 7, 12, 16, 00, Timezone::IST));
+
+        $this->ba->cronAuth('live');
+
+        $this->testData[__FUNCTION__]   = $this->testData['testScheduledPayoutProcessing'];
+
+        $testData                       = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            'dispatch_payouts_scheduled_post_approval' => 1
+        ];
+
+        $this->startTest();
+
+        $existingPayout->reload();
+
+        $expectedStatus = (env('FTS_MOCK') === true) ? 'created' : 'initiated';
+
+        $this->assertEquals($expectedStatus, $existingPayout->getStatus());
+    }
+
+    public function testScheduledPayoutQueuedAfterApprovalForEnabledP2PMerchants()
+    {
+        Carbon::setTestNow(Carbon::create(2022, 5, 7, 12, 00, 00, Timezone::IST));
+
+        $this->liveSetUp();
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::ENABLE_APPROVAL_VIA_OAUTH]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::P2P_SCHEDULE_POST_APPROVAL_MERCHANT_LIST => ['10000000000000']]);
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->create(Constants\Entity::PAYOUTS_DETAILS, [
+            'payout_id'                 => substr($payout["id"], 5),
+            'queue_if_low_balance_flag' => 1
+        ]);
+
+        // Approve with Owner role user
+        $this->ba->appAuthLive($this->config['applications.workflows.secret']);
+
+        $this->testData[__FUNCTION__]   = $this->testData['testPayoutScheduledAfterApprovalForEnabledP2PMerchants'];
+        $testData                       = &$this->testData[__FUNCTION__];
+        $testData['request']['url']     = '/payouts_internal/' . $payout["id"] . '/approve';
+
+        $this->startTest();
+
+        $existingPayout = $this->getDbLastEntity('payout', 'live');
+
+        // Assert that the payout is in scheduled state after approval
+        $this->assertEquals(Status::SCHEDULED, $existingPayout->getStatus());
+        $this->assertEquals(1651905900, $existingPayout->getScheduledAt());
+
+        Carbon::setTestNow(Carbon::create(2022, 5, 7, 12, 15, 01, Timezone::IST));
+
+        $this->ba->cronAuth('live');
+
+        $this->testData[__FUNCTION__]   = $this->testData['testScheduledPayoutProcessing'];
+
+        $testData                       = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            'dispatch_payouts_scheduled_post_approval' => 1
+        ];
+
+        $balanceEntity = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking'], 'live');
+
+        $this->fixtures->on('live')->edit('balance',
+                              $balanceEntity->getId(),
+                              [
+                                  'balance'      => 100,
+                              ]);
+
+        $this->startTest();
+
+        $existingPayout->reload();
+
+        $this->assertEquals(Status::QUEUED, $existingPayout->getStatus());
+        $this->assertEquals('low_balance', $existingPayout->getQueuedReason());
+    }
 }
 

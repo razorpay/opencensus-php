@@ -453,6 +453,8 @@ class ConfigKey
 
     const TURBO_SDK_ERROR_MAPPINGS                  = self::PREFIX . 'turbo_sdk_error_mappings';
 
+    const P2P_SCHEDULE_POST_APPROVAL_MERCHANT_LIST  = self::PREFIX . 'p2p_schedule_post_approval_merchant_list';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,

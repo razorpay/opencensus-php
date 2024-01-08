@@ -1993,7 +1993,7 @@ class Constants
      * Feature flag to enable merchants to use fee_credits for fee recovery
      */
     const RZPX_FEE_CREDIT = 'rzpx_fee_credit';
-  
+
       /**
      * Enable International Pricing For Amex International Payments
      */

@@ -143,6 +143,8 @@ class Service extends Base\Service
     const ENTITY    = 'entity';
     const MODES     = 'modes';
 
+    const DISPATCH_LIMIT_FOR_PAYOUTS_SCHEDULED_POST_APPROVAL = 25000;
+
     /**
      * @var PayoutService\OnHoldCron
      */
@@ -1035,7 +1037,7 @@ class Service extends Base\Service
             $data);
     }
 
-        public function processActionOnFundAccountPayoutInternal(string $id, bool $approved, array $input): array
+    public function processActionOnFundAccountPayoutInternal(string $id, bool $approved, array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_WORKFLOW_ACTION_REQUEST,
             ['id' => $id, 'approved' => $approved, 'input' => $input]);
@@ -1045,23 +1047,26 @@ class Service extends Base\Service
 
         $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
-        if ($this->shouldProcessBulkApproveAsync($payout->getMerchantId()))
+        if ($this->schedulePayoutProcessingForP2PIfApplicable($payout) === false)
         {
-            $payload = [
-                'input' => $input,
-                'payout_id' => $id,
-                'is_approved' => $approved,
-            ];
+            if ($this->shouldProcessBulkApproveAsync($payout->getMerchantId()))
+            {
+                $payload = [
+                    'input' => $input,
+                    'payout_id' => $id,
+                    'is_approved' => $approved,
+                ];
 
-            $this->trace->info(TraceCode::PAYOUT_ASYNC_APPROVE_JOB_DISPATCH, ['payload' => $payload]);
+                $this->trace->info(TraceCode::PAYOUT_ASYNC_APPROVE_JOB_DISPATCH, ['payload' => $payload]);
 
-            ApprovedPayoutDistribution::dispatch($this->mode, $payload, $payout->getMerchantId());
+                ApprovedPayoutDistribution::dispatch($this->mode, $payload, $payout->getMerchantId());
 
-            $this->trace->info(TraceCode::PAYOUT_ASYNC_APPROVE_JOB_DISPATCH_SUCCESS, ['payload' => $payload]);
-        }
-        else
-        {
-            $payout = (new Core)->processActionOnPayout($approved, $payout, $input);
+                $this->trace->info(TraceCode::PAYOUT_ASYNC_APPROVE_JOB_DISPATCH_SUCCESS, ['payload' => $payload]);
+            }
+            else
+            {
+                $payout = (new Core)->processActionOnPayout($approved, $payout, $input);
+            }
         }
 
         return $payout->toArrayPublic();
@@ -1952,8 +1957,34 @@ class Service extends Base\Service
         $balanceIdsWhitelist = $input[Entity::BALANCE_IDS] ?? [];
         $balanceIdsBlacklist = $input[Entity::BALANCE_IDS_NOT] ?? [];
 
-        $scheduledPayoutList = $this->repo->payout->getScheduledPayoutsToBeProcessed($balanceIdsWhitelist,
-                                                                                     $balanceIdsBlacklist);
+        $dispatchPayoutsScheduledPostApproval = $input[Entity::DISPATCH_PAYOUTS_SCHEDULED_POST_APPROVAL] ?? false;
+
+        if ($dispatchPayoutsScheduledPostApproval)
+        {
+            $p2pSchedulePostApprovalMerchantList = (new Admin\Service)->getConfigKey([
+                'key' => Admin\ConfigKey::P2P_SCHEDULE_POST_APPROVAL_MERCHANT_LIST
+            ]);
+
+            if (empty($p2pSchedulePostApprovalMerchantList) === true)
+            {
+                return [
+                    'total_payout_count'                    => 0,
+                    'dispatched_payout_count'               => 0,
+                    'dispatched_payout_amount'              => 0,
+                    'no_dispatch_for_payout_service_count'  => 0
+                ];
+            }
+
+            $scheduledPayoutList = $this->repo->payout->getScheduledPayoutsToBeProcessedForMerchants(
+                $p2pSchedulePostApprovalMerchantList,
+                Status::SCHEDULED,
+                self::DISPATCH_LIMIT_FOR_PAYOUTS_SCHEDULED_POST_APPROVAL
+            );
+        }
+        else
+        {
+            $scheduledPayoutList = $this->repo->payout->getScheduledPayoutsToBeProcessed($balanceIdsWhitelist, $balanceIdsBlacklist);
+        }
 
         return $this->core->processDispatchForScheduledPayouts($scheduledPayoutList);
     }
@@ -6028,6 +6059,18 @@ class Service extends Base\Service
         $this->core->updateCABalanceManagementConfig($merchantId, $input);
 
         return ['message' => 'Config for ' . $merchantId . ' updated successfully'];
+    }
+
+    private function schedulePayoutProcessingForP2PIfApplicable(Entity $payout)
+    {
+        if ($this->core->isPayoutApplicableForP2PDelay($payout) === false)
+        {
+            return false;
+        }
+
+        $this->core->schedulePayoutPostApproval($payout);
+
+        return true;
     }
 
 }

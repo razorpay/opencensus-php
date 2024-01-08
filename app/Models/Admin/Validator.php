@@ -286,6 +286,7 @@ class Validator extends Base\Validator
         ConfigKey::UPI_TURBO_PAYMENT_LOOK_UP_CREATED_AT_RANGE                          => 'filled|integer',
         ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST                                 => 'filled|array',
         ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST                               => 'filled|array',
+        ConfigKey::P2P_SCHEDULE_POST_APPROVAL_MERCHANT_LIST                            => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [
