@@ -56,12 +56,20 @@ class Service extends Base\Service
             }
             if($response['status_code'] == 200)
             {
-                $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant);
+                try {
+                    $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant);
 
-                $invoice->setStatus($input[Entity::ACTION]);
+                    $invoice->setStatus($input[Entity::ACTION]);
 
-                $this->repo->saveOrFail($invoice);
-
+                    $this->repo->saveOrFail($invoice);
+                }
+                catch (\Throwable $e)
+                {
+                    if ($e->getMessage() != 'Invalid status transition')
+                    {
+                        throw $e;
+                    }
+                }
             }
             return $response['response'];
         }

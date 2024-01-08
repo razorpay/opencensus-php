@@ -22,25 +22,31 @@ trait PartnershipServiceTrait
         $currentRoute = app('request.ctx')->getRoute();
         $mode =  app('basicauth')->getMode();
         $variant = $this->getReadApiExperimentVariant($partnerId, $currentRoute, $mode);
-        if ($this->isReadApiCutOffEnabled($variant) || $this->isReadApiShadowEnabled($variant))
-        {
-            $prtsPath = static::$PartnershipServicePathMap[$currentRoute];
-            $this->trace->info(TraceCode::PRTS_READ_API_PROXY_REUEST, [
-                'route'      => $currentRoute,
-                'prts_path'  => $prtsPath,
-                'parameters' => $parameters,
-            ]);
-            $result =  $this->app->partnerships->sendRequestWithRetry($parameters, $prtsPath, Requests::POST);
-            if($result['status_code'] != 200)
-            {
-                $this->trace->error(TraceCode::PARTNERSHIPS_REQUEST_ERROR, [
-                    'route'      => $currentRoute,
-                    'prts_path'  => $prtsPath,
+        try {
+            if ($this->isReadApiCutOffEnabled($variant) || $this->isReadApiShadowEnabled($variant)) {
+                $prtsPath = static::$PartnershipServicePathMap[$currentRoute];
+                $this->trace->info(TraceCode::PRTS_READ_API_PROXY_REUEST, [
+                    'route' => $currentRoute,
+                    'prts_path' => $prtsPath,
                     'parameters' => $parameters,
-                    'response'   => $result
                 ]);
+                $result = $this->app->partnerships->sendRequestWithRetry($parameters, $prtsPath, Requests::POST);
+                if ($result['status_code'] != 200) {
+                    $this->trace->error(TraceCode::PARTNERSHIPS_REQUEST_ERROR, [
+                        'route' => $currentRoute,
+                        'prts_path' => $prtsPath,
+                        'parameters' => $parameters,
+                        'response' => $result
+                    ]);
+                }
+                return ['response' => $result['response'] ?? [], 'status_code' => $result['status_code'], 'isCutOffEnabled' => $this->isReadApiCutOffEnabled($variant)];
             }
-            return ['response'=>  $result['response']?? [], 'status_code' => $result['status_code'], 'isCutOffEnabled' => $this->isReadApiCutOffEnabled($variant) ];
+        }
+        catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PRTS_READ_API_PROXY_ERROR, ['route' => $currentRoute, 'parameters' => $parameters]);
+            if ($this->isReadApiCutOffEnabled($variant)) {
+                throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR, $e->getMessage());
+            }
         }
         return ['response'=> []];
 

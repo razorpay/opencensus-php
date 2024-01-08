@@ -115,6 +115,16 @@ class AccessMapListener extends BaseListener
 
     private function getAuditLogParams(AccessMap\Entity $entity): array
     {
+        // get route name from request context if available else get job name from worker context
+        $routeName = '';
+        if(empty($this->request->route()) == false)
+        {
+            $routeName = $this->request->route()->getName();
+        }
+        else if ( empty(app('worker.ctx')) == false)
+        {
+            $routeName = app('worker.ctx')->getJobName();
+        }
         return array_merge(
             [
                 'entity'        => $entity->toArrayAudit(),

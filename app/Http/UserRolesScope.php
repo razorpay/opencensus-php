@@ -930,7 +930,7 @@ class UserRolesScope
             'get_app_name_from_payment'                            => Role::READER_ROLES,
             'fetch_partner_earnings_status'                        => Role::READER_ROLES,
             'partner_request_migration'                            => [Role::OWNER, Role::ADMIN],
-            'partner_activation_save'                              => [Role::OWNER, Role::ADMIN],
+            'partner_activation_save'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
             'partner_referral_fetch'                               => [Role::OWNER, Role::ADMIN],
             'partnerships_service_proxy'                           => Role::allExceptPaymentLinkRoles(),
             'merchant_authorize_partner_save'                      => [Role::OWNER, Role::ADMIN],
