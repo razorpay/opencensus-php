@@ -5,9 +5,7 @@ import { compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import ExclusiveOffer from 'common/ui/ExclusiveOffer/index';
-import RazorpayXNitroAnnouncement, {
-  getCampaignID,
-} from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
+import { getCampaignID } from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 import RXPayrollMoonshineModal from 'common/ui/RXPayrollMoonshineModal';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -121,25 +119,6 @@ const OffersForYou = ({
           ),
           size: 'xlarge',
           className: 'RXPayrollMoonshine--Modal',
-        });
-      } else if (
-        user.isProjectNitroEnabled ||
-        user?.isICICILinkedCAFlowEnabled?.('offers-for-you')
-      ) {
-        openModals({
-          component: (
-            <RazorpayXNitroAnnouncement hideModal={closeModals} fromWhere="offers-for-you" />
-          ),
-          size: 'xlarge',
-          className: 'RazorpayXNitroAnnouncement--Modal',
-        });
-      } else {
-        openModals({
-          component: (
-            <RazorpayXNitroAnnouncement hideModal={closeModals} fromWhere="offers-for-you" />
-          ),
-          size: 'xlarge',
-          className: 'RazorpayXNitroAnnouncement--Modal',
         });
       }
     } else if (user.isProjectNitroEnabled) {
