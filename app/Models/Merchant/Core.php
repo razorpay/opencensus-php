@@ -6502,7 +6502,19 @@ class Core extends Base\Core
             $businessName = $merchantDetails->getBusinessName();
             $dbaName      = $input[Detail\Entity::BUSINESS_DBA] ?? $merchant->getDbaName();
 
-            if ((empty($businessName) === true) and
+            // if business type is individual or unregistered and promoter_pan_name is provided -
+            // always sync it to business_name and merchant's name
+            if (array_key_exists(Detail\Entity::PROMOTER_PAN_NAME, $input) === true and
+                $merchantDetails->isUnregisteredBusiness() === true)
+            {
+                $promoterPanName = $input[Detail\Entity::PROMOTER_PAN_NAME];
+
+                $merchantDetails->setBusinessName($promoterPanName);
+                $this->repo->saveOrFail($merchantDetails);
+
+                $merchantInput[Entity::NAME] = $promoterPanName;
+            }
+            else if ((empty($businessName) === true) and
                 (empty($input[Detail\Entity::BUSINESS_NAME]) === true) and
                 (empty($dbaName) === false))
             {
