@@ -300,9 +300,16 @@ class Generator extends QrCode\Generator
 
     private function generateRefId($qrCode, $terminal, $refId)
     {
+        $terminalDetails = $terminal->toArray();
+
+        if ($this->gateway === Gateway::UPI_MINDGATE)
+        {
+            $terminalDetails = $terminal->toArrayWithPassword();
+        }
+
         $input = [
             'qr_code'  => $qrCode->toArray(),
-            'terminal' => $terminal->toArray(),
+            'terminal' => $terminalDetails,
             'merchant' => $qrCode->merchant,
             'amount'   => $qrCode->getRawAmount(),
         ];

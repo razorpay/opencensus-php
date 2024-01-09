@@ -2634,12 +2634,7 @@ class Gateway extends Base\Gateway
                 'currency' => 'INR',
                 'gateway'  => $this->gateway,
             ],
-            CoreEntity::TERMINAL => [
-                'id'                   => $input[CoreEntity::TERMINAL][Terminal\Entity::ID],
-                'gateway_merchant_id'  => $input[CoreEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
-                'gateway_merchant_id2' => $input[CoreEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2],
-                'vpa'                  => $input[CoreEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2],
-            ],
+            CoreEntity::TERMINAL => $input[CoreEntity::TERMINAL],
             CoreEntity::UPI      => [
                 Entity::MERCHANT_REFERENCE => $merchantReference,
             ],
