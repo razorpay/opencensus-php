@@ -348,15 +348,11 @@ export const PAGE_READ_SUCCESS_MS = 15000;
 
 export const POS_TERMS_AND_CONDITION_DATE = 1702916817;
 
-export const EXTERNA_URLS = {
-  dev: {
-    onboarding: 'https://sme-dashboard.dev.razorpay.in/onboarding',
-    storeDetails: 'https://sme-dashboard.dev.razorpay.in/onboarding/pos/store-details',
-  },
-  production: {
-    onboarding: 'https://easy.razorpay.com/onboarding',
-    storeDetails: 'https://easy.razorpay.com/onboarding/pos/store-details',
-  },
+export const EASY_DASHBOARD_ROUTES = {
+  l2onboarding: '/onboarding/l2',
+  storeDetails: '/onboarding/pos/store-details',
+  storeDetailsWithIntent: '/onboarding/pos/store-details?intent=pos',
+  l2onboardingWithIntent: '/onboarding/l2?intent=pos',
 };
 
 export { DETAILED_PRICING, TERMS_AND_CONDITIONS } from './DetailedPricingAndTnc';

@@ -95,14 +95,14 @@ const OrderList = ({ showNotification, pageSize = 6 }: OrderList): JSX.Element =
   return (
     <MainContainer>
       {!isFetching && orderListData.length === 0 ? (
-        <Box
-          height="90vh"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          flexDirection="column"
-        >
-          <Box maxWidth="400px" display="flex" alignItems="center" flexDirection="column">
+        <Box height="80vh" display="flex" alignItems="center" flexDirection="column">
+          <Box
+            maxWidth="400px"
+            display="flex"
+            alignItems="center"
+            flexDirection="column"
+            marginTop="10%"
+          >
             <img src={EmptyOrderImg} height="130px" alt="empty order image" />
             <Heading
               type="subtle"

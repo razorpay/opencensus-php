@@ -60,6 +60,7 @@ describe('<CheckoutCta/>', () => {
 
   beforeEach(() => {
     server.use(createOrderHandler(), getProductPricingHandler());
+    window.EASY_ONBOARDING_URL = 'https://easy.razorpay.com';
   });
 
   test('should render checkout cta on screen', async () => {
@@ -219,7 +220,9 @@ describe('<CheckoutCta/>', () => {
 
     await userEvent.click(screen.getByText('Add Details'));
     await waitFor(() => {
-      expect(window.location.assign).toHaveBeenCalledWith('https://easy.razorpay.com/onboarding');
+      expect(window.location.assign).toHaveBeenCalledWith(
+        'https://easy.razorpay.com/onboarding/l2',
+      );
     });
   });
 
@@ -227,6 +230,8 @@ describe('<CheckoutCta/>', () => {
     window.location.assign = jest.fn();
     const user = {
       ...MOCK_USER,
+      submitted: '1',
+      pos_activation_status: null,
     };
     renderApp(undefined, user);
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
@@ -241,7 +246,62 @@ describe('<CheckoutCta/>', () => {
 
     await userEvent.click(screen.getByText('Add Details'));
     await waitFor(() => {
-      expect(window.location.assign).toHaveBeenCalledWith('https://easy.razorpay.com/onboarding');
+      expect(window.location.assign).toHaveBeenCalledWith(
+        'https://easy.razorpay.com/onboarding/pos/store-details',
+      );
+    });
+  });
+
+  test('should redirect to easy onboarding with query params if l2 is not submitted with no pos intent and but online presence is there', async () => {
+    window.location.assign = jest.fn();
+    const user = {
+      ...MOCK_USER,
+    };
+
+    user.merchant_business_detail.website_details.physical_store = false;
+    renderApp(undefined, user);
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await userEvent.click(screen.getByText('Confirm Address & Pay'));
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Please add few more details in order to complete your order. Without these, we won’t be able to process your POS order.',
+        ),
+      ).toBeVisible();
+    });
+
+    await userEvent.click(screen.getByText('Add Details'));
+    await waitFor(() => {
+      expect(window.location.assign).toHaveBeenCalledWith(
+        'https://easy.razorpay.com/onboarding/l2?intent=pos',
+      );
+    });
+  });
+
+  test('should redirect to easy onboarding with query params if no online presence and no shop images and no pos intent', async () => {
+    window.location.assign = jest.fn();
+    const user = {
+      ...MOCK_USER,
+      submitted: '1',
+    };
+
+    user.merchant_business_detail.website_details.physical_store = false;
+    renderApp(undefined, user);
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await userEvent.click(screen.getByText('Confirm Address & Pay'));
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Please add few more details in order to complete your order. Without these, we won’t be able to process your POS order.',
+        ),
+      ).toBeVisible();
+    });
+
+    await userEvent.click(screen.getByText('Add Details'));
+    await waitFor(() => {
+      expect(window.location.assign).toHaveBeenCalledWith(
+        'https://easy.razorpay.com/onboarding/pos/store-details?intent=pos',
+      );
     });
   });
 });

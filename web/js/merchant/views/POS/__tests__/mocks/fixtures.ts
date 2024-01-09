@@ -238,6 +238,15 @@ export const MOCK_USER = {
   merchant: {
     id: 'mock-user-id',
   },
+  merchant_business_detail: {
+    website_details: {
+      physical_store: true,
+    },
+  },
+  pos_activation_status: 'under_review',
+  pos_activation_flow: 'whitelist',
+  is_pgos_merchant: true,
+  business_type: '1',
 };
 
 export const MOCK_PRICING_WITH_PRICES: ProductDescriptionPricing[] = [

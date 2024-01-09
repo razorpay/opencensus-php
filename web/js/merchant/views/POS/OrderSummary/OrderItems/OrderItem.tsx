@@ -28,15 +28,13 @@ const OrderItem = ({ orderItem, isListItem, isOrderDetails }: OrderItem): JSX.El
 
   const total = getCartItemTotal({ pricing, quantity, selectedPlan: plan });
 
-  const margin = isMobile ? 'spacing.5' : 'spacing.7';
-
   return (
     <Box
       display="flex"
       alignItems="center"
-      marginBottom={margin}
-      marginX={isListItem || isOrderDetails ? 'spacing.0' : margin}
-      marginTop={isListItem || isOrderDetails ? 'spacing.0' : margin}
+      marginBottom={'spacing.5'}
+      marginX={isListItem || isOrderDetails ? 'spacing.0' : 'spacing.5'}
+      marginTop={isListItem || isOrderDetails ? 'spacing.0' : 'spacing.5'}
       testID={`${orderItem.code}-${orderItem.plan}-order-item`}
     >
       <Box

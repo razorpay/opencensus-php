@@ -17,7 +17,7 @@ import {
   deliveryAddressSchema,
   PRODUCT_PLANS,
   FEE_TYPES,
-  EXTERNA_URLS,
+  EASY_DASHBOARD_ROUTES,
 } from './constants';
 import {
   CartItem,
@@ -43,11 +43,37 @@ export const isPosExperimentEnabled = ({
   user: User;
   abExperiments: ExperimentInfoType;
 }): boolean => {
+  const isUnregisteredMerchant = user?.business_type === '11' || user.business_type === '2';
+
+  const isWhitelistedForPos = user?.pos_activation_status
+    ? user?.pos_activation_flow === 'whitelist'
+    : true;
+
   return (
     isExperimentEnabled(abExperiments?.pos_onboarding) &&
-    user?.pos_activation_flow === 'whitelist' &&
-    !!user.is_pgos_merchant
+    !!user.is_pgos_merchant &&
+    isWhitelistedForPos &&
+    !isUnregisteredMerchant
   );
+};
+
+const checkIfMerchantHasOnlinePresence = (user): boolean => {
+  const hasBusinessWebsite = !!user?.business_website;
+  const hasAppstoreUrl = !!user?.appstore_url;
+  const hasPlaystoreUrl = !!user?.playstore_url;
+  const hasSocialMediaPresence =
+    !!user?.merchant_business_detail?.website_details?.social_media_urls?.length;
+
+  return hasBusinessWebsite || hasAppstoreUrl || hasPlaystoreUrl || hasSocialMediaPresence;
+};
+
+export const isShopDocUploaded = (user: User): boolean => {
+  const { shop_front, shop_interior } = user?.documents ?? {};
+  const isShopFrontImageUploaded = !!shop_front?.length;
+  const isShopInteriorImageUploaded = !!shop_interior?.length;
+  const isShopDocSubmitted = !!user?.pos_activation_status;
+
+  return isShopFrontImageUploaded && isShopInteriorImageUploaded && isShopDocSubmitted;
 };
 
 type getCartItemTotal = {
@@ -563,6 +589,9 @@ export const validatePrecheckout = ({
   latestOrder,
 }: ValidatePrecheckoutProps): CheckoutValidationError | null => {
   const totalQuantity = cartItems.reduce((acc, cartItems) => (acc += cartItems.quantity), 0);
+
+  if (!user) return CHECKOUT_ERRORS.ORDER_CREATE_FAILED;
+
   if (totalQuantity < 1) {
     return CHECKOUT_ERRORS.NO_CART_ITEMS;
   }
@@ -579,6 +608,15 @@ export const validatePrecheckout = ({
 
   if (user?.pos_activation_status === 'rejected') {
     return CHECKOUT_ERRORS.KYC_REJECTED;
+  }
+
+  const isPOSPaymentChannelSelected =
+    user?.merchant_business_detail?.website_details?.physical_store;
+
+  const hasShopImages = isShopDocUploaded(user);
+
+  if (!isPOSPaymentChannelSelected && checkIfMerchantHasOnlinePresence(user) && !hasShopImages) {
+    return CHECKOUT_ERRORS.ORDER_CREATE_FAILED;
   }
 
   return null;
@@ -750,16 +788,6 @@ export const loadCheckoutForPos = (): Promise<unknown> => {
   });
 };
 
-const checkIfMerchantHasOnlinePresence = (user): boolean => {
-  const hasBusinessWebsite = !!user?.business_website;
-  const hasAppstoreUrl = !!user?.appstore_url;
-  const hasPlaystoreUrl = !!user?.playstore_url;
-  const hasSocialMediaPresence =
-    !!user?.merchant_business_detail?.website_details?.social_media_urls;
-
-  return hasBusinessWebsite || hasAppstoreUrl || hasPlaystoreUrl || hasSocialMediaPresence;
-};
-
 type PreCheckoutAdditionalDetails = {
   isRequired: boolean;
   url: string | null;
@@ -770,27 +798,24 @@ export const preCheckoutAdditionalDetails = ({
 }: {
   user: User;
 }): PreCheckoutAdditionalDetails => {
-  const externalUrlType = isProductionEnv() ? 'production' : 'dev';
   const isPOSPaymentChannelSelected =
     user?.merchant_business_detail?.website_details?.physical_store;
 
-  const hasShopImages =
-    (user.documents?.shop_front || []).length > 0 ||
-    (user.documents?.shop_interior || []).length > 0;
+  const hasShopImages = isShopDocUploaded(user);
 
   if (!user?.submitted) {
     return {
       isRequired: true,
-      url: EXTERNA_URLS[externalUrlType].onboarding,
+      url: isPOSPaymentChannelSelected
+        ? `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES.l2onboarding}`
+        : `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES.l2onboardingWithIntent}`,
     };
-  } else if (
-    isPOSPaymentChannelSelected &&
-    !checkIfMerchantHasOnlinePresence(user) &&
-    !hasShopImages
-  ) {
+  } else if (!checkIfMerchantHasOnlinePresence(user) && !hasShopImages) {
     return {
       isRequired: true,
-      url: EXTERNA_URLS[externalUrlType].storeDetails,
+      url: isPOSPaymentChannelSelected
+        ? `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES.storeDetails}`
+        : `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES.storeDetailsWithIntent}`,
     };
   }
 

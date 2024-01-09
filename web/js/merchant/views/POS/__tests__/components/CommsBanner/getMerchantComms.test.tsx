@@ -402,6 +402,7 @@ describe('getMerchantComms', () => {
   test('should return expected scenarios (14) if has online presence and offline is null and device not ordered', () => {
     const user = {
       ...MOCK_USER,
+      pos_activation_status: null,
       business_website: 'www.dummy-website.com',
       appstore_url: 'www.dummy-website.com',
       playstore_url: 'www.dummy-website.com',
@@ -427,7 +428,10 @@ describe('getMerchantComms', () => {
 
   test('should return expected scenarios (15) if has no online presence and offline is null and device not ordered', () => {
     const stages = getMerchantComms({
-      user: MOCK_USER,
+      user: {
+        ...MOCK_USER,
+        pos_activation_status: null,
+      },
       mode: 'live',
       isMobileOrTablet: false,
     });

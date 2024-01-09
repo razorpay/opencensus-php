@@ -21,6 +21,7 @@ import {
   saveAddressInLocalStorage,
   getAllDeliveryAddressFromLocalStorage,
   processPrecheckoutPricing,
+  isPosExperimentEnabled,
 } from 'merchant/views/POS/helpers';
 import { PricingTypes, ProductPlans } from 'merchant/views/POS/types';
 
@@ -657,5 +658,65 @@ describe('processPrecheckoutPricing', () => {
         refund: null,
       }),
     );
+  });
+
+  describe('POS sidebar condtions', () => {
+    const abExperiments = {
+      pos_onboarding: {
+        experimentId: 'mock-exp-id',
+        variables: {
+          result: 'on',
+        },
+      },
+    };
+    test('isPosExperimentEnabled should return true when user is a pgos merchant and is registered business and is whitelisted', () => {
+      const isExperimentEnabled = isPosExperimentEnabled({ user: MOCK_USER, abExperiments });
+      expect(isExperimentEnabled).toBe(true);
+    });
+
+    test('isPosExperimentEnabled should return false when user is not a pgos merchant', () => {
+      const user = { ...MOCK_USER };
+      user.is_pgos_merchant = false;
+
+      const isExperimentEnabled = isPosExperimentEnabled({
+        user,
+        abExperiments,
+      });
+      expect(isExperimentEnabled).toBe(false);
+    });
+
+    test('isPosExperimentEnabled should return false when experiment is disabled', () => {
+      const newAbExperiments = {
+        pos_onboarding: {
+          experimentId: 'mock-exp-id',
+          variables: {
+            result: 'off',
+          },
+        },
+      };
+
+      const isExperimentEnabled = isPosExperimentEnabled({
+        user: MOCK_USER,
+        abExperiments: newAbExperiments,
+      });
+      expect(isExperimentEnabled).toBe(false);
+    });
+
+    test('isPosExperimentEnabled should return false for unregistered merchants', () => {
+      const newAbExperiments = {
+        pos_onboarding: {
+          experimentId: 'mock-exp-id',
+          variables: {
+            result: 'off',
+          },
+        },
+      };
+
+      const isExperimentEnabled = isPosExperimentEnabled({
+        user: { ...MOCK_USER, business_type: '11' },
+        abExperiments: newAbExperiments,
+      });
+      expect(isExperimentEnabled).toBe(false);
+    });
   });
 });
