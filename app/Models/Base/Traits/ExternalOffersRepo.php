@@ -213,17 +213,18 @@ trait ExternalOffersRepo
         return [];
     }
 
-    private function fetchOffersSubscriptionFromOE($paymentMethods, $offerId, $merchantId): Base\PublicCollection
+    private function fetchOffersSubscriptionFromOE($paymentMethods, $offerId, $merchantId): ?Base\PublicCollection
     {
-        $applicableOffers = new PublicCollection();
-
         if ($this->fetchFromOE($merchantId) === true)
         {
+            $applicableOffers = new PublicCollection();
+
             try
             {
-                $responseOffers = $this->fetchExternalEntitiesBulk($merchantId, [], [
-                    Constants::STATE => Constants::STATE_CREATED,
-                ]);
+                $responseOffers = $this->fetchExternalEntitiesBulk($merchantId, [],
+                    [
+                        Constants::STATE => Constants::STATE_CREATED,
+                    ]);
 
                 if (empty($responseOffers) === true)
                 {
@@ -276,7 +277,7 @@ trait ExternalOffersRepo
                 }
             }
 
-        return $applicableOffers;
+        return null;
     }
 
     private function fetchAllDefaultOffersForMerchantFromOE($merchantId)

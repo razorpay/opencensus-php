@@ -122,7 +122,7 @@ class Repository extends Base\Repository
         $oeResponse =  $this->fetchOffersSubscriptionFromOE($paymentMethods, $offerId, $merchantId);
 
         // if response is empty fallback to API query
-        if ($oeResponse !== new Base\PublicCollection())
+        if ($oeResponse !== null)
         {
             return $oeResponse ;
         }
