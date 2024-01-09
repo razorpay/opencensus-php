@@ -995,6 +995,7 @@ class Route
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'org_setl_fetch_by_id'                     => ['get',      'org_settlements/{id}',                           'SettlementController@getOrgSettlement'                             ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
+        'setl_fetch_multiple_proxy'                => ['get',      'settlements_fetch/proxy',                         'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                  => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
         'fb_setl_fetch_transactions'               => ['get',      'fb/settlements/{id}/transactions',               'SettlementController@getSettlementTransactionsWithSettlementId'    ],
         'setl_fetch_source_details'                => ['post',     'settlements/{id}/transaction_source_details',    'SettlementController@getSettlementTransactionsSourceDetails'       ],
@@ -7704,6 +7705,7 @@ class Route
         'pos_fetch_device_order',
         'pos_fetch_all_device_orders',
         'pos_fetch_latest_order',
+        'setl_fetch_multiple_proxy',
     ];
 
     // These will run on internal auth with the assurance
@@ -17220,7 +17222,9 @@ class Route
             'merchant_instrument_status_get_by_merchant_id',
             'create_payment_config',
             'fetch_payment_config',
-            'bank_account_fetch'
+            'bank_account_fetch',
+            'setl_fetch_multiple_proxy',
+            'merchant_analytics',
         ],
     ];
 
@@ -18439,6 +18443,7 @@ class Route
         'webhook_fetch_multiple'                            => HeartbeatLagChecker::SLAVE,
         'schedule_fetch_multiple'                           => HeartbeatLagChecker::SLAVE,
         'setl_fetch_multiple'                               => HeartbeatLagChecker::SLAVE,
+        'setl_fetch_multiple_proxy'                         => HeartbeatLagChecker::SLAVE,
         'setl_amount_check'                                 => HeartbeatLagChecker::SLAVE,
         'adj_fetch_multiple'                                => HeartbeatLagChecker::SLAVE,
         'emi_plans_fetch_multiple'                          => HeartbeatLagChecker::SLAVE,
