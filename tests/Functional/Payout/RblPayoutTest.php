@@ -2044,4 +2044,30 @@ class RblPayoutTest extends TestCase
 
         Queue::assertPushedOn('rbl_banking_account_gateway_balance_priority_update_test', RblUniqueGatewayBalanceUpdate::class);
     }
+
+    public function testRBLPriorityMerchantBalanceUpdateIsNotPushedOnDefaultQueue()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::GATEWAY_BALANCE_FETCH_V2  => 'on'
+            ]
+        );
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST => ['10000000000000']]);
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        Queue::fake();
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/rbl/balance',
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        Queue::assertNotPushed(RblBankingAccountGatewayBalanceUpdate::class);
+    }
 }

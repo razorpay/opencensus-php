@@ -2385,7 +2385,10 @@ class Core extends Base\Core
         // get list of distinct merchant ids who have done payouts in last $timePeriod seconds.
         $merchantIdsToDispatch[self::MADE_PAYOUT_RULE] = $this->repo->payout->getCAMerchantIdsWithAtleastOnePayout($channel, $currentTime - $timePeriod, $currentTime, $limitForPayoutMadeRule);
 
-        $basDetails = $this->repo->banking_account_statement_details->fetchByChannelOrderByBalanceLastFetchedAt($channel);
+        // List of merchants whose balance update is done on priority
+        $priorityMerchants = $this->getPriorityBalanceMerchantList($channel);
+
+        $basDetails = $this->repo->banking_account_statement_details->fetchByChannelOrderByBalanceLastFetchedAt($channel, $priorityMerchants);
 
         /** @var BASDetails\Entity $basDetailsEntity */
         foreach ($basDetails as $basDetailsEntity)
@@ -2491,6 +2494,7 @@ class Core extends Base\Core
                                        Entity::CHANNEL     => $channel,
                                        Entity::MERCHANT_ID => $merchantId,
                                    ])->using([], $job::PRIORITY_QUEUE_CONFIG_KEY);
+                    return;
                 }
 
                 $this->trace->info(
@@ -3613,20 +3617,7 @@ class Core extends Base\Core
      */
     private function dispatchPriorityBalanceUpdateForChannel(string $channel)
     {
-        $priorityMerchants = [];
-
-        switch ($channel)
-        {
-            case Channel::RBL:
-                $priorityMerchants = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST]);
-                break;
-            case Channel::ICICI:
-                $priorityMerchants = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST]);
-                break;
-            default:
-                $priorityMerchants = [];
-                break;
-        }
+        $priorityMerchants = $this->getPriorityBalanceMerchantList($channel);
 
         if (empty($priorityMerchants) === true)
         {
@@ -3671,5 +3662,28 @@ class Core extends Base\Core
         ]);
 
         return $successfullyDispatchedMerchantIds;
+    }
+
+    /**
+     * @param string $channel
+     *
+     * @return array
+     */
+    private function getPriorityBalanceMerchantList(string $channel): array
+    {
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $priorityMerchants = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_CA_PRIORITY_BALANCE_UPDATE_LIST]);
+                break;
+            case Channel::ICICI:
+                $priorityMerchants = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST]);
+                break;
+            default:
+                $priorityMerchants = [];
+                break;
+        }
+
+        return $priorityMerchants;
     }
 }

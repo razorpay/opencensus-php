@@ -61,7 +61,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchByChannelOrderByBalanceLastFetchedAt(string $channel, string $accountType = AccountType::DIRECT)
+    public function fetchByChannelOrderByBalanceLastFetchedAt(string $channel, array $merchantIdsExcluded = [], string $accountType = AccountType::DIRECT)
     {
         $channelColumn = $this->dbColumn(Entity::CHANNEL);
 
@@ -69,17 +69,25 @@ class Repository extends Base\Repository
 
         $accountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
 
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
         $basDetailsAttr = $this->dbColumn('*');
 
         $statusList = Status::getStatusesForActiveCaFlows();
 
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->select($basDetailsAttr)
                     ->where($channelColumn, '=', $channel)
                     ->whereIn($statusColumn, $statusList)
                     ->where($accountTypeColumn, '=', $accountType)
-                    ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
-                    ->get();
+                    ->oldest(Entity::BALANCE_LAST_FETCHED_AT);
+
+        if (empty($merchantIdsExcluded) === false)
+        {
+            $query = $query->whereNotIn($merchantIdColumn, $merchantIdsExcluded);
+        }
+
+        return $query->get();
     }
 
     public function getMerchantIdsByChannel($channel, $limit)
