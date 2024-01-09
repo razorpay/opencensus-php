@@ -3700,12 +3700,13 @@ class BankTransferTest extends TestCase
         $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         $this->assertNotNull($bankTransfer['payment_id']);
+        $paymentId = substr($bankTransfer['payment_id'], 4);
 
         // Payment is automatically captured
-        $payment =  $this->getLastEntity('payment', true);
+        $payment =  $this->getDbLastEntity('payment');
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($paymentId, $payment['id']);
 
         $this->runBankTransferRequestAssertions(
             true,
@@ -3718,8 +3719,6 @@ class BankTransferTest extends TestCase
                 'payment_id'                    => $bankTransfer['payment_id'],
             ]
         );
-
-        $paymentId = substr($payment["id"], 4);
 
         // Assert Transaction is not reconciled
         $transaction = $this->getDbLastEntity('transaction');
@@ -3747,6 +3746,70 @@ class BankTransferTest extends TestCase
         $this->assertEquals($transaction["reconciled_at"], $reconTimestamp);
         $this->assertEquals($transaction["reconciled_type"], $requestData["content"]["reconciled_type"]);
         $this->assertEquals($transaction["gateway_settled_at"], $requestData["content"]["gateway_settled_at"]);
+
+        // assert payment refund_at is not set for expected payment
+        $payment->reload();
+        $this->assertNull($payment['refund_at']);
+    }
+
+    public function testBankTransferProcessUpdateRefundForUnexpectedPaymentPostRecon()
+    {
+        $accountNumber = 'TEST123567890';
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('va_ShrdVirtualAcc', $bankTransfer['virtual_account_id']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $bankTransfer['unexpected_reason']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
+
+        $this->assertNotNull($bankTransfer['payment_id']);
+        $paymentId = substr($bankTransfer['payment_id'], 4);
+
+        // Payment will be at authorized state
+        $payment =  $this->getDbLastEntity('payment');
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals($paymentId, $payment['id']);
+
+        // Assert Transaction is not reconciled
+        $transaction = $this->getDbLastEntity('transaction');
+        $this->assertNotNull($transaction);
+        $this->assertEquals($transaction["entity_id"], $paymentId);
+        $this->assertNull($transaction["reconciled_at"]);
+        $this->assertNull($transaction["reconciled_type"]);
+
+        // Send reconciliation request
+        $requestData = $this->testData["bankTransferArtReconPayload"];
+        $requestData["content"]["payment_id"] = $paymentId;
+        $requestData["content"]["amount"] = 500;
+        $reconTimestamp = strval(Carbon::now()->getTimestamp());
+        $requestData["content"]["reconciled_at"] = $reconTimestamp;
+        $requestData["content"]["gateway_settled_at"] = $reconTimestamp;
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($requestData);
+        $this->assertNotNull($response);
+        $this->assertTrue($response['success']);
+
+        // assert transaction is reconciled
+        $transaction->reload();
+        $this->assertEquals($transaction["reconciled_at"], $reconTimestamp);
+        $this->assertEquals($transaction["reconciled_type"], $requestData["content"]["reconciled_type"]);
+        $this->assertEquals($transaction["gateway_settled_at"], $requestData["content"]["gateway_settled_at"]);
+
+        // assert payment refund_at is set
+        $payment->reload();
+        $this->assertNotNull($payment['refund_at']);
     }
 
 }

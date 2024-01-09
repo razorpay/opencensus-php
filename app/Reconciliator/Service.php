@@ -37,9 +37,12 @@ use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants as UpsConstants;
 use RZP\Reconciliator\Base\SubReconciliator\Upi\UpiPaymentServiceReconciliate;
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
+use RZP\Models\Payment\Processor\VirtualAccountUnexpectedPaymentRefundHandler;
 
 class Service extends Base\Service
 {
+    use VirtualAccountUnexpectedPaymentRefundHandler;
+
     /**
      * List of gateways where we are doing recon processing via non-batch.
      */
@@ -1080,6 +1083,8 @@ class Service extends Base\Service
             $this->repo->transaction(function () use ($paymentId, $input, $payment)
             {
                 $this->updateTransactionData($input, $payment);
+
+                $this->handleVAUnExpectedPaymentRefundInReconDualWrite($payment);
 
             });
 

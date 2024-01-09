@@ -8,6 +8,7 @@ use RZP\Models\Admin;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Payment;
 use RZP\Models\Merchant\RazorxTreatment;
 
 trait VirtualAccountUnexpectedPaymentRefundHandler
@@ -59,6 +60,27 @@ trait VirtualAccountUnexpectedPaymentRefundHandler
             $this->setRefundAtToNow($payment);
 
             return;
+        }
+
+    }
+
+    public function handleVAUnExpectedPaymentRefundInReconDualWrite($payment)
+    {
+        $bankTransfer = $this->repo->bank_transfer->findByPayment($payment);
+
+        if ((in_array($payment->getMerchantId(), self::$demoAccountIds) === false) or
+            ($payment->isBankTransfer() === false) or
+            ($payment->getStatus() !== Payment\Status::AUTHORIZED) or
+            ($bankTransfer === null) or
+            ($bankTransfer->isExpected() === true) or
+            ($bankTransfer->getUnexpectedReason() !== 'VIRTUAL_ACCOUNT_NOT_FOUND'))
+        {
+            return;
+        }
+
+        if (empty($payment->getRefundAt()) === true)
+        {
+            $this->setRefundAtToNow($payment);
         }
 
     }
