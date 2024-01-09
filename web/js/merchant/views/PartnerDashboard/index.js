@@ -12,7 +12,7 @@ import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
 import usePartnerPageNPS from 'merchant/views/PartnerDashboard/SubMerchant/utils/usePartnerPageNPS';
 import useTrackPartnerExperiments from 'merchant/views/PartnerDashboard/SubMerchant/utils/useTrackPartnerExperiments';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
-import Configuration, { AppConfiguration } from './Settings/configuration';
+import Configuration from './Settings/configuration';
 import { RouteGuard } from 'merchant/components/ShowWhen';
 import lazy from 'merchant/routes/LazyLoader';
 import { Box, Spinner } from '@razorpay/blade/components';
@@ -80,25 +80,14 @@ export default function PartnerDashboard() {
           }
         />
 
-        <Route path="applications/*">
-          <Route
-            path="applications/configuration/:id/*"
-            element={
-              <RouteGuard additionalCondition={(user) => user.isPartner('pure_platform')}>
-                <AppConfiguration />
-              </RouteGuard>
-            }
-          />
-
-          <Route
-            path="*"
-            element={
-              <RouteGuard additionalCondition={(user) => user.isPartner('pure_platform')}>
-                <Applications />
-              </RouteGuard>
-            }
-          />
-        </Route>
+        <Route
+          path="applications/*"
+          element={
+            <RouteGuard additionalCondition={(user) => user.isPartner('pure_platform')}>
+              <Applications />
+            </RouteGuard>
+          }
+        />
 
         <Route
           path="earnings/*"

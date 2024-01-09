@@ -64,6 +64,7 @@ const Home = ({
       const { data } = await merchantFetch({
         url: 'partner/first_user_experience',
         method: 'get',
+        mode: 'live',
       });
       const fux_status = data as FUXStatusT;
       setFUXStatus({

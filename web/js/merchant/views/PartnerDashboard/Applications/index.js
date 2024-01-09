@@ -8,7 +8,9 @@ import { RouteGuard } from 'merchant/components/ShowWhen';
 
 // lazy loaded components
 const AppConfiguration = lazy(() =>
-  import('merchant/views/PartnerDashboard/Settings/configuration'),
+  import('merchant/views/PartnerDashboard/Settings/configuration').then((module) => ({
+    default: module.AppConfiguration,
+  })),
 );
 
 export default function PartnerApplications(props) {
