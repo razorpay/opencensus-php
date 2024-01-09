@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { NATIVE_SHIPPING_VIEWS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import {
+  NATIVE_SHIPPING_VIEWS,
+  BACKEND_MAPPING_FOR_NATIVE_SHIPPING_PROVIDER,
+} from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import NativeShippingTab from 'merchant/views/MagicCheckout/MagicSettings/components/native/ShippingTab';
 import NativeShippingAPI from 'merchant/views/MagicCheckout/MagicSettings/containers/native/ShippingAPI';
 import ShipRocketSettings from 'merchant/views/MagicCheckout/ShippingServices';
@@ -12,7 +15,7 @@ import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettin
 const NativeShippingTabWrapper = ({ settings, updateSettings }) => {
   let defaultView = NATIVE_SHIPPING_VIEWS.PROVIDER_SELECTION;
 
-  switch (settings.shipping_source) {
+  switch (BACKEND_MAPPING_FOR_NATIVE_SHIPPING_PROVIDER[settings?.shipping_source]) {
     case NATIVE_SHIPPING_VIEWS.API:
       defaultView = NATIVE_SHIPPING_VIEWS.API;
       break;
@@ -31,8 +34,13 @@ const NativeShippingTabWrapper = ({ settings, updateSettings }) => {
 
   const onSave = (shipping_source) => {
     setView(shipping_source);
+
+    const backendKeyForShippingSource = Object.keys(
+      BACKEND_MAPPING_FOR_NATIVE_SHIPPING_PROVIDER,
+    ).find((key) => BACKEND_MAPPING_FOR_NATIVE_SHIPPING_PROVIDER[key] === shipping_source);
+
     const payload = {
-      shipping_source,
+      shipping_source: backendKeyForShippingSource,
       platform: 'native',
     };
     updateSettings(payload, false);

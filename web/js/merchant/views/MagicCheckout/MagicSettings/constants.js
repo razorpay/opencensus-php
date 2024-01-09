@@ -109,6 +109,11 @@ export const SHIPPING_PROVIDERS = [
   { label: 'Shiprocket', name: 'Shiprocket', view: NATIVE_SHIPPING_VIEWS.SHIPROCKET },
 ];
 
+export const BACKEND_MAPPING_FOR_NATIVE_SHIPPING_PROVIDER = {
+  merchant: NATIVE_SHIPPING_VIEWS.API,
+  shiprocket: NATIVE_SHIPPING_VIEWS.SHIPROCKET,
+};
+
 export const COMPONENTS = {
   [PLATFORMS.VALUES.NATIVE]: {
     platformComponent: (status) => <NativePlatform status={status} />,
