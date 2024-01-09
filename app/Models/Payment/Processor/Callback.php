@@ -545,11 +545,18 @@ trait Callback
 
 
             // if razorx was enabled  and stored in cache during create payment call  then we will fetch alt id and process the payment using alt id for  rupay
-        if(isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false && $payment->card->getNetworkCode() === Card\Network::RUPAY)
+        if(isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false && $payment->getGateway() === Gateway::PAYSECURE )
                  {
-                    $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
+                    if ($payment->getSave() === true and $payment->getAuthType() !== Payment\AuthType::OTP)
+                    {
+                        $variant = "off";
+                    }
+                    else
+                    {
+                        $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
 
-                    $variant = $this->cache->get($rupayRazorxCacheKey);
+                        $variant = $this->cache->get($rupayRazorxCacheKey);
+                    }
 
                     $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT,
                         [
