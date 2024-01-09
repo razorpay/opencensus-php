@@ -11,10 +11,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, autoPrefixUrls } from 'common/utils/rzp-utils';
 import FileUpload from 'merchant/components/File/Upload';
 import { FLOWS } from './Constants';
-import {
-  fetchWorkflowStatus as fetchWorkflowStatusReducer,
-  fetchBusinessWebsiteFeatureStatus,
-} from 'merchant/reducers/workflows';
+import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { useBusinessWebsiteRevamp } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/utils';
@@ -71,7 +68,6 @@ function WebsiteFields({
 
       {isBusinessWebsiteRevamp && flowType === FLOWS.BUSINESS_WEBSITE ? (
         <Input
-          required
           label="Shipping policy"
           name="shipping_policy"
           validator={(input) => {
@@ -203,6 +199,9 @@ function UpdateWebsiteDetails(props) {
 
       if (isBusinessWebsiteRevamp) {
         payload.version = 'v2';
+        if (payload.business_website_shipping_policy === '') {
+          delete payload.business_website_shipping_policy;
+        }
       }
 
       // If creds are not checked, removing these keys
@@ -261,7 +260,6 @@ function UpdateWebsiteDetails(props) {
           type: 'success',
           message: `${type} submitted successfully`,
         });
-        props.fetchBusinessWebsiteFeatureStatus(user.id);
         props.fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE);
         props.closeModal();
         analyticsTrack({
@@ -475,6 +473,10 @@ function UpdateWebsiteDetails(props) {
   };
 
   const validateMetaUrls = (fieldName, input) => {
+    // ignore shipping policy
+    if (fieldName === 'shipping_policy' && input === '') {
+      return '';
+    }
     const value = isUrlValid(input);
     if (!value) {
       const _obj = { ...areMetaUrlsValid };
@@ -494,7 +496,8 @@ function UpdateWebsiteDetails(props) {
     let areAllValid = true;
     Object.keys(areMetaUrlsValid).forEach((key) => {
       const value = areMetaUrlsValid[key];
-      if (!value) areAllValid = false;
+      // ignore shippping policy
+      if (!value && key !== 'shipping_policy') areAllValid = false;
     });
 
     return areAllValid;
@@ -662,7 +665,6 @@ const mapDispatchToProps = (dispatch) => {
       ...ModalActions,
       ...NotificationsActions,
       fetchWorkflowStatus: fetchWorkflowStatusReducer,
-      fetchBusinessWebsiteFeatureStatus,
     },
     dispatch,
   );

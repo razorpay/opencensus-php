@@ -4,10 +4,7 @@ import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isPresent } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import {
-  fetchWorkflowStatus as fetchWorkflowStatusReducer,
-  fetchBusinessWebsiteFeatureStatus,
-} from 'merchant/reducers/workflows';
+import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 import { FLOWS } from 'merchant/views/Account/Profile/components/WebsiteSelfServe/Constants';
 import InitiateWebsiteChange from 'merchant/views/Account/Profile/components/WebsiteSelfServe/InitiateWebsiteChange';
@@ -145,19 +142,16 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
     openModal,
     closeModal,
     isFlowRevamped = true,
-    fetchBusinessWebsiteFeatureStatus,
   } = props;
 
   const businessWebsiteWorkflow = workflows[WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE];
   const additionalWebsiteWorkflow = workflows[WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE];
   const isMobile = useMobile();
   const isRevamp = useBusinessWebsiteRevamp();
-  const businessWebsiteAutomationStatus = workflows.business_website_automation_status;
 
   useEffect(() => {
     // FETCH FOR BUSINESS WEBSITE
     if (isRevamp && [rolesList.OWNER].includes(user.role as string)) {
-      fetchBusinessWebsiteFeatureStatus(user.id as string);
       fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE);
     }
   }, []);
@@ -251,16 +245,15 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
       tags,
       rejection_reason_message,
     } = businessWebsiteWorkflow;
-    const { data } = businessWebsiteAutomationStatus;
 
-    if (data?.status === true) {
+    if (businessWebsiteWorkflow?.ocr_automated_check_enable) {
       return (
         <Alert
           contrast="low"
           description={
             user.has_key_access === true
-              ? 'Your request to update the website is under review.'
-              : "Our team will verify your website/app so that you can start collecting payments on it. We'll contact you via email if we need further information."
+              ? 'Your request to update the website is under review'
+              : "Our team will verify your website/app so that you can start collecting payments on it. We'll contact you via email if we need further information"
           }
           intent="notice"
           isDismissible={false}
@@ -461,9 +454,9 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
               </StyledLinksContainer>
             </CardBody>
           </Card>
-          {isWorkflowChangeAllowed(businessWebsiteWorkflow) &&
-          businessWebsiteAutomationStatus?.data?.status === false &&
-          user.role === 'admin' ? (
+          {!businessWebsiteWorkflow?.ocr_automated_check_enable &&
+          isWorkflowChangeAllowed(businessWebsiteWorkflow) &&
+          user.role === 'owner' ? (
             <Box position="absolute" top={isMobile ? '12px' : '0px'} right="15px">
               {isMobile ? (
                 <BladeButton
@@ -606,7 +599,6 @@ const mapDispatchToProps = (dispatch) =>
       openModal,
       closeModal,
       fetchWorkflowStatus: fetchWorkflowStatusReducer,
-      fetchBusinessWebsiteFeatureStatus,
     },
     dispatch,
   );

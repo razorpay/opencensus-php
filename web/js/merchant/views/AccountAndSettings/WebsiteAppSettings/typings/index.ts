@@ -61,5 +61,4 @@ export interface BusinessWebsiteDetailsProps extends RouteComponentProps {
   openModal: (data?: unknown) => unknown;
   closeModal: () => unknown;
   isFlowRevamped: boolean;
-  fetchBusinessWebsiteFeatureStatus: (mid: string) => Promise<any>;
 }
