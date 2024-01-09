@@ -31,7 +31,7 @@ export const order = {
   ],
   tax_details: {
     total_tax: 1080,
-    tax_included: false,
+    taxes_included: false,
   },
 };
 

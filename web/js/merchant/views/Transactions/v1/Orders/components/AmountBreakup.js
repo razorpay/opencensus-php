@@ -70,7 +70,7 @@ export default ({ order }) => {
               + <Amount value={order.cod_fee || 0} currency={currency} />
             </div>
           </div> */}
-          {tax_details?.tax_included === false ? (
+          {tax_details?.taxes_included === false ? (
             <div className="magic-checkout-row">
               <div>Taxes</div>
               <div>

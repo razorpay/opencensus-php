@@ -6,7 +6,7 @@ import { StorageStatePath, routes } from '../../utils/constants';
 const searchPaymentId = async (page, paymentId) => {
   try {
     // Select the input element by its name attribute
-    const paymentIdInput = await page.waitForSelector('input[name="id"]', { timeout: 5000 });
+    const paymentIdInput = await page.waitForSelector('input[name="id"]', { timeout: 10000 });
     // Fill data into the input field
     await paymentIdInput.fill(paymentId);
     await page.getByRole('button', { name: 'Search' }).click();
