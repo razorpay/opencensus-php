@@ -1988,6 +1988,17 @@ class Constants
     const SOURCE_TO_PAY_PRO = 'source_to_pay_pro';
 
     /**
+     * Feature flags to enable/disable Account Statement in X Dashboard
+     */
+    const STMT_ICICI_ENABLED = 'stmt_icici_enabled';
+
+    const STMT_RBL_DISABLED = 'stmt_rbl_disabled';
+
+    const STMT_ICICI_FTP_ENABLED = 'stmt_icici_ftp_enabled';
+
+    const STMT_RBL_FTP_ENABLED = 'stmt_rbl_ftp_enabled';
+
+    /**
      * These 3 feature flags are used for sending low-balance alerts on X & blocking payouts for current-accounts
      */
     const EXCLUDE_FROM_CA_BILLING = 'exclude_from_ca_billing';
@@ -2779,6 +2790,10 @@ class Constants
         self::SOURCE_TO_PAY_CORE                     => true,
         self::SOURCE_TO_PAY_PRO                      => true,
         self::REMOVE_EMANDATE_COOLOFF                => true,
+        self::STMT_ICICI_ENABLED                     => true,
+        self::STMT_RBL_DISABLED                      => true,
+        self::STMT_ICICI_FTP_ENABLED                 => true,
+        self::STMT_RBL_FTP_ENABLED                   => true,
         self::EXCLUDE_FROM_CA_BILLING                => true,
         self::AUTO_DISABLE_PAYOUTS                   => true,
         self::PAYOUT_LOW_BALANCE                     => true,
@@ -3930,6 +3945,26 @@ class Constants
             'feature'       => self::SOURCE_TO_PAY_PRO,
             'display_name'  => 'Source to Pay Pro',
             'documentation' => 'To determine subscription tier for merchant on X dashboard'
+        ],
+        self::STMT_ICICI_ENABLED =>  [
+            'feature'       => self::STMT_ICICI_ENABLED,
+            'display_name'  => 'ACCOUNT STATEMENT BANK ICICI ENABLED ON DASHBOARD',
+            'documentation' => 'To enable ICICI account statements to merchants on X dashboard'
+        ],
+        self::STMT_RBL_DISABLED =>  [
+            'feature'       => self::STMT_RBL_DISABLED,
+            'display_name'  => 'ACCOUNT STATEMENT BANK RBL DISABLED ON DASHBOARD',
+            'documentation' => 'To disable RBL account statements to merchants on X dashboard'
+        ],
+        self::STMT_ICICI_FTP_ENABLED =>  [
+            'feature'       => self::STMT_ICICI_FTP_ENABLED,
+            'display_name'  => 'ACCOUNT STATEMENT BANK ICICI FTP FETCH ENABLED',
+            'documentation' => 'To enable ICICI account statements pull through FTP from banks'
+        ],
+        self::STMT_RBL_FTP_ENABLED =>  [
+            'feature'       => self::STMT_RBL_FTP_ENABLED,
+            'display_name'  => 'ACCOUNT STATEMENT BANK RBL FTP FETCH ENABLED',
+            'documentation' => 'To enable RBL account statements pull through FTP from banks'
         ],
         self::RZPX_FEE_CREDIT => [
             'feature'       => self::RZPX_FEE_CREDIT,
