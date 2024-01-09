@@ -162,8 +162,8 @@ describe('Refunds - RefundDetails Component', () => {
       const gatewayContainer = screen.getByTestId('refund-gateway-data');
       expect(gatewayContainer).toBeInTheDocument();
       expect(gatewayContainer).toHaveTextContent(/Gateway response/i);
-      expect(gatewayContainer).toHaveTextContent('Error code: ERROR_CODE');
-      expect(gatewayContainer).toHaveTextContent('Sample message');
+      expect(gatewayContainer).toHaveTextContent('Gateway code: ERROR_CODE');
+      expect(gatewayContainer).toHaveTextContent('Gateway message: Sample message');
     });
 
     test('should not render gateway data if exp is "off" and "gateway_data" is not empty', () => {

@@ -21,8 +21,10 @@ const GatewayDataInfo = ({ gatewayData }) => {
           <PopoverBody>
             <div className="refund-status--error" data-testid="refund-gateway-data">
               <b>Gateway response</b>
-              <p className="refund-status--error-code">Error code: {gatewayData?.refund_code}</p>
-              <p className="refund-status--error-message">{gatewayData?.refund_message}</p>
+              <p className="refund-status--error-code">Gateway code: {gatewayData?.refund_code}</p>
+              <p className="refund-status--error-message">
+                Gateway message: {gatewayData?.refund_message}
+              </p>
             </div>
           </PopoverBody>
         </PopoverComponent>

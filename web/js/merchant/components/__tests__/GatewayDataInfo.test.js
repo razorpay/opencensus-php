@@ -16,8 +16,8 @@ describe('GatewayDataInfo Component', () => {
 
     expect(screen.getByTestId('refund-gateway-data')).toBeInTheDocument();
     expect(screen.getByText('Gateway response')).toBeInTheDocument();
-    expect(screen.getByText(`Error code: ${mockData.refund_code}`)).toBeInTheDocument();
-    expect(screen.getByText(mockData.refund_message)).toBeInTheDocument();
+    expect(screen.getByText(`Gateway code: ${mockData.refund_code}`)).toBeInTheDocument();
+    expect(screen.getByText(`Gateway message: ${mockData.refund_message}`)).toBeInTheDocument();
   });
 
   // Test case 2: Rendering when gatewayData is an empty object

@@ -16,15 +16,15 @@ const statusClassMap = {
 const GatewayData = ({ status, value }) => {
   // Check if the "value" is an object and it has keys and not an array
   if (value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length) {
-    const statusClass = ` ${statusClassMap[status?.toLowerCase()]}` || '';
+    const statusClass = `${statusClassMap[status?.toLowerCase()]}` || '';
 
     return (
       <div className="refund-gateway-data" data-testid="refund-gateway-data">
         <p className="refund-gateway-data--label">Gateway response</p>
-        <p className={`refund-gateway-data--code${statusClass}`}>
-          Error code: {value?.refund_code}
+        <p className="refund-gateway-data--code">
+          Gateway code: <span className={statusClass}>{value?.refund_code}</span>
         </p>
-        <p className="refund-gateway-data--message">{value?.refund_message}</p>
+        <p className="refund-gateway-data--message">Gateway message: {value?.refund_message}</p>
       </div>
     );
   }

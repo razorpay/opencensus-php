@@ -31,9 +31,10 @@ describe('GatewayData Component', () => {
 
     render(<GatewayData status="processed" value={mockData} />);
 
-    expect(screen.getByTestId('refund-gateway-data')).toBeInTheDocument();
-    expect(screen.getByText('Gateway response')).toBeInTheDocument();
-    expect(screen.getByText(`Error code: ${mockData.refund_code}`)).toBeInTheDocument();
-    expect(screen.getByText(mockData.refund_message)).toBeInTheDocument();
+    const gatewayContainer = screen.getByTestId('refund-gateway-data');
+    expect(gatewayContainer).toBeInTheDocument();
+    expect(gatewayContainer).toHaveTextContent(/Gateway response/i);
+    expect(gatewayContainer).toHaveTextContent(`Gateway code: ${mockData.refund_code}`);
+    expect(gatewayContainer).toHaveTextContent(`Gateway message: ${mockData.refund_message}`);
   });
 });
