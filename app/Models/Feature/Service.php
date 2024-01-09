@@ -399,11 +399,13 @@ class Service extends Base\Service
             $merchantId = $merchant->getId();
 
             // Fetch Merchant balance. Required to generate request body for account creation on ledger
-            $primaryBalance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
+            $primaryBalance = $this->repo->balance->getBalanceLockForUpdateBasedOnType($merchantId, BalanceType::PRIMARY);
 
             $reserveBalance = $this->repo->balance->getBalanceLockForUpdateBasedOnType($merchantId, BalanceType::RESERVE_PRIMARY);
 
             $reserveBalanceAmount =  isset($reserveBalance) ? $reserveBalance->getBalance() : 0;
+
+            $primaryBalanceAmount =  isset($primaryBalance) ? $primaryBalance->getBalance() : 0;
 
             //fetches fee, amount and refund credits from credits table
             $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchantId);
@@ -424,7 +426,7 @@ class Service extends Base\Service
             $result[Constants::ACCOUNTS_CREATED_RESPONSE] = (new BalanceCore)->createPGLedgerAccount(
                 $merchant,
                 $this->mode,
-                $primaryBalance->getBalance(),
+                $primaryBalanceAmount,
                 $creditBalances,
                 $reserveBalanceAmount
             );
@@ -435,7 +437,7 @@ class Service extends Base\Service
             }
 
             // sync merchant balance and credits on API and CLS
-            $result[Constants::BALANCE_RESPONSE] = (new BalanceCore)->updatePGMerchantBalance($merchant, $primaryBalance->getBalance());
+            $result[Constants::BALANCE_RESPONSE] = (new BalanceCore)->updatePGMerchantBalance($merchant, $primaryBalanceAmount);
 
             $result[Constants::CREDITS_RESPONSE] = (new BalanceCore)->updatePGLedgerMerchantCreditBalances($merchant, $creditBalances);
 
