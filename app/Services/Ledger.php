@@ -48,6 +48,10 @@ class Ledger
 
     protected $baseTestUrl;
 
+    protected $baseLivePgUrl;
+
+    protected $baseTestPgUrl;
+
     protected $mode;
 
     protected $key;
@@ -137,6 +141,7 @@ class Ledger
     const MODE = 'mode';
 
     const RAZORPAY_X_TENANT = 'X';
+    const RAZORPAY_PG_TENANT = 'PG';
 
     // transaction response constants
     const ID             = 'id';
@@ -181,6 +186,8 @@ class Ledger
 
         $this->baseLiveUrl = $this->config['url']['live'];
         $this->baseTestUrl = $this->config['url']['test'];
+        $this->baseLivePgUrl = $this->config['url']['pg']['live'];
+        $this->baseTestPgUrl = $this->config['url']['pg']['test'];
 
         // Refer: https://github.com/razorpay/api/issues/6385
         $this->mode = $app['rzp.mode'];
@@ -1083,17 +1090,31 @@ class Ledger
     {
         $url = '';
 
+        $this->addHeaders($headers);
+
         if ($this->mode === Mode::LIVE)
         {
-            $url = $this->baseLiveUrl . $endpoint;
+            if ($this->headers[self::LEDGER_TENANT_HEADER] === self::RAZORPAY_PG_TENANT)
+            {
+                $url = $this->baseLivePgUrl . $endpoint;
+            }
+            else
+            {
+                $url = $this->baseLiveUrl . $endpoint;
+            }
         }
 
         if ($this->mode === Mode::TEST)
         {
-            $url = $this->baseTestUrl . $endpoint;
+            if ($this->headers[self::LEDGER_TENANT_HEADER] === self::RAZORPAY_PG_TENANT)
+            {
+                $url = $this->baseTestPgUrl . $endpoint;
+            }
+            else
+            {
+                $url = $this->baseTestUrl . $endpoint;
+            }
         }
-
-        $this->addHeaders($headers);
 
         // json encode if data is must, else ignore.
         if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)

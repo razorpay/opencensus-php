@@ -1576,6 +1576,10 @@ return [
         'url'       => [
             'live' => env('LEDGER_LIVE_URL'),
             'test' => env('LEDGER_TEST_URL'),
+            'pg'   => [
+                'live' => env('LEDGER_LIVE_PG_URL'),
+                'test' => env('LEDGER_TEST_PG_URL'),
+            ]
         ],
         // Key and secret through which api will call ledger
         'ledger_key'        => env('LEDGER_KEY'),
