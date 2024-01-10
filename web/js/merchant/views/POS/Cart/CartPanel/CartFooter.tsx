@@ -7,8 +7,6 @@ import { ACTIONS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { processPrecheckoutPricing } from 'merchant/views/POS/helpers';
 
-import { CartFooterContainer } from './styles';
-
 type CartFooterProps = {
   isMaxReached: boolean;
 };
@@ -46,7 +44,17 @@ const CartFooter = ({ isMaxReached }: CartFooterProps): JSX.Element => {
   };
 
   return (
-    <CartFooterContainer>
+    <Box
+      backgroundColor="surface.background.level2.lowContrast"
+      position="absolute"
+      bottom="spacing.0"
+      width="100%"
+      minHeight="100px"
+      elevation="highRaised"
+      paddingTop="spacing.5"
+      paddingX="spacing.5"
+      paddingBottom={{ base: 'spacing.9', m: 'spacing.8' }}
+    >
       {isMaxReached ? (
         <Alert
           color="negative"
@@ -80,7 +88,7 @@ const CartFooter = ({ isMaxReached }: CartFooterProps): JSX.Element => {
           Place Order
         </Button>
       </Box>
-    </CartFooterContainer>
+    </Box>
   );
 };
 

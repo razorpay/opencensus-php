@@ -70,30 +70,29 @@ const PdpActions = ({ productCode, plan, containerRef }: PdpActionsProps): JSX.E
       height="50px"
       testID={isFloatingWidget ? 'floating-widget-actions' : 'pdp-actions'}
     >
-      <Box width="150px" marginRight={{ base: 'spacing.3', m: 'spacing.0' }}>
-        {cartItem ? (
-          <QuantityWidget
-            cartItem={cartItem}
-            onProductQuantityUpdate={onProductQuantityUpdate}
-            size="large"
-            isMinZero
-          />
-        ) : (
-          <AddToCartButton productCode={productCode} plan={plan} />
-        )}
+      {cartItem ? (
+        <QuantityWidget
+          cartItem={cartItem}
+          onProductQuantityUpdate={onProductQuantityUpdate}
+          size="large"
+          isMinZero
+        />
+      ) : (
+        <AddToCartButton productCode={productCode} plan={plan} />
+      )}
+      <Box flexGrow={1} marginLeft="spacing.4">
+        <Button
+          size="large"
+          icon={ArrowRightIcon}
+          iconPosition="right"
+          onClick={handleProceedtoCheckoutClick}
+          isDisabled={!cartItem}
+          testID="proceed-to-checkout"
+          isFullWidth={isMobile}
+        >
+          {isMobile ? 'Proceed' : 'Proceed to Order'}
+        </Button>
       </Box>
-      <Button
-        size="large"
-        marginLeft="spacing.2"
-        icon={ArrowRightIcon}
-        iconPosition="right"
-        onClick={handleProceedtoCheckoutClick}
-        isDisabled={!cartItem}
-        testID="proceed-to-checkout"
-        isFullWidth={isMobile}
-      >
-        {isMobile ? 'Proceed' : 'Proceed to Order'}
-      </Button>
     </Box>
   );
 

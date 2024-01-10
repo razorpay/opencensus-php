@@ -29,7 +29,7 @@ const TermsAndConditions = (): JSX.Element => {
                 m: index !== TERMS_AND_CONDITIONS.length - 1 ? 'thick' : 'none',
               }}
               borderRightColor="brand.gray.400.lowContrast"
-              paddingX={{ base: 'spacing.0', l: 'spacing.8' }}
+              paddingX={{ base: 'spacing.0', m: 'spacing.8' }}
             >
               {rows.map((row, rowNumber) => (
                 <Box key={row} display="flex">

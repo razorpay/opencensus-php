@@ -117,7 +117,7 @@ const ProductDescription = (): JSX.Element => {
                 <Title size="large" textAlign={isMobile ? 'center' : 'left'} testID="pdp-title">
                   {productTitle}
                 </Title>
-                <Box paddingTop="4px">
+                <Box paddingTop="4px" marginBottom="spacing.5">
                   <Heading
                     size="medium"
                     color="surface.text.subtle.lowContrast"

@@ -8,7 +8,14 @@ import { StyledPriceTagImage, StyledMainBannerImage } from './styles';
 
 const PriceTag = ({ value }: { value: number }): JSX.Element => {
   return (
-    <Box position="absolute" zIndex={1} bottom="10%" width="60%" minWidth="112px" right="160px">
+    <Box
+      position="absolute"
+      zIndex={1}
+      bottom="10%"
+      width="60%"
+      minWidth="112px"
+      right={{ base: '140px', m: '160px' }}
+    >
       <Box
         position="absolute"
         top="40%"

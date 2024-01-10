@@ -25,7 +25,7 @@ const ProductGalleryCarousel = ({ gallery, productTitle }: ProductGalleryCarouse
   };
 
   return (
-    <Box marginBottom="spacing.5" minHeight="300px">
+    <Box minHeight="300px">
       {photos?.length && (
         <Carousel onChange={onCarouselItemChange}>
           {photos.map((photo, index) => (
