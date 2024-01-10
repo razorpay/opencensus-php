@@ -1519,6 +1519,10 @@ class Service extends Base\Service
     // The calls are combined to reduce API latency.
     public function getTaxDetailsAndIfProductIsDigitalFromCheckout(string $checkoutId, array $address): array
     {
+        $address['city'] = empty($address['city']) === false ? $address['city'] : 'NA';
+
+        $address['zipcode'] = empty($address['zipcode']) === false ? $address['zipcode'] : $address['state_code']; //handles null check
+
         $response = (new Core)->updateShippingAddress($checkoutId, $address);
         // Based on logs the checkout response is still available if `errors` or `checkoutUserErrors` exists
         // for this mutation.
@@ -1565,6 +1569,10 @@ class Service extends Base\Service
 
     public function getTaxDetailsAndIfProductIsDigitalFromDraftOrder($order, $orderMeta, $address)
     {
+        $address['city'] = empty($address['city']) === false ? $address['city'] : 'NA';
+
+        $address['zipcode'] = empty($address['zipcode']) === false ? $address['zipcode'] : $address['state_code']; //handles null check
+
         $stateCode = (new StateMap)->getShopifyStateCode($address);
 
         $orderMeta['customer_details'] =[

@@ -22,6 +22,10 @@ class StateMap
                 $shopifyStateCode = $this->getShopifyStateCodeMY($address['state_code']);
                 break;
 
+            case 'it';
+                $shopifyStateCode = $this->getShopifyStateCodeIT($address['state_code']);
+                break;
+
             default:
                 $shopifyStateCode = $address['state_code'];
                 break;
@@ -112,6 +116,20 @@ class StateMap
         return $shopifyStateCode;
     }
 
+     //Fetching the state code on Shopify using the state name for Italy
+     function getShopifyStateCodeIT($stateCode)
+     {
+ 
+         $shippingStateCodeMap = [
+             'lombardy' => 'MI',
+             'calabria' => 'CZ',
+         ];
+ 
+         $shopifyStateCode = isset($shippingStateCodeMap[$stateCode]) ? $shippingStateCodeMap[$stateCode] : $stateCode;
+ 
+         return $shopifyStateCode;
+     }
+     
     //Fetching the state code on Shopify using the state name for Malaysia
     function getShopifyStateCodeMY($stateCode)
     {
