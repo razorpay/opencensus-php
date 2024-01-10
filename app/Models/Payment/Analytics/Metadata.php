@@ -174,6 +174,7 @@ class Metadata
     const JPMC_IMPORT_FLOW_SUPPORTED_LIBRARIES = [
         self::S2S,
         self::RAZORPAYJS,
+        self::CHECKOUTJS,
     ];
 
     const LRS_SUPPORTED_LIBRARIES = [

@@ -4190,7 +4190,7 @@ trait Authorize
         if ($payment->merchant->isInternational() === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Payment method request not allowed as international is disabled on the merchant.');
+                'Payment method request not allowed as international is enabled on the merchant.');
         }
 
         if ($payment->isInternational() === true)
@@ -4249,7 +4249,7 @@ trait Authorize
         if($payment->order->hasOrderMeta() === false || $payment->order->isCartInfoOrderMeta() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Payment order does not have a customer shipping address.', 'order.shipping_details');
+                'Payment order does not have a customer shipping address.', 'order.customer_details');
         }
 
         // validate if payment raised in jpmc supported currencies

@@ -1061,6 +1061,22 @@ class Service extends Base\Service
                     $paymentId = substr($str1, 4);
                     $transactionEntity = $this->repo->transaction->findByEntityIdWithConnection($paymentId, $merchant, true);
 
+                    if ($transactionEntity->getSettlementId() !== $settlementEntity->getId())
+                    {
+                        $this->trace->error(TraceCode::JPMC_REPATRIATION_FAILED, [
+                            'message'           => 'Invalid Transaction, file contains txn from diff settlements',
+                            'input'             => $input,
+                            'file_details'      => $fileDetails,
+                            'file_name'         => $fileName,
+                            'txn_id'            => $transactionEntity->getId(),
+                            'txn_settlement'    => $transactionEntity->getSettlementId(),
+                            'settl_id'          => $settlementEntity->getId(),
+                            'record'            => $row,
+                        ]);
+
+                        return ['success' => false, 'txn_id' => $transactionEntity->getId(), 'txn_settlement' => $transactionEntity->getSettlementId(), 'settl_id' => $settlementEntity->getId(), 'record' => $row, 'message' => 'Invalid Transaction, file contains txn from diff settlements'];
+                    }
+
                     $txnAmount = $transactionEntity->getCredit();
                     $rowAmount = $row['net_invoice_amount'] * 100;
 

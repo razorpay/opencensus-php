@@ -2084,7 +2084,7 @@ class Service extends Base\Service
 
         // Get payment supporting documents for opgsp import flow on dashboard.
         if($this->auth->isProxyAuth() === true and
-            $this->merchant->isOpgspImportEnabled())
+            ($this->merchant->isOpgspImportEnabled() || $this->merchant->isJpmcImportFlowEnabled()))
         {
            return $this->fetchPaymentDocumentsThroughInvoice($payments, $merchantId);
         }
@@ -2118,6 +2118,19 @@ class Service extends Base\Service
 
             $paymentsResponse = $payments->toArrayPublic();
 
+            switch (true)
+            {
+                case ($this->merchant->isOpgspImportEnabled() === true):
+                    $invoiceType = InvoiceType::OPGSP_INVOICE;
+                    break;
+                case ($this->merchant->isJpmcImportFlowEnabled() === true):
+                    $invoiceType = InvoiceType::JPMC_INVOICE;
+                    break;
+                default:
+                    $invoiceType = '';
+                    break;
+            }
+
             foreach ($paymentsResponse['items'] as &$paymentResponse)
             {
                 if(!isset($paymentDocumentTypeMap[substr($paymentResponse['id'],4)]))
@@ -2127,7 +2140,7 @@ class Service extends Base\Service
                 $documentData = $paymentDocumentTypeMap[substr($paymentResponse['id'],4)];
 
                 $paymentResponse[InvoiceType::OPGSP_INVOICE . '_doc'] =
-                    $documentData[InvoiceType::OPGSP_INVOICE];
+                    $documentData[$invoiceType];
             }
 
             return $paymentsResponse;

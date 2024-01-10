@@ -578,7 +578,7 @@ class Core extends Base\Core
             'amount'            => $orderEntity->getAmount(),
             'currency'          => $orderEntity->getCurrency(),
             'customer_id'       => $orderEntity->getCustomerId(),
-            'shipping_details'  => $cartInfo['shipping_details'] ?? '',
+            'shipping_details'  => $cartInfo['customer_details'] ?? '',
         ];
 
         $merchantDetails = [

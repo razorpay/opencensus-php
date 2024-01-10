@@ -410,14 +410,14 @@ class Shield
 
         $customerOrderData = array();
         $shippingDetails = null;
-        $shippingDetails =  array_merge($cartInfo['customer_details']['shipping_address'], $cartInfo['shipping_details']);
+        $shippingDetails =  array_merge($cartInfo['customer_details']['shipping_address'] ?? [], $cartInfo['shipping_details'] ?? []);
         unset($cartInfo['customer_details']['shipping_address']);
 
-        $customer = $cartInfo['customer_details'];
-        $customer['booking_channel'] = $customer['insights']['booking_channel'];
-        $customer['has_account'] = $customer['insights']['has_account'];
-        $customer['registered_at'] = $customer['insights']['registered_at'];
-        $customer['tier'] = $customer['insights']['tier'];
+        $customer = $cartInfo['customer_details'] ?? [];
+        $customer['booking_channel'] = $customer['insights']['booking_channel'] ?? '';
+        $customer['has_account'] = $customer['insights']['has_account'] ?? '';
+        $customer['registered_at'] = $customer['insights']['registered_at'] ?? '';
+        $customer['tier'] = $customer['insights']['tier'] ?? '';
         
         unset($customer['insights']['registered_at']);
         unset($customer['insights']['tier']);
