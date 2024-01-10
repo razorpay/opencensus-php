@@ -247,9 +247,7 @@ class App extends Component {
     partner_type,
     isBankingRequest,
   }) => {
-    if (!user.isActivated && this.state.isPartnerModeEnabled) {
-      this.partnerActivationKycCallback({ data, user, currentMode });
-    }
+    this.partnerActivationKycCallback({ data, user, currentMode });
     if (!isBankingRequest && PARTNER_ACTIVATION_APPLICABLE_TYPES.includes(partner_type)) {
       this.fetchPartnerActivationStatusUpdate({ data });
     }
@@ -456,11 +454,9 @@ class App extends Component {
 
         const { partner_type } = user?.merchants?.[user.current] || {};
         const isBankingRequest = window?.is_banking_request;
-        // use partner mode if merchant kyc is not activated and it's enabled
-        if (
-          (!user.isActivated && this.state.isPartnerModeEnabled) ||
-          (!isBankingRequest && PARTNER_ACTIVATION_APPLICABLE_TYPES.includes(partner_type))
-        ) {
+
+        // Update partner mode and activation details in store if the user is a partner
+        if (partner_type !== null) {
           this.fetchPartnerActivationStatus().then(({ data }) => {
             this.fetchPartnerActivationStatusCallback({
               data,
