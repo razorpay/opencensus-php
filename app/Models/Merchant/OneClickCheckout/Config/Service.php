@@ -270,6 +270,13 @@ class Service extends Base\Service
                             $input[Type::ORDER_STATUS_UPDATE_URL]
                         );
                     }
+
+                    if (isset($input[Type::SHIPPING_SOURCE])) {
+                        (new Core)->associateMerchant1ccConfig(
+                            Type::SHIPPING_SOURCE,
+                            $input[Type::SHIPPING_SOURCE]
+                        );
+                    }
                 }
 
                 /*
@@ -742,6 +749,13 @@ class Service extends Base\Service
             $shippingInfoUrl = $shippingInfoUrlConfig->getValue();
         }
 
+        $shippingSourceConfig = $this->merchant->getShippingSourceConfig();
+        $shippingSource = null;
+        if ($shippingSourceConfig !== null)
+        {
+            $shippingSource = $shippingSourceConfig->getValue();
+        }  
+
         $couponsUrlConfig = $this->merchant->getFetchCouponsUrlConfig();
         $couponsUrl = null;
         if ($couponsUrlConfig !== null)
@@ -783,7 +797,8 @@ class Service extends Base\Service
             "apply_promotion" => $applyCouponUrl,
             "cod_slabs"       => $codSlabs,
             "platform"        => $merchantPlatform,
-            "coupon_config"   => $couponConfig
+            "coupon_config"   => $couponConfig,
+            "shipping_source" => $shippingSource
         ];
 
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::WOOCOMMERCE)

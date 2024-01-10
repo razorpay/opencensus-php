@@ -1916,6 +1916,15 @@ class Entity extends Base\PublicEntity
             );
     }
 
+    public function getShippingSourceConfig()
+    {
+        return (new Merchant1ccConfig\Repository())
+            ->findByMerchantAndConfigType(
+                $this->getId(),
+                Merchant1ccConfig\Type::SHIPPING_SOURCE
+            );
+    }
+
     public function getCODIntelligenceConfig() : bool
     {
         $codIntelligenceConfig =  (new Merchant1ccConfig\Repository())->

@@ -19,6 +19,7 @@ class Type {
     const ONE_CC_HANDLE_DIGITAL_PRODUCT    = 'one_cc_handle_digital_product';
     const ONE_CC_GUPSHUP_CREDENTIALS       = 'one_cc_gupshup_credentials';
     const ONE_CC_ENABLE_GUPSHUP            = 'one_cc_enable_gupshup';
+    const SHIPPING_SOURCE                  = 'shipping_source';
 
     const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
     const ONE_CC_GIFT_CARD_RESTRICT_COUPON = 'one_cc_gift_card_restrict_coupon';

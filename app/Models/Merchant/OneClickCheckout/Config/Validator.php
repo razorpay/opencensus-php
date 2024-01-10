@@ -39,6 +39,7 @@ class Validator extends Base\Validator
         "one_cc_capture_order_instructions"  => 'sometimes|boolean',
         'one_cc_prepay_cod_conversion'       => 'sometimes|array',
         "shipping_engine"                => 'sometimes|boolean',
+        "shipping_source"                => 'sometimes|string|in:shiprocket,merchant,null',
     ];
 
     protected static $shopifyRules = [
