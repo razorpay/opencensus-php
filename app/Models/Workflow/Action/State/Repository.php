@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Action\State;
 
 use RZP\Models\Workflow\Base;
+use RZP\Models\State\Entity as ActionState;
 
 class Repository extends Base\Repository
 {
@@ -12,4 +13,13 @@ class Repository extends Base\Repository
         Entity::ADMIN_ID  => 'sometimes|string|max:14',
         Entity::ACTION_ID => 'sometimes|string|max:14',
     ];
+    
+    public function getLatestActionStateByEntityIdAndType(string $entityId, string $entityType)
+    {
+        return  $this->newQueryWithConnection($this->getMasterReplicaConnection())
+                     ->where(ActionState::ENTITY_TYPE, $entityType)
+                     ->where(ActionState::ENTITY_ID, $entityId)
+                     ->orderByDesc(Entity::UPDATED_AT)
+                     ->first();
+    }
 }

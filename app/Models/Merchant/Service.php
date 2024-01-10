@@ -10357,6 +10357,22 @@ class Service extends Base\Service
         return $merchantProducts;
     }
 
+    public function  getMerchantLastActivationStatusUpdatedAt(): string
+    {
+        $entityId   = $this->merchant->getId();
+        $entityType = EntityConstants::MERCHANT_DETAIL;
+
+        $actionState = $this->repo->action_state->getLatestActionStateByEntityIdAndType($entityId, $entityType);
+        
+        if ($actionState === null)
+        {
+            return "";
+        }
+        
+        return $actionState[Entity::UPDATED_AT];
+    }
+    
+    
     public function getMerchantSupportOptionFlags() : array
     {
         $isActivated = $this->merchant->isActivated();
@@ -10371,6 +10387,7 @@ class Service extends Base\Service
         $response = [
             'show_chat'                                 =>      $this->canChatOnDashboard($isActivated),
             "show_create_ticket_popup"                  =>      $showCreateTicketPopup,
+            'last_activation_status_changed_at'         =>      $this->getMerchantLastActivationStatusUpdatedAt()
         ];
 
         $variant  = $this->app->razorx->getTreatment(

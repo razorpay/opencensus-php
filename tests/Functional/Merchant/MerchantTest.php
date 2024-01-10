@@ -328,6 +328,13 @@ class MerchantTest extends TestCase
             'activation_status'             => 'needs_clarification',
             'submitted_at'                  => 1539543931,
         ]);
+    
+        $this->fixtures->create('action_state', [
+            'entity_type'                   => 'merchant_detail',
+            'entity_id'                     => '10000000000000',
+            'name'                          => 'approved',
+            'updated_at'                    => 1512995607,
+        ]);
 
         $this->mockMerchantImpersonated();
 
@@ -14484,7 +14491,15 @@ Team Razorpay',
             'name'        => 'under_review',
             'created_at'  =>  1539543931
         ]);
-
+    
+        $this->fixtures->on('test')->create('action_state', [
+          'entity_type'                   => 'merchant_detail',
+          'entity_id'                     => '10000000000000',
+          'name'                          => 'approved',
+          'updated_at'                    => 1639543931,
+        ]);
+        
+        
         foreach ($testCases as $testCase)
         {
             $this->testData[__FUNCTION__]['response'] = $testCase[self::RESPONSE];
@@ -14558,10 +14573,11 @@ Team Razorpay',
                 ],
                 self::RESPONSE       => [
                     'content' => [
-                        "show_chat"                 =>  false,
-                        "show_create_ticket_popup"  =>  true,
-                        "message_body"              =>  "We received your activation form on October 14, 2018. Your documents and KYC details are under review. It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any other clarification. Please go through our FAQs if you have any other queries.",
-                        "cta_list"                  =>  $popupDataForActivationStatus[ActivationStatus::UNDER_REVIEW][MerchantConstants::X_HOURS_AFTER_ACTIVATION_FORM_SUBMISSION][MerchantConstants::CTA_LIST],
+                        "show_chat"                         =>  false,
+                        "show_create_ticket_popup"          =>  true,
+                        "message_body"                      =>  "We received your activation form on October 14, 2018. Your documents and KYC details are under review. It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any other clarification. Please go through our FAQs if you have any other queries.",
+                        "cta_list"                          =>  $popupDataForActivationStatus[ActivationStatus::UNDER_REVIEW][MerchantConstants::X_HOURS_AFTER_ACTIVATION_FORM_SUBMISSION][MerchantConstants::CTA_LIST],
+                        "last_activation_status_changed_at" => "1639543931"
                     ],
                 ],
                 self::CREATE_MERCHANT_DETAILS   =>  [
@@ -14582,10 +14598,11 @@ Team Razorpay',
                 ],
                 self::RESPONSE       => [
                     'content' => [
-                        "show_chat"                 =>  false,
-                        "show_create_ticket_popup"  =>  true,
-                        "cta_list"                  => $popupDataForActivationStatus[ActivationStatus::UNDER_REVIEW][MerchantConstants::X_HOURS_WITHIN_ACTIVATION_FORM_SUBMISSION][MerchantConstants::CTA_LIST],
-                        "message_body"              => "We received your activation form on October 14, 2018. Your documents and KYC details are under review. It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any clarification. Please go through our FAQs if you have any other queries.",
+                        "show_chat"                         =>  false,
+                        "show_create_ticket_popup"          =>  true,
+                        "cta_list"                          => $popupDataForActivationStatus[ActivationStatus::UNDER_REVIEW][MerchantConstants::X_HOURS_WITHIN_ACTIVATION_FORM_SUBMISSION][MerchantConstants::CTA_LIST],
+                        "message_body"                      => "We received your activation form on October 14, 2018. Your documents and KYC details are under review. It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any clarification. Please go through our FAQs if you have any other queries.",
+                        "last_activation_status_changed_at" => "1639543931"
                     ],
                 ],
                 self::EDIT_MERCHANT_DETAILS     =>  [
@@ -14606,10 +14623,11 @@ Team Razorpay',
                 ],
                 self::RESPONSE       => [
                     'content' => [
-                        "show_chat"                 =>  false,
-                        "show_create_ticket_popup"  =>  true,
-                        "cta_list"                  => $popupDataForActivationStatus[ActivationStatus::NEEDS_CLARIFICATION][MerchantConstants::NON_DEDUPE_MERCHANT][MerchantConstants::CTA_LIST],
-                        "message_body"              => $popupDataForActivationStatus[ActivationStatus::NEEDS_CLARIFICATION][MerchantConstants::NON_DEDUPE_MERCHANT][MerchantConstants::MESSAGE],
+                        "show_chat"                         =>  false,
+                        "show_create_ticket_popup"          =>  true,
+                        "cta_list"                          => $popupDataForActivationStatus[ActivationStatus::NEEDS_CLARIFICATION][MerchantConstants::NON_DEDUPE_MERCHANT][MerchantConstants::CTA_LIST],
+                        "message_body"                      => $popupDataForActivationStatus[ActivationStatus::NEEDS_CLARIFICATION][MerchantConstants::NON_DEDUPE_MERCHANT][MerchantConstants::MESSAGE],
+                        "last_activation_status_changed_at" => "1639543931"
                     ],
                 ],
                 self::EDIT_MERCHANT_DETAILS   =>  [
@@ -14629,10 +14647,11 @@ Team Razorpay',
                 ],
                 self::RESPONSE       => [
                     'content' => [
-                        "show_chat"                 => true,
-                        "show_create_ticket_popup"  => true,
-                        "cta_list"                  => $popupDataForActivationStatus[ActivationStatus::REJECTED][MerchantConstants::DEFAULT][MerchantConstants::CTA_LIST],
-                        "message_body"              => $popupDataForActivationStatus[ActivationStatus::REJECTED][MerchantConstants::DEFAULT][MerchantConstants::MESSAGE],
+                        "show_chat"                         => true,
+                        "show_create_ticket_popup"          => true,
+                        "cta_list"                          => $popupDataForActivationStatus[ActivationStatus::REJECTED][MerchantConstants::DEFAULT][MerchantConstants::CTA_LIST],
+                        "message_body"                      => $popupDataForActivationStatus[ActivationStatus::REJECTED][MerchantConstants::DEFAULT][MerchantConstants::MESSAGE],
+                        "last_activation_status_changed_at" => "1639543931"
                     ],
                 ],
                 self::EDIT_MERCHANT_DETAILS   =>  [
@@ -14652,10 +14671,11 @@ Team Razorpay',
                 ],
                 self::RESPONSE       => [
                     'content' => [
-                        "show_chat"                 => true,
-                        "show_create_ticket_popup"  => true,
-                        "cta_list"                  => $popupDataForFormFillRange[0][MerchantConstants::CTA_LIST],
-                        "message_body"              => $popupDataForFormFillRange[0][MerchantConstants::MESSAGE],
+                        "show_chat"                         => true,
+                        "show_create_ticket_popup"          => true,
+                        "cta_list"                          => $popupDataForFormFillRange[0][MerchantConstants::CTA_LIST],
+                        "message_body"                      => $popupDataForFormFillRange[0][MerchantConstants::MESSAGE],
+                        "last_activation_status_changed_at" => "1639543931"
                     ]
                 ],
                 self::EDIT_MERCHANT_DETAILS   =>  [
@@ -14676,10 +14696,11 @@ Team Razorpay',
                 ],
                 self::RESPONSE       => [
                     'content' => [
-                        "show_chat"                 =>  true,
-                        "show_create_ticket_popup"  =>  true,
-                        "cta_list"                  => $popupDataForFormFillRange[1][MerchantConstants::CTA_LIST],
-                        "message_body"              => $popupDataForFormFillRange[1][MerchantConstants::MESSAGE],
+                        "show_chat"                         =>  true,
+                        "show_create_ticket_popup"          =>  true,
+                        "cta_list"                          => $popupDataForFormFillRange[1][MerchantConstants::CTA_LIST],
+                        "message_body"                      => $popupDataForFormFillRange[1][MerchantConstants::MESSAGE],
+                        "last_activation_status_changed_at" => "1639543931"
                     ],
                 ],
                 self::EDIT_MERCHANT_DETAILS     =>  [
@@ -14700,8 +14721,9 @@ Team Razorpay',
                 ],
                 self::RESPONSE       => [
                     'content' => [
-                        "show_chat"                 =>  true,
-                        "show_create_ticket_popup"  =>  false
+                        "show_chat"                         =>  true,
+                        "show_create_ticket_popup"          =>  false,
+                        "last_activation_status_changed_at" => "1639543931"
                     ],
                 ],
                 self::ACTIVATE_MERCHANT =>  [1]
@@ -14713,8 +14735,9 @@ Team Razorpay',
                 ],
                 self::RESPONSE       => [
                     'content' => [
-                        "show_chat"                 =>  false,
-                        "show_create_ticket_popup"  =>  false
+                        "show_chat"                         =>  false,
+                        "show_create_ticket_popup"          =>  false,
+                        "last_activation_status_changed_at" => "1639543931"
                     ],
                 ],
                 self::ACTIVATE_MERCHANT =>  [1],
@@ -14728,8 +14751,9 @@ Team Razorpay',
                 ],
                 self::RESPONSE       => [
                     'content' => [
-                        "show_chat"                 =>  true,
-                        "show_create_ticket_popup"  =>  false
+                        "show_chat"                         =>  true,
+                        "show_create_ticket_popup"          =>  false,
+                        "last_activation_status_changed_at" => "1639543931"
                     ],
                 ],
                 self::ACTIVATE_MERCHANT =>  [1],
@@ -14744,8 +14768,9 @@ Team Razorpay',
                 ],
                 self::RESPONSE       => [
                     'content' => [
-                        "show_chat"                 =>  false,
-                        "show_create_ticket_popup"  =>  false
+                        "show_chat"                         =>  false,
+                        "show_create_ticket_popup"          =>  false,
+                        "last_activation_status_changed_at" => "1639543931"
                     ],
                 ],
                 self::ACTIVATE_MERCHANT =>  [1],

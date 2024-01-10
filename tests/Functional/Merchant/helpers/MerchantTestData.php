@@ -10626,10 +10626,11 @@ return [
 
         'response' => [
             'content' => [
-                "show_chat"                => false,
-                "show_create_ticket_popup" => false,
-                "message_body"             => "",
-                "cta_list"                 => [],
+                "last_activation_status_changed_at" =>  "1512995607",
+                "show_chat"                         => false,
+                "show_create_ticket_popup"          => false,
+                "message_body"                      => "",
+                "cta_list"                          => [],
             ],
         ],
     ],
