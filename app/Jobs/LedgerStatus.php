@@ -59,6 +59,8 @@ class LedgerStatus extends Job
     const LEDGER_RESPONSE_MSG       = 'msg';
     const LEDGER_RECORD_NOT_FOUND   = 'record_not_found';
 
+    const LEDGER_STATUS_JOB_NAME = 'worker:ledger_status';
+
     public function __construct(string $mode, array $ledgerRequest, array $feeSplit = null, bool $retryEnabled = true)
     {
         parent::__construct($mode);

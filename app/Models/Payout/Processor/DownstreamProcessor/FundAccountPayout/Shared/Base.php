@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Jobs\Transactions;
+use RZP\Jobs\LedgerStatus;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Core;
 use RZP\Models\Payout\Entity;
@@ -349,8 +350,16 @@ class Base extends FundAccountPayout\Base
         }
         else
         {
-            // reverse free payout consumed in case payout fails due to transaction creation error from ledger
-            if ($payout->getFeeType() === Entity::FREE_PAYOUT) {
+            $jobName = app('worker.ctx')->getJobName() ?? null;
+
+            /**
+             * Reverse free payout consumed in case payout fails due to transaction creation error from ledger, only inside
+             * ledger_status job. For cases, when its in sync flow, free payouts decrement is handled inside catch block
+             * encapsulating parent::createPayout inside createBankingPayout method.
+             */
+            if (($jobName === LedgerStatus::LEDGER_STATUS_JOB_NAME) and
+                ($payout->getFeeType() === Entity::FREE_PAYOUT))
+            {
                 (new CounterHelper)->decreaseFreePayoutsConsumedInCaseOfTransactionFailure($payout->getBalanceId());
             }
 

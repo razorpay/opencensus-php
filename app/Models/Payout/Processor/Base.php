@@ -934,7 +934,7 @@ class Base extends BaseCore
         {
             $balanceId = $payout->getBalanceId();
 
-            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+            (new Payout\Core)->handleFreePayoutsConsumedInCaseOfFailure($payout->balance, $throwable, $feeType);
 
             $this->trace->traceException(
                 $throwable,
@@ -951,7 +951,6 @@ class Base extends BaseCore
 
             throw $throwable;
         }
-
 
         $this->fireEventForPayoutStatus($payout);
 
@@ -1081,7 +1080,7 @@ class Base extends BaseCore
         {
             $balanceId = $payout->getBalanceId();
 
-            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+            (new Payout\Core)->handleFreePayoutsConsumedInCaseOfFailure($payout->balance, $throwable, $feeType);
 
             $this->trace->info(
                 TraceCode::ON_HOLD_PAYOUT_PROCESS_EXCEPTION,
@@ -1225,7 +1224,7 @@ class Base extends BaseCore
         {
             $balanceId = $payout->getBalanceId();
 
-            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+            (new Payout\Core)->handleFreePayoutsConsumedInCaseOfFailure($payout->balance, $throwable, $feeType);
 
             $this->trace->traceException(
                 $throwable,
@@ -1490,7 +1489,7 @@ class Base extends BaseCore
             }
             else if ($highTpsPayoutIngressFlag === false)
             {
-                (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+                (new Payout\Core)->handleFreePayoutsConsumedInCaseOfFailure($payout->balance, $ex, $feeType);
             }
 
             $payout->reload();
@@ -1779,7 +1778,7 @@ class Base extends BaseCore
         {
             $balanceId = $payout->getBalanceId();
 
-            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+            (new Payout\Core)->handleFreePayoutsConsumedInCaseOfFailure($payout->balance, $throwable, $feeType);
 
             $this->trace->traceException(
                 $throwable,
@@ -1970,7 +1969,7 @@ class Base extends BaseCore
         {
             $balanceId = $payout->getBalanceId();
 
-            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+            (new Payout\Core)->handleFreePayoutsConsumedInCaseOfFailure($payout->balance, $throwable, $feeType);
 
             $this->trace->traceException(
                 $throwable,

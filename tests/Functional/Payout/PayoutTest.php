@@ -12,6 +12,7 @@ use Mockery;
 use RZP\Jobs\EsSync;
 use RZP\Services\Mock\Stork;
 use \WpOrg\Requests\Response;
+use RZP\Error\PublicErrorCode;
 use Razorpay\Edge\Passport\Passport;
 
 use Carbon\Carbon;
@@ -19,6 +20,7 @@ use Illuminate\Queue\SqsQueue;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Mail\PayoutLink\Approval;
+use RZP\Exception\IntegrationException;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\PayoutOutbox\Constants as PayoutOutboxConstants;
 use RZP\Services\DiagClient;
@@ -31548,7 +31550,81 @@ class PayoutTest extends OAuthTestCase
         $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
         $this->app->instance('ledger', $mockLedger);
 
-        $this->expectException(BadRequestException::class);
+        $mockLedger->shouldReceive('createJournal')
+                   ->times(1)
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $balance = $this->bankingBalance;
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        $freePayoutsCountBefore = $counter->getFreePayoutsConsumed();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000,
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]                                               = $this->testData['testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes'];
+        $this->testData[__FUNCTION__]['request']['content']['queue_if_low_balance'] = 0;
+
+        $this->testData[__FUNCTION__]['response']  = [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the payout operation.',
+                ],
+            ],
+            'status_code' => 400,
+        ];
+
+        $this->testData[__FUNCTION__]['exception'] = [
+            'class'               => \RZP\Exception\BadRequestException::Class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+        ];
+
+        $this->startTest();
+
+        $counter->reload();
+
+        $freePayoutsCountAfter = $counter->getFreePayoutsConsumed();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals($freePayoutsCountBefore, $freePayoutsCountAfter);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('failed', $payout->getStatus());
+    }
+
+    public function testPayoutCreationFailedDueToInsufficientBalanceWhenFreePayoutsAreAvailableButModeNotApplicableWithoutQueuedFlagInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
 
         $mockLedger->shouldReceive('createJournal')
                    ->times(1)
@@ -31591,6 +31667,23 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__]                                               = $this->testData['testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes'];
         $this->testData[__FUNCTION__]['request']['content']['queue_if_low_balance'] = 0;
 
+        $this->testData[__FUNCTION__]['response']  = [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the payout operation.',
+                ],
+            ],
+            'status_code' => 400,
+        ];
+
+        $this->testData[__FUNCTION__]['exception'] = [
+            'class'               => \RZP\Exception\BadRequestException::Class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+        ];
+
+        (new AdminService)->setConfigKeys([ConfigKey::FREE_PAYOUTS_SUPPORTED_MODES => ['IMPS']]);
+
         $this->startTest();
 
         $counter->reload();
@@ -31603,6 +31696,289 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertEquals('failed', $payout->getStatus());
+    }
+
+    public function testPayoutCreationFailedDueToInsufficientBalanceWhenFreePayoutsAreAvailableButModeNotApplicableWithQueuedFlagInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->times(1)
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $balance = $this->bankingBalance;
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        $freePayoutsCountBefore = $counter->getFreePayoutsConsumed();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000,
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]                                               = $this->testData['testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes'];
+        $this->testData[__FUNCTION__]['request']['content']['queue_if_low_balance'] = 1;
+
+        (new AdminService)->setConfigKeys([ConfigKey::FREE_PAYOUTS_SUPPORTED_MODES => ['IMPS']]);
+
+        $this->startTest();
+
+        $counter->reload();
+
+        $freePayoutsCountAfter = $counter->getFreePayoutsConsumed();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals($freePayoutsCountBefore, $freePayoutsCountAfter);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('queued', $payout->getStatus());
+    }
+
+    public function testPayoutCreationFailedDueToInsufficientBalanceWhenFreePayoutsAreNotAvailableAndWithoutQueuedFlagInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->times(1)
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $balance = $this->bankingBalance;
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        $counter = $this->fixtures->edit(
+            'counter',
+            $counter->getId(),
+            [
+                'free_payouts_consumed' => 2000,
+            ]);
+
+        $freePayoutsCountBefore = $counter->getFreePayoutsConsumed();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000,
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]                                               = $this->testData['testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes'];
+        $this->testData[__FUNCTION__]['request']['content']['queue_if_low_balance'] = 0;
+
+        $this->testData[__FUNCTION__]['response']  = [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the payout operation.',
+                ],
+            ],
+            'status_code' => 400,
+        ];
+
+        $this->testData[__FUNCTION__]['exception'] = [
+            'class'               => \RZP\Exception\BadRequestException::Class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+        ];
+
+        $this->startTest();
+
+        $counter->reload();
+
+        $freePayoutsCountAfter = $counter->getFreePayoutsConsumed();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals($freePayoutsCountBefore, $freePayoutsCountAfter);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('failed', $payout->getStatus());
+    }
+
+    public function testPayoutCreationFailedDueToInsufficientBalanceWhenFreePayoutsAreNotAvailableAndWithQueuedFlagInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->times(1)
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $balance = $this->bankingBalance;
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        $counter = $this->fixtures->edit(
+            'counter',
+            $counter->getId(),
+            [
+                'free_payouts_consumed' => 2000,
+            ]);
+
+        $freePayoutsCountBefore = $counter->getFreePayoutsConsumed();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000,
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]                                               = $this->testData['testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes'];
+        $this->testData[__FUNCTION__]['request']['content']['queue_if_low_balance'] = 1;
+
+        $this->startTest();
+
+        $counter->reload();
+
+        $freePayoutsCountAfter = $counter->getFreePayoutsConsumed();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals($freePayoutsCountBefore, $freePayoutsCountAfter);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('queued', $payout->getStatus());
+    }
+
+    public function testPayoutCreationFailedDueLedgerFailureWhenFreePayoutsAreAvailableInLedgerReverseShadowMode()
+    {
+        Queue::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->times(4)
+                   ->andThrow(new IntegrationException('Unexpected response code received from Ledger service.'));
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $balance = $this->bankingBalance;
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
+
+        $freePayoutsCountBefore = $counter->getFreePayoutsConsumed();
+
+        $this->fixtures->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 2000,
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes'];
+
+        $this->testData[__FUNCTION__]['request']['content']['queue_if_low_balance'] = 1;
+
+        $this->testData[__FUNCTION__]['response']  = [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ];
+
+        $this->testData[__FUNCTION__]['exception'] = [
+            'class'               => \RZP\Exception\IntegrationException::Class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_INTEGRATION_ERROR,
+        ];
+
+        $this->startTest();
+
+        $counter->reload();
+
+        $freePayoutsCountAfter = $counter->getFreePayoutsConsumed();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals($freePayoutsCountBefore, $freePayoutsCountAfter);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('reversed', $payout->getStatus());
     }
 
     public function testPayoutProcessedMailViaStatementProcessing()

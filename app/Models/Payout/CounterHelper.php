@@ -211,6 +211,11 @@ class CounterHelper extends Base\Core
                         self::CRITERIA                                      => self::TRANSACTION_FAILURE,
                     ]
                 );
+
+                if ($counter->getFreePayoutsConsumed() < 0)
+                {
+                    $this->trace->count(Metric::NEGATIVE_FREE_PAYOUT_CONSUMED_COUNT);
+                }
             }
         }
     }
@@ -416,6 +421,11 @@ class CounterHelper extends Base\Core
                 $counter->setFreePayoutsConsumed($freePayoutsConsumed - 1);
 
                 $this->repo->counter->saveOrFail($counter);
+
+                if ($counter->getFreePayoutsConsumed() < 0)
+                {
+                    $this->trace->count(Metric::NEGATIVE_FREE_PAYOUT_CONSUMED_COUNT);
+                }
 
                 return $counter;
             });

@@ -6058,6 +6058,28 @@ class Core extends Base\Core
         }
     }
 
+    public function handleFreePayoutsConsumedInCaseOfFailure(
+        $balance, $exception, $feeType)
+    {
+        $isLedgerReverseShadowEnabled =
+            ($balance->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === true);
+
+        $internalErrorCode = (method_exists($exception, 'getError') === true) ?
+            optional($exception->getError())->getInternalErrorCode() : null;
+
+        /**
+         * Keeping this check here, as for this error Code, decrementing of free payouts is already handled in
+         * failPayoutPostLedgerFailure function for merchants enabled on ledger reverse shadow
+         */
+        if (($isLedgerReverseShadowEnabled === true) and
+            ($internalErrorCode === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING))
+        {
+            return;
+        }
+
+        $this->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balance->getId(), $feeType);
+    }
+
     public function getFreePayoutsAttributes(string $balanceId)
     {
         try

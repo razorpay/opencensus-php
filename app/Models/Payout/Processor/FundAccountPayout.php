@@ -354,7 +354,7 @@ class FundAccountPayout extends Base
         {
             $balanceId = $input[Balance\Entity::BALANCE_ID];
 
-            (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+            (new Payout\Core)->handleFreePayoutsConsumedInCaseOfFailure($balance, $throwable, $feeType);
 
             $this->trace->traceException(
                 $throwable,

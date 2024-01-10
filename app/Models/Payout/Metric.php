@@ -68,6 +68,7 @@ final class Metric
     const FTS_SMART_ROUTING_FAILURES_COUNT                          = 'fts_smart_routing_failures_count';
     const SMART_ROUTING_BAS_FETCH_FAILURES_COUNT                    = 'smart_routing_bas_fetch_failures_count';
     const TOTAL_SMART_ROUTING_PAYOUTS_COUNT                         = 'total_smart_routing_payouts_count';
+    const NEGATIVE_FREE_PAYOUT_CONSUMED_COUNT                       = 'negative_free_payout_consumed_count';
 
 
     // Payout Service Metrics/Alerts
