@@ -4,6 +4,7 @@ namespace RZP\Models\Offer;
 
 use App;
 use Carbon\Carbon;
+use Monolog\Logger;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base\PublicCollection;
@@ -53,7 +54,8 @@ class OffersEngine extends Base\Core
                     'api_response' => $offer,
                     'offers_engine_response' => $oeResponse,
                 ]);
-                return;
+                throw new Exception\ServerErrorException(
+                    'Unable to process this request.', ErrorCode::SERVER_ERROR);
             }
 
             $convertedResponse = [];
@@ -75,10 +77,12 @@ class OffersEngine extends Base\Core
         catch (\Exception $exception)
         {
             $this->trace->count(Metric::OFFERS_ENGINE_CREATE_OFFER_FAIL);
-            $this->trace->debug(TraceCode::OFFERS_ENGINE_CREATE_OFFER_FAIL, [
-                'api_response' => $offer,
-                'exception' => $exception,
+            $this->trace->traceException($exception, Logger::ERROR,
+                TraceCode::OFFERS_ENGINE_CREATE_OFFER_FAIL, [
+                'api_response' => $offer
             ]);
+            throw new Exception\ServerErrorException(
+                'Unable to process this request.', ErrorCode::SERVER_ERROR);
         }
     }
 
@@ -159,6 +163,7 @@ class OffersEngine extends Base\Core
                 Constants::OFFER => [
                     Constants::METADATA => [
                         Constants::STATE => $state,
+                        Constants::ADVERTISER_ID => 'rzp.merchant.'.$offer->getMerchantId()
                     ]
                 ],
                 'field_masks' => ["metadata.state"]
@@ -187,10 +192,14 @@ class OffersEngine extends Base\Core
         catch (\Exception $exception)
         {
             $this->trace->count(Metric::OFFERS_ENGINE_UPDATE_OFFER_FAIL);
-            $this->trace->debug(TraceCode::OFFERS_ENGINE_UPDATE_OFFER_FAIL, [
+            $this->trace->traceException($exception, Logger::ERROR,
+                TraceCode::OFFERS_ENGINE_CREATE_OFFER_FAIL, [
                 'api_response' => $offer,
                 'exception' => $exception,
             ]);
+            throw new Exception\ServerErrorException(
+                'Unable to process this request.', ErrorCode::SERVER_ERROR);
+
         }
     }
 

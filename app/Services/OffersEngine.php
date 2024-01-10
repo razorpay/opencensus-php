@@ -59,7 +59,13 @@ class OffersEngine
     const OffersEngineGetOffers = 'v1/offers';
 
     // Requests/responses will be logged by default or if value for path mentioned here is true.
-    const REQUEST_LOGGER_MAP = [];
+    const REQUEST_LOGGER_MAP = [
+        Requests::POST => true,
+
+        Requests::GET => false,
+
+        Requests::PATCH => true,
+    ];
 
     const RESPONSE_LOGGER_MAP = [];
 
@@ -247,7 +253,7 @@ class OffersEngine
 
     public function shouldLogRequest(string $endpoint, string $method) :bool
     {
-        $logRequest = true;
+        $logRequest = false;
 
         $mapKey = $method.'_'.$endpoint;
 
@@ -399,7 +405,7 @@ class OffersEngine
         {
             foreach ($ids as $id)
             {
-                $endpoint .= '&offer_ids=' . 'offer_' . $id;
+                $endpoint .= '&offer_ids=' . 'offer_' . \RZP\Models\Offer\Entity::silentlyStripSign($id);
             }
         }
 

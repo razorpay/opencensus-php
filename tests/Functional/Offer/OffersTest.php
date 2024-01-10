@@ -79,6 +79,7 @@ class OffersTest extends TestCase
         $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
             'offer' => [
                 'metadata' => [
+                    'offer_id' => 'offer_10000000000000',
                     'name' => 'Test Offer',
                     'display_name' => 'Test Offer',
                     'description' => 'Some more details',
@@ -164,6 +165,7 @@ class OffersTest extends TestCase
         $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
             'offer' => [
                 'metadata' => [
+                    'offer_id' => 'offer_10000000000000',
                     'name' => 'Test Offer',
                     'display_name' => 'Test Offer',
                     'description' => 'Some more details',
@@ -257,6 +259,7 @@ class OffersTest extends TestCase
         $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
             'offer' => [
                 'metadata' => [
+                    'offer_id' => 'offer_10000000000000',
                     'name' => 'Test Offer',
                     'display_name' => 'Test Offer',
                     'description' => 'Some more details',
@@ -345,6 +348,7 @@ class OffersTest extends TestCase
         $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
             'offer' => [
                 'metadata' => [
+                    'offer_id' => 'offer_10000000000000',
                     'name' => 'Test Offer',
                     'display_name' => 'Test Offer',
                     'description' => 'Some more details',
@@ -437,6 +441,7 @@ class OffersTest extends TestCase
         $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
             'offer' => [
                 'metadata' => [
+                    'offer_id' => 'offer_10000000000000',
                     'name' => 'Test Offer',
                     'display_name' => 'Test Offer',
                     'description' => 'HDFC Debit Card EMI offers',
@@ -551,6 +556,7 @@ class OffersTest extends TestCase
         $this->offersEngineMock->shouldReceive('createOffer')->times(1)->andReturn( [
             'offer' => [
                 'metadata' => [
+                    'offer_id' => 'offer_10000000000000',
                     'name' => 'Test Offer',
                     'display_name' => 'Test Offer',
                     'description' => 'HDFC Debit Card EMI offers',

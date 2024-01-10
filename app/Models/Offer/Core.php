@@ -100,15 +100,21 @@ class Core extends Base\Core
 
         $offer->edit($input);
 
-        $this->repo->saveOrFail($offer);
+        $this->repo->transaction(
+            function () use ($offer, $input, $merchant)
+            {
 
-        $this->traceNonExistingIins($offer, $merchant);
+                $this->repo->saveOrFail($offer);
 
-        if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true) {
+                $this->traceNonExistingIins($offer, $merchant);
 
-            $this->offersEngine->update($offer, $input);
+                if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true) {
 
-        }
+                    $this->offersEngine->update($offer, $input);
+
+                }
+            }
+        );
 
         return $offer;
     }
@@ -142,9 +148,21 @@ class Core extends Base\Core
                 // Even so, the update happens in OE as well so not an issue.
                 $offer = $this->repo->offer->findByPublicId($offerId);
 
-                $offer->deactivate();
+                $this->repo->transaction(
+                    function () use ($offer) {
+                        $offer->deactivate();
 
-                $this->repo->saveOrFail($offer);
+                        $this->repo->saveOrFail($offer);
+
+                        if ($this->shouldRouteToOffersEngine($offer->getMerchantId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true) {
+
+                            $this->offersEngine->update($offer, [Entity::ACTIVE => false]);
+
+                        }
+
+                    }
+                );
+
 
                 $success[] = $offer->getPublicId();
 
@@ -988,22 +1006,26 @@ class Core extends Base\Core
 
         $this->checkConflictingOffers($offer);
 
-        $this->repo->saveOrFail($offer);
+        $this->repo->transaction(
+          function () use ($offer, $merchant)
+          {
+                $this->repo->saveOrFail($offer);
 
-        if (isset($input[Entity::PRODUCT_TYPE]) and
-            $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION)
-        {
-            // create entry in subscription_offers_master
-            $this->addSubscriptionData($offer, $subscriptionInput ?? []);
-        }
+                if (isset($input[Entity::PRODUCT_TYPE]) and
+                    $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION)
+                {
+                    // create entry in subscription_offers_master
+                    $this->addSubscriptionData($offer, $subscriptionInput ?? []);
+                }
 
-        $this->traceNonExistingIins($offer, $merchant);
+                $this->traceNonExistingIins($offer, $merchant);
 
-        if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true)
-        {
-            $this->offersEngine->createOffer($offer, $subscriptionInput ?? []);
-        }
-
+                if ($this->shouldRouteToOffersEngine($merchant->getId(), Constants::CREATE_OFFER_DUAL_WRITE_EXP) === true)
+                {
+                    $this->offersEngine->createOffer($offer, $subscriptionInput ?? []);
+                }
+          }
+        );
         return $offer;
     }
 

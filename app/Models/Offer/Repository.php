@@ -55,7 +55,6 @@ class Repository extends Base\Repository
         Entity::EMI_SUBVENTION,
         Entity::IINS,
     ];
-
     /**
      * Fetches all active offers for a given merchant.
      *
@@ -68,7 +67,7 @@ class Repository extends Base\Repository
         $oeResponse = $this->fetchAllActiveNonSubscriptionOffersFromOE($merchantId);
 
         // if response is empty fallback to API query
-        if (empty($oeResponse) === false)
+        if ($oeResponse !== null)
         {
             return $oeResponse;
         }

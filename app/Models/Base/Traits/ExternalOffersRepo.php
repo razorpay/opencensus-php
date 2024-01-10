@@ -166,10 +166,11 @@ trait ExternalOffersRepo
         return [];
     }
 
-    private function fetchAllActiveNonSubscriptionOffersFromOE(string $merchantId)
+    private function fetchAllActiveNonSubscriptionOffersFromOE(string $merchantId) : ?Base\PublicCollection
     {
         if ($this->fetchFromOE($merchantId) === true)
         {
+            $response = new Base\PublicCollection();
             try
             {
                 $responseOffers = $this->fetchExternalEntitiesBulk($merchantId, [], [
@@ -178,14 +179,13 @@ trait ExternalOffersRepo
 
                 if (empty($responseOffers) === true)
                 {
-                    return [];
+                    return null;
                 }
 
                 // fetch offers from API if it has limits
                 $offers = $this->fetchOffersWithLimitsFromAPI($responseOffers);
 
                 $now = Carbon::now()->getTimestamp();
-                $applicableOffers = [];
 
                 foreach ($offers as $offer)
                 {
@@ -194,11 +194,11 @@ trait ExternalOffersRepo
                         $offer[OfferEntity::ENDS_AT] > $now &&
                         empty($offer[Constants::SUBSCRIPTION_FIELDS]))
                     {
-                        $applicableOffers[] = $offer;
+                        $response->push($offer);
                     }
                 }
 
-                return $applicableOffers;
+                return $response;
 
             } catch (\Exception $exception)
             {
@@ -210,7 +210,7 @@ trait ExternalOffersRepo
                 ]);
             }
         }
-        return [];
+        return null;
     }
 
     private function fetchOffersSubscriptionFromOE($paymentMethods, $offerId, $merchantId): ?Base\PublicCollection
