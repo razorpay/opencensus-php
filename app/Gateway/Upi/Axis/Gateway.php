@@ -1222,7 +1222,8 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VERIFY_REFUND);
 
-        if ($input['payment']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE)
+        if (($input['payment']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE) or
+            ($input['payment']['cps_route'] === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE))
         {
             $verifyRequestArray = $this->getVerifyRefundUpsRequestArray($input);
         } else
