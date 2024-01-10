@@ -1957,7 +1957,7 @@ class Core extends Base\Core
 
                     if ($totalTds > 0)
                     {
-                        $core->createCommissionTds($partner, $totalTds);
+                        $core->createCommissionTds($partner, $totalTds, $payload[Entity::ID]);
                     }
                 }
             },

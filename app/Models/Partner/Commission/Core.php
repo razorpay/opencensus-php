@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Partner\Commission;
 
+use DB;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
+use RZP\Constants\Table;
 use RZP\Constants\Country;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment;
@@ -442,8 +444,17 @@ class Core extends Base\Core
         return $configs->first()->getTdsPercentage();
     }
 
-    public function createCommissionTds(Merchant\Entity $partner, int $totalTds)
+    public function createCommissionTds(Merchant\Entity $partner, int $totalTds, string $invoiceId = null)
     {
+        if($invoiceId != null)
+        {
+            $adj = $this->repo->adjustment->findAdjustmentByEntityIdAndEntityType($invoiceId, 'commission_invoice', $partner->getId());
+            if($adj !== null && $adj->count() >0)
+            {
+                return;
+            }
+        }
+
         // adj should be on yes_bank channel as commission channel is also yes_bank
         $input = [
             Adjustment\Entity::TYPE        => Balance\Type::COMMISSION,
@@ -453,7 +464,19 @@ class Core extends Base\Core
             Adjustment\Entity::DESCRIPTION => Constants::ADJUSTMENT_TDS_DESCRIPTION,
         ];
 
-        (new Adjustment\Core)->createAdjustment($input, $partner);
+        $adj = (new Adjustment\Core)->createAdjustment($input, $partner);
+
+        if ($invoiceId != null)
+        {
+            DB::table(Table::ADJUSTMENT)
+                ->where(Adjustment\Entity::ID, $adj[Adjustment\Entity::ID])
+                ->update(
+                    [
+                        Adjustment\Entity::ENTITY_TYPE => 'commission_invoice',
+                        Adjustment\Entity::ENTITY_ID   => $invoiceId,
+                    ]
+                );
+        }
     }
 
     public function setOnHoldFalse($transactionId): Transaction\Entity
