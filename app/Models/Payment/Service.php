@@ -1511,17 +1511,26 @@ class Service extends Base\Service
                 }
             }
 
-            $paymentMap = $this->app['pg_router']->paymentCapture($id, $input, true);
+            $resource = $this->getNewProcessor($payment->merchant)->getCallbackMutexResource($payment);
 
-            $payment = (new Payment\Entity)->forceFill($paymentMap);
+            $payment = $this->mutex->acquireAndRelease($resource,
+                function() use ($id, $input) {
 
-            if ((isset($paymentMap['card_id']) === true) and
-                (isset($paymentMap['merchant_id']) === true))
-            {
-                $card = $this->repo->card->findByIdAndMerchantId($paymentMap['card_id'], $paymentMap['merchant_id']);
+                    $paymentMap = $this->app['pg_router']->paymentCapture($id, $input, true);
 
-                $payment->card()->associate($card);
-            }
+                    $payment = (new Payment\Entity)->forceFill($paymentMap);
+
+                    if ((isset($paymentMap['card_id']) === true) and
+                        (isset($paymentMap['merchant_id']) === true)) {
+                        $card = $this->repo->card->findByIdAndMerchantId($paymentMap['card_id'], $paymentMap['merchant_id']);
+
+                        $payment->card()->associate($card);
+                    }
+
+                    return $payment;
+                },
+                20,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
         else
         {
@@ -6164,7 +6173,14 @@ class Service extends Base\Service
             ($this->isForceAuthAllowed($gateway) ===true) and
             ($payment->isUpiRecurring() === false))
         {
-            return $this->forceAuthorizeUpiPayment($payment, $input);
+            $resource = $this->getNewProcessor($payment->merchant)->getCallbackMutexResource($payment);
+
+            return $this->mutex->acquireAndRelease($resource,
+                function() use ($payment, $input) {
+                    return $this->forceAuthorizeUpiPayment($payment, $input);
+                },
+                20,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
         else
         {
