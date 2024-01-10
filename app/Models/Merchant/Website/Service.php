@@ -1022,29 +1022,29 @@ class Service extends Base\Service
                 return false;
             }
 
-            if ($hasKeyAccess === false)
-            {
-                return false;
-            }
+             if ($hasKeyAccess === false)
+             {
+                 return false;
+             }
 
             $gracePeriodCheck = false;
 
             if(empty($websiteDetail) === true and ($this->auth->isAdminAuth() === true))
             {
-                if ((new DetailCore())->isProductionEnvironment() === true)
-                {
+                 if ((new DetailCore())->isProductionEnvironment() === true)
+                 {
                     throw new BadRequestValidationFailureException(
                         'Please fill in the website details');
-                }
+                 }
             }
+
+            $adminWebsiteData = $this->getAdminWebsiteSection($merchantDetails->getMerchantId());
 
             foreach (Constants::MANDATORY_ADMIN_SECTIONS as $sectionName)
             {
                 foreach ($urls as $url => $url_type)
                 {
-
-                    $sectionUrl = $websiteDetail->getAdminUrl($url_type, $url, $sectionName) ??
-                                  $websiteDetail->getPublishedUrl($sectionName);
+                    $sectionUrl = $websiteDetail->getAdminUrl($adminWebsiteData[Entity::ADMIN_WEBSITE_DETAILS], $url_type, $url, $sectionName);
 
                     $sectionStatus = $websiteDetail->getSectionStatus($sectionName);
 
@@ -2100,6 +2100,7 @@ class Service extends Base\Service
 
         $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetails->getMerchantId());
 
+
         if (empty($websiteDetail) === true)
         {
             return ["isWebsiteSectionsApplicable" => true,
@@ -2107,7 +2108,86 @@ class Service extends Base\Service
             ];
         }
 
-        return $this->createResponse($websiteDetail->toArray(), $websiteDetail, $merchantDetails);
+
+        /*transforming ADMIN_WEBSITE_DETAILS based on the priority
+        1-BVS
+        2-Hosted Policies is BVS not found
+        3-admin entered Urls
+
+        fetch business verfication details to fill the admin website details
+        */
+        $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+            $merchant->getId(),
+            Constant::WEBSITE_POLICY,
+            MVD\Constants::NUMBER
+        );
+
+        $websitePolicyResult = (empty($websitePolicy) === false) ? $websitePolicy->getMetadata() : [];
+
+        /* example of websitePolicyResult
+                     [
+                        "refund"              => [
+                            "analysis_result" => [
+                                "links_found"       => [
+                                    "https://ilovesarees.com/pages/returns"
+                                ],
+                                "confidence_score"  => 0.5465,
+                                "relevant_details"  => [
+                                ],
+                                "validation_result" => true
+                            ]
+                        ]
+                    ]
+                    */
+
+        $transformedWebsiteDetail = $websiteDetail->toArray();
+        $websitePolicyLinks = [];
+        foreach ($websitePolicyResult as $policy => $value)
+        {
+            if (empty($value['analysis_result']['links_found'][0]) === false and
+                isset($value['analysis_result']['validation_result']) === true and
+                $value['analysis_result']['validation_result'] === true and
+            !in_array($policy, ['about_us', 'pricing']))
+            {
+                if ($policy === 'refund')
+                {
+                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()]['cancellation']['url'] = $value['analysis_result']['links_found'][0];
+                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()]['cancellation']['system_approved'] = true;
+                    $websitePolicyLinks['cancellation'] = true;
+                }
+                $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()][$policy]['url'] = $value['analysis_result']['links_found'][0];
+                $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()][$policy]['system_approved'] = true;
+                $websitePolicyLinks[$policy] = true;
+            }
+        }
+        $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
+        /* example of policiesData
+        [
+            "terms" => [
+                "section_status" => 3,
+                "status"         => "submitted",
+                "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms" ]
+        ]
+        */
+        foreach ($policiesData as $policyName => $policyDetails)
+        {
+            if (isset($policyDetails['section_status']) === true and $policyDetails['section_status'] === 3 and !in_array($policyName, ['about_us', 'pricing']))
+            {
+                // Filtered policy with status 3 found
+                if (empty($policyDetails['published_url']) === false and isset($websitePolicyLinks[$policyName]) === false)
+                {
+                    if ($policyName === 'refund')
+                    {
+                        $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()]['cancellation']['url'] =  $policyDetails['published_url'];
+                        $websitePolicyLinks['cancellation'] = true;
+                    }
+                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()][$policyName]['url'] = $policyDetails['published_url'];
+                    $websitePolicyLinks[$policy] = true;
+                }
+            }
+        }
+
+        return $this->createResponse($transformedWebsiteDetail, $websiteDetail, $merchantDetails);
     }
 
     public function saveAdminWebsiteSection($merchantId, array $input)

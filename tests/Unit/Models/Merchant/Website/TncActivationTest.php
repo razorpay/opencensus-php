@@ -1045,6 +1045,157 @@ class TncActivationTest extends TestCase
         $this->assertArrayHasKey('merchant_website_details', $websiteDetail);
     }
 
+
+    public function testGetAdminWebisteSectionWithPrefillUrls()
+    {
+
+        $this->mockRazorxTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id"                         => $merchant->getId(),
+            "contact_name"                        => "Mohan",
+            "business_type"                       => 4,
+            "business_name"                       => "Private Limited",
+            "business_dba"                        => "DBA",
+            "business_website"                    => "https://www.ilovesarees.com/",
+            "business_international"              => 0,
+            "business_registered_address"         => "address",
+        ]);
+
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH8gGHX1Vf0bK2",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "website_policy",
+            "artefact_identifier" => "number",
+            "status"              => "verified",
+            "audit_id"            => "MH98mqZfN59Wx8",
+            "metadata"            => [
+                "refund"              => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesarees.com/pages/returns"
+                        ],
+                        "confidence_score"  => 0.5465,
+                        "relevant_details"  => [
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "privacy"             => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesares.myshopify.com/pages/privacy-policy"
+                        ],
+                        "confidence_score"  => 0.9853,
+                        "relevant_details"  => [
+                            "note" => "Privacy Policy is majorly about First Party Collection/Use, Third Party Sharing/Collection, Data Security, Introductory/Generic, Practice not covered. Privacy Policy includes the following attributes Does, Explicit, Implicit, Collect on website, Unspecified, Identifiable, Aggregated or anonymized, Contact, Cookies and tracking elements, Basic service/feature, Additional service/feature, Marketing, Analytics/Research, Personalization/Customization, Service operation and security, Unspecified, User with account, Opt-in, Dont use service/feature, Opt-out via contacting company, Browser/device privacy controls, Collection, First party use, Unnamed third party, Named third party, Receive/Shared with, Track on first party website/app, Secure data transfer"
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "shipping"            => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesarees.com/policies/shipping-policy"
+                        ],
+                        "confidence_score"  => 0.6079,
+                        "relevant_details"  => [
+                            "5 ",
+                            "7 ",
+                            "10 "
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "contact_us"          => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesarees.com/pages/contact-us"
+                        ],
+                        "relevant_details"  => [
+                            "9043222190"
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "policy_details_file" => "file_MH8jjmKC3s9G3a"
+            ]
+        ]);
+
+        /*we don't have all urls in merchant_website fixture, once updation is done ,
+         then we have to check expected urls are updated in merchant_website entity
+        */
+        $this->fixtures->on('live')->create('merchant_website', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'           => $merchant->getId(),
+            'status'      => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "terms" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                ],
+                "about_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                ]
+            ]
+        ]);
+        $this->fixtures->on('test')->create('merchant_website', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'           => $merchant->getId(),
+            'status'      => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "terms" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                ],
+                "about_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                ]
+            ]
+        ]);
+
+        $merchantWebsiteDetail = (new Merchant\Website\Service)->getAdminWebsiteSection($merchant->getId());
+
+        // this merchant is getting applicable for fee based gating hence his activation status is not changing,
+        // temp fix
+
+        $this->assertEquals([
+                                'terms'        =>  ['url' => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"],
+                                'refund'       =>  ['url' => "https://ilovesarees.com/pages/returns",'system_approved' => true],
+                                'cancellation' =>  ['url' => "https://ilovesarees.com/pages/returns",'system_approved' => true],
+                                'privacy'      =>  ['url' => "https://ilovesares.myshopify.com/pages/privacy-policy",'system_approved' => true],
+                                'contact_us'   =>  ['url' => "https://ilovesarees.com/pages/contact-us",'system_approved' => true],
+                                'shipping'     =>  ['url' => "https://ilovesarees.com/policies/shipping-policy",'system_approved' => true],
+                            ], $merchantWebsiteDetail['admin_website_details']['website']['https://www.ilovesarees.com/']);
+    }
+
     // Allow partner to create website section
     public function testMerchantCreateWebsiteSectionDetailsSectionForPartner()
     {

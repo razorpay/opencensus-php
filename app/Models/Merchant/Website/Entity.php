@@ -230,10 +230,8 @@ class Entity extends Base\PublicEntity
        }
    }
 */
-    public function getAdminUrl($urlType, $inputUrl, $sectionName)
+    public function getAdminUrl($adminWebsiteDetail, $urlType, $inputUrl, $sectionName)
     {
-        $adminWebsiteDetail = $this->getAttribute(self::ADMIN_WEBSITE_DETAILS);
-
         if (isset($adminWebsiteDetail[$urlType]) === true)
         {
             foreach ($adminWebsiteDetail[$urlType] as $url => $data)
