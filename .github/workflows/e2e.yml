@@ -32,7 +32,7 @@ jobs:
       (!!(github.event.pull_request) && contains(github.event.pull_request.labels.*.name, 'pr-ready-for-e2e')) ||
       (github.ref == 'refs/heads/master')
     timeout-minutes: 60
-    runs-on: [cache-3]
+    runs-on: [non-api-premium]
     steps:
       - name: Set Commit ID on PR
         if: ${{ !!(github.event.pull_request) && contains(github.event.pull_request.labels.*.name, 'pr-ready-for-e2e') }}
@@ -75,18 +75,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 18.12.1
-      - name: Install libraries for webp conversion
-        run: |
-          apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
-
-      - name: Setup yarn
-        run: npm install -g yarn
-
-      - name: Install dependencies with caching
-        uses: ./.github/actions
-        with:
-          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Login to Harbor
         uses: docker/login-action@v1
@@ -124,10 +112,10 @@ jobs:
       - name: Update downstream dependencies' commits in devstack.json
         # If this steps fails, it's because one of the endpoints in addProdCommits.js threw an error.
         timeout-minutes: 2
-        run: yarn run add-prod-commits
+        run: npm run add-prod-commits
 
       - name: Initiate E2E Tests via an argo webhook
-        run: yarn test:e2e-infra
+        run: npm run test:e2e-infra
         env:
           COMMIT_ID: ${{ env.COMMIT_ID }}
           PR_NUMBER: ${{ github.event.issue.number }}

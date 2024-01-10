@@ -8,7 +8,7 @@ on: push
 jobs:
   build:
     name: Build Dashboard
-    runs-on: [cache-3]
+    runs-on: [non-api-premium]
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v3

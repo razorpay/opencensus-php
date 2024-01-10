@@ -1,5 +1,4 @@
-const axios = require('axios');
-const fs = require('fs/promises');
+const fs = require('fs');
 const path = require('path');
 
 const prodCommitIdFetchURLMap = {
@@ -16,19 +15,34 @@ const prodCommitIdFetchURLMap = {
   pgos: 'https://pgos.concierge.razorpay.com/commit.txt',
 };
 
+const fetcher = async (url, method = 'GET') => {
+  const response = await fetch(url, { method });
+
+  const contentType = response.headers.get('content-type');
+  let res;
+  if (contentType.includes('application/json')) {
+    res = await response.json();
+  } else if (contentType.includes('text/plain')) {
+    res = await response.text();
+  } else {
+    throw new Error('Invalid response type');
+  }
+  return res;
+};
+
 const fetchProdCommitId = async (serviceName) => {
   let commitId = '';
   try {
     const prodCommitIdURL = prodCommitIdFetchURLMap[serviceName];
-    const res = await axios.get(prodCommitIdURL);
+    const res = await fetcher(prodCommitIdURL);
 
     if (serviceName === 'terminals') {
       // terminals returns with application/json type response
-      commitId = res.data.commit_id.split(',')[0];
+      commitId = res.commit_id.split(',')[0];
     } else if (serviceName === 'payment-links') {
-      commitId = res.data.commit;
+      commitId = res.commit;
     } else {
-      commitId = res.data;
+      commitId = res;
     }
     commitId = commitId.replaceAll('\n', '');
     commitId = commitId.replaceAll('\r', '');
@@ -62,7 +76,7 @@ async function updateDevstackJSONWithProdCommits() {
   try {
     const rootPath = process.cwd();
     const devstackJSONPath = path.join(rootPath, 'web/config/devstack.json');
-    const devstackJSONContent = await fs.readFile(devstackJSONPath, 'utf-8');
+    const devstackJSONContent = fs.readFileSync(devstackJSONPath, 'utf-8');
     const dependentServices = JSON.parse(devstackJSONContent);
 
     const dependencyCommitsMapping = {};
@@ -80,7 +94,7 @@ async function updateDevstackJSONWithProdCommits() {
       dependentServices[serviceName] = commitId;
     });
     console.log('updated devstack.json:', JSON.stringify(dependentServices, null, 2));
-    await fs.writeFile(devstackJSONPath, JSON.stringify(dependentServices, null, 2));
+    fs.writeFileSync(devstackJSONPath, JSON.stringify(dependentServices, null, 2));
     response = 'devstack.json updated with production commits';
   } catch (error) {
     console.error('Encountered an error:', error);
