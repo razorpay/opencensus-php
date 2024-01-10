@@ -29,6 +29,7 @@ class Constants
     const DARPAN_PORTAL                             = 'darpan_portal';
     const PROOF_OF_PROFESSION                       = 'proof_of_profession';
     const TRADE_LICENSE                             = 'trade_license';
+    const UBO                                       = 'ubo';
 
     const IATA                                      = 'iata';
     const FCRA                                      = 'fcra';
@@ -78,6 +79,7 @@ class Constants
         self::UTILITY_BILLS,
         self::MOA,
         self::AOA,
+        self::UBO,
         self::DARPAN_PORTAL,
         self::PROOF_OF_PROFESSION,
         self::TRADE_LICENSE
@@ -113,6 +115,7 @@ class Constants
         self::UTILITY_BILLS. ',' .
         self::MOA. ',' .
         self::AOA. ',' .
+        self::UBO. ',' .
         self::DARPAN_PORTAL. ',' .
         self::PROOF_OF_PROFESSION. ',' .
         self::TRADE_LICENSE. ',' .
@@ -186,10 +189,12 @@ class Constants
         BusinessType::PUBLIC_LIMITED => [
             self::MOA,
             self::AOA,
+            self::UBO,
         ],
         BusinessType::PRIVATE_LIMITED => [
             self::MOA,
             self::AOA,
+            self::UBO,
         ],
         BusinessType::NGO => [
             self::DARPAN_PORTAL,

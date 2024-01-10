@@ -84,7 +84,7 @@ class Type
     const MOA                                       = 'moa';
     const AOA                                       = 'aoa';
     const DARPAN_PORTAL                             = 'darpan_portal';
-
+    const UBO                                       = 'ubo';
 
     //FIRS Documents
     const FIRS_FILE = 'firs_file';
@@ -366,6 +366,7 @@ class Type
         self::MOA,
         self::AOA,
         self::DARPAN_PORTAL,
+        self::UBO,
 
         self::FIRS_FILE,
         self::FIRS_ZIP,

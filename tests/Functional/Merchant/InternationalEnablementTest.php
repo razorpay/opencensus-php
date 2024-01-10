@@ -712,11 +712,18 @@ Team Razorpay',
             ],
         ];
 
+        $testData['request']['content']['documents']['ubo'] = [
+            [
+                'id'           => 'doc_10000011111111',
+                'display_name' => 'display_name_1',
+            ],
+        ];
+
         $this->startTest($testData);
 
         $insertedDocument = $this->getDbLastEntity('merchant_document');
 
-        assert(in_array($insertedDocument['document_type'],["moa", "aoa"]));
+        assert(in_array($insertedDocument['document_type'],["moa", "aoa", "ubo"]));
         self::assertEquals('10000011111111', $insertedDocument['file_store_id']);
         self::assertEquals($merchant->getId(), $insertedDocument['merchant_id']);
 
