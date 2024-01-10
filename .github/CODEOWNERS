@@ -1,5 +1,18 @@
 * @razorpay/merchant-dashboard
 
+app/Http/Kernel.php                               @razorpay/spine-edge
+app/Http/routes.php                               @razorpay/spine-edge
+app/Http/Middleware                               @razorpay/spine-edge
+app/Http/Providers                                @razorpay/spine-edge
+app/Http/Session                                  @razorpay/spine-edge
+app/User/Service.php                              @razorpay/spine-edge
+config/admin-auth-routes.php                      @razorpay/spine-edge
+config/auth.php                                   @razorpay/spine-edge
+config/oauth.php                                  @razorpay/spine-edge
+config/oauth-5-laravel.php                        @razorpay/spine-edge
+config/passport.php                               @razorpay/spine-edge
+config/session.php                                @razorpay/spine-edge
+config/user-roles.php                             @razorpay/spine-edge
 web/js/merchant/components/Announcements          @razorpay/platform-growth-fe
 web/js/merchant/models/GrowthService              @razorpay/platform-growth-fe
 web/js/common/ui/AnnouncementBanner               @razorpay/platform-growth-fe
