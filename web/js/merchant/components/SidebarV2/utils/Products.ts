@@ -1,8 +1,9 @@
+import { isExperimentEnabled } from 'common/splitz/utils';
 import { isMobileResolution } from 'common/utils/rzp-utils';
-import { isOrgFeatureExist } from 'merchant/models/User';
-import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
 import { ConfigTagType } from 'merchant/constants/tags';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 
 export type ExtraConfig = {
@@ -211,6 +212,31 @@ export const PRODUCTS_DATA = {
       const isPosOnboardingEnabled = isPosExperimentEnabled({ user, abExperiments });
       return isPosOnboardingEnabled;
     },
+  },
+  gcms_programs: {
+    icon: 'i-lightning',
+    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
+      user.isIssuingDashboardEnabled && isExperimentEnabled(abExperiments.razorpay_gcms),
+  },
+  gcms_resellers: {
+    icon: 'i-cell',
+    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
+      user.isIssuingDashboardEnabled && isExperimentEnabled(abExperiments.razorpay_gcms),
+  },
+  gcms_orders: {
+    icon: 'i-file-invoice',
+    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
+      user.isIssuingDashboardEnabled && isExperimentEnabled(abExperiments.razorpay_gcms),
+  },
+  gcms_funds: {
+    icon: 'i-file-dollar',
+    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
+      user.isIssuingDashboardEnabled && isExperimentEnabled(abExperiments.razorpay_gcms),
+  },
+  gcms_reports: {
+    icon: 'i-report',
+    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
+      user.isIssuingDashboardEnabled && isExperimentEnabled(abExperiments.razorpay_gcms),
   },
 };
 

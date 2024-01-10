@@ -85,6 +85,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'razorpay_gcms',
+        experimentId: {
+          beta: 'NEtQtUmS8rQ8Ag',
+          production: 'NFKqZXBtmdq8z4',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

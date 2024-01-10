@@ -43,6 +43,7 @@ import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { withI18Service } from 'common/i18';
 import { isSettlementsV3detailsRevamp } from 'merchant/views/Settlements/v3/utils/common';
 import { isTransactionsV2Enabled } from 'merchant/views/Transactions/v2/common/utils';
+import { isGCMSExperimentEnabled } from 'merchant/views/GCMS/shared/utils';
 
 const B2bPaymentsList = lazy(() =>
   import(
@@ -465,6 +466,15 @@ const PaymentHandle = lazy(() =>
 );
 const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'merchant/views/Wallet'));
 
+const GCMSPrograms = lazy(() =>
+  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Programs'),
+);
+
+const GCMSProgramDetails = lazy(() =>
+  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Programs/ProgramDetails'),
+);
+
+// const POS = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
 const Pos = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
 
 const PaymentsDetailsV2 = lazy(() =>
@@ -1998,6 +2008,34 @@ class Content extends Component {
               </RouteGuard>
             }
           />
+          <Route path="gcms/*">
+            <Route path="programs/*">
+              <Route
+                index
+                element={
+                  <RouteGuard
+                    additionalCondition={(user) =>
+                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                    }
+                  >
+                    <GCMSPrograms />
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path=":programId/*"
+                element={
+                  <RouteGuard
+                    additionalCondition={(user) =>
+                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                    }
+                  >
+                    <GCMSProgramDetails />
+                  </RouteGuard>
+                }
+              />
+            </Route>
+          </Route>
         </Routes>
       </Suspense>
     );

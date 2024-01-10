@@ -19,6 +19,7 @@ const StorageStatePath = {
   OPTIMIZER_V1_LOGIN_STATE: `${BASE_PATH}/desktop-optimizer-v1-login.json`,
   INTERNATIONAL_ACTIVATION_STATE: `${BASE_PATH}/international-activation.json`,
   WALLET_REPORTS_LOGIN_STATE: `${BASE_PATH}/mobile-wallet-reports-login.json`,
+  MOBILE_TEST_GCMS_STATE: `${BASE_PATH}/mobile-test-mode-gcms.json`,
 };
 
 const routes = {
@@ -64,6 +65,7 @@ const routes = {
   PAYMENT_METRICS: '/app/payment-metrics',
   INTERNATIONAL_PAYMENTS: '/app/payment-methods/international-payments',
   WALLET_REPORTS: '/app/wallet/reports',
+  GCMS_PROGRAMS: '/app/gcms/programs',
 };
 
 const EmailCredentials = [
@@ -146,6 +148,12 @@ const MobileCredentials = [
     type: 'mobile-wallet-reports-login.json',
     mobile: ENV.MOBILE_WALLET_REPORTS_MOBILE,
     storagePath: StorageStatePath.WALLET_REPORTS_LOGIN_STATE,
+  },
+  {
+    type: 'mobile-test-mode-gcms.json',
+    username: ENV.MOBILE_TEST_MODE_GCMS_USERNAME,
+    mobile: ENV.MOBILE_TEST_MODE_GCMS_MOBILE,
+    storagePath: StorageStatePath.MOBILE_TEST_GCMS_STATE,
   },
 ];
 

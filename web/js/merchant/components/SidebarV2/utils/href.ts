@@ -36,6 +36,11 @@ const ROUTE_REG = {
   internationalPaymentsBtn: /^\/(international)/,
   payment_metrics: /^\/(payment-metrics)/,
   pos: /^\/pos(\/(catalog|dashboard))*/,
+  gcms_programs: /^\/gcms\/programs/,
+  gcms_resellers: /^\/gcms\/resellers/,
+  gcms_orders: /^\/gcms\/orders/,
+  gcms_funds: /^\/gcms\/funds/,
+  gcms_reports: /^\/gcms\/reports/,
 };
 
 export const BASE_ROUTES = {
@@ -80,6 +85,11 @@ export const BASE_ROUTES = {
   internationalPaymentsBtn: '/payment-methods/international-payments',
   payment_metrics: '/payment-metrics',
   pos: '/pos',
+  gcms_programs: '/gcms/programs',
+  gcms_resellers: '/gcms/resellers',
+  gcms_orders: '/gcms/orders',
+  gcms_funds: '/gcms/funds',
+  gcms_reports: '/gcms/reports',
 };
 
 export const initializeRoutes = (location, user) => {
@@ -128,6 +138,16 @@ export const initializeRoutes = (location, user) => {
     routes.internationalPaymentsBtn = pathname.match(ROUTE_REG.internationalPaymentsBtn)[0];
   } else if (user.isRegistrationLinkBasedRole) {
     routes.chargeAtWill = 'registration_links';
+  } else if (ROUTE_REG.gcms_programs.test(pathname)) {
+    routes.gcms_programs = pathname.match(ROUTE_REG.gcms_programs)[0];
+  } else if (ROUTE_REG.gcms_resellers.test(pathname)) {
+    routes.gcms_resellers = pathname.match(ROUTE_REG.gcms_resellers)[0];
+  } else if (ROUTE_REG.gcms_orders.test(pathname)) {
+    routes.gcms_orders = pathname.match(ROUTE_REG.gcms_orders)[0];
+  } else if (ROUTE_REG.gcms_funds.test(pathname)) {
+    routes.gcms_funds = pathname.match(ROUTE_REG.gcms_funds)[0];
+  } else if (ROUTE_REG.gcms_reports.test(pathname)) {
+    routes.gcms_reports = pathname.match(ROUTE_REG.gcms_reports)[0];
   }
   return routes;
 };

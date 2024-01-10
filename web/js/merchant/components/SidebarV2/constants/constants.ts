@@ -63,4 +63,9 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   app_store: 'App Store',
   payment_metrics: 'Payment Metrics',
   pos: 'POS',
+  gcms_programs: 'Programs',
+  gcms_resellers: 'Resellers',
+  gcms_orders: 'Orders',
+  gcms_funds: 'Funds',
+  gcms_reports: 'Reports',
 };

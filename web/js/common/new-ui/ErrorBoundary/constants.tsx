@@ -228,4 +228,10 @@ export const RoutesConfig = {
   '/international-settings/firs': Teams.CROSS_BORDER,
   '/international-settings/international-payment-codes': Teams.CROSS_BORDER,
   '/payments/invoices': Teams.CROSS_BORDER,
+
+  '/gcms/programs': Teams.RAZORPAY_WALLET,
+  '/gcms/resellers': Teams.RAZORPAY_WALLET,
+  '/gcms/orders': Teams.RAZORPAY_WALLET,
+  '/gcms/funds': Teams.RAZORPAY_WALLET,
+  '/gcms/reports': Teams.RAZORPAY_WALLET,
 };
