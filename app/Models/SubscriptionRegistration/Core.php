@@ -58,10 +58,7 @@ class Core extends Base\Core
 
         $validator->validateMaxAmount($input, $merchant->getCountry());
 
-        if ($input[Entity::METHOD] !== Method::UPI)
-        {
-            $validator->validateTokenExpiryDate($input);
-        }
+        $validator->validateTokenExpiryDate($input);
 
         $subscriptionRegistration = (new Entity)->build($input);
 

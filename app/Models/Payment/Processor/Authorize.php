@@ -3348,7 +3348,8 @@ trait Authorize
         // expiry period must be less than 30 years for emandate & nach. Incase of nach extra date check is added as compliance
         // is applicable after 1st nov, 2023. This check will be removed in upcoming Prs.
         if((($token->getMethod() === Method::EMANDATE) or
-            (($token->getMethod() === Method::NACH) and ($currentTime >= 1698777000))) and
+                (($token->getMethod() === Method::NACH) and ($currentTime >= 1698777000)) or
+                ($token->getMethod() === Method::UPI)) and
             ($payment->isRecurringTypeInitial() === true) and
             (($token !== null) and ($token->getExpiredAt() !=null)))
         {
@@ -3356,7 +3357,7 @@ trait Authorize
             if ($token->getExpiredAt() > $validationTime)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'expire_at cannot be more than 30 years for emandate & paper nach'
+                    'expire_at cannot be more than 30 years'
                 );
             }
         }

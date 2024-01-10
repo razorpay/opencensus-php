@@ -73,6 +73,14 @@ class Validator extends Base\Validator
                     'end_time'         => $endTime,
                 ]);
         }
+
+        $validationTime = Carbon::now()->addYears(30)->addMinutes(1)->timestamp;
+        if ($input[Entity::END_TIME] > $validationTime)
+        {
+            throw new BadRequestValidationFailureException(
+                'expire_at cannot be more than 30 years for upi'
+            );
+        }
     }
 
     public function validateMaxAmount($input)

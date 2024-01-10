@@ -739,6 +739,17 @@ class Validator extends Base\Validator
                 );
             }
 
+            if($input[Entity::METHOD] === Method::UPI)
+            {
+                $validationTime = Carbon::now()->addYears(30)->addMinutes(1)->timestamp;
+                if ($input[Entity::EXPIRE_AT] > $validationTime)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'expire_at cannot be more than 30 years for upi'
+                    );
+                }
+            }
+
             // expiry period must be less than 30 years for emandate & nach. Incase of nach extra date check is added as compliance
             // is applicable after 1st nov, 2023. This check will be removed in upcoming Prs.
             $authType = $input['auth_type'] ?? null;
