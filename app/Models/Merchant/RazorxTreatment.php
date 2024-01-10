@@ -721,6 +721,9 @@ final class RazorxTreatment
     // Experiment to migrate merchant_risk_fact to datalake
     public const MERCHANT_RISK_FACT_MIGRATION = "merchant_risk_fact_migration";
 
+    // Token fetch list
+    public const CAW_TOKEN_FETCH = 'caw_token_fetch';
+
     // Experiment to enable Whatsapp Notification for Risk chargeback intimation
     const RISK_WHATSAPP_NOTIFICATION = 'risk_whatsapp_notification';
 

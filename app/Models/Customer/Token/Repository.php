@@ -6,9 +6,9 @@ use Carbon\Carbon;
 use DB;
 
 use Illuminate\Database\Eloquent\Builder;
+
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -20,6 +20,7 @@ use RZP\Trace\TraceCode;
 use RZP\Base\ConnectionType;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
+use RZP\Models\Base\PublicEntity;
 use RZP\Exception\ServerErrorException;
 use Rzp\Wda_php\WDARegisterQueryRequestBuilder;
 
@@ -346,8 +347,22 @@ class Repository extends Base\Repository
                               RecurringStatus::INITIATED,
                               RecurringStatus::PAUSED,
                               RecurringStatus::CANCELLED
-                          ])
-                      ->with('customer');
+                          ]);
+
+        $variant = $this->app['razorx']->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::CAW_TOKEN_FETCH,
+            $this->app['rzp.mode']
+        );
+
+        if ($variant === 'on')
+        {
+            // entity_type has subscription and null as values at the moment
+            // To fetch just CAW tokens we check entity_type is NULL as using `!=` with WHERE clause excludes null entries
+            $query = $query->whereNull(Token\Entity::ENTITY_TYPE);
+        }
+
+        $query = $query->with('customer');
 
         $query = $this->buildFetchQuery($query, $input);
 
