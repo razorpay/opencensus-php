@@ -409,6 +409,13 @@ class EdgeThrottleController extends Controller
      */
     public function deleteLimit($id)
     {
+        $input = Request::all();
+
+        $useRateLimiterService = $input['useRateLimiterService'] ?? "false";
+        if ($useRateLimiterService == "true") {
+            return (new RateLimiterController())->deleteLimit($id);
+        }
+
         $path = '/rate-limits/' . $id;
 
         $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_DELETE, $id, $this->getLimit($path));

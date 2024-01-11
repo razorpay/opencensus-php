@@ -109,10 +109,10 @@ class RateLimiterController extends EdgeThrottleController
 
         return $this->finalizeResponse($response, [
             'id',
-            'rule',
-            'enabled',
-            'priority',
-            'rule_type_id',
+            'rule_id',
+            'key',
+            'config',
+            'action',
             'created_at',
             'updated_at',
         ]);
