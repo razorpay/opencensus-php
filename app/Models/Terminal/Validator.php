@@ -333,6 +333,7 @@ class Validator extends Base\Validator
         Entity::NOTES                      => 'sometimes|string',
         Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
         Entity::CARD                       => 'sometimes|boolean|in:0,1',
+        Entity::UPI                        => 'sometimes|boolean|in:0,1',
     ];
 
     protected static $payuTerminalRules = [
@@ -850,6 +851,7 @@ class Validator extends Base\Validator
         Entity::TYPE . '.non_recurring'     => 'sometimes|in:1',
         Entity::NETBANKING                  => 'sometimes|boolean|in:0,1',
         Entity::CARD                        => 'sometimes|boolean|in:0,1',
+        Entity::UPI                         => 'sometimes|boolean|in:0,1',
     ];
 
     protected static $bajajfinservEditTerminalRules = [

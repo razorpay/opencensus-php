@@ -1783,6 +1783,7 @@ class Gateway
             self::CCAVENUE,
             self::OPTIMIZER_RAZORPAY,
             self::UPI_KOTAK,
+            self::ATOM,
         ],
 
         Method::AEPS => [
@@ -1960,6 +1961,7 @@ class Gateway
         self::UPI_KOTAK,
         self::UPI_RZPRBL,
         self::UPI_RZPAPB,
+        self::ATOM,
         self::WALLET_PHONEPE,
         self::CRED,
         self::CASHFREE,
@@ -3666,6 +3668,7 @@ class Gateway
         Gateway::UPI_KOTAK,
         Gateway::UPI_RZPRBL,
         Gateway::UPI_RZPAPB,
+        Gateway::ATOM,
         Gateway::CASHFREE,
         Gateway::PHONEPE,
         Gateway::PAYTM,
@@ -5047,6 +5050,7 @@ class Gateway
             self::UPI_AXISOLIVE,
             self::UPI_RZPRBL,
             self::UPI_RZPAPB,
+            self::ATOM,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -5076,6 +5080,7 @@ class Gateway
             self::UPI_YESBANK,
             self::UPI_ICICI,
             self::UPI_AXIS,
+            self::ATOM,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -5087,6 +5092,7 @@ class Gateway
             self::UPI_KOTAK,
             self::UPI_RZPRBL,
             self::UPI_RZPAPB,
+            self::ATOM,
         ];
 
         return (in_array($gateway, $gateways, true));

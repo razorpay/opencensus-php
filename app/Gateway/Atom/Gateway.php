@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Atom;
 
 use Carbon\Carbon;
+use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
@@ -111,6 +112,61 @@ class Gateway extends Base\Gateway
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    public function preProcessServerCallback($input): array
+    {
+        $gateway = Payment\Gateway::ATOM;
+
+        $terminal = $this->app['repo']->terminal->findActivatedTerminalByGatewayMerchantId($input['merchId'], $gateway);
+
+        $data = [
+            'payload'       => $input,
+            'gateway'       => $gateway,
+            'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+        ];
+
+        $gatewayInput = [
+            'gateway'  => $data,
+            'terminal' => $terminal,
+            'payment'  => [
+                'gateway' => $gateway,
+                'id'      => '',
+            ]
+        ];
+
+        $action = \RZP\Gateway\Mozart\Action::PRE_PROCESS;
+
+        $mozart= $this->getUpiMozartGatewayWithModeFromEnvironment();
+
+        $result = $mozart->sendUpiMozartRequest(
+            $gatewayInput,
+            TraceCode::GATEWAY_PRE_PROCESS_CALLBACK,
+            $action
+        );
+
+        return $result;
+    }
+
+    public function getUpiMozartGatewayWithModeFromEnvironment()
+    {
+        $mozart = $this->getUpiMozartGatewayWithModeSet();
+
+        if ($this->env === Environment::PRODUCTION)
+        {
+            $mozart->setMode(Mode::LIVE);
+        }
+        else
+        {
+            $mozart->setMode(Mode::TEST);
+        }
+
+        return $mozart;
+    }
+
+    public function getPaymentIdFromServerCallback(array $response, $gateway): string
+    {
+        return $response['data']['upi']['merchant_reference'];
     }
 
     public function refund(array $input)
@@ -1226,4 +1282,21 @@ class Gateway extends Base\Gateway
 
         return true;
     }
+
+    /**
+     * Returns UPI Mozart gateway
+     * @return Upi\Mozart\Gateway
+     */
+    protected function getUpiMozartGatewayWithModeSet()
+    {
+        /**
+         * @var $gateway Upi\Mozart\Gateway
+         */
+        $gateway = $this->app['gateway']->gateway('upi_mozart');
+
+        $gateway->setMode($this->getMode());
+
+        return $gateway;
+    }
+
 }

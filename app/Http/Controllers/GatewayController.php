@@ -760,6 +760,7 @@ class GatewayController extends Controller
             case Gateway::WALLET_PHONEPE:
             case Gateway::UPI_CITI:
             case Gateway::CRED:
+            case Gateway::ATOM:
             case 'axis_corporate':
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')
