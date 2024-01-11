@@ -54,7 +54,7 @@ const CouponFilters: React.FC<CouponFiltersProps> = ({
   const [formData, setFormData] = useState<FormData>(initialFiltersState);
 
   useEffect(() => {
-    if (tabName === 'active' || tabName === 'expired') {
+    if (tabName === 'active' || tabName === 'expired' || tabName === 'published') {
       setFormData((prevState) => ({ ...prevState, status: tabName }));
     }
   }, [tabName]);
@@ -113,7 +113,7 @@ const CouponFilters: React.FC<CouponFiltersProps> = ({
           options={COUPON_STATUS}
           value={formData.status}
           onChange={setField}
-          disabled={tabName === 'expired' || tabName === 'active'}
+          disabled={tabName === 'expired' || tabName === 'active' || tabName === 'publised'}
         />
       </div>
 

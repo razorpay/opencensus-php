@@ -6,7 +6,7 @@ import GenericCoupons from 'merchant/views/MagicCheckout/CouponEngine/pages/Gene
 const initialFiltersState = {
   type: 'all',
   code: '',
-  status: 'active',
+  status: 'published',
   sort_by: 'date-desc',
   skip: 0,
   count: 10,
@@ -14,8 +14,8 @@ const initialFiltersState = {
   source: 'all',
 };
 
-const ActiveCoupons: React.FC = () => {
-  return <GenericCoupons initialFilters={initialFiltersState} tabName="active" />;
+const PublishedCouponsTab: React.FC = () => {
+  return <GenericCoupons initialFilters={initialFiltersState} tabName="published" />;
 };
 
-export default ActiveCoupons;
+export default PublishedCouponsTab;

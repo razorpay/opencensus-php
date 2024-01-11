@@ -87,6 +87,13 @@ interface CouponDetails {
   autoapply: boolean;
   prepaidMethodsOnly: boolean;
 }
+export type ShopifyCouponSyncResponse = {
+  status: 'not-started' | 'completed' | 'in-progress' | '';
+  last_sync_dates?: {
+    end_date?: string;
+    start_date?: string;
+  } | null;
+} | null;
 
 export interface ErrorStates {
   couponDetails: {
@@ -132,8 +139,35 @@ export interface ModalContextValue {
   resetWidgetsData: () => void;
   allCouponsList: any;
   setAllCouponsList: Dispatch<SetStateAction<any>>;
+  hasCouponScreenLoadedOnce: boolean;
+  setHasCouponScreenLoadedOnce: Dispatch<SetStateAction<boolean>>;
+  shopifySyncStatus: ShopifyCouponSyncResponse;
+  setShopifySyncStatus: Dispatch<SetStateAction<any>>;
 }
 
 export interface ModalProviderProps {
   children: ReactNode;
+}
+
+export type CreateCouponFormProps = {
+  showNotification: (notification: any) => void;
+  openModal: (modal: any) => void;
+  closeModal: () => void;
+  flow: 'cretaed' | 'edit' | 'duplicate';
+};
+
+export type HandleCreateUpdateCouponFnProps = {
+  shouldShowConfirmationModal: boolean;
+  couponStatus: string;
+};
+
+export type CheckedItem = {
+  id: string;
+  status: string;
+};
+
+export interface GenericCouponsProps {
+  initialFilters: any;
+  tabName?: string;
+  showNotification: (notification: any) => void;
 }

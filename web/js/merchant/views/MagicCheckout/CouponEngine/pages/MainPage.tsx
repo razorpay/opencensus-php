@@ -1,9 +1,10 @@
-import React, { Fragment, useCallback, useState, useEffect } from 'react';
+import React, { Fragment, useCallback, useState, useEffect, useContext } from 'react';
 import { connect } from 'react-redux';
 
 // helper imports
 import { getItem, setItem } from 'common/utils/localStorage';
 import { useSplitzService } from 'common/splitz';
+import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
 
 // ui components
 import EnableCouponBanner from 'merchant/views/MagicCheckout/CouponEngine/components/EnableCouponBanner/EnableCouponBanner';
@@ -13,9 +14,6 @@ import { PromotionalBanner } from 'merchant/views/MagicCheckout/CouponEngine/pag
 import Loader from 'common/components/Loader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
-// constant imports
-import { getNavItems } from 'merchant/views/MagicCheckout/CouponEngine/constants';
-
 // api imports
 import {
   getSyncShopifyCouponsStatus,
@@ -24,6 +22,19 @@ import {
 
 //style imports
 import 'merchant/views/MagicCheckout/css/coupon-engine/promotional-banner.styl';
+
+// constant imports
+import { getNavItems } from 'merchant/views/MagicCheckout/CouponEngine/constants';
+const initialFiltersState = {
+  type: 'all',
+  code: '',
+  status: 'all',
+  sort_by: 'date-desc',
+  skip: 0,
+  count: 10,
+  display: 'all',
+  source: 'all',
+};
 
 interface MainPageProps {
   merchantId: string;
@@ -44,37 +55,52 @@ const MainPage: React.FC<MainPageProps> = ({
   const NAV_ITEMS = getNavItems(isShopifyCouponSyncEnabled);
   const [activeNav, setActiveNav] = useState<string>(NAV_ITEMS[0].id);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { setAllCouponsList, setShopifySyncStatus } = useContext(ModalContext);
   const [shouldShowPromotionalBanner, setShouldShowPromotionalBanner] = useState<boolean>(
     getItem(`showCouponBanner-${merchantId}`) !== 'false',
   );
 
   const fetchInitialDataWithSync = async () => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
+
       const [statusResponse, couponsResponse] = await Promise.allSettled([
         getSyncShopifyCouponsStatus(),
-        listCoupons({ count: 1 }),
+        listCoupons(initialFiltersState),
       ]);
 
-      // Check the status of each promise
       const isStatusSuccess = statusResponse.status === 'fulfilled';
       const isCouponsSuccess = couponsResponse.status === 'fulfilled';
 
-      // Extract data from the responses if successful
       const statusData = isStatusSuccess ? statusResponse.value.data : {};
       const couponsData = isCouponsSuccess ? couponsResponse.value.data : {};
 
-      // Check conditions and set activeNav
+      const setActiveNavAndCouponsList = (navIndex, couponsList) => {
+        setActiveNav(NAV_ITEMS[navIndex].id);
+        setAllCouponsList(couponsList);
+      };
+
       if (
         isStatusSuccess &&
         statusData.status === 'not-started' &&
         isCouponsSuccess &&
         couponsData.coupons.length === 0
       ) {
-        setActiveNav(NAV_ITEMS[0].id);
+        setActiveNavAndCouponsList(0, []);
       } else {
-        setActiveNav(NAV_ITEMS[1].id);
+        setActiveNavAndCouponsList(1, couponsData.coupons);
       }
+      const syncStatus = isStatusSuccess
+        ? statusData
+        : {
+            status: 'not-started',
+            last_sync_dates: {
+              start_date: '',
+              end_date: '',
+            },
+          };
+
+      setShopifySyncStatus(syncStatus);
     } catch (errors) {
       setActiveNav(NAV_ITEMS[0].id);
     } finally {

@@ -5,6 +5,7 @@ export const StyledListItem = styled.li`
   box-shadow: 0px -1px 0px 0px #e2e2e299 inset;
   width: 200px;
   transition: background-color 0.3s;
+  text-transform: initial;
 
   &:hover {
     background-color: #f8fbff;

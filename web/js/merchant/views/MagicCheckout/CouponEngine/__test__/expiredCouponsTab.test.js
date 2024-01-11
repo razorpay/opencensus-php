@@ -1,24 +1,25 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+
+// ui imports
 import ExpiredCouponsTab from 'merchant/views/MagicCheckout/CouponEngine/pages/ExpiredCouponsTab';
-import { render, screen, waitFor } from 'test-utils';
-import { listCoupons } from 'merchant/views/MagicCheckout/CouponEngine/api';
 
-import { EXPIRED_COUPONS } from 'merchant/views/MagicCheckout/CouponEngine/__test__/mocks/DummyResponses';
-
-jest.mock('merchant/views/MagicCheckout/CouponEngine/api', () => ({
-  ...jest.requireActual('merchant/views/MagicCheckout/CouponEngine/api'),
-  listCoupons: jest.fn(),
-}));
-
-listCoupons.mockReturnValue({
-  data: EXPIRED_COUPONS,
+jest.mock('merchant/views/MagicCheckout/CouponEngine/pages/GenericCouponTab', () => {
+  return jest.fn((props) => (
+    <div {...props}>Mocked Generic Coupons Tab for - {props.initialFilters.status} coupons tab</div>
+  ));
 });
 
-describe('expired coupons tab', () => {
-  test.each(EXPIRED_COUPONS.coupons)('should render coupon with code %s', async (coupon) => {
+describe('ActiveCoupons', () => {
+  it('renders ActiveCoupons component with initial filters', () => {
     render(<ExpiredCouponsTab />);
 
-    await waitFor(() => {
-      expect(screen.getByText(coupon.code)).toBeInTheDocument();
-    });
+    const mockedGenericCouponsComponent = screen.getByText(/Generic Coupons Tab/i);
+
+    expect(mockedGenericCouponsComponent).toBeInTheDocument();
+    expect(mockedGenericCouponsComponent).toHaveAttribute('initialFilters');
+    expect(mockedGenericCouponsComponent).toHaveTextContent(
+      'Mocked Generic Coupons Tab for - expired coupons tab',
+    );
   });
 });

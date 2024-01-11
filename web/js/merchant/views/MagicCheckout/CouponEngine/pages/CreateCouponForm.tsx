@@ -1,7 +1,6 @@
 import React, { useEffect, useContext, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import moment from 'moment';
-import isEmpty from 'lodash/isEmpty';
 import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
@@ -23,21 +22,29 @@ import { createCoupon, getCoupon } from 'merchant/views/MagicCheckout/CouponEngi
 
 // helper imports
 import { showNotification } from 'merchant_common/reducers/notifications';
-import {
-  createCartDiscountPayload,
-  createProductDiscountPayload,
-  createBuyXGetYPayload,
-  createBulkDiscountPayload,
-} from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads';
 import { globalValidator } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponFormValidators';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import {
+  isCreateCouponValid,
+  openCreateCouponConfirmationModal,
+  createApiData,
+} from 'merchant/views/MagicCheckout/CouponEngine/helpers';
 
 // context import
 import { ModalContext } from 'merchant/views/MagicCheckout/CouponEngine/context';
 
-const CreateCouponForm: React.FC<{
-  showNotification: (notification: any) => void;
-  flow: string;
-}> = ({ showNotification, flow = 'created' }) => {
+// type imports
+import {
+  CreateCouponFormProps,
+  HandleCreateUpdateCouponFnProps,
+} from 'merchant/views/MagicCheckout/CouponEngine/types';
+
+const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
+  showNotification,
+  flow = 'created',
+  openModal,
+  closeModal,
+}) => {
   const { couponName, code } = useParams();
   const navigate = useNavigate();
   const {
@@ -104,32 +111,20 @@ const CreateCouponForm: React.FC<{
   }, [code]);
 
   useEffect(() => {
-    setIsFormValid(isDeepEmpty(errorStates));
+    setIsFormValid(isCreateCouponValid(errorStates));
   }, [errorStates]);
-
-  const createApiData = (couponName, data) => {
-    switch (couponName) {
-      case 'amount_off_order':
-        return createCartDiscountPayload(data);
-      case 'amount_off_products':
-        return createProductDiscountPayload(data);
-      case 'buyx_gety':
-        return createBuyXGetYPayload(data);
-      case 'bulk_order':
-        return createBulkDiscountPayload(data);
-      default:
-        return null;
-    }
-  };
 
   const handleReset = () => {
     resetWidgetsData();
   };
 
-  const handleSubmit = async (updatedCouponStatus?: string) => {
+  const handleSubmit = async ({
+    shouldShowConfirmationModal,
+    couponStatus: updatedCouponStatus,
+  }: HandleCreateUpdateCouponFnProps) => {
     setIsLoading(true);
 
-    if (updatedCouponStatus) {
+    if (updatedCouponStatus === 'created') {
       setCouponStatus(updatedCouponStatus);
     }
 
@@ -146,6 +141,15 @@ const CreateCouponForm: React.FC<{
     if (!isFormFieldsValid) {
       setIsLoading(false);
       return;
+    }
+
+    if (shouldShowConfirmationModal) {
+      const isConfirmed = await openCreateCouponConfirmationModal(openModal, closeModal);
+
+      if (!isConfirmed) {
+        setIsLoading(false);
+        return;
+      }
     }
 
     // using form data to create api payload
@@ -209,7 +213,12 @@ const CreateCouponForm: React.FC<{
           {flow !== 'edit' && (
             <AsyncBtn
               className="secondary-cta"
-              onClick={() => handleSubmit('created')}
+              onClick={() =>
+                handleSubmit({
+                  shouldShowConfirmationModal: false,
+                  couponStatus: 'created',
+                })
+              }
               disabled={!isFormValid || isLoading}
               isPending={isLoading && couponStatus === 'created'}
             >
@@ -218,7 +227,12 @@ const CreateCouponForm: React.FC<{
           )}
           <AsyncBtn
             className="primary-cta"
-            onClick={() => handleSubmit()}
+            onClick={() =>
+              handleSubmit({
+                shouldShowConfirmationModal: true,
+                couponStatus: widgetsData.status,
+              })
+            }
             disabled={!isFormValid || isLoading}
             isPending={isLoading && couponStatus === widgetsData.status}
           >
@@ -234,25 +248,10 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
       showNotification,
+      openModal,
+      closeModal,
     },
     dispatch,
   );
 
 export default connect(null, mapDispatchToProps)(CreateCouponForm);
-
-function isDeepEmpty(input) {
-  if (isEmpty(input)) {
-    return true;
-  }
-  if (typeof input === 'object') {
-    for (const item of Object.values(input)) {
-      // if item is not undefined and is a primitive, return false
-      // otherwise dig deeper
-      if ((item !== undefined && typeof item !== 'object') || !isDeepEmpty(item)) {
-        return false;
-      }
-    }
-    return true;
-  }
-  return isEmpty(input);
-}

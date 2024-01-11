@@ -3,6 +3,7 @@ import {
   ModalContextValue,
   ErrorStates,
   ModalProviderProps,
+  ShopifyCouponSyncResponse,
 } from 'merchant/views/MagicCheckout/CouponEngine/types';
 import moment from 'moment';
 
@@ -98,6 +99,10 @@ const initialErrorStates: ErrorStates = {
   },
 };
 
+const initialShopifySyncStatus: ShopifyCouponSyncResponse = {
+  status: 'not-started',
+};
+
 export const ModalContext = createContext<ModalContextValue>({
   widgetsData: initialWidgetsData,
   setWidgetsData: () => {},
@@ -106,12 +111,18 @@ export const ModalContext = createContext<ModalContextValue>({
   resetWidgetsData: () => {},
   allCouponsList: [],
   setAllCouponsList: () => {},
+  hasCouponScreenLoadedOnce: true,
+  setHasCouponScreenLoadedOnce: () => {},
+  shopifySyncStatus: initialShopifySyncStatus,
+  setShopifySyncStatus: () => {},
 });
 
 export function ModalProvider({ children }: ModalProviderProps): JSX.Element {
   const [widgetsData, setWidgetsData] = useState(initialWidgetsData);
   const [errorStates, setErrorStates] = useState(initialErrorStates);
+  const [hasCouponScreenLoadedOnce, setHasCouponScreenLoadedOnce] = useState(true);
   const [allCouponsList, setAllCouponsList] = useState([]);
+  const [shopifySyncStatus, setShopifySyncStatus] = useState(initialShopifySyncStatus);
 
   const resetWidgetsData = () => {
     setWidgetsData(initialWidgetsData);
@@ -126,6 +137,10 @@ export function ModalProvider({ children }: ModalProviderProps): JSX.Element {
     resetWidgetsData,
     allCouponsList,
     setAllCouponsList,
+    hasCouponScreenLoadedOnce,
+    setHasCouponScreenLoadedOnce,
+    shopifySyncStatus,
+    setShopifySyncStatus,
   };
 
   return <ModalContext.Provider value={contextValue}>{children}</ModalContext.Provider>;

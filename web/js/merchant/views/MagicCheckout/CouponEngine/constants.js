@@ -10,6 +10,12 @@ const ActiveCouponsTab = lazy(() =>
     'merchant/views/MagicCheckout/CouponEngine/pages/ActiveCouponsTab'
   ),
 );
+const PublishedCoupons = lazy(() =>
+  /* webpackChunkName: 'MagicCouponEnginePublishedCouponsTab' */ import(
+    'merchant/views/MagicCheckout/CouponEngine/pages/PublishedCouponsTab'
+  ),
+);
+
 const AllCouponsTab = lazy(() =>
   /* webpackChunkName: 'MagicCouponEngineAllCouponsTab' */ import(
     'merchant/views/MagicCheckout/CouponEngine/pages/AllCouponsTab'
@@ -28,6 +34,11 @@ export const getNavItems = (syncExperiment = false) => {
       id: 'allCoupons',
       title: 'All coupons',
       component: <AllCouponsTab />,
+    },
+    {
+      id: 'publishedCoupons',
+      title: 'Published coupons',
+      component: <PublishedCoupons />,
     },
     {
       id: 'activeCoupons',
@@ -133,3 +144,20 @@ export const COUNT = [
   { label: '10', name: 10 },
   { label: '5', name: 5 },
 ];
+
+export const CREATE_COUPON_CONFIRMATION_MODAL_CONTENT = {
+  header: 'Are you sure you want to publish this coupon?',
+  affirmativeLabel: 'Publish Coupon',
+  abortLabel: 'Go Back',
+  desc: (
+    <span>
+      Once the coupon will be published, you will be unable to modify the following for this coupon:
+      <ul>
+        <li>Start date and end date</li>
+        <li>Display status of the coupon code on checkout</li>
+        <li>User segments</li>
+      </ul>
+      Please ensure the details are correct before publishing.
+    </span>
+  ),
+};

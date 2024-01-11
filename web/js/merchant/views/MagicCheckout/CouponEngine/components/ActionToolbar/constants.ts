@@ -9,23 +9,23 @@ export const statusActionMap = {
   created: [
     // { name: 'delete', displayValue: 'Delete', icon: trashOutline },
     { name: 'publish', displayValue: 'Publish', icon: publish },
-    { name: 'edit', displayValue: 'Edit', icon: edit },
+    { name: 'edit', displayValue: 'View and Edit', icon: edit },
     { name: 'duplicate', displayValue: 'Duplicate', icon: copy },
   ],
   active: [
     { name: 'inactivate', displayValue: 'Deactivate', icon: cross },
-    { name: 'edit', displayValue: 'Edit', icon: edit },
+    { name: 'edit', displayValue: 'View and Edit', icon: edit },
     { name: 'duplicate', displayValue: 'Duplicate', icon: copy },
   ],
   in_active: [
     { name: 'activate', displayValue: 'Activate', icon: approve },
-    { name: 'edit', displayValue: 'Edit', icon: edit },
+    { name: 'edit', displayValue: 'View and Edit', icon: edit },
     { name: 'duplicate', displayValue: 'Duplicate', icon: copy },
   ],
   expired: [{ name: 'duplicate', displayValue: 'Duplicate', icon: copy }],
   published: [
     { name: 'inactivate', displayValue: 'Deactivate', icon: cross },
-    { name: 'edit', displayValue: 'Edit', icon: edit },
+    { name: 'edit', displayValue: 'View and Edit', icon: edit },
     { name: 'duplicate', displayValue: 'Duplicate', icon: copy },
   ],
 };
