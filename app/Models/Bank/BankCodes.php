@@ -503,6 +503,7 @@ class BankCodes
         '8393' => 'HDFC0CSVCBL',
         '8120' => 'YESB0MSB002',
         '8129' => 'UTIB0SBPP02',
+        '7139' => 'HDFC0009112',
     ];
 
     const IEC_REQUIRED_BANKS =  [
