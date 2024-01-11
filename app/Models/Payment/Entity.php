@@ -7009,6 +7009,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             return $fee;
         }
+        // return the fees as it is if the payment is yet in authorized state because
+        // in this case the fees are already in payment currency
+        if ($this->isAuthorized()) {
+            return $this->getFee();
+        }
 
         $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($this->getId());
 

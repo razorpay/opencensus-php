@@ -1827,7 +1827,7 @@ Secondary reference id should be unique, duplicate value for test123";
 
         $this->ba->directAuth();
 
-        try 
+        try
         {
             $this->makeRequestAndGetContent($orderCreateRequest);
 
@@ -1858,7 +1858,7 @@ Secondary reference id should be unique, duplicate value for test123";
             'item1' => 100,
             'item2' => ''
         ]);
-        
+
         $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
 
         $this->assertEquals($paymentPageRecord["custom_field_schema"], '{"field_4": {"key": "DOB", "value": "test123", "dataType": "string"}, "field_5": {"key": "Address", "value": "", "dataType": "string"}, "field_6": {"key": "item1", "value": "100", "dataType": "string"}, "field_7": {"key": "item2", "value": "", "dataType": "string"}}');
@@ -6849,5 +6849,27 @@ Secondary reference id should be unique, duplicate value for test123";
         $this->assertEquals($response['payment']['amount'], 6042);
         $this->assertEquals($response['payment']['fee'], 16652);
         $this->assertEquals($response['payment']['fee_in_mcc'], 202);
+
+        $paymentAttributes =  [
+            'fee'    => 101,
+            'status' => 'authorized',
+        ];
+        $payment = $this->fixtures->edit('payment', $payment['id'], $paymentAttributes);
+
+        $fetchPaymentDetails = [
+            'url' => '/v1/payment_links_payment/' . $payment['public_id'],
+            'method' => 'get',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($fetchPaymentDetails);
+
+        $this->assertNotNull($response['payment']);
+        $this->assertEquals('USD', $response['payment']['currency'] );
+        $this->assertEquals(self::TEST_MID, $response['payment']['merchant_id']);
+        $this->assertEquals(101, $response['payment']['fee']);
+        $this->assertEquals(101, $response['payment']['fee_in_mcc']);
     }
 }
