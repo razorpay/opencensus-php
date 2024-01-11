@@ -230,7 +230,7 @@ class ProviderCode
         self::AXIS               => IFSC::UTIB,
         self::AXISBANK           => IFSC::UTIB,
         self::AXISGO             => IFSC::UTIB,
-        self::AXISB              => IFSC::UTIB,
+        self::AXISB              => 'NPCI',
         self::AXL                => IFSC::UTIB,
         self::BANDHAN            => IFSC::BDBL,
         self::BARODAMPAY         => IFSC::BARB,
@@ -507,7 +507,7 @@ class ProviderCode
         ProviderPsp::SAMSUNG_PAY,
         ProviderPsp::YESPAY_NEXT,
         ProviderPsp::KOTAK_BANK_APP,
-        ProviderPsp::AXIS_BANK,
+        ProviderPsp::CRED,
     ];
 
     /**
@@ -569,7 +569,7 @@ class ProviderCode
         self::YESPAY       => ProviderPsp::YESPAY_NEXT,
         self::KOTAK        => ProviderPsp::KOTAK_BANK_APP,
         self::KOTAK811     => ProviderPsp::KOTAK_BANK_APP,
-        self::AXISB        => ProviderPsp::AXIS_BANK,
+        self::AXISB        => ProviderPsp::CRED,
         self::PAYTMWALLET  => ProviderPsp::PAYTM,
 
         // used only for testing

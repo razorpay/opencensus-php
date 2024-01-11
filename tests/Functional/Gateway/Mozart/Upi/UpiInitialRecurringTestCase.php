@@ -1582,7 +1582,7 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['yespaynext_yespay_allow']      = ['razorpay@yespay', $throwables['whitelisted']];
         $cases['kotakbankapp_kotak_allow']      = ['razorpay@kotak', $throwables['whitelisted']];
         $cases['kotakbankapp_kotak811_allow']   = ['razorpay@kotak811', $throwables['whitelisted']];
-        $cases['axisbank_axisb_allow']          = ['razorpay@axisb', $throwables['whitelisted']];
+        $cases['cred_axisb_allow']              = ['razorpay@axisb', $throwables['whitelisted']];
         $cases['paytm_paytmwallet_allow']       = ['razorpay@paytmwallet', $throwables['whitelisted']];
 
 
