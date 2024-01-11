@@ -1289,7 +1289,8 @@ class Core extends Base\Core
     protected function addCcOrWalletOnUpiInNotesIfApplicable(&$input)
     {
         if((isset($input[Entity::CC_ON_UPI]) === false) and
-            (isset($input[Entity::WALLET_ON_UPI]) === false))
+            (isset($input[Entity::WALLET_ON_UPI]) === false) and
+            (isset($input[Entity::CREDIT_LINE_ON_UPI]) === false))
         {
             return $input;
         }
@@ -1313,6 +1314,12 @@ class Core extends Base\Core
         {
             $input[Entity::NOTES][Entity::WALLET_ON_UPI] =  $input[Entity::WALLET_ON_UPI];
             unset($input[Entity::WALLET_ON_UPI]);
+        }
+
+        if(isset($input[Entity::CREDIT_LINE_ON_UPI]) === true)
+        {
+            $input[Entity::NOTES][Entity::CREDIT_LINE_ON_UPI] =  $input[Entity::CREDIT_LINE_ON_UPI];
+            unset($input[Entity::CREDIT_LINE_ON_UPI]);
         }
 
         $input[Entity::NOTES] = json_encode($input[Entity::NOTES]);

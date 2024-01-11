@@ -29,6 +29,9 @@ return [
                         Header::UPI_TERMINAL_ONBOARDING_MCC                  => NULL,
                         Header::UPI_TERMINAL_ONBOARDING_CATEGORY2            => NULL,
                         Header::UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE        => 'online',
+                        Header::UPI_TERMINAL_ONBOARDING_ALLOW_CC             => 1,
+                        Header::UPI_TERMINAL_ONBOARDING_ALLOW_WALLET         => 1,
+                        Header::UPI_TERMINAL_ONBOARDING_ALLOW_CREDIT_LINE    => 1,
                     ],
                 ],
             ],
@@ -97,7 +100,10 @@ return [
                 'Recurring',
                 'Mcc',
                 'Category2',
-                'Merchant Type'
+                'Merchant Type',
+                'Allow CC',
+                'Allow Wallet',
+                'Allow Credit Line',
             ],
             [
                 "10NodalAccount",
@@ -111,6 +117,9 @@ return [
                 '',
                 '',
                 'online',
+                '1',
+                '1',
+                '1',
             ]
         ],
     ],

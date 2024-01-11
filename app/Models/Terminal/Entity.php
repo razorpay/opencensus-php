@@ -105,6 +105,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_MOBILE_CONTACT       = 'merchant_mobile_contact';
     const CC_ON_UPI                     = 'cc_on_upi';
     const WALLET_ON_UPI                 = 'wallet_on_upi';
+    const CREDIT_LINE_ON_UPI            = 'credit_line_on_upi';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';

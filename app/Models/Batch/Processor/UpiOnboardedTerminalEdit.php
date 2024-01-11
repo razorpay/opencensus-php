@@ -23,6 +23,10 @@ class UpiOnboardedTerminalEdit extends Base
         $gatewayTerminalId  = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_GATEWAY_TERMINAL_ID];
         $gatewayAccessCode  = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE];
         $vpaHandle          = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_VPA_HANDLE];
+        $allowCC            = $entry[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CC];
+        $allowWallet        = $entry[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_WALLET];
+        $allowCreditLine    = $entry[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CREDIT_LINE];
+
         $identifiers = [
             Terminal\Entity::VPA                  => $vpa,
             Terminal\Entity::GATEWAY_TERMINAL_ID  => $gatewayTerminalId,
@@ -43,6 +47,22 @@ class UpiOnboardedTerminalEdit extends Base
         {
             $features['recurring'] = '0';
         }
+
+        if($allowCC !== null && $allowCC !== '')
+        {
+            $features[Terminal\Entity::CC_ON_UPI] = (boolval($allowCC) === true) ? '1' : '0';
+        }
+
+        if($allowWallet !== null && $allowWallet !== '')
+        {
+            $features[Terminal\Entity::WALLET_ON_UPI] = (boolval($allowWallet) === true) ? '1' : '0';
+        }
+
+        if($allowCreditLine !== null && $allowCreditLine !== '')
+        {
+            $features[Terminal\Entity::CREDIT_LINE_ON_UPI] = (boolval($allowCreditLine) === true) ? '1' : '0';
+        }
+
         $response = $this->app['terminals_service']->EditOnboardedTerminal($terminalId, $gateway,$identifiers,$features,$otherInputs);
         if (isset($response['terminal'][Terminal\Entity::ID]) === true)
         {

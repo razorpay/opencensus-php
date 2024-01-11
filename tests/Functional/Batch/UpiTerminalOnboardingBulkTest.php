@@ -46,6 +46,9 @@ class UpiTerminalCreationBulkTest extends TestCase
                 Batch\Header::UPI_TERMINAL_ONBOARDING_MCC                  => '',
                 Batch\Header::UPI_TERMINAL_ONBOARDING_CATEGORY2            => '',
                 Batch\Header::UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE        => 'online',
+                Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_CC             => 1,
+                Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_WALLET         => 1,
+                Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_CREDIT_LINE    => 1,
             ],
         ];
     }

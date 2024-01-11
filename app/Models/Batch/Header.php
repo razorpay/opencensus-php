@@ -1025,6 +1025,9 @@ class Header
     const UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY       =   'Gateway';
     const UPI_ONBOARDED_TERMINAL_EDIT_RECURRING     =   'Recurring';
     const UPI_ONBOARDED_TERMINAL_EDIT_ONLINE        =   'Online';
+    const UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CC              =   'Allow CC';
+    const UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_WALLET          =   'Allow Wallet';
+    const UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CREDIT_LINE     =   'Allow Credit Line';
 
     // Upi Terminal Onboarding Headers
     const UPI_TERMINAL_ONBOARDING_MERCHANT_ID   =   'Merchant Id';
@@ -1038,6 +1041,10 @@ class Header
     const UPI_TERMINAL_ONBOARDING_MCC                  = 'Mcc';
     const UPI_TERMINAL_ONBOARDING_CATEGORY2            = 'Category2';
     const UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE        = 'Merchant Type';
+    const UPI_TERMINAL_ONBOARDING_ALLOW_CC             = 'Allow CC';
+    const UPI_TERMINAL_ONBOARDING_ALLOW_WALLET         = 'Allow Wallet';
+    const UPI_TERMINAL_ONBOARDING_ALLOW_CREDIT_LINE    = 'Allow Credit Line';
+
 
     // Pricing Rules Addition Headers
     const PRICING_RULE_PLAN_NAME                = 'plan_name';
@@ -2054,7 +2061,10 @@ class Header
                 self::UPI_TERMINAL_ONBOARDING_RECURRING,
                 self::UPI_TERMINAL_ONBOARDING_MCC,
                 self::UPI_TERMINAL_ONBOARDING_CATEGORY2,
-                self::UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE
+                self::UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE,
+                self::UPI_TERMINAL_ONBOARDING_ALLOW_CC,
+                self::UPI_TERMINAL_ONBOARDING_ALLOW_WALLET,
+                self::UPI_TERMINAL_ONBOARDING_ALLOW_CREDIT_LINE,
             ],
             self::OUTPUT => [
                 self::UPI_TERMINAL_ONBOARDING_MERCHANT_ID,
@@ -2074,6 +2084,9 @@ class Header
                 self::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY,
                 self::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING,
                 self::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CC,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_WALLET,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CREDIT_LINE,
             ],
             self::OUTPUT => [
                 self::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID,

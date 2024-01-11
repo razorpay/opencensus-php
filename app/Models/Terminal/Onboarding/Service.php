@@ -272,8 +272,10 @@ class Service extends Base\Service
                 'Terminal Id'   =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID],
                 'Gateway'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY],
                 'Recurring'     =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING],
-                'Online'        =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE]
-
+                'Online'        =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE],
+                'Allow CC'      =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CC],
+                'Allow Wallet'  =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_WALLET],
+                'Allow Credit Line' =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ALLOW_CREDIT_LINE],
             ]);
 
         $result = [
