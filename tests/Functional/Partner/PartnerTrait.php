@@ -7,8 +7,11 @@ use ApiResponse;
 use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Models\User\Role;
+use Mockery\MockInterface;
 use WpOrg\Requests\Response;
+use Mockery\LegacyMockInterface;
 use RZP\Models\Merchant\Referral;
+use RZP\Exception\TwirpException;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\Feature\Constants as FName;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -73,6 +76,31 @@ trait PartnerTrait
                        );
 
         $mockLOSService->shouldReceive('parseResponse')->times(1);
+    }
+
+    public function mockCreateApplicationRequestOnLOSServiceWithError( LegacyMockInterface|MockInterface $mockLOSService): void
+    {
+        $mockLOSService->shouldReceive('sendRequest')
+                       ->atLeast()
+                       ->once()
+                       ->with(
+                           MerchantConstants::CREATE_CAPITAL_APPLICATION_LOS_URL,
+                           Mockery::type('array'),
+                           Mockery::type('array')
+                       );
+
+        $mockLOSService->shouldReceive('parseResponse')
+                       ->times(1)
+                       ->andThrowExceptions(
+                           [
+                               new TwirpException(
+                                   [
+                                       "code" => "test code",
+                                       "msg" => "test message",
+                                   ]
+                               )
+                           ]
+                       );
     }
 
     public function mockGetProductsRequestOnLOSService($mockLOSService): void

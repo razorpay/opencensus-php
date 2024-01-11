@@ -2400,22 +2400,25 @@ class Service extends Base\Service
                                 // applyReferralIfApplicable() is always called for signIn flows only
                                 $this->applyReferralPartner($merchant, $referralInput, false);
 
+                                $capitalSubmUtility = new CapitalSubmerchantUtility();
+
                                 //Disable commissions only if merchant was not a sub-merchant
                                 // for the partner before referral
                                 if($accessMaps->isEmpty() === true)
                                 {
-                                    (new CapitalSubmerchantUtility())
-                                        ->createPartnerConfigForExistingMerchantsInvitedForLOC($partner, $merchant);
+                                    $capitalSubmUtility->createPartnerConfigForExistingMerchantsInvitedForLOC(
+                                        $partner,
+                                        $merchant,
+                                    );
                                 }
 
-                                (new CapitalSubmerchantUtility())
-                                    ->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent(
-                                        $partner,
-                                        $merchant->getId(),
-                                        PartnerConstants::REFERRAL,
-                                    );
-
                                 $this->createCapitalApplicationIfApplicable($merchant, $referral);
+
+                                $capitalSubmUtility->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent(
+                                    $partner,
+                                    $merchant->getId(),
+                                    PartnerConstants::REFERRAL,
+                                );
                             }
                         );
                     }

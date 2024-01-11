@@ -6,7 +6,6 @@ use Throwable;
 use Monolog\Logger;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
-use RZP\Models\Merchant\Metric;
 use Jitendra\Lqext\TransactionAware;
 use RZP\Models\Merchant\CapitalSubmerchantUtility;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -76,26 +75,43 @@ class PartnerSubmerchantLinkingReferralJob extends Job
 
             $referral = (new ReferralCore())->fetchReferralByReferralCode($this->referralInput['referral_code']);
 
-            $accessMaps = $this->repoManager->merchant_access_map->fetchAccessMapForMerchantIdAndOwnerId($subMerchant->getId(), $referral->getMerchantId());
+            $accessMaps = $this->repoManager->merchant_access_map->fetchAccessMapForMerchantIdAndOwnerId(
+                $subMerchant->getId(),
+                $referral->getMerchantId(),
+            );
 
-            $detailService = new DetailService();
+            $this->repoManager->transactionOnLiveAndTest(
+                function() use ($subMerchant, $referral, $accessMaps) {
 
-            $detailService->applyReferralPartner($subMerchant, $this->referralInput, $this->isSignupFlow);
+                    $detailService = new DetailService();
 
-            if ($referral->getProduct() == Product::CAPITAL and $this->isSignupFlow === false)
-            {
-                $partner = $this->repoManager->merchant->findOrFailPublic($referral->getMerchantId());
+                    $detailService->applyReferralPartner($subMerchant, $this->referralInput, $this->isSignupFlow);
 
-                //Disable commissions only if merchant was not a sub-merchant for the partner before referral
-                if($accessMaps->isEmpty() === true)
-                {
-                    (new CapitalSubmerchantUtility())->createPartnerConfigForExistingMerchantsInvitedForLOC($partner, $subMerchant);
+                    if ($referral->getProduct() == Product::CAPITAL and $this->isSignupFlow === false)
+                    {
+                        $partner = $this->repoManager->merchant->findOrFailPublic($referral->getMerchantId());
+
+                        $capitalSubmerchantUtility = new CapitalSubmerchantUtility();
+
+                        //Disable commissions only if merchant was not a sub-merchant for the partner before referral
+                        if ($accessMaps->isEmpty() === true)
+                        {
+                            $capitalSubmerchantUtility->createPartnerConfigForExistingMerchantsInvitedForLOC(
+                                $partner,
+                                $subMerchant,
+                            );
+                        }
+
+                        $detailService->createCapitalApplicationIfApplicable($subMerchant, $referral);
+
+                        $capitalSubmerchantUtility->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent(
+                            $partner,
+                            $subMerchant->getId(),
+                            PartnerConstants::REFERRAL,
+                        );
+                    }
                 }
-
-                (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteExistingSubmerchantLinkedEvent($partner, $subMerchant->getId(), PartnerConstants::REFERRAL);
-
-                $detailService->createCapitalApplicationIfApplicable($subMerchant, $referral);
-            }
+            );
 
             $this->delete();
         }
