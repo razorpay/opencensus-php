@@ -44,13 +44,15 @@ class Core extends Base\Core
     const GATEWAY_HDFC  = 'tokenisation_hdfc';
     const GATEWAY_AXIS  = 'tokenisation_axis';
 
+    //remove amex , axis and hdfc from automatic onboarding upon onboard_tokenisation feature enablement as onboarding API is not provided for these networks
+    // Todo: Enable them once onboarding API integration is done
     const TokenizationGateways = [
         self::GATEWAY_VISA,
         self::GATEWAY_MC,
-        self::GATEWAY_AMEX,
         self::GATEWAY_RUPAY,
-        self::GATEWAY_HDFC,
-        self::GATEWAY_AXIS,
+        //self::GATEWAY_AMEX,
+        //self::GATEWAY_HDFC,
+       // self::GATEWAY_AXIS,
     ];
 
     public const TokenisationGatewayToNetworkMapping = [
