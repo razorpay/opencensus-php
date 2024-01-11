@@ -7,7 +7,17 @@
 <h2>Password Reset</h2>
 
 <div>
-    @if ($product === 'banking')
+    @if ($unified_hostname != null)
+        To reset your password, <a href="{{ $unified_hostname
+            .'/forgotpwd/#token='. $token . '&email=' . $email}}" target="_blank">click here</a>. <br/>
+
+        Or you may open the following link in your browser: <br/>
+        <a href="{{$unified_hostname .'/forgotpwd/#token='. $token . '&email=' . $email}}" target="_blank">
+            {{'https://' . env('CURLEC_ACCOUNTS_URL')
+            .'/forgotpwd/#token='. $token . '&email=' . $email}}
+        </a>
+
+    @elseif ($product === 'banking')
         To reset your password, <a href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
             .'/forgot-password#token='. $token . '&email=' . $email}}" target="_blank">click here</a>. <br/>
 

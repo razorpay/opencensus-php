@@ -1,7 +1,7 @@
 <?php
 
 namespace RZP\Models\User;
-
+use Request;
 use Mail;
 use Hash;
 use Cache;
@@ -2287,12 +2287,29 @@ class Service extends Base\Service
                 //get Org and send it to mailer, deal with other orgs as well.
                 $org = $org->toArrayPublic();
 
+                $referer  = Request::header('X-Rzp-Referer');
+                // if orgId = org_abc then extractedOrgId will be abc
+                $extractedOrgId = Org\Entity::verifyIdAndStripSign($orgId);
+
+                if (!empty($referer)) {
+
+                    switch ($extractedOrgId) {
+                        case env('CURLEC_ORG_ID'):
+                            $unified_hostname = env('CURLEC_ACCOUNTS_URL');
+                            break;
+                        case env('RAZORPAY_ORG_ID'):
+                            $unified_hostname = env('RAZORPAY_ACCOUNTS_URL');
+                            break;
+                    }
+                }
+
+
                 $org['hostname'] = $this->auth->getOrgHostName();
                 $org['showAxisSupportUrl'] = $showAxisSupportUrl;
 
                 $requestOriginProduct = $this->auth->getRequestOriginProduct();
 
-                $passwordResetMail = new UserMail\PasswordReset($user->toArrayPublic(), $org, $requestOriginProduct);
+                $passwordResetMail = new UserMail\PasswordReset($user->toArrayPublic(), $org, $requestOriginProduct, $unified_hostname);
 
                 Mail::send($passwordResetMail);
 

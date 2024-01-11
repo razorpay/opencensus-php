@@ -19,7 +19,9 @@ class PasswordReset extends Base\Mailable
 
     protected $product;
 
-    public function __construct($user, $org, $product = Product::PRIMARY)
+    protected $unified_hostname;
+
+    public function __construct($user, $org, $product = Product::PRIMARY, $unified_hostname = null)
     {
         parent::__construct();
 
@@ -31,6 +33,8 @@ class PasswordReset extends Base\Mailable
                         );
 
         $this->org = $org;
+
+        $this -> unified_hostname = $unified_hostname;
 
         $this->product = $product;
     }
@@ -71,6 +75,7 @@ class PasswordReset extends Base\Mailable
         $data = [
             'token'      => $this->token,
             'org'        => $this->org,
+            'unified_hostname' => $this->unified_hostname,
             'email'      => urlencode($this->user['email']),
             'product'    => $this->product,
         ];
