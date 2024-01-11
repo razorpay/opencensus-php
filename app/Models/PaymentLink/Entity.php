@@ -884,7 +884,7 @@ class Entity extends Base\PublicEntity
     public function getCurlecBrandingConfig()
     {
         $branding = [];
-        $branding['show_rzp_logo'] = true;
+        $branding['show_rzp_logo'] = false;
         $branding['security_branding_logo'] = "https://cdn.razorpay.com/static/assets/i18n/malaysia/security-branding.png";
         return $branding;
     }

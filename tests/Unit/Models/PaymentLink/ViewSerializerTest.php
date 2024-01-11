@@ -154,7 +154,7 @@ class ViewSerializerTest extends TestCase
     public function serializePropertiesForHostedMalaysiaDataProvider() : array
     {
         return [
-            [true, true, 'https://rzp-1415-prod-dashboard-activation.s3.ap-south-1.amazonaws.com/org_KjWRtYXwpK6VfK/payment_apps_logo/phplelIPA', 'https://cdn.razorpay.com/static/assets/i18n/malaysia/security-branding.png', 'MY', 'Curlec Payment Pages'],
+            [true, false, 'https://rzp-1415-prod-dashboard-activation.s3.ap-south-1.amazonaws.com/org_KjWRtYXwpK6VfK/payment_apps_logo/phplelIPA', 'https://cdn.razorpay.com/static/assets/i18n/malaysia/security-branding.png', 'MY', 'Curlec Payment Pages'],
             [false, true, '', '', 'IN', 'Razorpay Payment Pages'],
         ];
     }

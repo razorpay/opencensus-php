@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Environment;
 use RZP\Encryption\AESEncryption;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\PaymentLink\Entity as PaymentLink;
@@ -2583,7 +2584,7 @@ class Core extends Base\Core
 
         $preferences['merchant_brand_color'] = $merchantBrandColor;
 
-        $preferences += $this->serializeOrgPropertiesForPreferences($merchant);
+        $preferences += $this->serializeOrgPropertiesForPreferences($merchant, $preferences);
 
         return [
             'is_test_mode'   => $this->isTestMode(),
@@ -3168,7 +3169,7 @@ class Core extends Base\Core
         return $modifiedInput;
     }
 
-    protected function serializeOrgPropertiesForPreferences(Merchant\Entity $merchant)
+    protected function serializeOrgPropertiesForPreferences(Merchant\Entity $merchant,array $preferences)
     {
         $org = $merchant->org;
 
@@ -3180,6 +3181,15 @@ class Core extends Base\Core
         if($merchant->shouldShowCustomOrgBranding() === true)
         {
             $branding['show_rzp_logo'] = false;
+
+            if(ORG_ENTITY::isOrgCurlec($org->getId()) === true && $preferences['payment_button_theme'] === "rzp-dark-standard")
+            {
+                $branding['branding_logo'] = Constants::PB_WHITE_BRANDING_LOGO_CURLEC;
+
+                return [
+                    'branding'  => $branding
+                ];
+            }
 
             $branding['branding_logo'] = $org->getPaymentAppLogo() ?: 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
 
