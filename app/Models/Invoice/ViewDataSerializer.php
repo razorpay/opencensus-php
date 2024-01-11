@@ -134,6 +134,12 @@ class ViewDataSerializer extends Base\Core
         $branding[ENTITY::PRODUCT_DOMAIN_NAME] = $this->invoice->getDomainName();
         $branding[ENTITY::PRODUCT_DOMAIN_LINK] = $this->invoice->getDomainLink();
 
+        if ($this->invoice->getEntityType() === E::SUBSCRIPTION_REGISTRATION)
+        {
+            $branding[Entity::PRODUCT_DOMAIN_NAME] = $this->invoice->getCAWDomainName();
+            $branding[Entity::PRODUCT_DOMAIN_LINK] = $this->invoice->getCAWDomainLink();
+        }
+
         if($this->merchant->shouldShowCustomOrgBranding() === true)
         {
 

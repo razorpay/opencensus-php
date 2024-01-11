@@ -238,6 +238,10 @@ class Entity extends Base\PublicEntity
     const INVOICE_DOMAIN_NAME_CURLEC = 'curlec.com/invoices';
     const INVOICE_DOMAIN_LINK_RAZORPAY = 'https://razorpay.com/invoices/';
     const INVOICE_DOMAIN_LINK_CURLEC = 'https://curlec.com/invoices/';
+    const CAW_CURLEC_DOMAIN_NAME = 'curlec.com/subscriptions';
+    const CAW_RAZORPAY_DOMAIN_NAME = 'razorpay.com/subscriptions';
+    const CAW_CURLEC_DOMAIN_LINK = 'https://curlec.com/subscriptions/';
+    const CAW_RAZORPAY_DOMAIN_LINK = 'https://razorpay.com/docs/payments/recurring-payments';
 
 
     protected static $sign         = 'inv';
@@ -2030,5 +2034,23 @@ class Entity extends Base\PublicEntity
             return self::INVOICE_DOMAIN_LINK_CURLEC;
         }
         return self::INVOICE_DOMAIN_LINK_RAZORPAY;
+    }
+
+    public function getCAWDomainName(): ?string
+    {
+        $country = $this->merchant->getCountry();
+        if ($country == 'MY') {
+            return self::CAW_CURLEC_DOMAIN_NAME;
+        }
+        return self::CAW_RAZORPAY_DOMAIN_NAME;
+    }
+
+    public function getCAWDomainLink(): ?string
+    {
+        $country = $this->merchant->getCountry();
+        if ($country == 'MY') {
+            return self::CAW_CURLEC_DOMAIN_LINK;
+        }
+        return self::CAW_RAZORPAY_DOMAIN_LINK;
     }
 }
