@@ -5576,6 +5576,10 @@ class Core extends Base\Core
                 $smsPayload['sender'] = 'RZPAYX';
                 $smsPayload['templateName'] = 'sms.user.approve_bulk_payout_v2';
                 $smsPayload['templateNamespace'] = 'razorpayx_neobanking';
+
+            case Constants::X_INVITE_USER_OTP:
+                $smsPayload['sender'] = 'RZPAYX';
+                $smsPayload['templateNamespace'] = 'razorpayx_neobanking';
                 break;
         }
 

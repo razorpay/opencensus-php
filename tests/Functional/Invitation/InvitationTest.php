@@ -2,10 +2,9 @@
 
 namespace RZP\Tests\Functional\Invitation;
 
+use Carbon\Carbon;
 use DB;
 use Mail;
-use Carbon\Carbon;
-
 use Mockery;
 use Nyholm\Psr7\Factory\HttplugFactory;
 use RZP\Constants\Table;
@@ -13,19 +12,18 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Mail\Invitation\Invite as InvitationMail;
+use RZP\Mail\Invitation\Razorpayx\IntegrationInvite as XAccountingIntegrationInviteMail;
+use RZP\Mail\Invitation\Razorpayx\InvitationNotificationToOwner as XInvitationNotificationToOwner;
+use RZP\Mail\Invitation\RazorpayX\Invite as xInvitationMail;
 use RZP\Mail\Invitation\Razorpayx\VendorPortalInvite;
-use RZP\Models\Merchant\Detail\BusinessType;
-use RZP\Services\Mock\Raven;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 use RZP\Services\RazorXClient;
 use RZP\Services\VendorPortal\Service as VendorPortalService;
-use RZP\Tests\Functional\TestCase;
-use RZP\Mail\Invitation\Invite as InvitationMail;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
-use RZP\Mail\Invitation\RazorpayX\Invite as xInvitationMail;
-use RZP\Mail\Invitation\Razorpayx\IntegrationInvite as XAccountingIntegrationInviteMail;
-use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
-use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\TestCase;
 
 class InvitationTest extends TestCase
 {
@@ -58,6 +56,19 @@ class InvitationTest extends TestCase
         $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID ]);
 
         $this->fixtures->create('merchant',[ 'id' => self::EXISTING_MERCHANT_FOR_INVITED_USER_ID ]);
+
+        $ownerUser = $this->createUserForMerchantWithoutCreatingMerchantUser(['email' => self::DEFAULT_X_MERCHANT_ID . '+owner@razorpay.com']);
+
+        DB::table('merchant_users')
+          ->insert([
+                       'merchant_id' => self::DEFAULT_X_MERCHANT_ID,
+                       'user_id'     => $ownerUser['id'],
+                       'product'     => 'banking',
+                       'role'        => 'owner',
+                       'created_at'  => Carbon::now()->getTimestamp(),
+                       'updated_at'  => Carbon::now()->getTimestamp(),
+                   ]);
+
 
         $xMerchantUser = $this->createUserForMerchantWithoutCreatingMerchantUser(['email' => 'testteamxinvite@razorpay.com']);
 
@@ -93,6 +104,13 @@ class InvitationTest extends TestCase
 
             return true;
         });
+
+        Mail::assertQueued(XInvitationNotificationToOwner::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invitation_notification_to_owner', $mail->view);
+
+            return true;
+        });
     }
 
     public function testPostSendInvitationToNonExistingUserInXForCARole()
@@ -107,6 +125,13 @@ class InvitationTest extends TestCase
 
         Mail::assertQueued(xInvitationMail::class, function ($mail) {
             $this->assertEquals('emails.invitation.razorpayx.ca-invitation', $mail->view);
+
+            return true;
+        });
+
+        Mail::assertQueued(XInvitationNotificationToOwner::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invitation_notification_to_owner', $mail->view);
 
             return true;
         });
@@ -125,6 +150,13 @@ class InvitationTest extends TestCase
         Mail::assertQueued(xInvitationMail::class, function ($mail)
         {
             $this->assertEquals('emails.invitation.razorpayx.invite_existing_user', $mail->view);
+
+            return true;
+        });
+
+        Mail::assertQueued(XInvitationNotificationToOwner::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invitation_notification_to_owner', $mail->view);
 
             return true;
         });
@@ -160,6 +192,13 @@ class InvitationTest extends TestCase
 
             return true;
         });
+
+        Mail::assertQueued(XInvitationNotificationToOwner::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invitation_notification_to_owner', $mail->view);
+
+            return true;
+        });
     }
 
     public function testPostSendInvitationToPgOwnerInX()
@@ -192,6 +231,13 @@ class InvitationTest extends TestCase
 
             return true;
         });
+
+        Mail::assertQueued(XInvitationNotificationToOwner::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invitation_notification_to_owner', $mail->view);
+
+            return true;
+        });
     }
 
     public function testPostSendInvitationToExistingUserInX()
@@ -221,6 +267,13 @@ class InvitationTest extends TestCase
         Mail::assertQueued(xInvitationMail::class, function ($mail)
         {
             $this->assertEquals('emails.invitation.razorpayx.invite_existing_x_user', $mail->view);
+
+            return true;
+        });
+
+        Mail::assertQueued(XInvitationNotificationToOwner::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invitation_notification_to_owner', $mail->view);
 
             return true;
         });

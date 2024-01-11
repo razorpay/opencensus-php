@@ -2,39 +2,38 @@
 
 namespace RZP\Models\Invitation;
 
-use Request;
 use ApiResponse;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
-use Mail;
 use Illuminate\Support\Collection;
-
+use Mail;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
 use Psr\Http\Message\RequestInterface;
 use Razorpay\Trace\Logger as Trace;
+use Request;
+use RZP\Constants\Product;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Request\Requests;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\OrgWiseConfig;
-use RZP\Models\Base;
-use RZP\Models\Merchant\Core as MerchantCore;
-use RZP\Models\Merchant\Entity as MerchantEntity;
-use RZP\Models\Feature;
-use RZP\Models\User;
-use RZP\Models\Merchant;
-use RZP\Models\User\AxisUserRole;
-use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
-use RZP\Constants\Product;
 use RZP\Mail\Invitation\Invite as InvitationMail;
-use RZP\Services\Segment\EventCode as SegmentEvent;
-use RZP\Services\Segment\Constants as SegmentConstants;
-use RZP\Mail\Invitation\Razorpayx\Invite as RazorpayXInvitationMail;
 use RZP\Mail\Invitation\Razorpayx\BankLmsInvite as BankLmsInvite;
-use RZP\Mail\Invitation\Razorpayx\VendorPortalInvite as VendorPortalInvitationMail;
 use RZP\Mail\Invitation\Razorpayx\IntegrationInvite as XAccountingIntegrationInviteMail;
-use RZP\Trace\Tracer;
+use RZP\Mail\Invitation\Razorpayx\InvitationNotificationToOwner;
+use RZP\Mail\Invitation\Razorpayx\Invite as RazorpayXInvitationMail;
+use RZP\Mail\Invitation\Razorpayx\VendorPortalInvite as VendorPortalInvitationMail;
+use RZP\Models\Base;
+use RZP\Models\Feature;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\User;
+use RZP\Services\Segment\Constants as SegmentConstants;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Tests\P2p\Service\Base\Traits;
+use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
 
 define('JOINING_INTEGRATION_INVITATION', 'joining_integration_invitation');
 
@@ -519,6 +518,8 @@ class Core extends Base\Core
                 $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole(), $isIntegrationInvite);
 
             Mail::queue($inviteMailer);
+
+            $this->sendInvitationNotificationToOwnerForX($invitation);
         }
     }
 
@@ -843,5 +844,33 @@ class Core extends Base\Core
         return false;
     }
 
+    function sendInvitationNotificationToOwnerForX(Entity $invitation)
+    {
+        try
+        {
+            /* @var BasicAuth $ba */
+            $ba  = $this->app['basicauth'];
 
+            $owner = $this->merchant->owners(Product::BANKING)->firstOrFail();
+
+            $data = [
+                'merchant_name' => $this->merchant->getName(),
+                'owner_name'    => $owner->getName(),
+                'inviter_name'  => $ba->getUser()->getName(),
+                'inviter_email' => $ba->getUser()->getEmail(),
+                'inviter_role'  => $ba->getUserRole(),
+                'invitee_email' => $invitation->getEmail(),
+                'invitee_role'  => $invitation->getRole(),
+            ];
+
+            Mail::queue(new InvitationNotificationToOwner($data, $owner));
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::INVITATION_SEND_NOTIFICATION_TO_OWNER_FAILED, [
+                'exception'  => $e,
+                'invitation' => $invitation,
+            ]);
+        }
+    }
 }

@@ -424,6 +424,7 @@ class Validator extends Base\Validator
                                  . 'update_workflow_config,'
                                  . 'delete_workflow_config,'
                                  . 'ip_whitelist,'
+                                 . 'x_invite_user_otp,'
                                  . 'approve_bulk_payouts,',
         Entity::TOKEN         => 'sometimes|filled',
 

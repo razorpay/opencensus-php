@@ -12,6 +12,7 @@ use RZP\Constants\Product;
 use RZP\Models\User\AxisUserRole;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {

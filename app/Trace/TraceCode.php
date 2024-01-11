@@ -3812,6 +3812,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVITATION_EMAIL                                      = 'INVITATION_EMAIL';
     const INVITATION_CREATE_FAILED                              = 'INVITATION_CREATE_FAILED';
     const INVITATION_ACCEPT_FAILED                              = 'INVITATION_ACCEPT_FAILED';
+    const INVITATION_SEND_NOTIFICATION_TO_OWNER_FAILED          = 'INVITATION_SEND_NOTIFICATION_TO_OWNER_FAILED';
 
     // Trace codes for gateway load rules
     const GATEWAY_RULE_CREATE_REQUEST                           = 'GATEWAY_RULE_CREATE_REQUEST';
