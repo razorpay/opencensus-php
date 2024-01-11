@@ -4923,6 +4923,8 @@ class Service extends Base\Service
                 return $merchantService->edit($merchantId, $input);
             case 'STORE_IN_CACHE':
                 return $this->core->updateMerchantStoreInternal($merchantId, $input);
+            case 'DELETE_FROM_CACHE':
+                return $this->core->deleteMerchantStoreInternal($merchantId, $input);
             default:
                 $merchantDetails = $this->repo->merchant_detail->findOrFail($merchantId);
                 return $this->core->submitMerchantInternal($input, $merchantDetails);

@@ -4426,6 +4426,28 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
+    public function deleteMerchantStoreInternal(string $merchantId, array $input): array
+    {
+        try
+        {
+            $keys = [$input['cache_key']];
+
+            $cacheOutput = (new StoreCore())->deleteMerchantStore($merchantId, ConfigKey::ONBOARDING_NAMESPACE, $keys, Merchant\Store\Constants::INTERNAL);
+        }
+        catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::SUBMIT_MERCHANT_INTERNAL, [
+                'MerchantId'    => $merchantId,
+                'CacheKey'      => $input['cache_key'],
+                'ErrorMessage'  => $e->getMessage()
+            ]);
+
+            return ['success' => false];
+        }
+
+        return ['success' => true];
+    }
+
     protected function checkLicenseExpiryValidationForMerchantDocuments($merchant, $input)
     {
         $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
