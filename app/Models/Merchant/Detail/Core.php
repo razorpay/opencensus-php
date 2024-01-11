@@ -4286,6 +4286,11 @@ class Core extends Base\Core
 
             $merchantPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
 
+            $this->trace->info(TraceCode::PGOS_POS_SUBMIT, [
+                'pos_activation_status' => $merchantPosActivationStatus,
+                'input'     => $input
+            ]);
+
             if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::UNDER_REVIEW)
             {
                 if (($merchantPosActivationStatus === Status::REJECTED) and
@@ -4334,8 +4339,17 @@ class Core extends Base\Core
                         ->setOriginal($merchantDetails)
                         ->setDirty($oldMerchantDetails);
 
-                    $this->app['workflow']
-                        ->handle();
+                    try
+                    {
+                        $this->app['workflow']
+                            ->handle();
+                    }
+                    catch (Exception\EarlyWorkflowResponse $e)
+                    {
+                        // Catching exception because we do not want to abort the code flow
+                        $workflowActionData = json_decode($e->getMessage(), true);
+                        $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+                    }
 
                     $this->pgosProxyController->handlePGOSProxyRequests('pos_merchant_config', ["merchant_id" => $merchant->getId()], $merchant, true);
                 }
@@ -4347,8 +4361,17 @@ class Core extends Base\Core
                         ->setOriginal($merchantDetails)
                         ->setDirty($oldMerchantDetails);
 
-                    $this->app['workflow']
-                        ->handle();
+                    try
+                    {
+                        $this->app['workflow']
+                            ->handle();
+                    }
+                    catch (Exception\EarlyWorkflowResponse $e)
+                    {
+                        // Catching exception because we do not want to abort the code flow
+                        $workflowActionData = json_decode($e->getMessage(), true);
+                        $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+                    }
 
                     $this->sendRejectionEmail($merchant);
                 }
@@ -9247,7 +9270,7 @@ class Core extends Base\Core
 
         return $permissionName;
     }
-    
+
     /**
      * Get MCC Categorisation and Website Validation.
      *
@@ -9259,9 +9282,9 @@ class Core extends Base\Core
     public function getMccCategorisationAndWebsiteValidation(string $mccServiceId, string $individualLinkRequestId, Merchant\Entity $merchant): array
     {
         $response = [];
-        
+
         $this->merchant = $merchant;
-        
+
         if (empty($this->mccCategorisationClient))
         {
             $this->mccCategorisationClient = $this->getMccCategorisationClient(OcrServiceConstants::OCR_CONFIG_KEY);
@@ -9345,7 +9368,7 @@ class Core extends Base\Core
         foreach ($MandatorykeysToCheck as $Optionalkey) {
             if (
                 isset($websiteLinkValidation[$Optionalkey]) &&
-                isset($websiteLinkValidation[$Optionalkey]['analysis_result']['confidence_score']) && 
+                isset($websiteLinkValidation[$Optionalkey]['analysis_result']['confidence_score']) &&
                 $websiteLinkValidation[$Optionalkey]['analysis_result']['confidence_score'] < 0.9
             ) {
                 return false;
@@ -9379,23 +9402,23 @@ class Core extends Base\Core
 
         return false;
     }
-    
+
     public function getMerchantWebsiteAutomatedOcrCheckCacheData(Merchant\Entity $merchant)
     {
         $cacheKey = $this->getMerchantWebsiteAutomatedOcrCheckCacheKey($merchant);
 
         $data = $this->app['cache']->get($cacheKey);
-        
+
         return $data;
     }
-    
+
     protected function deleteMerchantWebsiteAutomatedOcrCheckCacheData(Merchant\Entity $merchant)
     {
         $cacheKey = $this->getMerchantWebsiteAutomatedOcrCheckCacheKey($merchant);
-    
+
         $this->app['cache']->delete($cacheKey);
     }
-    
+
     /**
      * Update website details after validation.
      *
@@ -9406,7 +9429,7 @@ class Core extends Base\Core
     public function updateWebsiteDetailAfterValidation(array $payload)
     {
         $validationResponse = $payload['validationResponse'] ?? [];
-        
+
         $this->deleteMerchantWebsiteAutomatedOcrCheckCacheData($this->merchant);
 
         if(
@@ -9502,7 +9525,7 @@ class Core extends Base\Core
     public function validateIndividualLink(array $input)
     {
         $this->websiteIndividualClient = $this->getWebsiteIndividualLinkClient(OcrServiceConstants::OCR_CONFIG_KEY);
-        
+
         $payload = $this->createWebsiteLinkClientPayload($input);
 
         $validation = $this->websiteIndividualClient->createWebsiteVerificationJob($payload);
@@ -9547,16 +9570,16 @@ class Core extends Base\Core
 
         return $validation['id'];
     }
-    
+
     protected function getMerchantWebsiteAutomatedOcrCheckCacheKey(Merchant\Entity $merchant)
     {
         return sprintf(Constants::MERCHANT_WEBSITE_AUTOMATED_OCR_CHECKS_CACHE_KEY, $merchant->getId());
     }
-    
+
     protected function saveMerchantWebsiteAutomatedOcrCheckDataInCache(Merchant\Entity $merchant, array $data)
     {
         $cacheKey = $this->getMerchantWebsiteAutomatedOcrCheckCacheKey($merchant);
-    
+
         $this->app['cache']->put($cacheKey, $data, Constants::MERCHANT_WEBSITE_AUTOMATED_OCR_CHECKS_TTL);
     }
 
@@ -9574,7 +9597,7 @@ class Core extends Base\Core
         $mccRequestId = $this->validateMCC($input);
 
         $individualLinkRequestId = $this->validateIndividualLink($input);
-        
+
         try
         {
             $this->dispatchOCRValidationJob($mccRequestId, $individualLinkRequestId, $input, $urlType);
@@ -9594,7 +9617,7 @@ class Core extends Base\Core
 
         $data[Constants::OCR_AUTOMATED_CHECK_ENABLE] = true;
         $this->saveMerchantWebsiteAutomatedOcrCheckDataInCache($this->merchant, $data);
-        
+
         return [
             'bvs_validation' => true,
             'mccRequestId' => $mccRequestId,

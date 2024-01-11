@@ -10967,6 +10967,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const IN_APP_CREDIT_CARD_METHOD_ENABLED_CHECK_FAILED       = 'IN_APP_CREDIT_CARD_METHOD_ENABLED_CHECK_FAILED';
 
+    const PGOS_POS_SUBMIT                                      = "PGOS_POS_SUBMIT";
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

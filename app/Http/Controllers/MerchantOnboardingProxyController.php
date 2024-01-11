@@ -523,47 +523,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
         return false;
     }
 
-    public function shouldMerchantOnboardForPOS(Merchant\Entity $merchant)
-    {
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        $businessDetail = $merchantDetails->businessDetail;
-
-        if (empty($businessDetail) === false)
-        {
-            $isPosMerchant = (new Merchant\Detail\Core())->isPOSMerchant($businessDetail);
-
-            if ($isPosMerchant === true and $this->isPOSExperimentEnabledForCity($merchantDetails->getBusinessOperationCity()))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function isPOSExperimentEnabledForCity(string $city): bool{
-
-        $properties = [
-            'request_data' => "{\"city\": \"$city\"}",
-            'experiment_id' => $this->app['config']->get('app.enable_routes_for_pos_merchant_exp_id'),
-        ];
-
-        $isExpEnabled =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'allow omni onboarding');
-
-        if ($isExpEnabled === true)
-        {
-            $this->trace->info(TraceCode::POS_MERCHANT_ONBOARDING_REQUEST, [
-                'message' => "POS merchant has requested for onboarding",
-            ]);
-
-            return true;
-        }
-
-        return false;
-    }
-
     public function isFieldsOwnedByPGOS($inputFields): bool
     {
         return (bool)count(array_intersect($inputFields, self::PGOS_OWNED_FIELDS));

@@ -583,7 +583,11 @@ class Service extends Base\Service
                 {
                     $posActivationFlow = $this->core->fetchPosActivationFlow($merchant);
 
-                    if ($posActivationFlow !== DetailConstants::POS_BLACKLIST && $this->shouldMerchantOnboardForPOS($merchant)) {
+                    $this->trace->info(TraceCode::PGOS_POS_SUBMIT, [
+                        'pos_activation_flow' => $posActivationFlow
+                    ]);
+
+                    if ($posActivationFlow !== DetailConstants::POS_BLACKLIST) {
 
                         $this->core->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW]);
 
@@ -744,43 +748,6 @@ class Service extends Base\Service
         }
 
         return $response;
-    }
-
-    public function shouldMerchantOnboardForPOS(Merchant\Entity $merchant)
-    {
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        $businessDetail = $merchantDetails->businessDetail;
-
-        if (empty($businessDetail) === false)
-        {
-            $isPosMerchant = (new Merchant\Detail\Core())->isPOSMerchant($businessDetail);
-
-            if ($isPosMerchant === true and $this->isPOSExperimentEnabledForCity($merchantDetails->getBusinessOperationCity()))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function isPOSExperimentEnabledForCity(string $city): bool{
-
-        $properties = [
-            'request_data'  => "{\"city\": \"$city\"}",
-            'experiment_id' => $this->app['config']->get('app.enable_routes_for_pos_merchant_exp_id'),
-        ];
-
-        $isExpEnabled =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'allow omni onboarding');
-
-        if ($isExpEnabled === true)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     private function allowEditingOfBusinessNameAndDBAKYC($merchant, $input)
@@ -1871,7 +1838,7 @@ class Service extends Base\Service
     public function putBusinessWebsiteUpdatePostWorkflow(array $input, ?Merchant\Entity $merchant = null)
     {
         $merchant = $merchant ?? $this->merchant;
-        
+
         $previousWebsite = $merchant->merchantDetail->getWebsite();
 
         $newUrl = $input[DetailConstants::URL_TYPE] === DEConstants::URL_TYPE_WEBSITE ?  $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE] : $input[DetailConstants::BUSINESS_APP_URL];

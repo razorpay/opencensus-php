@@ -11250,7 +11250,7 @@ class Service extends Base\Service
         {
             $merchant = $this->merchant;
         }
-        
+
         if (($workflowType === Constants::BANK_DETAIL_UPDATE) and
             ($permission === Permission::EDIT_MERCHANT_BANK_DETAIL))
         {
@@ -11262,12 +11262,12 @@ class Service extends Base\Service
                 $response[Constants::BANK_ACCOUNT_ID] = $careResponse[Constants::BANK_ACCOUNT_ID];
             }
         }
-        
+
         if ($workflowType == Constants::ADDITIONAL_WEBSITE)
         {
             $merchantDetailCore = (new Detail\Core);
             $cacheDataResponse = $merchantDetailCore->getMerchantWebsiteAutomatedOcrCheckCacheData($merchant);
-    
+
             if ($cacheDataResponse !== null)
             {
                 $response[Constants::OCR_AUTOMATED_CHECK_ENABLE] =  $cacheDataResponse[Constants::OCR_AUTOMATED_CHECK_ENABLE];
@@ -13136,7 +13136,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_payment_callback', $callBackObj, $merchant);
+        $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_payment_callback', $callBackObj, $merchant, true);
     }
 
     public function posFetchLatestOrder($input)
