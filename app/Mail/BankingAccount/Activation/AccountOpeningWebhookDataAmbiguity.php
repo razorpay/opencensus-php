@@ -3,34 +3,36 @@
 
 namespace RZP\Mail\BankingAccount\Activation;
 
-
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 
-class AccountOpeningWebhookDataAmbiguity extends Base
+class AccountOpeningWebhookDataAmbiguity extends BaseV2
 {
     const SUBJECT       = 'Important | RBL Webhook Data Mismatch Alert';
 
-    public function __construct(string $bankingAccountId, array $eventDetails)
+    public function __construct(array $bankingAccount, array $eventDetails)
     {
         $this->eventDetails = $eventDetails;
 
-        parent::__construct($bankingAccountId, $eventDetails);
+        parent::__construct($bankingAccount, $eventDetails);
     }
 
     protected function addMailData()
     {
+        /** @var \RZP\Models\Merchant\Detail\Entity $merchantDetail */
+        $merchantDetail = (new \RZP\Models\Merchant\Detail\Repository)->findOrFail($this->bankingAccount[Entity::MERCHANT_ID]);
+
         $data = [
-            'merchantId'      => $this->bankingAccount[Entity::MERCHANT_ID],
-            'bankReferenceNumber' => $this->bankingAccount->getBankReferenceNumber(),
+            'merchantId'            => $this->bankingAccount[Entity::MERCHANT_ID],
+            'bankReferenceNumber'   => $this->bankingAccount[Entity::BANK_REFERENCE_NUMBER],
             'razorpayDetails' => [
-                'businessName'        => $this->bankingAccount->merchant->merchantDetail->getBusinessName(),
+                'businessName'        => $merchantDetail->getBusinessName(),
                 'pinCode'             => $this->bankingAccount[Entity::PINCODE],
-                'businessCity'        => $this->bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_CITY],
-                'businessAddress'     => $this->bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_DOCUMENTS_ADDRESS],
-                'bankReferenceNumber' => $this->bankingAccount->getBankReferenceNumber(),
-                'email'               => $this->bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_EMAIL],
-                'phoneNumber'         => $this->bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER],
+                'businessCity'        => $this->bankingAccount[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::MERCHANT_CITY],
+                'businessAddress'     => $this->bankingAccount[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::MERCHANT_DOCUMENTS_ADDRESS],
+                'bankReferenceNumber' => $this->bankingAccount[Entity::BANK_REFERENCE_NUMBER],
+                'email'               => $this->bankingAccount[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::MERCHANT_POC_EMAIL],
+                'phoneNumber'         => $this->bankingAccount[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER],
 
             ],
             'rblWebhookDetails' => [

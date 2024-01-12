@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
+// Note: RBL accounts on BAS are already handled while preparing the statement data
 class StatementMail extends Mailable
 {
     const HEADER = 'RX Account Statement';

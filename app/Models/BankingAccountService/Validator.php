@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccountService;
 
 use RZP\Base;
+use RZP\Models\BankingAccount\Entity;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 
 class Validator extends Base\Validator
@@ -11,9 +12,11 @@ class Validator extends Base\Validator
     const ARCHIVE_BANKING_ACCOUNT   = 'archive_banking_account';
     const UNARCHIVE_BANKING_ACCOUNT = 'unarchive_banking_account';
 
-    const NOTIFICATION_INPUT_VALIDATION = 'notification_input_validation';
-    const HANDLE_NOTIFICATION_VALIDATION = 'handle_notification_validation';
-    const DOCKET_EMAIL_DATA_VALIDATION = 'docket_email_data_validation';
+    const NOTIFICATION_INPUT_VALIDATION         = 'notification_input_validation';
+    const HANDLE_NOTIFICATION_VALIDATION        = 'handle_notification_validation';
+    const DOCKET_EMAIL_DATA_VALIDATION          = 'docket_email_data_validation';
+    const NOTIFICATION_ACCOUNT_ACTIVATION       = 'notification_account_activation';
+    const NOTIFICATION_WEBHOOK_AMBIGUITY        = 'notification_webhook_ambiguity';
 
     const SUPPORTED_ARTEFACT_TYPE = [
       Constant::BUSINESS_PAN,
@@ -43,22 +46,42 @@ class Validator extends Base\Validator
         Constants::NOTIFICATION_TYPE => 'required|string',
     ];
 
+    protected static $notificationWebhookAmbiguityRules = [
+        'webhook_data.' . Entity::BENEFICIARY_NAME      => 'required|string',
+        'webhook_data.' . Entity::BENEFICIARY_PIN       => 'required|string',
+        'webhook_data.' . Entity::BENEFICIARY_CITY      => 'required|string',
+        'webhook_data.' . Entity::BENEFICIARY_ADDRESS1  => 'required|string',
+        'webhook_data.' . Entity::BANK_REFERENCE_NUMBER => 'required|string',
+        'webhook_data.' . Entity::BENEFICIARY_EMAIL     => 'sometimes|string',
+        'webhook_data.' . Entity::BENEFICIARY_MOBILE    => 'sometimes|string',
+    ];
+
+    protected static $notificationAccountActivationRules = [
+        Constants::NOTIFICATION_TYPE     => 'required|string',
+        Constants::MERCHANT_ID           => 'required|string',
+        'banking_account.id'             => 'required|string',
+        'banking_account.merchant_id'    => 'required|string',
+        'banking_account.account_number' => 'required|string',
+
+    ];
+
     protected static $handleNotificationValidationRules = [
-        Constants::NOTIFICATION_TYPE                  => 'required|string',
-        Constants::VALIDATOR_OP                       => 'required_if:notification_type,x_pro_activation',
-        Constants::BANKING_ACCOUNT                    => 'required|array',
-        Constants::BANKING_ACCOUNT_STATUS_CHANGED     => 'required_if:notification_type,status_change',
-        Constants::BANKING_ACCOUNT_SUB_STATUS_CHANGED => 'required_if:notification_type,status_change',
-        'banking_account.id'                                 => 'required|string',
-        'banking_account.merchant_id'                        => 'required|string',
-        'banking_account.bank_reference_number'              => 'required|string',
-        'banking_account.created_at'                         => 'required|epoch',
-        'banking_account.pincode'                            => 'required|string',
-        'banking_account.status'                             => 'required|string',
-        'banking_account.sub_status'                         => 'sometimes',
-        'banking_account.spocs'                              => 'required_if:status,api_onboarding,account_activation,processed,rejected,archived,activated',
-        'banking_account.reviewers'                          => 'required_if:status,api_onboarding,account_activation,processed',
-        'banking_account.banking_account_activation_details' => 'required|array',
+        Constants::NOTIFICATION_TYPE                                            => 'required|string',
+        Constants::BANKING_ACCOUNT                                              => 'required|array',
+        Constants::BANKING_ACCOUNT_STATUS_CHANGED                               => 'required_if:notification_type,status_change',
+        Constants::BANKING_ACCOUNT_SUB_STATUS_CHANGED                           => 'required_if:notification_type,status_change',
+        Constants::FRESHDESK_TICKET_REQUIRED                                   => 'required_if:notification_type,status_change',
+        Constants::ASSIGNEE_TEAM_CHANGED                                        => 'required_if:notification_type,status_change',
+        'banking_account.id'                                                    => 'required|string',
+        'banking_account.merchant_id'                                           => 'required|string',
+        'banking_account.bank_reference_number'                                 => 'required|string',
+        'banking_account.created_at'                                            => 'required|epoch',
+        'banking_account.pincode'                                               => 'required|string',
+        'banking_account.status'                                                => 'required|string',
+        'banking_account.sub_status'                                            => 'sometimes',
+        'banking_account.spocs'                                                 => 'required_if:status,api_onboarding,account_activation,processed,rejected,archived,activated',
+        'banking_account.reviewers'                                             => 'required_if:status,api_onboarding,account_activation,processed',
+        'banking_account.banking_account_activation_details'                    => 'required|array',
         'banking_account.banking_account_activation_details.assignee_name'      => 'required_if:notification_type,x_pro_activation|string',
         'banking_account.banking_account_activation_details.additional_details' => 'sometimes|array',
         'banking_account.banking_account_activation_details.contact_verified'   => 'required_if:notification_type,status_change|integer',
@@ -66,17 +89,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $docketEmailDataValidationRules = [
-        'subject'   => 'required|string',
-        'view_data' => 'required|array',
-        'view_data.merchantName'    => 'required|string',
-        'view_data.refNo'           => 'required|string',
-        'view_data.entityType'      => 'required|string',
-        'view_data.address'         => 'required|string',
-        'view_data.city'            => 'required|string',
-        'view_data.pocName'         => 'required|string',
-        'view_data.pocPhoneNumber'  => 'required|string',
-        'view_data.attachment_url'  => 'required|string',
-        'recipients' => 'required|array',
+        'subject'                  => 'required|string',
+        'view_data'                => 'required|array',
+        'view_data.merchantName'   => 'required|string',
+        'view_data.refNo'          => 'required|string',
+        'view_data.entityType'     => 'required|string',
+        'view_data.address'        => 'required|string',
+        'view_data.city'           => 'required|string',
+        'view_data.pocName'        => 'required|string',
+        'view_data.pocPhoneNumber' => 'required|string',
+        'view_data.attachment_url' => 'required|string',
+        'recipients'               => 'required|array',
     ];
 
     protected static $archiveBankingAccountRules = [

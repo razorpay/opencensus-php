@@ -25,14 +25,8 @@ abstract class Base extends Core
     {
         $mailableClass = 'RZP\\Mail\\BankingAccount\\Activation\\' . studly_case($event->getName());
 
-        if($event->getName() === Event::STATUS_CHANGE)
-        {
-            /** @var $mailable BaseV2 */
-            $mailable = new $mailableClass($bankingAccount, $event->toArray());
-        } else {
-            /** @var $mailable BaseEmail */
-            $mailable = new $mailableClass($bankingAccount['id'], $event->toArray());
-        }
+        /** @var $mailable BaseV2 */
+        $mailable = new $mailableClass($bankingAccount, $event->toArray());
 
         $mailable->subject(sprintf("[%s] %s", $event->getType(), $mailable->subject));
 

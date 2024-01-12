@@ -7,6 +7,8 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\BankingAccount\Activation\Notification\Event;
+use RZP\Models\BankingAccount\Activation\Notification\Notifier;
 use RZP\Models\BankingAccount\Gateway\Processor;
 use RZP\Models\Base;
 use RZP\Models\Card\BuNamespace;
@@ -922,53 +924,97 @@ class Service extends Base\Service
 
         foreach ($inputs as $input)
         {
-            $errorMsg = null;
             try
             {
+                $bankingAccountCore = new \RZP\Models\BankingAccount\Core();
+                $notifier = new Notifier();
+
                 $validator = new Validator();
                 $validator->setStrictFalse(); // to allow extra fields in input
 
+                // Validate notification type
                 $validator->validateInput(Validator::NOTIFICATION_INPUT_VALIDATION, $input);
 
                 $notificationType = $input[Constants::NOTIFICATION_TYPE];
 
-                if ($notificationType == Constants::NOTIFICATION_TYPE_DOCKET_EMAIL)
+                switch ($notificationType)
                 {
-                    $this->handleDocketEmailNotification($input, $res);
+                    case Constants::NOTIFICATION_TYPE_DOCKET_EMAIL:
+                        $this->handleDocketEmailNotification($input);
+                        break;
+
+                    case Constants::NOTIFICATION_TYPE_X_PRO_ACTIVATION:
+                        $validator->validateInput(Validator::HANDLE_NOTIFICATION_VALIDATION, $input);
+                        $bankingAccount = $input[Constants::BANKING_ACCOUNT];
+
+                        $bankingAccountCore->notifyOpsAboutProActivation($bankingAccount);
+                        break;
+
+                    case Constants::NOTIFICATION_TYPE_STATUS_CHANGE:
+                        $validator->validateInput(Validator::HANDLE_NOTIFICATION_VALIDATION, $input);
+                        $bankingAccount = $input[Constants::BANKING_ACCOUNT];
+
+                        $bankingAccountStatusChanged    = $input[Constants::BANKING_ACCOUNT_STATUS_CHANGED];
+                        $bankingAccountSubStatusChanged = $input[Constants::BANKING_ACCOUNT_SUB_STATUS_CHANGED];
+                        $freshDeskTicketRequired        = $input[Constants::FRESHDESK_TICKET_REQUIRED];
+                        $assigneeTeamChanged            = $input[Constants::ASSIGNEE_TEAM_CHANGED];
+
+                        // called when a banking_account's status or sub status is updated
+                        $bankingAccountCore->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
+
+                        // send push notification if status changed
+                        if ($bankingAccountStatusChanged) {
+                            $bankingAccountCore->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
+                        }
+
+                        // create FD ticket if needed
+                        if ($freshDeskTicketRequired) {
+                            $bankingAccountCore->notifyOpsAboutProActivation($bankingAccount);
+                        }
+
+                        // trigger assignee change notification if needed
+                        if ($assigneeTeamChanged) {
+                            $notifier->notify($bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
+                        }
+
+                        break;
+
+                    case Constants::NOTIFICATION_TYPE_BANK_PARTNER_POC_ASSIGNED:
+                        $validator->validateInput(Validator::HANDLE_NOTIFICATION_VALIDATION, $input);
+                        $bankingAccount = $input[Constants::BANKING_ACCOUNT];
+
+                        $notifier->notify($bankingAccount, Event::BANK_PARTNER_POC_ASSIGNED);
+                        break;
+
+                    case Constants::NOTIFICATION_TYPE_ACCOUNT_ACTIVATION:
+                        $validator->validateInput(Validator::NOTIFICATION_ACCOUNT_ACTIVATION, $input);
+                        $bankingAccount = $input[Constants::BANKING_ACCOUNT];
+
+                        $merchant = $this->repo->merchant->findOrFail($bankingAccount['merchant_id']);
+
+                        $bankingAccountCore->sendBankingCaActivationSmsIfApplicable($bankingAccount, $merchant);
+                        break;
+
+                    case Constants::NOTIFICATION_TYPE_WEBHOOK_DATA_AMBIGUITY:
+                        $validator->validateInput(Validator::NOTIFICATION_WEBHOOK_AMBIGUITY, $input);
+                        $bankingAccount = $input[Constants::BANKING_ACCOUNT];
+                        $webhookData = $input[Constants::NOTIFICATION_INPUT_WEBHOOK_DATA];
+
+                        $notifier->notify($bankingAccount->toArray(), Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY, Event::ALERT, $webhookData);
+
+                        break;
+
+                    default:
+                        throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
                 }
-                else
-                {
-                    (new Validator)->validateInput(Validator::HANDLE_NOTIFICATION_VALIDATION, $input);
 
-                    $bankingAccount = $input[Constants::BANKING_ACCOUNT];
+                $res[] = [
+                    'notification_type'  => $notificationType,
+                    'banking_account_id' => array_get($input, 'banking_account.id', ''),
+                    'success'            => true,
+                    'error'              => null,
+                ];
 
-                    $bankingAccountCore = new \RZP\Models\BankingAccount\Core;
-
-                    switch ($notificationType)
-                    {
-                        case Constants::NOTIFICATION_TYPE_X_PRO_ACTIVATION:
-                            $validatorOp = $input[Constants::VALIDATOR_OP];
-
-                            $bankingAccountCore->shouldNotifyOpsAboutProActivation($validatorOp, $bankingAccount);
-                            break;
-
-                        case Constants::NOTIFICATION_TYPE_STATUS_CHANGE:
-                            $bankingAccountStatusChanged    = $input[Constants::BANKING_ACCOUNT_STATUS_CHANGED];
-                            $bankingAccountSubStatusChanged = $input[Constants::BANKING_ACCOUNT_SUB_STATUS_CHANGED];
-
-                            // called when a banking_account's status or sub status is updated
-                            $bankingAccountCore->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
-                            break;
-
-                        default:
-                            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
-                    }
-                    array_push($res, [
-                        'banking_account_id' => array_get($input, 'banking_account.id', ''),
-                        'success'            => true,
-                        'error'              => null,
-                    ]);
-                }
             }
             catch (\Exception $e)
             {
@@ -981,59 +1027,36 @@ class Service extends Base\Service
 
                 $errorMsg = $e->getMessage();
 
-
-                array_push($res, [
+                $res[] = [
                     'banking_account_id' => array_get($input, 'banking_account.id', ''),
                     'success'            => false,
                     'error'              => $errorMsg,
-                ]);
+                ];
             }
         }
 
         return $res;
     }
 
-    protected function handleDocketEmailNotification($input, &$res)
+    /**
+     */
+    protected function handleDocketEmailNotification($input)
     {
-        try
-        {
-            $notificationData = $input[Constants::NOTIFICATION_INPUT_DOCKET_DATA];
-            $validator = new Validator();
-            $validator->setStrictFalse(); // to allow extra fields in input
+        $notificationData = $input[Constants::NOTIFICATION_INPUT_DOCKET_DATA];
+        $validator        = new Validator();
+        $validator->setStrictFalse(); // to allow extra fields in input
 
-            $validator->validateInput(Validator::DOCKET_EMAIL_DATA_VALIDATION, $notificationData);
+        $validator->validateInput(Validator::DOCKET_EMAIL_DATA_VALIDATION, $notificationData);
 
-            $subject = $notificationData['subject'];
-            $viewData = $notificationData['view_data'];
-            $viewData['subject'] = $subject;
+        $subject             = $notificationData['subject'];
+        $viewData            = $notificationData['view_data'];
+        $viewData['subject'] = $subject;
 
-            $recipients = $notificationData['recipients'];
-            $otherRecipeints = array_slice($recipients, 1);
+        $recipients      = $notificationData['recipients'];
+        $otherRecipients = array_slice($recipients, 1);
 
-            $bankingAccountCore = new \RZP\Models\BankingAccount\Core;
-            $bankingAccountCore->enqueueDocketEmail($viewData, $recipients[0], $otherRecipeints);
-
-            return array_push($res, [
-                'message' => 'Docket email queued',
-                'success' => true,
-                'error'   => null,
-            ]);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->error(
-                TraceCode::BAS_SEND_NOTIFICATION_FAILED,
-                [
-                    'banking_account_id' => array_get($input, 'banking_account.id', ''),
-                    'error'              => $e->getMessage()
-                ]);
-
-            array_push($res, [
-                'message' => $e->getMessage(),
-                'success' => false,
-                'error'   => true,
-            ]);
-        }
+        $bankingAccountCore = new \RZP\Models\BankingAccount\Core;
+        $bankingAccountCore->enqueueDocketEmail($viewData, $recipients[0], $otherRecipients);
     }
 
     protected function tokenizeValueViaVault(string $element): string

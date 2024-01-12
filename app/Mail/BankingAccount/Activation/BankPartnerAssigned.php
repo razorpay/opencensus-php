@@ -2,9 +2,10 @@
 
 namespace RZP\Mail\BankingAccount\Activation;
 
-use RZP\Models\BankingAccount\Activation\Detail\Entity;
+use RZP\Models\BankingAccount\Entity;
+use RZP\Models\BankingAccount\Activation\Detail\Entity as ActivationEntity;
 
-class BankPartnerAssigned extends Base
+class BankPartnerAssigned extends BaseV2
 {
     const SUBJECT = "New Lead from Razorpay";
     
@@ -12,20 +13,27 @@ class BankPartnerAssigned extends Base
 
     protected $merchantBusinessName;
 
-    public function __construct(string $bankingAccountId, array $eventDetails)
-    {
-        parent::__construct($bankingAccountId, $eventDetails);
+    protected $merchantName;
 
-        $this->merchantBusinessName = $this->bankingAccount->merchant->merchantDetail->getBusinessName();
+    public function __construct(array $bankingAccount, array $eventDetails)
+    {
+        parent::__construct($bankingAccount, $eventDetails);
+
+        /** @var \RZP\Models\Merchant\Entity $merchant */
+        $merchant = (new \RZP\Models\Merchant\Repository)->findOrFail($this->bankingAccount[Entity::MERCHANT_ID]);
+
+        $this->merchantBusinessName = $merchant->merchantDetail->getBusinessName();
+
+        $this->merchantName = $merchant->getName();
     }
 
     protected function getSubject(): string
     {
-        $reference_number = $this->bankingAccount->getBankReferenceNumber();
+        $reference_number = $this->bankingAccount[Entity::BANK_REFERENCE_NUMBER];
 
-        $merchant_name = $this->bankingAccount->merchant->getName();
+        $merchant_name = $this->merchantName;
 
-        $constitution_type = $this->bankingAccount->bankingAccountActivationDetails[Entity::BUSINESS_CATEGORY];
+        $constitution_type = $this->bankingAccount[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][Entity::BUSINESS_CATEGORY];
         
         $constitution_type = ucwords(str_replace('_', ' ', $constitution_type));
 
@@ -36,7 +44,7 @@ class BankPartnerAssigned extends Base
     {
         $data = $this->viewData;
 
-        $bankingAccountActivationDetails = $this->bankingAccount->bankingAccountActivationDetails;
+        $bankingAccountActivationDetails = $this->bankingAccount[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
 
         $constitution_type = $bankingAccountActivationDetails[Entity::BUSINESS_CATEGORY];
 
@@ -46,12 +54,11 @@ class BankPartnerAssigned extends Base
 
         $bankingUrl = $config['applications.bank_lms_banking_service_url'];
 
-        $partner_lms_link = sprintf(self::PARTNER_LMS_LEAD_LINK_FORMAT, $bankingUrl, $this->bankingAccount->getId());
+        $partner_lms_link = sprintf(self::PARTNER_LMS_LEAD_LINK_FORMAT, $bankingUrl, $this->bankingAccount[Entity::ID]);
 
+        $data[ActivationEntity::MERCHANT_POC_NAME] = $bankingAccountActivationDetails[ActivationEntity::MERCHANT_POC_NAME];
 
-        $data[Entity::MERCHANT_POC_NAME] = $bankingAccountActivationDetails[Entity::MERCHANT_POC_NAME];
-
-        $data[Entity::MERCHANT_POC_PHONE_NUMBER] = $bankingAccountActivationDetails[Entity::MERCHANT_POC_PHONE_NUMBER];
+        $data[ActivationEntity::MERCHANT_POC_PHONE_NUMBER] = $bankingAccountActivationDetails[ActivationEntity::MERCHANT_POC_PHONE_NUMBER];
 
         $data["constitution_type"] = $constitution_type;
 

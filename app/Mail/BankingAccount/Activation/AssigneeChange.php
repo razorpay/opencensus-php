@@ -3,9 +3,10 @@
 
 namespace RZP\Mail\BankingAccount\Activation;
 
+use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Activation\Notification\Constants;
 
-class AssigneeChange extends Base
+class AssigneeChange extends BaseV2
 {
     const SUBJECT = "RazorpayX LMS | Assignee for CA of Merchant - %s has been changed to %s(%s)";
 
@@ -15,11 +16,14 @@ class AssigneeChange extends Base
 
     protected $newAssigneeName;
 
-    public function __construct(string $bankingAccountId, array $eventDetails)
+    public function __construct(array $bankingAccount, array $eventDetails)
     {
-        parent::__construct($bankingAccountId, $eventDetails);
+        parent::__construct($bankingAccount, $eventDetails);
 
-        $this->merchantBusinessName = $this->bankingAccount->merchant->merchantDetail->getBusinessName();
+        /** @var \RZP\Models\Merchant\Detail\Entity $merchantDetail */
+        $merchantDetail = (new \RZP\Models\Merchant\Detail\Repository)->findOrFail($this->bankingAccount[Entity::MERCHANT_ID]);
+
+        $this->merchantBusinessName = $merchantDetail->getBusinessName();
 
         $this->newAssigneeTeam = $eventDetails[Constants::PROPERTIES][Constants::NEW_ASSIGNEE_TEAM];
 

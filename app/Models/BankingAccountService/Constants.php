@@ -143,22 +143,23 @@ class Constants
 
     const SELF_SERVE                    = 'self_serve';
 
-    const BANKING_ACCOUNT               = 'banking_account';
-
-    const NOTIFICATION_TYPE             = 'notification_type';
-
-    const NOTIFICATION_TYPE_X_PRO_ACTIVATION = 'x_pro_activation';
-
-    const VALIDATOR_OP                       = 'validator_op';
-
-    const NOTIFICATION_TYPE_STATUS_CHANGE    = 'status_change';
-
-    const NOTIFICATION_TYPE_DOCKET_EMAIL     = 'docket_email';
-    const NOTIFICATION_INPUT_DOCKET_DATA     = 'docket_data';
-
-    const BANKING_ACCOUNT_STATUS_CHANGED     = 'banking_account_status_changed';
-
-    const BANKING_ACCOUNT_SUB_STATUS_CHANGED = 'banking_account_sub_status_changed';
+    // BAS notification request fields / values
+    const BANKING_ACCOUNT                             = 'banking_account';
+    const NOTIFICATION_TYPE                           = 'notification_type';
+    const NOTIFICATION_TYPE_X_PRO_ACTIVATION          = 'x_pro_activation';
+    const NOTIFICATION_TYPE_STATUS_CHANGE             = 'status_change';
+    const NOTIFICATION_TYPE_ASSIGNEE_CHANGE           = 'assignee_change';
+    const NOTIFICATION_TYPE_BANK_PARTNER_ASSIGNED     = 'bank_partner_assigned';
+    const NOTIFICATION_TYPE_BANK_PARTNER_POC_ASSIGNED = 'bank_partner_poc_assigned';
+    const NOTIFICATION_TYPE_ACCOUNT_ACTIVATION        = 'account_activation';
+    const NOTIFICATION_TYPE_WEBHOOK_DATA_AMBIGUITY    = 'webhook_data_ambiguity';
+    const NOTIFICATION_TYPE_DOCKET_EMAIL              = 'docket_email';
+    const NOTIFICATION_INPUT_DOCKET_DATA              = 'docket_data';
+    const NOTIFICATION_INPUT_WEBHOOK_DATA             = 'webhook_data';
+    const BANKING_ACCOUNT_STATUS_CHANGED              = 'banking_account_status_changed';
+    const BANKING_ACCOUNT_SUB_STATUS_CHANGED          = 'banking_account_sub_status_changed';
+    const FRESHDESK_TICKET_REQUIRED                   = 'freshdesk_ticket_required';
+    const ASSIGNEE_TEAM_CHANGED                       = 'assignee_team_changed';
 
     const TYPE                          = 'type';
 

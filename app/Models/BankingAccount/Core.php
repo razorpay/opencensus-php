@@ -1459,7 +1459,7 @@ class Core extends Base\Core
         }
 
 
-        $this->sendBankingCaActivationSmsIfApplicable($bankingAccount);
+        $this->sendBankingCaActivationSmsIfApplicable($bankingAccount->toArray(), $merchant);
 
         $this->sendNotificationAfterCAActivation($bankingAccount);
 
@@ -1505,16 +1505,16 @@ class Core extends Base\Core
      * @param Entity $bankingAccount
      *
      */
-    public function sendBankingCaActivationSmsIfApplicable(Entity $bankingAccount)
+    public function sendBankingCaActivationSmsIfApplicable(array $bankingAccount, Merchant\Entity $merchant)
     {
         $this->trace->info(TraceCode::BANKING_ACTIVATION_CONFIRMATION_SMS_CA_REQUEST,
             [
-                'merchant_id' => $bankingAccount->merchant->getId(),
+                'merchant_id' => $merchant->getId(),
             ]);
 
         try
         {
-            $users = $bankingAccount->merchant->ownersAndAdmins(Product::BANKING);
+            $users = $merchant->ownersAndAdmins(Product::BANKING);
 
             if ($users === null)
             {
@@ -1522,7 +1522,7 @@ class Core extends Base\Core
             }
 
             // Mask Account Number
-            $accountNumber = $bankingAccount->getAccountNumber();
+            $accountNumber = $bankingAccount[Entity::ACCOUNT_NUMBER];
             $accountNumberLength = strlen($accountNumber);
 
             $accountNumberMasked = str_pad(substr($accountNumber, ($accountNumberLength - 4), $accountNumberLength),

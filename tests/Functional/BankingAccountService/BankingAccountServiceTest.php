@@ -26,6 +26,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\BankingAccountService\Constants;
+use RZP\Mail\BankingAccount\Activation\AssigneeChange;
 use RZP\Models\BankingAccountStatement\Details\AccountType;
 use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -1744,8 +1745,6 @@ class BankingAccountServiceTest extends TestCase
 
         $this->ba->bankingAccountServiceAppAuth();
 
-        $this->mockSalesForce('sendLeadStatusUpdate', 2);
-
         $this->startTest();
 
         Mail::hasQueued(XProActivation::class);
@@ -1778,6 +1777,38 @@ class BankingAccountServiceTest extends TestCase
 
             $this->assertNotificationsForStatusChange($testData['request']['content'][0]['banking_account'],$status);
         }
+    }
+
+    public function testBasNotifyStatusChangeWithFreshDeskAndAssigneeChange()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => '10000000000000',
+            'business_name' => 'Foo',
+        ]);
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testBasNotifyStatusChange'];
+
+        $dataToReplace = [
+            'request'   => [
+                'content'   => [
+                    [
+                        'banking_account_status_changed'    => false,
+                        'freshdesk_ticket_required'         => true,
+                        'assignee_team_changed'             => true,
+                    ]
+                ]
+            ]
+        ];
+
+        Mail::fake();
+
+        $this->startTest($dataToReplace);
+
+        Mail::assertQueued(XProActivation::class);
+
+        Mail::assertQueued(AssigneeChange::class);
     }
 
     public function testBasNotifySubStatusChange()
