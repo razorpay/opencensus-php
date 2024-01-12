@@ -1763,7 +1763,7 @@ class Service extends Base\Service
 
                 }
 
-                $response = $this->app->mozart->sendMozartRequest('payments',$gateway,'payment_create',$createPaymentRequest);
+                $this->app->mozart->sendMozartRequest('payments',$gateway,'payment_create',$createPaymentRequest,'v2');
             }
             catch (\Exception $ex)
             {
