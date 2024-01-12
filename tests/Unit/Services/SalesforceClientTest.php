@@ -84,7 +84,7 @@ class SalesforceClientTest extends TestCase
 
         $this->assertEquals('Dummycontactmobile', $payload[0]['contact_mobile']);
 
-        $this->assertEquals('Dummy gstin number', $payload[0]['GSTIN']);
+        $this->assertEquals('Dummy gstin number', $payload[0]['gst_number']);
 
         $this->assertBooleanValuesAsInt($payload);
     }

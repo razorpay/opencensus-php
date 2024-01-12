@@ -492,7 +492,7 @@ class SalesForceClient
 
         if (!empty($gstin))
         {
-            $payLoad[0]['GSTIN'] = $gstin;
+            $payLoad[0]['gst_number'] = $gstin;
         }
 
         return $payLoad;
