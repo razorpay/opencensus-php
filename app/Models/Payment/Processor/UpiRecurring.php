@@ -110,6 +110,21 @@ trait UpiRecurring
              throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED);
          }
 
+        $notifyInput = [];
+
+        if ($payment->isUpiAutoRecurring() === true) {
+
+            $notifyInput = [
+                'action'        => Payment\Action::PRE_DEBIT,
+                'gateway'       => $payment->getGateway(),
+                'terminal'      => $payment->terminal,
+                'payment'       => $payment,
+                'merchant'      => $payment->merchant,
+                'notify_action' => 'retrieve_upi',
+                'upi_mandate'   => $inputRec['upi_mandate'],
+            ];
+        }
+
         $input = [
             'action'        => Payment\Action::DEBIT,
             'gateway'       => $payment->getGateway(),
@@ -129,9 +144,20 @@ trait UpiRecurring
         $input['payment']['callback_url'] = route('gateway_payment_callback_recurring', ["gateway" => $payment->getGateway()], true);
 
         return $this->app['api.mutex']->acquireAndRelease('debit_' . $payment->getId(),
-            function() use ($input, $payment) {
+            function() use ($input, $payment, $notifyInput) {
                 try
                 {
+                    if ($notifyInput !== []) {
+                        $this->callGatewayFunction(Payment\Action::PRE_DEBIT, $notifyInput);
+
+                        $metadata = $payment->getUpiMetadata();
+                        $metadata->setInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED);
+                        $newMetadata = (new UpiMetadata\Core)->update($metadata);
+
+                        $payment->setMetadata($newMetadata);
+
+                    }
+
                     $response = $this->callGatewayFunction(Payment\Action::DEBIT, $input);
 
                     $this->processDebitGatewaySuccess($payment, $response);
@@ -152,6 +178,15 @@ trait UpiRecurring
                         ]);
 
                     $this->processDebitGatewayFailure($payment, $exception);
+
+                    // Since the debit for auto recurring is called by reminder service
+                    // we do not need to throw exception back as
+                    // 1. This is gateway failure and already handled
+                    // 2. Reminder service will retry for 5xx and that's not needed
+                    if ($payment->isUpiAutoRecurring() === true)
+                    {
+                        return;
+                    }
 
                     throw $exception;
                 }
@@ -816,6 +851,7 @@ trait UpiRecurring
 
         $metadata       = $this->getUpiMetadataForPayment($payment);
         $internalStatus = $data['upi']['internal_status'] ?? null;
+        $txn_status = $data['upi']['txn_status'] ?? null;
 
         $this->trace->info(
             TraceCode::UPI_RECURRING_METADATA_STATUS_DURING_AUTHORIZE_FLOW,
@@ -917,6 +953,11 @@ trait UpiRecurring
                 ($metadata->isInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED)) or
                 ($metadata->isInternalStatus(UpiMetadata\InternalStatus::FAILED)))
             {
+                if ($txn_status === Payment\Status::CAPTURED)
+                {
+                    return false;
+                }
+
                 // If gateway is explicitly telling that the payment is authorized at gateways end
                 // We will not skip authorize for those cases
                 if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED)

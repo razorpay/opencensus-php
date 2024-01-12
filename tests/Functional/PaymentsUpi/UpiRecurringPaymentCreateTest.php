@@ -4,6 +4,7 @@ use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -580,5 +581,254 @@ class UpiRecurringPaymentCreateTest extends TestCase
         $this->app->razorx
             ->method('getTreatment')
             ->will($this->returnCallback($closure));
+    }
+
+    public function testPayuAutoRecurringPreDebitInitiationFailure()
+    {
+        $this->gateway = 'mozart';
+        Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
+        $terminal = $this->fixtures->create('terminal:payu_upi_recurring_terminal');
+
+        $this->terminalId = $terminal->getId();
+        $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === "allow_optimizer_upi_recurring")
+            {
+                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
+            }
+
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
+
+        $this->createDbUpiMandate(['frequency' => 'as_presented']);
+
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment();
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $input['amount'] = '100';
+        $this->expectExceptionMessage(
+            'Your payment amount is different from your order amount. To pay successfully, please try using right amount.');
+
+        $response = $this->doS2SRecurringPayment($input);
+
+        $this->assertUpiDbLastEntity('payment', [
+            'status'        => 'failed',
+            'reference1'    => null,
+            'reference16'   => null,
+        ], false);
+
+    }
+
+    public function testPayuAutoRecurringPreDebitInitiationSuccess()
+    {
+        $this->gateway = 'mozart';
+        Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
+        $terminal = $this->fixtures->create('terminal:payu_upi_recurring_terminal');
+
+        $this->terminalId = $terminal->getId();
+
+        $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === "allow_optimizer_upi_recurring")
+            {
+                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
+            }
+
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
+
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment();
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $response = $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway' => 'payu',
+            'cps_route' => 0,
+        ]);
+
+        $this->assertArraySubset([
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'razorpay_order_id'     => $this->order->getPublicId(),
+        ], $response);
+
+        $this->assertArrayHasKey('razorpay_signature', $response);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $requestAsserted = [
+            'notify'    => false,
+            'pay_init'  => false,
+        ];
+
+        // Gateway request will be sent in next step
+        $this->mockServerRequestFunction(function (& $content, $action) use (& $requestAsserted)
+        {
+            if ($action === 'notify')
+            {
+                $requestAsserted['notify'] = true;
+
+                $paymentId = $content['payment']['id'];
+                $paymentCreatedAt = $content['payment']['created_at'];
+
+                $this->assertArraySubset([
+                    'act'   => 'notify',
+                    'ano'   => 1,
+                    'ext'   => $paymentCreatedAt + 90000,
+                    'sno'   => 2,
+                    'id'    => $paymentId . '0notify' . 1,
+                ], $content['upi']['gateway_data']);
+
+                return;
+            }
+        });
+
+        $metadata = $payment->getUpiMetadata();
+        $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT);
+        $newMetadata = (new UpiMetadata\Core)->update($metadata);
+        $payment->setMetadata($newMetadata);
+
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertTrue($requestAsserted['notify']);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => 'pending',
+            'gateway_data'      => [
+                'act'   => 'execte',
+                'ano'   => 1,
+                'sno'   => 2,
+            ],
+        ]);
+
+    }
+
+    public function testPayuAutoRecurringPreDebitInitiationSuccessCapture()
+    {
+        $this->gateway = 'mozart';
+        Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
+        $terminal = $this->fixtures->create('terminal:payu_upi_recurring_terminal');
+
+        $this->terminalId = $terminal->getId();
+
+        $this->fixtures->merchant->addFeatures(['raas', 'allow_force_terminal_id']);
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === "allow_optimizer_upi_recurring")
+            {
+                return $this->getRazoxVariant($feature, 'allow_optimizer_upi_recurring', 'on');
+            }
+
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
+
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment();
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $response = $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway' => 'payu',
+            'cps_route' => 0,
+        ]);
+
+        $this->assertArraySubset([
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'razorpay_order_id'     => $this->order->getPublicId(),
+        ], $response);
+
+        $this->assertArrayHasKey('razorpay_signature', $response);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $requestAsserted = [
+            'notify'    => false,
+            'pay_init'  => false,
+        ];
+
+        // Gateway request will be sent in next step
+        $this->mockServerRequestFunction(function (& $content, $action) use (& $requestAsserted)
+        {
+            if ($action === 'notify')
+            {
+                $requestAsserted['notify'] = true;
+
+                $paymentId = $content['payment']['id'];
+                $paymentCreatedAt = $content['payment']['created_at'];
+
+                $this->assertArraySubset([
+                    'act'   => 'notify',
+                    'ano'   => 1,
+                    'ext'   => $paymentCreatedAt + 90000,
+                    'sno'   => 2,
+                    'id'    => $paymentId . '0notify' . 1,
+                ], $content['upi']['gateway_data']);
+
+                return;
+            }
+        });
+
+        $metadata = $payment->getUpiMetadata();
+        $metadata->setInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT);
+        $newMetadata = (new UpiMetadata\Core)->update($metadata);
+        $payment->setMetadata($newMetadata);
+
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertTrue($requestAsserted['notify']);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => 'pending',
+            'gateway_data'      => [
+                'act'   => 'execte',
+                'ano'   => 1,
+                'sno'   => 2,
+            ],
+        ]);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $input = [
+            'description' => '',
+        ];
+
+        $this->fixtures->base->editEntity(Entity::PAYMENT, $payment['id'], $input);
+
+        $txnid = substr($payment['id'], 4);
+
+        // Immediate webhooks are rejected, add buffer
+        $testTime = Carbon::now()->addMinutes(4);
+        Carbon::setTestNow($testTime);
+
+        $response = $this->mockWebhookFromGateway($txnid, ['old_callback' => true]);
+        $this->assertEquals(true, $response['success']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $this->assertEquals('captured', $payment[Payment::STATUS]);
+        $this->assertTrue($payment[Payment::CAPTURED]);
+
     }
 }

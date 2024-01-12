@@ -347,6 +347,28 @@ trait RecurringTrait
             throw $exception;
         }
 
+        if ((in_array($input['payment']['gateway'], self::$optimizerUpiRecurringGateway) === true) and
+            (isset($input['notify_action']) === true) and
+            ($input['notify_action'] === 'retrieve_upi') and
+            ($input['payment']['amount'] >= Payment\Processor\Constants::WITHOUT_AFA_AMOUNT_LIMIT_UPI) and
+            isset($response['invoice_status']) === true and
+            $response['invoice_status'] !== 'Approved')
+        {
+            $exception =  new GatewayErrorException(
+                $response['error']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
+                $response['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                [
+                    'message' => 'AFA approval is still pending from customer end'
+                ],
+                null,
+                $this->action);
+
+            $exception->setData($this->getResponseForAutoRecurring($input, $response['data'], $upi, $exception));
+
+            throw $exception;
+        }
+
         return $this->getResponseForAutoRecurring($input, $response['data'], $upi);
     }
 
@@ -630,6 +652,14 @@ trait RecurringTrait
                 Payment\Entity::REFERENCE16     => $upi->getNpciReferenceId(),
             ],
         ];
+
+        if ((in_array($input['gateway'],self::$optimizerUpiRecurringGateway) === true) and
+            ($input['payment']['recurring_type'] == 'auto') and
+            (isset($data['upi']['txn_status']) === true) and
+            ($data['upi']['txn_status'] == Payment\Status::CAPTURED )) {
+
+            $processed['upi']['txn_status'] = $data['upi']['txn_status'];
+        }
 
         // Data Block take preference over all other entities as this means some action is needed from customer
         $dataBlock = $metadataTransformer->getDataBlock();

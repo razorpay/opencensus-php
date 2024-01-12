@@ -21,9 +21,9 @@ class Constants
     const CARD                          = 'card';
 
     const EMANDATE                      = 'emandate';
-    
+
     const TOKEN_ENTITY                  = 'token_entity';
-    
+
     const CREATED                       = 'created';
 
     const SUBSCRIPTION                  = 'subscription';
@@ -154,5 +154,7 @@ class Constants
     const OPTIMIZER_AUTO_DEBIT_WALLET = 'optimizer_auto_debit_wallet';
 
     const TURBO_PAYMENT_ID_BY_GATEWAY_TXN_ID_PREFIX = 'turbo_txn_id_';
+
+    const WITHOUT_AFA_AMOUNT_LIMIT_UPI   = 1500000;
 
 }

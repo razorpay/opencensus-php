@@ -3,6 +3,7 @@
 namespace RZP\Models\Reminders;
 
 use Carbon\Carbon;
+use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\UpiMetadata;
@@ -58,8 +59,18 @@ class UpiAutoRecurringReminderProcessor extends ReminderProcessor
             $processor = (new Payment\Processor\Processor($payment->merchant));
             $processor->setPayment($payment);
 
-            $processor->processRecurringDebitForUpi($payment);
-            $processed = true;
+            if (in_array($payment->getGateway(), RecurringTrait::$optimizerUpiRecurringGateway) === true)
+            {
+                $mandate = $this->repo->upi_mandate->findByTokenId($payment->getTokenId());
+                $inputRec['upi_mandate'] = $mandate->toArray();
+
+                $processor->processRecurringDebitForUpiOptimizer($payment,$inputRec);
+                $processed = true;
+            }
+            else {
+                $processor->processRecurringDebitForUpi($payment);
+                $processed = true;
+            }
         }
 
         return ['success' => $processed];
