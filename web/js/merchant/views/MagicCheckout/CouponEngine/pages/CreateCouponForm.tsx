@@ -229,7 +229,7 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
             className="primary-cta"
             onClick={() =>
               handleSubmit({
-                shouldShowConfirmationModal: true,
+                shouldShowConfirmationModal: flow !== 'edit',
                 couponStatus: widgetsData.status,
               })
             }
