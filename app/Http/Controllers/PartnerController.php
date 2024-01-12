@@ -179,4 +179,21 @@ class PartnerController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function createPOSDeviceConfig(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createPOSDeviceConfig($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updatePOSDeviceConfig(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updatePOSDeviceConfig($id, $input);
+
+        return ApiResponse::json($response);
+    }
 }

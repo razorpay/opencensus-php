@@ -21,6 +21,10 @@ class Constants
     const ADDRESS ='address';
     const COUNTRY ='country';
 
+    const ENTITY_TYPE_PARTNER = "partner";
+    const ENTITY_ID           = "entity_id";
+    const ENTITY_TYPE         = "entity_type";
+
     const PARTNER_SELF_SERVE = "Partner Self Serve";
 
     public static $subMActivationStatusLabels = [

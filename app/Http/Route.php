@@ -3347,6 +3347,8 @@ class Route
 
         //Partner activation routes
         'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerController@updatePartnerActivationStatus'         ],
+        'partner_pos_device_config_create'         => ['post',     'partner/{id}/pos/device_config',                          'PartnerController@createPOSDeviceConfig'                 ],
+        'partner_pos_device_config_update'         => ['put',      'partner/{id}/pos/device_config',                          'PartnerController@updatePOSDeviceConfig'                 ],
         'partner_activation_update'                => ['put',      'partner/activation/{id}',                        'PartnerController@editPartnerActivationDetails'          ],
         'partner_activation_details'               => ['get',      'partner/activation',                             'PartnerController@getPartnerActivationDetails'           ],
         'partner_activation_save'                  => ['post',     'partner/activation',                             'PartnerController@savePartnerActivationDetails'          ],
@@ -8309,6 +8311,8 @@ class Route
         'partner_activation_update',
         'partner_actions',
         'partner_activation_bulk_assign_reviewer',
+        'partner_pos_device_config_create',
+        'partner_pos_device_config_update',
 
         'migrate_reseller_to_aggregator',
         'migrate_aggregator_to_reseller',
@@ -10499,6 +10503,8 @@ class Route
         'partner_activation_status'                => Permission::EDIT_ACTIVATE_PARTNER,
         'partner_actions'                          => Permission::PARTNER_ACTIONS,
         'partner_activation_bulk_assign_reviewer'  => Permission::ASSIGN_PARTNER_ACTIVATION_REVIEWER,
+        'partner_pos_device_config_create'         => Permission::EDIT_PARTNERS,
+        'partner_pos_device_config_update'         => Permission::EDIT_PARTNERS,
 
 
         // Ledger Service Routes
@@ -13602,6 +13608,8 @@ class Route
             'partner_activation_migrate',
             'partner_activation_update',
             'partner_activation_status',
+            'partner_pos_device_config_create',
+            'partner_pos_device_config_update',
             'consume_typeform_webhook',
             'contact_create',
             'contact_get',

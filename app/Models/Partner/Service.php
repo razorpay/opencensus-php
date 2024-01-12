@@ -24,6 +24,7 @@ use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Jobs\SubmerchantFirstTransactionEvent;
 use RZP\Models\Feature\Service as FeatureService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Http\Controllers\PartnerPGOSProxyController;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -39,6 +40,8 @@ class Service extends Base\Service
 
     private $partnerActivationValidator;
 
+    protected $partnerPGOSProxyController;
+
     public function __construct()
     {
         $this->core = new Core();
@@ -50,6 +53,8 @@ class Service extends Base\Service
         $this->merchantValidator = new Merchant\Validator();
 
         $this->partnerActivationValidator = new Activation\Validator();
+
+        $this->partnerPGOSProxyController = new PartnerPGOSProxyController();
 
         parent::__construct();
     }
@@ -645,4 +650,36 @@ class Service extends Base\Service
 
         return ['enable_earnings' => $isEarningsEnabled];
     }
+
+    public function createPOSDeviceConfig(string $partnerId, array $input): array
+    {
+        return $this->handlePOSDeviceConfigRequest($partnerId, $input, PartnerPGOSProxyController::PARTNER_POS_DEVICE_CONFIG_CREATE);
+    }
+
+    public function updatePOSDeviceConfig(string $partnerId, array $input): array
+    {
+        return $this->handlePOSDeviceConfigRequest($partnerId, $input, PartnerPGOSProxyController::PARTNER_POS_DEVICE_CONFIG_UPDATE);
+    }
+
+
+    public function handlePOSDeviceConfigRequest(string $partnerId, array $input, string $route)
+    {
+        $partner = $this->repo->merchant->findOrFail($partnerId);
+
+        $isPOSPartnershipEnabled = $this->core()->isPOSEnabledForPartner($partner->getId());
+
+        if($isPOSPartnershipEnabled == false)
+        {
+            return [
+                "success" => false,
+                "message" => "partnerships pos not enabled for the partner"
+            ];
+        }
+
+        $input[PartnerConstants::ENTITY_ID]   = $partnerId;
+        $input[PartnerConstants::ENTITY_TYPE] = PartnerConstants::ENTITY_TYPE_PARTNER;
+
+        return $this->partnerPGOSProxyController->handlePGOSProxyRequests($route, $input, $partner, true);
+    }
+
 }
