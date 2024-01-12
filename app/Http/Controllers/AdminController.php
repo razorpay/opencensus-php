@@ -808,7 +808,9 @@ class AdminController extends Controller
             (str_starts_with($devServe, 'itf') || str_starts_with($devServe, 'pr-')) and
             ($env === 'stage') and
             (($domain === 'dashboard-' . Request::header(Headers::DEV_SERVE_USER) . '.dev.razorpay.in') or
-            ($domain === 'dashboard.dev.razorpay.in')))
+                ($domain === 'dashboard-' . Request::header(Headers::DEV_SERVE_USER) . '.int.dev.razorpay.in') or
+                ($domain === 'dashboard.dev.razorpay.in') or ($domain === 'dashboard.int.dev.razorpay.in')
+            ))
         {
             $org['auth_type'] = 'password';
         }
@@ -843,9 +845,9 @@ class AdminController extends Controller
     public function clearRazorXCache() {
 
         $input = Input::all();
-    
+
         $error = (new App\Razorx\Validator)->validateInput('razorx_invalidation', $input)->messages();
-    
+
         if(empty($error) === false)
         {
             return [$error, []];

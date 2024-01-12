@@ -62,7 +62,6 @@ func (s AdminDashboardAPISuite) TestGetIndexPostLogin() {
 }
 
 func (s AdminDashboardAPISuite) TestGetIndexBeforeLogin() {
-	s.T().Skip()
 	var response string
 	response = GetIndexRouteCall(s)
 
