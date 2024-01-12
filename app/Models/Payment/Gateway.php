@@ -144,6 +144,7 @@ class Gateway
     const RUPAY_SIHUB            = 'rupay_sihub';
     const EGHL                   = 'eghl';
 
+    const TNGD                   = 'tngd';
     const CARD_FSS               = 'card_fss';
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';
 
