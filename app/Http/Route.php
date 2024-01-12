@@ -4761,7 +4761,6 @@ class Route
     ];
 
     public static $public = [
-        'automatic_onboarding_cron',
         '1cc_methods_offers_preflight',
         '1cc_methods_offers',
         'test_mailgun',
@@ -5423,6 +5422,7 @@ class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'merchant_create_terminal_internal_app',
+        'automatic_onboarding_cron',
         'internal_get_merchant_key',
         'transfer_reversal_transactions_create',
         'irctc_settlement_batch_service',
@@ -15891,6 +15891,7 @@ class Route
             'payments_rearch_backfill',
             'dcc_invoice_generation_cron',
             'payments_api_backfill',
+            'automatic_onboarding_cron',
             'fpx_downtime_detection_cron',
             'payment_page_cds_billing_update_cron',
             'merchant_popular_products_cron',
