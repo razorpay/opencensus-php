@@ -48,7 +48,7 @@ describe('withEDIMigration', () => {
     });
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
-      'https://x.razorpay.com/capital/cash-advance/?from=dashboard',
+      'https://x.razorpay.com/capital/cash-advance?from=dashboard',
     );
     expect(mockedWindowOpen).not.toHaveBeenCalled();
   });

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { connect } from 'react-redux';
 import {
   Box,
   BladeProvider,
@@ -14,6 +15,8 @@ import styled, { createGlobalStyle } from 'styled-components';
 import CoinsImg from 'assets/capital/coins.png';
 import { useSplitzService } from 'common/splitz';
 import { NEW_CASH_ADVANCE_DASHBOARD } from 'merchant/views/Capital/CashAdvanceV2/constants';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { analyticsTrack } from 'common/utils/analytics';
 
 /** Temp workaround to hide footer and padding in capital EDI page */
 const GlobalStyles = createGlobalStyle`
@@ -53,16 +56,26 @@ const AutoRedirection = ({ onTimeout }: { onTimeout: VoidFunction }) => {
   return <Text type="muted">Redirecting in {time} seconds</Text>;
 };
 
-const RedirectToNewDashboard = () => {
+const _RedirectToNewDashboard = (props) => {
   const [didStopTimer, setDidStopTimer] = useState(false);
 
   const handleClick = () => {
     setDidStopTimer(true);
+    analyticsTrack({ objectName: 'Button', actionName: 'Clicked', screen: 'LOC_X_MIGRATION' });
   };
 
   const onTimeout = () => {
-    window.open(NEW_CASH_ADVANCE_DASHBOARD, '_blank');
+    const windowRef = window.open(NEW_CASH_ADVANCE_DASHBOARD, '_blank');
     setDidStopTimer(true);
+    if (!windowRef) {
+      props.showNotification({
+        type: 'neutral',
+        message: 'Unable to auto-open new dashboard. Please click on "Go To New Dashboard."',
+      });
+    }
+    if (windowRef) {
+      analyticsTrack({ objectName: 'Button', actionName: 'Clicked', screen: 'LOC_X_MIGRATION' });
+    }
   };
 
   return (
@@ -124,6 +137,8 @@ const RedirectToNewDashboard = () => {
     </BladeProvider>
   );
 };
+
+const RedirectToNewDashboard = connect(null, { showNotification })(_RedirectToNewDashboard);
 
 export default function withEDIMigration<T extends JSX.IntrinsicAttributes>(
   Component: React.ComponentType<T>,

@@ -45,24 +45,6 @@ class WithdrawalsRoot extends Component {
   };
 
   componentDidMount() {
-    const { user } = this.props;
-
-    if (isCashAdvanceProductActive(user)) {
-      this.fetchWithdrawalConfiguration();
-      this.props.fetchWithdrawals({
-        product_type: this.productType,
-        order_by: 'CREATED_AT',
-        order_direction: 'desc',
-        reference: [
-          {
-            reference_id: this.props.user.current,
-            reference_type: 'OWNER_ID',
-          },
-        ],
-        limit: 20,
-      });
-    }
-
     this.gaEventDispatcher({
       eventAction: 'Flash Credit Tab',
       eventLabel: `${this.props.user.current} | loc_stage_1`,
@@ -117,29 +99,12 @@ class WithdrawalsRoot extends Component {
   };
 
   render() {
-    const {
-      user,
-      withdrawalConfigurationDetails: { loading: configLoading, error: wcError },
-      list,
-    } = this.props;
+    const user = this.props.user;
 
-    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
     const hasLOCStage2Feature = user.isCashAdvanceStage2Enabled;
     const isCashAdvanceEligible = canViewCashAdvanceProduct(user);
-    const hasWC = !!withdrawalConfigurationDetails;
-
-    if (list.loading || configLoading)
-      return (
-        <div className="spinner center">
-          <div className="double-bounce1" />
-          <div className="double-bounce2" />
-        </div>
-      );
 
     if (isCashAdvanceProductActive(user)) {
-      if (wcError) {
-        return 'Error while loading WC.';
-      }
       return <Navigate to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`} replace />; // nosemgrep : https://semgrep.dev/s/w48P
     }
     if (isCashAdvanceEligible && hasLOCStage2Feature) {
@@ -148,10 +113,11 @@ class WithdrawalsRoot extends Component {
         <Onboarding
           leadGenerated={true}
           hasLOCStage2Feature={true}
-          hasWithdrawalConfiguration={hasWC}
+          /** Onboarding is already broken and unused feature so removed api's called for Onboarding - it should be fetched inside Onboarding itself  */
+          // hasWithdrawalConfiguration={hasWC}
+          // withdrawalConfiguration={withdrawalConfigurationDetails}
           createFDTicket={WithdrawalsRoot.createCapitalFDTicket}
           onRaiseRequest={this.onRaiseRequest}
-          withdrawalConfiguration={withdrawalConfigurationDetails}
           trackGA={this.gaEventDispatcher}
         />
       );

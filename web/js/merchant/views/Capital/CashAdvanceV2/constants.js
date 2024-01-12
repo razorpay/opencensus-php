@@ -228,7 +228,7 @@ export const CASH_ADVANCE_LINK =
   'https://x.razorpay.com/capital/cash-advance/application/?from=dashboard';
 
 export const NEW_CASH_ADVANCE_DASHBOARD =
-  'https://x.razorpay.com/capital/cash-advance/?from=dashboard';
+  'https://x.razorpay.com/capital/cash-advance?from=dashboard';
 
 export const PRODUCT_CONFIG = {
   [CAPITAL_PRODUCT_CODES.CASH_ADVANCE]: {
