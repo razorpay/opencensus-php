@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Request;
+use RZP\Constants\Environment;
 use RZP\Http\Request\Requests;
 use RZP\Models\Gateway\Downtime\Core;
 use RZP\Models\Payment;
@@ -211,6 +212,12 @@ class Mozart
             ]
         ];
 
+        if ($this->app['env'] === Environment::BETA) {
+            $testCaseHeaderValue = $this->app['request']->headers?->get(RequestHeader::X_RZP_TESTCASE_ID);
+            if (isset($testCaseHeaderValue)) {
+                $request['headers'][RequestHeader::X_RZP_TESTCASE_ID] = $testCaseHeaderValue;
+            }
+        }
         return $request;
     }
 

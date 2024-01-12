@@ -5,6 +5,7 @@ namespace RZP\Models\BankTransfer;
 use App;
 use Cache;
 use Carbon\Carbon;
+use Database\DefaultConnection;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Environment;
 use RZP\Constants\Product;
@@ -1340,10 +1341,13 @@ class Service extends Base\Service
             'header' => $header,
         ]);
 
-        if ($this->app['env'] === Environment::BVT or
+
+        if ($this->app['env'] === Environment::BETA or
             $this->app['env'] === Environment::AUTOMATION or
-            $this->app['env'] === Environment::TESTING)
+            $this->app['env'] === Environment::TESTING
+        )
         {
+            DefaultConnection::set(Mode::TEST);
             $this->app['rzp.mode']=Mode::TEST;
         } else {
             $this->app['rzp.mode']=Mode::LIVE;
