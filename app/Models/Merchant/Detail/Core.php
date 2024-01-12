@@ -9431,7 +9431,7 @@ class Core extends Base\Core
         $validationResponse = $payload['validationResponse'] ?? [];
 
         $this->deleteMerchantWebsiteAutomatedOcrCheckCacheData($this->merchant);
-
+        
         if(
             !empty($validationResponse['success']) &&
             $validationResponse['success'] === true &&
@@ -9443,11 +9443,50 @@ class Core extends Base\Core
 
             return;
         }
-
-        $this->postBusinessWebsiteViaWorkflow($payload['urlType'], $payload['input']);
+        
+        $this->postBusinessWebsiteViaWorkflow($payload['urlType'], $payload['input'], $payload['workflow_detail_input']);
     }
 
 
+    private function createWorkFlowForMerchantWebsite(array $input, array $originalMerchantDetails, array $dirtyMerchantDetails, ?array $workflowDetailsInput = null)
+    {
+        $permissionName = $this->getWebsiteUpdatePermissionName();
+        
+        if ($workflowDetailsInput === null)
+        {
+            $this->app['workflow']
+                 ->setPermission($permissionName)
+                 ->setEntityAndId($this->merchant->merchantDetail->getEntity(), $this->merchant->merchantDetail->getMerchantId())
+                 ->setController(DetailConstants::UPDATE_BUSINESS_WEBSITE_CONTROLLER)
+                 ->setInput($input)
+                 ->handle($originalMerchantDetails, $dirtyMerchantDetails, true);
+            
+            return;
+        }
+        
+        $routeParams = array_get($workflowDetailsInput, 'route_params');
+        $uri  = array_get($workflowDetailsInput, 'uri');
+    
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_WEBSITE_WORKFLOW_V2, [
+            'uri'           => $uri,
+            'route_params'  => $routeParams
+        ]);
+    
+        $this->app['workflow']
+             ->setPermission($permissionName)
+             ->setEntityAndId($this->merchant->merchantDetail->getEntity(), $this->merchant->merchantDetail->getMerchantId())
+             ->setController(DetailConstants::UPDATE_BUSINESS_WEBSITE_CONTROLLER)
+             ->setWorkflowMaker($this->merchant)
+             ->setWorkflowMakerType(MakerType::MERCHANT)
+             ->setRouteName(Constants::MERCHANT_SAVE_BUSINESS_WEBSITE)
+             ->setImitateProxyAuth(true)
+             ->setRouteParams($routeParams)
+             ->setUri($uri)
+             ->setInput($input)
+             ->setMethod('POST')
+             ->handle($originalMerchantDetails, $dirtyMerchantDetails, true);
+    }
+    
     /**
      * This function is used for edit/update business website details with workflow
      * @param Entity $merchantDetails
@@ -9456,7 +9495,7 @@ class Core extends Base\Core
      * @return array
      * @throws \Throwable
      */
-    public function postBusinessWebsiteViaWorkflow(string $urlType, array $input)
+    public function postBusinessWebsiteViaWorkflow(string $urlType, array $input, ?array $workflowDetailsInput = null)
     {
         $permissionName = $this->getWebsiteUpdatePermissionName();
 
@@ -9473,14 +9512,9 @@ class Core extends Base\Core
         $this->merchant->merchantDetail->setWebsite($originalMerchantDetails[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE]);
 
         $dedupeFlaggedMIDs = implode(',', $matchedMerchantIds);
-
-        $this->app['workflow']
-            ->setPermission($permissionName)
-            ->setEntityAndId($this->merchant->merchantDetail->getEntity(), $this->merchant->merchantDetail->getMerchantId())
-            ->setController(DetailConstants::UPDATE_BUSINESS_WEBSITE_CONTROLLER)
-            ->setInput($input)
-            ->handle($originalMerchantDetails, $dirtyMerchantDetails, true);
-
+        
+        $this->createWorkFlowForMerchantWebsite($input, $originalMerchantDetails, $dirtyMerchantDetails, $workflowDetailsInput);
+        
         $this->addCommentForBusinessWebsiteSave($urlType, $permissionName, $this->merchant->merchantDetail, $dedupeFlaggedMIDs, $input);
 
         return [];
@@ -9597,7 +9631,7 @@ class Core extends Base\Core
         $mccRequestId = $this->validateMCC($input);
 
         $individualLinkRequestId = $this->validateIndividualLink($input);
-
+        
         try
         {
             $this->dispatchOCRValidationJob($mccRequestId, $individualLinkRequestId, $input, $urlType);
@@ -11661,6 +11695,12 @@ class Core extends Base\Core
       array $input,
       string $urlType): void
     {
+        $app = App::getFacadeRoot();
+        
+        $workflowDetailInput = [];
+        $workflowDetailInput['uri'] = $app['request']->getUri();
+        $workflowDetailInput['route_params'] = $app['router']->current()->parameters();
+        
         // Temporary arrange ment to using payment page queue
         // TODO: decomp this queue to service with dedicated self serve queue
         PaymentPageProcessor::dispatch($this->mode, [
@@ -11671,6 +11711,7 @@ class Core extends Base\Core
             'input'                     => $input,
             'urlType'                   => $urlType,
             'start_time'                => millitime(),
+            'workflow_detail_input'     => $workflowDetailInput,
         ]);
     }
 

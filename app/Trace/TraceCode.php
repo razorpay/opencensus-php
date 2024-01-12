@@ -2442,6 +2442,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_UPDATE_INTERNATIONAL                         = 'MERCHANT_UPDATE_INTERNATIONAL';
     const MERCHANT_UPDATE_KEY_ACCESS                            = 'MERCHANT_UPDATE_KEY_ACCESS';
     const MERCHANT_UPDATE_KEY_LESS_ACTIVATION                   = 'MERCHANT_UPDATE_KEY_LESS_ACTIVATION';
+    const MERCHANT_UPDATE_WEBSITE_WORKFLOW_V2                   = 'MERCHANT_UPDATE_WEBSITE_WORKFLOW_V2';
 
     const MERCHANT_TAGS_ADD                                     = 'MERCHANT_TAGS_ADD';
     const MERCHANT_TAGS_APPEND                                  = 'MERCHANT_TAGS_APPEND';

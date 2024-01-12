@@ -610,20 +610,20 @@ class PaymentPageProcessor extends Job
             $this->retry(
                 $this->attempts() * self::OCR_SERVICE_RETRY_DELAY, self::OCR_SERVICE_MAX_RETRY_ATTEMPTS
             );
-    
+
             $this->trace->info(TraceCode::OCR_SERVICE_WEBSITE_UPDATE_RETRY, [
-                "attempt"   => $this->attempts(),
-                "mccRequestId" => $mccRequestId,
-                "individualLinkRequestId" => $individualLinkRequestId,
+                "attempt"                   => $this->attempts(),
+                "mccRequestId"              => $mccRequestId,
+                "individualLinkRequestId"   => $individualLinkRequestId,
             ]);
-    
+
             return;
         }
 
         $traceContext = [
-            'validationResponse' => $validationResponse,
-            'mccRequestId' => $mccRequestId,
-            'individualLinkRequestId' => $individualLinkRequestId,
+            'validationResponse'        => $validationResponse,
+            'mccRequestId'              => $mccRequestId,
+            'individualLinkRequestId'   => $individualLinkRequestId,
         ];
 
         try
@@ -631,9 +631,10 @@ class PaymentPageProcessor extends Job
             $this->trace->info(TraceCode::WEBSITE_UPDATE_OCR_SERVICE_QUEUE_RESOLVE, $traceContext);
 
             $this->merchantDetailCore->updateWebsiteDetailAfterValidation([
-                'validationResponse' => $validationResponse,
-                'input' => $this->params->get('input'),
-                'urlType' => $this->params->get('urlType')
+                'validationResponse'        => $validationResponse,
+                'input'                     => $this->params->get('input'),
+                'urlType'                   => $this->params->get('urlType'),
+                'workflow_detail_input'     => $this->params->get('workflow_detail_input')
             ]);
         }
         catch (\Throwable $e)

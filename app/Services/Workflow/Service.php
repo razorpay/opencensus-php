@@ -55,6 +55,8 @@ class Service
     protected $imitateProxyAuth = false;
 
     protected $tags = [];
+    
+    protected $uri;
 
     private $workflowMaker;
 
@@ -193,6 +195,18 @@ class Service
         return $this;
     }
 
+    public function setUri(string $uri)
+    {
+        $this->uri = $uri;
+    
+        return $this;
+    }
+    
+    public function getUri()
+    {
+        return $this->uri;
+    }
+    
     public function trigger()
     {
         // Main entity to act upon and calculate the diff
@@ -271,7 +285,7 @@ class Service
             Differ\Entity::MAKER_ID                 => $maker->getId(),
             Differ\Entity::MAKER_TYPE               => $this->getWorkflowMakerType(),
             Differ\Entity::TYPE                     => Differ\Type::MAKER,
-            Differ\Entity::URL                      => $request->getUri(),
+            Differ\Entity::URL                      => $this->getUri() ?? $request->getUri(),
             Differ\Entity::ROUTE_PARAMS             => $routeParams,
             Differ\Entity::METHOD                   => $this->getMethod(),
             Differ\Entity::PAYLOAD                  => $input,
@@ -542,7 +556,7 @@ class Service
         // Logic to calculate diff for nested relations
         $mainEntity = $this->getEntity();
 
-        $routeName = $this->router->currentRouteName();
+        $routeName = $this->getRouteName() ?? $this->router->currentRouteName();
 
         $relations = EntityValidator::getRelations($routeName);
 
