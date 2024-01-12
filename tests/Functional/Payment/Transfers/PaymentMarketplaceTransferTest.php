@@ -328,6 +328,59 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals(50000, $oldMarketBalance - $newMarketBalance);
     }
 
+    public function testFullTransferWithOptimizerCheckTrue()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+        $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $merchantDetailAttributes =  [
+            'merchant_id'   => $account['id'],
+            'contact_email' => $account['email'],
+            'activation_status' => "activated",
+            'bank_details_verification_status'  => 'verified'
+        ];
+
+        $this->fixtures->create('merchant_detail:associate_merchant', $merchantDetailAttributes);
+
+        $terminal = $this->fixtures->create('terminal:card_billdesk_optimiser_terminal', [
+            'type' => [
+                'optimizer' => '1',
+            ]
+        ]);
+        $paymentAttributes = [
+            'terminal_id' => $terminal->getId(),
+        ];
+
+        $this->payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['status' => 'captured']);
+
+        $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
+        $this->assertEquals(0, $this->getAccountBalance('10000000000002'));
+
+        $transfers = [
+            [
+                'account' => 'acc_10000000000001',
+                'amount'  => 43000,
+                'currency'=> 'INR',
+            ],
+            [
+                'account' => 'acc_10000000000002',
+                'amount'  => 7000,
+                'currency'=> 'INR',
+            ],
+        ];
+
+        $this->makeRequestAndCatchException(
+            function() use ($transfers)
+            {
+            $this->transferPayment('pay_' . $this->payment['id'], $transfers);
+            },
+            BadRequestException::class,
+            'Razorpay Route is only supported on payments that were processed by Razorpay Payment Gateway.'
+        );
+    }
+
     public function testTransferForMerchantCustomerFeeBearer()
     {
         $this->fixtures->create('pricing:standard_plan');

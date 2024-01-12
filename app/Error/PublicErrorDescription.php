@@ -865,6 +865,8 @@ class PublicErrorDescription
     const BAD_REQUEST_TRANSFER_NOT_ALLOWED_TO_SUSPENDED_LINKED_ACCOUNT          = 'Transfer cannot be made to a suspended linked account';
     const BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED                = 'Transfer failed as source payment is refunded';
 
+    const BAD_REQUEST_TRANSFER_NOT_ALLOWED_FOR_OPTIMIZER_EXTERNAL_GATEWAYS      = 'Razorpay Route is only supported on payments that were processed by Razorpay Payment Gateway.';
+
     const BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED                            = 'The hold attributes cannot be modified as the amount has already been settled to your account.';
 
     const BAD_REQUEST_USER_ACCOUNT_LOCKED                                       = 'Your account has been locked';

@@ -91,6 +91,23 @@ class Core extends Base\Core
         });
     }
 
+    function isOptimizerPaymentCheck($payment)
+    {
+        $isOptimizerPayment = false;
+
+        if ($payment->hasTerminal() === true) {
+
+            $terminalTypeArray = $payment->terminal->getType();
+
+            if (($terminalTypeArray != null) && (in_array('optimizer', $terminalTypeArray) === true))
+            {
+                $isOptimizerPayment = true;
+            }
+        }
+
+        return $isOptimizerPayment;
+    }
+
     /**
      * Create a direct transfer from Merchant balance
      *
@@ -219,8 +236,24 @@ class Core extends Base\Core
 
         $asyncTransfer = true;
 
+        $isOptimizerPayment = $this->isOptimizerPaymentCheck($payment);
+
         foreach ($input as $transfer)
         {
+            if ($isOptimizerPayment === true) {
+                $this->trace->info(
+                    TraceCode::PAYMENT_VERIFY_OPTIMIZER_CHECK,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'terminal_id' => $payment->terminal->getId(),
+                    ]);
+
+                // Handle the optimizer payment case for each transfer
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_TRANSFER_NOT_ALLOWED_FOR_OPTIMIZER_EXTERNAL_GATEWAYS);
+
+            }
+
             $transfer = Tracer::inSpan(['name' => 'payment.transfer.create.make_transfer'], function() use ($transfer, $payment, $merchant, & $asyncTransfer)
             {
                 return $this->makeTransfer($transfer, $payment, $merchant, $asyncTransfer);
