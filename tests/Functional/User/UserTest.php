@@ -12802,7 +12802,7 @@ class UserTest extends TestCase
                 'url' => '/purpose/code',
                 'method' => 'PATCH',
                 'content' => [
-                    'purpose_code' => 'P0001',
+                    'purpose_code' => 'S0001',
                     'merchant_id' => $merchant1->getId(),
                 ],
             ],

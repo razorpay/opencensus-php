@@ -10821,11 +10821,7 @@ class Service extends Base\Service
 
     public function getPurposeCodeDetails(): array
     {
-        $data = [];
-
-        $data = PurposeCodeList::getPurposeCode();
-
-        return $data;
+        return PurposeCodeList::getPurposeCode($this->app['basicauth']->isAdminAuth());
     }
 
     public function getHsCodeDetails(): array

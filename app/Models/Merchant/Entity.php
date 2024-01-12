@@ -6,6 +6,7 @@ use App;
 use Config;
 use Carbon\Carbon;
 use Conner\Tagging\Taggable;
+use Illuminate\Support\Str;
 use Razorpay\Trace\Logger;
 use RZP\Models\Payment\Method;
 use RZP\Services\Dcs;
@@ -3938,12 +3939,8 @@ class Entity extends Base\PublicEntity
 
     public function hasValidPurposeCodeForGlobalBankTransfer()
     {
-        if (in_array($this->getPurposeCode(), PurposeCodeList::OPGSP_EXPORT_APPROVED_PURPOSE_CODE) === true)
-        {
-            return true;
-        }
-
-        return false;
+        return Str::startsWith($this->getPurposeCode(), 'P') and
+            array_key_exists($this->getPurposeCode(), PurposeCodeList::$purposeCodeDescMappings);
     }
 
     public function getQueueableRelations()

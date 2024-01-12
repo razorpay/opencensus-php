@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\PurposeCode;
 
+use Illuminate\Support\Str;
+
 class PurposeCodeList
 {
     const CODES = "codes";
@@ -720,7 +722,7 @@ class PurposeCodeList
     const S1407_DESC = 'Payment/repatriation of dividends';
 
     //purpose code mapping
-    protected static $purposeCodeDescMappings = [
+    public static $purposeCodeDescMappings = [
         self::P0001 => self::P0001_DESC,
         self::P0002 => self::P0002_DESC,
         self::P0003 => self::P0003_DESC,
@@ -1438,49 +1440,6 @@ class PurposeCodeList
         self::P0807,
     ];
 
-    // List of codes approved for CC VA account creation
-    // https://razorpay.slack.com/archives/C024U3B04LD/p1688614779764399?thread_ts=1688468005.859769&cid=C024U3B04LD
-    const OPGSP_EXPORT_APPROVED_PURPOSE_CODE = [
-        self::P0103,
-        self::P1004,
-        self::P1005,
-        self::P1006,
-        self::P1007,
-        self::P1008,
-        self::P1009,
-        self::P0802,
-        self::P0807,
-        self::P1020,
-        self::P1002,
-        self::P1104,
-        self::P1099,
-        self::P1015,
-        self::P1016,
-        self::P1017,
-        self::P1019,
-        self::P1107,
-        self::P1109,
-        self::P1701,
-        self::P0301,
-        self::P0302,
-        self::P0304,
-        self::P0305,
-        self::P0306,
-        self::P0801,
-        self::P0803,
-        self::P0804,
-        self::P0805,
-        self::P0806,
-        self::P0808,
-        self::P1013,
-        self::P1014,
-        self::P1101,
-        self::P1103,
-        self::P1105,
-        self::P1106,
-        self::P1108,
-    ];
-
     // List of codes valid for JPMC import flow
     const JPMC_IMPORT_FLOW_PURPOSE_CODES = [
         self::S0802,
@@ -1494,7 +1453,7 @@ class PurposeCodeList
         return self::$purposeCodeDescMappings[$purposeCode];
     }
 
-    public static function getPurposeCode(): array
+    public static function getPurposeCode($isAdminAuth = false): array
     {
         $data = array();
 
@@ -1528,13 +1487,13 @@ class PurposeCodeList
             array(self::PURPOSEGROUP => self::TRAVEL, self::CODES => self::TRAVEL_CODES)
         );
         foreach ($purposeGroupMapping as $purposeCodeDtl) {
-            array_push($data, PurposeCodeList::getPurposeGroupDetails($purposeCodeDtl[self::PURPOSEGROUP], $purposeCodeDtl[self::CODES]));
+            array_push($data, PurposeCodeList::getPurposeGroupDetails($purposeCodeDtl[self::PURPOSEGROUP], $purposeCodeDtl[self::CODES], $isAdminAuth));
         }
 
         return $data;
     }
 
-    public static function getPurposeGroupDetails($purposeGroup, $codes): array
+    public static function getPurposeGroupDetails($purposeGroup, $codes, $isAdminAuth): array
     {
         $data = array(
             self::PURPOSEGROUP => $purposeGroup,
@@ -1542,6 +1501,11 @@ class PurposeCodeList
         );
 
         foreach ($codes as $code) {
+            // do not show import codes for non admin users
+            if (!$isAdminAuth and Str::startsWith($code, 'S'))
+            {
+                continue;
+            }
             $data[self::CODES][] = array(
                 self::PURPOSECODE => $code,
                 self::DESCRIPTION => self::$purposeCodeDescMappings[$code],
