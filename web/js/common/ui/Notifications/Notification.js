@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, isValidElement } from 'react';
 
 export const NOTIFICATION_TYPES = {
   success: 'Notification--success',
@@ -84,8 +84,10 @@ class Notification extends Component {
               <li key={idx}>{msg}</li>
             ))}
           </ul>
-        ) : (
+        ) : typeof message === 'string' || isValidElement(message) ? (
           message
+        ) : (
+          'Something Went Wrong'
         )}
         {showClose && <i class="i i-close" onClick={this.onCloseClick} />}
       </div>
