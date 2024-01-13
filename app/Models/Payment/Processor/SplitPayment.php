@@ -227,7 +227,11 @@ trait SplitPayment
             if ($walletPayment->isCreated() === true)
             {
                 $this->setPayment($walletPayment);
-                return $this->authorize($walletPayment, []);
+                $this->authorize($walletPayment, []);
+
+                // at line 230 $walletPayment->order gets updated with paid_amount
+                // in subsequent steps, $payment is captured, and it needs to have updated paid_amount to update order accordingly.
+                $payment->order()->associate($walletPayment->order);
             }
             else
             {
