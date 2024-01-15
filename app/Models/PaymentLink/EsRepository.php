@@ -50,4 +50,14 @@ class EsRepository extends Base\EsRepository
     {
         $this->addTermFilter($query, Entity::VIEW_TYPE, $value);
     }
+
+    public function buildQueryForMerchantId(array & $query, string $value)
+    {
+        $clause = [
+            Es::MATCH => [
+                Entity::MERCHANT_ID    => $value
+            ]
+        ];
+        $this->addMust($query,$clause);
+    }
 }
