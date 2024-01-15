@@ -47,6 +47,8 @@ class Base
 
     const AUDIT_ID_KEY = 'audit_id';
 
+    const X_CLIENT_FLOW = 'X-Client-Flow';
+
     const SAVE_TIMEOUT_IN_MICRO_SECONDS = 2000000;
 
     function __construct()
@@ -88,11 +90,25 @@ class Base
                 ]
             );
         }
+        // represents route name  for web pods or job name for worker pod
+        $clientFlow = $this->getClientFlow();
 
-        $headers = [RequestHeader::X_AMAZON_TRACE_ID => $awsTraceId];
+        $headers = [
+            RequestHeader::X_AMAZON_TRACE_ID => $awsTraceId,
+            self::X_CLIENT_FLOW => $clientFlow
+        ];
         $requestMetadata->setHeaders($headers);
 
         return $requestMetadata;
+    }
+
+    function getClientFlow(): string {
+        $runningInQueue = $this->app->runningInQueue();
+        if ($runningInQueue === true) {
+            return app('worker.ctx')->getJobName() ?? "";
+        }
+
+        return app('request.ctx')->getRoute() ?? "";
     }
 
     function getRequestMetaData(RequestMetadata|null $inputRequestMetadata = null) : RequestMetadata {
