@@ -10303,7 +10303,8 @@ class CoreTest extends TestCase
 
         $merchant = $this->fixtures->create('merchant', [
             'category'  => '5945',
-            'category2' => 'ecommerce'
+            'category2' => 'ecommerce',
+            "has_key_access" => true
         ]);
 
         $input = [

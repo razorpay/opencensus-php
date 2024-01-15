@@ -116,9 +116,10 @@ class Constants
                                       self::CONTACT_US,
                                       self::REFUND,
                                       self::PRIVACY,
-                                      self::SHIPPING,
-                                      self::PRICING,
-                                      self::CANCELLATION] ;
+                                      self::CANCELLATION];
+
+    //This is mandatory section for a few category and sub-categories and is optional for the rest
+    const CATEGORY_SPECIFIC_MANDATORY_ADMIN_SECTION = [self::SHIPPING];
 
 
     // 1- I have live page with required details

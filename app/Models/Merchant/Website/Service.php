@@ -52,6 +52,7 @@ use RZP\Models\Merchant\Detail\Service as DetailService;
 use RZP\Models\Merchant\Consent\Core as ConsentCore;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Merchant\Service as MerchantService;
+use RZP\Models\Merchant\Detail\BusinessCategoriesV2\BusinessSubCategoryMetaData as SubcategoryV2;
 
 class Service extends Base\Service
 {
@@ -1040,7 +1041,28 @@ class Service extends Base\Service
 
             $adminWebsiteData = $this->getAdminWebsiteSection($merchantDetails->getMerchantId());
 
-            foreach (Constants::MANDATORY_ADMIN_SECTIONS as $sectionName)
+            $mandatoryAdminSections = Constants::MANDATORY_ADMIN_SECTIONS;
+
+            $subCategory = $merchantDetails->getBusinessSubcategory();
+
+            $category = $merchantDetails->getBusinessCategory();
+
+            $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($category, $subCategory);
+
+            $requiredPolicies = $subcategoryMetaData[SubcategoryV2::REQUIRED_WEBSITE_POLICIES];
+
+            foreach (Constants::CATEGORY_SPECIFIC_MANDATORY_ADMIN_SECTION as $policy) {
+                if (isset($requiredPolicies[$policy]) ===  true  and $requiredPolicies[$policy] === true) {
+                    $mandatoryAdminSections[] = $policy;
+                }
+            }
+
+            $this->trace->info(TraceCode::MANDATORY_ADMIN_SECTIONS_FOR_ACTIVATION, [
+                "merchant_id"   => $merchantDetails->getMerchantId(),
+                "section_name"  => $mandatoryAdminSections,
+            ]);
+
+            foreach ($mandatoryAdminSections as $sectionName)
             {
                 foreach ($urls as $url => $url_type)
                 {
