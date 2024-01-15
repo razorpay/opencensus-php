@@ -312,6 +312,7 @@ class Validator extends Base\Validator
         BDConstants::CONSENT                             => 'sometimes|boolean',
         BDConstants::DOCUMENTS_DETAIL                    => 'sometimes|array',
         Constants::POS_ACTIVATION_STATUS                 => 'sometimes|string|max:30',
+        Constants::SHOW_SUBCATEGORY_RECOMMENDATIONS      => 'sometimes|boolean',
 
         Entity::POI_VERIFICATION_STATUS                 => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
         Entity::POA_VERIFICATION_STATUS                 => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',

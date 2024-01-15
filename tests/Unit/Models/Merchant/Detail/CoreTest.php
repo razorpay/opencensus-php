@@ -4012,7 +4012,6 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    // take help from these testcases
     public function testGetApplicableActivationStatusWebsitePolicyFail()
     {
         Mail::fake();
@@ -5642,7 +5641,7 @@ class CoreTest extends TestCase
             'shipping' =>  ['url' => "https://www.sukhdev.org/shipping"],
         ], $merchantWebsiteDetail['admin_website_details']['website']['https://www.sukhdev.org']);
     }
-    // take test cases help from here as well
+
     public function testOCRPassedActivatedPilot()
     {
         Queue::fake();
@@ -13930,7 +13929,7 @@ class CoreTest extends TestCase
     }
 
 
-    public function testGetFeeBasedGatingDetailsFromMerchantDetailsGetCall()
+    public function testActivationFetchInternalPGOSFromMerchantDetailsGetCall()
     {
 
         // testing the response regardless it is website or no website merchant
@@ -14068,6 +14067,9 @@ class CoreTest extends TestCase
 
         $this->assertEquals(false, $response['fee_based_gating']['invoice_sent']);
 
+        $this->assertEquals(['subcat_desc_1', 'subcat_desc_2', 'subcat_desc_3', 'subcat_desc_4'], $response['suggested_business_subcategories']);
+
+        $this->assertEquals(false, $response['disable_try_again_others_m3']);
     }
 
     public function testIsMerchantApplicableForWebsiteSections_BankingPlusPrimary()
@@ -14293,7 +14295,7 @@ class CoreTest extends TestCase
         $mockedCore->shouldReceive("validateIndividualLink")->andReturn("individualLinkRequestId");
         $mockedCore->shouldReceive("dispatchOCRValidationJob")->andReturn(null);
         $mockedCore->shouldReceive("saveMerchantWebsiteAutomatedOcrCheckDataInCache")->andReturn(null);
-        
+
         $mockedMerchant = \Mockery::mock('RZP\Models\Merchant\Entity')->makePartial();
         $mockedMerchant->shouldAllowMockingProtectedMethods();
         $mockedMerchant->shouldReceive("isFeatureEnabled")->andReturn(true);

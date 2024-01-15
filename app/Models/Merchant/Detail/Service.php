@@ -261,27 +261,22 @@ class Service extends Base\Service
             ]);
         }
 
-        // here the fee based gating data is saved on the pgos and is not dual written on api monolith hence we will make call to pgos everytime do get call
-        // for merchant details
-        $feeBasedGatingResponse = (new Core())->fetchMerchantGatingDetails($merchantDetails->merchant);
+        // fetches attributes not dual written on api monolith and only present in PGOS in a single API
+        $pgosFetchInternalResponse = (new Core())->fetchPgosInternalResponse($merchantDetails->merchant);
 
-        /*
-           feeBasedGating :
-           {
-                     isEligible       =>  true
-                     paymentStatus    => 'authorized',
-                     orderId          => 'order_9A33XWu170gUtm'
-           }
-       */
-
-        $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY,[
-            'merchantId'                 => $merchantDetails->getId(),
-            'fee_based_gating_db_values' => $feeBasedGatingResponse
-        ]);
-
-        if (isset($feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING]) === true)
+        if (isset($pgosFetchInternalResponse[DetailConstants::FEE_BASED_GATING]) === true)
         {
-            $response[DetailConstants::FEE_BASED_GATING] = $feeBasedGatingResponse[DetailConstants::FEE_BASED_GATING];
+            $response[DetailConstants::FEE_BASED_GATING] = $pgosFetchInternalResponse[DetailConstants::FEE_BASED_GATING];
+        }
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::SUBCATEGORY_RECOMMENDATIONS][DetailConstants::SUGGESTED_BUSINESS_SUBCATEGORIES]) === true)
+        {
+            $response[DetailConstants::SUGGESTED_BUSINESS_SUBCATEGORIES] = $pgosFetchInternalResponse[DetailConstants::SUBCATEGORY_RECOMMENDATIONS][DetailConstants::SUGGESTED_BUSINESS_SUBCATEGORIES];
+        }
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::SUBCATEGORY_RECOMMENDATIONS][DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3]) === true)
+        {
+            $response[DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3] = $pgosFetchInternalResponse[DetailConstants::SUBCATEGORY_RECOMMENDATIONS][DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3];
         }
     }
 

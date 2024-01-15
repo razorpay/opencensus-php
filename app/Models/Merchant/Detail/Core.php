@@ -9431,7 +9431,7 @@ class Core extends Base\Core
         $validationResponse = $payload['validationResponse'] ?? [];
 
         $this->deleteMerchantWebsiteAutomatedOcrCheckCacheData($this->merchant);
-        
+
         if(
             !empty($validationResponse['success']) &&
             $validationResponse['success'] === true &&
@@ -9443,7 +9443,7 @@ class Core extends Base\Core
 
             return;
         }
-        
+
         $this->postBusinessWebsiteViaWorkflow($payload['urlType'], $payload['input'], $payload['workflow_detail_input']);
     }
 
@@ -9451,7 +9451,7 @@ class Core extends Base\Core
     private function createWorkFlowForMerchantWebsite(array $input, array $originalMerchantDetails, array $dirtyMerchantDetails, ?array $workflowDetailsInput = null)
     {
         $permissionName = $this->getWebsiteUpdatePermissionName();
-        
+
         if ($workflowDetailsInput === null)
         {
             $this->app['workflow']
@@ -9460,18 +9460,18 @@ class Core extends Base\Core
                  ->setController(DetailConstants::UPDATE_BUSINESS_WEBSITE_CONTROLLER)
                  ->setInput($input)
                  ->handle($originalMerchantDetails, $dirtyMerchantDetails, true);
-            
+
             return;
         }
-        
+
         $routeParams = array_get($workflowDetailsInput, 'route_params');
         $uri  = array_get($workflowDetailsInput, 'uri');
-    
+
         $this->trace->info(TraceCode::MERCHANT_UPDATE_WEBSITE_WORKFLOW_V2, [
             'uri'           => $uri,
             'route_params'  => $routeParams
         ]);
-    
+
         $this->app['workflow']
              ->setPermission($permissionName)
              ->setEntityAndId($this->merchant->merchantDetail->getEntity(), $this->merchant->merchantDetail->getMerchantId())
@@ -9486,7 +9486,7 @@ class Core extends Base\Core
              ->setMethod('POST')
              ->handle($originalMerchantDetails, $dirtyMerchantDetails, true);
     }
-    
+
     /**
      * This function is used for edit/update business website details with workflow
      * @param Entity $merchantDetails
@@ -9512,9 +9512,9 @@ class Core extends Base\Core
         $this->merchant->merchantDetail->setWebsite($originalMerchantDetails[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE]);
 
         $dedupeFlaggedMIDs = implode(',', $matchedMerchantIds);
-        
+
         $this->createWorkFlowForMerchantWebsite($input, $originalMerchantDetails, $dirtyMerchantDetails, $workflowDetailsInput);
-        
+
         $this->addCommentForBusinessWebsiteSave($urlType, $permissionName, $this->merchant->merchantDetail, $dedupeFlaggedMIDs, $input);
 
         return [];
@@ -9631,7 +9631,7 @@ class Core extends Base\Core
         $mccRequestId = $this->validateMCC($input);
 
         $individualLinkRequestId = $this->validateIndividualLink($input);
-        
+
         try
         {
             $this->dispatchOCRValidationJob($mccRequestId, $individualLinkRequestId, $input, $urlType);
@@ -11248,6 +11248,16 @@ class Core extends Base\Core
         return false;
     }
 
+    public function isEligibleForOthersM3($merchantId)
+    {
+        if ($this->pgosProxyController->isPGOSExperimentEnabledForMerchant($merchantId, 'app.pgos_live_mode_experiment_id', 'enable') === false)
+        {
+            return false;
+        }
+
+        return $this->pgosProxyController->isPGOSExperimentEnabledForMerchant($merchantId, 'app.others_m3_experiment_id', 'enable') === true;
+    }
+
     /**
      * This function updates fee based gating eligibility status in PGOS and gets updated status.
      * @param Merchant\Entity $merchant
@@ -11537,6 +11547,10 @@ class Core extends Base\Core
 
         if ($pgosMock === true)
         {
+            $this->trace->info(TraceCode::RETURNING_PGOS_MOCKED_RESPONSE, [
+                'merchant_id'                   => $merchantId,
+            ]);
+
             $phantomOnboarding = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
 
             if ($phantomOnboarding === true)
@@ -11595,6 +11609,84 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode::PGOS_FETCH_GATING_LOGIC_FAILURE, [
                 'route'         => 'fetch_gating_logic',
+                'merchant_id'   => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+
+        return null;
+    }
+
+    public function fetchPgosInternalResponse(Merchant\Entity $merchant)
+    {
+        $app = App::getFacadeRoot();
+
+        $pgosMock = $app['config']['pgos.proxy.request.mock'];
+
+        if ($pgosMock === true)
+        {
+            $this->trace->info(TraceCode::RETURNING_PGOS_MOCKED_RESPONSE, [
+                'merchant_id'                   => $merchantId,
+            ]);
+
+            $phantomOnboarding = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
+
+            if ($phantomOnboarding === true)
+            {
+                return [
+                    "fee_based_gating" => [
+                        "is_eligible"    => false,
+                    ]
+                ];
+            }
+
+            return [
+                "fee_based_gating" => [
+                    "is_eligible"    => DetailConstants::DEFAULT_ELIGIBILITY_CRITERIA,
+                    "order_id"       => DetailConstants::DEFAULT_ORDER_ID,
+                    "payment_status" => DetailConstants::DEFAULT_PAYMENT_STATUS,
+                    "invoice_sent"   => false
+                ],
+                "subcategory_recommendations" => [
+                    "suggested_business_subcategories" => ['subcat_desc_1', 'subcat_desc_2', 'subcat_desc_3', 'subcat_desc_4'],
+                    "disable_try_again_others_m3"      => false,
+                ],
+            ];
+        }
+
+        $merchantId = $merchant->getId();
+
+        $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+            'merchant_id'  => $merchantId,
+            'route'        => DetailConstants::MERCHANT_ACTIVATION_FETCH_INTERNAL,
+        ]);
+
+        $isEligibleForFeeBasedGating = $this->isEligibleForFeeBasedGating($merchant, $merchant->merchantDetail);
+
+        $isEligibleForOthersM3 = $this->isEligibleForOthersM3($merchantId);
+
+        if ($isEligibleForFeeBasedGating === false && $isEligibleForOthersM3 === false)
+        {
+            return null;
+        }
+
+        try
+        {
+            $response = $this->pgosProxyController->handlePGOSProxyRequests(DetailConstants::MERCHANT_ACTIVATION_FETCH_INTERNAL,
+                [], $merchant, true);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response'    => $response,
+                'route'       => DetailConstants::MERCHANT_ACTIVATION_FETCH_INTERNAL,
+            ]);
+
+            return $response;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'route'         => DetailConstants::MERCHANT_ACTIVATION_FETCH_INTERNAL,
                 'merchant_id'   => $merchantId,
                 'error_message' => $exception->getMessage()
             ]);
@@ -11696,11 +11788,11 @@ class Core extends Base\Core
       string $urlType): void
     {
         $app = App::getFacadeRoot();
-        
+
         $workflowDetailInput = [];
         $workflowDetailInput['uri'] = $app['request']->getUri();
         $workflowDetailInput['route_params'] = $app['router']->current()->parameters();
-        
+
         // Temporary arrange ment to using payment page queue
         // TODO: decomp this queue to service with dedicated self serve queue
         PaymentPageProcessor::dispatch($this->mode, [

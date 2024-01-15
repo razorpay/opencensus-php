@@ -33,6 +33,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_UPDATE_BY_ADMIN       = 'merchant_update_by_admin';
     const MERCHANT_CONSENTS_SAVE         = 'merchant_consents_save';
 
+    const MERCHANT_ACTIVATION_FETCH_INTERNAL    = 'merchant_activation_fetch_internal';
+
     // fee based gating routes
     const MERCHANT_GATING_LOGIC_SAVE     = 'merchant_gating_logic_save';
     const PAYMENT_ORDER_CREATE           = 'payment_order_create';
@@ -221,8 +223,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_CATEGORIES_V3                       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesV3Map',
         self::MERCHANT_CATEGORIES_ADMIN_V3                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/FetchMerchantCategoriesAdminV3Map',
         self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantCategoriesV3EligibilitySave',
-        self::SEND_SMS_OTP      => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendSMSOTP',
-        self::VERIFY_OTP        => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/VerifyOTP',
+        self::SEND_SMS_OTP                                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/SendSMSOTP',
+        self::VERIFY_OTP                                    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/VerifyOTP',
+        self::MERCHANT_ACTIVATION_FETCH_INTERNAL            => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantActivationFetchInternal',
         self::PGOS_FETCH_DEVICE_CONFIG                      => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchDeviceConfig',
         self::PGOS_CREATE_DEVICE_ORDER                      => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/CreateDeviceOrder',
         self::PGOS_UPDATE_DEVICE_ORDER                      => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/UpdateDeviceOrder',
