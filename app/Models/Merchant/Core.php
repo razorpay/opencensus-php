@@ -1384,6 +1384,12 @@ class Core extends Base\Core
         return false;
     }
 
+    private function isPosEnabled():bool
+    {
+        $isExpEnabled = (new Partner\Core())->isPOSEnabled();
+        return $isExpEnabled;
+    }
+
     private function isPaymentPagesEnabled()
     {
         /*
@@ -1456,6 +1462,11 @@ class Core extends Base\Core
         if ($this->isPaymemtLinkEnabled() === true)
         {
             $currentProducts[] = Constants::PAYMENT_LINK;
+        }
+
+        if($this->isPosEnabled() === true)
+        {
+            $currentProducts[] = Constants::POS;
         }
 
         if ($this->isPaymemtGatewayEnabled() === true)

@@ -653,6 +653,8 @@ return array(
 
     'pos_partnership_experiment_id' => env('POS_PARTNERSHIP_EXPERIMENT_ID'),
 
+    'pos_enabled_experiment_id' => env('POS_ENABLED_EXPERIMENT_ID'),
+
     'easy_kyc_access_referral_experiment_id' => env('EASY_KYC_ACCESS_REFERRAL_EXP_ID'),
 
     '1cc_enable_v165_splitz_experiment_id' => env('MAGIC_CHECKOUT_ENABLE_V165_EXP_ID'),

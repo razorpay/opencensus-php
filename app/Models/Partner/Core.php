@@ -2002,4 +2002,23 @@ class Core extends Detail\Core
 
         return $isExpEnabled;
     }
+    public function isPOSEnabled(): bool
+    {
+        $properties = [
+            'experiment_id' => $this->app['config']->get('app.pos_enabled_experiment_id'),
+        ];
+
+        $isExpEnabled = $this->merchantCore->isSplitzExperimentEnable($properties, 'variant');
+
+        $this->trace->info(
+            TraceCode::POS_ENABLE_EXPERIMENT,
+            [
+                "properties" => $properties,
+                "enabled"    => $isExpEnabled,
+            ]
+        );
+
+        return $isExpEnabled;
+    }
+
 }

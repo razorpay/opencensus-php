@@ -294,6 +294,7 @@ final class Constants
     const PAYMENT_PAGES                              = 'payment_pages';
     const PAYMENT_LINK                               = 'payment_link';
     const PAYMENT_GATEWAY                            = 'payment_gateway';
+    const POS                                        = 'pos';
     const IS_NEW_PRODUCT                             = 'is_new_product';
     const SYNC_FLOW                                  = 'sync_flow';
     const WORKFLOW_CREATED                           = 'workflow_created';
@@ -1245,6 +1246,14 @@ final class Constants
             self::TITLE          => 'Payment Link',
             self::DESCRIPTION    => 'Create a link and send it to your customers to accept payments',
             self::IS_NEW_PRODUCT => false
+        ],
+
+        self::POS=> [
+            self::TYPE            => 'pos',
+            self::TITLE           => 'POS',
+            self::DESCRIPTION     => 'Explore and order POS devices from our exclusive catalog',
+            self::IS_NEW_PRODUCT  => false,
+
         ],
 
         self::PAYMENT_GATEWAY => [

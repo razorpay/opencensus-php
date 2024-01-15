@@ -4835,6 +4835,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_FETCH_SUBMERCHANT_BY_ID_REQUEST               = 'PARTNER_FETCH_SUBMERCHANT_BY_ID_REQUEST';
     const CAPITAL_PARTNERSHIP_EXPERIMENT                        = 'CAPITAL_PARTNERSHIP_EXPERIMENT';
     const PARTNER_POS_EXPERIMENT                                = 'PARTNER_POS_EXPERIMENT';
+    const POS_ENABLE_EXPERIMENT                                 = 'POS_ENABLE_EXPERIMENT';
     const PARTNER_REFERRAL_FOR_CAPITAL                          = 'PARTNER_REFERRAL_FOR_CAPITAL';
     const PARTNER_REFERRAL_LINK_FOR_CAPITAL                     = 'PARTNER_REFERRAL_LINK_FOR_CAPITAL';
     const PARTNER_REFERRAL_LINK_FOR_POS                         = 'PARTNER_REFERRAL_LINK_FOR_POS';
