@@ -2545,6 +2545,7 @@ class Gateway
         IFSC::PSIB,
         IFSC::SRCB,
         IFSC::UCBA,
+        IFSC::DCBL,
     ];
 
     public static $directDebitCardNetworks = [
