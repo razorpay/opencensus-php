@@ -1074,7 +1074,11 @@ class Core extends Base\Core
                         }
                     }
 
-                    return $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);
+                    $txn = $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);
+
+                    $paymentProcessor->processTransferIfApplicable($payment);
+
+                    return $txn;
                 },
                 self::PAYMENT_TRANSACTION_CREATION_MUTEX_TTL,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
@@ -1082,8 +1086,6 @@ class Core extends Base\Core
                 self::PAYMENT_TRANSACTION_CREATION_MUTEX_MIN_RETRY_DELAY,
                 self::PAYMENT_TRANSACTION_CREATION_MUTEX_MAX_RETRY_DELAY
             );
-
-            $paymentProcessor->processTransferIfApplicable($payment);
 
             return $txn;
         });
