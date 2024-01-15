@@ -1701,6 +1701,10 @@ class Gateway extends Base\Gateway
         {
             $prefix = 'upiPayments';
 
+            if($gateway === Payment\Gateway::UPI_MINDGATE)
+            {
+                unset($input[Constants::QR_STATUS_CHECK]);
+            }
             $content = $input;
         }
 

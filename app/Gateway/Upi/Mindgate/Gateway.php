@@ -2487,7 +2487,7 @@ class Gateway extends Base\Gateway
                 'id' => $input[EntityConstants::MERCHANT]['id'],
             ],
             EntityConstants::UPI => [
-                'merchant_reference' =>$input[EntityConstants::QR_CODE]['id']
+                'merchant_reference' =>$input[EntityConstants::QR_CODE]['id'] .  QrCode\Constants::QR_CODE_V2_TR_SUFFIX
             ],
             Constants::QR_STATUS_CHECK => true
         ];
