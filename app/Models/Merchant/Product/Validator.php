@@ -53,7 +53,9 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PRODUCT_NAME);
         }
 
-        if($partner !== null
+
+        if($partner !== null                                            // Check for partner type, only if $partner is set
+            && ($this->merchant->isLinkedAccount() === false)           // Ignore check for linked accounts since we are checking for 'route' product above
             && (($value === Name::LINE_OF_CREDIT && $partner->isResellerPartner() === false)
                 or ($partner->isResellerPartner() === true && $value !== Name::LINE_OF_CREDIT)))
         {

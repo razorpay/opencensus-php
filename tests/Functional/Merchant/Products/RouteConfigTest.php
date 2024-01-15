@@ -585,6 +585,27 @@ class RouteConfigTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testRouteDefaultConfigWithResellerPartner()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'reseller']);
+
+        $testData = $this->testData['testCreateLinkedAccountWithMarketplaceFeature'];
+
+        $linkedAccountResponse = $this->runRequestResponseFlow($testData);
+
+        $linkedAccountId    =   $linkedAccountResponse['id'];
+
+        $testData = $this->testData['testRouteDefaultConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/'.$linkedAccountId.'/products';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function validateStorkWebhookFireEvent($testData, $storkPayload, $merchantId, &$eventFired)
     {
         if ($storkPayload['event']['name'] === 'product.route.under_review')
