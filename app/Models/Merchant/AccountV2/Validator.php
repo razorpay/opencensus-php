@@ -8,6 +8,9 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Stakeholder;
+use RZP\Models\User\Core as UserCore;
+use RZP\Exception\BadRequestException;
+use libphonenumber\NumberParseException;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Constants\Product as ProductConstants;
 use RZP\Models\Merchant\Detail\ValidationFields;
@@ -32,6 +35,23 @@ class Validator extends Merchant\Validator
         Constants::TOS_ACCEPTANCE                  => 'sometimes|array',
         Constants::NOTES                           => 'sometimes|notes',
         Constants::NO_DOC_ONBOARDING               => 'sometimes|bool',
+        Constants::TYPE                            => 'sometimes|in:route'
+    ];
+
+    protected static $createAccountPrefillRules = [
+        Constants::REFERENCE_ID                    => 'sometimes',
+        Constants::EMAIL                           => 'sometimes|email',
+        Constants::PHONE                           => 'required|regex:/^\+?[1-9]{1}[0-9]{7,14}$/u|custom',
+        Constants::CONTACT_NAME                    =>  array ('sometimes','max:255','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
+        Constants::LEGAL_BUSINESS_NAME             => 'sometimes|string',
+        Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'filled|string',
+        Constants::BUSINESS_TYPE                   => 'sometimes|string',
+        Constants::PROFILE                         => 'sometimes|array',
+        Constants::LEGAL_INFO                      => 'sometimes|array',
+        Constants::CONTACT_INFO                    => 'sometimes|array',
+        Constants::APPS                            => 'sometimes|array',
+        Constants::BRAND                           => 'sometimes|array',
+        Constants::NOTES                           => 'sometimes|notes',
         Constants::TYPE                            => 'sometimes|in:route'
     ];
 
@@ -182,7 +202,7 @@ class Validator extends Merchant\Validator
         switch ($product)
         {
             case ProductConstants::PRIMARY:
-                $this->validateInput('create_account', $input);
+                $this->validateCreateAccountForPG($input);
                 break;
 
             case ProductConstants::CAPITAL:
@@ -217,6 +237,11 @@ class Validator extends Merchant\Validator
     protected function validateProfileInput(array $input)
     {
         $profileInput = $input[Constants::PROFILE];
+
+        if (empty($profileInput))
+        {
+            return;
+        }
 
         $this->validateInput('profile', $profileInput);
 
@@ -446,6 +471,34 @@ class Validator extends Merchant\Validator
         if(IndianStates::getStateCode($value) === null)
         {
             throw new Exception\BadRequestValidationFailureException('State name entered is incorrect. Please provide correct state name.', Constants::STATE);
+        }
+    }
+
+    /**
+     * @throws NumberParseException
+     * @throws BadRequestException
+     */
+    protected function validatePhone(string $attribute, string $value)
+    {
+        $contactMobileAlreadyExists = (new UserCore)->checkIfMobileAlreadyExists($value);
+
+        if ($contactMobileAlreadyExists === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS);
+        }
+    }
+
+    public function validateCreateAccountForPG(array $input)
+    {
+        $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled)
+        {
+            $this->validateInput('create_account_prefill', $input);
+        }
+        else
+        {
+            $this->validateInput('create_account', $input);
         }
     }
 }

@@ -39,6 +39,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\Credits as FundCredits;
@@ -51,6 +52,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use \RZP\Models\Workflow\Action\Entity as ActionEntity;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Partner\Config\Constants as ConfigConstants;
+use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 use RZP\Models\Merchant\Analytics\Constants as AnalyticsConstants;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
@@ -1544,9 +1546,14 @@ class Validator extends Base\Validator
             $this->validateInput('unique_email', array_only($input, Entity::EMAIL));
         }
 
+        $isPhantomPrefillEnabled = \Request::all()[AccountConstants::PHANTOM_PREFILL_ENABLED] ?? false;
+
         if ($linkedAccount === false)
         {
-            $this->validateInput('edit_name', array_only($input, Entity::NAME));
+            if (!$isPhantomPrefillEnabled)
+            {
+                $this->validateInput('edit_name', array_only($input, Entity::NAME));
+            }
         }
         else
         {
@@ -1714,8 +1721,11 @@ class Validator extends Base\Validator
 
         if ($merchant->isPartner() === true)
         {
+            $isPhantomPrefillEnabled = \Request::all()[AccountConstants::PHANTOM_PREFILL_ENABLED] ?? false;
+
             if (($merchant->isFullyManagedPartner() === false) and
-                ($merchant->isOptionalEmailAllowedAggregator() === false))
+                ($merchant->isOptionalEmailAllowedAggregator() === false) and
+                ($isPhantomPrefillEnabled === false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED);

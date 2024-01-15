@@ -16,10 +16,17 @@ class InputHelper
 {
     public static function getSubMerchantCreateInput(array $input): array
     {
-        $data = [
-            Merchant\Entity::NAME  => $input[Constants::LEGAL_BUSINESS_NAME],
-            Merchant\Entity::EMAIL => $input[Constants::EMAIL]
-        ];
+        $data = [];
+
+        if (isset($input[Constants::LEGAL_BUSINESS_NAME]))
+        {
+            $data[Merchant\Entity::NAME] = $input[Constants::LEGAL_BUSINESS_NAME];
+        }
+
+        if (isset($input[Constants::EMAIL]) === true)
+        {
+            $data[Merchant\Entity::EMAIL] = $input[Constants::EMAIL];
+        }
 
         if (isset($input[Constants::REFERENCE_ID]) === true)
         {

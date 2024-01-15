@@ -40,6 +40,8 @@ class Core extends Merchant\Core
 
         $accountCoreV1->validatePartnerAccess($partner,null, $accountType);
 
+        $this->checkIfPhantomPrefillIsEnabledForPartner($partner);
+
         $requestedProduct = ProductConstants::PRIMARY;
 
         $isLocOnboardingEnabled = $accountCoreV1->isPartnerAllowedToOnboardLOCMerchantViaOnboardingAPIs($partner);
@@ -718,5 +720,17 @@ class Core extends Merchant\Core
             'live'          => $merchant->isLive(),
             'funds_on_hold' => $merchant->isFundsOnHold()
         ];
+    }
+
+    private function checkIfPhantomPrefillIsEnabledForPartner(Merchant\Entity $partner) : void
+    {
+        $phantomPrefillEnabled = false;
+
+        if ($partner->isCobrandedOnboardingEnabled())
+        {
+            $phantomPrefillEnabled = true;
+        }
+
+        Request::instance()->request->add([Constants::PHANTOM_PREFILL_ENABLED => $phantomPrefillEnabled]);
     }
 }

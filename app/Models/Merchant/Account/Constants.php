@@ -155,6 +155,8 @@ class Constants
 
     const IS_IGNORE_TOS_ACCEPTANCE         = 'isIgnoreTosAcceptance';
 
+    const PHANTOM_PREFILL_ENABLED = 'phantom_prefill_enabled';
+
     public static $validBusinessModels = [
         self::B2B,
         self::B2C,

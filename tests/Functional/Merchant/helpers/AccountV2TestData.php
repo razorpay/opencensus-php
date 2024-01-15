@@ -2529,4 +2529,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
+
+    'testAccountCreationWithOnlyPhoneNumberForPhantomPartners' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'phone'           => '9999999999'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'                => 'standard',
+                'status'              => 'created',
+                'phone'               => '+919999999999',
+                'business_type'       => '',
+                'profile'             => [
+                    'category'       => null,
+                    'subcategory'    => null,
+                    'addresses'      => []
+                ],
+                'notes'               => []
+            ],
+        ],
+    ],
 ];

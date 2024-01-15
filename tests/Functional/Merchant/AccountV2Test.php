@@ -1722,6 +1722,67 @@ class AccountV2Test extends TestCase
         $this->assertEquals(true, $methods['upi']);
     }
 
+    public function testAccountCreationWithOnlyPhoneNumberForPhantomPartners()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
+
+        $metricCaptured = false;
+
+        $this->mockStorkService();
+
+        $this->app['stork_service']->shouldReceive('publishOnSns')->twice()->andReturn(null);
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->startTest($testData);
+
+        // check that stakeholder is not yet created
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+        $stakeholders = $this->getDbEntities('stakeholder', ['merchant_id' => $accountId])->toArray();
+
+        $this->assertEmpty($stakeholders);
+
+        $this->assertTrue($metricCaptured);
+    }
+
+    public function testPhoneNumberValidationFailureForPhantomPartnersWithoutFeature()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics(MerchantConstants::PURE_PLATFORM);
+
+        $metricCaptured = false;
+
+        $this->mockStorkService();
+
+        $this->app['stork_service']->shouldReceive('publishOnSns')->twice()->andReturn(null);
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testAccountCreationWithOnlyPhoneNumberForPhantomPartners'];
+
+        $response = $this->startTest($testData);
+
+        // check that stakeholder is not yet created
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $this->assertTrue($metricCaptured);
+    }
+
     protected function mockRazorxTreatment(string $returnValue = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
