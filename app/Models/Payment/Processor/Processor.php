@@ -727,6 +727,52 @@ class Processor
            return false;
         }
 
+        $merchant = $this->app['basicauth']->getMerchant();
+        $order = isset($input['order_id']) ? $this->fetchOrderFromInput($input) : null;
+        if (empty($order) === false and ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or
+            ($order->invoice !== null))
+        {
+            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON_MY, [
+                'reason' => "no_code_apps",
+                'merchant_id' => $merchant->getId(),
+            ]);
+            return false;
+        }
+
+        if ((empty($input[Payment\Entity::OFFER_ID]) === false))
+        {
+            $offerId = $input[Payment\Entity::OFFER_ID];
+
+            Offer\Entity::verifyIdAndStripSign($offerId);
+
+            $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
+
+            if ($offer->shouldBlockPayment() === true)
+            {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON_MY, [
+                    'reason' => "offer_should_block_payment",
+                    'merchant_id' => $merchant->getId(),
+                ]);
+                return false;
+            }
+
+            $offerMethod = $offer->getPaymentMethod();
+
+            if ($offerMethod === Payment\Method::CARD)
+            {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON_MY, [
+                    'reason' => "card_offer_payment_blocked",
+                    'merchant_id' => $merchant->getId(),
+                ]);
+                return false;
+            }
+
+
+        }
+
+
+
+
         return true;
     }
 
