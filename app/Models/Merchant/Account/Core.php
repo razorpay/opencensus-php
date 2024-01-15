@@ -231,11 +231,6 @@ class Core extends Merchant\Core
 
     public function validatePartnerAccess(Merchant\Entity $partner, $accountId = null, $accountType = Type::STANDARD, $checkApiAccess = true)
     {
-        if ($checkApiAccess)
-        {
-            (new PartnerValidator())->validateOnboardingApisAccess($partner->getId());
-        }
-
         $isRouteAccount = $this->checkIfRouteAccount($accountId, $accountType);
 
         // As part of making Partnership APIs available for Route product, for linked accounts don't want to check
@@ -246,10 +241,15 @@ class Core extends Merchant\Core
         }
         else
         {
-            Tracer::inspan(['name' => HyperTrace::VALIDATE_PARTNER_ACCESS], function () use ($partner, $accountId)
+            Tracer::inspan(['name' => HyperTrace::VALIDATE_PARTNER_ACCESS], function () use ($partner, $accountId, $checkApiAccess)
             {
                 if ($partner->isPurePlatformPartner() === true && $this->isOnboardingV2ApiRoute() === true)
                 {
+                    if ($checkApiAccess)
+                    {
+                        (new PartnerValidator())->validateOnboardingApisAccess($partner->getId());
+                    }
+
                     // Note: This feature check exist for Pure-platform partners to access all Onboarding APIs,
                     // except webhook v2 APIs, since webhook v2 APIs was enabled via OAuth quite a long time ago and may be in use by other partners.
                     Merchant\PhantomUtility::validateCobrandedOnboardingEnabledForPlatformPartner($partner);
@@ -275,6 +275,11 @@ class Core extends Merchant\Core
                 }
                 else
                 {
+                    if ($checkApiAccess)
+                    {
+                        (new PartnerValidator())->validateOnboardingApisAccess($partner->getId());
+                    }
+
                     $partner->getValidator()->validateIsAggregatorPartner($partner);
 
                     if (empty($accountId) === false)
