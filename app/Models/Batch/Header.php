@@ -1652,6 +1652,7 @@ class Header
     const TERMINAL_BATCH_CREATION_GATEWAY_TERMINAL_ID = "gateway_terminal_id";
     const TERMINAL_BATCH_CREATION_PROVIDER_NAME = "provider_name";
     const TERMINAL_BATCH_CREATION_PROVIDER_TYPE = "provider_type";
+    const ORG_ID = "org_id";
 
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
@@ -2041,6 +2042,7 @@ class Header
                 self::MERCHANT_ID,
                 self::TERMINAL_CREATION_GATEWAY,
                 self::TERMINAL_CREATION_CATEGORY,
+                self::ORG_ID,
                 self::TERMINAL_BATCH_CREATION_TYPE,
                 self::TERMINAL_BATCH_CREATION_GATEWAY,
                 self::TERMINAL_BATCH_CREATION_GATEWAY_TERMINAL_ID,

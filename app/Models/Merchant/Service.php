@@ -9125,6 +9125,7 @@ class Service extends Base\Service
                 }
                 $newItem['Gateway'] = $gateway;
                 $newItem['Category'] = $Category;
+                $newItem['org_id'] = $item['org_id'];
                 $newItem['terminal_type'] = $tokenisationType;
 
                 return $newItem;
@@ -10363,16 +10364,16 @@ class Service extends Base\Service
         $entityType = EntityConstants::MERCHANT_DETAIL;
 
         $actionState = $this->repo->action_state->getLatestActionStateByEntityIdAndType($entityId, $entityType);
-        
+
         if ($actionState === null)
         {
             return "";
         }
-        
+
         return $actionState[Entity::UPDATED_AT];
     }
-    
-    
+
+
     public function getMerchantSupportOptionFlags() : array
     {
         $isActivated = $this->merchant->isActivated();
