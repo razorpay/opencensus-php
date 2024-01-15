@@ -56,6 +56,7 @@ use RZP\Models\Merchant\Detail\SelectiveRequiredFields;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\M2MReferral\Status as M2MEntityStatus;
 use RZP\Models\Merchant\M2MReferral\Entity as M2MReferralEntity;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
@@ -14111,6 +14112,94 @@ class CoreTest extends TestCase
 
     }
 
+    public function testshouldMerchantOnboardViaPGOS_GoogleOAuthMerchant_Success()
+    {
+
+        $merchant = $this->fixtures->create('merchant', [
+            'signup_via_email'             => true,
+        ]);
+
+        $user = $this->fixtures->create('user', []);
+
+        $merchantUser = $this->fixtures->create('user_device_detail', [
+            'merchant_id'         => $merchant->getId(),
+            'user_id'             => $user->getId(),
+            'signup_campaign'     => 'easy_onboarding',
+            'metadata'            => ['service'=>'pgos']
+        ]);
+
+        $res = (new MerchantOnboardingProxyController())->shouldMerchantOnboardViaPGOS($merchant->getId());
+
+        $this->assertEquals(true, $res);
+
+    }
+
+    public function testshouldMerchantOnboardViaPGOS_GoogleOAuthMerchant_Failure1()
+    {
+
+        $merchant = $this->fixtures->create('merchant', [
+            'signup_via_email'             => true,
+        ]);
+
+        $user = $this->fixtures->create('user', []);
+
+        $merchantUser = $this->fixtures->create('user_device_detail', [
+            'merchant_id'         => $merchant->getId(),
+            'user_id'             => $user->getId(),
+            'signup_campaign'     => 'easy_onboarding',
+            'metadata'            => ['service'=>'api']
+        ]);
+
+        $res = (new MerchantOnboardingProxyController())->shouldMerchantOnboardViaPGOS($merchant->getId());
+
+        $this->assertEquals(false, $res);
+
+    }
+
+    public function testshouldMerchantOnboardViaPGOS_GoogleOAuthMerchant_Failure2()
+    {
+
+        $merchant = $this->fixtures->create('merchant', [
+            'signup_via_email'             => true,
+        ]);
+
+        $user = $this->fixtures->create('user', []);
+
+        $merchantUser = $this->fixtures->create('user_device_detail', [
+            'merchant_id'         => $merchant->getId(),
+            'user_id'             => $user->getId(),
+            'signup_campaign'     => 'xyz_onboarding',
+            'metadata'            => ['service'=>'pgos']
+        ]);
+
+        $res = (new MerchantOnboardingProxyController())->shouldMerchantOnboardViaPGOS($merchant->getId());
+
+        $this->assertEquals(false, $res);
+
+    }
+
+    public function testshouldMerchantOnboardViaPGOS_GoogleOAuthMerchant_Failure3()
+    {
+
+        $merchant = $this->fixtures->create('merchant', [
+            'signup_via_email'             => false,
+        ]);
+
+        $user = $this->fixtures->create('user', []);
+
+        $merchantUser = $this->fixtures->create('user_device_detail', [
+            'merchant_id'         => $merchant->getId(),
+            'user_id'             => $user->getId(),
+            'signup_campaign'     => 'easy_onboarding',
+            'metadata'            => ['service'=>'pgos']
+        ]);
+
+        $res = (new MerchantOnboardingProxyController())->shouldMerchantOnboardViaPGOS($merchant->getId());
+
+        $this->assertEquals(false, $res);
+
+    }
+
     /**
      * @group web_update
      */
@@ -14484,7 +14573,8 @@ class CoreTest extends TestCase
 
         $merchant = $this->fixtures->edit('merchant', $merchantId, [
             'id'           => $merchantId,
-            'country_code' => 'IN'
+            'country_code' => 'IN',
+            'signup_via_email' => false
         ]);
 
         $this->app['basicauth']->setMerchant($merchant);

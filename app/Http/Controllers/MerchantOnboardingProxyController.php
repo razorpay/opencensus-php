@@ -499,15 +499,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     public function shouldMerchantOnboardViaPGOS($merchantId, $merchantCountryCode = 'IN'): bool
     {
-        // Doing this check again to fall back
-        if ($this->isPGOSExperimentEnabledForMerchant($merchantId, self::PGOS_LIVE_MODE_EXPERIMENT_ID,
-                self::ENABLE) === true or $merchantCountryCode === 'MY')
+        try
         {
-            $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
-                'shouldMerchantOnboardViaPGOS-merchantId' => $merchantId,
-            ]);
-
             $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
+
+            //Check for Google OAuth merchants
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
 
             if (empty($userDeviceDetail) === false)
             {
@@ -515,12 +512,47 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
                 if (empty($merchantOnboardedViaService) === false)
                 {
-                    return $merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS;
+                    if ($merchant->isSignupViaEmail() === true &&
+                        $merchantCountryCode === 'IN' &&
+                        $userDeviceDetail->getSignupCampaign() == DeviceDetailConstants::EASY_ONBOARDING &&
+                        $merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS)
+                    {
+                        return true;
+                    }
                 }
             }
-        }
 
-        return false;
+            // Check for PGOS merchants whitelisted via experiment
+            if ($this->isPGOSExperimentEnabledForMerchant($merchantId, self::PGOS_LIVE_MODE_EXPERIMENT_ID,
+                                                          self::ENABLE) === true or $merchantCountryCode === 'MY')
+            {
+                $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+                    'shouldMerchantOnboardViaPGOS-merchantId' => $merchantId,
+                ]);
+
+                if (empty($userDeviceDetail) === false)
+                {
+                    $merchantOnboardedViaService = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::SERVICE);
+
+                    if (empty($merchantOnboardedViaService) === false)
+                    {
+                        return $merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS;
+                    }
+                }
+            }
+
+            return false;
+        }
+        catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'pgos_proxy_request'     => true,
+                'error_function'         => 'shouldMerchantOnboardViaPGOS',
+                'error_message'          => $e->getMessage()
+            ]);
+
+            return false;
+        }
     }
 
     public function isFieldsOwnedByPGOS($inputFields): bool

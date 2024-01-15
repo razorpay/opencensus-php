@@ -17,6 +17,8 @@ class DetailServiceTest extends TestCase
     protected $coreMock;
     protected $merchantEntityMock;
     protected $userEntityMock;
+    protected $userDeviceDetailRepositoryMock;
+    protected $userDeviceDetailEntityMock;
     protected $deviceEntityMock;
     protected $merchantDetailEntityMock;
     protected $merchantBusinessDetailEntityMock;
@@ -216,16 +218,21 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('isLocked')->andReturn();
         $this->merchantEntityMock->shouldReceive('getCountry')->andReturn('IN');
+        $this->merchantEntityMock->shouldReceive('isSignupViaEmail')->andReturn(false);
         $this->merchantEntityMock->shouldReceive('isRouteNoDocKycEnabledForParentMerchant')->andReturn(false);
+        $this->merchantRepoMock->shouldReceive('findOrFail')->withAnyArgs()->andReturn($this->merchantEntityMock);
         $this->merchantDetailRepositoryMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantDetailEntityMock);
         $this->merchantEntityMock->shouldReceive('getOrgId')->withAnyArgs()->andReturn();
         $this->merchantBusinessDetailEntityMock->shouldReceive('getWebsiteDetails')->withAnyArgs()->andReturn(null);
+        $this->userDeviceDetailRepositoryMock->shouldReceive('fetchByMerchantIdAndUserRole')->withAnyArgs()->andReturn($this->userDeviceDetailEntityMock);
+        $this->userDeviceDetailEntityMock->shouldReceive('getValueFromMetadata')->withAnyArgs()->andReturn('api');
 
         $org = Mockery::mock('\RZP\Models\Admin\Org\Entity');
 
         $this->merchantEntityMock->shouldReceive('getAttribute')->withArgs(['org'])->andReturn($org);
         $org->shouldReceive('isFeatureEnabled')->withArgs([Feature\Constants::ORG_PROGRAM_DS_CHECK])->andReturn(false);
         $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
+        $this->repoMock->shouldReceive('driver')->with('user_device_detail')->andReturn($this->userDeviceDetailRepositoryMock);
 
         $actualResponse = $this->merchantService->saveMerchantDetailsForActivation($merchantData);
         $expectedResponse = [
@@ -355,6 +362,12 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
 
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
+
+        $this->merchantEntityMock->shouldReceive('isSignupViaEmail')->andReturn(false);
+        $this->merchantRepoMock->shouldReceive('findOrFail')->withAnyArgs()->andReturn($this->merchantEntityMock);
+        $this->userDeviceDetailRepositoryMock->shouldReceive('fetchByMerchantIdAndUserRole')->withAnyArgs()->andReturn($this->userDeviceDetailEntityMock);
+        $this->userDeviceDetailEntityMock->shouldReceive('getValueFromMetadata')->withAnyArgs()->andReturn('api');
+        $this->repoMock->shouldReceive('driver')->with('user_device_detail')->andReturn($this->userDeviceDetailRepositoryMock);
 
         $response = $this->merchantService->patchMerchantDetails($merchantData);
 
@@ -835,6 +848,12 @@ class DetailServiceTest extends TestCase
 
         // Device Entity Mocking
         $this->deviceEntityMock = Mockery::mock('RZP\Models\Device\Entity');
+
+        // User Device Detail Repository Mocking
+        $this->userDeviceDetailRepositoryMock = Mockery::mock('RZP\Models\DeviceDetail\Repository');
+
+        // User Device Detail Entity Mocking
+        $this->userDeviceDetailEntityMock = Mockery::mock('RZP\Models\DeviceDetail\Entity');
 
         $this->basicAuthMock->shouldReceive('getMerchant')->andReturn($this->merchantEntityMock);
 
