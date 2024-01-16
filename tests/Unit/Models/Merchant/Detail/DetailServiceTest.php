@@ -347,6 +347,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantDetailEntityMock->shouldReceive('getBusinessCategory')->andReturn(1);
 
+        $this->merchantDetailEntityMock->shouldReceive('getActivationStatus')->andReturn('under_review');
+
         $this->merchantDetailEntityMock->shouldReceive('getBusinessSubcategory')->andReturn(0);
 
         $this->merchantEntityMock->shouldReceive('getCategory')->andReturn(2);

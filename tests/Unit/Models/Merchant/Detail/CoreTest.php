@@ -14602,4 +14602,62 @@ class CoreTest extends TestCase
            $this->assertNotNull($e);
         }
     }
+
+    public function testPGOSMerchantPatchDetailsWhenMerchantActivated()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'activated',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchantId = $merchantDetails->getId();
+
+        $input = [
+            "business_category"             => "ecommerce",
+            "business_subcategory"          => "gifting",
+            "international_activation_flow" => "whitelist",
+            "business_name"                 => "Laksh",
+            "reset_methods"                 => true
+        ];
+
+
+        $this->pgosProxyController->shouldNotReceive('handlePGOSProxyRequests');
+
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'id'           => $merchantId,
+            'country_code' => 'IN',
+            'activated' => true
+        ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata'        => [
+                'service' => 'pgos'
+            ]
+        ]);
+
+
+        (new DetailCore())->patchMerchantDetails($merchant, $input);
+
+
+        $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->assertEquals($merchantDetail->getBusinessSubcategory(), 'gifting');
+
+
+    }
 }

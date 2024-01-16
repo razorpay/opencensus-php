@@ -2619,41 +2619,46 @@ class Core extends Base\Core
      */
     public function patchMerchantDetails(Merchant\Entity $merchant, array $input): Entity
     {
-        // check if merchant has onboarded via PGOS
-        $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchant->getMerchantId(), $merchant->getCountry());
-
-        if ($shouldMerchantOnboardViaPGOS === true)
+        // skip call to pgos  to update merchant details if merchant is activated
+        $activationStatus = $merchant->merchantDetail->getActivationStatus();
+        if ($activationStatus !== Detail\Status::ACTIVATED)
         {
-            try
+            // check if merchant has onboarded via PGOS
+            $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchant->getMerchantId(), $merchant->getCountry());
+
+            if ($shouldMerchantOnboardViaPGOS === true)
             {
-                $input['merchant_id'] = $merchant->getMerchantId();
-
-                $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests('merchant_details_patch', $input, $this->merchant, true);
-
-                $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-                    'response' => $pgosResponse
-                ]);
-
-                if (isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                try
                 {
-                    throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                    $input['merchant_id'] = $merchant->getMerchantId();
+
+                    $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests('merchant_details_patch', $input, $this->merchant, true);
+
+                    $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                        'response' => $pgosResponse
+                    ]);
+
+                    if (isset($pgosResponse['code']) === true && in_array($pgosResponse['code'], DetailConstants::PGOS_VALIDATION_FAILURE_ERROR_CODES) === true)
+                    {
+                        throw new Exception\BadRequestValidationFailureException($pgosResponse['msg']);
+                    }
+
+                    $this->pgosProxyController->errorHandler($pgosResponse);
+
+                    $merchantDetails = $this->getMerchantDetails($merchant);
+
+                    return $merchantDetails;
                 }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                        'route'         => 'merchant_details_patch',
+                        'merchant_id'   => $merchant->getMerchantId(),
+                        'error_message' => $exception->getMessage()
+                    ]);
 
-                $this->pgosProxyController->errorHandler($pgosResponse);
-
-                $merchantDetails = $this->getMerchantDetails($merchant);
-
-                return $merchantDetails;
-            }
-            catch (\Throwable $exception)
-            {
-                $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
-                    'route'         => 'merchant_details_patch',
-                    'merchant_id'   => $merchant->getMerchantId(),
-                    'error_message' => $exception->getMessage()
-                ]);
-
-                throw $exception;
+                    throw $exception;
+                }
             }
         }
 
