@@ -25,6 +25,7 @@ class ProviderCode
      * Helpful link: https://www.npci.org.in/what-we-do/upi/3rd-party-apps
      */
     const ABFSPAY            = 'abfspay';
+    Const ABCDICICI          = 'abcdicici';
     const AIRTEL             = 'airtel';
     const AIRTELPAYMENTSBANK = 'airtelpaymentsbank';
     const ALBK               = 'albk';
@@ -135,6 +136,7 @@ class ProviderCode
     const RMHDFCBANK         = 'rmhdfcbank';
     const S2B                = 's2b';
     const SBI                = 'sbi';
+    Const SBIPA              = 'sbipa';
     const SC                 = 'sc';
     const SCB                = 'scb';
     const SCBL               = 'scbl';
@@ -217,6 +219,7 @@ class ProviderCode
      */
     protected static $bankCodes = [
         self::ABFSPAY            => IFSC::UTBI,
+        self::ABCDICICI          => 'NPCI',
         self::AIRTEL             => IFSC::AIRP,
         self::AIRTELPAYMENTSBANK => IFSC::AIRP,
         self::ALBK               => IFSC::ALLA,
@@ -329,6 +332,7 @@ class ProviderCode
         self::RMHDFCBANK         => IFSC::HDFC,
         self::S2B                => 'NPCI',
         self::SBI                => IFSC::SBIN,
+        self::SBIPA              => 'NPCI',
         self::SC                 => IFSC::SCBL,
         self::SCB                => IFSC::SCBL,
         self::SCBL               => IFSC::SCBL,
@@ -508,6 +512,9 @@ class ProviderCode
         ProviderPsp::YESPAY_NEXT,
         ProviderPsp::KOTAK_BANK_APP,
         ProviderPsp::CRED,
+        ProviderPsp::YONO_SBI,
+        ProviderPsp::FREECHARGE,
+        ProviderPsp::ADITYA_BIRLA_CAPITAL_DIGITAL,
     ];
 
     /**
@@ -571,6 +578,9 @@ class ProviderCode
         self::KOTAK811     => ProviderPsp::KOTAK_BANK_APP,
         self::AXISB        => ProviderPsp::CRED,
         self::PAYTMWALLET  => ProviderPsp::PAYTM,
+        self::FREECHARGE   => ProviderPsp::FREECHARGE,
+        self::SBIPA        => ProviderPsp::YONO_SBI,
+        self::ABCDICICI    => ProviderPsp::ADITYA_BIRLA_CAPITAL_DIGITAL,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,

@@ -50,6 +50,9 @@ class ProviderPsp
     const KOTAK_BANK_APP    = 'kotak_bank_app';
     const AXIS_BANK         = 'axis_bank';
     const CRED              = 'cred';
+    Const FREECHARGE        = 'freecharge';
+    Const YONO_SBI          = 'yono_sbi';
+    Const ADITYA_BIRLA_CAPITAL_DIGITAL = 'aditya_birla_capital_digital';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';
