@@ -2105,8 +2105,26 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ];
                 break;
 
-            case Method::PAYLATER:
             case Method::WALLET:
+
+                $merchant = $this->merchant;
+
+                if ($merchant->getCountry() === 'MY')
+                {
+                    $acquirerData = [
+                        'arn' => $this->getAttribute(self::REFERENCE2),
+                        'transaction_id' => $this->getAttribute(self::REFERENCE1)
+                    ];
+                }
+                else
+                {
+                    $acquirerData = [
+                        'transaction_id' => $this->getAttribute(self::REFERENCE1)
+                    ];
+                }
+                break;
+
+            case Method::PAYLATER:
             case Method::CARDLESS_EMI:
 
                 $acquirerData = [
