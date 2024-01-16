@@ -23,11 +23,18 @@ final class Environment
     const QA_ENVS        = [self::PERF, self::FUNC, self::AUTOMATION, self::BVT, self::AVAILABILITY, self::PERF1, self::PERF2];
 
     const LOWER_ENVS     = [self::DEV, self::BETA, self::AXIS];
+
+    const ITF_ENV     = [self::DEV, self::BETA];
     const PERF_ENV       = [self::PERF, self::AVAILABILITY, self::PERF1, self::PERF2];
 
     public static function isEnvironmentQA(string $env): bool
     {
         return in_array($env, self::QA_ENVS, true);
+    }
+
+    public static function isEnvironmentItf(string $env): bool
+    {
+        return in_array($env, self::ITF_ENV, true);
     }
 
     public static function isEnvironmentBeta(string $env): bool

@@ -11551,7 +11551,7 @@ trait Authorize
         {
             // Checking if the payment is production payment or not based on which response is decided. once bvt testcases are fixed,
             // this logic can be removed altogether for domestic payments.
-            if (Environment::isEnvironmentQA($this->app['env']) === true) {
+            if (Environment::isEnvironmentQA($this->app['env']) === true || Environment::isEnvironmentItf($this->app['env'])) {
                 return $this->merchant->Is3dsDetailsRequiredEnabled() === true;
             }
 
