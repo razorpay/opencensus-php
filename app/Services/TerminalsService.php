@@ -239,8 +239,8 @@ class TerminalsService
 
         $options = [];
 
-        $options[self::CONNECT_TIMEOUT] = 2;
-        $options[self::TIMEOUT] = 2;
+        $options[self::CONNECT_TIMEOUT] = 5;
+        $options[self::TIMEOUT] = 5;
 
         $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD], $options, $headers);
 
