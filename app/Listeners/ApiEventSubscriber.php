@@ -2245,18 +2245,22 @@ class ApiEventSubscriber extends Base\Core
     {
         try
         {
-            if ((empty($token) === false) and ($token->getMethod() === Payment\Method::EMANDATE))
-            {
-                $payment = $this->repo->payment->getRecurringInitialPayment($token->getId(),
-                $token->getMerchantId(), $token->getMethod());
-                $currentRecurringStatus = $token->getRecurringStatus();
+            if ((empty($token) === false) and ($token->getMethod() === Payment\Method::EMANDATE)) {
+                //since gateway is not present in token context, fetching terminal entity
+                $terminal = $this->repo->terminal->findOrFail($token->getTerminalId());
 
-                if ((empty($payment) === false) and
-                    (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true) and
-                    (Payment\Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === true))
+                if (Payment\Gateway::isApiBasedAsyncEMandateGateway($terminal->getGateway()) === true)
                 {
-                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+                    $payment = $this->repo->payment->getRecurringInitialPayment($token->getId(),
+                        $token->getMerchantId(), $token->getMethod());
+                    $currentRecurringStatus = $token->getRecurringStatus();
+
+                    if ((empty($payment) === false) and
+                        (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true))
+                    {
+                        $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+                        $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+                    }
                 }
             }
         }
