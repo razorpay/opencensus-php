@@ -1277,11 +1277,6 @@ class Selector extends Base\Core
     private function shouldFetchApiTerminals($payment): bool
     {
 
-        if ($payment->isOffline() === true)
-        {
-            return true;
-        }
-
         //Unit Tests use API Terminals, until all the terminal fetch is mocked in unit test cases
         if ($this->repo->terminal->isTestEnv())
         {
