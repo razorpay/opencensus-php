@@ -6123,4 +6123,21 @@ return [
             'description'         => 'Could not update attachment for Payout'
         ],
     ],
+
+    'testDispatchingStuckPayoutsForPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/dispatch_stuck',
+            'content' => [
+                'payout_service'        => true,
+                'statuses'              => ['create_request_submitted'],
+                'payout_stuck_duration' => 0
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'dispatched_payouts_count' => 1
+            ],
+        ],
+    ],
 ];

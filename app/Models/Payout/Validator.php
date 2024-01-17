@@ -1121,9 +1121,12 @@ class Validator extends Base\Validator
 
     public function validatePostCreateProcessPayout()
     {
+        /** @var Payout\Entity $payout */
         $payout = $this->entity;
 
-        if ($payout->isStatusCreateRequestSubmitted() === false)
+        if (($payout->isStatusCreateRequestSubmitted() === false) and
+            ($payout->isStatusCreated() === false) and
+            ($payout->isStatusInitiated() == false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_NOT_CREATE_REQUEST_SUBMITTED_STATUS,

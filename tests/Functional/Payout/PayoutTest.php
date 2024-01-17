@@ -17429,6 +17429,61 @@ class PayoutTest extends OAuthTestCase
         $this->assertNull($txn);
     }
 
+    public function testDispatchingStuckPayouts()
+    {
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('created', $payout['internal_status']);
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertNotNull($payout['transaction_id']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNotNull($fta['fts_transfer_id']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta['id'], [
+            'fts_transfer_id' => null
+        ]);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNull($fta['fts_transfer_id']);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['statuses'] = ['created'];
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNotNull($fta['fts_transfer_id']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta['id'], [
+            'fts_transfer_id' => null
+        ]);
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status' => 'initiated'
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['statuses'] = ['initiated'];
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNotNull($fta['fts_transfer_id']);
+    }
+
     /**
      * In this test, we shall process a create_request_submitted payout
      * ( create_request_submitted -> created )

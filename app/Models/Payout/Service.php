@@ -1950,6 +1950,11 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function dispatchStuckPayouts(array $input)
+    {
+        return $this->core->dispatchStuckPayouts($input);
+    }
+
     public function processInitiateForScheduledPayouts($input)
     {
         (new Validator)->validateInput(Validator::PROCESS_SCHEDULED_PAYOUTS, $input);

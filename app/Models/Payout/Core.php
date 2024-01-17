@@ -91,7 +91,9 @@ use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Jobs\PartnerBankDowntimeHoldPayouts;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Services\FTS\Constants as FTSConstants;
+use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Jobs\BankingAccountStatementSourceLinking;
 use RZP\Jobs\FreePayoutMigrationForPayoutsService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -208,6 +210,8 @@ class Core extends Base\Core
     const PS_DATA_MIGRATION_LIMIT              = 10;
     const MUTEX_LOCK_TIMEOUT_PS_DATA_MIGRATION = 180;
 
+    const DEFAULT_PAYOUT_STUCK_DURATION = 900;
+
     const PARTNER_BANK_HEALTH_REDIS_KEY = "partner_bank_health";
 
     const PAYOUT_SERVICE_TEMPORARY_METADATA_TABLE = 'payout_meta_temporary';
@@ -297,6 +301,9 @@ class Core extends Base\Core
     /** @var PayoutService\UpdateAttachments */
     protected $payoutServiceUpdateAttachmentsClient;
 
+    /** @var PayoutService\ProcessStuckPayouts */
+    protected $payoutServiceProcessStuckPayouts;
+
     /** @var TdsProcessor\Processor*/
     protected $tdsProcessor;
 
@@ -336,6 +343,9 @@ class Core extends Base\Core
         $this->payoutServiceFetchClient = $this->app[PayoutService\Fetch::PAYOUT_SERVICE_FETCH];
 
         $this->payoutServiceUpdateAttachmentsClient = $this->app[PayoutService\UpdateAttachments::PAYOUT_SERVICE_UPDATE_ATTACHMENTS];
+
+        $this->payoutServiceProcessStuckPayouts =
+            $this->app[PayoutService\ProcessStuckPayouts::PAYOUT_SERVICE_PROCESS_STUCK_PAYOUTS];
 
         $this->workflowService = new Workflow\Service\Client;
 
@@ -1413,6 +1423,78 @@ class Core extends Base\Core
         return [$basDetails, false];
     }
 
+    public function dispatchStuckPayouts(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::DISPATCH_STUCK_PAYOUTS,
+            $input);
+
+        if ((array_key_exists('payout_service', $input) === true))
+        {
+            $value = array_pull($input, 'payout_service');
+
+            if ($value == true)
+            {
+                return $this->payoutServiceProcessStuckPayouts->dispatchStuckPayouts($input);
+            }
+        }
+
+        $statuses = $input['statuses'] ?? [];
+
+        if (empty($statuses) === true)
+        {
+            return [];
+        }
+
+        $merchantIdsWhitelist = $input['merchant_ids'] ?? [];
+        $merchantIdsBlacklist = $input['merchant_ids_not'] ?? [];
+
+        $payoutStuckDuration = $input['payout_stuck_duration'] ?? self::DEFAULT_PAYOUT_STUCK_DURATION;
+
+        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+        $endTimeStamp = $currentTimeStamp - $payoutStuckDuration;
+
+        $payouts = $this->repo->payout->fetchPayoutsWithStatus(
+            $statuses,
+            $endTimeStamp,
+            $merchantIdsWhitelist,
+            $merchantIdsBlacklist);
+
+        $dispatchedPayoutCount = 0;
+
+        /** @var Entity $payout */
+        foreach ($payouts as $payout)
+        {
+            $status = $payout->getStatus();
+
+            if (in_array($status, [
+                    Status::CREATE_REQUEST_SUBMITTED,
+                    Status::CREATED,
+                    Status::INITIATED]) === true)
+            {
+                $payoutQueueFlagDetails = $payout->payoutsDetails;
+
+                if ($payoutQueueFlagDetails != null and
+                    $payoutQueueFlagDetails->getQueueIfLowBalanceFlag() === true)
+                {
+                    $payout->setQueueFlag(true);
+                }
+
+                PayoutPostCreateProcessLowPriority::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
+
+                $dispatchedPayoutCount++;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::STUCK_PAYOUTS_DISPATCHED,
+            [
+                'dispatched_payouts_count' => $dispatchedPayoutCount
+            ] + $input);
+
+        return ['dispatched_payouts_count' => $dispatchedPayoutCount];
+    }
+
     /**
      * TODO : Remove this code. Has been kept here for backward compatibility
      *
@@ -1915,7 +1997,8 @@ class Core extends Base\Core
     function processPayoutPostCreateLowPriorityBase(Entity $payout, bool $queueFlag): Entity
     {
         // associate sub balance if merchant is not on ledger reverse shadow
-        if ($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
+        if (($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false) and
+            ($payout->isStatusCreateRequestSubmitted() === true))
         {
             $payout = $this->setSubBalance($payout);
         }

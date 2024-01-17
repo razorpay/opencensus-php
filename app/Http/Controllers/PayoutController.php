@@ -603,6 +603,15 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function dispatchStuckPayouts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->dispatchStuckPayouts($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getScheduleSlotsForPayouts()
     {
         $response = $this->service()->getScheduleSlotsForPayouts();

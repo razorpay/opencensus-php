@@ -780,6 +780,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceQueuedInitiate();
 
+        $this->registerPayoutServiceProcessStuckPayouts();
+
         $this->registerPayoutServiceCreate();
 
         $this->registerPayoutServiceWorkflow();
@@ -2038,6 +2040,16 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         {
             return new PayoutService\QueuedInitiate($app);
         });
+    }
+
+    protected function registerPayoutServiceProcessStuckPayouts()
+    {
+        $this->app->singleton(PayoutService\ProcessStuckPayouts::PAYOUT_SERVICE_PROCESS_STUCK_PAYOUTS,
+            function ($app)
+            {
+                return new PayoutService\ProcessStuckPayouts($app);
+            }
+        );
     }
 
     protected function registerPayoutServiceFetch()

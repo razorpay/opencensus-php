@@ -50,6 +50,8 @@ class Repository extends Base\Repository
     const  LIMIT                   = 'limit';
 
     const QUEUED_PAYOUTS_FETCH_LIMIT         = 5000;
+
+    const STUCK_PAYOUTS_FETCH_LIMIT          = 5000;
     const PENDING_PAYOUTS_FETCH_LIMIT        = 5000;
     const BATCH_PAYOUTS_FETCH_LIMIT          = 300;
     const SCHEDULED_PAYOUTS_FETCH_LIMIT      = 5000;
@@ -2393,6 +2395,43 @@ class Repository extends Base\Repository
                     ->where($merchantEmailColumn, 'not like', '%@razorpay.com')
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
                     ->first();
+    }
+
+    public function fetchPayoutsWithStatus(array $statuses,
+                                                 $endTimeStamp = 0,
+                                           array $merchantIdsWhitelist = [],
+                                           array $merchantIdsBlacklist = [])
+    {
+        $isPayoutService = $this->dbColumn(Entity::IS_PAYOUT_SERVICE);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($this->getTableName() . ".*")
+            ->with(['balance', 'merchant', 'merchant.org'])
+            ->WhereIn(Entity::STATUS, $statuses)
+            ->where($isPayoutService, '=', 0)
+            ->whereNull(Entity::FTS_TRANSFER_ID);
+
+        $merchantIdColumn = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+
+        if (empty ($merchantIdsWhitelist) === false)
+        {
+            $query->whereIn($merchantIdColumn, $merchantIdsWhitelist);
+        }
+
+        if (empty($merchantIdsBlacklist) === false)
+        {
+            $query->whereNotIn($merchantIdColumn, $merchantIdsBlacklist);
+        }
+
+        $updatedAtCol = $this->dbColumn(Entity::UPDATED_AT);
+
+        if ($endTimeStamp != 0)
+        {
+            $query->where($updatedAtCol, '<=', $endTimeStamp);
+        }
+
+        return $query->limit(self::STUCK_PAYOUTS_FETCH_LIMIT)
+            ->get();
     }
 
     /**

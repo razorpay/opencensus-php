@@ -22767,4 +22767,20 @@ return [
             ],
         ],
     ],
+
+    'testDispatchingStuckPayouts' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/dispatch_stuck',
+            'content' => [
+                'statuses'              => ['create_request_submitted'],
+                'payout_stuck_duration' => 0
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'dispatched_payouts_count' => 1
+            ],
+        ],
+    ],
 ];
