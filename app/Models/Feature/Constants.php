@@ -587,6 +587,11 @@ class Constants
     const LOC_EMI = 'loc_emi';
 
     /**
+     * Gives access to apply for BNPL - Buy Now, Pay Later
+     */
+    const BNPL = 'bnpl_enabled';
+
+    /**
      * Gives access to apply for capital card
      */
     const CAPITAL_CARDS_ELIGIBLE = 'capital_cards_eligible';
@@ -2370,6 +2375,7 @@ class Constants
         self::LOAN                                         => true,
         self::LOC                                          => true,
         self::LOC_EMI                                      => true,
+        self::BNPL                                         => true,
         self::LOS                                          => true,
         self::CAPITAL_CARDS_ELIGIBLE                       => true,
         self::CARDS_TRANSACTION_LIMIT_1                    => true,
@@ -3879,6 +3885,11 @@ class Constants
         self::LOC_EMI => [
             'feature'       => self::LOC_EMI,
             'display_name'  => 'Loc Emi',
+            'documentation' => '',
+        ],
+        self::BNPL => [
+            'feature'       => self::BNPL,
+            'display_name'  => 'Bnpl Enabled',
             'documentation' => '',
         ],
         self::SKIP_APPROVAL_FOR_CREATOR => [

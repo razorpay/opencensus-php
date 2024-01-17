@@ -10970,12 +10970,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "650f9399420ab7a54b76db6b5ec60ae91e7b7c95"
+                "reference": "93fae4fba25a60ac217490018182b8e7ce233a97"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/650f9399420ab7a54b76db6b5ec60ae91e7b7c95",
-                "reference": "650f9399420ab7a54b76db6b5ec60ae91e7b7c95",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/93fae4fba25a60ac217490018182b8e7ce233a97",
+                "reference": "93fae4fba25a60ac217490018182b8e7ce233a97",
                 "shasum": ""
             },
             "require": {
