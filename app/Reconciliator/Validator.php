@@ -205,7 +205,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_UCO           => 1,
     ];
 
-    const AUTOMATIC_FETCHING_ENABLED_GATEWAYS = [RequestProcessor\Base::NETBANKING_SBI, RequestProcessor\Base::WALLET_BAJAJ, RequestProcessor\Base::UPI_HDFC];
+    const AUTOMATIC_FETCHING_ENABLED_GATEWAYS = [RequestProcessor\Base::NETBANKING_SBI, RequestProcessor\Base::WALLET_BAJAJ, RequestProcessor\Base::UPI_HDFC, RequestProcessor\Base::ISG];
 
     const WHITELISTED_EMAIL_FOR_ART = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com"];
 

@@ -236,7 +236,7 @@ class Base extends Core
         self::UPI_HULK                 => [],
         self::UPI_YESBANK              => [],
         self::AMEX                     => [],
-        self::ISG                      => ['kotak.acquirer@insolutionsglobal.com'],
+        self::ISG                      => ['kotak.acquirer@insolutionsglobal.com','art-recon@razorpay.com'],
         self::PHONEPE                  => [],
         self::PHONEPE_SWITCH           => [],
         self::PAYLATER_ICICI           => [],

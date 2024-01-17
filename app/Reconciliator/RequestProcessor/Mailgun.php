@@ -121,6 +121,22 @@ class Mailgun extends Base
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
         ],
+        self::ISG => [
+            [
+                "from" => "kotak.acquirer@insolutionsglobal.com",
+                "subject_pattern" => "/(?i)^Razorpay MPR Reports(.+)?/",
+                "filename_pattern" => "/^(?i)RAZORPAY_System Generated MPR_\d{8}$/",
+                "destination" => "recon/input/CARD_KOTAK_ISG/bank_transaction_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ],
+            [
+                "from" => "kotak.acquirer@insolutionsglobal.com",
+                "subject_pattern" => "/(?i)^Razorpay MPR Reports(.+)?/",
+                "filename_pattern" => "/^(?i)RAZORPAY_System Generated MPR_\d{8}$/",
+                "destination" => "recon/input/CARD_KOTAK_ISG/bank_refund_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
+        ],
     ];
 
     protected $inputDetails;
@@ -296,7 +312,22 @@ class Mailgun extends Base
 
         if($input[self::RECIPIENT] == "finances.recon@mg.razorpay.com")
         {
-            $from = $input['X-Original-Sender'] ?? $input['From'];
+            if (isset($input['X-Original-Sender'])) {
+                $from = $input['X-Original-Sender'];
+            } else {
+                // Use 'From' as fallback
+                $from = $input['From'];
+                // Extract email address given in any format from 'From' key
+                // In KOTAK ISG, the email payload received is in this format => "From": "\"Kotak Acquirer\" <kotak.acquirer@insolutionsglobal.com>"
+                // Examples:
+                // 1. "\"Kotak Acquirer\" <kotak.acquirer@insolutionsglobal.com>" => "kotak.acquirer@insolutionsglobal.com"
+                // 2. "<kotak.acquirer@insolutionsglobal.com>" => "kotak.acquirer@insolutionsglobal.com"
+                // 3. "#@?sample string<<kotak.acquirer@insolutionsglobal.com>" => "kotak.acquirer@insolutionsglobal.com"
+                $pattern = '/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/';
+                if (preg_match($pattern, $from, $matches)) {
+                    $from = $matches[0];
+                }
+            }
         }
         else
         {
