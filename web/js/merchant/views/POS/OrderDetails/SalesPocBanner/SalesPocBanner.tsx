@@ -31,6 +31,7 @@ const SalesPocBanner = ({
   };
 
   const handleOnSubmit = async () => {
+    if (!pocCode) return;
     setIsLoading(true);
     try {
       const response = await updateSalePoc({ id: orderId, pocCode });

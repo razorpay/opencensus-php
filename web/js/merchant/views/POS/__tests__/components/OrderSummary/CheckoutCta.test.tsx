@@ -3,6 +3,7 @@ import React from 'react';
 import CheckoutCta from 'merchant/views/POS/OrderSummary/CheckoutCta';
 import { MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import {
+  createActvationCaseHandler,
   createOrderHandler,
   getProductPricingHandler,
 } from 'merchant/views/POS/__tests__/mocks/handlers';
@@ -59,7 +60,7 @@ describe('<CheckoutCta/>', () => {
   };
 
   beforeEach(() => {
-    server.use(createOrderHandler(), getProductPricingHandler());
+    server.use(createOrderHandler(), getProductPricingHandler(), createActvationCaseHandler());
     window.EASY_ONBOARDING_URL = 'https://easy.razorpay.com';
   });
 
@@ -301,6 +302,89 @@ describe('<CheckoutCta/>', () => {
     await waitFor(() => {
       expect(window.location.assign).toHaveBeenCalledWith(
         'https://easy.razorpay.com/onboarding/pos/store-details?intent=pos',
+      );
+    });
+  });
+
+  test('should not call activation api if user has pos intent and l2 is submitted and online presence is there and NO shop images', async () => {
+    window.location.assign = jest.fn();
+    const newUser = {
+      ...MOCK_USER,
+      business_website: 'www.mock-website.com',
+      pos_activation_status: 'under_review',
+      submitted: 1,
+      merchant_business_detail: {
+        website_details: {
+          physical_store: false,
+        },
+      },
+      documents: {
+        shop_front: ['some-image-url'],
+        shop_interior: ['some-image-url'],
+      },
+    };
+    renderApp(undefined, newUser);
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await userEvent.click(screen.getByText('Confirm Address & Pay'));
+    const activationServiceSpy = jest.spyOn(posServices, 'createActvationCase');
+
+    await waitFor(() => {
+      expect(CheckoutMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: '18% GST included',
+          notes: {
+            type: 'Pos Device Store',
+            merchant_id: 'mock-user-id',
+            device_order_id: 'mock-order-id',
+          },
+          order_id: 'order_mock-order-id',
+          name: 'Razorpay POS',
+          theme: {
+            color: '#3005BF2',
+          },
+        }),
+      );
+    });
+
+    expect(activationServiceSpy).not.toHaveBeenCalled();
+  });
+
+  test('should call activation api with correct payload if user has NO pos intent and l2 is submitted and online presence is there and NO shop images', async () => {
+    window.location.assign = jest.fn();
+    const newUser = {
+      ...MOCK_USER,
+      business_website: 'www.mock-website.com',
+      pos_activation_status: null,
+      submitted: 1,
+      merchant_business_detail: {
+        website_details: {
+          physical_store: false,
+        },
+      },
+      documents: {},
+    };
+    renderApp(undefined, newUser);
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await userEvent.click(screen.getByText('Confirm Address & Pay'));
+    const activationServiceSpy = jest.spyOn(posServices, 'createActvationCase');
+    await waitFor(() => {
+      expect(activationServiceSpy).toHaveBeenCalled();
+    });
+    await waitFor(() => {
+      expect(CheckoutMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: '18% GST included',
+          notes: {
+            type: 'Pos Device Store',
+            merchant_id: 'mock-user-id',
+            device_order_id: 'mock-order-id',
+          },
+          order_id: 'order_mock-order-id',
+          name: 'Razorpay POS',
+          theme: {
+            color: '#3005BF2',
+          },
+        }),
       );
     });
   });

@@ -14,7 +14,7 @@ import {
   loadCheckoutForPos,
   preCheckoutAdditionalDetails,
 } from 'merchant/views/POS/helpers';
-import { createOrder } from 'merchant/views/POS/services';
+import { createOrder, createActvationCase } from 'merchant/views/POS/services';
 import { ApiResponse, DeviceConfig } from 'merchant/views/POS/types';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -59,7 +59,9 @@ const CheckoutCta = ({
   };
 
   const handleOnCheckoutClick = async () => {
-    const { isRequired, url } = preCheckoutAdditionalDetails({ user: user as User });
+    const { isRequired, url, isCaseCreateRequired } = preCheckoutAdditionalDetails({
+      user: user as User,
+    });
     analytics.track_EXPERIMENTAL(SignUpEvents.websiteCtaClicked, {
       label: 'Confirm Address & Pay',
       whatsAppUpdates: 'No',
@@ -79,7 +81,12 @@ const CheckoutCta = ({
       if (!createOrderPayload || !razorpayKey) throw new Error();
 
       const { data } = await createOrder(createOrderPayload);
-      if (!data?.order_id) throw new Error();
+      if (!data?.order_id || !user) throw new Error();
+
+      if (isCaseCreateRequired) {
+        const { data: activationData } = await createActvationCase();
+        if (!activationData?.pos_activation_status) throw new Error();
+      }
 
       await loadCheckoutForPos();
       const options = {

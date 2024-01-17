@@ -610,15 +610,6 @@ export const validatePrecheckout = ({
     return CHECKOUT_ERRORS.KYC_REJECTED;
   }
 
-  const isPOSPaymentChannelSelected =
-    user?.merchant_business_detail?.website_details?.physical_store;
-
-  const hasShopImages = isShopDocUploaded(user);
-
-  if (!isPOSPaymentChannelSelected && checkIfMerchantHasOnlinePresence(user) && !hasShopImages) {
-    return CHECKOUT_ERRORS.ORDER_CREATE_FAILED;
-  }
-
   return null;
 };
 
@@ -791,6 +782,7 @@ export const loadCheckoutForPos = (): Promise<unknown> => {
 type PreCheckoutAdditionalDetails = {
   isRequired: boolean;
   url: string | null;
+  isCaseCreateRequired: boolean;
 };
 
 export const preCheckoutAdditionalDetails = ({
@@ -809,6 +801,7 @@ export const preCheckoutAdditionalDetails = ({
       url: isPOSPaymentChannelSelected
         ? `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES.l2onboarding}`
         : `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES.l2onboardingWithIntent}`,
+      isCaseCreateRequired: false,
     };
   } else if (!checkIfMerchantHasOnlinePresence(user) && !hasShopImages) {
     return {
@@ -816,11 +809,23 @@ export const preCheckoutAdditionalDetails = ({
       url: isPOSPaymentChannelSelected
         ? `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES.storeDetails}`
         : `${window.EASY_ONBOARDING_URL}${EASY_DASHBOARD_ROUTES.storeDetailsWithIntent}`,
+      isCaseCreateRequired: false,
+    };
+  } else if (
+    !isPOSPaymentChannelSelected &&
+    checkIfMerchantHasOnlinePresence(user) &&
+    !hasShopImages
+  ) {
+    return {
+      isRequired: false,
+      url: null,
+      isCaseCreateRequired: true,
     };
   }
 
   return {
     isRequired: false,
     url: null,
+    isCaseCreateRequired: false,
   };
 };

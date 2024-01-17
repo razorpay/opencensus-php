@@ -708,3 +708,10 @@ export const MOCK_LATEST_ORDER_WITH_PAID_STATUS = {
     id: 'order_mock-order-id',
   },
 };
+
+export const MOCK_CMMA_CASE_CREATE_CALL = {
+  pos_activation_status: 'under_review',
+  is_pgos_merchant: true,
+  pos_activation_flow: 'whitelist',
+  is_pos_details_submitted: true,
+};

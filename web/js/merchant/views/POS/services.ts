@@ -7,6 +7,7 @@ import {
   OrderDetailsItem,
   CreateOrderPayload,
   ProductPricingMap,
+  PosActivationStatusTypes,
 } from './types';
 
 export const getOrderList = async (payload) => {
@@ -77,3 +78,17 @@ export const updateSalePoc = async ({ id, pocCode }) =>
 
 export const getLatestOrder = (): Promise<ApiResponse<OrderDetailsItem>> =>
   merchantFetch('merchant/device/order/latest');
+
+type CreateActvationCaseResponse = {
+  pos_activation_status: PosActivationStatusTypes;
+  is_pos_details_submitted: boolean;
+};
+
+export const createActvationCase = (): Promise<ApiResponse<CreateActvationCaseResponse>> =>
+  merchantFetch({
+    url: 'merchant/activation',
+    method: 'post',
+    data: {
+      is_pos_details_submitted: true,
+    },
+  });

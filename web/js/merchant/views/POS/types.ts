@@ -427,3 +427,12 @@ export type MainBannerTilesItem = {
   image: string;
   styleProps: MainBannerItemStyleProps;
 };
+
+export type PosActivationStatusTypes =
+  | 'activated'
+  | 'under_review'
+  | 'needs_clarification'
+  | 'rejected'
+  | 'kyc_qualified_stb'
+  | 'kyc_qualified_unactivated'
+  | null;

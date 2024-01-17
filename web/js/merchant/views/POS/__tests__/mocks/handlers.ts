@@ -13,6 +13,7 @@ import {
   MOCK_REJECTED_ORDER_ITEM,
   MOCK_REJECTED_WITH_REFUND_INITIATED,
   MOCK_REJECTED_WITH_REFUND_COMPLETED,
+  MOCK_CMMA_CASE_CREATE_CALL,
 } from './fixtures';
 
 const delivery_available_pincode = {
@@ -212,4 +213,15 @@ export const getLatestOrderHandler = (type = '', isSuccess = true) => {
       res(ctx.status(200), ctx.json(response), ctx.delay(50)),
     );
   }
+};
+
+export const createActvationCaseHandler = () => {
+  const response = {
+    status_code: 200,
+    success: true,
+    data: MOCK_CMMA_CASE_CREATE_CALL,
+  };
+  return rest.post('*/merchant/api/*/merchant/activation', (_, res, ctx) =>
+    res(ctx.status(200), ctx.json(response), ctx.delay(50)),
+  );
 };
