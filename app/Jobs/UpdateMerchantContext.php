@@ -214,25 +214,29 @@ class UpdateMerchantContext extends Job
                     MVD\Constants::NUMBER
                 );
 
-                $mccResult = $mccCategorisation->getMetadata();
+                $mccResult = optional($mccCategorisation)->getMetadata();
 
-                $merchantInput = [
-                    MerchantEntity::CATEGORY  => strval($mccResult[MVD\Constants::PREDICTED_MCC]),
-                    MerchantEntity::CATEGORY2 => $mccResult[MVD\Constants::CATEGORY]
-                ];
+                if(empty($mccResult)===false)
+                {
+                    $merchantInput = [
+                        MerchantEntity::CATEGORY  => strval($mccResult[MVD\Constants::PREDICTED_MCC]),
+                        MerchantEntity::CATEGORY2 => $mccResult[MVD\Constants::CATEGORY]
+                    ];
 
-                $merchant->edit($merchantInput);
+                    $merchant->edit($merchantInput);
 
-                $app['repo']->merchant->saveOrFail($merchant);
+                    $app['repo']->merchant->saveOrFail($merchant);
 
-                $merchantDetailInput = [
-                    DetailEntity::BUSINESS_CATEGORY    => $mccResult[MVD\Constants::CATEGORY],
-                    DetailEntity::BUSINESS_SUBCATEGORY => $mccResult[MVD\Constants::SUBCATEGORY],
-                ];
+                    $merchantDetailInput = [
+                        DetailEntity::BUSINESS_CATEGORY    => $mccResult[MVD\Constants::CATEGORY],
+                        DetailEntity::BUSINESS_SUBCATEGORY => $mccResult[MVD\Constants::SUBCATEGORY],
+                    ];
 
-                $merchantDetail->edit($merchantDetailInput);
+                    $merchantDetail->edit($merchantDetailInput);
 
-                $app['repo']->merchant_detail->saveOrFail($merchantDetail);
+                    $app['repo']->merchant_detail->saveOrFail($merchantDetail);
+                }
+
             }
 
             if ($newActivationStatus !== Status::ACTIVATED_KYC_PENDING and $newActivationStatus !== Status::ACTIVATED)

@@ -138,14 +138,13 @@ class DefaultStatusUpdater extends BaseStatusUpdater
         {
             $documentValidationStatus = $this->getDocumentValidationStatus($validation);
 
-            $updateVerificationStatusAttribute = $this->validateDocumentTypeStatusUpdate($documentValidationStatus);
-
-            $this->trace->info(TraceCode::ENTITY_VERIFICATION_ATTRIBUTE_UPDATE, [
-                'status_update' => $updateVerificationStatusAttribute,
-            ]);
-
-            if ($updateVerificationStatusAttribute === true)
+            if ($this->canUpdateVerificationStatus() === true)
             {
+                $this->trace->info(TraceCode::ENTITY_VERIFICATION_ATTRIBUTE_UPDATE, [
+                    'status_update' => 'true',
+                    'merchant_id' => $this->merchantDetails->getId(),
+                ]);
+
                 switch ($this->entity)
                 {
                     case E::MERCHANT_DETAIL:

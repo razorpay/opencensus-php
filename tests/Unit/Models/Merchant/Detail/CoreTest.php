@@ -517,6 +517,216 @@ class CoreTest extends TestCase
         $this->assertEquals('verified', $merchant->getAttribute(Entity::POI_VERIFICATION_STATUS));
     }
 
+    public function testNoWebsiteUpdateMerchantContextActivatedSplitzLive()
+    {
+        Queue::fake();
+
+        Config::set('pgos.proxy.request.mock', true);
+
+        Config::set('pgos.proxy.request.response', true);
+
+        $this->mockRazorxTreatment();
+
+        $plan = $this->fixtures->create('pricing');
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            \RZP\Models\Merchant\Entity::PRICING_PLAN_ID => $plan->getPlanId()
+        ]);
+
+        $balance = $this->fixtures->create('balance', ['id' => $merchant->getId(), 'merchant_id' => $merchant->getId()]);
+
+        $this->fixtures->create('methods', [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            'disabled_banks'    => [],
+            'banks'             => '[]',
+            'netbanking'        => 0,
+            'debit_card'        => 0,
+            'credit_card'       => 0,
+        ]);
+
+        $this->fixtures->edit('pricing', $plan->getId(), ['international' => 1]);
+
+
+        $input = [
+            "experiment_id" => "MCn0j0VEmYCpAb",
+            "id"            => $merchant->getId()
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id"                         => $merchant->getId(),
+            "contact_name"                        => "Mohan",
+            "business_type"                       => 1,
+            "business_name"                       => "Private Limited",
+            "business_dba"                        => "DBA",
+            "business_international"              => 0,
+            "business_registered_address"         => "address",
+            "business_registered_state"           => "DL",
+            "business_registered_city"            => "Delhi",
+            "business_registered_pin"             => 110022,
+            "business_operation_address"          => "address",
+            "business_operation_state"            => "DL",
+            "business_operation_city"             => "Delhi",
+            "business_operation_pin"              => 110022,
+            "business_category"                   => "ecommerce",
+            "business_subcategory"                => "fashion_and_lifestyle",
+            "steps_finished"                      => [
+            ],
+            "activation_progress"                 => 80,
+            "locked"                              => 0,
+            "activation_status"                   => "under_review",
+            "activation_flow"                     => "whitelist",
+            "issue_fields"                        => "business_website",
+            "submitted"                           => 1,
+            "poi_verification_status"             => "verified",
+            "poa_verification_status"             => "verified",
+            "bank_details_verification_status"    => "verified",
+            "live_transaction_done"               => 0,
+            "additional_websites"                 => [
+            ],
+            "company_pan_verification_status"     => "verified",
+            "gstin_verification_status"           => "verified",
+            "cin_verification_status"             => "verified",
+            "international_activation_flow"       => "whitelist",
+            "company_pan_doc_verification_status" => "verified",
+            "activation_form_milestone"           => "L2",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH95NyX6wcWbG1",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "cin",
+            "artefact_identifier" => "number",
+            "status"              => "initiated",
+            "audit_id"            => "MGvjUr37Z52dur",
+            "metadata"            => [
+                "bvs_validation_id"           => "MH95Nv3tZnT44P",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH933kTShboSkS",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "signatory_validation",
+            "artefact_identifier" => "number",
+            "status"              => "verified",
+            "audit_id"            => "MH96sMk4xoPIZB",
+            "metadata"            => [
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH987XQBcsGzp8",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "certificate_of_incorporation",
+            "artefact_identifier" => "doc",
+            "status"              => "verified",
+            "audit_id"            => "MGvjUr37Z52dur",
+            "metadata"            => [
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH96sJegGOKRdr",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "gstin",
+            "artefact_identifier" => "number",
+            "status"              => null,
+            "audit_id"            => "MH96sMk4xoPIZB",
+            "metadata"            => [
+                "bvs_validation_id"           => "MH96qkWCFYMRh5",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH933fs4DyoDny",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "bank_account",
+            "artefact_identifier" => "number",
+            "status"              => null,
+            "audit_id"            => "MH933g9SNCgxta",
+            "metadata"            => [
+                "bvs_validation_id"           => "MH932IVI0TvVOs",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        // block_merchant_activations experiment id
+        $input = [
+            "experiment_id" => "KxkO63MKPtxKy9",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => []
+        ];
+
+
+        /*we don't have all urls in merchant_website fixture, once updation is done ,
+         then we have to check expected urls are updated in merchant_website entity
+        */
+
+        $businessDetail = $this->getDbEntity('merchant_business_detail', ['merchant_id' => $merchant->getId()]);
+
+        // for regular merchants, there should be no call to block_merchant_activations experiment
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->times(0)
+             ->with($input)
+             ->andReturn($output);
+
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        (new UpdateMerchantContext(Mode::TEST, $merchantDetails->getId(), 'L61kGPVWKT05QT'))->handle();
+
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        $businessDetail = $this->getDbEntity('merchant_business_detail', ['merchant_id' => $merchant->getId()]);
+
+        // this merchant is getting applicable for fee based gating hence his activation status is not changing,
+        // temp fix
+
+        $this->assertEquals(Status::ACTIVATED, $merchantDetail[Entity::ACTIVATION_STATUS]);
+
+    }
+
     public function testBvsValidationProcessForPersonalPanValidationUnitProof()
     {
         $this->createAndFetchMocks();

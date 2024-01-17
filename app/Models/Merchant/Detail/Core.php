@@ -1475,7 +1475,7 @@ class Core extends Base\Core
             // If Risk fails then we have to remove no-doc change status to Nc, make optional doc to mandatory. Ignore activation flow
             if ($merchant->isNoDocOnboardingEnabled() === true)
             {
-               return $this->processFlowForNoDocRiskyMerchant($merchant, $merchantDetails);
+                return $this->processFlowForNoDocRiskyMerchant($merchant, $merchantDetails);
             }
         }
 
@@ -1495,7 +1495,7 @@ class Core extends Base\Core
 
         $isFeeBasedGatingEligible = $this->getUpdatedFeeBasedGatingResponse($merchant, $merchantDetails, $statusToBeUpdated);
 
-        $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY,[
+        $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY, [
             'merchant_id'              => $merchant->getId(),
             'isFeeBasedGatingEligible' => $isFeeBasedGatingEligible,
             'statusToBeUpdated'        => $statusToBeUpdated
@@ -1566,8 +1566,8 @@ class Core extends Base\Core
             $this->updateNoDocOnboardingConfig($noDocConfig, (new StoreCore()));
 
             $this->trace->info(TraceCode::NO_DOC_REDIS_DATA_INITIALIZATION, [
-                'merchant_id'              => $merchant->getId(),
-                'redis_retry_status'       => $noDocConfig
+                'merchant_id'        => $merchant->getId(),
+                'redis_retry_status' => $noDocConfig
             ]);
 
             /**
@@ -5642,6 +5642,7 @@ class Core extends Base\Core
 
         return $response;
     }
+
 
     public function isMalaysianMerchant($merchant)
     {

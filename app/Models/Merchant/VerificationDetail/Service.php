@@ -13,6 +13,8 @@ use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\BvsValidation\Core as BvsCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstant;
 use RZP\Models\Merchant\VerificationDetail\Constants as MVD;
+use RZP\Models\Merchant\VerificationDetail\Entity as VerificationEntity;
+use RZP\Models\Merchant\VerificationDetail\Constants as VerificationConstants;
 
 class Service extends Base\Service
 {

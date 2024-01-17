@@ -208,4 +208,10 @@ class PanStatusUpdater extends DefaultStatusUpdater
 
        Jobs\GstinValidation:: dispatch(Mode::LIVE, $this->merchant, $gst);
    }
+
+    protected function canUpdateVerificationStatus(): bool
+    {
+        return (empty($this->merchantDetails->getPromoterPanName()) === false) and
+               (empty($this->merchantDetails->getPromoterPan()) === false);
+    }
 }

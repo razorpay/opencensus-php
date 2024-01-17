@@ -65,4 +65,11 @@ class POI extends BaseStatusUpdater
 
         $this->updateStakeholderStatusIfApplicable(Constants::PENDING);
     }
+
+    protected function canUpdateVerificationStatus(): bool
+    {
+        return (empty($this->merchantDetails->getPromoterPanName()) === false) and
+               (empty($this->merchantDetails->getPromoterPan()) === false);
+    }
+
 }

@@ -440,4 +440,9 @@ abstract class BaseStatusUpdater implements StatusUpdater
             Entity::ERROR_DESCRIPTION                   => $validation->getErrorDescription(),
         ];
     }
+    protected function canUpdateVerificationStatus(): bool
+    {
+        return true;
+    }
+
 }
