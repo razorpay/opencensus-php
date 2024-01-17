@@ -782,9 +782,9 @@ class Core extends Base\Core
                 $exceptionData = $e->getData();
             }
 
-            $customProperties['internal_error_code']       = $exceptionData['data']['error']['internal_error_code'] ?? $e->getCode();
-            $customProperties['gateway_error_code']        = $exceptionData['data']['error']['gateway_error_code'] ?? '';
-            $customProperties['gateway_error_description'] = $exceptionData['data']['error']['gateway_error_description'] ?? '';
+            $customProperties['err']['internal_error_code']       = $exceptionData['data']['error']['internal_error_code'] ?? $e->getCode();
+            $customProperties['err']['network_error_code']        = $exceptionData['data']['error']['gateway_error_code'] ?? '';
+            $customProperties['err']['network_error_description'] = $exceptionData['data']['error']['gateway_error_description'] ?? '';
 
             $this->app['diag']->trackPaymentEventV2(EventCode::GUEST_CHECKOUT_RESPONSE_RECEIVED, $payment, $e, [], $customProperties);
         }
