@@ -251,6 +251,13 @@ class Service extends Base\Service
             $input['user_id'] = $this->user->getId();
         }
 
+        $idempotencyKeyId = $this->app['basicauth']->getIdempotencyKeyId();
+
+        if (empty($idempotencyKeyId) === false)
+        {
+            $input['idempotency_key'] = $idempotencyKeyId;
+        }
+
         return $this->app['payout-links']->create($this->merchant, $input);
     }
 

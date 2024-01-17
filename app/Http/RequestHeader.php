@@ -77,6 +77,8 @@ class RequestHeader
 
     const X_PAYOUT_IDEMPOTENCY          = 'X-Payout-Idempotency';
 
+    const X_PAYOUT_LINKS_IDEMPOTENCY    = 'X-Payout-Links-Idempotency';
+
     const X_PAYOUT_BATCH_IDEMPOTENCY    = 'X-Payout-Batch-Idempotency';
 
     const X_TRANSFER_IDEMPOTENCY        = 'X-Transfer-Idempotency';

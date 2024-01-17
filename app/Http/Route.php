@@ -17602,6 +17602,10 @@ class Route
             IdempotencyKey\Entity::SOURCE_TYPE => Entity::TRANSFER,
             IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_TRANSFER_IDEMPOTENCY,
         ],
+        'payout_links_create' => [
+            IdempotencyKey\Entity::SOURCE_TYPE => Entity::PAYOUT_LINK,
+            IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_PAYOUT_LINKS_IDEMPOTENCY,
+        ],
     ];
     /**
      * Config array which contains Idempotency Routes

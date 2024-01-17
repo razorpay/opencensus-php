@@ -130,6 +130,7 @@ class PayoutLinks
     const REMINDERS                                = 'reminders';
     const SEND_SMS                                 = 'send_sms';
     const SEND_EMAIL                               = 'send_email';
+    const IDEMPOTENCY_KEY                          = 'idempotency_key';
     const ATTEMPT_COUNT                            = 'attempt_count';
     const PAYOUTS                                  = 'payouts';
     const USER_ID                                  = 'user_id';
