@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Partner\Config;
 
+use RZP\Models\Merchant\Entity;
+use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestException;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Exception;
@@ -37,40 +40,43 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array $input
+     * @param array       $input
+     * @param Entity|null $partner
      *
      * @return array
-     * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
+     * @throws BadRequestException
+     * @throws LogicException
      */
-    public function create(array $input): array
+    public function create(array $input, Merchant\Entity $partner = null): array
     {
-        $application = $this->getApplicationFromInput($input);
+        $application = $this->getApplicationFromInput($input, $partner);
         $subMerchant = $this->getSubMerchantFromInput($input);
         // if application is not found check if it is pure platform partner
         // As we can create default config at partner level instead of app
         if(empty($application) === true)
         {
-            $partner = $this->getPartnerFromInput($input);
+            $partner = $partner ?? $this->getPartnerFromInput($input);
             if(empty($partner) == false && $partner->isPurePlatformPartner())
             {
                 $config = (new Core)->createDefaultConfigForPurePlatform($partner, $subMerchant, $input);
                 return $config->toArrayPublic();
             }
         }
-        $config = (new Core)->create($application, $input, $subMerchant);
+        $config = (new Core)->create($application, $input, $subMerchant, $partner);
 
         return $config->toArrayPublic();
     }
 
     /**
-     * @param array $input
+     * @param array       $input
+     * @param Entity|null $partnerMerchant
      *
      * @return OAuthApp\Entity|null
-     * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
+     * @throws BadRequestException
+     * @throws LogicException
+     * @throws \Exception
      */
-    public function getApplicationFromInput(array $input): mixed
+    public function getApplicationFromInput(array $input, Merchant\Entity $partnerMerchant = null): mixed
     {
         $this->validateConfigInput($input);
 
@@ -88,7 +94,7 @@ class Service extends Base\Service
 
                 $partnerMerchantId = Account\Entity::verifyIdAndSilentlyStripSign($partnerMerchantId);
 
-                $partnerMerchant = $this->repo->merchant->findOrFailPublic($partnerMerchantId);
+                $partnerMerchant = $partnerMerchant ?? $this->repo->merchant->findOrFailPublic($partnerMerchantId);
 
                 // Block non partners
                 (new Merchant\Validator)->validateIsPartner($partnerMerchant);
@@ -96,7 +102,7 @@ class Service extends Base\Service
                 // Block pure platform if partner id is sent instead of app id
                 if ($partnerMerchant->isNonPurePlatformPartner() === false)
                 {
-                    return $application;
+                    return null;
                 }
 
                 $application = (new Merchant\Core())->fetchPartnerApplication($partnerMerchant);

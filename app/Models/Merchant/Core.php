@@ -3977,9 +3977,6 @@ class Core extends Base\Core
         {
             $merchant->setPartnerType($partnerType);
 
-            $this->repo->saveOrFail($merchant);
-
-
             Tracer::inspan(['name' => HyperTrace::CREATE_DEFAULT_FEATURE_FOR_PARTNER], function () use ($merchant) {
                 $this->setDefaultFeatureForPartner($merchant);
             });
@@ -4042,10 +4039,12 @@ class Core extends Base\Core
                         ]);
                     // create default partner config for pure platform partner
                     $defaultConfig = (new Partner\Core())->getPartnerDefaultConfig($merchant);
-                    (new PartnerConfig\Service())->create($defaultConfig);
+                    (new PartnerConfig\Service())->create($defaultConfig, $merchant);
 
                 }
             });
+
+            $this->repo->saveOrFail($merchant);
         });
 
         $dimensions = [Entity::PARTNER_TYPE => $merchant->getPartnerType()];
@@ -4184,12 +4183,7 @@ class Core extends Base\Core
         $partner = Tracer::inspan(['name' => HyperTrace::MARK_AS_PARTNER,
             'attributes' => array ( 'partnerType'=> $partnerType, 'merchantId'=> $this->merchant->getId())], function () use ($merchant, $partnerType) {
 
-            $partner = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
-            {
-                return $this->markAsPartner($merchant, $partnerType);
-            });
-
-            return $partner;
+            return $this->markAsPartner($merchant, $partnerType);
         });
 
         $eventData = [
@@ -4256,7 +4250,7 @@ class Core extends Base\Core
 
         $config = array_merge($defaultConfig, $config);
 
-        (new PartnerConfig\Core)->create($application, $config);
+        (new PartnerConfig\Core)->create($application, $config, null, $partner);
     }
 
     public function backFillMerchantApplications(array $merchantIds = null, $limit = null, $afterId = null)

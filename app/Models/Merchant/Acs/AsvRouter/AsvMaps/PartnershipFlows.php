@@ -28,7 +28,7 @@ final class PartnershipFlows {
         "account_delete_v2" => true,
         "account_edit" => true,
         "merchant_sub_create" => true,
-        "Update_partner_type" => true,
+        "update_partner_type" => true,
         "partner_activation_save" => true,
     );
 

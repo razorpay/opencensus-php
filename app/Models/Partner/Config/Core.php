@@ -24,9 +24,9 @@ class Core extends Base\Core
      * @return Entity
      * @throws Exception\BadRequestException
      */
-    public function create(Application\Entity $application, array $input, Merchant\Entity $subMerchant = null) : Entity
+    public function create(Application\Entity $application, array $input, Merchant\Entity $subMerchant = null, Merchant\Entity $partner = null) : Entity
     {
-        $partner = (new Merchant\Core)->getPartnerFromApp($application);
+        $partner = $partner ?? (new Merchant\Core)->getPartnerFromApp($application);
 
         $this->validateCreate($partner, $application, $input, $subMerchant);
 
