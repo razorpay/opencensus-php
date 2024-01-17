@@ -1187,7 +1187,6 @@ class TncActivationTest extends TestCase
         // temp fix
 
         $this->assertEquals([
-                                'terms'        =>  ['url' => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"],
                                 'refund'       =>  ['url' => "https://ilovesarees.com/pages/returns",'system_approved' => true],
                                 'cancellation' =>  ['url' => "https://ilovesarees.com/pages/returns",'system_approved' => true],
                                 'privacy'      =>  ['url' => "https://ilovesares.myshopify.com/pages/privacy-policy",'system_approved' => true],

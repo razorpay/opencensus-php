@@ -2133,8 +2133,7 @@ class Service extends Base\Service
 
         /*transforming ADMIN_WEBSITE_DETAILS based on the priority
         1-BVS
-        2-Hosted Policies is BVS not found
-        3-admin entered Urls
+        2-admin section Urls
 
         fetch business verfication details to fill the admin website details
         */
@@ -2182,33 +2181,6 @@ class Service extends Base\Service
                 $websitePolicyLinks[$policy] = true;
             }
         }
-        $policiesData = optional($websiteDetail)->getMerchantWebsiteDetails() ?? [];
-        /* example of policiesData
-        [
-            "terms" => [
-                "section_status" => 3,
-                "status"         => "submitted",
-                "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms" ]
-        ]
-        */
-        foreach ($policiesData as $policyName => $policyDetails)
-        {
-            if (isset($policyDetails['section_status']) === true and $policyDetails['section_status'] === 3 and !in_array($policyName, ['about_us', 'pricing']))
-            {
-                // Filtered policy with status 3 found
-                if (empty($policyDetails['published_url']) === false and isset($websitePolicyLinks[$policyName]) === false)
-                {
-                    if ($policyName === 'refund')
-                    {
-                        $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()]['cancellation']['url'] =  $policyDetails['published_url'];
-                        $websitePolicyLinks['cancellation'] = true;
-                    }
-                    $transformedWebsiteDetail[Entity::ADMIN_WEBSITE_DETAILS]['website'][$merchantDetails->getWebsite()][$policyName]['url'] = $policyDetails['published_url'];
-                    $websitePolicyLinks[$policy] = true;
-                }
-            }
-        }
-
         return $this->createResponse($transformedWebsiteDetail, $websiteDetail, $merchantDetails);
     }
 
