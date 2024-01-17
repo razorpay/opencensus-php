@@ -415,6 +415,10 @@ class OneClickCheckoutController extends Controller
           'path'   => Request::path(),
           'header' => $this->fetchMerchantDashboardHeaders(),
         ];
+        if (Request::hasFile('file'))
+        {
+            $input['file'] = Request::file('file');
+        }
         $resp = (new MagicCheckoutService\Service)->handleMerchantDashboardReq($input);
         return ApiResponse::json($resp, 200);
     }
@@ -474,4 +478,20 @@ class OneClickCheckoutController extends Controller
 
         return $cookies;
     }
+
+    public function handleMerchantDashboardFileDownloadReq()
+    {
+        $input = [
+            'method' => Request::getMethod(),
+            'body'   => Request::all(),
+            'path'   => Request::path(),
+            'header' => $this->fetchMerchantDashboardHeaders(),
+        ];
+        $data = (new MagicCheckoutService\Service)->handleMerchantDashboardFileDownloadReq($input);
+
+        return response()->streamDownload(function () use ($data) {
+            echo $data->getBody();
+        }, 'allowlist_zipcode.csv');
+    }
+
 }

@@ -39,6 +39,10 @@ class Service extends Base\Service
       {
           $headers = $input['header'];
       }
+      if (isset($input['file'])=== true)
+      {
+          return $this->app['magic_checkout_service_client']->sendRequest($path, $input, $input['method'], $headers);
+      }
       return $this->app['magic_checkout_service_client']->sendRequest($path, $input['body'], $input['method'], $headers);
   }
 
@@ -121,4 +125,16 @@ class Service extends Base\Service
   {
     return $this->app['magic_checkout_service_client']->sendRequest(self::CHECK_SHOPIFY_COMPLETE_CHECKOUT_PATH, $input, Requests::GET);
   }
+
+    // which converts it to url params internally. We do NOT need to construct a separate path.
+    public function handleMerchantDashboardFileDownloadReq(array $input)
+    {
+        $path = $this->transformPath($input['path']);
+        $headers = [];
+        if (empty($input['header']) === false)
+        {
+            $headers = $input['header'];
+        }
+        return $this->app['magic_checkout_service_client']->makeFileDownloadRequest($path, $input['body'], $input['method'], $headers);
+    }
 }

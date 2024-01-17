@@ -4639,6 +4639,11 @@ class Route
         '1cc_item_category_search_product'              =>['get',       '1cc/shipping/cod/item/category/search/products',           'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_fee_rule_associations'                     =>['put',       '1cc/shipping/cod/fee_rule/mapping',                        'OneClickCheckoutController@handleMerchantDashboardReq'],
         '1cc_clear_fee_rule'                            =>['post',      '1cc/shipping/cod/fee_rule/clear',                          'OneClickCheckoutController@handleMerchantDashboardReq'],
+        // cod engine allowlist pincode
+        '1cc_create_allowlist'                            =>['post',      '1cc/shipping/cod/allowlist',                          'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_list_allowlist'                              =>['get',       '1cc/shipping/cod/allowlist',                          'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_download_allowlist'                          =>['get',       '1cc/shipping/cod/allowlist/download',                 'OneClickCheckoutController@handleMerchantDashboardFileDownloadReq'],
+        '1cc_clear_allowlist'                             =>['delete',    '1cc/shipping/cod/allowlist',                          'OneClickCheckoutController@handleMerchantDashboardReq'],
 
         // 1cc shipping engine related routes
         '1cc_shipping_get_zone'                         =>['get',       '1cc/shipping/zones/{zone_id}',                   'OneClickCheckoutController@handleMerchantDashboardReq'],
@@ -7569,6 +7574,10 @@ class Route
         '1cc_item_category_search_product',
         '1cc_fee_rule_associations',
          '1cc_clear_fee_rule',
+        '1cc_create_allowlist',
+        '1cc_list_allowlist',
+        '1cc_download_allowlist',
+        '1cc_clear_allowlist',
 
         '1cc_shipping_get_zone',
         '1cc_shipping_create_zone',
@@ -13096,6 +13105,10 @@ class Route
             '1cc_item_category_search_product',
             '1cc_fee_rule_associations',
             '1cc_clear_fee_rule',
+            '1cc_create_allowlist',
+            '1cc_list_allowlist',
+            '1cc_download_allowlist',
+            '1cc_clear_allowlist',
 
             '1cc_shipping_get_zone',
             '1cc_shipping_create_zone',
@@ -15670,6 +15683,10 @@ class Route
             '1cc_fetch_all_countries_with_zone',
             '1cc_cod_engine_config_summary',
             '1cc_clear_fee_rule',
+            '1cc_create_allowlist',
+            '1cc_list_allowlist',
+            '1cc_download_allowlist',
+            '1cc_clear_allowlist',
 
             '1cc_order_edit_search_products',
             '1cc_order_edit_get_orders',

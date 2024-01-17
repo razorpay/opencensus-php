@@ -1324,6 +1324,10 @@ class UserRolesScope
             '1cc_item_category_search_product'                    => [Role::OWNER, Role::ADMIN],
             '1cc_fee_rule_associations'                           => [Role::OWNER, Role::ADMIN],
             '1cc_clear_fee_rule'                                  => [Role::OWNER,Role::ADMIN],
+            '1cc_create_allowlist'                                => [Role::OWNER,Role::ADMIN],
+            '1cc_list_allowlist'                                  => [Role::OWNER,Role::ADMIN],
+            '1cc_download_allowlist'                              => [Role::OWNER,Role::ADMIN],
+            '1cc_clear_allowlist'                                 => [Role::OWNER,Role::ADMIN],
             // 1cc shipping engine
             '1cc_shipping_get_zone'                               => [Role::OWNER, Role::ADMIN],
             '1cc_shipping_create_zone'                            => [Role::OWNER, Role::ADMIN],

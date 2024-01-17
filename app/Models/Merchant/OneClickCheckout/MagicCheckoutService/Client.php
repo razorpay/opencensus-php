@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 
 use App;
+use GuzzleHttp\Exception\GuzzleException;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Service;
@@ -13,6 +14,8 @@ use RZP\Exception\IntegrationException;
 use RZP\Http\Request\Requests;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
+use GuzzleHttp\Client as HttpClient;
+
 
 class Client
 {
@@ -26,6 +29,8 @@ class Client
     const X_REQUEST_ID                     = 'X-Request-Id';
     const TIMEOUT                          = 'timeout';
     const X_PASSPORT_JWT_V1                = 'X-Passport-JWT-V1';
+    const CONTENT_TYPE_MULTIPART           = "multipart/form-data";
+    const FILE_KEY                         = "file";
 
     public function __construct($app = null)
     {
@@ -53,6 +58,11 @@ class Client
                 'url'   => $url,
                 'method' => $method,
             ]);
+
+            if((isset($input[self::FILE_KEY]) === true) and (is_null($input[self::FILE_KEY]) === false))
+            {
+                 return $this->sendMultiPartRequestAndParseResponse($url,$input['file'],$headers);
+            }
 
             $headers = array_merge($headers, $this->getHeaders());
 
@@ -179,4 +189,91 @@ class Client
             self::TIMEOUT => $this->config['timeout'],
         ];
     }
+
+    protected function sendMultiPartRequestAndParseResponse($url, $input, $headers = [])
+    {
+        try
+        {
+            $requestHeaders = array_merge([
+                self::AUTHORIZATION => $this->getAuthorizationHeader(),
+                self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
+                self::X_PASSPORT_JWT_V1 => $this->auth->getPassportJwt($this->getBaseUrl()),
+                Constants::X_Merchant_Id => $this->merchant->getId(),
+            ], $headers);
+
+            $response = (new HttpClient)->request('POST', $url,
+                [
+                    'multipart' => [
+                        [
+                            'name'     => 'file',
+                            'contents' => file_get_contents($input->getRealPath()),
+                            'filename' => $input->getClientOriginalName(),
+                        ],
+                    ],
+                    self::TIMEOUT => $this->config['timeout'],
+                    'headers' => $requestHeaders,
+                    'http_errors' => false,
+                ]
+            );
+            if ($response->getStatusCode() != 200)
+            {
+                $this->app['trace']->info(TraceCode::MAGIC_CHECKOUT_SERVICE_RESPONSE,
+                    [
+                        'status_code' => $response->getStatusCode(),
+                        'response' => $response->getBody()->getContents()
+                    ]);
+                throw new IntegrationException('magic-checkout-service request failed with status code: ' . $response->status_code,
+                    ErrorCode::SERVER_ERROR);
+            }
+
+            return json_decode($response->getBody(), true);;
+
+        }
+        catch (GuzzleException $e)
+        {
+
+            $data = [
+                'exception' => $e->getMessage(),
+                'path'       => $url,
+            ];
+
+            $this->app['trace']->error(TraceCode::MAGIC_CHECKOUT_SERVICE_ERROR, $data);
+
+            throw $e;
+        }
+    }
+
+    public function makeFileDownloadRequest($path, $content, $method, $header=[])
+    {
+        $url = $this->getBaseUrl() . $path;
+
+        $data = [
+            'headers' => [
+                self::AUTHORIZATION => $this->getAuthorizationHeader(),
+                self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
+                self::X_PASSPORT_JWT_V1 => $this->auth->getPassportJwt($this->getBaseUrl()),
+                Constants::X_Merchant_Id => $this->merchant->getId(),
+            ],
+        ];
+        if ($method !== 'GET')
+        {
+            $data['body'] = $content;
+        }
+
+        if ($method !== "GET" and $method !== "DELETE")
+        {
+            if (empty($content) === true)
+            {
+                $content = json_encode([], JSON_FORCE_OBJECT);
+            }
+            else
+            {
+                $content = json_encode($content);
+            }
+        }
+        $response =  (new HttpClient)->request($method,$url,$data);
+
+       return $response;
+    }
+
 }
