@@ -14,13 +14,34 @@ class RecoveryMethod
     const REFUNDED_PAYMENT = 'refunded_payment';
 
     const NETBANKING_RECOVER_VIA_REFUND_GATEWAYS = [
-        Gateway::NETBANKING_HDFC,
-        Gateway::NETBANKING_YESB,
-        Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_FEDERAL,
-        Gateway::ATOM,
-        Gateway::BILLDESK,
+        Gateway::NETBANKING_HDFC,
         Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_CANARA,
+        Gateway::NETBANKING_KOTAK,
+        Gateway::NETBANKING_AXIS,
+        Gateway::NETBANKING_SBI,
+        Gateway::NETBANKING_RBL,
+        Gateway::NETBANKING_IDFC,
+        Gateway::NETBANKING_JKB,
+        Gateway::ATOM,
+        Gateway::NETBANKING_INDUSIND,
+        Gateway::NETBANKING_IOB,
+        Gateway::NETBANKING_UBI,
+        Gateway::NETBANKING_PNB,
+        Gateway::NETBANKING_IBK,
+        Gateway::NETBANKING_YESB,
+        Gateway::CCAVENUE,
+        Gateway::NETBANKING_BOB,
+        Gateway::NETBANKING_CBI,
+        Gateway::NETBANKING_SIB,
+        Gateway::NETBANKING_CUB,
+        Gateway::NETBANKING_KVB,
+        Gateway::NETBANKING_AUSF,
+        Gateway::NETBANKING_DLB,
+        Gateway::NETBANKING_AIRTEL,
+        Gateway::NETBANKING_UCO,
+        Gateway::PAYU,
     ];
 
     const UPI_RECOVER_VIA_ADJUSTMENT_GATEWAYS = [
@@ -46,11 +67,11 @@ class RecoveryMethod
     ];
 
     const WALLET_RECOVER_VIA_REFUND_GATEWAYS = [
-        Gateway::BAJAJFINSERV,
-        Gateway::WALLET_FREECHARGE,
-        Gateway::WALLET_JIOMONEY,
         Gateway::MOBIKWIK,
+        Gateway::WALLET_FREECHARGE,
         Gateway::WALLET_OPENWALLET,
+        Gateway::WALLET_JIOMONEY,
+        Gateway::BAJAJFINSERV,
         Gateway::WALLET_BAJAJ,
         Gateway::PAYPAL
     ];

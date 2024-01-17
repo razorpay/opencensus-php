@@ -437,15 +437,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-
-                ],
+                'amount'             => 100,
+                'amount_deducted'    => 100,
+                'currency'           => 'INR',
+                'phase'              => 'chargeback',
+                'status'             => 'open',
+                'reason_code'        => 'KFRER_R',
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

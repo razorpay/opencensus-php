@@ -345,6 +345,7 @@ class Core extends Base\Core
         }
 
         $returnParam = $this->repo->transaction(function() use ($dispute, $input, $isShadowModeDualWrite) {
+
             $this->handleDisputeClosure($dispute, $input);
 
             if ($dispute->getDeductionSourceType() !== RecoveryMethod::REFUNDED_PAYMENT)
@@ -632,7 +633,18 @@ class Core extends Base\Core
 
     protected function handleDeduction(array $input, Entity $dispute): void
     {
-        $recoveryMethod = (isset($input[Entity::RECOVERY_METHOD])) ? $input[Entity::RECOVERY_METHOD] : RecoveryMethod::ADJUSTMENT;
+        $recoveryMethod = (isset($input[Entity::RECOVERY_METHOD])) ? $input[Entity::RECOVERY_METHOD] : $this->getRecoveryMethodForDisputeAccept($dispute);
+
+        if ($recoveryMethod === RecoveryMethod::RISK_OPS_REVIEW && $dispute->getDeductAtOnset() === false)
+        {
+            $recoveryMethod = RecoveryMethod::ADJUSTMENT;
+        }
+
+        $this->trace->info(
+            TraceCode::DISPUTE_EDIT_REQUEST_RECOVERY_METHOD,
+            [
+                'recovery_method' => $recoveryMethod
+            ]);
 
         if ($recoveryMethod === RecoveryMethod::ADJUSTMENT)
         {
@@ -658,6 +670,13 @@ class Core extends Base\Core
     public function handleLostDisputeRefunds(Entity $dispute, array $input)
     {
         $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input);
+
+        // In case DAO = true, we make a negative adjustment at dispute creation stage,
+        // which needs to be reversed now for refunds recovery method
+        if ($dispute->getDeductAtOnset() === true)
+        {
+            $this->createPositiveAdjustmentAndUpdateDispute($dispute, $dispute->getAmountDeducted());
+        }
 
         $this->createRefundAndUpdateDispute($dispute, $acceptedDisputeAmount);
     }

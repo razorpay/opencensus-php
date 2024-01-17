@@ -319,9 +319,43 @@ class DisputeTest extends TestCase
             'method' => 'netbanking',
         ]);
 
-        $testData = $this->updateCreateTestData($payment->getPublicId());
+        $payment_id = $payment->getPublicId();
+
+        $testData = $this->updateCreateTestData($payment_id);
+
+        $testData['response']['content']['payment_id'] = $payment_id;
 
         $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertArraySelectiveEquals([
+            'disputed'          => true,
+            'amount_refunded'   => 0,
+            'status'            => 'captured',
+        ], $payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('adjustment', $transaction['type']);
+
+        $this->assertEquals(100, $transaction['amount']);
+
+        $this->assertEquals(100, $transaction['debit']);
+
+        $this->assertEquals(0, $transaction['credit']);
+
+        $adjustment = $this->getDbLastEntity('adjustment');
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertArraySelectiveEquals([
+            'status'                => 'open',
+            'deduct_at_onset'       => true,
+            'amount_deducted'       => 100,
+            'deduction_source_type' => 'adjustment',
+            'deduction_source_id'   => $adjustment['id'],
+        ], $dispute);
     }
 
     public function testDisputeCreateWithDeductAdjustmentRecoveryMethod()

@@ -316,12 +316,12 @@ class Validator extends Base\Validator
 
         $recoveryMethod = (new Core)->getRecoveryMethodForDisputeAccept($tempEntity);
 
-        if ($recoveryMethod === RecoveryMethod::ADJUSTMENT)
+        if ($recoveryMethod === RecoveryMethod::ADJUSTMENT || $recoveryMethod === RecoveryMethod::REFUND)
         {
             return;
         }
 
-        throw new BadRequestValidationFailureException('Deduct at onset not supported when recovery method is not adjustment',
+        throw new BadRequestValidationFailureException('Deduct at onset not supported when recovery method is not adjustment / refund',
         'deduct_at_onset',
         [
             'mapped_recovery_method' => $recoveryMethod
