@@ -1990,12 +1990,6 @@ class Core extends Base\Core
 
         (new Validator)->validateInput(Validator::CREATE_NETWORK_CARD, $input[Entity::CARD]);
 
-        $this->trace->info(
-            TraceCode::CARD_NOT_ELIGIBLE_FOR_TOKENISATION_TEST,
-            [
-                'input'=> $input
-            ]
-        );
         if ($this->isNetworkRuPay($input[Entity::CARD]))
         {
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_RUPAY, $input);
