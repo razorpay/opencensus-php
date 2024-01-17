@@ -296,59 +296,53 @@ class Validator extends Base\Validator
 
     ];
 
+    const FILE_SIZE_LIMIT = 50; // limit in MB
+
+    // list of magic bytes https://en.wikipedia.org/wiki/List_of_file_signatures
+    const MAGIC_BYTES_MATCH_REGEX_FOR_EXTENSION = [
+        'mp3' => '/^(FFFB|FFF3|FFF2)/',
+
+       // images
+        'jpg'       => '/^(FFD8FFDB|FFD8FFE000104A46|49460001|FFD8FFEE|FFD8FFE1.{4}4578|69660000|FFD8FFE0)/',
+        'jpeg'      => '/^(FFD8FFDB|FFD8FFE000104A46|49460001|FFD8FFEE|FFD8FFE1.{4}4578|69660000|FFD8FFE0)/',
+        'png'       => '/^(89504E470D0A1A0A)/',
+
+        // media
+        '3gp'       => '/^(667479703367)/', // Magic byte starts from 4th byte
+        'mp4'       => '/^(6674797069736F6D|667479704D534E56)/', // Magic byte starts from 4th byte
+
+        // documents
+        'doc'       => '/^(D0CF11E0A1B11AE1|0D444F43)/',
+        'docx'      => '/^(504B0304|504B0506|504B0708)/',
+        'pdf'       => '/^(255044462D)/',
+        'txt'       => '/^(EFBBBF)/',
+        'xls'       => '/^(D0CF11E0A1B11AE1)/',
+        'xlsx'      => '/^(504B0304|504B0506|504B0708)/',
+    ];
+
     /*
      * From: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
      */
     const VALID_EXTENSION_MIMETYPE_MAP = [
         // audio
-        'aif'       => ['audio/x-aiff',],
-        'cda'       => ['application/x-cdf'],
         'mp3'       => ['audio/mpeg',],
-        'mpa'       => ['audio/mpeg'],
-        'ogg'       => ['audio/ogg'],
-        'oga'       => ['audio/ogg'],
-        'wav'       => ['audio/wav'],
-        'weba'	    => ['audio/webm'],
-        'wma'       => ['audio/x-ms-wma'],
-        // data
-        'csv'       => ['text/csv', 'text/plain'],
-        'dat'       => ['application/dat'],
-        'log'       => ['text/plain'],
-        'xml'       => ['text/xml'],
+
         // images
-        'bmp'       => ['image/bmp'],
-        'gif'       => ['image/gif'],
-        'ico'       => ['image/x-icon', 'image/vnd.microsoft.icon'],
         'jpg'       => ['image/jpeg'],
         'jpeg'      => ['image/jpeg'],
         'png'       => ['image/png'],
-        'svg'       => ['image/svg+xml'],
-        'tif'       => ['image/tiff'],
-        'tiff'      => ['image/tiff'],
+
         // media
-        '3g2'       => ['video/3gpp2', 'audio/3gpp2'],
         '3gp'       => ['video/3gpp', 'audio/3gpp'],
-        'avi'       => ['video/x-msvideo'],
-        'flv'       => ['video/x-flv'],
-        'h264'      => ['audio/mp4m, video/mp4'],
-        'm4v'       => ['video/m4v'],
-        'mkv'       => ['video/x-matroska'],
-        'mov'       => ['video/quicktime'],
         'mp4'       => ['video/mp4'],
-        'mpg'       => ['video/mpeg'],
-        'mpeg'      => ['video/mpeg'],
-        'rm'        => ['application/vnd.rn-realmedia'],
-        'wmv'       => ['video/x-ms-wmv'],
+
         // documents
         'doc'       => ['application/msword'],
         'docx'      => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        'odt'       => ['application/vnd.oasis.opendocument.text'],
         'pdf'       => ['application/pdf'],
-        'rtf'       => ['application/rtf'],
         'txt'       => ['text/plain'],
         'xls'       => ['application/vnd.ms-excel'],
         'xlsx'      => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-        'ods'       => ['application/vnd.oasis.opendocument.spreadsheet'],
     ];
 
     protected static $internalFetchMerchantFreshdeskTicketsRules = [
@@ -495,6 +489,9 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     */
     protected function validateAttachment($attribute, $attachment)
     {
         if ($this->shouldValidateAttachment() === false)
@@ -511,6 +508,12 @@ class Validator extends Base\Validator
             'mime_type' => $mimeType,
         ];
 
+        $content = $attachment->getContent();
+
+        $this->validateMagicBytes($extension, $content, $attachment);
+
+        $this->validateFileSize($content);
+
         if (isset(self::VALID_EXTENSION_MIMETYPE_MAP[$extension]) === false)
         {
             throw new Exception\BadRequestValidationFailureException('Invalid Extension', $attribute, $data);
@@ -522,6 +525,52 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException('Invalid Extension', $attribute, $data);
         }
+    }
+
+    protected function validateFileSize($content)
+    {
+        $size = strlen($content); // size in bytes
+
+        if ($size > self::FILE_SIZE_LIMIT * 1048576)
+        {
+            throw new Exception\BadRequestValidationFailureException(sprintf('File Size exceeded allowed limit, Maximum allowed File Size is %d MB', self::FILE_SIZE_LIMIT));
+        }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateMagicBytes($extension, $content, $attachment)
+    {
+        $magicBytesRegex = $this->getMagicBytesRegexForExtension($extension);
+
+        // special case for 3gp, 3g2 and mp4 files: magic byte starts from 4th byte
+        if (in_array($extension, ['3g2', 'mp4', '3gp'], true) === true)
+        {
+            $content = substr($content, 4, -1);
+        }
+
+        $fileMagicBytes = mb_strtoupper(bin2hex($content));
+
+        if (preg_match($magicBytesRegex, $fileMagicBytes) === 1)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException('Invalid File Content');
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    private function getMagicBytesRegexForExtension($extension): string
+    {
+       if (key_exists($extension, self::MAGIC_BYTES_MATCH_REGEX_FOR_EXTENSION) === true)
+       {
+           return self::MAGIC_BYTES_MATCH_REGEX_FOR_EXTENSION[$extension];
+       }
+
+       throw new Exception\BadRequestValidationFailureException('Invalid Extension', null, ['extension' => $extension]);
     }
 
     protected function shouldValidateAttachment(): bool
