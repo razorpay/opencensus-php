@@ -115,9 +115,12 @@ class Core extends Base\Core
 
                     $this->updateCreditsInMerchantAccount($merchant, $creditsLog->getValue(), $type);
 
-                    $this->createLedgerEntriesForCreditLoadingReverseShadow($creditsLog, $payment);
+                    if ($type !== Type::FEE_CREDIT)
+                    {
+                        $this->createLedgerEntriesForCreditLoadingReverseShadow($creditsLog, $payment);
 
-                    $this->createLedgerEntriesForMerchantCreditLoading($creditsLog, $payment);
+                        $this->createLedgerEntriesForMerchantCreditLoading($creditsLog, $payment);
+                    }
 
                     return $creditsLog;
                 });
