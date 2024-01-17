@@ -161,7 +161,7 @@ class OffersEngine
      */
     protected function sendOffersEngineRequest(array $request, string $endpoint)
     {
-        $this->traceRequest($request, $endpoint);
+        $this->traceRequest($request);
 
         try
         {
@@ -233,9 +233,9 @@ class OffersEngine
     /**
      * @param array $request
      */
-    protected function traceRequest(array $request, string $endpoint)
+    protected function traceRequest(array $request)
     {
-        $logRequest = $this->shouldLogRequest($endpoint, $request['method']);
+        $logRequest = $this->shouldLogRequest($request['method']);
 
         if($logRequest === true)
         {
@@ -251,11 +251,11 @@ class OffersEngine
         }
     }
 
-    public function shouldLogRequest(string $endpoint, string $method) :bool
+    public function shouldLogRequest(string $method) :bool
     {
         $logRequest = false;
 
-        $mapKey = $method.'_'.$endpoint;
+        $mapKey = $method;
 
         if(isset(self::REQUEST_LOGGER_MAP[$mapKey]))
         {

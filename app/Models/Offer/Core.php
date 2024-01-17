@@ -1007,15 +1007,14 @@ class Core extends Base\Core
         $this->checkConflictingOffers($offer);
 
         $this->repo->transaction(
-          function () use ($offer, $merchant)
+          function () use ($offer, $merchant, $subscriptionInput)
           {
-                $this->repo->saveOrFail($offer);
+              $this->repo->saveOrFail($offer);
 
-                if (isset($input[Entity::PRODUCT_TYPE]) and
-                    $input[Entity::PRODUCT_TYPE] === Order\ProductType::SUBSCRIPTION)
+              if (empty($subscriptionInput) === false)
                 {
                     // create entry in subscription_offers_master
-                    $this->addSubscriptionData($offer, $subscriptionInput ?? []);
+                    $this->addSubscriptionData($offer, $subscriptionInput);
                 }
 
                 $this->traceNonExistingIins($offer, $merchant);

@@ -234,7 +234,7 @@ class OffersEngine extends Base\Core
             Constants::TERMS_AND_CONDITIONS => strval($offer->getTerms()),
         ];
 
-        $metadata[Constants::ADVERTISER_ID] = 'rzp.merchant.' . $this->merchant->getId();
+        $metadata[Constants::ADVERTISER_ID] = 'rzp.merchant.' . $offer->getMerchantId();
 
         // **offer_id**
         $metadata[Constants::OFFER_ID] = $offer->getId();
