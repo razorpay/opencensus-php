@@ -492,7 +492,10 @@ class Service extends Base\Service
                 'policy_eligibility_status' => $policyEligibility
             ]);
 
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
+            return [
+                "isWebsiteSectionsApplicable" => false,
+                "isGracePeriodApplicable"     => false
+            ];
         }
 
         if (empty($policyEligibility) === true or $policyEligibility === Constants::POLICY_WIZARD_V2) {
