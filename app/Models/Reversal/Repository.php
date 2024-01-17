@@ -102,7 +102,7 @@ class Repository extends Base\Repository
 
         if ($this->isExperimentEnabledForId(self::PAYMENT_FETCH_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
         {
-            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
 
         $query = $this->newQueryWithConnection($connectionType)
