@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use Database\Connection;
 use DB;
 use Carbon\Carbon;
 
@@ -982,7 +983,7 @@ class Repository extends Base\Repository
             'method'       => 'fetchIrctcDeltaRefunds',
             'route'        => $this->route
         ]);
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
                       ->select($this->dbColumn('*'))
                       ->whereIn(Entity::ID, function ($query) use($merchantId, $from, $to)
                         {
