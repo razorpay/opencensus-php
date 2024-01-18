@@ -4355,8 +4355,6 @@ class Core extends Base\Core
                         $workflowActionData = json_decode($e->getMessage(), true);
                         $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
                     }
-
-                    $this->pgosProxyController->handlePGOSProxyRequests('pos_merchant_config', ["merchant_id" => $merchant->getId()], $merchant, true);
                 }
 
                 if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::REJECTED)
@@ -4410,6 +4408,11 @@ class Core extends Base\Core
                 }
 
                 $this->updateMerchantPosActivationStatus($merchantDetails, $input[DEConstants::POS_ACTIVATION_STATUS]);
+
+                if ($input[DEConstants::POS_ACTIVATION_STATUS] === Status::KYC_QUALIFIED_STB)
+                {
+                    $this->pgosProxyController->handlePGOSProxyRequests('pos_merchant_config', ["merchant_id" => $merchant->getId()], $merchant, true);
+                }
 
                 $stateData = [
                     "pos_state"       => $input[DEConstants::POS_ACTIVATION_STATUS],

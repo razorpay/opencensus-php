@@ -14870,4 +14870,45 @@ class CoreTest extends TestCase
 
 
     }
+
+    public function testGetUpdatedPosClarificationResponse()
+    {
+
+        $input = [
+            "clarification_details"   => [
+                "pos_nc_count" =>1,
+                "shop_front" => [
+                    "comments" => [
+                        [
+                            "nc_count" => 1,
+                            "created_at" => 12132312,
+                            "comment_data" => [
+                                "text" => "some comment",
+                                "type" => "some type",
+                            ]
+                        ],
+                    ]
+                ]
+            ]
+        ];
+
+       $response =  (new DetailCore())->getUpdatedPosClarificationResponse($input);
+
+       $expectedResponse = [
+           "clarification_reasons" => [
+               'pos_nc_count' => 1,
+               'shop_front' => [
+                   'from' => 'admin',
+                   'nc_count' => 1,
+                   'is_current' => true,
+                   'created_at' => 12132312,
+                   'reason_code' => 'some comment',
+                   'reason_type' => 'some type'
+               ]
+           ]
+       ];
+
+        $this->assertEquals( $expectedResponse['clarification_reasons']['pos_nc_count'], $response['clarification_reasons']['pos_nc_count']);
+
+    }
 }
