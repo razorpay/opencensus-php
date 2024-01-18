@@ -1,16 +1,7 @@
 name: I18n Linter
 on:
   pull_request:
-    types:
-      [
-        edited,
-        opened,
-        synchronize,
-        reopened,
-        assigned,
-        labeled,
-        unlabeled
-      ]
+    types: [opened, synchronize, reopened, labeled, unlabeled, ready_for_review]
     branches:
       - master
 
@@ -29,6 +20,7 @@ jobs:
     runs-on: [self-hosted]
     name: I18n Linter
     if: |
+      github.event.pull_request.draft == false &&
       !contains(github.event.pull_request.labels.*.name, 'ignore-i18n-linter')
     outputs:
       has_error: ${{ steps.linter-check.outputs.hardcoding_found }}
