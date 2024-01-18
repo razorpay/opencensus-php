@@ -2,8 +2,8 @@ const { setFailed, setOutput } = require('@actions/core');
 const { markdown } = require('@razorpay/universe-doctor/src/configs/danger/utils/constants');
 const printMessage = require('@razorpay/universe-doctor/src/configs/danger/utils/printMessage');
 
-const tableHelper = require('./tableHelper');
-const { logger, getStatus, showThreshold, bold } = require('./utils');
+const { logger } = require('./utils');
+const { getStatus, showThreshold, bold, createMarkdownTable } = require('../utils');
 
 const truncLabel = (text, limit = 50) =>
   text.length > limit
@@ -22,8 +22,6 @@ const getTableData = ({ reportData }) =>
   });
 
 const commentStats = ({ reportData }) => {
-  const { createMarkdownTable } = tableHelper;
-
   const isThresholdBreached = reportData.some((each) => !each.result);
 
   setOutput('isThresholdBreached', isThresholdBreached);

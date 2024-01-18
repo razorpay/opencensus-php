@@ -1,5 +1,5 @@
 const { Logger } = require('../utils');
 
 module.exports = {
-  logger: new Logger('Bundle Size Check'),
+  logger: new Logger('I18n Linter ::'),
 };

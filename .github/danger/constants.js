@@ -1,5 +1,6 @@
 const PR_AUTOMATED_CHECKS = 'PR_AUTOMATED_CHECKS';
 const BUNDLE_SIZE_CHECKS = 'BUNDLE_SIZE_CHECKS';
+const I18N_LINTER_CHECKS = 'I18N_LINTER_CHECKS';
 
 const AdheredToGuidelineCheck = {
   // - [] Have you adhered to [Dashboard PR review guidelines]
@@ -22,6 +23,7 @@ const PrCheckSuccessCheck = {
 module.exports = {
   PR_AUTOMATED_CHECKS,
   BUNDLE_SIZE_CHECKS,
+  I18N_LINTER_CHECKS,
   AdheredToGuidelineCheck,
   PrCheckSuccessCheck,
 };

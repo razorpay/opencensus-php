@@ -1,5 +1,5 @@
 const micromatch = require('micromatch');
-const { bytesToKB } = require('./utils');
+const { bytesToKB } = require('../utils');
 
 const getResult = (statDetails, budget) => {
   const { limit } = budget;

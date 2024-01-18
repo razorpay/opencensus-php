@@ -1,5 +1,5 @@
 const { setOutput } = require('@actions/core');
-const { getStatus, showThreshold } = require('./utils');
+const { getStatus, showThreshold } = require('../utils');
 
 const Border = '-';
 const Cell = '=';

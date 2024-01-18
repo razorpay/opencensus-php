@@ -1,4 +1,4 @@
-const { bytesToKB } = require('./utils');
+const { bytesToKB } = require('../utils');
 
 const getUsedThreshold = ({ used, limit }) => {
   if (!used || !parseFloat(limit)) {

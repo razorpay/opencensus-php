@@ -78,6 +78,15 @@ jobs:
         id: linter-metrics
         run: ./scripts/linter/error-metrics.sh
 
+      - name: Run DangerJS for I18n Linter
+        id: i18n_linter_dangerjs
+        uses: danger/danger-js@10.6.6
+        with:
+          args: "--id i18n_linter_dangerjs --dangerfile dangerfile-i18nlinter.js"
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          DANGER_DISABLE_TRANSPILATION: true
+
       - name: Annotate ES lint issues
         uses: ataylorme/eslint-annotate-action@v2
         id: eslint-annotator
