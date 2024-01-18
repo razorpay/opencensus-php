@@ -339,6 +339,8 @@ class Checkout
 
         $data[Entity::METHODS] = $methodsCore->enableOrDisableMethodsBasedOnTerminals($merchant, $data[Entity::METHODS], $this->app['rzp.mode']);
 
+        $this->addCacheableEmiData($data);
+
         $expectedAsDictionaries = [
             'app',
             'app_meta',
@@ -350,6 +352,7 @@ class Checkout
             'emi_options',
             'emi_plans',
             'emi_types',
+            'force_offer_emi_plans',
             'fpx',
             'intl_bank_transfer',
             'netbanking',
@@ -995,6 +998,19 @@ class Checkout
                     break;
             }
         }
+    }
+
+    protected function addCacheableEmiData(array & $data): void
+    {
+        // using max int value as amount any processing fee plans
+        // are not filtered due to min amount checks,
+        // min_amount filtering would be done in checkout service
+        $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions(null, null, PHP_INT_MAX);
+        $data[Entity::METHODS]['emi_plans'] = $emiPlansAndOptions['plans'];
+        $data[Entity::METHODS]['emi_options'] = $emiPlansAndOptions['options'];
+
+        // the below emi_plans are used in force offer case
+        $data[Entity::METHODS]['force_offer_emi_plans'] = (new Emi\Service())->all();
     }
 
     protected function addDebitCardEmiCustomProvider($detailMap, & $data)

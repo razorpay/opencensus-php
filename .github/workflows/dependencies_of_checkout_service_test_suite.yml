@@ -45,7 +45,7 @@ jobs:
       - name: prepare_test
         run: ci-assets/prepare_test.sh
         env:
-          GIT_TOKEN: ${{ github.token }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       - name: dependencies_of_checkout_service_test_suite
         run: ci-assets/dependencies_of_checkout_service_test_suite.sh
         env:

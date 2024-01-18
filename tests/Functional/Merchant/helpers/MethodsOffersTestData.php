@@ -563,7 +563,7 @@ return [
                     'boost' => true,
                     'mcash' => true
                 ],
-                'emi' => false,
+                'emi' => true,
                 'upi' => false,
                 'cardless_emi' => [],
                 'paylater' => [],
@@ -578,8 +578,8 @@ return [
                 ],
                 'gpay' => false,
                 'emi_types' => [
-                    'credit' => false,
-                    'debit' => false
+                    'credit' => true,
+                    'debit' => true
                 ],
                 'debit_emi_providers' => [
                     'HDFC' => 0,
@@ -595,6 +595,73 @@ return [
                 'upi_type' => [
                     'collect' => 0,
                     'intent' => 0,
+                ],
+                'emi_plans' => [
+                    'CITI' => [
+                        'min_amount' =>300000,
+                        'plans' => [
+                            '3' => 12,
+                        ],
+                    ],
+                    'SBIN' => [
+                        'min_amount' =>100000,
+                        'plans' => [
+                            '3' => 16.5,
+                            '6' => 15,
+                        ],
+                    ],
+                ],
+                'emi_options' => [
+                    'CITI' => [
+                        [
+                            'duration'   => 3,
+                            'interest'   => 12,
+                            'min_amount' => 300000,
+                            'subvention' => 'customer',
+                            'merchant_payback' => '5.18',
+                            'processing_fee_plan' => [
+                                'type' => 'combination',
+                                'percentage' => 1,
+                                'amount' => 10000,
+                            ]
+                        ]
+                    ],
+                    'SBIN' => [
+                        [
+                            'duration'   => 3,
+                            'interest'   => 16.5,
+                            'min_amount' => 100000,
+                            'subvention' => 'customer',
+                            'merchant_payback' => '5.18',
+                        ],
+                        [
+                            'duration'   => 6,
+                            'interest'   => 15,
+                            'min_amount' => 100000,
+                            'subvention' => 'customer',
+                            'merchant_payback' => '5.18',
+                            'processing_fee_plan' => [
+                                'type' => 'fixed',
+                                'amount' => 9900,
+                                'min_amount' => 1250000
+                            ]
+                        ],
+                    ]
+                ],
+                'force_offer_emi_plans' => [
+                    'CITI' => [
+                        'min_amount' =>300000,
+                        'plans' => [
+                            '3' => 12,
+                        ],
+                    ],
+                    'SBIN' => [
+                        'min_amount' =>100000,
+                        'plans' => [
+                            '3' => 16.5,
+                            '6' => 15,
+                        ],
+                    ],
                 ],
             ],
         ],

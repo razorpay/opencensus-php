@@ -265,6 +265,55 @@ class MethodsOffersTest extends TestCase
 
         $this->fixtures->merchant->enablePaytm();
 
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['SBIN' => 1, 'CITI' => 1]);
+
+        $this->fixtures->terminal->create([
+            'merchant_id' => '10000000000000',
+            'gateway'     => 'emi_sbi',
+        ]);
+
+
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => [EmiType::CREDIT => '1'],
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101810',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'CITI',
+                'type'        => 'credit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101910',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'SBIN',
+                'type'        => 'credit',
+                'rate'        => 1650,
+                'min_amount'  => 100000,
+                'duration'    => 3,
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101912',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'SBIN',
+                'type'        => 'credit',
+                'rate'        => 1500,
+                'min_amount'  => 100000,
+                'duration'    => 6,
+            ]);
+
         $this->startTest();
     }
 
