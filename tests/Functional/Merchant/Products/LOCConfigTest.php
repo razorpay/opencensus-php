@@ -76,6 +76,42 @@ class LOCConfigTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testCreateLOCProductConfigWhenLOCAppAlreadyExists()
+    {
+        Mail::fake();
+
+        list($partner, $app) = $this->setupPrivateAuthForPartner();
+
+        $this->fixtures->merchant->addFeatures(['loc_subm_onboarding_api'], $partner->getId());
+
+        $this->mockCapitalPartnershipSplitzExperiment($partner->getId());
+
+        $testData = $this->testData['createAccountV2ForMandatoryFilledByCapitalPartner'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        // assert that LOS Service gets one request to get product list and one request to create capital application
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('losService', $losServiceMock);
+
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $this->mockGetApplicationBulkRequestByMerchantIdOnLOSService($losServiceMock, substr($accountId, 4));
+
+        $this->mockCreateApplicationRequestOnLOSServiceNegative($losServiceMock);
+
+        $testData = $this->testData['testCreateLOCProductConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products' ;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function setupPrivateAuthForPartner()
     {
         list($partner, $app) = $this->createPartnerAndApplication(

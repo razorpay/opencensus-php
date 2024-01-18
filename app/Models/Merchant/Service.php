@@ -7118,7 +7118,7 @@ class Service extends Base\Service
         // For capital submerchant requests, we are allowing existing merchants to be linked to the partner. Hence we will skip account creation.
         if($actualProduct === Product::CAPITAL && empty($input['existing_merchant']) === false && $input['existing_merchant'] === true)
         {
-            $subMerchant = (new CapitalSubmerchantUtility())->validateIfNonExistingCapitalSubmerchant($input[Entity::EMAIL], $merchant);
+            $subMerchant = (new CapitalSubmerchantUtility())->getMerchantWithNoLOCApplicationOrFail($input[Entity::EMAIL], $merchant);
 
             $isExistingMerchantForCapital = true;
 

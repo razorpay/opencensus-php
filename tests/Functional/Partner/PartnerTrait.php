@@ -78,6 +78,16 @@ trait PartnerTrait
         $mockLOSService->shouldReceive('parseResponse')->times(1);
     }
 
+    public function mockCreateApplicationRequestOnLOSServiceNegative($mockLOSService): void
+    {
+        $mockLOSService->shouldNotReceive('sendRequest')
+            ->with(
+                MerchantConstants::CREATE_CAPITAL_APPLICATION_LOS_URL,
+                Mockery::type('array'),
+                Mockery::type('array')
+            );
+    }
+
     public function mockCreateApplicationRequestOnLOSServiceWithError( LegacyMockInterface|MockInterface $mockLOSService): void
     {
         $mockLOSService->shouldReceive('sendRequest')
@@ -220,6 +230,59 @@ trait PartnerTrait
                     return ApiResponse::json($body, 200);
                 }
             );
+    }
+
+    public function mockGetApplicationBulkRequestByMerchantIdOnLOSService($mockLOSService, string $merchantId): void
+    {
+        $mockLOSService->shouldReceive('sendRequest')
+            ->atLeast()
+            ->once()
+            ->with(
+                MerchantConstants::GET_CAPITAL_APPLICATIONS_BULK_URL,
+                Mockery::type('array'),
+                Mockery::type('array')
+            )->andReturnUsing(
+                function() use($merchantId) {
+                    $resp              = new Response;
+                    $resp->success     = true;
+                    $resp->status_code = 200;
+                    $resp->body        = json_encode(
+                        [
+                            "response"  => [
+                                $merchantId => [
+                                    "partner_applications" => [
+                                        json_encode([
+                                            "id" => "randomId"
+                                        ])
+                                    ]
+                                ]
+                            ]
+                        ]
+                    );
+
+                    return $resp;
+                }
+            );
+
+        $mockLOSService->shouldReceive('parseResponse')
+            ->atLeast()
+            ->once()
+            ->andReturnUsing(
+                function() use($merchantId) {
+                    $body = [
+                            "response"  => [
+                                $merchantId => [
+                                    "partner_applications" => [
+                                        json_encode([
+                                            "id" => "randomId"
+                                        ])
+                                    ]
+                                ]
+                            ]
+                        ];
+
+                    return ApiResponse::json($body, 200);
+                });
     }
 
     public function setUpPartnerMerchantAppAndGetClient(

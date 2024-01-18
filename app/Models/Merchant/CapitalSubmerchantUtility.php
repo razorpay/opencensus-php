@@ -271,14 +271,13 @@ class CapitalSubmerchantUtility
             return false;
         }
 
-        // If the merchant has the capital loc tag attached and it has banking product owner user, we will not make merchant a submerchant.
-        $isCapitalSubmerchant = $this->isCapitalLocTagAttachedAndHasBankingProduct($merchant);
+        $hasExistingLOCApp = $this->hasExistingCapitalLOCApplication($merchant->getId());
 
-        if ($isCapitalSubmerchant === true)
+        if ($hasExistingLOCApp === true)
         {
             $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
 
-            (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteMerchantsWithExistingApplicationEvent($partner, $merchant->getId(), PartnerConstants::REFERRAL);
+            $this->trackPartnershipsCapitalInviteMerchantsWithExistingApplicationEvent($partner, $merchant->getId(), PartnerConstants::REFERRAL);
 
             return false;
         }
@@ -287,7 +286,7 @@ class CapitalSubmerchantUtility
     }
 
     /**
-     * This function throws error if the merchant already has LOC tag attached and banking product owner access
+     * This function throws error if the merchant already has an LOC application, irrespective of application state
      *
      * @param string $email
      * @param Entity $partner
@@ -295,15 +294,15 @@ class CapitalSubmerchantUtility
      * @return Entity|null
      * @throws BadRequestException
      */
-    public function validateIfNonExistingCapitalSubmerchant(string $email, Merchant\Entity $partner): ?Merchant\Entity
+    public function getMerchantWithNoLOCApplicationOrFail(string $email, Merchant\Entity $partner): ?Merchant\Entity
     {
         $subMerchants = $this->repo->merchant->fetchByEmailAndOrgId($email);
 
         $subMerchant = $subMerchants->first();
 
-        if((new CapitalSubmerchantUtility())->isCapitalLocTagAttachedAndHasBankingProduct($subMerchant) === true)
+        if($this->hasExistingCapitalLOCApplication($subMerchant->getId()) === true)
         {
-            (new CapitalSubmerchantUtility())->trackPartnershipsCapitalInviteMerchantsWithExistingApplicationEvent($partner, $subMerchant->getId(), PartnerConstants::ADD_MULTIPLE_ACCOUNT);
+            $this->trackPartnershipsCapitalInviteMerchantsWithExistingApplicationEvent($partner, $subMerchant->getId(), PartnerConstants::ADD_MULTIPLE_ACCOUNT);
 
             $this->trace->info(
                 TraceCode::BATCH_EXISTING_ACCOUNT_MARK_CAPITAL_SUBMERCHANT,
@@ -324,18 +323,17 @@ class CapitalSubmerchantUtility
                 $description
             );
         }
-        else
-        {
-            $this->trace->info(
-                TraceCode::BATCH_EXISTING_ACCOUNT_MARK_CAPITAL_SUBMERCHANT,
-                [
-                    'partner_id'                    => $partner->getId(),
-                    'account_id'                    => $subMerchant->getId(),
-                    'account_name'                  => $subMerchant->getName() ?? null,
-                    'email'                         => $subMerchant->getEmail() ?? null,
-                    'isExistingCapitalSubmerchant'  => false
-                ]);
-        }
+
+        $this->trace->info(
+            TraceCode::BATCH_EXISTING_ACCOUNT_MARK_CAPITAL_SUBMERCHANT,
+            [
+                'partner_id'                    => $partner->getId(),
+                'account_id'                    => $subMerchant->getId(),
+                'account_name'                  => $subMerchant->getName() ?? null,
+                'email'                         => $subMerchant->getEmail() ?? null,
+                'isExistingCapitalSubmerchant'  => false
+            ]);
+
         return $subMerchant;
     }
 
@@ -355,6 +353,44 @@ class CapitalSubmerchantUtility
         }
 
         return false;
+    }
+
+    public function hasExistingCapitalLOCApplication(string $merchantId): bool
+    {
+        try
+        {
+            $productIds = CapitalSubmerchantUtility::getLOSProductIds();
+
+            $locProductId = $productIds[Merchant\Constants::CAPITAL_LOC_EMI_PRODUCT_NAME];
+
+            $applicationResponse = new JsonResponse($this->fetchApplicationsForSubmerchantsForProduct(
+                [$merchantId],
+                $locProductId
+            ));
+
+            $applicationResponse = $applicationResponse->getData(true);
+
+            if (isset($applicationResponse['original']['response'][$merchantId]) === true)
+            {
+                return true;
+            }
+
+            return false;
+
+        }
+        catch (\Throwable $e)
+        {
+
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CAPITAL_LOC_EXISTENCE_CHECK_FAILED,
+                ['merchant_id'  => $merchantId]
+            );
+
+            // In case if the call to LOS service fails, just allow linking existing merchant to partner
+            return false;
+        }
     }
 
     public function trackPartnershipsCapitalInviteMerchantsWithExistingApplicationEvent(Entity $partner, string $merchantId, string $source)

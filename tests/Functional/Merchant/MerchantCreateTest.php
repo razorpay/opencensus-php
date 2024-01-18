@@ -1850,8 +1850,6 @@ class MerchantCreateTest extends TestCase
 
         $this->mockCapitalPartnershipSplitzExperiment();
 
-        $this->mockCapitalPartnershipLinkExistingMerchantExperiment();
-
         // assert that LOS Service gets one request to get product list and one request to create capital application
         $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
             ->makePartial()
@@ -1872,7 +1870,9 @@ class MerchantCreateTest extends TestCase
         // assert that partner is not sent an email, since it's batch service
         Mail::assertNotQueued(CreateSubMerchantPartnerForLOC::class);
 
-        $submerchant = $merchant[0];
+        $submerchantId = $merchant[0]['id'];
+
+        $submerchant = $this->getEntityById('merchant', $submerchantId, true);
 
         // assert that partner's reseller app is mapped to submerchant in merchant_access_map
         $this->verifyAccessMapEntries($app, $submerchant);
@@ -1884,7 +1884,7 @@ class MerchantCreateTest extends TestCase
 
         // assert that submerchant user is given access to banking product
         $mapping = $this->fixtures->user->getMerchantUserMapping(
-            $submerchant['id'],
+            $submerchantId,
             $submerchantUser['id'],
             'banking'
         );
@@ -1902,7 +1902,7 @@ class MerchantCreateTest extends TestCase
         // assert that merchant attribute for X_MERCHANT_INTENT:CAPITAL_LOC_EMI is added in live mode
         $res = $this->repo->merchant_attribute->connection(Mode::LIVE)
             ->getKeyValues(
-                $submerchant["id"],
+                $submerchantId,
                 Product::BANKING,
                 MerchantAttribute\Group::X_MERCHANT_INTENT,
                 [MerchantAttribute\Type::CAPITAL_LOC_EMI]
@@ -1911,7 +1911,7 @@ class MerchantCreateTest extends TestCase
         $this->assertNotEmpty($res);
     }
 
-    public function testCreateExistingCapitalSubMerchantByResellerBatchForLOC()
+    public function testCreateExistingCapitalLOCMerchantByResellerBatchForLOC()
     {
         Mail::fake();
 
@@ -1921,20 +1921,23 @@ class MerchantCreateTest extends TestCase
 
         (new PartnerTest())->markBankingSubmerchantAsCapitalSubmerchant($merchant[0]['id'], '11000000000000');
 
-        $this->fixtures->create('merchant_user', [
-            'merchant_id'   => $merchant[0]['id'],
-            'user_id'       => $user->getId(),
-            'role'          => 'owner',
-            'product'       => 'banking',
-        ]);
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('losService', $losServiceMock);
+
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $this->mockGetApplicationBulkRequestByMerchantIdOnLOSService($losServiceMock, $merchant[0]['id']);
+
+        $this->mockCreateApplicationRequestOnLOSServiceNegative($losServiceMock);
 
         $this->markPartnerAndCreateAppAndUserMapping(MerchantConstants::RESELLER);
 
         $this->ba->batchAppAuth();
 
         $this->mockCapitalPartnershipSplitzExperiment();
-
-        $this->mockCapitalPartnershipLinkExistingMerchantExperiment();
 
         $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $this->testData[__FUNCTION__]['response']['content']['error']['description'] . $merchant[0]['id'];
 

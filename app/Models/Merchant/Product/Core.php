@@ -789,23 +789,18 @@ class Core extends Base\Core
 
         try
         {
-            $productIds = CapitalSubmerchantUtility::getLOSProductIds();
-
-            $locProductId = $productIds[Merchant\Constants::CAPITAL_LOC_EMI_PRODUCT_NAME];
-
-            $applicationResponse = new JsonResponse($this->capitalSubmerchantUtility()->fetchApplicationsForSubmerchantsForProduct(
-                [$merchant->getId()],
-                $locProductId
-            ));
-
-            $applicationResponse = $applicationResponse->getData(true);
-
-            //If LOC application doesn't exist already for the merchant, then request for it.
+            // If LOC application doesn't exist already for the merchant, then request for it.
             // This check is applicable for cases where application already exist but LOC product was never requested
             // via product config API.
-            if(isset($applicationResponse['original']['response'][$merchant->getId()]) === false)
+            $hasExistingLOCApp = $this->capitalSubmerchantUtility()->hasExistingCapitalLOCApplication($merchant->getId());
+
+            if($hasExistingLOCApp === false)
             {
                 $partner = $this->app['basicauth']->getPartnerMerchant();
+
+                $productIds = CapitalSubmerchantUtility::getLOSProductIds();
+
+                $locProductId = $productIds[Merchant\Constants::CAPITAL_LOC_EMI_PRODUCT_NAME];
 
                 CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant($merchant, $partner, [
                     Merchant\Constants::LEAD_SOURCE     => "Partner",

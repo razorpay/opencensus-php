@@ -803,7 +803,7 @@ return [
         ],
     ],
 
-    'testCreateExistingCapitalSubMerchantByResellerBatchForLOC' => [
+    'testCreateExistingCapitalLOCMerchantByResellerBatchForLOC' => [
         'request'  => [
             'url'     => '/submerchants/batch',
             'method'  => 'POST',

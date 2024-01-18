@@ -2954,6 +2954,8 @@ class UserTest extends TestCase
 
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
 
+        $this->mockGetNoApplicationBulkRequestOnLOSService($losServiceMock);
+
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest($testData);
@@ -3052,6 +3054,8 @@ class UserTest extends TestCase
 
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
 
+        $this->mockGetNoApplicationBulkRequestOnLOSService($losServiceMock);
+
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest($testData);
@@ -3141,6 +3145,8 @@ class UserTest extends TestCase
         $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
 
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $this->mockGetNoApplicationBulkRequestOnLOSService($losServiceMock);
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -4542,6 +4548,8 @@ class UserTest extends TestCase
         $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
 
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $this->mockGetNoApplicationBulkRequestOnLOSService($losServiceMock);
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -10983,6 +10991,8 @@ class UserTest extends TestCase
 
         $this->mockGetProductsRequestOnLOSService($losServiceMock);
 
+        $this->mockGetNoApplicationBulkRequestOnLOSService($losServiceMock);
+
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
@@ -11164,20 +11174,17 @@ class UserTest extends TestCase
         $this->assertNotContains('Ref-' . '10000000000000', $merchant->tagNames());
     }
 
-    public function testCapitalReferralWithCapitalLOCTagOnMerchantDuringLogin()
+    public function testCapitalReferralWithExistingCapitalLOCAppOnMerchantDuringLogin()
     {
-        $user = $this->fixtures->create('user',['password' => 'hello123']);
-
         $merchant = $this->fixtures->create('merchant');
 
-        $mappingData = [
-            'user_id'     => $user->getId(),
-            'merchant_id' => $merchant->getId(),
-            'role'        => 'owner',
-            'product'     => 'banking',
-        ];
-
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+        $this->fixtures->user->createUserForMerchant($merchant->getId(), [
+            'id'    => "FL0nl7kME8j3Dd",
+            'email' => 'hello123@gmail.com',
+            'confirm_token'  => null,
+            'signup_via_email' => 1,
+            'password' => 'hello123'
+        ]);
 
         $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'reseller']);
         $this->fixtures->create('referrals', ["product" => 'capital']);
@@ -11190,10 +11197,24 @@ class UserTest extends TestCase
 
         (new PartnerTest())->markBankingSubmerchantAsCapitalSubmerchant($merchant->getId(), '10000000000000');
 
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+            ->makePartial()
+            ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('losService', $losServiceMock);
+
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $this->mockGetApplicationBulkRequestByMerchantIdOnLOSService($losServiceMock, $merchant->getId());
+
+        $this->mockCreateApplicationRequestOnLOSServiceNegative($losServiceMock);
+
         $testData = & $this->testData['testCapitalReferralFlowDuringLogin'];
 
         $content = [
-            'email'                 => $user['email'],
+            'email'                 => 'hello123@gmail.com',
             'password'              => 'hello123',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
             'referral_code'         => 'teslacomikejzc'
