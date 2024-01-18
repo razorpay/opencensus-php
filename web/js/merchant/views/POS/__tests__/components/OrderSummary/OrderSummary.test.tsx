@@ -41,7 +41,6 @@ describe('<OrderSummary/>', () => {
   };
 
   afterEach(() => {
-    jest.resetAllMocks();
     queryClient.clear();
   });
   test('should render app on screen ', async () => {
@@ -165,10 +164,21 @@ describe('<OrderSummary/>', () => {
     await waitFor(() => {
       expect(screen.getByTestId('pos-checkout-cta')).toBeEnabled();
     });
+
+    validatorSpy.mockRestore();
+  });
+
+  test('should show delivery address form open error and checkout should be disblaed if form is open', async () => {
+    server.use(getProductPricingHandler(), getLatestOrderHandler());
+    renderApp();
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await userEvent.click(screen.getByText('Add New Address'));
+    expect(screen.getByText('Please save your address to continue')).toBeVisible();
+    expect(screen.getByTestId('pos-checkout-cta')).toBeDisabled();
   });
 
   test('should render checkout cta for mobile with total amount and view details should open pricing sheet', async () => {
-    server.use(getProductPricingHandler(), getLatestOrderHandler('latest_order_with_delivered'));
+    server.use(getProductPricingHandler(), getLatestOrderHandler());
     const useBladeBreakpointsSpy = jest.spyOn(posCustomHooks, 'useBladeBreakpoints');
     useBladeBreakpointsSpy.mockReturnValue({
       matchedBreakpoint: 'sm',

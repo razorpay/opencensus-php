@@ -198,7 +198,9 @@ export const getLatestOrderHandler = (type = '', isSuccess = true) => {
     const response = {
       status_code: 200,
       success: true,
-      data: type === 'latest_order_with_delivered' ? MOCK_LATEST_ORDER_WITH_DELIVERED_STATUS : [],
+      ...(type === 'latest_order_with_delivered'
+        ? { data: MOCK_LATEST_ORDER_WITH_DELIVERED_STATUS }
+        : {}),
     };
     return rest.get('*/merchant/api/*/merchant/device/order/latest', (_, res, ctx) =>
       res(ctx.status(200), ctx.json(response), ctx.delay(50)),

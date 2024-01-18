@@ -581,12 +581,14 @@ type ValidatePrecheckoutProps = {
   cartItems: CartItem[];
   user: User | null;
   latestOrder: OrderDetailsItem | undefined;
+  isDeliveryAddressFormOpen: boolean;
 };
 
 export const validatePrecheckout = ({
   user,
   cartItems,
   latestOrder,
+  isDeliveryAddressFormOpen,
 }: ValidatePrecheckoutProps): CheckoutValidationError | null => {
   const totalQuantity = cartItems.reduce((acc, cartItems) => (acc += cartItems.quantity), 0);
 
@@ -608,6 +610,10 @@ export const validatePrecheckout = ({
 
   if (user?.pos_activation_status === 'rejected') {
     return CHECKOUT_ERRORS.KYC_REJECTED;
+  }
+
+  if (isDeliveryAddressFormOpen) {
+    return CHECKOUT_ERRORS.DELIVERY_ADDRESS_FORM_OPEN;
   }
 
   return null;

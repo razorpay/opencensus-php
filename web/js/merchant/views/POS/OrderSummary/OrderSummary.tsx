@@ -31,18 +31,19 @@ import PosBreadcrumbs from 'merchant/views/POS/PosBreadcrumbs';
 const OrderSummary = (): JSX.Element => {
   const { latestOrder, isLatestOrderLoading, latestOrderFetchError } = useLatestOrder();
   const { state } = useContext(PosDeviceStoreContext);
-  const { cartItems, productDescriptions, user } = state;
+  const { cartItems, productDescriptions, user, isDeliveryAddressFormOpen } = state;
   const { isMobile } = useBladeBreakpoints();
   const [isViewDetailsSheetOpen, setIsViewDetailsSheetOpen] = useState<boolean>(false);
 
   const { orderProcessError, pricing } = useMemo(
     () => ({
       orderProcessError:
-        validatePrecheckout({ cartItems, user, latestOrder }) ?? latestOrderFetchError,
+        validatePrecheckout({ cartItems, user, latestOrder, isDeliveryAddressFormOpen }) ??
+        latestOrderFetchError,
       pricing: processPrecheckoutPricing({ cartItems, productDescriptions }),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [cartItems, latestOrder, latestOrderFetchError],
+    [cartItems, latestOrder, latestOrderFetchError, isDeliveryAddressFormOpen],
   );
 
   const handlePageReadSuccess = () => {
@@ -87,6 +88,8 @@ const OrderSummary = (): JSX.Element => {
     setIsViewDetailsSheetOpen(false);
   };
 
+  const isCheckoutDisabled = orderProcessError?.sev === 0 || isDeliveryAddressFormOpen;
+
   return (
     <MainContainer>
       <PosBreadcrumbs />
@@ -116,10 +119,7 @@ const OrderSummary = (): JSX.Element => {
                   }
                 />
               ) : null}
-              <CheckoutCta
-                isDisabled={orderProcessError?.sev === 0}
-                isLoading={isLatestOrderLoading}
-              />
+              <CheckoutCta isDisabled={isCheckoutDisabled} isLoading={isLatestOrderLoading} />
             </Box>
           </Box>
         ) : (
@@ -187,10 +187,7 @@ const OrderSummary = (): JSX.Element => {
               />
             ) : null}
 
-            <CheckoutCta
-              isDisabled={orderProcessError?.sev === 0}
-              isLoading={isLatestOrderLoading}
-            />
+            <CheckoutCta isDisabled={isCheckoutDisabled} isLoading={isLatestOrderLoading} />
           </Box>
         )}
       </Box>

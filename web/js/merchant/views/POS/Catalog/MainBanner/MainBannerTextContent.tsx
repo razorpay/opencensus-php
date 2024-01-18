@@ -15,10 +15,11 @@ import {
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
-import { PRODUCT_DESCRIPTIONS, PRODUCT_PLANS } from 'merchant/views/POS/constants';
+import { PRODUCT_PLANS, ANDROID_SMART_POS } from 'merchant/views/POS/constants';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 
 import { MainBannerFeaturesContainer, MainBannerFooter } from './styles';
+import { ProductDescription } from 'merchant/views/POS/types';
 
 type FEATURE_ITEMS = {
   title: string;
@@ -26,6 +27,7 @@ type FEATURE_ITEMS = {
 }[];
 
 type MainBannerTextContentProps = {
+  product: ProductDescription;
   setupFee: number;
   monthlyFee: number;
   onLearnMoreClick: () => void;
@@ -51,6 +53,7 @@ const FEATURE_ITEMS: FEATURE_ITEMS = [
 ];
 
 const MainBannerTextContent = ({
+  product,
   setupFee,
   monthlyFee,
   onLearnMoreClick,
@@ -70,7 +73,7 @@ const MainBannerTextContent = ({
         color="surface.text.normal.highContrast"
         textAlign={isMobile ? 'center' : 'left'}
       >
-        Android Smart POS
+        {product.productTitle}
       </Title>
       <Heading
         size="medium"
@@ -156,7 +159,7 @@ const MainBannerTextContent = ({
           marginBottom={{ base: 'spacing.5', m: 'spacing.8' }}
         >
           <AddToCartButton
-            productCode={PRODUCT_DESCRIPTIONS.a50.code}
+            productCode={ANDROID_SMART_POS.code}
             plan={PRODUCT_PLANS.MONTHLY}
             openCartOnUpdate
             onCtaClick={() => {

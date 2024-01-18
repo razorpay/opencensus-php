@@ -106,15 +106,14 @@ const CartItem = ({
               {breakups.map(({ key, value, isExtraFee, suffix }) => (
                 <React.Fragment key={key}>
                   {isExtraFee ? ' (' : null}
+                  {'  '}
                   <Amount
                     value={value}
                     suffix="none"
                     marginLeft="-2px"
                     isAffixSubtle={false}
                   />{' '}
-                  {suffix}
-                  {'  '}
-                  {isExtraFee ? ')' : null}
+                  {suffix} {isExtraFee ? ')' : null}
                 </React.Fragment>
               ))}
             </Box>

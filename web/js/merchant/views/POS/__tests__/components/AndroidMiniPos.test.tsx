@@ -5,6 +5,7 @@ import { MOCK_USER } from 'merchant/views/POS/__tests__/mocks/fixtures';
 import { getProductPricingHandler } from 'merchant/views/POS/__tests__/mocks/handlers';
 import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
 import { render, screen, waitForElementToBeRemoved, server } from 'test-utils';
+import { ANDROID_MINI_POS } from 'merchant/views/POS/constants';
 
 jest.unmock('merchant/views/POS/constants');
 
@@ -19,7 +20,7 @@ const renderApp = () => {
 const MOCK_PRODUCT_PRICING = [
   {
     name: 'Android Mini POS',
-    code: 'a910',
+    code: ANDROID_MINI_POS.code,
     rate_config: {
       monthly: 300,
       lifetime: 12000,

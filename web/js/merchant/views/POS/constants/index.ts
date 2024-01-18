@@ -77,9 +77,9 @@ export const UPDATE_CART_ACTIONS: Record<UpdateCartTypes, UpdateCartTypes> = {
 };
 
 export const PRODUCT_DESCRIPTIONS = {
-  a50: ANDROID_SMART_POS,
-  a910: ANDROID_MINI_POS,
-  d180: MOBILE_POS,
+  [ANDROID_SMART_POS.code]: ANDROID_SMART_POS,
+  [ANDROID_MINI_POS.code]: ANDROID_MINI_POS,
+  [MOBILE_POS.code]: MOBILE_POS,
 };
 
 export const PosStoreInitialState: PosDeviceStoreState = {
@@ -354,6 +354,10 @@ export const EASY_DASHBOARD_ROUTES = {
   storeDetailsWithIntent: '/onboarding/pos/store-details?intent=pos',
   l2onboardingWithIntent: '/onboarding/l2?intent=pos',
 };
+
+export { default as ANDROID_MINI_POS } from './AndroidMiniPos';
+export { default as ANDROID_SMART_POS } from './AndroidSmartPos';
+export { default as MOBILE_POS } from './MobilePos';
 
 export { DETAILED_PRICING, TERMS_AND_CONDITIONS } from './DetailedPricingAndTnc';
 export { ORDER_STATUS_META_DATA, ORDER_STATUS_TIMELINE_ITEMS } from './OrderStatus';

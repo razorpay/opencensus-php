@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 import MainBannerBackdropImage from 'assets/pos/main-banner/mainbannerbackground.webp';
-import { PRODUCT_DESCRIPTIONS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { getPricingByProduct, getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
@@ -14,6 +13,7 @@ import MainBannerProductImage from './MainBannerProductImage';
 import MainBannerTextContent from './MainBannerTextContent';
 import MainBannerTilesGroup from './MainBannerTilesGroup';
 import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
+import { ANDROID_SMART_POS } from 'merchant/views/POS/constants';
 
 const MainBanner = (): JSX.Element | null => {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const MainBanner = (): JSX.Element | null => {
 
   const { productDescriptions } = state;
   const productDescription = getProductFromProductDescriptions({
-    code: PRODUCT_DESCRIPTIONS.a50.code,
+    code: ANDROID_SMART_POS.code,
     productDescriptions,
   });
 
@@ -75,6 +75,7 @@ const MainBanner = (): JSX.Element | null => {
               gridTemplateColumns={{ l: '2fr 1fr', xl: '2fr 1fr 0.5fr' }}
             >
               <MainBannerTextContent
+                product={productDescription}
                 monthlyFee={monthly}
                 setupFee={setupFee}
                 onLearnMoreClick={() => {

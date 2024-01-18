@@ -5,7 +5,7 @@ import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 import AndroidMiniPosImage from 'assets/pos/main-banner/minipos.webp';
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
-import { PRODUCT_DESCRIPTIONS, PRODUCT_PLANS } from 'merchant/views/POS/constants';
+import { PRODUCT_PLANS, ANDROID_MINI_POS } from 'merchant/views/POS/constants';
 import { PosDeviceStoreContext } from 'merchant/views/POS/context';
 import { getPricingByProduct, getProductFromProductDescriptions } from 'merchant/views/POS/helpers';
 
@@ -25,7 +25,7 @@ const AndroidMiniPos = (): JSX.Element | null => {
 
   const { productDescriptions } = state;
   const productDescription = getProductFromProductDescriptions({
-    code: PRODUCT_DESCRIPTIONS.a910.code,
+    code: ANDROID_MINI_POS.code,
     productDescriptions,
   });
 
@@ -53,7 +53,7 @@ const AndroidMiniPos = (): JSX.Element | null => {
           paddingRight="spacing.5"
         >
           <Box>
-            <Title>Android Smart Mini POS</Title>
+            <Title>{productDescription.productTitle}</Title>
             <Text color="surface.text.subtle.lowContrast" weight="bold">
               Feature packed and portable
             </Text>
@@ -77,7 +77,7 @@ const AndroidMiniPos = (): JSX.Element | null => {
               <Text color="surface.text.subtle.lowContrast">*Lifetime Pricing also available.</Text>
               <Box display="flex" marginTop="spacing.5" alignItems="center">
                 <AddToCartButton
-                  productCode={PRODUCT_DESCRIPTIONS.a910.code}
+                  productCode={ANDROID_MINI_POS.code}
                   plan={PRODUCT_PLANS.MONTHLY}
                   openCartOnUpdate
                   onCtaClick={() => {
@@ -103,7 +103,7 @@ const AndroidMiniPos = (): JSX.Element | null => {
                       subSection: 'Android Smart Mini POS',
                     });
 
-                    navigate(`/pos/catalog/${PRODUCT_DESCRIPTIONS.a910.code}`);
+                    navigate(`/pos/catalog/${ANDROID_MINI_POS.code}`);
                   }}
                 >
                   Learn More

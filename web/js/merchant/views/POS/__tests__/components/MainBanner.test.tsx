@@ -8,13 +8,14 @@ import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
 import { screen, render, waitForElementToBeRemoved, userEvent, server } from 'test-utils';
 import { ScrollObserverProvider } from 'merchant/views/POS/utils/ScrollObserver';
 import { setupIntersectionObserverMock } from 'merchant/views/POS/utils/IntersectionObserverMock';
+import { ANDROID_SMART_POS } from 'merchant/views/POS/constants';
 
 const mockedUsedNavigate = jest.fn();
 
 const MOCK_PRODUCT_PRICING = [
   {
     name: 'Android Smart POS',
-    code: 'a50',
+    code: ANDROID_SMART_POS.code,
     rate_config: {
       monthly: 300,
       lifetime: 12000,
@@ -97,7 +98,7 @@ describe('<MainBanner/>', () => {
     renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
     await userEvent.click(screen.getByText('Learn More'));
-    expect(mockedUsedNavigate).toHaveBeenCalledWith('/pos/catalog/a50');
+    expect(mockedUsedNavigate).toHaveBeenCalledWith(`/pos/catalog/${ANDROID_SMART_POS.code}`);
   });
 
   test('should navigate to pdp if clicked on main banner and isMobile', async () => {
@@ -110,6 +111,6 @@ describe('<MainBanner/>', () => {
     renderApp();
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
     await userEvent.click(screen.getByTestId('main-banner-wrapper'));
-    expect(mockedUsedNavigate).toHaveBeenCalledWith('/pos/catalog/a50');
+    expect(mockedUsedNavigate).toHaveBeenCalledWith(`/pos/catalog/${ANDROID_SMART_POS.code}`);
   });
 });

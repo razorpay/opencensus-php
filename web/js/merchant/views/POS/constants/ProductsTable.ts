@@ -12,6 +12,9 @@ import AndroidMini from 'assets/pos/productTable/androidMini.webp';
 import AndroidPos from 'assets/pos/productTable/androidPos.webp';
 import MobilePos from 'assets/pos/productTable/mobilePos.webp';
 import { ProductTableList } from 'merchant/views/POS/types';
+import ANDROID_SMART_POS from './AndroidSmartPos';
+import ANDROID_MINI_POS from './AndroidMiniPos';
+import MOBILE_POS from './MobilePos';
 
 const PRODUCTS_TABLE: ProductTableList = {
   features: [
@@ -38,9 +41,9 @@ const PRODUCTS_TABLE: ProductTableList = {
   products: [
     {
       image: AndroidPos,
-      name: 'android-smart-pos',
-      code: 'a50',
-      productTitle: 'Android Smart POS',
+      name: ANDROID_SMART_POS.name,
+      code: ANDROID_SMART_POS.code,
+      productTitle: ANDROID_SMART_POS.productTitle,
       features: {
         pricing_plan: {
           isAvailable: true,
@@ -87,9 +90,9 @@ const PRODUCTS_TABLE: ProductTableList = {
     },
     {
       image: AndroidMini,
-      name: 'android-mini-pos',
-      code: 'a910',
-      productTitle: 'Android Mini POS',
+      name: ANDROID_MINI_POS.name,
+      code: ANDROID_MINI_POS.code,
+      productTitle: ANDROID_MINI_POS.productTitle,
       features: {
         pricing_plan: {
           isAvailable: true,
@@ -136,9 +139,9 @@ const PRODUCTS_TABLE: ProductTableList = {
     },
     {
       image: MobilePos,
-      name: 'mobile-pos',
-      code: 'd180',
-      productTitle: 'Mobile POS (mPOS)',
+      name: MOBILE_POS.name,
+      code: MOBILE_POS.code,
+      productTitle: MOBILE_POS.productTitle,
       features: {
         pricing_plan: {
           isAvailable: true,

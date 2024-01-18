@@ -53,7 +53,7 @@ const MobilePos = (): JSX.Element | null => {
           padding="spacing.5"
         >
           <Box>
-            <Title>Mobile POS (mPOS)</Title>
+            <Title>{productDescription.productTitle}</Title>
             <Text color="surface.text.subtle.lowContrast" weight="bold">
               Pocket-sized and affordable
             </Text>

@@ -4,13 +4,13 @@ import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 
 import MiniPosMobile from 'assets/pos/main-banner/minipos-mobile.webp';
 import MPos from 'assets/pos/main-banner/mpos-mobile.webp';
-import { PRODUCT_DESCRIPTIONS } from 'merchant/views/POS/constants';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
 
 import AndroidMiniPos from './AndroidMiniPos';
 import MobileCardContainer from './MobileCardContainer';
 import MobilePos from './MobilePos';
 import { useScrollObserver } from 'merchant/views/POS/utils/ScrollObserver';
+import { ANDROID_MINI_POS, MOBILE_POS } from 'merchant/views/POS/constants';
 
 const ProductCards = (): JSX.Element => {
   const { isMobile } = useBladeBreakpoints();
@@ -30,7 +30,7 @@ const ProductCards = (): JSX.Element => {
       <Box maxWidth="1600px" width="100%" display={{ base: 'block', xl: 'flex' }} gap="spacing.5">
         {isMobile ? (
           <MobileCardContainer
-            code={PRODUCT_DESCRIPTIONS.a910.code}
+            code={ANDROID_MINI_POS.code}
             image={MiniPosMobile}
             cardDescription="Feature packed and portable"
           />
@@ -39,7 +39,7 @@ const ProductCards = (): JSX.Element => {
         )}
         {isMobile ? (
           <MobileCardContainer
-            code={PRODUCT_DESCRIPTIONS.d180.code}
+            code={MOBILE_POS.code}
             image={MPos}
             cardDescription="Pocket Sized and Affordable"
           />

@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-const { MAIN_BANNER_TEXT_CONTENT, PDP_CONTENT } = require('./constants');
+const { MAIN_BANNER_TEXT_CONTENT, PDP_CONTENT, DEVICE_CODES } = require('./constants');
 const { waitForPosCatalogToLoad } = require('./utils');
 const { navigateTo } = require('../../utils/common');
 const { StorageStatePath, routes } = require('../../utils/constants');
@@ -26,7 +26,11 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       MAIN_BANNER_TEXT_CONTENT.forEach(async (content) => {
         await expect(mainBanner).toContainText(content);
       });
-      await expect(page.getByText('Android Smart Mini POS')).toBeVisible();
+      await expect(
+        page
+          .getByTestId('android-mini-pos-product-card')
+          .getByRole('heading', { name: 'Android Smart Mini POS' }),
+      ).toBeVisible();
       await expect(page.getByText('Feature packed and portable')).toBeVisible();
       const mobilePosProductCart = page.getByTestId('mobile-pos-product-card');
       await expect(mobilePosProductCart).toContainText('Mobile POS (mPOS)');
@@ -42,7 +46,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
       await androidSmartPosAddToCartBtn.click();
 
-      const cartItem = page.getByTestId('a50-monthly-cart-item');
+      const cartItem = page.getByTestId(`${DEVICE_CODES.androidSmartPos}-monthly-cart-item`);
       await expect(cartItem).toBeVisible();
       await expect(cartItem.getByTestId('quantity-value')).toHaveText('1');
       await cartItem.getByLabel('increase cart quantity').click();
@@ -55,14 +59,14 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
 
       const mobilePos = page.getByTestId('mobile-pos-product-card');
       await mobilePos.getByText('Add to cart').click();
-      const mobilePosCartItem = page.getByTestId('d180-monthly-cart-item');
+      const mobilePosCartItem = page.getByTestId(`${DEVICE_CODES.mobilePos}-monthly-cart-item`);
       //TODO:: cart item plan change assertion
       await expect(mobilePosCartItem.getByTestId('quantity-value')).toHaveText('1');
       await page.getByLabel('cart close button').click();
 
       const miniPos = page.getByTestId('android-mini-pos-product-card');
       await miniPos.getByText('Add to cart').click();
-      const miniPosCartItem = page.getByTestId('a910-monthly-cart-item');
+      const miniPosCartItem = page.getByTestId(`${DEVICE_CODES.androidMiniPos}-monthly-cart-item`);
       await expect(miniPosCartItem.getByTestId('quantity-value')).toHaveText('1');
     });
   });
@@ -76,20 +80,28 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
 
       const mainBanner = page.getByTestId('main-banner-wrapper');
       await mainBanner.getByText('Learn More').click();
-      await expect(page.getByText(PDP_CONTENT.a50.subtitle)).toBeVisible();
-      await expect(page.getByTestId('pdp-title')).toHaveText(PDP_CONTENT.a50.title);
+      await expect(
+        page.getByText(PDP_CONTENT[DEVICE_CODES.androidSmartPos].subtitle),
+      ).toBeVisible();
+      await expect(page.getByTestId('pdp-title')).toHaveText(
+        PDP_CONTENT[DEVICE_CODES.androidSmartPos].title,
+      );
       await page.getByText('Catalog').click();
 
       const mobilePos = page.getByTestId('mobile-pos-product-card');
       await mobilePos.getByText('Learn More').click();
-      await expect(page.getByText(PDP_CONTENT.d180.subtitle)).toBeVisible();
-      await expect(page.getByTestId('pdp-title')).toHaveText(PDP_CONTENT.d180.title);
+      await expect(page.getByText(PDP_CONTENT[DEVICE_CODES.mobilePos].subtitle)).toBeVisible();
+      await expect(page.getByTestId('pdp-title')).toHaveText(
+        PDP_CONTENT[DEVICE_CODES.mobilePos].title,
+      );
       await page.getByText('Catalog').click();
 
       const miniPos = page.getByTestId('android-mini-pos-product-card');
       await miniPos.getByText('Learn More').click();
-      await expect(page.getByText(PDP_CONTENT.a910.subtitle)).toBeVisible();
-      await expect(page.getByTestId('pdp-title')).toHaveText(PDP_CONTENT.a910.title);
+      await expect(page.getByText(PDP_CONTENT[DEVICE_CODES.androidMiniPos].subtitle)).toBeVisible();
+      await expect(page.getByTestId('pdp-title')).toHaveText(
+        PDP_CONTENT[DEVICE_CODES.androidMiniPos].title,
+      );
     });
 
     test('should be able to add products in cart and should reflect in the cart @flow=pos-device-ordering @project=pos-onboarding', async ({
@@ -100,7 +112,9 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
 
       const mainBanner = page.getByTestId('main-banner-wrapper');
       await mainBanner.getByText('Learn More').click();
-      await expect(page.getByText(PDP_CONTENT.a50.subtitle)).toBeVisible();
+      await expect(
+        page.getByText(PDP_CONTENT[DEVICE_CODES.androidSmartPos].subtitle),
+      ).toBeVisible();
       await page.getByPlaceholder('Enter PIN Code').fill('560034');
       await page.getByRole('button', { name: 'Check', exact: true }).click();
       await page.waitForSelector(`text=Delivery in 2-3 business days post KYC approval.`, {
@@ -128,7 +142,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
       await androidSmartPosAddToCartBtn.click();
 
-      const cartItem = page.getByTestId('a50-monthly-cart-item');
+      const cartItem = page.getByTestId(`${DEVICE_CODES.androidSmartPos}-monthly-cart-item`);
       await expect(cartItem).toBeVisible();
       await expect(cartItem.getByTestId('quantity-value')).toHaveText('1');
       await page.getByText('Place Order').click();
@@ -149,7 +163,7 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       const androidSmartPosAddToCartBtn = page.getByTestId('main-banner-wrapper').getByText('Add');
       await androidSmartPosAddToCartBtn.click();
 
-      const cartItem = page.getByTestId('a50-monthly-cart-item');
+      const cartItem = page.getByTestId(`${DEVICE_CODES.androidSmartPos}-monthly-cart-item`);
       await expect(cartItem).toBeVisible();
       await expect(cartItem.getByTestId('quantity-value')).toHaveText('1');
       await page.getByText('Place Order').click();
@@ -218,7 +232,9 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
 
       await page.reload();
       await page.waitForSelector('text=Test Name, Test Address, Bengaluru', { timeout: 10000 });
-      await expect(page.getByTestId('a50-monthly-order-item')).toBeVisible();
+      await expect(
+        page.getByTestId(`${DEVICE_CODES.androidSmartPos}-monthly-order-item`),
+      ).toBeVisible();
     });
   });
 
@@ -231,7 +247,11 @@ test.describe.parallel('POS Device Store @flow=pos-device-ordering @project=paym
       await page.getByText('Orders').click();
       await expect(page.getByText('No Order History')).toBeVisible();
       await page.getByText('Shop now').click();
-      await expect(page.getByText('Android Smart Mini POS')).toBeVisible();
+      await expect(
+        page
+          .getByTestId('android-mini-pos-product-card')
+          .getByRole('heading', { name: 'Android Smart Mini POS' }),
+      ).toBeVisible();
     });
   });
 });

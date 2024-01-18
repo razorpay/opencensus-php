@@ -41,7 +41,7 @@ const ANDROID_MINI_POS: ProductDescription = {
       thumbnail: Thumbnail4,
     },
   ],
-  code: 'a910',
+  code: 'a50',
   name: 'android-mini-pos',
   productTitle: 'Android Smart Mini POS',
   description:

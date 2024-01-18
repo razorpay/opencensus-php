@@ -39,10 +39,10 @@ const DeliveryAddresses = ({ defaultIsExpanded }: { defaultIsExpanded: boolean }
     dispatch({
       type: ACTIONS.SET_DELIVERY_ADDRESS_FORM_OPEN,
       payload: {
-        isDeliveryAddressFormOpen: editiableAddressIndex !== null,
+        isDeliveryAddressFormOpen: editiableAddressIndex !== null || isAddNewDeliveryAddress,
       },
     });
-  }, [editiableAddressIndex]);
+  }, [editiableAddressIndex, isAddNewDeliveryAddress]);
 
   const getSelectedAddress = useCallback(
     () => deliveryAddresses.findIndex((address) => address.isSelected) ?? 0,
