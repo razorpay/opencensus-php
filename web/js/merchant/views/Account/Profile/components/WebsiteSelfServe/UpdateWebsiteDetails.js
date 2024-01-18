@@ -68,6 +68,7 @@ function WebsiteFields({
 
       {isBusinessWebsiteRevamp && flowType === FLOWS.BUSINESS_WEBSITE ? (
         <Input
+          required
           label="Shipping policy"
           name="shipping_policy"
           validator={(input) => {
@@ -199,9 +200,6 @@ function UpdateWebsiteDetails(props) {
 
       if (isBusinessWebsiteRevamp) {
         payload.version = 'v2';
-        if (payload.business_website_shipping_policy === '') {
-          delete payload.business_website_shipping_policy;
-        }
       }
 
       // If creds are not checked, removing these keys
@@ -473,10 +471,6 @@ function UpdateWebsiteDetails(props) {
   };
 
   const validateMetaUrls = (fieldName, input) => {
-    // ignore shipping policy
-    if (fieldName === 'shipping_policy' && input === '') {
-      return '';
-    }
     const value = isUrlValid(input);
     if (!value) {
       const _obj = { ...areMetaUrlsValid };
@@ -496,8 +490,7 @@ function UpdateWebsiteDetails(props) {
     let areAllValid = true;
     Object.keys(areMetaUrlsValid).forEach((key) => {
       const value = areMetaUrlsValid[key];
-      // ignore shippping policy
-      if (!value && key !== 'shipping_policy') areAllValid = false;
+      if (!value) areAllValid = false;
     });
 
     return areAllValid;
