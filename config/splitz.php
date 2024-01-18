@@ -218,5 +218,8 @@ return [
         // razorx caching enabled
         'RAZORX_CACHING_ENABLED' => env('RAZORX_CACHING_ENABLED', ''),
 
+        // unified signup
+        'CURLEC_REDIRECTION_ENABLED' => env('CURLEC_REDIRECTION_ENABLED', '')
+
     ]
 ];

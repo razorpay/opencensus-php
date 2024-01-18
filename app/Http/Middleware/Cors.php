@@ -61,6 +61,14 @@ class Cors
         'easy_curlec_signup_domain' => [
             'url_config'    => 'app.easy_curlec_signup_url'
         ],
+
+        'curlec_accounts_domain' => [
+            'url_config'    => 'app.curlec_accounts_url'
+        ],
+
+        'razorpay_accounts_domain' => [
+            'url_config'    => 'app.razorpay_accounts_url'
+        ],
     ];
 
     protected function shouldAllowCors($request, $originHost) : bool

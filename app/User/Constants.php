@@ -239,6 +239,10 @@ class Constants
         '', '+91', '91', '0'
     ];
 
+    const DOMAIN_REDIRECT_MAP = [
+        'dashboard-curlec.dev.razorpay.in' => ['redirect_url' => 'https://accounts-curlec.np.razorpay.in', 'id' => 'CURLEC_REDIRECTION_ENABLED'],
+        'dashboard.curlec.com'             => ['redirect_url' => 'https://accounts.curlec.com', 'id'=>'CURLEC_REDIRECTION_ENABLED'],
+    ];
 
     const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
     // Fields to be added if API calls are to be skipped for them.

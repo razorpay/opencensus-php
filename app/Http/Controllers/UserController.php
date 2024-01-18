@@ -132,6 +132,26 @@ class UserController extends Controller
         $this->splitzExprimentData = $data;
     }
 
+    public function IsDomainRedirectionEnabled($id): bool
+    {
+        if (empty($id)) {
+            // No experiment is set
+            return true;
+        }
+        $experimentId = env($id);
+        $data = (new SplitzService([AppConstants::HTTP_CLIENT => $this->httpClient]))->getVariant(
+            $experimentId,
+            "",
+        );
+
+        if ($data === null)
+        {
+            return false;
+        }
+
+        return ($data["variables"][0]["value"] ?? null) === 'true';
+    }
+
     public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $startTime, $isConcurrentApiCall = false)
     {
         $data = $this->getDataForRendering($details,$org, $userError, $orgError);
@@ -319,6 +339,7 @@ class UserController extends Controller
 
             if (is_null($isMerchantLogin) === true)
             {
+
                 if (is_null($currentMerchantId) === false)
                 {
                     // Chunk based straming: set flag to enable streaming
@@ -327,6 +348,17 @@ class UserController extends Controller
 
                 $timeTaken = self::millitime() - $startTime;
                 $this->pushUserRenderDataToMetrics($timeTaken, true, $isConcurrentApiCall);
+
+                $domain = \Request::server('SERVER_NAME');
+
+                foreach (UserConstants::DOMAIN_REDIRECT_MAP as $domainKey => $domainData) {
+                    if ($domain == $domainKey) {
+                        $redirectUrl = $domainData['redirect_url'];
+                        if ($this->IsDomainRedirectionEnabled($domainData['id'])) {
+                            return redirect($redirectUrl);
+                        }
+                    }
+                }
 
                 return view('merchant.index', $data);
             }
