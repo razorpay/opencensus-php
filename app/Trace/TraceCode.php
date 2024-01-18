@@ -10985,6 +10985,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PGOS_POS_SUBMIT                                      = "PGOS_POS_SUBMIT";
 
+    const HEADER_LOGGER_FOR_PARITY                             = "HEADER_LOGGER_FOR_PARITY";
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

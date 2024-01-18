@@ -4,6 +4,7 @@ namespace RZP\Http;
 
 use ApiResponse;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use Illuminate\Routing\Router;
 use RZP\Models\IdempotencyKey;
@@ -19006,6 +19007,8 @@ class Route
      */
     protected $app;
 
+    protected $trace;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -19013,6 +19016,8 @@ class Route
         $this->router = $app['router'];
 
         $this->ba = $app['basicauth'];
+
+        $this->trace = $app['trace'];
     }
 
     public function getCurrentRouteName()
@@ -19223,6 +19228,14 @@ class Route
         $schema = $request->getScheme() . '://';
 
         $host = $request->getHost();
+        $this->trace->info(
+            TraceCode::HEADER_LOGGER_FOR_PARITY,
+            [
+                'host' => $request->header('Host'),
+                'x_forwarded_host' => $request->header('X-Forwarded-Host'),
+                'headers_match' => $request->header('Host') === $request->header('X-Forwarded-Host'),
+            ]
+        );
 
         $port = (int) $request->getPort();
 
