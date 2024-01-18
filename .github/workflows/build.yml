@@ -172,7 +172,10 @@ jobs:
                 {
                   "name": "api",
                   "commit_id": ${{ steps.prodApiCommitId.outputs.response }},
-                  "node_selector":"node.kubernetes.io/worker-tests-app"
+                  "node_selector":"node.kubernetes.io/worker-tests-app",
+                  "chart_values": {
+                    "enable_edge_base": true
+                  }
                 }
               ]
             }

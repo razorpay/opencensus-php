@@ -59,6 +59,12 @@ function getDependencies(depCommits) {
       commit_id: commit,
     };
 
+    // TODO: Make this changes dyamic from depCommits payload;
+    if (depName === 'api') {
+      dependency.chart_values = {
+        enable_edge_base: true,
+      };
+    }
     return dependency;
   });
 
