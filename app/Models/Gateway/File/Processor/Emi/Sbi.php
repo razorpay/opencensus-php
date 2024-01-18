@@ -50,6 +50,13 @@ class Sbi extends Base
     // Hence will be sending the same if creation date of the terminal is after this
     const SKU_V2_START_TIMESTAMP =  1693247400; // 29/08/2023 00:00:00
 
+    const EMI_RATES_CHANGE_START_TIMESTAMP = 1705516200; // 18/01/2024 00:00:00
+
+    const OLD_EMI_RATES = [
+        18 => '1600',
+        24 => '1600',
+    ];
+
     const SKU_PREFIX_V1 = 'GG0001';
     const SKU_PREFIX_V2 = 'GG0003';
     // redis key format: emi:sbi_emi_ref_no_<payment_id>
@@ -281,7 +288,9 @@ class Sbi extends Base
 
                     $principalAmount = $emiPayment->getAmount();
 
-                    $rate = $emiPlan->getRate() / 100;
+                    $rate = self::getEmiRate($emiPayment, $emiPlan);
+
+                    $rate_in_perc = $rate / 100;
 
                     $tenure = $emiPlan->getDuration();
 
@@ -289,7 +298,7 @@ class Sbi extends Base
 
                     $businessName = $this->getBusinessName($merchantDetail);
 
-                    $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
+                    $emiAmount = $this->getEmiAmount($principalAmount, $rate_in_perc, $tenure);
 
                     $card = $emiPayment->card;
 
@@ -319,7 +328,7 @@ class Sbi extends Base
                     $this->numpad($mid, 16) .
                     $this->strpad($businessName, 40) .
                     $this->strpad($tid, 8) .
-                    str_pad($emiPlan->getRate(), 7, '0', STR_PAD_RIGHT) .
+                    str_pad($rate, 7, '0', STR_PAD_RIGHT) .
                     $this->strpad('', 40) .
                     $this->numpad($principalAmount, 17) .
                     'F' .
@@ -413,6 +422,31 @@ class Sbi extends Base
             );
         }
         return false;
+    }
+
+    protected function getEmiRate($emiPayment, $emiPlan)
+    {
+        $tenure = $emiPlan->getDuration();
+
+        if($emiPayment['authorized_at'] >= self::EMI_RATES_CHANGE_START_TIMESTAMP)
+        {
+            // new emi rates
+            $rate = $emiPlan->getRate();
+        }
+        else
+        {
+            // old emi rates
+            if($tenure == 18 or $tenure == 24)
+            {
+                $rate = self::OLD_EMI_RATES[$tenure];
+            }
+            else
+            {
+                // no change in rates for tenures other than 18 & 24
+                $rate = $emiPlan->getRate();
+            }
+        }
+        return $rate;
     }
 
     protected function getBusinessName($merchantDetails)
