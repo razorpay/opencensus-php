@@ -6803,6 +6803,8 @@ class Core extends Base\Core
         if ($shouldActivateInternational === true)
         {
             (new Detail\InternationalCore())->activateInternational($merchant);
+
+            $this->addFeatureFlagForMerchant($merchant, FeatureConstants::ACCEPT_ONLY_3DS_PAYMENTS );
         }
         elseif ($merchant->isInternational() === true)
         {
