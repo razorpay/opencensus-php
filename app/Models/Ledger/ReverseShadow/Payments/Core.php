@@ -571,6 +571,21 @@ class Core extends Base\Core
             return false;
         }
 
+        if ($merchant->isRazorpayOrgId() === true && $merchantDetail->isUnregisteredBusiness() === false)
+        {
+            if (isset($payment->card) === true and ($payment->card->isPrepaid() === true or $payment->card->isSubTypeBusiness() === true))
+            {
+                $this->trace->info(
+                    TraceCode::BLOCKING_AMOUNT_CREDIT_FOR_PAYMENTS,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'merchant_id' => $merchant->getId()
+                    ]);
+
+                return true;
+            }
+        }
+
         if (($merchantDetail->isUnregisteredBusiness() === true)
             and (new Merchant\Core())->isDisableFreeCreditsFeatureEnabled($merchant, Feature\Constants::DISABLE_FREE_CREDIT_UNREG) === true)
         {

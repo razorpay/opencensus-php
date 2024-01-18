@@ -120,6 +120,13 @@ class Core extends Base\Core
         return [$txn, $feesSplit];
     }
 
+    public function createFromPaymentAuthorizedInReverseShadow(Base\Entity $source, $txnId = null)
+    {
+        $txnProcessor = $this->getFactory($source);
+
+        return $txnProcessor->createAuthorisedTransactionInReverseShadow($txnId);
+    }
+
     /**
      * Update the corresponding transaction when
      * hold attributes of a Payment are updated

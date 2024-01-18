@@ -3479,6 +3479,9 @@ class PaymentLedgerTest extends TestCase
 
         $this->assertEquals($payment['fee'], $txn['fee']);
         $this->assertEquals($payment['tax'], $txn['tax']);
+        $this->assertEquals($txn['balance_updated'],false);
+        $this->assertEquals($txn['debit'],0);
+        $this->assertEquals($txn['debit'],0);
 
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_gateway_captured']);
 
@@ -4369,4 +4372,166 @@ class PaymentLedgerTest extends TestCase
         $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
         $this->assertEquals($payment->getPublicId(), $actualLedgerOutboxEntry['transactor_id']);
     }
+
+    public function testKafkaSuccessForPaymentMerchantFirstAndGatewayCaptureEventNext()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $payment = $this->createPaymentInReverseShadow();
+
+        $paymentId = $payment['id'];
+
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
+
+        $journalId = $journal['id'];
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($txn);
+
+        $this->assertNotNull($txn['fee']);
+        $this->assertNotNull($txn['tax']);
+        $this->assertNotNull($txn['credit']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertTrue($txn->isBalanceUpdated());
+
+        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_", "", $paymentId)]);
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals($payment['fee'], $txn['fee']);
+        $this->assertEquals($payment['tax'], $txn['tax']);
+        $this->assertEquals($payment['amount']-$payment['fee'], $txn['credit']);
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
+
+        $this->assertEquals($paymentId, 'pay_'.$txn['entity_id']);
+        $this->assertEquals($journalId, $txn['id']);
+        $this->assertEquals($journal['ledger_entry'][0]['amount'], $txn['fee']);
+        $this->assertEquals($journal['ledger_entry'][1]['amount'], $txn['tax']);
+        $this->assertEquals($journal['ledger_entry'][2]['amount'], $txn['amount']);
+        $this->assertEquals($journal['ledger_entry'][3]['amount'], $txn['amount']-$txn['fee']-$txn['tax']);
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+
+        //gateway capture comes after merchant capture
+        $journal = $this->getPaymentGatewayCapturedJournalResponsePayload($paymentId);
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($txn);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertNotNull($payment);
+
+        $this->assertNotNull($txn['fee']);
+        $this->assertNotNull($txn['tax']);
+        $this->assertNotNull($txn['credit']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertTrue($txn->isBalanceUpdated());
+        $this->assertEquals($payment['fee'], $txn['fee']);
+        $this->assertEquals($payment['tax'], $txn['tax']);
+
+    }
+
+    public function testKafkaSuccessForPaymentGatewayFirstAndMerchantCaptureEventNext()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $payment = $this->createPaymentInReverseShadow();
+
+        $paymentId = $payment['id'];
+
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        //gateway capture comes before merchant capture
+        $journal = $this->getPaymentGatewayCapturedJournalResponsePayload($paymentId);
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($txn);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals(0, $txn['fee']);
+        $this->assertEquals(0,$txn['tax']);
+        $this->assertEquals(0,$txn['credit']);
+        $this->assertNull($txn['balance_id']);
+        $this->assertFalse($txn->isBalanceUpdated());
+        $this->assertEquals($payment['fee'], $txn['fee']);
+        $this->assertEquals($payment['tax'], $txn['tax']);
+
+        // merchant capture ack
+        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
+
+        $journalId = $journal['id'];
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($txn);
+
+        $this->assertNotNull($txn['fee']);
+        $this->assertNotNull($txn['tax']);
+        $this->assertNotNull($txn['credit']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertTrue($txn->isBalanceUpdated());
+
+        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_", "", $paymentId)]);
+
+        $this->assertNotNull($payment);
+
+        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals($payment['fee'], $txn['fee']);
+        $this->assertEquals($payment['tax'], $txn['tax']);
+        $this->assertEquals($payment['amount']-$payment['fee'], $txn['credit']);
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
+
+        $this->assertEquals($paymentId, 'pay_'.$txn['entity_id']);
+        $this->assertEquals($journalId, $txn['id']);
+        $this->assertEquals($journal['ledger_entry'][0]['amount'], $txn['fee']);
+        $this->assertEquals($journal['ledger_entry'][1]['amount'], $txn['tax']);
+        $this->assertEquals($journal['ledger_entry'][2]['amount'], $txn['amount']);
+        $this->assertEquals($journal['ledger_entry'][3]['amount'], $txn['amount']-$txn['fee']-$txn['tax']);
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+
+    }
+
 }

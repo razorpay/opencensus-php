@@ -157,6 +157,23 @@ class Payment extends Base
         return parent::createTransaction($txnId);
     }
 
+    public function createAuthorisedTransactionInReverseShadow($txnId = null)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
+            [
+                'payment_id' => $this->source->getId()
+            ]);
+
+        // Creates new or fetches existing transaction entity for the source entity
+        $this->setTransactionForSource($txnId);
+
+        // set transaction attributes from the source entity
+        $this->setSourceDefaults();
+
+        return $this->fillEmptyTxnFeesAndAmount();
+    }
+
     protected function shouldUpdateBalance()
     {
         //

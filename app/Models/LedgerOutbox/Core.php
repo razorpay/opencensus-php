@@ -751,16 +751,7 @@ class Core extends Base\Core
                     ->payment
                     ->findByPublicIdAndMerchant($transactorPublicId, $this->merchant, []);
 
-                if ($payment->hasBeenCaptured() === false)
-                {
                     $txn = $this->createTransactionFromAuthorisedPaymentInReverseShadow($payment, $transactorPublicId);
-                }
-                else
-                {
-                    $apiTransactionId = $this->getAPITransactionId($transactorPublicId, $payment);
-
-                    $txn = $this->createTransactionFromCapturedPaymentInReverseShadow($payment, $apiTransactionId, $transactorEvent);
-                }
             }
 
             if($transactorEvent === LedgerConstants::MERCHANT_CAPTURED)
@@ -1039,46 +1030,47 @@ class Core extends Base\Core
 
     private function createTransactionFromCapturedPaymentInReverseShadow($payment, $journalId, $transactorEvent)
     {
-        return $this->repo->transaction(function() use ($payment, $journalId, $transactorEvent)
-        {
-            $paymentProcessor = new Payment\Processor\Processor($this->merchant);
-
             $resource = $this->getTransactionMutexresource($payment);
 
-            list($txn, $merchantBalance) = $this->mutex->acquireAndRelease(
+            $txn = $this->mutex->acquireAndRelease(
                 $resource,
-                function () use ($payment, $journalId, $paymentProcessor, $transactorEvent)
+                function () use ($payment, $journalId, $transactorEvent)
                 {
-                    $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+                    return $this->repo->transaction(function() use ($payment, $journalId, $transactorEvent)
+                     {
+                         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
-                    if ((isset($txn) === true) and
-                        ($txn->isBalanceUpdated() === true))
-                    {
-                        return $txn;
-                    }
+                         $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
 
-                    if ((isset($txn) === true) and
-                        ($transactorEvent === LedgerConstants::MERCHANT_CAPTURED) and
-                        ($txn->getId() !== $journalId))
-                    {
-                        throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
-                    }
+                        if ((isset($txn) === true) and
+                            ($txn->isBalanceUpdated() === true))
+                        {
+                            return $txn;
+                        }
 
-                    if ((isset($txn) === true) and
-                        ($transactorEvent === LedgerConstants::GATEWAY_CAPTURED))
-                    {
-                        $apiTransactionId = $this->getAPITransactionId($payment->getPublicId(), $payment);
-                        if($txn->getId() !== $apiTransactionId)
+                        if ((isset($txn) === true) and
+                            ($transactorEvent === LedgerConstants::MERCHANT_CAPTURED) and
+                            ($txn->getId() !== $journalId))
                         {
                             throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
                         }
-                    }
 
-                    $txn = $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);
+                        if ((isset($txn) === true) and
+                            ($transactorEvent === LedgerConstants::GATEWAY_CAPTURED))
+                        {
+                            $apiTransactionId = $this->getAPITransactionId($payment->getPublicId(), $payment);
+                            if($txn->getId() !== $apiTransactionId)
+                            {
+                                throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
+                            }
+                        }
 
-                    $paymentProcessor->processTransferIfApplicable($payment);
+                        list($txn, $merchantBalance) = $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);
 
-                    return $txn;
+                        $paymentProcessor->processTransferIfApplicable($payment);
+
+                        return $txn;
+                    });
                 },
                 self::PAYMENT_TRANSACTION_CREATION_MUTEX_TTL,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
@@ -1088,45 +1080,43 @@ class Core extends Base\Core
             );
 
             return $txn;
-        });
     }
 
     private function createTransactionFromAuthorisedPaymentInReverseShadow($payment, $transactorPublicId)
     {
-        return $this->repo->transaction(function() use ($payment, $transactorPublicId)
-        {
-            $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+        $resource = $this->getTransactionMutexresource($payment);
 
-            if (isset($txn) === true)
+        $txn = $this->mutex->acquireAndRelease(
+            $resource,
+            function () use ($payment, $transactorPublicId)
             {
-                return $txn;
-            }
-
-            $apiTransactionId = $this->getAPITransactionId($transactorPublicId, $payment);
-
-            $resource = $this->getTransactionMutexresource($payment);
-
-            list($txn, $feeSplit) = $this->mutex->acquireAndRelease(
-                $resource,
-                function () use ($payment, $apiTransactionId)
+                return $this->repo->transaction(function() use ($payment, $transactorPublicId)
                 {
-                    list($txn, $feeSplit) = (new Transaction\Core())->createFromPaymentAuthorized($payment, $apiTransactionId);
+                    $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+
+                    if (isset($txn) === true) {
+                        return $txn;
+                    }
+
+                    $apiTransactionId = $this->getAPITransactionId($transactorPublicId, $payment);
+
+                    list($txn, $feeSplit) = (new Transaction\Core())->createFromPaymentAuthorizedInReverseShadow($payment, $apiTransactionId);
 
                     $this->repo->saveOrFail($txn);
                     // This is required to save the association of the transaction with the payment.
                     $this->repo->saveOrFail($payment);
 
                     return $txn;
-                },
-                self::PAYMENT_TRANSACTION_CREATION_MUTEX_TTL,
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
-                self::PAYMENT_TRANSACTION_CREATION_MUTEX_RETRIES,
-                self::PAYMENT_TRANSACTION_CREATION_MUTEX_MIN_RETRY_DELAY,
-                self::PAYMENT_TRANSACTION_CREATION_MUTEX_MAX_RETRY_DELAY
-            );
+                });
+            },
+            self::PAYMENT_TRANSACTION_CREATION_MUTEX_TTL,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            self::PAYMENT_TRANSACTION_CREATION_MUTEX_RETRIES,
+            self::PAYMENT_TRANSACTION_CREATION_MUTEX_MIN_RETRY_DELAY,
+            self::PAYMENT_TRANSACTION_CREATION_MUTEX_MAX_RETRY_DELAY
+        );
 
-            return $txn;
-        });
+        return $txn;
     }
 
 
