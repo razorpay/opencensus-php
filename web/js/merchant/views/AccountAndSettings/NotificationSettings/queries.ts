@@ -21,4 +21,28 @@ const SMS_NOTIFICATION_TOGGLE_MUTATION = gql`
   }
 `;
 
-export { SMS_NOTIFICATION_STATUS_QUERY, SMS_NOTIFICATION_TOGGLE_MUTATION };
+const NOTIFICATION_EMAIL_UPDATE_MUTATION = gql`
+  mutation notificationEmailUpdate($transactionReportEmail: [EmailAddress!]!) {
+    notificationEmailUpdate(transactionReportEmail: $transactionReportEmail) {
+      ... on NotificationEmailUpdateSuccessResponse {
+        __typename
+        code
+        success
+        message
+        transactionReportEmail
+      }
+      ... on NotificationEmailUpdateFailureResponse {
+        __typename
+        code
+        success
+        message
+      }
+    }
+  }
+`;
+
+export {
+  SMS_NOTIFICATION_STATUS_QUERY,
+  SMS_NOTIFICATION_TOGGLE_MUTATION,
+  NOTIFICATION_EMAIL_UPDATE_MUTATION,
+};

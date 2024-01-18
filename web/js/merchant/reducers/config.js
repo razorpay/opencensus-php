@@ -3,6 +3,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
 import { deepClone } from 'common/utils/rzp-utils';
 import { computeBannerState } from 'merchant/utils/intlPaymentsRecommendation';
+import { SYNCHRONIZE_EMAIL_SETTINGS_ON_GRAPHQL_EMAIL_MUTATION_UPDATE_SUCCESS } from 'merchant/reducers/graphql/configSettings/actions';
 
 const CONFIG_FETCH = 'CONFIG_FETCH';
 const LOCALE_FETCH = 'CONFIG_LOCALE_FETCH';
@@ -873,6 +874,17 @@ const configReducer = (state = initialState, action) => {
         },
         error: action.payload.errors,
       });
+    }
+    case SYNCHRONIZE_EMAIL_SETTINGS_ON_GRAPHQL_EMAIL_MUTATION_UPDATE_SUCCESS: {
+      const { transaction_report_email } = action.payload;
+
+      return {
+        ...state,
+        config: {
+          ...state.config,
+          transaction_report_email,
+        },
+      };
     }
 
     default:
