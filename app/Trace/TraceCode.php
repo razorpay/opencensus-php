@@ -88,6 +88,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_RZORX_EXPERIMENT_ERROR                            = 'GET_RZORX_EXPERIMENT_ERROR';
     const BVS_VERIFICATION_ERROR                                = 'BVS_VERIFICATION_ERROR';
     const TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE             = 'TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE';
+
+    const SYNC_TERMINAL_BY_ID                                   = 'SYNC_TERMINAL_BY_ID';
+    const SYNC_TERMINAL_BY_ID_FAILED                            = 'SYNC_TERMINAL_BY_ID_FAILED';
     const HTTP_REQUEST_RESPONSE_SIZE                            = 'HTTP_REQUEST_RESPONSE_SIZE';
     const MERCHANT_HTTP_REQUEST_TOTAL                           = 'MERCHANT_HTTP_REQUEST_TOTAL';
     const FAILED_TO_FETCH_MERCHANTS_FROM_CACHE                  = 'FAILED_TO_FETCH_MERCHANTS_FROM_CACHE';

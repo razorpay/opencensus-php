@@ -554,6 +554,13 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function syncTerminalById(string $id)
+    {
+        $data = $this->service()->syncTerminalById($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postTokenizeMpans()
     {
         $input = Request::all();

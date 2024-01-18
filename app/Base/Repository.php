@@ -1559,7 +1559,7 @@ class Repository extends \Razorpay\Spine\Repository
         {
             $entity->setConnection($originalConnectionName);
         }
-        
+
         return $entity;
     }
 }

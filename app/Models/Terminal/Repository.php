@@ -437,6 +437,40 @@ class Repository extends Base\Repository
         }
     }
 
+    public function findFromTS($id) {
+
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
+
+        $path = "v1/terminals/" . $id . "?with_trashed=true";
+
+        $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+
+        $terminal = Terminal\Service::getEntityFromTS($response);
+
+        return $terminal;
+    }
+
+    public function findFromAPI($id) {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
+
+        $query = $this->newQuery();
+
+        $query->withTrashed();
+
+        return $query->find($id);
+    }
+
+
     public function findMany($ids, $columns = array('*'))
     {
         return $this->getByTerminalIds($ids);

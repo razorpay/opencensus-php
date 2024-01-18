@@ -435,6 +435,14 @@ trait Migrate
 
     public static function getEntityFromTerminalServiceResponse(array $t)
     {
+        $terminal = Terminal\Service::getEntityFromTS($t);
+
+        $terminal->syncEntity();
+
+        return $terminal;
+    }
+
+    public static function getEntityFromTS(array $t) {
         $finalArray = [];
 
         $ignoreAttributes = ["id", "updated_at", "created_at"];
@@ -492,7 +500,14 @@ trait Migrate
 
         if (array_key_exists("deleted_at",$t) === true)
         {
-            $terminal->setDeletedAt($t["deleted_at"]);
+            if($t["deleted_at"] === 0)
+            {
+                $terminal->setDeletedAt(null);
+            }
+            else
+            {
+                $terminal->setDeletedAt($t["deleted_at"]);
+            }
         }
 
         if (array_key_exists("direct",$t) === true)
@@ -510,8 +525,6 @@ trait Migrate
         {
            $terminal->setType($finalArray["type"]);
         }
-
-        $terminal->syncEntity();
 
         return $terminal;
     }

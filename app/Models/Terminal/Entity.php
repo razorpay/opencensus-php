@@ -32,6 +32,7 @@ use RZP\Models\Emi\Subvention as EmiSubvention;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Terminal\Status;
 use RZP\Trace\TraceCode;
+use Illuminate\Support\Arr;
 
 class Entity extends Base\PublicEntity
 {
@@ -2068,5 +2069,9 @@ class Entity extends Base\PublicEntity
             throw $ex;
         }
 
+    }
+
+    public function removeAttributes($fieldToRemove) {
+        $this->attributes = Arr::except($this->attributes, $fieldToRemove);
     }
 }

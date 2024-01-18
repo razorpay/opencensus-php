@@ -672,6 +672,8 @@ class Route
         'terminal_enable_bulk'                     => ['put',      'terminals/enable/bulk',                          'TerminalOnboardingController@putTerminalEnableBulk'                ],
         'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
         'terminal_fetch_by_id_internal'            => ['get',      'terminals/{id}',                                 'TerminalController@fetchTerminalById'                              ],
+        'terminal_sync'                            => ['put',      'terminals/sync/{id}',                             'TerminalController@syncTerminalById'                              ],
+        'terminal_sync_internal'                   => ['put',      'terminals/sync/{id}/internal',                   'TerminalController@syncTerminalById'                               ],
         'terminal_onboard'                         => ['post',     'terminals',                                      'TerminalOnboardingController@postCreateTerminal'                   ],
         'initiate_terminal_onboarding'             => ['post',     'terminals/onboard',                              'TerminalOnboardingController@postInitiateOnboarding'               ],
         'terminal_onboard_callback'                => ['post',     'terminals/onboard/{gateway}/callback/{mode}',    'TerminalOnboardingController@postTerminalOnboardCallback'          ],
@@ -6402,6 +6404,8 @@ class Route
 
         'merchant_fetch_methods_internal',
 
+        'terminal_sync_internal',
+
         'get_or_create_customer_internal',
 
         'customer_fetch_by_id_internal',
@@ -8734,6 +8738,7 @@ class Route
         "trigger_instrument_rules_event",
         'fetch_instrument_previous_status',
         'terminal_enable_bulk',
+        'terminal_sync',
         'update_template_mappings',
         'fetch_template_mappings',
         'fetch_merchant_instrument_requests',
@@ -10359,6 +10364,7 @@ class Route
         'fetch_instrument_comment_list'               => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'fetch_instrument_previous_status'            => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'terminal_enable_bulk'                        => Permission::ENABLE_TERMINALS_BULK,
+        'terminal_sync'                               => Permission::VIEW_TERMINAL,
         'update_template_mappings'                    => Permission::EDIT_IIR_TEMPLATE,
         'fetch_template_mappings'                     => Permission::VIEW_IIR_TEMPLATE,
         'terminals_proxy_fetch_multiple'              => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
@@ -13809,6 +13815,7 @@ class Route
             'fetch_instrument_comment_list',
             'fetch_instrument_previous_status',
             'terminal_enable_bulk',
+            'terminal_sync',
             'update_template_mappings',
             'fetch_template_mappings',
             'terminals_proxy_fetch_multiple',
@@ -16768,6 +16775,7 @@ class Route
         ],
 
         'terminals_service' => [
+            'terminal_sync_internal',
             'merchant_fetch_methods_internal',
             'internal_get_banking_config',
             'feature_get_multiple_internal',
