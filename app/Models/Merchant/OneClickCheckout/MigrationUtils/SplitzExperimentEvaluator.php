@@ -117,6 +117,34 @@ class SplitzExperimentEvaluator extends Base\Core
         return $result['variant'] === 'enable';
     }
 
+    public function useMCSForShopifyApplyCouponDecomposition(): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.magic_shopify_apply_coupon_decomp_experiment_id');
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
+    public function useMCSForMerchantApplyCouponDecomposition(): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.magic_merchant_apply_coupon_decomp_experiment_id');
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
+    public function useMCSForShopifyRemoveCouponDecomposition(): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.magic_shopify_remove_coupon_decomp_experiment_id');
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
+    public function useMCSForMerchantRemoveCouponDecomposition(): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.magic_merchant_remove_coupon_decomp_experiment_id');
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
     // To be used when merchant_id is the only param required for evaluating the experiment.
     protected function merchantIdBasedPayload(string $experimentPath): array
     {

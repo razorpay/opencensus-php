@@ -805,6 +805,15 @@ return array(
     'email_optional_partner_MIDs' => env('EMAIL_OPTIONAL_PARTNER_MIDS'),
 
     'invite_merchant_with_2FA_experiment_id' => env('INVITE_MERCHANT_WITH_2FA_EXP_ID'),
+  
+    'enable_onboarding_apis_access_exp_id' => env('ENABLE_ONBOARDING_APIS_ACCESS_EXP_ID'),
 
-    'enable_onboarding_apis_access_exp_id' => env('ENABLE_ONBOARDING_APIS_ACCESS_EXP_ID')
+    'magic_shopify_apply_coupon_decomp_experiment_id' => env('MAGIC_SHOPIFY_APPLY_COUPON_DECOMP_EXP_ID'),
+
+    'magic_merchant_apply_coupon_decomp_experiment_id' => env('MAGIC_MERCHANT_APPLY_COUPON_DECOMP_EXP_ID'),
+
+    'magic_shopify_remove_coupon_decomp_experiment_id' => env('MAGIC_SHOPIFY_REMOVE_COUPON_DECOMP_EXP_ID'),
+
+    'magic_merchant_remove_coupon_decomp_experiment_id' => env('MAGIC_MERCHANT_REMOVE_COUPON_DECOMP_EXP_ID'),
+
 );

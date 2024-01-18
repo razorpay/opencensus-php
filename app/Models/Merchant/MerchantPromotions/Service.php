@@ -249,9 +249,16 @@ class Service extends Base\Service
                 $ex = $e;
                 throw $e;
             }
+            $platformConfig = $this->merchant->getMerchantPlatformConfig();
+            $platform = 'unknown';
+            if ($platformConfig !== null)
+            {
+                $platform = $platformConfig->getValue();
+            }
 
             $couponEngineRouting = $this->merchant->get1ccConfigFlagStatus(Constants::ONE_CC_COUPON_ENGINE);
-            if ($couponEngineRouting === true)
+            $useMCS = $this->routeRequestForCouponDecomp($platform);
+            if ($couponEngineRouting === true || $useMCS === true)
             {
                 $input['merchant_id'] = $this->merchant->getId();
                 return (new CouponProvider\Service())->applyCoupon($input, self::REDEEM_APPLY);
@@ -292,8 +299,6 @@ class Service extends Base\Service
             }
 
             $input['order_id'] = $merchantOrderId;
-
-            $platformConfig = $this->merchant->getMerchantPlatformConfig();
 
             $externalRequestStart = millitime();
 
@@ -483,8 +488,16 @@ class Service extends Base\Service
 
             $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
 
+            $platformConfig = $this->merchant->getMerchantPlatformConfig();
+            $platform = 'unknown';
+            if ($platformConfig !== null)
+            {
+                $platform = $platformConfig->getValue();
+            }
+
             $couponEngineRouting = $this->merchant->get1ccConfigFlagStatus(Constants::ONE_CC_COUPON_ENGINE);
-            if ($couponEngineRouting === true)
+            $useMCS = $this->routeRequestForRemoveCouponDecomp($platform);
+            if ($couponEngineRouting === true || $useMCS === true)
             {
                 $input['merchant_id'] = $this->merchant->getId();
                 $input['code'] = $input['reference_id'];
@@ -506,8 +519,6 @@ class Service extends Base\Service
             if ($orderMeta === null) {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
             }
-
-            $platformConfig = $this->merchant->getMerchantPlatformConfig();
 
             if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY and
                 method_exists(Shopify\Service::class, 'removeShopifyCoupon') === true) {
@@ -674,6 +685,34 @@ class Service extends Base\Service
             ]
         );
         return $expResult['variant'] === 'magic';
+    }
+
+    public function routeRequestForCouponDecomp(string $platform): bool
+    {
+        $useMCS = false;
+        if ($platform === Constants::SHOPIFY) {
+            $useMCS = (new SplitzExperimentEvaluator())->useMCSForShopifyApplyCouponDecomposition();
+        }
+
+        if ($platform === Constants::WOOCOMMERCE || $platform === Constants::NATIVE) {
+            $useMCS = (new SplitzExperimentEvaluator())->useMCSForMerchantApplyCouponDecomposition();
+        }
+
+        return $useMCS;
+    }
+
+    public function routeRequestForRemoveCouponDecomp(string $platform): bool
+    {
+        $useMCS = false;
+        if ($platform === Constants::SHOPIFY) {
+            $useMCS = (new SplitzExperimentEvaluator())->useMCSForShopifyRemoveCouponDecomposition();
+        }
+
+        if ($platform === Constants::WOOCOMMERCE || $platform === Constants::NATIVE) {
+            $useMCS = (new SplitzExperimentEvaluator())->useMCSForMerchantRemoveCouponDecomposition();
+        }
+
+        return $useMCS;
     }
 
 }

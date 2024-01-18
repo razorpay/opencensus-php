@@ -1154,7 +1154,7 @@ class Service extends Base\Service
         if ($shippingEngineEnabled === true) {
             $response[Constants::ONE_CC_SHIPPING_USING_CHECKOUT] = false;
         }
-        
+
         return $response;
     }
 
@@ -1254,6 +1254,12 @@ class Service extends Base\Service
         }
 
         $result[Constants::MERCHANT_ID] = $input[Constants::MERCHANT_ID];
+
+        $platform = $this->merchant->getMerchantPlatformConfig();
+        if ($platform !== null && isset($platform["value"]))
+        {
+            $result["platform"] = $platform["value"];
+        }
 
         if (empty($input[Constants::KEYS]) === true) {
             return $result;
