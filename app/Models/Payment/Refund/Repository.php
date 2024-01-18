@@ -983,7 +983,7 @@ class Repository extends Base\Repository
             'method'       => 'fetchIrctcDeltaRefunds',
             'route'        => $this->route
         ]);
-        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                       ->select($this->dbColumn('*'))
                       ->whereIn(Entity::ID, function ($query) use($merchantId, $from, $to)
                         {
