@@ -1599,7 +1599,7 @@ class Core extends Base\Core
                 $isInAppCreditCardAlreadyEnabled === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    "in_app needs to be enabled (or already enabled) when in_app_credit_card is being enabled"
+                    "in_app cannot be disabled when in_app_credit_card is enabled"
                 );
             }
         }

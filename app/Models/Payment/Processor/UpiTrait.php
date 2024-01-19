@@ -14,6 +14,7 @@ use RZP\Gateway\Upi\Base\IntentParams;
 use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Models\Payment\UpiMetadata\Type;
 use RZP\Models\Payment\UpiMetadata\Entity;
+use RZP\Models\PaymentsUpi\PayerAccountType;
 use RZP\Models\Payment\UpiMetadata\Contants;
 use RZP\Models\Feature\Constants as Feature;
 

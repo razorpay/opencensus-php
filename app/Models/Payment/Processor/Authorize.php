@@ -5806,10 +5806,9 @@ trait Authorize
 
                 $this->validateUpiPspIsAllowed($payment);
             }
-            else if ($this->isFlowInApp($input) === true and $merchant->getMethods()->isInAppEnabled() !== true)
+            else if ($this->isFlowInApp($input) === true)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Merchant is not authorized to UPI InApp payments');
+                $this->runInAppPaymentRequestValidations($input);
             }
             else
             {
@@ -5883,6 +5882,42 @@ trait Authorize
         $this->modifyRecurringForUpiIfApplicable($payment, $input, $gatewayInput);
     }
 
+    private function runInAppPaymentRequestValidations($input)
+    {
+        $payerAccountType = $input['upi']['payer_account_type'] ?? null;
+
+        $this->validatePayerAccountTypeEligibilityForInAppMerchant($payerAccountType);
+    }
+
+    private function validatePayerAccountTypeEligibilityForInAppMerchant($payerAccountType)
+    {
+        $merchantMethods = $this->merchant->getMethods();
+
+        switch ($payerAccountType)
+        {
+            case PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_CREDIT:
+                if($merchantMethods->isInAppCreditCardEnabled() !== true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Merchant is not authorized to accept UPI InApp credit card payments'
+                    );
+                }
+
+            case PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT:
+            case null:
+                if ($merchantMethods->isInAppEnabled() !== true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Merchant is not authorized to UPI InApp payments');
+                }
+                break;
+
+            default:
+                throw new Exception\BadRequestValidationFailureException(
+                    'Not a supported payer_account_type: ' . $payerAccountType
+                );
+        }
+    }
     protected function isTokenInteroperabilityAllowed($customer , $payment , $input)
     {
         $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
@@ -11109,17 +11144,17 @@ trait Authorize
         // update payer account type in reference2 column, if present.
         try
         {
-            if (($payment->isUpi()) === true and
-                (isset($data[Payment\Entity::PAYER_ACCOUNT_TYPE]) === true) and
-                (in_array(strtolower($data[Payment\Entity::PAYER_ACCOUNT_TYPE]), PaymentsUpi\PayerAccountType::SUPPORTED_PAYER_ACCOUNT_TYPES)))
+            [$isInAppRequest, $action] = $this->isInAppUpiPaymentRequest($payment, $data);
+
+            if ($isInAppRequest === true)
+            {
+                $this->setPayerAccountTypeForInAppUpiPayments($payment, $data, $action);
+            }
+            elseif (($payment->isUpi()) === true and
+                    (isset($data[Payment\Entity::PAYER_ACCOUNT_TYPE]) === true) and
+                    (in_array(strtolower($data[Payment\Entity::PAYER_ACCOUNT_TYPE]), PaymentsUpi\PayerAccountType::SUPPORTED_PAYER_ACCOUNT_TYPES)))
             {
                 $payment->setReference2(strtolower($data[Payment\Entity::PAYER_ACCOUNT_TYPE]));
-            }
-
-            // for in app payment , bank account will be set temproarily
-            if ($payment->isInAppUPI() === true)
-            {
-                $payment->setReference2(Payment\Entity::BANK_ACCOUNT);
             }
         }
         catch (\Throwable $e)
@@ -11128,6 +11163,71 @@ trait Authorize
                 Trace::ERROR,
                 TraceCode::PAYER_ACCOUNT_TYPE_SAVE_FAILED,
                 $data);
+        }
+    }
+
+    private function isInAppUpiPaymentRequest(Payment\Entity $payment, $data)
+    {
+        $isInApp  = false;
+        $action = null;
+
+        /* In the payee callback received from gateway, payer_account_type will be set */
+        if (isset($data['payer_account_type']) and
+            ($payment->isInAppUPI() === true))
+        {
+            $isInApp = true;
+            $action = 'callback';
+        }
+
+        /* upi.payer_account_type will be set for new payment requests, where as for older ones, it wont be.
+         * In any case, upi.flow == in_app will determine whether its a turbo payment create request. */
+        elseif (isset($data['upi']['flow']) and
+                ($data['upi']['flow'] === 'in_app'))
+        {
+            $isInApp = true;
+
+            $action = isset($data['upi']['payer_account_type']) === true ? 'create_v2' : 'create_v1';
+        }
+
+        return [$isInApp, $action];
+    }
+
+    /*
+     * For in_app payments, payer_account_type will be present during payment creation as well as in payee callback
+     * If there is a mismatch in payer_account_type received from gateway vs what RZP has at it's end, we should
+     * log a warning for further investigation.
+     */
+    private function setPayerAccountTypeForInAppUpiPayments(Payment\Entity $payment, $data, $action)
+    {
+        $payerAccountType = PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT;
+
+        switch ($action)
+        {
+            case 'create_v1':
+                $payment->setReference2($payerAccountType);
+                break;
+
+            case 'create_v2':
+                $payerAccountType = strtolower($data['upi']['payer_account_type']);
+                $payment->setReference2($payerAccountType);
+                break;
+
+            case 'callback':
+                $payerAccountType = strtolower($data[Payment\Entity::PAYER_ACCOUNT_TYPE]);
+
+                //This is kept for backward compatibility.
+                if ($payment->getReference2() === null)
+                {
+                    $payment->setReference2($payerAccountType);
+                }
+                else if ($payerAccountType !== $payment->getReference2())
+                {
+                    $this->trace->warning(TraceCode::TURBO_UPI_PAYMENT_PAYER_ACCOUNT_TYPE_MISMATCH,
+                                          [
+                                              'gateway_payer_account_type' => $payerAccountType,
+                                              'rzp_payer_account_type'     => $payment->getReference2(),
+                                          ]);
+                }
         }
     }
 

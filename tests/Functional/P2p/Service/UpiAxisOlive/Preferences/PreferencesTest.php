@@ -85,6 +85,10 @@ class PreferencesTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedPayerAccountTypes, $response[Constants::FEATURES]);
+
+        $expectedPayerAccountTypeMappings = Constants::getPayerAccountTypeMappings($this->gateway);
+
+        $this->assertArraySelectiveEquals($expectedPayerAccountTypeMappings, $response[Constants::PAYER_ACCOUNT_TYPE_MAPPINGS]);
     }
 
     public function testCreateBankAccountForCustomerForPreferences()

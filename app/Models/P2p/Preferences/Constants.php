@@ -10,6 +10,7 @@ class Constants
     const FEATURES     = 'features';
     const MERCHANT_ID  = 'merchant_id';
     const DISPLAY_NAME = 'display_name';
+    const PAYER_ACCOUNT_TYPE_MAPPINGS = 'payer_account_type_mappings';
 
     // Timeout related constants
     const TIMEOUTS           = 'timeouts';
@@ -121,6 +122,19 @@ class Constants
         AccountType::CURRENT,
     ];
 
+    private static array $payerAccountTypeMappings = [
+        'p2m_upi_axis_olive' => [
+            'credit' => 'credit_card',
+            'current' => 'bank_account',
+            'savings' => 'bank_account',
+        ],
+        'default' => [
+            'credit' => 'credit_card',
+            'current' => 'bank_account',
+            'savings' => 'bank_account',
+        ]
+    ];
+
     public static function getStaticPopularBanksList(): array
     {
         if((app()->isEnvironmentProduction() === true))
@@ -141,5 +155,10 @@ class Constants
     public static function getSupportedPayerAccountTypes(): array
     {
         return self::$supportedPayerAccountTypes;
+    }
+
+    public static function getPayerAccountTypeMappings($gateway)
+    {
+        return self::$payerAccountTypeMappings[$gateway] ?? self::$payerAccountTypeMappings['default'];
     }
 }

@@ -161,15 +161,16 @@ class Processor extends Base\Processor
     private function getGatewayPreferencesForSDK()
     {
         return [
-            Entity::GATEWAYS            => [
+            Entity::GATEWAYS                       => [
                 [
                     Entity::PRIORITY => '0',
                     Entity::GATEWAY  => $this->getGateway(),
                 ],
             ],
-            Entity::POPULAR_BANKS       => $this->getPopularBankListForSDK(),
-            Constants::TIMEOUTS         => $this->fetchSDKTimeoutConfigs(),
-            Entity::ERROR_MAPPING_HASH  => $this->getErrorMappingHash(),
+            Entity::POPULAR_BANKS                  => $this->getPopularBankListForSDK(),
+            Constants::TIMEOUTS                    => $this->fetchSDKTimeoutConfigs(),
+            Entity::ERROR_MAPPING_HASH             => $this->getErrorMappingHash(),
+            Constants::PAYER_ACCOUNT_TYPE_MAPPINGS => Constants::getPayerAccountTypeMappings($this->getGateway())
         ];
     }
 

@@ -4844,6 +4844,48 @@ class PaymentCreateTest extends TestCase
         $this->assertArraySelectiveEquals($expectedUpiMetadataBlock, $lastPayment['upi_metadata']);
     }
 
+    public function testInAppUpiCreditCardPayment()
+    {
+        $methods = [
+            'upi'           => 1,
+            'addon_methods' => [
+                'upi' => [
+                    'in_app' => 1,
+                    'in_app_credit_card' => 1
+                ]
+            ]
+        ];
+        $this->fixtures->edit('methods', '10000000000000', $methods);
+
+        $payment = $this->getDefaultUpiBlockIntentPaymentArray();
+        $payment['upi']['flow'] = 'in_app';
+        $payment['upi']['payer_account_type'] = 'credit_card';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertEquals('in_app', $response['type']);
+
+        $lastPayment = $this->getLastEntity('payment');
+
+        $this->assertSame('authorized', $lastPayment['status']);
+
+        //Since lastEntity() does a fetch multiple via proxy auth, upi_metadata should be set in the response
+        $this->assertArrayHasKey('upi_metadata', $lastPayment);
+
+        $expectedUpiMetadataBlock = [
+            'flow' => 'in_app',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedUpiMetadataBlock, $lastPayment['upi_metadata']);
+
+        $expectedUpiBlock = [
+            'flow' => 'in_app',
+            'payer_account_type' => 'credit_card'
+        ];
+
+        $this->assertArraySelectiveEquals($expectedUpiBlock, $lastPayment['upi']);
+    }
+
     public function testUpiAmountLimit()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
