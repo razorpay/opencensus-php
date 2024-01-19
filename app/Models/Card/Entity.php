@@ -1627,6 +1627,8 @@ class Entity extends Base\PublicEntity
         $data[Card\Entity::EXPIRY_MONTH]    = $this->getExpiryMonth();
         $data[Card\Entity::EXPIRY_YEAR]     = $this->getExpiryYear();
 
+        $cardlast4 = $data['last4'];
+
         if ($data[Card\Entity::TRIVIA] === '1')
         {
             $data['token_iin']    = empty($data['token_iin']) ? $data['iin'] : substr($data['token_iin'],0,9);
@@ -1654,7 +1656,7 @@ class Entity extends Base\PublicEntity
         // Changes to send the card's last4 instead of tokenlast4 for optimizer
         if(($this->merchant->isFeatureEnabled(Feature\Constants::RAAS)) === true)
         {
-            $data['last4']   = empty($data['last4']) ? $data['token_last4'] : $data ['last4'];
+            $data['last4']   = empty($cardlast4) ? $data['token_last4'] : $cardlast4;
         }
 
         return $data;
