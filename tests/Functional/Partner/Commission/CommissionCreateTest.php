@@ -3716,17 +3716,17 @@ class CommissionCreateTest extends TestCase
         // update partner type to reseller
         $this->fixtures->on(Mode::TEST)->edit('merchant', Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type'=> 'reseller']);
 
+        $now = Carbon::now(Timezone::IST);
+
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
         $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,'activation_status' => 'activated'];
         $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation);
         $testData['request']['content']['month'] = 4;
         $commission = $this->getLastEntity('commission', true);
 
-        $this->fixtures->edit('commission', $commission['id'], ['created_at'=> Carbon::createFromDate(2023,4,3,Timezone::IST)->timestamp]);
+        $this->fixtures->edit('commission', $commission['id'], ['created_at'=> Carbon::createFromDate($now->year,4,3,Timezone::IST)->timestamp]);
 
-        $now = Carbon::now(Timezone::IST);
-
-        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, 2023, 'enable');
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year, 'enable');
         $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
         $this->runRequestResponseFlow($testData);
@@ -3737,7 +3737,7 @@ class CommissionCreateTest extends TestCase
         $invoiceExpectedData = [
             'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
             'month' => 4,
-            'year' => 2023,
+            'year' => $now->year,
             'status' => 'issued',
             'gross_amount' => 944,
             'tax_amount' => 144,
@@ -3753,20 +3753,19 @@ class CommissionCreateTest extends TestCase
 
         $testData = $this->setUpCommissionCreateWith3MTU();
 
+        $now = Carbon::now(Timezone::IST);
+
         // update partner type to reseller
         $this->fixtures->on(Mode::TEST)->edit('merchant', Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type'=> 'reseller']);
 
         $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
         $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,'activation_status' => 'activated'];
         $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation);
-        $testData['request']['content']['month'] = 5;
         $commission = $this->getLastEntity('commission', true);
 
-        $this->fixtures->edit('commission', $commission['id'], ['created_at'=> Carbon::createFromDate(2023,5,3,Timezone::IST)->timestamp]);
+        $this->fixtures->edit('commission', $commission['id'], ['created_at'=> Carbon::createFromDate($now->year,$now->month,3,Timezone::IST)->timestamp]);
 
-        $now = Carbon::now(Timezone::IST);
-
-        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, 2023, 'enable');
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year, 'enable');
         $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->mockAutoApprovalFinanceExp(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
@@ -3778,8 +3777,8 @@ class CommissionCreateTest extends TestCase
 
         $invoiceExpectedData = [
             'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
-            'month' => 5,
-            'year' => 2023,
+            'month' => $now->month,
+            'year' => $now->year,
             'status' => 'processed',
             'gross_amount' => 944,
             'tax_amount' => 144,
@@ -4017,7 +4016,7 @@ class CommissionCreateTest extends TestCase
 
         $testData = $this->testData['testInvoiceGenerate'];
         $testData['request']['content']['month']        = 11;
-        $testData['request']['content']['year']         = 2023;
+        $testData['request']['content']['year']         = 2022;
         $testData['request']['content']['merchant_ids'] = [$partner->getId()];
 
         $this->createTaxes();
@@ -4033,7 +4032,7 @@ class CommissionCreateTest extends TestCase
             'year'          => 2022,
             'status'        => 'issued',
             'gross_amount'  => $grossAmount,
-            'tax_amount'    => 762727,
+            'tax_amount'    => 762712,
         ];
         $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
     }
@@ -4061,7 +4060,7 @@ class CommissionCreateTest extends TestCase
         $testData = $this->testData['testInvoiceGenerate'];
         $now = Carbon::now(Timezone::IST);
         $testData['request']['content']['month']        = 11;
-        $testData['request']['content']['year']         = 2023;
+        $testData['request']['content']['year']         = 2022;
         $testData['request']['content']['merchant_ids'] = [$partner->getId()];
 
         $this->createTaxes();
