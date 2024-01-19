@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
+use RZP\Base\ConnectionType;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Constants\Environment;
@@ -258,7 +259,7 @@ class Core extends Base\Core
         // add expands to fetch merchant details
         $input[Repository::EXPAND] = [Entity::SOURCE_MERCHANT];
 
-        $commissions = $this->repo->commission->fetch($input);
+        $commissions = $this->repo->commission->fetch($input, null, ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $this->trace->count(Metric::COMMISSION_FETCH, $input);
 

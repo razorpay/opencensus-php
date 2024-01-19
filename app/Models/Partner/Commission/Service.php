@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Base\ConnectionType;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Services\Partnerships;
@@ -61,7 +62,7 @@ class Service extends Base\Service
         // findByPublicIdAndMerchant() function here, filters by partner_id.
         // Refer Commission\Entity::scopeMerchantId() for more details.
         //
-        $commission = $this->repo->commission->findByPublicIdAndMerchant($id, $partner, $input);
+        $commission = $this->repo->commission->findByPublicIdAndMerchant($id, $partner, $input, ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $this->checkParity($result['response'], $commission->toArrayPublic());
 
