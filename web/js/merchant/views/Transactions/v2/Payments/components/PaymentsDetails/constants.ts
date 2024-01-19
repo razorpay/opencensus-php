@@ -44,6 +44,8 @@ export const ERROR_DESCRIPTION_CONTENT_MAP = {
     'Payment was unsuccessful as it was declined by the bank.',
   'Your payment could not be completed due to insufficient account balance. Try again with another account.':
     'Your payment could not be completed due to insufficient account balance. Try again with another account.',
+  'The payment could not be completed as the eMandate has been cancelled or is inactive. The token has been put on hold temporarily for raising recurring payments.':
+    'The payment could not be completed as the eMandate has been cancelled or is inactive. The token has been put on hold temporarily for raising recurring payments.',
 };
 
 export const REFUND_ELIBILITY_TEXT = {
