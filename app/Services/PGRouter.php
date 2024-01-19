@@ -1096,7 +1096,7 @@ class PGRouter
 
             unset($traceRequest['content']['bank_account']['account_number'], $traceRequest['content']['bank_account']['name'],
                 $traceRequest['content']['notes'], $traceRequest['content']['receipt'], $traceRequest['content']['cardnumber'],
-                $traceRequest['content']['products']);
+                $traceRequest['content']['products'], $traceRequest['content']['raw_request']);
         }
         else
         {
@@ -1108,7 +1108,7 @@ class PGRouter
 
             unset($content['bank_account']['account_number'], $content['bank_account']['name'],
                 $content['notes'], $content['receipt'], $content['cardnumber'],
-                $content['products']);
+                $content['products'], $content['raw_request']);
 
             $traceRequest['content'] = json_encode($content);
         }
