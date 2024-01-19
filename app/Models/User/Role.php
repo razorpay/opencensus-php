@@ -105,6 +105,11 @@ class Role
         self::ADMIN
     ];
 
+    const BILLING_ROLES = [
+        self::OWNER,
+        self::ADMIN
+    ];
+
     const RBL_ROLES = [
         self::RBL_SUPERVISOR,
         self::RBL_AGENT
@@ -122,6 +127,11 @@ class Role
     public static function getPrimaryRoles(): array
     {
         return array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES, self::RBL_ROLES);
+    }
+
+    public static function getBillingRoles(): array
+    {
+        return self::BILLING_ROLES;
     }
 
     public static function exists(string $action): bool
@@ -151,6 +161,9 @@ class Role
                 }
                 return true;
 
+            case Product::BILLING:
+                $productRoles = self::getBillingRoles();
+                break;
             default:
                 throw new LogicException('Logic not defined for product: ' . $product);
         }

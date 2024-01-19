@@ -10,6 +10,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
+use RZP\Models\Merchant\Account;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
@@ -161,6 +162,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::SIGNUP_VIA_EMAIL,
     ];
+
 
     protected $hidden = [
         self::PASSWORD,
@@ -358,6 +360,13 @@ class Entity extends Base\PublicEntity
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
                     ->withPivot([self::ROLE, self::PRODUCT])
                     ->wherePivot(self::PRODUCT, 'banking');
+    }
+
+    public function billingMerchants()
+    {
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+            ->withPivot([self::ROLE, self::PRODUCT])
+            ->wherePivot(self::PRODUCT, 'billing');
     }
 
     public function merchantsByProductAndRole($product = ProductType::PRIMARY, $role = \RZP\Models\User\Role::OWNER)

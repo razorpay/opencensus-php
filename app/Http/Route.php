@@ -2494,6 +2494,7 @@ class Route
         'user_oauth_login'                         => ['post',     'users/oauth-login',                              'UserController@oAuthLogin'                                         ],
         'user_oauth_register'                      => ['post',     'users/oauth-register',                           'UserController@oAuthSignup'                                        ],
         'user_create'                              => ['post',     'users',                                          'UserController@createUser'                                         ],
+        'user_create_proxy'                        => ['post',     'users_proxy',                                    'UserController@createUser'                                         ],
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'check_user_exists'                        => ['post',     'users/exists',                                   'UserController@checkUserExists'                                    ],
         'send_email_otp'                           => ['post',     'users/email/send_otp',                           'UserController@sendEmailOtp'                                       ],
@@ -2579,6 +2580,7 @@ class Route
         'user_account_unlock'                      => ['put',      'users/account/{id}/{action}',                    'UserController@accountLockUnlock'                                  ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
         'user_roles_mapping_bulk'                  => ['put',      'users/roles-mapping/bulk',                       'UserController@bulkUpdateUserMapping'                              ],
+        'user_roles_mapping_bulk_proxy'            => ['put',      'users_proxy/roles-mapping/bulk',                 'UserController@bulkUpdateUserMapping'                              ],
         'user_send_x_mobile_app_link'              => ['post',     'users/mobile_app_link',                          'UserController@sendXMobileAppDownloadLinkSms'                      ],
 
         'change_banking_user_role'                 => ['patch',    'users/role',                                     'UserController@changeBankingUserRole'                              ],
@@ -6464,6 +6466,10 @@ class Route
         'third_party_authenticate',
         'internal_1cc_configs_update',
         'fetch_1cc_customer_consent_internal',
+
+        // Billme
+        'user_create_proxy',
+        'user_roles_mapping_bulk_proxy',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -9813,6 +9819,7 @@ class Route
         'upi_psp_disallow'                         => Permission::UPI_MANAGE_PSPS,
         'user_confirm'                             => Permission::CONFIRM_USER,
         'user_create'                              => Permission::USER_CREATE,
+        'user_create_proxy'                        => Permission::USER_CREATE,
         'user_update_contact_admin'                => Permission::UPDATE_USER_CONTACT_MOBILE,
         'webhook_list_events'                      => Permission::STORK_WEBHOOK_REPLAY,
         'sms_set_ratelimit_threshold'              => Permission::STORK_CREATE_SMS_RATE_LIMIT,
@@ -10285,6 +10292,7 @@ class Route
         // Financial Data Service
         'financial_data_service'                    => Permission::FINANCIAL_DATA_SERVICE,
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
+        'user_roles_mapping_bulk_proxy'            => Permission::MAKE_API_CALL,
         'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL_NEW,
         'banking_account_create_admin'              => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_service_lms_routes_all'    => Permission::VIEW_ACTIVATION_FORM,
@@ -15869,6 +15877,8 @@ class Route
             'user_confirm_by_data',
             'guest_pincode_get',
             'partner_config_fetch_guest',
+            'user_create_proxy',
+            'user_roles_mapping_bulk_proxy'
         ],
 
         'dashboard_internal' => [
@@ -16328,6 +16338,13 @@ class Route
             'payment_refund',
             'payment_fetch_refunds',
             'payment_fetch_refund_by_id',
+        ],
+
+        'billme' => [
+            'user_fetch',
+            'user_details',
+            'user_create_proxy',
+            'user_roles_mapping_bulk_proxy',
         ],
 
         'no_code_apps' => [

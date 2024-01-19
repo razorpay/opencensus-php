@@ -24,6 +24,11 @@ final class Product
     const BANKING = 'banking';
 
     /**
+     ** Billme - Billing 😎
+     */
+    const BILLING = 'billing';
+
+    /**
      * Capital Product
      */
     const CAPITAL = 'capital';
@@ -44,6 +49,7 @@ final class Product
             self::BANKING,
             self::CAPITAL,
             self::POS,
+            self::BILLING
         ];
 
     /**

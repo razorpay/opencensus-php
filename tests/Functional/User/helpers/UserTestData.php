@@ -34,6 +34,32 @@ return [
         ],
     ],
 
+    'testCreateProxy'  => [
+        'request' => [
+            'url'       => '/users_proxy',
+            'method'    => 'POST',
+            'content'   => [
+                'id'                    => '100000Razorpay',
+                'name'                  => 'hello123',
+                'email'                 => 'hello123@c.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'contact_mobile'        => '123456789',
+                'confirm_token'         => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'                    => 'hello123',
+                'email'                   => 'hello123@c.com',
+                'contact_mobile'          => '123456789',
+                'contact_mobile_verified' => false,
+                'confirmed'               => false
+            ],
+        ],
+    ],
+
     'testChangeBankingUserRole' => [
         'request' => [
             'url'       => '/users/role',
@@ -4012,6 +4038,20 @@ return [
     'testBulkUpdateUserRoleMapping' => [
         'request' => [
             'url'    => '/users/roles-mapping/bulk',
+            'method' => 'PUT',
+            'content' => [],
+            'server'     => [
+                'HTTP_X-Request-Origin'         => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testBulkUpdateUserRoleMappingProxy' => [
+        'request' => [
+            'url'    => '/users_proxy/roles-mapping/bulk',
             'method' => 'PUT',
             'content' => [],
             'server'     => [

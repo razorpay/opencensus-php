@@ -66,6 +66,27 @@ return [
             ]
         ]
     ],
+    env('APP_V2_ID_BILLME')          => [
+        "name"        => "billme",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_BILLME'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_BILLME'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.billme"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_BILLME'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_BILLME'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.billme"
+                ]
+            ]
+        ]
+    ],
     env('APP_V2_ID_ADMIN_DASHBOARD')            => [
         "name"        => "admin_dashboard",
         "credentials" => [

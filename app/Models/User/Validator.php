@@ -185,7 +185,7 @@ class Validator extends Base\Validator
     protected static $actionRules = [
         Entity::ACTION                => 'required|custom',
         Entity::MERCHANT_ID           => 'required|max:14',
-        Merchant\Entity::PRODUCT      => 'required|in:primary,banking',
+        Merchant\Entity::PRODUCT      => 'required|in:primary,banking,billing',
         Entity::ROLE                  => 'sometimes|string|custom',
     ];
 
@@ -349,7 +349,7 @@ class Validator extends Base\Validator
     protected static $bulkUserMappingRules = [
         Entity::USER_ID               => 'required|alpha_num|size:14',
         Entity::MERCHANT_ID           => 'required|alpha_num|size:14',
-        Merchant\Entity::PRODUCT      => 'required|in:primary,banking',
+        Merchant\Entity::PRODUCT      => 'required|in:primary,banking,billing',
         Entity::ROLE                  => 'required|string|custom',
         Entity::ACTION                => 'required|custom',
     ];
