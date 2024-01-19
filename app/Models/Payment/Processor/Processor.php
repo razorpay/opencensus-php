@@ -2733,6 +2733,7 @@ class Processor
             case "payment_create_private_old":
                 $input['route_auth'] = $this->app['basicauth']->getAuthType();
                 return $this->app['pg_router']->validateAndCreatePaymentRedirect($input, true);
+            case "payment_create_subscriptions":
             case "payment_create_private_json":
             case "payment_create_private_json_internal":
                 $input['route_auth'] = $this->app['basicauth']->getAuthType();
