@@ -7,6 +7,12 @@ const CODEngine = lazy(() =>
   ),
 );
 
+const Allowlist = lazy(() =>
+  import(
+    /*webpackChunkName: "Magic-COD-Engine-Allowlist" */ 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/Allowlist'
+  ),
+);
+
 const routes = [
   {
     title: 'Magic COD',
@@ -20,6 +26,12 @@ const routes = [
     id: 'blocklist',
     component: <Blocklist />,
     className: 'cod-blocklist-container',
+  },
+  {
+    title: 'Allow List',
+    id: 'allowlist',
+    component: <Allowlist />,
+    className: 'cod-allowlist-container',
   },
 ];
 

@@ -57,8 +57,11 @@ describe('COD Engine', () => {
 
     const CODEngineTab = await screen.findByText('Magic COD');
     const BlockListTab = await screen.findByText('Block List');
+    const AllowListTab = await screen.findByText('Allow List');
+
     expect(CODEngineTab).toBeInTheDocument();
     expect(BlockListTab).toBeInTheDocument();
+    expect(AllowListTab).toBeInTheDocument();
   });
 
   test('should show update plugin message if platform is woocommerce', () => {
@@ -71,5 +74,22 @@ describe('COD Engine', () => {
     };
     render(<App state={customState} />);
     expect(screen.getByText(UPDATE_WOOC_PLUGIN_MSG)).toBeInTheDocument();
+  });
+
+  test('should not show allowlist tab if engine is not basic', async () => {
+    const customState = {
+      ...initState,
+      magicCODEngine: {
+        ...initState.magicCODEngine,
+        configs: {
+          ...initState.magicCODEngine.configs,
+          engine: 'Advance',
+        },
+      },
+    };
+
+    render(<App state={customState} />);
+    const AllowListTab = await screen.findByText('Allow List');
+    expect(AllowListTab).toBeInTheDocument();
   });
 });

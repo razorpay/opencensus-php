@@ -77,6 +77,7 @@ import {
 } from 'merchant/reducers/magicCheckout/prepayCOD/orderConversionTab/reducers';
 import { magicAnalyticsSettingsReducer } from 'merchant/reducers/magicCheckout/analyticsSettings/reducer';
 import { rtoHistoryUploadReducer } from 'merchant/reducers/magicCheckout/rtoHistoryUpload/reducer';
+import { codEngineAllowlistUploadReducer } from 'merchant/reducers/magicCheckout/codEngineAllowlistUpload/reducer';
 import {
   magicCODOrdersReducer,
   magicCODOrderInfoReducer,
@@ -278,6 +279,7 @@ export default combineReducers({
   magicBlocklist: blocklistReducer,
   magicAllowlist: allowlistReducer,
   rtoHistoryUpload: rtoHistoryUploadReducer,
+  codEngineAllowlistUpload: codEngineAllowlistUploadReducer,
   shippingService: shippingServiceReducer,
   merchantReferral: merchantReferralReducer,
   trackEvents: trackEventsReducer,

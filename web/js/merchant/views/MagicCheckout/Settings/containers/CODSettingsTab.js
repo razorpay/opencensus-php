@@ -184,7 +184,11 @@ const CODSettingsTab = ({
       <div className="cod-settings">
         <ErrorBoundary team={Teams?.MAGIC_CHECKOUT} rank={Ranks.P0} resetOnProps>
           <SuspenseWithLoader type="center">
-            <CODSettings isRcod={rcodEnabled} />
+            <CODSettings
+              isRcod={rcodEnabled}
+              isCODEngineEnabled={configs?.cod_engine}
+              codEngineType={configs?.engine}
+            />
           </SuspenseWithLoader>
         </ErrorBoundary>
       </div>

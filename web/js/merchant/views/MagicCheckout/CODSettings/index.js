@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import codSettingsRoutes from 'merchant/views/MagicCheckout/CODSettings/routes';
+import { COD_ENGINES } from 'merchant/views/MagicCheckout/CODSettings/constants';
 
-const TabNavItem = ({ id, title, activeTab, setActiveTab }) => {
+const TabNavItem = ({ id, title, activeTab, setActiveTab, isCODEngineEnabled, codEngineType }) => {
   const handleClick = () => {
     setActiveTab(id);
   };
+
+  if ((!isCODEngineEnabled || codEngineType !== COD_ENGINES.BASIC) && id === 'allowlist') {
+    return null;
+  }
 
   return (
     <li
@@ -17,11 +22,15 @@ const TabNavItem = ({ id, title, activeTab, setActiveTab }) => {
   );
 };
 
-const TabContent = ({ id, activeTab, children, className }) => {
+const TabContent = ({ id, activeTab, children, className, isCODEngineEnabled, codEngineType }) => {
+  if ((!isCODEngineEnabled || codEngineType !== COD_ENGINES.BASIC) && id === 'allowlist') {
+    return null;
+  }
+
   return activeTab === id ? <div className={`tabContent ${className}`}>{children}</div> : null;
 };
 
-const CODSettings = ({ isRcod }) => {
+const CODSettings = ({ isRcod, isCODEngineEnabled, codEngineType }) => {
   const [activeTab, setActiveTab] = useState('cod-engine');
 
   return (
@@ -36,6 +45,8 @@ const CODSettings = ({ isRcod }) => {
                 title={isRcod ? item.rcodTitle || item.title : item.title}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
+                isCODEngineEnabled={isCODEngineEnabled}
+                codEngineType={codEngineType}
               />
             ))}
           </header>
@@ -47,6 +58,8 @@ const CODSettings = ({ isRcod }) => {
                 activeTab={activeTab}
                 className={item.className}
                 children={item.component}
+                isCODEngineEnabled={isCODEngineEnabled}
+                codEngineType={codEngineType}
               />
             ))}
           </content>
