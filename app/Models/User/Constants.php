@@ -527,4 +527,14 @@ class Constants
         self::VERIFY_CONTACT,
         self::VERIFY_USER,
     ];
+
+    const UNIFIED_ORIGINS = [
+        // beta urls
+        "https://accounts-curlec.np.razorpay.in",
+        "https://accounts.np.razorpay.in",
+
+        // prod urls
+        "https://accounts.curlec.com",
+        "https://accounts.razorpay.com"
+    ];
 }

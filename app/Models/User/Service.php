@@ -59,7 +59,7 @@ use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 use RZP\Constants\Mode;
 use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
-
+use RZP\User\Constants as UserConstants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Environment;
 
@@ -2233,6 +2233,16 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function isUnifiedRequest($origin): bool
+    {
+        foreach (Constants::UNIFIED_ORIGINS as $unified_origin) {
+            if ($origin == $unified_origin) {
+              return true;
+            }
+        }
+
+        return false;
+    }
     /**
      * @throws \libphonenumber\NumberParseException
      * @throws BadRequestException
@@ -2287,12 +2297,11 @@ class Service extends Base\Service
                 //get Org and send it to mailer, deal with other orgs as well.
                 $org = $org->toArrayPublic();
 
-                $referer  = Request::header('X-Rzp-Referer');
+                $origin  = $_SERVER['HTTP_X_REQUEST_ORIGIN'];
                 // if orgId = org_abc then extractedOrgId will be abc
                 $extractedOrgId = Org\Entity::verifyIdAndStripSign($orgId);
 
-                if (!empty($referer)) {
-
+                if ($this->isUnifiedRequest($origin)) {
                     switch ($extractedOrgId) {
                         case env('CURLEC_ORG_ID'):
                             $unified_hostname = env('CURLEC_ACCOUNTS_URL');

@@ -13,7 +13,7 @@
 
         Or you may open the following link in your browser: <br/>
         <a href="{{$unified_hostname .'/forgotpwd/#token='. $token . '&email=' . $email}}" target="_blank">
-            {{'https://' . env('CURLEC_ACCOUNTS_URL')
+            {{ $unified_hostname
             .'/forgotpwd/#token='. $token . '&email=' . $email}}
         </a>
 
