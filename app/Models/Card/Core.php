@@ -750,11 +750,11 @@ class Core extends Base\Core
 
             $response = $cardVault->fetchAltIdData($fetchAltIdRequest);
 
-            $this->trace->info(
-                TraceCode::VAULT_ALT_ID_RESPONSE,
-                [
-                    'alt_id_response'        => $response,
-                ]);
+//            $this->trace->info(
+//                TraceCode::VAULT_ALT_ID_RESPONSE,
+//                [
+//                    'alt_id_response'        => $response,
+//                ]);
 
             if(isset($response['token']) && isset($response['alt_id']['value']))
             {

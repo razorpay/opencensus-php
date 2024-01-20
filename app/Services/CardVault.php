@@ -650,6 +650,7 @@ class CardVault
         unset($response['name']);
         unset($response['expiry_month']);
         unset($response['expiry_year']);
+        unset($response['alt_id']);
 
         return $response;
     }
