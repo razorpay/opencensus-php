@@ -953,7 +953,7 @@ class Core extends Base\Core
                     {
                         $this->repo->transaction(function () use ($transferCore, $transfer, $sourcePayment, $transferProcessor, $creditJournalId, $debitJournalId, $transferMetric, $source)
                         {
-                            if($transfer->getStatus() !== Transfer\Status::PROCESSED)
+                            if($transfer->getStatus() === Transfer\Status::PENDING)
                             {
                                 // set transfer as processed
                                 $transfer->setProcessed();
