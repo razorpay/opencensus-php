@@ -747,7 +747,13 @@ class Service extends Base\Service
     {
         Customer\Validator::validateSmsHash($input);
 
-        $data = ['saved' => false, 'saved_address' => false, '1cc_consent_banner_views' => 0];
+        $data = [
+            'saved' => false,
+            'saved_address' => false,
+            '1cc_consent_banner_views' => 0,
+            'saved_cards_count' => 0,
+            'saved_addresses_count' => 0
+        ];
 
         if ($sendOtp === true)
         {
@@ -886,6 +892,8 @@ class Service extends Base\Service
             {
                 $data['saved_address'] = true;
             }
+            $data['saved_addresses_count'] = $rzpAddressCount;
+
             $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
             $data['1cc_consent_banner_views'] = $addressConsentView;
 
@@ -909,6 +917,7 @@ class Service extends Base\Service
                 }
                 else{
                     $customerTokensCount = $this->getCardTokensCountByCustomer($customer, $this->merchant);
+                    $data['saved_cards_count'] = $customerTokensCount;
                 }
 
                 if ($customerTokensCount === 0)
@@ -917,6 +926,7 @@ class Service extends Base\Service
 
                     $data['saved'] = false;
                 }
+
             }
 
             if ($sendOtp === true)

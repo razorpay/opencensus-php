@@ -655,6 +655,7 @@ return [
             'response' => [
                 'content' => [
                     'saved' => true,
+                    'saved_cards_count' => 1,
                 ],
             ],
     ],
@@ -723,6 +724,7 @@ return [
             'response' => [
                 'content' => [
                     'saved' => false,
+                    'saved_cards_count' => 0,
                 ],
             ],
     ],
@@ -751,6 +753,7 @@ return [
             'response' => [
                 'content' => [
                     'saved' => false,
+                    'saved_cards_count' => 0,
                 ],
             ],
     ],
@@ -765,6 +768,7 @@ return [
         'response' => [
             'content' => [
                 'saved' => false,
+                'saved_cards_count' => 0,
             ],
         ],
     ],
@@ -779,6 +783,7 @@ return [
             'response' => [
                 'content' => [
                     'saved' => false,
+                    'saved_cards_count' => 0,
                 ],
             ],
     ],
