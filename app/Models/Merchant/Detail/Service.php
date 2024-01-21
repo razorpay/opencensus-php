@@ -5103,12 +5103,12 @@ class Service extends Base\Service
 
     public function initiateVCIPForMerchant($input)
     {
-        (new Validator)->validateInput(__FUNCTION__, $input);
-
         if($this->ba->isAdminAuth() === false and isset($input['merchant_id']) === false)
         {
             $input['merchant_id'] = $this->merchant->getId();
         }
+        
+        (new Validator)->validateInput(__FUNCTION__, $input);
 
         $vcipEntities = $this->core->fetchAllVCIPEntity($input);
 
@@ -5148,20 +5148,39 @@ class Service extends Base\Service
 
     public function getEDDDetails($input)
     {
+        if($this->ba->isAdminAuth() === false and isset($input['merchant_id']) === false)
+        {
+            $input['merchant_id'] = $this->merchant->getId();
+        }
+        
         (new Validator)->validateInput(__FUNCTION__, $input);
 
-        $VCIPEntities = $this->core->fetchAllVCIPEntity($input);
+        $latestVCIPEntity = $this->core->getLatestVCIPEntity($input);
 
+        $vcipEntityStatus = [
+            'type'   => DEConstants::VKYC,
+            'status' => DEConstants::NOT_VERIFIED,
+        ];
+
+        if (isset($latestVCIPEntity) === true && !empty($latestVCIPEntity))
+        {
+            $vcipEntityStatus['status'] = $latestVCIPEntity['status'];
+
+            if ($latestVCIPEntity['status'] === DEConstants::REJECTED)
+            {
+                $vcipEntityStatus['code'] = $latestVCIPEntity['details']->rejection_details->code ?? '';
+                $vcipEntityStatus['reason'] = $latestVCIPEntity['details']->rejection_details->reason ?? '';
+                $vcipEntityStatus['comments'] = $latestVCIPEntity['details']->rejection_details->comments ?? '';
+            }
+        }
+        
         $eddStatus = $this->core->getEDDStatus($input);
 
         $response = [
             'status' => $eddStatus,
             'details' => [
-                    [
-                        'type'   => DEConstants::VKYC,
-                        'status' => isset($VCIPEntities[0]['status']) ? $VCIPEntities[0]['status']: DEConstants::NOT_VERIFIED,
+                    $vcipEntityStatus
                 ]
-            ]
         ];
 
         return $response;

@@ -14,21 +14,23 @@ use RZP\Trace\Tracer;
 class KafkaMessageProcessor
 {
     // Topic name constants to map job
-    const API_BVS_EVENTS                = 'api-bvs-validation-result-events';
-    const ADDRESS_DEDUPE_EVENT          = 'address-dedupe-response';
-    const RAW_ADDRESS_CONTACTS          = 'raw-address-contacts';
-    const MERCHANT_WEBSITE_INFO         = 'merchant-website-info-result';
-    const LEGAL_DOCUMENTS_EVENTS        = 'api-bvs-legal-document-result-events';
-    const INVALID_ADDRESS_EVENTS        = 'invalid-address-events';
-    const WEBSITE_POLICY_EVENTS         = 'pg-website-verification-notification-events';
-    const NEGATIVE_KEYWORDS_EVENTS      = 'api-bvs-kyc-document-result-events';
-    const MCC_NOTIFICATION_EVENTS       = 'pg-mcc-notification-events';
-    const API_PG_LEDGER_ACKNOWLEDGMENTS = 'outbox_jobs_api';
+    const API_BVS_EVENTS                            = 'api-bvs-validation-result-events';
+    const ADDRESS_DEDUPE_EVENT                      = 'address-dedupe-response';
+    const RAW_ADDRESS_CONTACTS                      = 'raw-address-contacts';
+    const MERCHANT_WEBSITE_INFO                     = 'merchant-website-info-result';
+    const LEGAL_DOCUMENTS_EVENTS                    = 'api-bvs-legal-document-result-events';
+    const INVALID_ADDRESS_EVENTS                    = 'invalid-address-events';
+    const WEBSITE_POLICY_EVENTS                     = 'pg-website-verification-notification-events';
+    const NEGATIVE_KEYWORDS_EVENTS                  = 'api-bvs-kyc-document-result-events';
+    const MCC_NOTIFICATION_EVENTS                   = 'pg-mcc-notification-events';
+    const API_PG_LEDGER_ACKNOWLEDGMENTS             = 'outbox_jobs_api';
     const MERCHANT_PAYMENTS_ENABLED_CALLBACK_EVENTS = 'merchant-payments-enabled-callback';
-    const PGOS_STAGE_CDC_EVENTS               = 'cdc_events_mysql_stage_pg_onboarding';
-    const PGOS_PROD_CDC_EVENTS               = 'cdc_events_mysql_prod_pg_onboarding';
-    const PARTNER_WEBHOOK_CALLBACK_EVENTS = "partner_webhook_callback_events";
-    const PARTNERSHIPS_OUTBOX_EVENTS      = "api_outbox_partnerships";
+    const PGOS_STAGE_CDC_EVENTS                     = 'cdc_events_mysql_stage_pg_onboarding';
+    const PGOS_PROD_CDC_EVENTS                      = 'cdc_events_mysql_prod_pg_onboarding';
+    const PARTNER_WEBHOOK_CALLBACK_EVENTS           = "partner_webhook_callback_events";
+    const PARTNERSHIPS_OUTBOX_EVENTS                = "api_outbox_partnerships";
+    const API_KAFKA_CONSUMER_BVS_VIDEO_KYC_EVENTS   = "api-bvs-video-kyc-result-events";
+
 
     const ASV_MERCHANT_UPDATE_EVENTS = 'asv-merchant-update-events';
 
@@ -172,6 +174,8 @@ class KafkaMessageProcessor
                 return new KafkaJobs\AsvMerchantUpdateJob($payload, $mode);
             case self::PARTNERSHIPS_OUTBOX_EVENTS:
                 return new KafkaJobs\PartnershipsOutboxEventHandlerJob($payload, $mode);
+            case self::API_KAFKA_CONSUMER_BVS_VIDEO_KYC_EVENTS:
+                    return new KafkaJobs\BvsVideoKYCEventsJob($payload['data'], $mode);
 
             default:
                 return null;

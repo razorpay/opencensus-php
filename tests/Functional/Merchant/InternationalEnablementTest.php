@@ -1115,4 +1115,140 @@ Team Razorpay',
         $this->startTest($testData);
     }
 
+    public function testInternationalProductPACBStatusRequestedInReview()
+    {
+        Mail::fake();
+
+        $merchant = $this->createFixtures([
+            Permission\Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT  => 'international_products_pa_cb_enablement',
+        ], 'test');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->edit('merchant', $merchant->getId(), ['product_international' => '11110']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $testData = $this->testData['testSubmitProductsPACB'];
+
+        $testData['request']['content']['version'] = 'v2';
+
+        $this->startTest($testData);
+
+        $this->esClient->indices()->refresh();
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $testData = $this->testData['testGetProductInternationalStatusV2Workflow'];
+
+        $testData['response']['content']['data'] = [
+            'payment_gateway' => 'approved',
+            'payment_links'   => 'approved',
+            'payment_pages'   => 'approved',
+            'invoices'        => 'approved',
+            'products_pa_cb'  => 'in_review',
+        ];
+
+        $this->startTest($testData);
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            if ($mail->view === 'emails.merchant.international_pa_cb_enablement.under_review')
+            {
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    public function testInternationalProductPACBStatusRequestedApproved()
+    {
+        Mail::fake();
+
+        $merchant = $this->createFixtures([
+            Permission\Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT  => 'international_products_pa_cb_enablement',
+        ], 'test');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->edit('merchant', $merchant->getId(), ['product_international' => '11110']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $testData = $this->testData['testSubmitProductsPACB'];
+
+        $testData['request']['content']['version'] = 'v2';
+
+        $this->startTest($testData);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->performWorkflowAction($workflowAction['id'], true, 'test');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $testData = $this->testData['testGetProductInternationalStatusV2Workflow'];
+
+        $testData['response']['content']['data'] = [
+            'payment_gateway' => 'approved',
+            'payment_links'   => 'approved',
+            'payment_pages'   => 'approved',
+            'invoices'        => 'approved',
+            'products_pa_cb'  => 'approved',
+        ];
+
+        $this->startTest($testData);
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            if ($mail->view === 'emails.merchant.international_pa_cb_enablement.successful_vkyc_not_completed')
+            {
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    public function testInternationalProductPACBStatusReject()
+    {
+        $merchant = $this->createFixtures([
+            Permission\Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT  => 'international_products_pa_cb_enablement',
+        ], 'test');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->edit('merchant', $merchant->getId(), ['product_international' => '11110']);
+        
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $testData = $this->testData['testSubmitProductsPACB'];
+
+        $testData['request']['content'] = array_merge($testData['request']['content'], ['version' => 'v2']);
+
+        $this->startTest($testData);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->performWorkflowAction($workflowAction['id'],false,'test');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $testData = $this->testData['testGetProductInternationalStatusV2Workflow'];
+
+        $testData['response']['content']['data'] = [
+            'payment_gateway' => 'approved',
+            'payment_links'   => 'approved',
+            'payment_pages'   => 'approved',
+            'invoices'        => 'approved',
+            'products_pa_cb'  => 'rejected',
+        ];
+
+        $this->startTest($testData);
+    }
 }

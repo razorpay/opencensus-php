@@ -640,6 +640,7 @@ class Validator extends Base\Validator
 
     protected static $initiateVCIPForMerchantRules = [
         Constants::MERCHANT_ID              => 'required|string|max:14',
+        Constants::NAME                     => 'sometimes|string|max:255'
     ];
 
     /**

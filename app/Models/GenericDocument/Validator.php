@@ -80,16 +80,21 @@ class Validator extends Base\Validator
         Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
     ];
 
+    protected static $ieProductsPaCbMimeRules = [
+        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
+    ];
+    
     protected $mimeValidators = [
-        Constants::KYC_PROOF                        => 'kyc_mime',
-        Constants::TRADEMARK_LOGO                   => 'logo_mime',
-        Constants::DISPUTE_EVIDENCE                 => 'dispute_evidence_mime',
-        Constants::INTERNATIONAL_ENABLEMENT         => 'ie_mime',
-        Constants::MERCHANT_WORKFLOW_CLARIFICATION  => 'merchant_workflow_clarification_mime',
-        Constants::B2B_EXPORT_INVOICE               => 'b2b_export_invoice_mime',
-        Constants::APM_ONBOARDING                   => 'apm_onboarding_mime',
-        Constants::OPGSP_INVOICE                    => 'opgsp_invoice_mime',
-        Constants::JPMC_INVOICE                     => 'jpmc_invoice_mime',
+        Constants::KYC_PROOF                                => 'kyc_mime',
+        Constants::TRADEMARK_LOGO                           => 'logo_mime',
+        Constants::DISPUTE_EVIDENCE                         => 'dispute_evidence_mime',
+        Constants::INTERNATIONAL_ENABLEMENT                 => 'ie_mime',
+        Constants::MERCHANT_WORKFLOW_CLARIFICATION          => 'merchant_workflow_clarification_mime',
+        Constants::B2B_EXPORT_INVOICE                       => 'b2b_export_invoice_mime',
+        Constants::APM_ONBOARDING                           => 'apm_onboarding_mime',
+        Constants::OPGSP_INVOICE                            => 'opgsp_invoice_mime',
+        Constants::JPMC_INVOICE                             => 'jpmc_invoice_mime',
+        Constants::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT  => 'ie_products_pa_cb_mime'
     ];
 
     public function validateMimeType(array $input)

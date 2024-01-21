@@ -46,6 +46,7 @@ class Constants
     const RERA                                      = 'rera';
     const GAMING_ADDENDUM_CERTIFICATE               = 'gaming_addendum_certificate';
     const HALLMARK_GII                              = 'hallmark_gii';
+    const BUSINESS_PROOF_URL                        = 'business_proof_url';
 
     const OTHERS = 'others';
 
@@ -82,7 +83,8 @@ class Constants
         self::UBO,
         self::DARPAN_PORTAL,
         self::PROOF_OF_PROFESSION,
-        self::TRADE_LICENSE
+        self::TRADE_LICENSE,
+        self::BUSINESS_PROOF_URL
     ];
 
     const DOCUMENT_TYPE_VALIDATOR_CSV =
@@ -119,6 +121,7 @@ class Constants
         self::DARPAN_PORTAL. ',' .
         self::PROOF_OF_PROFESSION. ',' .
         self::TRADE_LICENSE. ',' .
+        self::BUSINESS_PROOF_URL. ',' .
         self::OTHERS;
 
     const BUSINESS_CATEGORY_SUBCATEGORY_DOCUMENT_TYPE_MAP = [
@@ -198,7 +201,17 @@ class Constants
         ],
         BusinessType::NGO => [
             self::DARPAN_PORTAL,
-        ]
+            self::BUSINESS_PROOF_URL,
+        ],
+        BusinessType::TRUST => [
+            self::BUSINESS_PROOF_URL,
+        ],
+        BusinessType::PARTNERSHIP => [
+            self::BUSINESS_PROOF_URL,
+        ],
+        BusinessType::SOCIETY => [
+            self::BUSINESS_PROOF_URL,
+        ],
     ];
 
     public static function isMandatoryDocumentType(string $documentType): bool

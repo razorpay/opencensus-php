@@ -1178,6 +1178,8 @@ class Name
 
     const CREATE_COST_CENTER = 'create_cost_center';
     const VIEW_COST_CENTER   = 'view_cost_center';
+    
+    const INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT = 'international_products_pa_cb_enablement';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

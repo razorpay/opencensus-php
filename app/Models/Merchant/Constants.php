@@ -405,6 +405,8 @@ final class Constants
     const ENABLE_INTERNATIONAL_PROD_V2 = 'enable_international_prod_v2';
     const TOGGLE_INTERNATIONAL_REVAMPED = 'toggle_international_revamped';
 
+    const INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT = 'international_products_pa_cb_enablement';
+
     const INTERNATIONAL_WORKFLOW_LIST = [
         self::ENABLE_INTERNATIONAL_PG,
         self::ENABLE_INTERNATIONAL_PROD_V2,
@@ -673,6 +675,10 @@ final class Constants
         ],
         self::TOGGLE_INTERNATIONAL_REVAMPED => [
             self::PERMISSION => Permission::TOGGLE_INTERNATIONAL_REVAMPED,
+            self::ENTITY     => \RZP\Constants\Entity::MERCHANT,
+        ],
+        self::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT => [
+            self::PERMISSION => Permission::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT,
             self::ENTITY     => \RZP\Constants\Entity::MERCHANT,
         ],
         self::BANK_DETAIL_UPDATE   => [

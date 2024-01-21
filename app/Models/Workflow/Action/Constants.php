@@ -26,19 +26,21 @@ class Constants
     const KEYS_TO_ENCRYPT_BEFORE_SAVING_IN_ES = ['password','password_confirmation'];
 
     const ACTION_REJECT_CALLBACK_HANDLERS = [
-        Permission\Name::MERCHANT_RISK_ALERT_FOH             => \RZP\Models\MerchantRiskAlert\Service::class,
-        Permission\Name::EDIT_MERCHANT_PG_INTERNATIONAL      => \RZP\Models\Typeform\Service::class,
-        Permission\Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL => \RZP\Models\Typeform\Service::class,
-        Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED       => \RZP\Models\Typeform\Service::class,
-        Permission\Name::EXECUTE_MERCHANT_SUSPEND_BULK       => \RZP\Models\BulkWorkflowAction\Service::class,
-        Permission\Name::EXECUTE_MERCHANT_HOLD_FUNDS_BULK    => \RZP\Models\BulkWorkflowAction\Service::class,
-        Permission\Name::EXECUTE_MERCHANT_TOGGLE_LIVE_BULK   => \RZP\Models\BulkWorkflowAction\Service::class,
+        Permission\Name::MERCHANT_RISK_ALERT_FOH                    => \RZP\Models\MerchantRiskAlert\Service::class,
+        Permission\Name::EDIT_MERCHANT_PG_INTERNATIONAL             => \RZP\Models\Typeform\Service::class,
+        Permission\Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL        => \RZP\Models\Typeform\Service::class,
+        Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED              => \RZP\Models\Typeform\Service::class,
+        Permission\Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT    => \RZP\Models\Typeform\Service::class,
+        Permission\Name::EXECUTE_MERCHANT_SUSPEND_BULK              => \RZP\Models\BulkWorkflowAction\Service::class,
+        Permission\Name::EXECUTE_MERCHANT_HOLD_FUNDS_BULK           => \RZP\Models\BulkWorkflowAction\Service::class,
+        Permission\Name::EXECUTE_MERCHANT_TOGGLE_LIVE_BULK          => \RZP\Models\BulkWorkflowAction\Service::class,
     ];
 
     const CLOSE_OPERATION_UNSUPPORTED_PERMISSIONS = [
         Permission\Name::EDIT_MERCHANT_PG_INTERNATIONAL,
         Permission\Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
         Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED,
+        Permission\Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT,
     ];
 
     const WORKFLOWS_FOR_NEED_MERCHANT_CLARIFICATION = [
@@ -51,6 +53,7 @@ class Constants
         Permission\Name::INCREASE_TRANSACTION_LIMIT,
         Permission\Name::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT,
         Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED,
+        Permission\Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT,
     ];
 
     const PERMISSION_FOR_NEW_SELF_SERVE_COMMUNICATIONS = [

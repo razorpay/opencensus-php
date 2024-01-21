@@ -12,6 +12,7 @@ class Constants
     const PAYMENT_LINKS   = 'payment_links';
     const PAYMENT_PAGES   = 'payment_pages';
     const INVOICES        = 'invoices';
+    const PRODUCTS_PA_CB  = 'products_pa_cb';
 
     const ACTION_DRAFT  = 'draft';
     const ACTION_SUBMIT = 'submit';
@@ -35,7 +36,8 @@ class Constants
         self::PAYMENT_GATEWAY . ',' .
         self::PAYMENT_LINKS . ',' .
         self::PAYMENT_PAGES . ',' .
-        self::INVOICES;
+        self::INVOICES. ',' .
+        self::PRODUCTS_PA_CB;
 
     const VALIDATOR_CREATE_ACTION_KEY = 'create_for_%s';
 

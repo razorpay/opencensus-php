@@ -7517,7 +7517,7 @@ class Core extends Base\Core
     /**
      * @throws BadRequestValidationFailureException
      */
-    public function fetchProductWiseWorkflowStatusV2($permissionName, $productRequested, Entity $merchant): array
+    public function fetchProductWiseWorkflowStatusV2($productRequested, Entity $merchant): array
     {
         $productWiseWorkflowStatus = [];
 
@@ -7543,6 +7543,8 @@ class Core extends Base\Core
             }
             else if (in_array($productName, $productRequested, true) === true)
             {
+                $permissionName = Merchant\ProductInternational\ProductInternationalMapper::PRODUCT_TO_PERMISSION_MAPPING[$productName];
+
                 $productWiseWorkflowStatus[$productName] = $this->getMerchantWorkflowStatus($permissionName, $merchant);
             }
             else
@@ -7559,6 +7561,8 @@ class Core extends Base\Core
      */
     public function getProductInternationalStatusV2(Entity $merchant): array
     {
+        // Last Updated workflow for toggle_international_revamped
+        // This takes care of Payment Gateway, Payment Pages, Payment Links and Invoices Product
         $workflowActions = ((new WorkflowAction\Core()))->fetchLastUpdatedWorkflowActionInPermissionList(
             $merchant->getId(), TypeformConstant::MERCHANT_KEY, [Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED]);
 
@@ -7569,7 +7573,21 @@ class Core extends Base\Core
             $productRequested = (new TypeformCore)->getProductNamesFromActionEntityData($workflowActions);
         }
 
-        $productWiseWorkflowStatus = $this->fetchProductWiseWorkflowStatusV2(Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED, $productRequested, $merchant);
+        // Last Updated workflow for international_products_pa_cb_enablement
+        // This takes care of International PA CB Products Enablement
+        $workflowActions = ((new WorkflowAction\Core()))->fetchLastUpdatedWorkflowActionInPermissionList(
+            $merchant->getId(), TypeformConstant::MERCHANT_KEY, [Permission\Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT]);
+
+        if (is_null($workflowActions) === false)
+        {
+            $productRequestedForPaCb = [];
+
+            $productRequestedForPaCb = (new TypeformCore)->getProductNamesFromActionEntityData($workflowActions);
+            
+            $productRequested = array_merge($productRequested, $productRequestedForPaCb);
+        }
+
+        $productWiseWorkflowStatus = $this->fetchProductWiseWorkflowStatusV2($productRequested, $merchant);
 
         return $productWiseWorkflowStatus;
     }

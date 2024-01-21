@@ -92,6 +92,10 @@ class Validator extends Base\Validator
         Constants::UBO . '.*.'.Constants::ID              => 'required|string|starts_with:doc_|size:18',
         Constants::UBO . '.*.'. Constants::DISPLAY_NAME   => 'nullable|sometimes|string|max:100',
 
+        Constants::BUSINESS_PROOF_URL                                    => 'nullable|sometimes|array|max:3',
+        Constants::BUSINESS_PROOF_URL . '.*.'.Constants::ID              => 'required|string|starts_with:doc_|size:18',
+        Constants::BUSINESS_PROOF_URL . '.*.'. Constants::DISPLAY_NAME   => 'nullable|sometimes|string|max:100',
+
         Constants::IE_CODE                                           => 'nullable|sometimes|array|max:3',
         Constants::IE_CODE . '.*.'.Constants::ID                     => 'required|string|starts_with:doc_|size:18',
         Constants::IE_CODE . '.*.'. Constants::DISPLAY_NAME          => 'nullable|sometimes|string|max:100',

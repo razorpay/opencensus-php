@@ -22,6 +22,10 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AsvSdkAccount;
+use Accounts\Account\V1\GetAccountByIdResponse;
+use Accounts\Account\V1\Account;
+
 
 class InternationalBankTransferTest extends TestCase
 {
@@ -52,6 +56,8 @@ class InternationalBankTransferTest extends TestCase
         $slackMock->shouldReceive('queue');
 
         $this->app->instance('slack', $slackMock);
+
+        $this->mockGetEDDStatusFromAccountService();
     }
 
     public function testCreateAccountForCurrencyCloud()
@@ -1476,5 +1482,33 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals(0, $response['final']['counts']['failures']);
 
         Mail::assertNotSent(AuthorizedPaymentsReminder::class);
+    }
+
+    protected function getMockAsvClient()
+    {
+        return $this->getMockBuilder("Razorpay\Asv\Interfaces\AccountInterface")
+            ->enableOriginalConstructor()
+            ->getMock();
+    }
+
+    protected function mockGetEDDStatusFromAccountService()
+    {
+        $asvSdkAccount = new AsvSdkAccount();
+
+        $mockAccountClient = $this->getMockAsvClient();
+
+        $asvSdkAccount->getAsvSdkClient()->setAccount($mockAccountClient);
+
+        $jsonData = '{"id":"10000000000000","account_detail":{"edd_verification_status":"verified"}}';
+
+        $account = new Account();
+
+        $account->mergeFromJsonString($jsonData);
+
+        $response = new GetAccountByIdResponse();
+
+        $response->setAccount($account);
+
+        $mockAccountClient->expects($this->any())->method("GetAccountById")->withAnyParameters()->willReturn([$response, null]);
     }
 }

@@ -105,7 +105,8 @@ class Workflow
         Permission::EDIT_TERMINAL,
         Permission::EDIT_TERMINAL_GOD_MODE,
         Permission::ASSIGN_MERCHANT_TERMINAL,
-        Permission::TERMINAL_MANAGE_MERCHANT
+        Permission::TERMINAL_MANAGE_MERCHANT,
+        Permission::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT
     ];
 
     protected $app;

@@ -113,6 +113,25 @@ class Events
 
     const IE_NEEDS_CLARIFICATION                                        = 'IE_NEEDS_CLARIFICATION';
 
+    // International PA CB Products Enablements Events
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW                             = 'IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL                               = 'IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING    = 'IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED            = 'IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_NEEDS_CLARIFICATION                      = 'IE_PRODUCTS_PA_CB_ENABLEMENT_NEEDS_CLARIFICATION';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_INCORRECT             = 'IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_INCORRECT';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_FORMAT_INCONSISTENT   = 'IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_FORMAT_INCONSISTENT';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_INCOMPLETE_DOCUMENTS_SUBMITTED  = 'IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_INCOMPLETE_DOCUMENTS_SUBMITTED';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_VCIP_NOT_COMPLETED              = 'IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_VCIP_NOT_COMPLETED';
+
     // Event vs sms templates mapping
     const SMS_TEMPLATES = [
         self::MERCHANT_BUSINESS_WEBSITE_ADD                             => 'sms.dashboard.merchant_business_website_add',
@@ -395,6 +414,16 @@ class Events
         self::IE_REJECTED_DORMANT_MERCHANT                              => 'emails.merchant.ie_rejected_dormant_merchant',
         self::IE_REJECTED_RESTRICTED_BUSINESS                           => 'emails.merchant.ie_rejected_restricted_business',
         self::IE_NEEDS_CLARIFICATION                                    => 'emails.merchant.ie_needs_clarification',
+        // For PA CB Products
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL                               => 'emails.merchant.international_pa_cb_enablement.successful',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING    => 'emails.merchant.international_pa_cb_enablement.successful_vkyc_completed_but_pending',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED            => 'emails.merchant.international_pa_cb_enablement.successful_vkyc_not_completed',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_NEEDS_CLARIFICATION                      => 'emails.merchant.international_pa_cb_enablement.needs_clarification',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW                             => 'emails.merchant.international_pa_cb_enablement.under_review',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_INCORRECT             => 'emails.merchant.international_pa_cb_enablement.rejected_documents_incorect',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_FORMAT_INCONSISTENT   => 'emails.merchant.international_pa_cb_enablement.rejected_documents_format_inconsistent',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_INCOMPLETE_DOCUMENTS_SUBMITTED  => 'emails.merchant.international_pa_cb_enablement.rejected_incomplete_documents_submitted',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_VCIP_NOT_COMPLETED              => 'emails.merchant.international_pa_cb_enablement.rejected_vcip_not_completed',
     ];
 
     // Event vs email Tags mapping
@@ -448,7 +477,16 @@ class Events
         self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => MailTags::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD,
         self::IE_REJECTED_DORMANT_MERCHANT                              => MailTags::IE_REJECTED_DORMANT_MERCHANT,
         self::IE_REJECTED_RESTRICTED_BUSINESS                           => MailTags::IE_REJECTED_RESTRICTED_BUSINESS,
-        self::IE_NEEDS_CLARIFICATION                                    => MailTags::IE_NEEDS_CLARIFICATION,
+        // For PA CB Products
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL                              => MailTags::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL,
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING   => MailTags::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING,
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED           => MailTags::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED,
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_NEEDS_CLARIFICATION                     => MailTags::IE_PRODUCTS_PA_CB_ENABLEMENT_NEEDS_CLARIFICATION,
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW                            => MailTags::IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW,
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_INCORRECT            => MailTags::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_INCORRECT,
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_FORMAT_INCONSISTENT  => MailTags::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_FORMAT_INCONSISTENT,
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_INCOMPLETE_DOCUMENTS_SUBMITTED => MailTags::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_INCOMPLETE_DOCUMENTS_SUBMITTED,
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_VCIP_NOT_COMPLETED             => MailTags::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_VCIP_NOT_COMPLETED,
     ];
 
     // Event vs email subject mapping
@@ -503,6 +541,16 @@ class Events
         self::IE_REJECTED_DORMANT_MERCHANT                              => 'International payments request is rejected',
         self::IE_REJECTED_RESTRICTED_BUSINESS                           => 'International payments request is rejected',
         self::IE_NEEDS_CLARIFICATION                                    => 'Action required: international payments request',
+        // For PA CB Products
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL                               => 'International payments request is successful',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING    => 'Additional KYC docs successfully verified',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED            => 'Additional KYC docs successfully verified',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_NEEDS_CLARIFICATION                      => 'Action required: More international payment methods request',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW                             => 'Verification of international payments activation form',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_INCORRECT             => 'International payments request rejected',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_FORMAT_INCONSISTENT   => 'International payments request rejected',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_INCOMPLETE_DOCUMENTS_SUBMITTED  => 'International payments request rejected',
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_VCIP_NOT_COMPLETED              => 'International payments request rejected',
     ];
 
     // Event vs recipients role mapping
@@ -557,6 +605,16 @@ class Events
         self::IE_REJECTED_DORMANT_MERCHANT                              => [UserRole::OWNER],
         self::IE_REJECTED_RESTRICTED_BUSINESS                           => [UserRole::OWNER],
         self::IE_NEEDS_CLARIFICATION                                    => [UserRole::OWNER],
+        // For PA CB Products
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL                               => [UserRole::OWNER],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING    => [UserRole::OWNER],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED            => [UserRole::OWNER],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_NEEDS_CLARIFICATION                      => [UserRole::OWNER],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW                             => [UserRole::OWNER],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_INCORRECT             => [UserRole::OWNER],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_FORMAT_INCONSISTENT   => [UserRole::OWNER],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_INCOMPLETE_DOCUMENTS_SUBMITTED  => [UserRole::OWNER],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_VCIP_NOT_COMPLETED              => [UserRole::OWNER],
     ];
 
     // Event vs supported channel mapping
@@ -611,5 +669,15 @@ class Events
         self::IE_REJECTED_DORMANT_MERCHANT                              => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::IE_REJECTED_RESTRICTED_BUSINESS                           => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::IE_NEEDS_CLARIFICATION                                    => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        // For PA CB Products
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL                               => [Channel::EMAIL],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING    => [Channel::EMAIL],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED            => [Channel::EMAIL],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_NEEDS_CLARIFICATION                      => [Channel::EMAIL],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW                             => [Channel::EMAIL],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_INCORRECT             => [Channel::EMAIL],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_FORMAT_INCONSISTENT   => [Channel::EMAIL],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_INCOMPLETE_DOCUMENTS_SUBMITTED  => [Channel::EMAIL],
+        self::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_VCIP_NOT_COMPLETED              => [Channel::EMAIL],
     ];
 }

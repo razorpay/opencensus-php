@@ -31,15 +31,16 @@ class Constants
     const DOCUMENT_UPLOAD_MUTEX_LOCK_TIMEOUT = '30';
     const DOCUMENT_UPLOAD_MUTEX_RETRY_COUNT  = '2';
 
-    const KYC_PROOF                         = 'kyc_proof';
-    const TRADEMARK_LOGO                    = 'trademark_logo';
-    const DISPUTE_EVIDENCE                  = 'dispute_evidence';
-    const INTERNATIONAL_ENABLEMENT          = 'international_enablement';
-    const MERCHANT_WORKFLOW_CLARIFICATION   = 'merchant_workflow_clarification';
-    const B2B_EXPORT_INVOICE                = 'b2b_export_invoice';
-    const APM_ONBOARDING                    = 'apm_onboarding';
-    const OPGSP_INVOICE                     = 'opgsp_invoice';
-    const JPMC_INVOICE                      = 'jpmc_invoice';
+    const KYC_PROOF                               = 'kyc_proof';
+    const TRADEMARK_LOGO                          = 'trademark_logo';
+    const DISPUTE_EVIDENCE                        = 'dispute_evidence';
+    const INTERNATIONAL_ENABLEMENT                = 'international_enablement';
+    const MERCHANT_WORKFLOW_CLARIFICATION         = 'merchant_workflow_clarification';
+    const B2B_EXPORT_INVOICE                      = 'b2b_export_invoice';
+    const APM_ONBOARDING                          = 'apm_onboarding';
+    const OPGSP_INVOICE                           = 'opgsp_invoice';
+    const JPMC_INVOICE                            = 'jpmc_invoice';
+    const INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT = 'international_products_pa_cb_enablement';
 
     const PURPOSE_TYPE = [
         self::KYC_PROOF,
@@ -51,5 +52,6 @@ class Constants
         self::APM_ONBOARDING,
         self::OPGSP_INVOICE,
         self::JPMC_INVOICE,
+        self::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT
     ];
 }

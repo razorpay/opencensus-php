@@ -25,6 +25,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\HsCode\HsCodeList;
+use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstants;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\Merchant\InternationalIntegration\Emerchantpay\EmerchantpayApmRequestFile;
 
 class Service extends Base\Service
@@ -158,6 +160,17 @@ class Service extends Base\Service
         (new Validator)->validateInput('post_emerchantpay_request_data', $input);
 
         $merchant = $this->auth->getMerchant();
+
+        $eddStatus = (new MerchantDetailsCore)->getEDDStatus(['merchant_id' => $merchant->getID()]);
+
+        if ($eddStatus !== MerchantDetailsConstants::VERIFIED) 
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_EDD_STATUS_NOT_VERIFIED, null,
+            [
+                'edd_status' => $eddStatus,
+            ]);
+        }
+
         if ($merchant->isInternational() === false) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNATIONAL_NOT_ALLOWED_ON_MERCHANT,
                 null, null, PublicErrorDescription::EMERCHANTPAY_INTERNATIONAL_DISABLED_DESC);

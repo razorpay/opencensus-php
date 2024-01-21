@@ -25,18 +25,21 @@ class ProductInternationalMapper
     const PAYMENT_LINKS   = 'payment_links';
     const PAYMENT_PAGES   = 'payment_pages';
     const INVOICES        = 'invoices';
+    const PRODUCTS_PA_CB  = 'products_pa_cb';
 
     //Product Categories
-    const PG      = 'pg';
-    const PROD_V2 = 'prod_v2';
+    const PG        = 'pg';
+    const PROD_V2   = 'prod_v2';
+    const PROD_PACB  = 'prod_pacb';
 
-    const LIVE_PRODUCTS = [self::PAYMENT_GATEWAY, self::PAYMENT_LINKS, self::PAYMENT_PAGES, self::INVOICES];
+    const LIVE_PRODUCTS = [self::PAYMENT_GATEWAY, self::PAYMENT_LINKS, self::PAYMENT_PAGES, self::INVOICES, self::PRODUCTS_PA_CB];
 
     // Product Category Mapping
     const PRODUCT_CATEGORIES =
         [
-            self::PG      => [self::PAYMENT_GATEWAY],
-            self::PROD_V2 => [self::PAYMENT_LINKS, self::PAYMENT_PAGES, self::INVOICES]
+            self::PG        => [self::PAYMENT_GATEWAY],
+            self::PROD_V2   => [self::PAYMENT_LINKS, self::PAYMENT_PAGES, self::INVOICES],
+            self::PROD_PACB => [self::PRODUCTS_PA_CB]
         ];
 
     //Position of products (default value of ProductInternational is 0000000000)
@@ -46,13 +49,15 @@ class ProductInternationalMapper
             self::PAYMENT_LINKS   => 1,
             self::PAYMENT_PAGES   => 2,
             self::INVOICES        => 3,
+            self::PRODUCTS_PA_CB   => 4,
         ];
 
     //Permisson of products
     const PRODUCT_PERMISSION =
         [
-            self::PG      => Name::EDIT_MERCHANT_PG_INTERNATIONAL,
-            self::PROD_V2 => Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL
+            self::PG      =>    Name::EDIT_MERCHANT_PG_INTERNATIONAL,
+            self::PROD_V2 =>    Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
+            self::PROD_PACB =>  Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT
         ];
 
     const PRODUCT_PERMISSIONS_LIST =
@@ -61,6 +66,7 @@ class ProductInternationalMapper
             Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
             Name::EDIT_MERCHANT_INTERNATIONAL_NEW,
             Name::TOGGLE_INTERNATIONAL_REVAMPED,
+            Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT
         ];
 
     //Product ErrorCode mapping
@@ -69,7 +75,17 @@ class ProductInternationalMapper
             self::PAYMENT_LINKS   => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_LINKS,
             self::PAYMENT_PAGES   => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES,
             self::INVOICES        => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES,
-            self::PAYMENT_GATEWAY => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY
+            self::PAYMENT_GATEWAY => ErrorCode::BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY,
+            self::PRODUCTS_PA_CB  => ErrorCode::BAD_REQUEST_INTERNATIONAL_NOT_ALLOWED_FOR_PRODUCTS_PA_CB
+        ];
+
+    const PRODUCT_TO_PERMISSION_MAPPING = 
+        [
+            self::PAYMENT_LINKS   =>  Name::TOGGLE_INTERNATIONAL_REVAMPED,
+            self::PAYMENT_PAGES   =>  Name::TOGGLE_INTERNATIONAL_REVAMPED,
+            self::INVOICES        =>  Name::TOGGLE_INTERNATIONAL_REVAMPED,
+            self::PAYMENT_GATEWAY =>  Name::TOGGLE_INTERNATIONAL_REVAMPED,
+            self::PRODUCTS_PA_CB  =>  Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT,
         ];
 
     const INTERNATIONAL_PRODUCTS = 'international_products';

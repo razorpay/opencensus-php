@@ -32,6 +32,9 @@ use RZP\Models\Dispute;
 use RZP\Models\Merchant\InternationalEnablement\Detail as IEDetail;
 use RZP\Models\Workflow\Action\Differ\Entity as WorkflowDifferEntity;
 use RZP\Models\Workflow\Action\Differ\Service as WorkflowDifferService;
+use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
+use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstants;
 
 class Core extends Base\Core
 {
@@ -183,17 +186,40 @@ class Core extends Base\Core
 
             unset($input[IEDetail\Entity::DOCUMENTS]);
 
-            $this->app['workflow']
+            // For PA CB Enablement it comes as a only key in array
+            // If required in future, we can open up two parallel workflows
+            $isPACBProductsCategoryRequested = in_array(ProductInternationalMapper::PROD_PACB, $productCategoriesRequested, true);
+
+            if($isPACBProductsCategoryRequested === true)
+            {
+                $workflowRequestTags[] = Constants::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT_REQUESTED;
+
+                $this->app['workflow']
+                ->setEntityAndId($merchant->getEntity(), $merchant->getId())
+                ->setPermission(Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT)
+                ->setInput($input)
+                ->setTags($workflowRequestTags)
+                ->handle(null, $typeformWorkflowData, true);
+                // added true in handle to continue the flow.
+
+                $this->trace->info(TraceCode::INTERNATIONAL_PRODUCTS_PA_CB_WORKFLOW_TRIGGERED, []);
+
+                $this->sendNotificationForInReviewState($merchant, DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW);
+            }
+            else
+            {
+                $this->app['workflow']
                 ->setEntityAndId($merchant->getEntity(), $merchant->getId())
                 ->setPermission(Name::TOGGLE_INTERNATIONAL_REVAMPED)
                 ->setInput($input)
                 ->setTags($workflowRequestTags)
                 ->handle(null, $typeformWorkflowData, true);
-            // added true in handle to continue the flow.
+                // added true in handle to continue the flow.
 
-            $this->trace->info(TraceCode::TOGGLE_INTERNATIONAL_REVAMPED_WORKFLOW_TRIGGERED, []);
+                $this->trace->info(TraceCode::TOGGLE_INTERNATIONAL_REVAMPED_WORKFLOW_TRIGGERED, []);
 
-            $this->sendNotificationForInReviewState($merchant);
+                $this->sendNotificationForInReviewState($merchant, DashboardEvents::IE_UNDER_REVIEW);
+            }
         }
         else
         {
@@ -250,19 +276,19 @@ class Core extends Base\Core
 
         $products = (new IEDetail\Repository())->getProductsFromEntityId($internationalEnablementDetailId);
 
-        $this->trace->info(TraceCode::TOGGLE_INTERNATIONAL_REVAMPED_PRODUCT_REQUESTED, [
+        $this->trace->info(TraceCode::INTERNATIONAL_PRODUCT_REQUESTED, [
             'products' => $products,
         ]);
 
         return $products;
     }
 
-    private function sendNotificationForInReviewState($merchant)
+    private function sendNotificationForInReviewState($merchant, $event)
     {
         $tatDaysLater = Carbon::now()->addDays(DashboardConstants::IE_TAT_DAYS)->format('M d,Y');
         $args = [
             DashboardConstants::MERCHANT => $merchant,
-            DashboardEvents::EVENT       => DashboardEvents::IE_UNDER_REVIEW,
+            DashboardEvents::EVENT       => $event,
             DashboardConstants::PARAMS   => [
                 DashboardConstants::MERCHANT_NAME => $merchant->getName(),
                 DashboardConstants::UPDATE_DATE   => $tatDaysLater,
@@ -286,7 +312,7 @@ class Core extends Base\Core
         if ($version === 'v2')
         {
             $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
-                $merchant->getId(), Constants::MERCHANT_KEY, Name::TOGGLE_INTERNATIONAL_REVAMPED);
+                $merchant->getId(), Constants::MERCHANT_KEY, $permission);
 
             if (is_null($workflowActions) === false)
             {
@@ -383,7 +409,8 @@ class Core extends Base\Core
 
         $actionPermission = $action->permission->getName();
 
-        if ($actionPermission === Name::TOGGLE_INTERNATIONAL_REVAMPED)
+        if ($actionPermission === Name::TOGGLE_INTERNATIONAL_REVAMPED || 
+            $actionPermission === Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT)
         {
             $version = 'v2';
         }
@@ -466,15 +493,28 @@ class Core extends Base\Core
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $productInternational = $merchant->getProductInternational();
+        
+        $event = DashboardEvents::IE_SUCCESSFUL;
 
-        foreach (ProductInternationalMapper::LIVE_PRODUCTS as $productName)
+        // Override PA-CB Enablement Successful Event
+        if($action['permission']['name'] === PermissionName::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT)
         {
-            $status = (new ProductInternationalField($merchant))->getProductStatus($productName, $productInternational);
+            $latestVCIPEntity = (new MerchantDetailCore())->getLatestVCIPEntity(['merchant_id' => $merchantId]);
 
-            $approvedProductCount = $approvedProductCount + 1;
+            $vkycStatus = $latestVCIPEntity['status'] ?? '';
+
+            switch($vkycStatus) {
+                case MerchantDetailsConstants::APPROVED: 
+                    $event = DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL;
+                    break;
+                case MerchantDetailsConstants::UNDER_REVIEW: 
+                    $event = DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING;
+                    break;
+                default: // For rest of the cases, where KYC is Either Initiated / Rejected
+                    $event = DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED;
+                    break;
+            }  
         }
-
-        $event = Constants::APPROVED_PRODUCT_COUNT_VS_IE_SUCCESS_EVENT[$approvedProductCount];
 
         $args = [
             DashboardConstants::MERCHANT => $merchant,

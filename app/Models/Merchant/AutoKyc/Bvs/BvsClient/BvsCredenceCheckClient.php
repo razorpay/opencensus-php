@@ -85,14 +85,14 @@ class BvsCredenceCheckClient extends BaseClient {
 
         try {
 
-            $response = $this->credenceCheckClient->GetDetailsByAccountId($this->apiClientCtx,$getCredenceCheckDetailsByAccountIdRequest);
+            $response = new CredenceCheckBaseResponse($this->credenceCheckClient->GetDetailsByAccountId($this->apiClientCtx,$getCredenceCheckDetailsByAccountIdRequest));
 
             $this->trace->info(TraceCode::BVS_GET_CREDENCE_DETAILS_BY_ACCOUNT_ID_RESPONSE,[
                 'account_id'    => $request['id'],
-                'response' => $response
+                'response'      => $response->getResponseData()
             ]);
 
-            return new CredenceCheckBaseResponse($response);
+            return $response;
 
         }catch (TwirpError $ex) {
             $response =  [

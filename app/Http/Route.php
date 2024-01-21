@@ -140,12 +140,15 @@ class Route
         'merchant_autokyc_escalation'              => ['post',     'merchants/auto-kyc-cron/escalations',            'MerchantController@handleAutoKycEscalationCron'                  ],
 
 
-        //Merchant VCIP Flow
-        'merchant_vkyc_submit_admin'                     => ['post',      'merchant/{id}/vkyc',                                 'MerchantController@initiateVCIPForMerchant'                       ],
-        'merchant_vkyc_fetch_admin'                      => ['get',       'merchant/{id}/vkyc',                                 'MerchantController@getVCIPForMerchant'                       ],
-        'merchant_edd_details_fetch_admin'               => ['get',       'merchant/{id}/edd_details',                           'MerchantController@getEDDDetails'],
-        'merchant_edd_details_submit_admin'              => ['post',      'merchant/{id}/edd_details',                           'MerchantController@updateEDDDetails' ],
+        // Merchant VCIP Flow Admin Dashboard
+        'merchant_vkyc_submit_admin'                     => ['post',      'merchant/{id}/vkyc',                                 'MerchantController@initiateVCIPForMerchant'           ],
+        'merchant_vkyc_fetch_admin'                      => ['get',       'merchant/{id}/vkyc',                                 'MerchantController@getVCIPForMerchant'                ],
+        'merchant_edd_details_fetch_admin'               => ['get',       'merchant/{id}/edd_details',                           'MerchantController@getEDDDetails'                    ],
+        'merchant_edd_details_submit_admin'              => ['post',      'merchant/{id}/edd_details',                           'MerchantController@updateEDDDetails'                 ],
 
+        // Merchant VCIP Flow Merchant Dashboard
+        'merchant_vkyc_submit'                            => ['post',      'vkyc',                                 'MerchantController@initiateVCIPForMerchant'             ],
+        'merchant_edd_details_fetch'                      => ['get',       'edd_details',                          'MerchantController@getEDDDetails'                       ],
 
         'merchant_store_add'                       => ['post',     'merchants/config/store',                                'MerchantController@updateMerchantStore'   ],
         'merchant_store_fetch'                     => ['get',      'merchants/config/store',                                'MerchantController@fetchMerchantStore'    ],
@@ -6598,6 +6601,8 @@ class Route
     //
 
     public static $proxy = [
+        'merchant_vkyc_submit',
+        'merchant_edd_details_fetch',
         'pgos_send_sms_otp',
         'pgos_verify_otp',
         'merchant_activation_business_categories_v3',
@@ -11683,6 +11688,8 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_vkyc_submit',
+            'merchant_edd_details_fetch',
             'pgos_send_sms_otp',
             'pgos_verify_otp',
             'merchant_activation_business_categories_v3',
@@ -13237,6 +13244,8 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_vkyc_submit',
+            'merchant_edd_details_fetch',
             '1cc_prepay_cod_configs_get',
             'shipping_provider_list',
             'shipping_provider_post',

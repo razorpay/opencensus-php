@@ -1417,6 +1417,9 @@ class UserRolesScope
             'get_all_country_dashboard_config'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_ADMIN, Role::LINKED_ACCOUNT_OWNER],
             'get_country_dashboard_config'                          => [Role::OWNER, Role::ADMIN],
             'edit_country_dashboard_config'                         => [Role::OWNER, Role::ADMIN],
+
+            'merchant_vkyc_submit'                                 =>   [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
+            'merchant_edd_details_fetch'                           =>   Role::ALL_ROLES,
         ];
 
         /*

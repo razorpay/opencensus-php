@@ -91,6 +91,8 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         PermissionName::EDIT_MERCHANT_BANK_DETAIL,
 
         PermissionName::TOGGLE_INTERNATIONAL_REVAMPED,
+
+        PermissionName::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT,
     ];
 
     const IE_REJECTION_REASON_VS_EVENT = [
@@ -110,6 +112,17 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         TypeformConstants::REJECT_REASON_MERCHANT_DORMANT_MERCHANT              => DashboardEvents::IE_REJECTED_DORMANT_MERCHANT,
 
         TypeformConstants::REJECT_REASON_MERCHANT_RESTRICTED_BUSINESS           => DashboardEvents::IE_REJECTED_RESTRICTED_BUSINESS,
+    ];
+
+    const IE_PRODUCTS_PA_CB_REJECTION_REASON_VS_EVENT = [
+
+        TypeformConstants::REJECT_REASON_DOCUMENTS_INCORRECT              => DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_INCORRECT,
+
+        TypeformConstants::REJECT_REASON_DOCUMENTS_FORMAT_INCONSISTENT    => DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_FORMAT_INCONSISTENT,
+
+        TypeformConstants::REJECT_REASON_INCOMPLETE_DOCUMENTS_SUBMITTED   => DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_INCOMPLETE_DOCUMENTS_SUBMITTED,
+
+        TypeformConstants::REJECT_REASON_VCIP_NOT_COMPLETED               => DashboardEvents::IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_VCIP_NOT_COMPLETED,
     ];
 
     public function __construct($input)
@@ -262,6 +275,13 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
             return;
         }
+
+        if ($permissionName === PermissionName::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT)
+        {
+            $this->sendNotificationForInternationalPACBEnablement($merchant, $rejectionReason);
+
+            return;
+        }
     }
 
     protected function sendNotificationForBankAccountUpdate($merchant, $event = DashboardEvents::BANK_ACCOUNT_UPDATE_REJECTED)
@@ -314,6 +334,25 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
             Merchant\Constants::PARAMS       => [
                 DashboardConstants::MERCHANT_NAME => $merchant[Merchant\Entity::NAME],
                 DashboardConstants::UPDATE_DATE   => $rejectionRetryAfterDate,
+                DashboardConstants::DASHBOARD_URL => app('config')->get('applications.international_payment_methods_dashboard_url'),
+                DashboardConstants::PAYPAL_URL => app('config')->get('applications.international_payment_methods_paypal_url'),
+            ]
+        ];
+
+        (new DashboardNotificationHandler($args))->send();
+    }
+
+    protected function sendNotificationForInternationalPACBEnablement($merchant, $rejectionReason)
+    {
+        $rejectionReason = $rejectionReason[Constants::MESSAGE_BODY];
+        
+        $event = self::IE_PRODUCTS_PA_CB_REJECTION_REASON_VS_EVENT[$rejectionReason];
+
+        $args = [
+            Merchant\Constants::MERCHANT     => $merchant,
+            DashboardEvents::EVENT           => $event,
+            Merchant\Constants::PARAMS       => [
+                DashboardConstants::MERCHANT_NAME => $merchant[Merchant\Entity::NAME],
                 DashboardConstants::DASHBOARD_URL => app('config')->get('applications.international_payment_methods_dashboard_url'),
                 DashboardConstants::PAYPAL_URL => app('config')->get('applications.international_payment_methods_paypal_url'),
             ]

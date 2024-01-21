@@ -331,6 +331,25 @@ class MailTags
     const MERCHANT_ADD_ADDITIONAL_WEBSITE_REJECTION_REASON       = 'merchant_add_additional_website_rejection_reason';
 
     const B2B_UPLOAD_INVOICE = 'b2b_upload_invoice';
+    
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_NEEDS_CLARIFICATION                      = 'ie_products_pa_cb_enablement_needs_clarification';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_UNDER_REVIEW                             = 'ie_products_pa_cb_enablement_under_review';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL                               = 'ie_products_pa_cb_enablement_successful';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_COMPLETED_BUT_PENDING    = 'ie_products_pa_cb_enablement_successful_vkyc_completed_but_pending';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_SUCCESSFUL_VKYC_NOT_COMPLETED            = 'ie_products_pa_cb_enablement_successful_vkyc_not_completed';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_INCORRECT             = 'ie_products_pa_cb_enablement_rejected_documents_incorrect';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_DOCUMENTS_FORMAT_INCONSISTENT   = 'ie_products_pa_cb_enablement_rejected_documents_format_inconsistent';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_INCOMPLETE_DOCUMENTS_SUBMITTED  = 'ie_products_pa_cb_enablement_rejected_incomplete_documents_submitted';
+
+    const IE_PRODUCTS_PA_CB_ENABLEMENT_REJECTED_VCIP_NOT_COMPLETED              = 'ie_products_pa_cb_enablement_rejected_vcip_not_completed';
+
 
     /**
      * Razorpay Trusted Business/Badge Constants

@@ -18,7 +18,6 @@ class Account extends Base
 
     public function saveAccount($accountId, $accountDetail, $fieldList) : string
     {
-
         $saveAccountRequest = new SaveRequest();
 
         $fieldMask = new \Google\Protobuf\FieldMask([ 'paths' => $fieldList

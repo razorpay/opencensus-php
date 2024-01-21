@@ -14,5 +14,6 @@ class Constants
         Permission\Name::EDIT_MERCHANT_PG_INTERNATIONAL,
         Permission\Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
         Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED,
+        Permission\Name::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT,
     ];
 }

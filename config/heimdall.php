@@ -719,6 +719,11 @@ return [
                 'assignable'    => true
             ],
 
+            Permission::INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT  => [
+                'workflow'      => true,
+                'assignable'    => true
+            ],
+
             Permission::EDIT_MERCHANT_INTERNATIONAL_NEW  => '',
             Permission::TOGGLE_TRANSACTION_HOLD_STATUS => '',
             Permission::CURRENCY_FETCH_RATES => [

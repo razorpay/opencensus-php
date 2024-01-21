@@ -12134,6 +12134,13 @@ class Core extends Base\Core
         return $listofVCIPEntity;
     }
 
+    public function getLatestVCIPEntity($input) : array
+    {
+        $vcipEntities = $this->fetchAllVCIPEntity($input);
+
+        return (isset($vcipEntities) && !empty($vcipEntities)) ? $vcipEntities[0] : [];
+    }
+
     public function createVCIPEntity($input)
     {
         $actorDetails = $this->getActorDetails();
@@ -12154,7 +12161,7 @@ class Core extends Base\Core
             'payload' => [
                 'account_details' => [
                     'account_id'    => $input['merchant_id'],
-                    'name'          => $merchantDetails->getPromoterPanName()
+                    'name'          => trim($merchantDetails->getPromoterPanName()),
                 ]
             ]
         ];
@@ -12207,6 +12214,11 @@ class Core extends Base\Core
 
     public function updateEDDStatus($input)
     {
+        $this->trace->info(TraceCode::UPDATE_EDD_STATUS_REQUEST,
+        [
+            'input'   => $input,
+        ]);
+
         $accountDetailsInput['edd_verification_status'] = $input['status'];
 
         $accountDetails = (new AccountDetailsSDKWrapper())->setAccountDetails($accountDetailsInput);

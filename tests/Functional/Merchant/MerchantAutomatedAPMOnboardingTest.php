@@ -6,6 +6,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AsvSdkAccount;
+use Accounts\Account\V1\GetAccountByIdResponse;
+use Accounts\Account\V1\Account;
 
 class MerchantAutomatedAPMOnboardingTest extends OAuthTestCase
 {
@@ -37,6 +40,8 @@ class MerchantAutomatedAPMOnboardingTest extends OAuthTestCase
         ]);
 
         $this->mockSplitzTreatment();
+
+        $this->mockGetEDDStatusFromAccountService();
 
         $this->postEmerchantpayRequestData();
     }
@@ -258,5 +263,33 @@ class MerchantAutomatedAPMOnboardingTest extends OAuthTestCase
         $this->splitzMock
             ->shouldReceive('evaluateRequest')
             ->andReturn($output);
+    }
+
+    protected function getMockAsvClient()
+    {
+        return $this->getMockBuilder("Razorpay\Asv\Interfaces\AccountInterface")
+            ->enableOriginalConstructor()
+            ->getMock();
+    }
+
+    protected function mockGetEDDStatusFromAccountService()
+    {
+        $asvSdkAccount = new AsvSdkAccount();
+
+        $mockAccountClient = $this->getMockAsvClient();
+
+        $asvSdkAccount->getAsvSdkClient()->setAccount($mockAccountClient);
+
+        $jsonData = '{"id":"10000000000000","account_detail":{"edd_verification_status":"verified"}}';
+
+        $account = new Account();
+
+        $account->mergeFromJsonString($jsonData);
+
+        $response = new GetAccountByIdResponse();
+
+        $response->setAccount($account);
+
+        $mockAccountClient->expects($this->any())->method("GetAccountById")->withAnyParameters()->willReturn([$response, null]);
     }
 }

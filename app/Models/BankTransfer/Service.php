@@ -56,6 +56,8 @@ use RZP\Models\Pricing\Service as PricingService;
 use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
+use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstants;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 
 class Service extends Base\Service
 {
@@ -1036,6 +1038,16 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
+        $eddStatus = (new MerchantDetailsCore)->getEDDStatus(['merchant_id' => $merchantId]);
+
+        if ($eddStatus !== MerchantDetailsConstants::VERIFIED) 
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EDD_STATUS_NOT_VERIFIED, null,
+            [
+                'edd_status' => $eddStatus,
+            ]);
+        }
+        
         if ($this->merchant->hasValidPurposeCodeForGlobalBankTransfer() === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PURPOSE_CODE_FOR_INTL_PAYMENTS, null,

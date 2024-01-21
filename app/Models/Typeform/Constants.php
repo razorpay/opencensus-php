@@ -12,10 +12,11 @@ class Constants
     const APPROVED    = 'approved';
     const PRODUCTS    = 'products';
     
-    const REJECTION_TAG_PREFIX                          = 'ie_rejection_tag_';
-    const REJECTION_REASON_PREFIX                       = 'ie_rejection_reason_';
-    const INTERNATIONAL_ENABLEMENT_REQUEST_ID_PREFIX    = 'ie_request_id_';
-    const INTERNATIONAL_ENABLEMENT_REQUEST_HAS_SIBLINGS = 'ie_request_has_siblings';
+    const REJECTION_TAG_PREFIX                               = 'ie_rejection_tag_';
+    const REJECTION_REASON_PREFIX                            = 'ie_rejection_reason_';
+    const INTERNATIONAL_ENABLEMENT_REQUEST_ID_PREFIX         = 'ie_request_id_';
+    const INTERNATIONAL_ENABLEMENT_REQUEST_HAS_SIBLINGS      = 'ie_request_has_siblings';
+    const INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT_REQUESTED  = 'ie_products_pa_cb_enablement_requested';
 
     const CSV_SEPERATOR = ',';
 
@@ -44,6 +45,11 @@ class Constants
     const REJECTION_TAG_CATEGORY_INTERNATIONAL_INELIGIBLE = 'merchant_category_international_ineligible';
     const REJECTION_TAG_BUSINESS_MODEL_MISMATCH           = 'business_model_mismatch';
 
+    const REJECT_REASON_DOCUMENTS_INCORRECT               = 'documents_incorrect';
+    const REJECT_REASON_DOCUMENTS_FORMAT_INCONSISTENT     = 'documents_format_inconsistent';
+    const REJECT_REASON_INCOMPLETE_DOCUMENTS_SUBMITTED    = 'incomplete_documents_submitted';
+    const REJECT_REASON_VCIP_NOT_COMPLETED                = 'vcip_not_completed';
+
     const REJECTION_REASONS = [
         self::REJECT_REASON_MERCHANT_LOOKS_RISKY,
         self::REJECT_REASON_MERCHANT_LOOKS_SAFE,
@@ -59,7 +65,12 @@ class Constants
         self::REJECT_REASON_MERCHANT_INVALID_DOCUMENTS,
         self::REJECT_REASON_MERCHANT_DORMANT_MERCHANT,
         self::REJECT_REASON_MERCHANT_RESTRICTED_BUSINESS,
-    ];
+        // PA CB Addl Document Collection Rejection Reasons
+        self::REJECT_REASON_DOCUMENTS_INCORRECT,              
+        self::REJECT_REASON_DOCUMENTS_FORMAT_INCONSISTENT,    
+        self::REJECT_REASON_INCOMPLETE_DOCUMENTS_SUBMITTED,    
+        self::REJECT_REASON_VCIP_NOT_COMPLETED   
+    ];         
     
     const REJECTION_TAGS = [
         self::REJECTION_TAG_CHARGEBACK_FRAUD_PRESENT,
