@@ -686,6 +686,8 @@ return [
                         'emi_subvention' => true,
                         'type' => "instant",
                         'terms' => "Terms and Condition",
+                        'min_amount' => 100000,
+                        'emi_durations' => [6],
                     ]
                 ],
                 'emi_plans' => [
@@ -735,6 +737,8 @@ return [
                         'emi_subvention' => true,
                         'type' => "instant",
                         'terms' => "Terms and Condition",
+                        'min_amount' => 100000,
+                        'emi_durations' => [6],
                     ]
                 ],
                 'emi_plans' => [
@@ -783,6 +787,8 @@ return [
                         'emi_subvention' => true,
                         'type' => "instant",
                         'terms' => "Terms and Condition",
+                        'min_amount' => 319149,
+                        'emi_durations' => [6, 9],
                     ],
                     [
                         'name' => "Test Offer",
@@ -792,6 +798,8 @@ return [
                         'emi_subvention' => true,
                         'type' => "instant",
                         'terms' => "Terms and Condition",
+                        'min_amount' => 319149,
+                        'emi_durations' => [6, 9],
                     ]
                 ],
                 'emi_plans' => [
@@ -942,6 +950,8 @@ return [
                         'original_amount' => 100000,
                         'amount' => 90000,
                         'terms' => "Terms and Condition",
+                        'percent_rate' => 1000,
+                        'min_amount' => 1000,
                     ],
                     [
                         'name' => "Test Offer",
@@ -953,6 +963,8 @@ return [
                         'original_amount' => 100000,
                         'amount' => 90000,
                         'terms' => "Terms and Condition",
+                        'percent_rate' => 1000,
+                        'min_amount' => 1000,
                     ],
                     [
                         'name' => "Test Offer",
@@ -963,6 +975,8 @@ return [
                         'type' => "deferred",
                         'terms' => "Terms and Condition",
                         'cashback_amount' => 10000,
+                        'percent_rate' => 1000,
+                        'min_amount' => 1000,
                     ]
                 ],
             ],
@@ -1129,6 +1143,8 @@ return [
                         'emi_subvention' => true,
                         'type' => "instant",
                         'terms' => "Terms and Condition",
+                        'min_amount' => 100000,
+                        'emi_durations' => [6],
                     ]
                 ],
                 'emi_plans' => [

@@ -742,6 +742,13 @@ class Entity extends Base\PublicEntity
             self::MAX_CASHBACK    => $this->getMaxCashback(),
             self::HAS_IINS        => $hasIins,
             self::IS_LOW_COST_OFFER => $is_low_cost_offer,
+
+            // The below fields are added for checkout service use case
+            // for applying emi offer based updates.
+            // These will not be returned in the final preferences API response
+            self::PERCENT_RATE  => $this->getPercentRate(),
+            self::MIN_AMOUNT    => $this->getMinAmount(),
+            self::EMI_DURATIONS => $this->getEmiDurations(),
         ];
 
         // If this flag is set then amount is to be discounted by us
