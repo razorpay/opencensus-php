@@ -96,7 +96,8 @@ class RateLimiterController extends EdgeThrottleController
     {
         $request = Request::instance();
         $method = $request->method();
-        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_UPDATE, $id);
+        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_UPDATE, $id, $this->getRateLimit($id));
+
         $path = '/limit/' . $id;
 
         unset($input['rule_name']);
@@ -132,7 +133,7 @@ class RateLimiterController extends EdgeThrottleController
         $method = $request->method();
         $path = '/limit/' . $id;
 
-        $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_DELETE, $id, $this->getRateLimitRule($path));
+        $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_DELETE, $id, $this->getRateLimit($id));
 
         $response = $this->fetchResponse($method, $path);
 
@@ -205,9 +206,12 @@ class RateLimiterController extends EdgeThrottleController
     public function updateRule($id)
     {
         $path = '/rule/' . $id;
-        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_UPDATE, $id, $this->getRateLimitRule($path));
+        $request = Request::instance();
+        $method = $request->method();
 
-        $response = $this->fetchResponse('PUT', $path, $input);
+        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_UPDATE, $id, $this->getRateLimitRule($id));
+
+        $response = $this->fetchResponse($method, $path, $input);
 
 
         return $this->finalizeResponse($response, [
@@ -248,12 +252,11 @@ class RateLimiterController extends EdgeThrottleController
      * @param string $path
      * @return mixed
      */
-    protected function getRateLimitRule(string $path)
+    protected function getRateLimitRule(string $id)
     {
-        $request = Request::instance();
-        $method = $request->method();
+        $path = '/rules?id='.$id;
 
-        $response = $this->fetchResponse($method, $path);
+        $response = $this->fetchResponse('GET', $path);
 
         $arrayResponse = json_decode($response->getBody()->getContents(), true);
 
@@ -262,6 +265,29 @@ class RateLimiterController extends EdgeThrottleController
             'rule_type_id',
             'rule',
             'enabled',
+        ]);
+    }
+
+    /**
+     * lists rate limit rules configured on a service/route.
+     *
+     * @param string $path
+     * @return mixed
+     */
+    protected function getRateLimit(string $id)
+    {
+        $path = '/limits?id ='.$id;
+        $response = $this->fetchResponse('GET', $path);
+
+
+        $arrayResponse = json_decode($response->getBody()->getContents(), true);
+
+        return $this->extractKeys($arrayResponse, [
+            'id',
+            'rule_id',
+            'key',
+            'config',
+            'action'
         ]);
     }
 
