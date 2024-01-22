@@ -373,12 +373,17 @@ class Core extends Base\Core
                 (new Reminders\CardAutoRecurringReminderProcessor)->process(E::PAYMENT, $namespace, $paymentId, []);
             }
 
+            if (($cardMandateNotification->isAfaRequired() and
+                ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
+                    $cardMandateNotification->getAfaStatus() === AfaStatus::EXPIRED)) and
+                ($payment->getStatus() === Payment\Status::CREATED))
+            {
+                $this->handleNotificationNotApproved($cardMandateNotification, $cardMandateNotification->payment);
+            }
+
             if (((!$cardMandateNotification->isAfaRequired() and
                     ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
-                        $cardMandateNotification->getStatus() === Status::FAILED)) or
-                    ($cardMandateNotification->isAfaRequired() and
-                        ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
-                            $cardMandateNotification->getAfaStatus() === AfaStatus::EXPIRED))) and
+                        $cardMandateNotification->getStatus() === Status::FAILED))) and
                 ($payment->getStatus() === Payment\Status::CREATED))
             {
                 $this->handleNotificationFailed($cardMandateNotification, $cardMandateNotification->payment);
@@ -425,6 +430,13 @@ class Core extends Base\Core
         $processor = new Payment\Processor\Processor($notification->merchant);
 
         $processor->failNotificationNotSentCardAutoRecurringPayment($payment);
+    }
+
+    protected function handleNotificationNotApproved(Entity $notification, Payment\Entity $payment)
+    {
+        $processor = new Payment\Processor\Processor($notification->merchant);
+
+        $processor->failMandateHQPaymentAFANotApproved($payment);
     }
 
     protected function setCardAutoRecurringReminder(Entity $cardMandateNotification, $mandateHub = MandateHubs\MandateHubs::MANDATE_HQ)
