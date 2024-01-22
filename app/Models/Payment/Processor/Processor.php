@@ -409,6 +409,11 @@ class Processor
     const ALLOW_CFB_MERCHANTS_ON_REARCH_UPS = 'allow_cfb_merchants_on_rearch_ups';
 
     /**
+     * Razorx flag to allow non Rzp org merchants on re-arch flow
+     */
+    const ALLOW_NON_RZP_ORG_MERCHANTS_ON_REARCH_UPS = 'allow_non_rzp_org_merchants_on_rearch_ups';
+
+    /**
      * Razorx flag to allow route from ups re-arch flow
      */
     const ALLOW_ROUTE_ON_REARCH_UPS_V2 = 'allow_route_on_rearch_ups_v2';
@@ -2160,8 +2165,11 @@ class Processor
 
         if ($merchant->isRazorpayOrgId() === false)
         {
-            $routeViaReArch = false;
-            $dimensions[13] = 1;
+            if ($this->isUpsRearchNonRzpOrgMerchant() === false)
+            {
+                $routeViaReArch = false;
+                $dimensions[13] = 1;
+            }
         }
 
         if ($this->isOtmPayment($input) === true)
@@ -11224,5 +11232,28 @@ class Processor
         ]);
 
         return $variant === 'on';
+    }
+
+    /**
+     * isUpsRearchNonRzpOrgMerchant checks if Non Rzp Org Merchant is whitelisted for Rearch flow
+     * @return bool
+     */
+    public function isUpsRearchNonRzpOrgMerchant(): bool
+    {
+        $orgId = $this->merchant->getMerchantOrgId();
+
+        $feature = self::ALLOW_NON_RZP_ORG_MERCHANTS_ON_REARCH_UPS . '_org_' . $orgId;
+
+        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(), $feature, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_NON_RZP_ORG_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
+            'org_id'      => $orgId,
+            'variant'     => $variant,
+            'mode'        => $this->mode,
+            'feature'     => $feature,
+        ]);
+
+        return str_starts_with($variant, 'on') === true;
     }
 }
