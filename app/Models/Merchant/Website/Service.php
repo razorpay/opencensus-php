@@ -2569,9 +2569,10 @@ class Service extends Base\Service
         }
 
         return [
-            "name"     => $merchant->getName(),
-            "logo"     => $merchant->getFullLogoUrlWithSize(),
-            "sections" => $links
+            "name"          => $merchant->getName(),
+            "logo"          => $merchant->getFullLogoUrlWithSize(),
+            "sections"      => $links,
+            "business_name" => $merchant->merchantDetail->getBusinessName()
         ];
     }
 

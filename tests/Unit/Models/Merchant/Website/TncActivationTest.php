@@ -1195,6 +1195,90 @@ class TncActivationTest extends TestCase
                             ], $merchantWebsiteDetail['admin_website_details']['website']['https://www.ilovesarees.com/']);
     }
 
+
+    public function testgetPublicWebsiteSectionPageLinksWithBusinessName()
+    {
+
+        $this->mockRazorxTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce',
+            'name'      => "dummy name"
+        ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id"                 => $merchant->getId(),
+            "contact_name"                => "Mohan",
+            "business_type"               => 4,
+            "business_name"               => "Private Limited",
+            "business_dba"                => "DBA",
+            "business_website"            => "https://www.ilovesarees.com/",
+            "business_international"      => 0,
+            "business_registered_address" => "address",
+        ]);
+
+        /*we don't have all urls in merchant_website fixture, once updation is done ,
+         then we have to check expected urls are updated in merchant_website entity
+        */
+        $this->fixtures->on('live')->create('merchant_website', [
+            'id'                       => 'LGjQP2ZQxa02as',
+            'merchant_id'              => $merchant->getId(),
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "terms"    => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                ],
+                "about_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                ]
+            ]
+        ]);
+        $this->fixtures->on('test')->create('merchant_website', [
+            'id'                       => 'LGjQP2ZQxa02as',
+            'merchant_id'              => $merchant->getId(),
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "terms"    => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                ],
+                "about_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                ]
+            ]
+        ]);
+
+        $response = (new Merchant\Website\Service)->getPublicWebsiteSectionPageLinks("LGjQP2ZQxa02as");
+
+        $this->assertEquals(['name'          => 'dummy name',
+                             'logo'          => null,
+                             'sections'      => [["display_name" => "Terms and Conditions", "section_name" => "terms"]],
+                             'business_name' => 'Private Limited'], $response);
+    }
+
+
     // Allow partner to create website section
     public function testMerchantCreateWebsiteSectionDetailsSectionForPartner()
     {
