@@ -5,6 +5,9 @@ namespace RZP\Notifications\Onboarding;
 use App;
 use Carbon\Carbon;
 
+use RZP\Constants\Entity as E;
+use RZP\Events\Event;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Notifications\Channel;
@@ -87,9 +90,40 @@ class Handler extends BaseHandler
         Events::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE               => [Channel::EMAIL, Channel::WHATSAPP],
         Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE => [Channel::EMAIL, Channel::WHATSAPP],
         Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE              => [Channel::EMAIL, Channel::WHATSAPP],
-    ];
 
+        // in person events
+        Events::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE     => [Channel::EMAIL],
+        Events::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE  => [Channel::EMAIL],
+        Events::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE        => [Channel::EMAIL],
+        Events::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE    => [Channel::EMAIL],
+        Events::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE => [Channel::EMAIL],
+        Events::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE         => [Channel::EMAIL],
+        Events::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE      => [Channel::EMAIL],
+        Events::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE       => [Channel::EMAIL],
+        Events::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE    => [Channel::EMAIL],
+        Events::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE       => [Channel::EMAIL],
+        Events::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE    => [Channel::EMAIL],
+
+        Events::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE                     => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE                     => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_1_ONBOARDING_PAUSE                      => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_2_ONBOARDING_PAUSE                      => [Channel::EMAIL],
+
+        Events::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => [Channel::EMAIL],
+        Events::OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => [Channel::EMAIL],
+    ];
     private $activationStatus;
+    private $posActivationStatus;
 
     private $merchant;
 
@@ -103,6 +137,12 @@ class Handler extends BaseHandler
         {
             $this->activationStatus = $args['activationStatus'];
         }
+
+        if (isset($args['posActivationStatus']) === true)
+        {
+            $this->posActivationStatus = $args['posActivationStatus'];
+        }
+
     }
 
     public function send()
@@ -113,6 +153,19 @@ class Handler extends BaseHandler
         {
             return;
         }
+
+        foreach ($events as $event)
+        {
+            if (empty($event) === false)
+            {
+                $this->sendForEvent($event);
+            }
+        }
+    }
+
+    public function sendInPersonNotifications()
+    {
+        $events = $this->getInPersonEventForActivationStatus($this->posActivationStatus, $this->merchant);
 
         foreach ($events as $event)
         {
@@ -231,6 +284,48 @@ class Handler extends BaseHandler
         return $events;
     }
 
+    private function getInPersonNCCommunicationEvent(Entity $merchant, Bool $isDeviceOrdered): array
+    {
+        $events = [];
+
+        $doesV3Exist = (new ClarificationDetailsCore)->hasClarificationDetails($merchant->getId());
+
+        $statusChangeLogs = (new MCore)->getActivationStatusChangeLog($merchant);
+
+        $ncCount = (new DetailCore)->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
+
+        $clarificationDetails = [];
+
+        if ($doesV3Exist === true)
+        {
+            $clarificationDetails = (new ClarificationDetailsCore)->getCommunicationParams($merchant->getId());
+
+            if ($isDeviceOrdered == true)
+            {
+                $events[] = ($ncCount <= 1) ? Events::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE : Events::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE;
+            }
+            else
+            {
+                $events[] = ($ncCount <= 1) ? Events::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE : Events::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE;
+            }
+        }
+        else
+        {
+            $events[] = Events::NEEDS_CLARIFICATION;
+        }
+
+        $this->args[MConstants::PARAMS]['clarification_details'] = $clarificationDetails;
+
+        $this->args[MConstants::PARAMS]['ncSubmissionDate'] = Carbon::createFromTimestamp(
+            Carbon::now()
+                ->addDays(7)
+                ->getTimestamp(), Timezone::IST)->isoFormat('MMM Do YYYY');
+
+        $this->args[MConstants::PARAMS][Constants::NC_URL] = self::getUrlForNCEvent($merchant);
+
+        return $events;
+    }
+
     private function getEventForActivationStatus(?string $activationStatus, Entity $merchant): array
     {
         $events                     = [];
@@ -289,6 +384,93 @@ class Handler extends BaseHandler
         }
 
         return $events;
+    }
+
+    private function getInPersonEventForActivationStatus(?string $posActivationStatus, Entity $merchant): array
+    {
+        $events                     = [];
+        $isDeviceOrdered            = $this->getDeviceOrderedFlag($merchant);
+        $currentActivationStatus = $merchant->merchantDetail->getActivationStatus();
+
+        switch ($posActivationStatus)
+        {
+            case Status::NEEDS_CLARIFICATION:
+
+                // If online is also in NC, the comms would be sent via PG flow.
+                if ($currentActivationStatus !== Status::NEEDS_CLARIFICATION)
+                {
+                    $events = $this->getInPersonNCCommunicationEvent($merchant, $isDeviceOrdered);
+                }
+
+                break;
+            case Status::ACTIVATED:
+                $events = [
+                    Events::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE,
+                ];
+                break;
+
+            case Status::UNDER_REVIEW:
+                if ($isDeviceOrdered === true)
+                {
+                    $events = [
+                        Events::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE,
+                    ];
+                }
+                else
+                {
+                    $events = [
+                        Events::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE,
+                    ];
+                }
+                break;
+
+            case Status::KYC_QUALIFIED_STB:
+                if ($isDeviceOrdered === true)
+                {
+                    $events = [
+                        Events::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE,
+                    ];
+                }
+                else
+                {
+                    $events = [
+                        Events::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE,
+                    ];
+                }
+                break;
+
+            case Status::REJECTED:
+                if ($isDeviceOrdered === true)
+                {
+                    $events = [
+                        Events::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE,
+                    ];
+                }
+                else
+                {
+                    $events = [
+                        Events::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE,
+                    ];
+                }
+                break;
+        }
+
+        return $events;
+    }
+
+    private function getDeviceOrderedFlag(Entity $merchant): Bool
+    {
+        $input['merchant_id']     = $merchant->getId();
+
+        $deviceDetailsResponse    = (new MerchantOnboardingProxyController())->handlePGOSProxyRequests(
+            'merchant_pos_fetch_all_order',$input, $merchant, true);
+
+        if (empty($deviceDetailsResponse['order_list']) === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function getSupportedChannels(string $event)

@@ -6,12 +6,14 @@ namespace Unit\Models\Merchant\Activation;
 use DB;
 use Illuminate\Support\Facades\Mail;
 use RZP\Constants\Mode;
+use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Feature;
 use RZP\Mail\Merchant\NeedsClarificationEmail;
 
 use RZP\Models\Admin\Permission;
 use RZP\Models\Workflow\Action\Constants;
 use RZP\Models\Workflow\Action\MakerType;
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -25,6 +27,7 @@ use RZP\Models\Merchant\AccessMap as MerchantAccessMap;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Mail\Merchant\SubMerchantNCStatusChanged as SubMerchantNCStatusChangedEmail;
+use RZP\Trace\Tracer;
 
 class ActivationStatusTest extends OAuthTestCase
 {
@@ -555,5 +558,71 @@ class ActivationStatusTest extends OAuthTestCase
 
         $isAutoKycDone = (new DetailCore)->isAutoKycDone($merchantDetail);
         $this->assertFalse($isAutoKycDone);
+    }
+
+    public function testPosActivationNotifications()
+    {
+        Mail::fake();
+
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $merchantDetail = $fixtures['merchantDetail'];
+        $merchant       = $merchantDetail->merchant;
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $pgosProxyController = Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
+
+        $expectedPgosResponse = [
+            "order_list"     => [],
+        ];
+
+        $pgosProxyController->shouldReceive('handlePGOSProxyRequests')->andReturn($expectedPgosResponse);
+
+        $args = [
+            'posActivationStatus'   => Detail\Status::UNDER_REVIEW,
+            'merchant'              => $merchant,
+            'params'                => [
+                'subMerchantName'  => $merchant->getTrimmedName(25, "..."),
+                'subMerchantId'    => $merchant->getId(),
+            ]
+        ];
+
+        (new OnboardingNotificationHandler($args))->sendInPersonNotifications();
+
+        // check that mail was queued
+        Mail::assertQueued(MerchantOnboardingEmail::class);
+    }
+
+    public function testNoPosEmailIfNoPosActivationStatus()
+    {
+        Mail::fake();
+
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $merchantDetail = $fixtures['merchantDetail'];
+        $merchant       = $merchantDetail->merchant;
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $pgosProxyController = \Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
+
+        $expectedPgosResponse = [
+            "order_list"     => [],
+        ];
+
+        $pgosProxyController->shouldReceive('handlePGOSProxyRequests')->andReturn($expectedPgosResponse);
+        $args = [
+            'merchant'              => $merchant,
+            'params'                => [
+                'subMerchantName'  => $merchant->getTrimmedName(25, "..."),
+                'subMerchantId'    => $merchant->getId(),
+            ]
+        ];
+
+        (new OnboardingNotificationHandler($args))->sendInPersonNotifications();
+
+        // check that mail was not queued
+        Mail::assertNotQueued(MerchantOnboardingEmail::class);
     }
 }

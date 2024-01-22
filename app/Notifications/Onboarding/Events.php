@@ -79,6 +79,40 @@ class Events
     const PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   = 'PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED';
     const PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED = 'PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED';
 
+    // InPerson events
+    const IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE           = "IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE";
+    const IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE        = "IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE";
+    const IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE          = "IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE";
+    const IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE       = "IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE";
+    const IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE              = "IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE";
+    const IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE               = "IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE";
+    const IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE            = "IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE";
+    const IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE             = "IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE";
+    const IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE          = "IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE";
+    const IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE             = "IN_PERSON_MERCHANT_NC_SECOND_WITH_DEVICE";
+    const IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE          = "IN_PERSON_MERCHANT_NC_SECOND_WITHOUT_DEVICE";
+
+    // Omni events - When both online & offline in NC
+    const OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE        = "OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE";
+    const OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE        = "OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE";
+    const OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    = "OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE";
+    const OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    = "OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE";
+    const OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE                     = "OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE";
+    const OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE                     = "OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE";
+    const OMNI_NC_COUNT_1_ONBOARDING_PAUSE                      = "OMNI_NC_COUNT_1_ONBOARDING_PAUSE";
+    const OMNI_NC_COUNT_2_ONBOARDING_PAUSE                      = "OMNI_NC_COUNT_2_ONBOARDING_PAUSE";
+    const OMNI_NEEDS_CLARIFICATION                              = "OMNI_NEEDS_CLARIFICATION";
+
+    // Omni Reminder Events
+    const OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER       = "OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER";
+    const OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER       = "OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER";
+    const OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER   = "OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER";
+    const OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER   = "OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER";
+    const OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                    = "OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER";
+    const OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                    = "OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER";
+    const OMNI_NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                     = "OMNI_NC_COUNT_1_ONBOARDING_PAUSE_REMINDER";
+    const OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                     = "OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER";
+
     const SMS_TEMPLATES = [
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => 'sms.onboarding.nc_revamp',
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => 'sms.onboarding.nc_revamp',
@@ -122,6 +156,18 @@ class Events
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'sms.onboarding.partner_submerchant_registered_settlements',
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'sms.onboarding.partner_submerchant_registered_settlements',
         self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'sms.onboarding.partner_submerchant_registered_settlements',
+
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'sms.onboarding.in_person_under_review_with_device',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'sms.onboarding.in_person_under_review',
+        self::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE          => 'sms.onboarding.in_person_activated',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE      => 'sms.onboarding.in_person_kyc_qualified_with_device',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE   => 'sms.onboarding.in_person_kyc_qualified',
+        self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE           => 'sms.onboarding.in_person_rejected_with_device',
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE        => 'sms.onboarding.in_person_rejected',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE         => 'sms.onboarding.in_person_nc_with_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE      => 'sms.onboarding.in_person_nc',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE         => 'sms.onboarding.in_person_nc_with_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE      => 'sms.onboarding.in_person_nc',
     ];
 
     // this list contain only NC events
@@ -165,7 +211,7 @@ class Events
         self::UNREGISTERED_SETTLEMENTS_ENABLED => 'Congratulations {merchantName}, your KYC is approved and settlements have been enabled for your Razorpay account. Visit your dashboard to accept payments {dashboardUrl}',
         self::REGISTERED_SETTLEMENTS_ENABLED   => 'Congratulations {merchantName}, your account is activated, you can now accept payments and get funds settled to your bank account. Visit your dashboard to accept payments {dashboardUrl}',
         self::PENNY_TESTING_FAILURE            => "Hi {merchantName}, we couldn't verify your Bank Account, kindly visit your Dashboard and upload scanned copy of cheque/bank statement at {dashboardUrl}",
-        self::ACTIVATED_MCC_PENDING            => "Dear Customer, Congratulations! You can now start accepting payments and the payments will be settled in your bank account as per your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications. You can now visit your dashboard to accept payments at {dashboardUrl}."
+        self::ACTIVATED_MCC_PENDING            => "Dear Customer, Congratulations! You can now start accepting payments and the payments will be settled in your bank account as per your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications. You can now visit your dashboard to accept payments at {dashboardUrl}.",
     ];
 
     // Add template name here if the registered template name defers from standard pattern of 'onboarding.*'
@@ -200,6 +246,36 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                  => 'whatsapp_partnerships_partner_submerchant_nc_count_onboarding_pause',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => 'whatsapp_partnerships_partner_submerchant_nc_count_payments_live_settlements_live',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => 'whatsapp_partnerships_partner_submerchant_nc_count_payments_not_live',
+
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'in_person_under_review_with_device',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'in_person_under_review_without_device',
+        self::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE          => 'in_person_activated',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE      => 'in_person_kyc_qualified_with_device',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE   => 'in_person_kyc_qualified_without_device',
+        self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE           => 'in_person_rejected_with_device',
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE        => 'in_person_rejected_without_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE         => 'in_person_nc_count_1_with_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE      => 'in_person_nc_count_1_without_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE         => 'in_person_nc_count_2_with_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE      => 'in_person_nc_count_2_without_device',
+
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => 'omni_nc_count_payments_live_settlements_live',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => 'omni_nc_count_2_payments_live_settlements_live',
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => 'omni_nc_count_payments_live_settlements_not_live',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => 'omni_nc_count_2_payments_live_settlements_not_live',
+        self::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE                     => 'omni_nc_count_payments_not_live',
+        self::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE                     => 'omni_nc_count_2_payments_not_live',
+        self::OMNI_NC_COUNT_1_ONBOARDING_PAUSE                      => 'omni_nc_revamp_onboarding_pause',
+        self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE                      => 'omni_nc_revamp_2_onboarding_pause',
+
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'omni_nc_revamp_payments_live_settlements_live_reminder',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'omni_nc_revamp_payments_live_settlements_live_reminder',
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'omni_nc_revamp_payments_live_settlements_not_live_reminder',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'omni_nc_revamp_payments_live_settlements_not_live_reminder',
+        self::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => 'omni_nc_revamp_payments_not_live_reminder',
+        self::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => 'omni_nc_revamp_payments_not_live_reminder',
+        self::OMNI_NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => 'omni_nc_revamp_onboarding_pause_reminder',
+        self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => 'omni_nc_revamp_onboarding_pause_reminder',
 
     ];
 
@@ -271,6 +347,30 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                  => 'nc-communication/optout?channel=whatsapp&submerchant_id={subMerchantId}&partner_id={partnerId}',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => 'nc-communication/optout?channel=whatsapp&submerchant_id={subMerchantId}&partner_id={partnerId}',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => 'nc-communication/optout?channel=whatsapp&submerchant_id={subMerchantId}&partner_id={partnerId}',
+
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE                     => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE                     => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_1_ONBOARDING_PAUSE                      => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE                      => 'onboarding/needs-clarification',
+
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => 'onboarding/needs-clarification',
+        self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => 'onboarding/needs-clarification',
+
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE         => 'onboarding/needs-clarification',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE      => 'onboarding/needs-clarification',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE         => 'onboarding/needs-clarification',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE      => 'onboarding/needs-clarification',
+
     ];
 
     // blade templates
@@ -329,6 +429,35 @@ class Events
         self::WEBSITE_ADHERENCE_HARD_NUDGE      => 'whatsapp.merchant.onboarding.website_adherence_hard_nudge',
         self::WEBSITE_ADHERENCE_SOFT_NUDGE      => 'whatsapp.merchant.onboarding.website_adherence_soft_nudge',
 
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'whatsapp.merchant.onboarding.in_person_under_review_with_device',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'whatsapp.merchant.onboarding.in_person_under_review_without_device',
+        self::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE          => 'whatsapp.merchant.onboarding.in_person_activated',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE      => 'whatsapp.merchant.onboarding.in_person_kyc_qualified_with_device',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE   => 'whatsapp.merchant.onboarding.in_person_kyc_qualified_without_device',
+        self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE           => 'whatsapp.merchant.onboarding.in_person_rejected_with_device',
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE        => 'whatsapp.merchant.onboarding.in_person_rejected_without_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE         => 'whatsapp.merchant.onboarding.in_person_nc_count_1_with_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE      => 'whatsapp.merchant.onboarding.in_person_nc_count_1_without_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE         => 'whatsapp.merchant.onboarding.in_person_nc_count_2_with_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE      => 'whatsapp.merchant.onboarding.in_person_nc_count_2_without_device',
+
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => 'whatsapp.merchant.onboarding.omni_nc_count_payments_live_settlements_live',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => 'whatsapp.merchant.onboarding.omni_nc_count_2_payments_live_settlements_live',
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => 'whatsapp.merchant.onboarding.omni_nc_count_payments_live_settlements_not_live',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => 'whatsapp.merchant.onboarding.omni_nc_count_2_payments_live_settlements_not_live',
+        self::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE                     => 'whatsapp.merchant.onboarding.omni_nc_count_payments_not_live',
+        self::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE                     => 'whatsapp.merchant.onboarding.omni_nc_count_2_payments_not_live',
+        self::OMNI_NC_COUNT_1_ONBOARDING_PAUSE                      => 'whatsapp.merchant.onboarding.omni_nc_revamp_onboarding_pause',
+        self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE                      => 'whatsapp.merchant.onboarding.omni_nc_revamp_2_onboarding_pause',
+
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'whatsapp.merchant.onboarding.omni_nc_revamp_payments_live_settlements_live_reminder',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'whatsapp.merchant.onboarding.omni_nc_revamp_payments_live_settlements_live_reminder',
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'whatsapp.merchant.onboarding.omni_nc_revamp_payments_live_settlements_not_live_reminder',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'whatsapp.merchant.onboarding.omni_nc_revamp_payments_live_settlements_not_live_reminder',
+        self::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => 'whatsapp.merchant.onboarding.omni_nc_revamp_payments_not_live_reminder',
+        self::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => 'whatsapp.merchant.onboarding.omni_nc_revamp_payments_not_live_reminder',
+        self::OMNI_NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => 'whatsapp.merchant.onboarding.omni_nc_revamp_onboarding_pause_reminder',
+        self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => 'whatsapp.merchant.onboarding.omni_nc_revamp_onboarding_pause_reminder',
     ];
 
     const EMAIL_TEMPLATES = [
@@ -373,6 +502,35 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => 'partner.submerchant.onboarding.nc_count_payments_live_settlements_live',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => 'partner.submerchant.onboarding.nc_count_payments_not_live',
 
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'emails.merchant.onboarding.in_person_under_review_with_device',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'emails.merchant.onboarding.in_person_under_review_without_device',
+        self::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE          => 'emails.merchant.onboarding.in_person_activated',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE      => 'emails.merchant.onboarding.in_person_kyc_qualified_with_device',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE   => 'emails.merchant.onboarding.in_person_kyc_qualified_without_device',
+        self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE           => 'emails.merchant.onboarding.in_person_rejected_with_device',
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE        => 'emails.merchant.onboarding.in_person_rejected_without_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE         => 'emails.merchant.onboarding.in_person_nc_count_1_with_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE      => 'emails.merchant.onboarding.in_person_nc_count_1_without_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE         => 'emails.merchant.onboarding.in_person_nc_count_2_with_device',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE      => 'emails.merchant.onboarding.in_person_nc_count_2_without_device',
+
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => 'emails.merchant.onboarding.omni_nc_count_1_payments_live_settlements_live',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => 'emails.merchant.onboarding.omni_nc_count_2_payments_live_settlements_live',
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => 'emails.merchant.onboarding.omni_nc_count_1_payments_live_settlements_not_live',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => 'emails.merchant.onboarding.omni_nc_count_2_payments_live_settlements_not_live',
+        self::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE                     => 'emails.merchant.onboarding.omni_nc_count_1_payments_not_live',
+        self::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE                     => 'emails.merchant.onboarding.omni_nc_count_2_payments_not_live',
+        self::OMNI_NC_COUNT_1_ONBOARDING_PAUSE                      => 'emails.merchant.onboarding.omni_nc_count_1_onboarding_pause',
+        self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE                      => 'emails.merchant.onboarding.omni_nc_count_2_onboarding_pause',
+
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'emails.merchant.onboarding.omni_nc_count_1_payments_live_settlements_live_reminder',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'emails.merchant.onboarding.omni_nc_count_2_payments_live_settlements_live_reminder',
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'emails.merchant.onboarding.omni_nc_count_1_payments_live_settlements_not_live_reminder',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'emails.merchant.onboarding.omni_nc_count_2_payments_live_settlements_not_live_reminder',
+        self::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => 'emails.merchant.onboarding.omni_nc_count_1_payments_not_live_reminder',
+        self::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => 'emails.merchant.onboarding.omni_nc_count_2_payments_not_live_reminder',
+        self::OMNI_NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => 'emails.merchant.onboarding.omni_nc_count_1_onboarding_pause_reminder',
+        self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => 'emails.merchant.onboarding.omni_nc_count_2_onboarding_pause_reminder',
     ];
 
     const EMAIL_SUBJECTS = [
@@ -416,6 +574,36 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                  => '[Action required] Few more details required to complete your client {id} verification.',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => '[Action required] Few more details required to complete your client {id} verification.',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => '[Action required] Few more details required to complete your client {id} verification.',
+
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'Your POS device order has been confirmed | Razorpay POS',
+        self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'Important KYC Update for Your Razorpay POS Application',
+        self::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE          => 'Good News! : Your Razorpay POS Order has been approved! Delivery in few days',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE      => 'Get Ready: Your Razorpay POS Device is Almost Here',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE   => 'Important: Confirm Your Razorpay POS Order',
+        self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE           => 'Important Notice: Your POS KYC Application has been rejected',
+        self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE        => 'Important Notice: Your POS KYC Application has been rejected',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE         => '[Action Required] Few more details required to complete POS KYC verification',
+        self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE      => '[Action Required] Few more details required to complete POS KYC verification',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE         => '[Action required] Few more details required to complete POS KYC verification',
+        self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE      => '[Action Required] Few more details required to complete POS KYC verification',
+
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => '[Action required] Few more details required to complete KYC verification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE        => '[Action required] Few more details required to complete KYC verification',
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => '[Action required] Few more details required to complete KYC verification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE    => '[Action required] Few more details required to complete KYC verification',
+        self::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE                     => '[Action required] Few more details required to complete KYC verification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE                     => '[Action required] Few more details required to complete KYC verification',
+        self::OMNI_NC_COUNT_1_ONBOARDING_PAUSE                      => '[Action required] Few more details required to complete KYC verification',
+        self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE                      => '[Action required] Few more details required to complete KYC verification',
+
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => '[Action required] Reminder to update your details for KYC verification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => '[Action required] Reminder to update your details for KYC verification',
+        self::OMNI_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => '[Action required] Reminder to update your details for KYC verification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => '[Action required] Reminder to update your details for KYC verification',
+        self::OMNI_NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => '[Action required] Reminder to update your details for KYC verification',
+        self::OMNI_NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => '[Action required] Reminder to update your details for KYC verification',
+        self::OMNI_NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => '[Action required] Reminder to update your details for KYC verification',
+        self::OMNI_NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => '[Action required] Reminder to update your details for KYC verification',
     ];
 
 

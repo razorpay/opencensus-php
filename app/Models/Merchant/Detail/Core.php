@@ -4449,6 +4449,31 @@ class Core extends Base\Core
                 ];
                 $this->pgosProxyController->handlePGOSProxyRequests('update_action_state', $stateData, $merchant, true);
 
+                $newPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
+
+                $args = [
+                    'posActivationStatus'         => $newPosActivationStatus,
+                    'merchant'                 => $merchant,
+                    Merchant\Constants::PARAMS => [
+                        'subMerchantName'  => $merchant->getTrimmedName(25, "..."),
+                        'subMerchantId'    => $merchant->getId(),
+                    ]
+                ];
+
+                try
+                {
+                    Tracer::inSpan(['name' => 'in_person_onboarding_notification_handler_send'], function() use ($args) {
+                        (new OnboardingNotificationHandler($args))->sendInPersonNotifications();
+                    });
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->error(TraceCode::MERCHANT_IN_PERSON_NOTIFICATION_FAILED, [
+                        'MerchantId'   => $merchantId,
+                        'ErrorMessage' => $e->getMessage()
+                    ]);
+                }
+
                 return $merchantDetails;
         });
 
