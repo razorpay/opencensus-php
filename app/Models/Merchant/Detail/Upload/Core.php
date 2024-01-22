@@ -129,7 +129,7 @@ class Core extends Base\Core
             $merchant = $this->repo->transactionOnLiveAndTest(function () use ($processedEntry, $parser, &$entry)
             {
                 $user = $this->createUser($processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
-                    $processedEntry[UConstants::IS_DS_MERCHANT]);
+                    $processedEntry[UConstants::IS_DS_MERCHANT], $processedEntry[Header::MIQ_CONTACT_NUMBER]);
 
                 $merchant = $this->createMerchant($user, $processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
                     $processedEntry[MerchantEntity::ORG_ID], $processedEntry[UConstants::IS_DS_MERCHANT]);
@@ -243,7 +243,7 @@ class Core extends Base\Core
         });
     }
 
-    protected function createUser(string $email, string $businessName, string $onlyDs = null)
+    protected function createUser(string $email, string $businessName, string $onlyDs = null, string $contactMobile = null)
     {
         $confirm_token = gen_uuid();
 
@@ -255,7 +255,8 @@ class Core extends Base\Core
             'password_confirmation' => $password,
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
             'confirm_token'         => $confirm_token,
-            'name'                  => $businessName
+            'name'                  => $businessName,
+            'contact_mobile'        => $contactMobile,
         ];
 
         // If the create request is for the only DS merchant, then set the only_ds_upload_miq field in the input.
