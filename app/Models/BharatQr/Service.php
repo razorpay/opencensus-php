@@ -251,16 +251,13 @@ class Service extends Base\Service
 
             $this->forwardPaymentsCallBackToSCService($qrPaymentRequest, $path, $gatewayResponse);
 
-            $valid = $this->processQrCodePayment($gatewayResponse, $terminal, $qrPaymentRequest);
+            $this->processQrCodePayment($gatewayResponse, $terminal, $qrPaymentRequest);
 
-            if ($valid === true)
+            $qrPayment = $this->findQrPayment($gatewayResponse['qr_data'], $isQrCodeV2);
+
+            if ($qrPayment !== null)
             {
-                $qrPayment = $this->findQrPayment($gatewayResponse['qr_data'], $isQrCodeV2);
-
-                if ($qrPayment !== null)
-                {
-                    return $this->getQrPaymentResponseInternal($qrPayment);
-                }
+                return $this->getQrPaymentResponseInternal($qrPayment);
             }
         }
         catch (\Exception $ex)
@@ -291,10 +288,8 @@ class Service extends Base\Service
 
             return $response;
         }
-        else
-        {
-            throw new Exception\ServerErrorException($errorMessage, ErrorCode::SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED);
-        }
+
+        throw new Exception\ServerErrorException($errorMessage, ErrorCode::SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED);
     }
 
     private function findQrPayment($gatewayQrData, $isQrCodeV2)

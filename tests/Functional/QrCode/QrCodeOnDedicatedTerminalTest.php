@@ -3,6 +3,7 @@
 namespace Functional\QrCode;
 
 use Queue;
+use Mockery;
 use Carbon\Carbon;
 
 
@@ -1866,5 +1867,34 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         // Should I use getAmount() or getRawAmount() here?
         $this->assertEquals(27071, $qrCode->getAmount());
+    }
+
+    public function testProcessReconViaInternalRouteWhenExceptionIsReceivedFromScrooge()
+    {
+        $this->ba->scroogeAuth();
+        $scroogeMock = Mockery::mock('RZP\Services\Scrooge');
+        $scroogeMock->allows('createNewRefundV2')->withAnyArgs()->andReturns(['code' => 400]);
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $qrCode = $this->createQrCode();
+        $qrCodeId = $qrCode['id'];
+
+        $qrCode   = $this->closeQrCode($qrCodeId);
+        $this->assertEquals('closed', $qrCode['status']);
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPaymentInternal'];
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $response = $this->makeUpiIciciPaymentInternal($request);
+
+        $payment  = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals($response['payment']['amount'], $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
     }
 }
