@@ -131,4 +131,24 @@ class Service extends Base\Service
             default     => Constants::CAPTURED,
         };
     }
+
+    public static function getAllVerificationStatuses($merchantDetails) : array
+    {
+        $verificationStatuses = [];
+
+        foreach ($merchantDetails->verificationDetail as $verificationDetail)
+        {
+            $mappingKey = $verificationDetail->getAttribute(VerificationEntity::ARTEFACT_TYPE) . "_" . $verificationDetail->getAttribute(VerificationEntity::ARTEFACT_IDENTIFIER);
+
+            if (isset(VerificationConstants::ARTEFACTS_STATUS_MAPPING[$mappingKey]) === true)
+            {
+                $key                        = VerificationConstants::ARTEFACTS_STATUS_MAPPING[$mappingKey];
+                $value                      = $verificationDetail->getAttribute(VerificationEntity::STATUS);
+                $verificationStatuses[$key] = $value;
+            }
+
+        }
+
+        return $verificationStatuses;
+    }
 }

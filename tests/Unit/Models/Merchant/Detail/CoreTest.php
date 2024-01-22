@@ -11319,6 +11319,430 @@ class CoreTest extends TestCase
     }
 
 
+    public function testSegmentAdditionalPropsOnL2()
+    {
+        Queue::fake();
+        $this->app['rzp.mode'] = 'live';
+
+        Config::set('pgos.proxy.request.mock', true);
+
+        Config::set('pgos.proxy.request.response', true);
+
+        $this->mockRazorxTreatment();
+
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId()
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'kqu',
+                ]
+            ]
+        ];
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setMethods(['pushTrackEvent'])
+                            ->getMock();
+
+        $defaultVerificationDetailAttributes = [
+            'merchant_id'         => $merchant->getId(),
+            'artefact_type'       => Constant::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE,
+            'status'              => 'verified',
+            'artefact_identifier' => 'doc',
+        ];
+
+        $verificationDetail = $this->fixtures->create(
+            'merchant_verification_detail',
+         $defaultVerificationDetailAttributes);
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->atLeastOnce())
+                    ->method('pushTrackEvent');
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id"                         => $merchant->getId(),
+            "contact_name"                        => "Mohan",
+            "business_type"                       => 4,
+            "business_name"                       => "Private Limited",
+            "business_dba"                        => "DBA",
+            "business_website"                    => "https://www.ilovesarees.com/",
+            "business_international"              => 0,
+            "business_registered_address"         => "address",
+            "business_registered_state"           => "DL",
+            "business_registered_city"            => "Delhi",
+            "business_registered_pin"             => 110022,
+            "business_operation_address"          => "address",
+            "business_operation_state"            => "DL",
+            "business_operation_city"             => "Delhi",
+            "business_operation_pin"              => 110022,
+            "business_category"                   => "ecommerce",
+            "business_subcategory"                => "fashion_and_lifestyle",
+            "steps_finished"                      => [
+            ],
+            "activation_progress"                 => 80,
+            "locked"                              => 0,
+            "activation_status"                   => "under_review",
+            "activation_flow"                     => "whitelist",
+            "issue_fields"                        => "business_website",
+            "submitted"                           => 1,
+            "poi_verification_status"             => "verified",
+            "poa_verification_status"             => "verified",
+            "bank_details_verification_status"    => "verified",
+            "kyc_clarification_reasons"           => [
+                "nc_count"                 => 1,
+                "additional_details"       => [
+                ],
+                "clarification_reasons"    => [
+                    "business_website" => [
+                        [
+                            "from"        => "admin",
+                            "nc_count"    => 1,
+                            "is_current"  => true,
+                            "field_value" => "https://www.ilovesarees.com/",
+                            "reason_code" => "code",
+                            "reason_type" => "custom"
+                        ]
+                    ]
+                ],
+                "clarification_reasons_v2" => [
+                    "business_website" => [
+                        [
+                            "from"        => "admin",
+                            "nc_count"    => 1,
+                            "is_current"  => true,
+                            "field_value" => "https://www.ilovesarees.com/",
+                            "reason_code" => "code",
+                            "reason_type" => "custom"
+                        ]
+                    ]
+                ]
+            ],
+            "live_transaction_done"               => 0,
+            "additional_websites"                 => [
+            ],
+            "company_pan_verification_status"     => "verified",
+            "gstin_verification_status"           => "verified",
+            "cin_verification_status"             => "verified",
+            "international_activation_flow"       => "whitelist",
+            "company_pan_doc_verification_status" => "verified",
+            "activation_form_milestone"           => "L2",
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH8gGahWhUb2Ew",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "negative_keywords",
+            "artefact_identifier" => "number",
+            "status"              => "verified",
+            "audit_id"            => "MGlLFiUREeLueC",
+            "metadata"            => [
+                "result"      => [
+                    "required"   => [
+                        "policy disclosure" => [
+                            "phrases"      => [
+                                "Payment"        => 1,
+                                "Returns"        => 1,
+                                "Contact us"     => 1,
+                                "privacy policy" => 1
+                            ],
+                            "total_count"  => 4,
+                            "unique_count" => 4
+                        ]
+                    ],
+                    "prohibited" => [
+                    ]
+                ],
+                "website_url" => "https://www.ilovesarees.com/"
+            ],
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH8gGVEldWInOq",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "mcc_categorisation_website",
+            "artefact_identifier" => "number",
+            "status"              => "verified",
+            "audit_id"            => "MGw1N8TTDPPCz5",
+            "metadata"            => [
+                "status"           => "completed",
+                "category"         => "ecommerce",
+                "subcategory"      => "women_clothing",
+                "predicted_mcc"    => 5621,
+                "confidence_score" => 0.94
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH8gGHX1Vf0bK2",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "website_policy",
+            "artefact_identifier" => "number",
+            "status"              => "failed  ",
+            "audit_id"            => "MH98mqZfN59Wx8",
+            "metadata"            => [
+                "refund"              => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesarees.com/pages/returns"
+                        ],
+                        "confidence_score"  => 0.5465,
+                        "relevant_details"  => [
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "privacy"             => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesares.myshopify.com/pages/privacy-policy"
+                        ],
+                        "confidence_score"  => 0.9853,
+                        "relevant_details"  => [
+                            "note" => "Privacy Policy is majorly about First Party Collection/Use, Third Party Sharing/Collection, Data Security, Introductory/Generic, Practice not covered. Privacy Policy includes the following attributes Does, Explicit, Implicit, Collect on website, Unspecified, Identifiable, Aggregated or anonymized, Contact, Cookies and tracking elements, Basic service/feature, Additional service/feature, Marketing, Analytics/Research, Personalization/Customization, Service operation and security, Unspecified, User with account, Opt-in, Dont use service/feature, Opt-out via contacting company, Browser/device privacy controls, Collection, First party use, Unnamed third party, Named third party, Receive/Shared with, Track on first party website/app, Secure data transfer"
+                        ],
+                        "validation_result" => false
+                    ]
+                ],
+                "shipping"            => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesarees.com/policies/shipping-policy"
+                        ],
+                        "confidence_score"  => 0.6079,
+                        "relevant_details"  => [
+                            "5 ",
+                            "7 ",
+                            "10 "
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "contact_us"          => [
+                    "analysis_result" => [
+                        "links_found"       => [
+                            "https://ilovesarees.com/pages/contact-us"
+                        ],
+                        "relevant_details"  => [
+                            "9043222190"
+                        ],
+                        "validation_result" => true
+                    ]
+                ],
+                "policy_details_file" => "file_MH8jjmKC3s9G3a"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH95NyX6wcWbG1",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "cin",
+            "artefact_identifier" => "number",
+            "status"              => "initiated",
+            "audit_id"            => "MGvjUr37Z52dur",
+            "metadata"            => [
+                "bvs_validation_id"           => "MH95Nv3tZnT44P",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+        $stakeholder = $this->fixtures->create('stakeholder', [
+            'merchant_id'                          => $merchant->getId()
+        ]);
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH933kTShboSkS",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "signatory_validation",
+            "artefact_identifier" => "number",
+            "status"              => "verified",
+            "audit_id"            => "MH96sMk4xoPIZB",
+            "metadata"            => [
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH987XQBcsGzp8",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "certificate_of_incorporation",
+            "artefact_identifier" => "doc",
+            "status"              => "verified",
+            "audit_id"            => "MGvjUr37Z52dur",
+            "metadata"            => [
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH96sJegGOKRdr",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "gstin",
+            "artefact_identifier" => "number",
+            "status"              => null,
+            "audit_id"            => "MH96sMk4xoPIZB",
+            "metadata"            => [
+                "bvs_validation_id"           => "MH96qkWCFYMRh5",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            "id"                  => "MH933fs4DyoDny",
+            "merchant_id"         => $merchant->getId(),
+            "artefact_type"       => "bank_account",
+            "artefact_identifier" => "number",
+            "status"              => null,
+            "audit_id"            => "MH933g9SNCgxta",
+            "metadata"            => [
+                "bvs_validation_id"           => "MH932IVI0TvVOs",
+                "signatory_validation_status" => "verified"
+            ]
+        ]);
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        // block_merchant_activations experiment id
+        $input = [
+            "experiment_id" => "KxkO63MKPtxKy9",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => []
+        ];
+
+        /*we don't have all urls in merchant_website fixture, once updation is done ,
+         then we have to check expected urls are updated in merchant_website entity
+        */
+        $this->fixtures->on('live')->create('merchant_website', [
+            'id'                       => 'LGjQP2ZQxa02as',
+            'merchant_id'              => $merchant->getId(),
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "terms"    => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                ],
+                "about_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                ],
+                "privacy"  => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/privacy"
+                ],
+            ]
+        ]);
+        $this->fixtures->on('test')->create('merchant_website', [
+            'id'                       => 'LGjQP2ZQxa02as',
+            'merchant_id'              => $merchant->getId(),
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "terms"    => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/terms"
+                ],
+                "about_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/about_us"
+                ],
+                "privacy"  => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => "https://sme-dashboard.dev.razorpay.in/policy/LXMbyTLTPeFIwO/privacy"
+                ]
+            ]
+        ]);
+
+        $businessDetail = $this->getDbEntity('merchant_business_detail', ['merchant_id' => $merchant->getId()]);
+
+        // for regular merchants, there should be no call to block_merchant_activations experiment
+        $this->getSplitzMock()
+             ->shouldReceive('evaluateRequest')
+             ->times(0)
+             ->with($input)
+             ->andReturn($output);
+
+        $input = [
+            "experiment_id" => "LS64r2cBVZVT5b",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail', [
+            'merchant_id'         => $merchantDetails->getId(),
+            'artefact_identifier' => 'number',
+            'artefact_type'       => 'mcc_categorisation_website'
+        ]);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['blockMerchantActivations', 'canSubmit'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('blockMerchantActivations')
+                       ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+                       ->method('canSubmit')
+                       ->willReturn(true);
+
+        $detailCoreMock->saveMerchantDetails(['activation_form_milestone' => 'L2'], $merchant);
+
+        $merchantWebsiteDetail = $this->getDbLastEntity('merchant_website');
+
+        $this->assertEquals('verified', $verificationData['status']);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $merchantDetail[Entity::ACTIVATION_STATUS]);
+    }
+
+
     public function testActivateMerchantWithHostedPolicies()
     {
         Queue::fake();

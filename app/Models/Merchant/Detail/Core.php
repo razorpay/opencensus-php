@@ -1526,24 +1526,6 @@ class Core extends Base\Core
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
 
-        $properties = [
-            'easyOnboarding'                              => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING),
-            Merchant\Constants::PHANTOM_ONBOARDING        => $isPhantomOnboarding,
-            DetailConstants::FEE_BASED_GATING_ELIGIBILITY => $isFeeBasedGatingEligible
-        ];
-
-        $this->trace->info(TraceCode::L2_SUBMISSION_SEGMENT_EVENT, [
-            'merchant_id'        => $merchant->getId(),
-            'segment_properties' => $properties
-        ]);
-
-        // Fetching submitted at before the merchant detail object is set in the current flow which updated the submitted at
-        // to the current timestamp (current time stamp here signifies when the merchant submitted the L2 )
-        if (empty($submittedAt) === true)
-        {
-            $this->app['segment-analytics']->pushTrackEvent($merchant, $properties, SegmentEvent::L2_SUBMISSION);
-        }
-
         $canUpdateMerchantContext = false;
 
         if ($merchant->isNoDocOnboardingEnabled() === true)
@@ -1621,7 +1603,56 @@ class Core extends Base\Core
         }
 
         $response['auto_activated'] = $autoActivated;
+        // Fetching submitted at before the merchant detail object is set in the current flow which updated the submitted at
+        // to the current timestamp (current time stamp here signifies when the merchant submitted the L2 )
+        if (empty($submittedAt) === true)
+        {
+            $verificationStatuses = Merchant\VerificationDetail\Service::getAllVerificationStatuses($merchantDetails);
 
+            $properties = [
+                'easyOnboarding'                              => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING),
+                Merchant\Constants::PHANTOM_ONBOARDING        => $isPhantomOnboarding,
+                DetailConstants::FEE_BASED_GATING_ELIGIBILITY => $isFeeBasedGatingEligible,
+
+                "isRiskyMerchant"     => $response['isRiskyMerchant'] ?? null,
+                "businessType"        => $merchantDetails->getAttribute(Entity::BUSINESS_TYPE),
+                "businessWebsite"     => $merchantDetails->getAttribute(Entity::BUSINESS_WEBSITE),
+                "businessCategory"    => $merchantDetails->getAttribute(Entity::BUSINESS_CATEGORY),
+                "businessSubcategory" => $merchantDetails->getAttribute(Entity::BUSINESS_SUBCATEGORY),
+                "activationFlow"      => $merchantDetails->getAttribute(Entity::ACTIVATION_FLOW),
+
+                "personalPANStatus"             => $merchantDetails->getAttribute(Entity::POI_VERIFICATION_STATUS),
+                "companyPANStatus"              => $merchantDetails->getAttribute(Entity::COMPANY_PAN_VERIFICATION_STATUS),
+                "bankDetailsStatus"             => $merchantDetails->getAttribute(Entity::BANK_DETAILS_VERIFICATION_STATUS),
+                "shopEstablishmentNumberStatus" => $merchantDetails->getAttribute(Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS),
+                "poaStatus"                     => $merchantDetails->getAttribute(Entity::POA_VERIFICATION_STATUS),
+                "cinStatus"                     => $merchantDetails->getAttribute(Entity::CIN_VERIFICATION_STATUS),
+                "gstinStatus"                   => $merchantDetails->getAttribute(Entity::GSTIN_VERIFICATION_STATUS),
+                "aadhaarEsignStatus"            => $merchantDetails->stakeholder ? $merchantDetails->stakeholder->getAttribute(Stakeholder\Entity::AADHAAR_ESIGN_STATUS) : null,
+
+                "personalPanOcrStatus"                => $merchantDetails->getAttribute(Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS),
+                "bankDetailsOcrStatus"                => $merchantDetails->getAttribute(Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS),
+                "gstOcrStatus"                        => $verificationStatuses[MVD\Constants::GST_DOC_STATUS] ?? null,
+                "shopEstablishmentNumberOcrStatus"    => $verificationStatuses[MVD\Constants::SHOP_ESTABLISHMENT_DOC_STATUS] ?? null,
+                "msmeCertificateOcrStatus"            => $merchantDetails->getAttribute(Entity::MSME_DOC_VERIFICATION_STATUS),
+                "partnershipDeedOcrStatus"            => $verificationStatuses[MVD\Constants::PARTNERSHIP_DEED_DOC_STATUS] ?? null,
+                "cinOcrStatus"                        => $verificationStatuses[MVD\Constants::CERTIFICATE_OF_INCORPORATION_DOC_STATUS] ?? null,
+                "trustNgoSocietyCertificateOcrStatus" => $verificationStatuses[MVD\Constants::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE_DOC_STATUS] ?? null,
+
+                "negativeKeywordsStatus"    => $verificationStatuses[MVD\Constants::NEGATIVE_KEYWORDS_STATUS] ?? null,
+                "mccCategorisationStatus"   => $verificationStatuses[MVD\Constants::MCC_CATEGORIZATION_WEBSITE_STATUS] ?? null,
+                "websitePolicyStatus"       => $verificationStatuses[MVD\Constants::WEBSITE_POLICY_STATUS] ?? null,
+                "signatoryValidationStatus" => $verificationStatuses[MVD\Constants::SIGNATORY_VALIDATION_STATUS] ?? null,
+
+            ];
+
+            $this->trace->info(TraceCode::L2_SUBMISSION_SEGMENT_EVENT, [
+                'merchant_id'        => $merchant->getId(),
+                'segment_properties' => $properties
+            ]);
+
+            $this->app['segment-analytics']->pushTrackEvent($merchant, $properties, SegmentEvent::L2_SUBMISSION);
+        }
         $this->repo->saveOrFail($merchantDetails);
 
         if ($canUpdateMerchantContext === true)
@@ -5516,7 +5547,11 @@ class Core extends Base\Core
             $hardEscalationLevel4 = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchantAndTypeAndLevel
             ($merchant->getMerchantId(), Merchant\AutoKyc\Escalations\Constants::HARD_LIMIT, 4);
 
+            $isDedupeMatch = $this->dedupeCore->isMerchantImpersonated($merchant);
+
             $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($merchant);
+
+            $isRiskyMerchant = ($isDedupeMatch and !$isDedupeBlocked);
 
             if ($merchantDetails->getActivationFormMilestone() === DetailConstants::L1_SUBMISSION)
             {
@@ -5526,7 +5561,6 @@ class Core extends Base\Core
                 $isDedupeBlocked = false;
             }
 
-            $isDedupeMatch = $this->dedupeCore->isMerchantImpersonated($merchant);
             $dedupe        = [
                 'isMatch'       => $isDedupeMatch,
                 'isUnderReview' => !$isDedupeBlocked
@@ -5554,6 +5588,7 @@ class Core extends Base\Core
             $response[Entity::MERCHANT_AVG_ORDER_VALUE]               = $merchantDetails->avgOrderValue;
             $response[Entity::ACTIVATION_PROGRESS]                    = $response['verification'][Entity::ACTIVATION_PROGRESS];
             $response[Entity::MERCHANT_VERIFICATION_DETAIL]           = $merchantDetails->verificationDetail;
+            $response['isRiskyMerchant']                              = $isRiskyMerchant;
             $response['dedupe']                                       = $dedupe;
             $response['isDedupe']                                     = $isDedupeBlocked;
             $response['isAutoKycDone']                                = $this->isAutoKycDone($merchantDetails);
