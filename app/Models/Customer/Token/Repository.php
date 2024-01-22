@@ -349,18 +349,9 @@ class Repository extends Base\Repository
                               RecurringStatus::CANCELLED
                           ]);
 
-        $variant = $this->app['razorx']->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::CAW_TOKEN_FETCH,
-            $this->app['rzp.mode']
-        );
-
-        if ($variant === 'on')
-        {
-            // entity_type has subscription and null as values at the moment
-            // To fetch just CAW tokens we check entity_type is NULL as using `!=` with WHERE clause excludes null entries
-            $query = $query->whereNull(Token\Entity::ENTITY_TYPE);
-        }
+        // entity_type has subscription and null as values at the moment
+        // To fetch just CAW tokens we check entity_type is NULL as using `!=` with WHERE clause excludes null entries
+        $query = $query->whereNull(Token\Entity::ENTITY_TYPE);
 
         $query = $query->with('customer');
 
