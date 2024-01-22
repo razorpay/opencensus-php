@@ -494,6 +494,7 @@ class Entity extends Base\PublicEntity
             Paylaterprovider::ICIC,
             Paylaterprovider::HDFC,
             PaylaterProvider::AMAZONPAY,
+            Paylaterprovider::RZPXPOSTPAID,
         ],
 
         self::CARD => [

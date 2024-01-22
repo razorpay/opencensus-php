@@ -10317,6 +10317,10 @@ class Processor
                 return;
                 break;
 
+            case PayLater::RZPXPOSTPAID:
+                return;
+                break;
+
             default:
                 (new Customer\Raven)->sendOtp($input, $merchant);
                 $coproto = $this->preProcessPaylaterCoproto($payment, $input, $merchant);

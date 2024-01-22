@@ -2371,6 +2371,12 @@ trait Authorize
         {
             return true;
         }
+
+        if ($input['provider'] === PayLater::RZPXPOSTPAID and $input['method'] === Gateway::PAYLATER)
+        {
+            return true;
+        }
+
         return false;
     }
 

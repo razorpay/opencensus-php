@@ -168,6 +168,7 @@ class Gateway
     const PAYLATER           = 'paylater';
     const GETSIMPL           = 'getsimpl';
     const PAYLATER_ICICI     = 'paylater_icici';
+    const RZPXPOSTPAID       = 'rzpx_postpaid';
     const CRED               = 'cred';
     const OFFLINE_HDFC       = 'offline_hdfc';
     const TWID               = 'twid';
@@ -282,7 +283,7 @@ class Gateway
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369, CardlessEmi::SEZZLE, CardlessEmi::LIQUILOANS],
-        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY, Paylater::LAZYPAY, Paylater::AMAZONPAY],
+        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY, Paylater::LAZYPAY, Paylater::AMAZONPAY, PayLater::RZPXPOSTPAID],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC, self::ACQUIRER_OCBC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
@@ -315,6 +316,7 @@ class Gateway
             PayLater::FLEXMONEY,
             Paylater::LAZYPAY,
             PayLater::AMAZONPAY,
+            PayLater::RZPXPOSTPAID,
             self::ACQUIRER_AMEX,
             self::PAYU
         ],
@@ -395,6 +397,9 @@ class Gateway
         self::CARDLESS_EMI => [
             'default'    => self::SEZZLE,
             self::SEZZLE => self::SEZZLE
+        ],
+        self::PAYLATER => [
+            self::RZPXPOSTPAID => self::RZPXPOSTPAID,
         ],
         self::CYBERSOURCE           => [
             'default'           => self::HDFC,
@@ -493,6 +498,7 @@ class Gateway
         self::WALLET_RAZORPAYWALLET => self::WALLET_RAZORPAYWALLET,
         self::WALLET_OPENWALLET     => self::WALLET_OPENWALLET,
         self::FIRST_DATA            => self::FIRST_DATA,
+        self::RZPXPOSTPAID          => self::RZPXPOSTPAID,
     ];
 
 
@@ -3569,7 +3575,8 @@ class Gateway
      */
     public static $minAmountForMethodAndGateway = [
         Payment\Method::PAYLATER => [
-            PayLater::HDFC => '100000'
+            PayLater::HDFC => '100000',
+            PayLater::RZPXPOSTPAID => '100000',
         ],
         Payment\Method::CARDLESS_EMI => [
             CardlessEmi::WALNUT369 => '90000',
@@ -3706,6 +3713,7 @@ class Gateway
         CardlessEmi::WALNUT369,
         CardlessEmi::SEZZLE,
         CardlessEmi::LIQUILOANS,
+        PayLater::RZPXPOSTPAID,
     ];
 
     public static $checkAccountSkipProvider = [
@@ -4798,6 +4806,7 @@ class Gateway
             self::PAYLATER     => [
                 Paylater::LAZYPAY,
                 PayLater::AMAZONPAY,
+                Paylater::RZPXPOSTPAID,
             ],
         ];
 
@@ -4939,6 +4948,7 @@ class Gateway
             self::PAYLATER     => [
                 Paylater::LAZYPAY,
                 PayLater::AMAZONPAY,
+                PayLater::RZPXPOSTPAID,
             ],
         ];
 

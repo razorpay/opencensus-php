@@ -12,18 +12,20 @@ class PayLater
     const FLEXMONEY    = 'flexmoney';
     const LAZYPAY      = 'lazypay';
     const AMAZONPAY    = 'amazonpay';
+    const RZPXPOSTPAID = 'rzpx_postpaid';
 
     const HDFC         = 'hdfc';
     const KKBK         = 'kkbk';
 
     /** @var int[] The minimum order/transaction amount in paisa for each paylater provider. */
     public const MIN_AMOUNTS = [
-        self::GETSIMPL => 100,    // Rs. 1
-        self::LAZYPAY  => 100,    // Rs. 1
-        self::HDFC     => 100000, // Rs. 1000
-        self::ICICI    => 100,    // Rs. 1
-        self::KKBK     => 200000, // Rs. 2000
-        self::AMAZONPAY=> 100,    // Rs. 1
+        self::GETSIMPL     => 100,    // Rs. 1
+        self::LAZYPAY      => 100,    // Rs. 1
+        self::HDFC         => 100000, // Rs. 1000
+        self::ICICI        => 100,    // Rs. 1
+        self::KKBK         => 200000, // Rs. 2000
+        self::AMAZONPAY    => 100,    // Rs. 1
+        self::RZPXPOSTPAID => 100000, // Rs. 1000
     ];
 
     /** @var string[] The order in which pay later providers should be displayed on checkout */
@@ -34,6 +36,7 @@ class PayLater
         self::HDFC,
         self::KKBK,
         self::AMAZONPAY,
+        self::RZPXPOSTPAID,
     ];
 
     public static $fullName = [
@@ -43,6 +46,7 @@ class PayLater
         self::FLEXMONEY    => 'flexmoney',
         self::LAZYPAY      => 'lazypay',
         self::AMAZONPAY    => 'amazonpay',
+        self::RZPXPOSTPAID => 'rzpx_postpaid',
     ];
 
     public static $fullNameForSupportedBanks = [

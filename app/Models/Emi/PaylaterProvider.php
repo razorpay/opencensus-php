@@ -14,6 +14,7 @@ class PaylaterProvider
     const ICIC = 'icic';
     const HDFC = 'hdfc';
     const AMAZONPAY = 'amazonpay';
+    const RZPXPOSTPAID = 'rzpx_postpaid';
     const PAYLATER = 'paylater';
 
 
@@ -23,6 +24,7 @@ class PaylaterProvider
         self::ICIC,
         self::HDFC,
         self::AMAZONPAY,
+        self::RZPXPOSTPAID,
     ];
 
     public static function checkProviderValidity($provider)

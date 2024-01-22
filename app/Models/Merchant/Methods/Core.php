@@ -123,6 +123,7 @@ class Core extends Base\Core
             PaylaterProvider::HDFC => '0',
             PaylaterProvider::ICIC => '1',
             PaylaterProvider::AMAZONPAY=>'0',
+            PaylaterProvider::RZPXPOSTPAID => '0',
         ]
 
     ];
