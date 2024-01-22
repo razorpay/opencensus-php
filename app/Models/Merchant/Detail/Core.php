@@ -523,8 +523,6 @@ class Core extends Base\Core
 
         $response = null;
 
-        $this->unlockL3FormIfApplicable($merchant);
-
         /**
          * To handle submit Merchant Internal for POS merchants in following conditions
          *  1. If merchant only submitted pos details
@@ -4408,7 +4406,6 @@ class Core extends Base\Core
                         $workflowActionData = json_decode($e->getMessage(), true);
                         $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
                     }
-
                     $this->sendRejectionEmail($merchant);
                 }
 
@@ -4424,8 +4421,6 @@ class Core extends Base\Core
                             'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
                             'pos_activation_status'      => $merchantDetails->getActivationStatus()
                         ]);
-
-                        $merchantDetails->setLocked(false);
 
                         if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
                             (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
@@ -12081,22 +12076,6 @@ class Core extends Base\Core
         }
 
         return $states;
-    }
-
-    private function unlockL3FormIfApplicable(Merchant\Entity $merchant)
-    {
-        if ($merchant->merchantDetail->isLocked() === false)
-        {
-            return;
-        }
-
-        $merchantDetailCore = new Detail\Core();
-
-        $input = [
-            'locked'  =>  false,
-        ];
-
-        $merchantDetailCore->editMerchantDetailFields($merchant, $input);
     }
 
     public function fetchPosActivationFlow(Merchant\Entity $merchant)

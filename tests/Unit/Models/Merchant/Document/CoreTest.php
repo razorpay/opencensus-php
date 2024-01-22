@@ -127,4 +127,30 @@ class CoreTest extends TestCase
 
         $this->assertTrue($shouldPerformOCR);
     }
+
+    public function testShouldIgnoreLockValidation()
+    {
+        $input = [
+            "document_type"   => "shop_front"
+        ];
+
+        $documentCore = new DocumentCore();
+
+        $shouldIgnoreLock =  $documentCore->shouldIgnoreLockValidation($input);
+
+        $this->assertEquals( true, $shouldIgnoreLock );
+    }
+
+    public function testShouldIgnoreLockValidation1()
+    {
+        $input = [
+            "document_type"   => "mmtc_pamp_license"
+        ];
+
+        $documentCore = new DocumentCore();
+
+        $shouldIgnoreLock =  $documentCore->shouldIgnoreLockValidation($input);
+
+        $this->assertEquals( false, $shouldIgnoreLock );
+    }
 }

@@ -208,9 +208,9 @@ class Core extends Base\Core
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
-        $this->unlockL3FormIfApplicable($merchant, $input);
+        $shouldIgnoreLockValidationForL3Form = $this->shouldIgnoreLockValidation($input);
 
-        if ($validateLock === true)
+        if ($validateLock === true or $shouldIgnoreLockValidationForL3Form === true)
         {
             $merchantDetails->getValidator()->validateIsNotLocked();
         }
@@ -836,19 +836,13 @@ class Core extends Base\Core
         }
     }
 
-    private function unlockL3FormIfApplicable(Merchant\Entity $merchant, array $input)
+    public function shouldIgnoreLockValidation(array $input) :bool
     {
-        if ($merchant->merchantDetail->isLocked() === false)
+        if (in_array($input[Constants::DOCUMENT_TYPE], Type::VALID_POS_DOCUMENTS) === true)
         {
-            return;
+            return true;
         }
 
-        $merchantDetailCore = new Detail\Core();
-
-        $input = [
-            'locked'  =>  false,
-        ];
-
-        $merchantDetailCore->editMerchantDetailFields($merchant, $input);
+        return false;
     }
 }
