@@ -85,7 +85,8 @@ use RZP\Models\Merchant\Attribute\Repository as MerchantAttributeRepository;
 use RZP\Models\Admin\Permission\Repository as PermissionRepository;
 use RZP\Models\Merchant\Consent\Repository as MerchantConsentRepository;
 use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
-
+use RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClient as  MccCategorisationClient;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 
 class MerchantDetailTest extends OAuthTestCase
 {
@@ -10209,6 +10210,41 @@ You can now start accepting payments from https://www.example.com.
         });
     }
 
+    public function testBusinessWebsiteSaveForOCRSuccessfulValidation()
+    {
+        $this->app['config']['services.ocr_service.mock'] = true;
+        $this->app['config']['services.mutex.mock'] = true;
+    
+        [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails(['name' => 'Test name', 'has_key_access' => true, 'category' => 6211], ['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated']);
+    
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId );
+    
+        $this->startTest();
+    
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        
+        $this->assertEquals('https://www.example.com', $merchantDetail->getWebsite());
+        
+    }
+    
+    public function testBusinessWebsiteRaiseWorkflowAfterOCRValidationDueToBusinessWebsiteAlreadyExistWithDifferentMerchant()
+    {
+        $this->app['config']['services.ocr_service.mock'] = true;
+        $this->app['config']['services.mutex.mock'] = true;
+        
+        [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails(['name' => 'Test name1', 'has_key_access' => true, 'category' => 6211], ['business_website'=> 'https://www.example.com', 'activation_status' => 'activated']);
+        
+        $this->setupWorkflow("update_website", PermissionName::UPDATE_MERCHANT_WEBSITE);
+        
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId );
+    
+        $testData = $this->testData['testBusinessWebsiteSaveForOCRSuccessfulValidation'];
+    
+        $this->testData[__FUNCTION__] = $testData;
+        
+        $this->startTest();
+    }
+    
     public function testBusinessWebsiteAdditionWorkflowApprove()
     {
         Mail::fake();

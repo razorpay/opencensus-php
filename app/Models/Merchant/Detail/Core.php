@@ -162,8 +162,10 @@ use RZP\Models\ClarificationDetail\Core as ClarificationDetailCore;
 use RZP\Models\Merchant\Website;
 use RZP\Models\Merchant\Detail\Factory as DetailFactory;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
+use RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\WebsiteIndividualLinkClientMock;
 use RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\WebsiteIndividualLinkClient as WebsiteIndividualLinkClient;
 use RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\Constants as OcrServiceConstants;
+use RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClientMock;
 use RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClient as MccCategorisationClient;
 use RZP\Jobs\PaymentPageProcessor;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Account as AccountSDKWrapper;
@@ -9395,26 +9397,17 @@ class Core extends Base\Core
      */
     private function isWebsiteLinkAnalysisSucceed(array $websiteLinkValidation): bool
     {
-        $MandatorykeysToCheck = ['terms', 'refund', 'privacy', 'contact_us'];
+        $mandatorykeysToCheck = ['terms', 'refund', 'privacy', 'shipping', 'contact_us'];
 
-        foreach ($MandatorykeysToCheck as $Mandatorykey) {
+        foreach ($mandatorykeysToCheck as $mandatorykey)
+        {
             if (
-                !isset($websiteLinkValidation[$Mandatorykey]) ||
-                !isset($websiteLinkValidation[$Mandatorykey]['analysis_result']['confidence_score']) ||
-                $websiteLinkValidation[$Mandatorykey]['analysis_result']['confidence_score'] < 0.9
-            ) {
-                return false;
-            }
-        }
-
-        $OptionalkeysToCheck = ['shipping'];
-
-        foreach ($MandatorykeysToCheck as $Optionalkey) {
-            if (
-                isset($websiteLinkValidation[$Optionalkey]) &&
-                isset($websiteLinkValidation[$Optionalkey]['analysis_result']['confidence_score']) &&
-                $websiteLinkValidation[$Optionalkey]['analysis_result']['confidence_score'] < 0.9
-            ) {
+                !isset($websiteLinkValidation[$mandatorykey]) ||
+                !isset($websiteLinkValidation[$mandatorykey]['analysis_result']) ||
+                !isset($websiteLinkValidation[$mandatorykey]['analysis_result']['confidence_score']) ||
+                $websiteLinkValidation[$mandatorykey]['analysis_result']['confidence_score'] < 0.9
+            )
+            {
                 return false;
             }
         }
@@ -9462,7 +9455,7 @@ class Core extends Base\Core
 
         $this->app['cache']->delete($cacheKey);
     }
-
+    
     /**
      * Update website details after validation.
      *
@@ -9475,20 +9468,26 @@ class Core extends Base\Core
         $validationResponse = $payload['validationResponse'] ?? [];
 
         $this->deleteMerchantWebsiteAutomatedOcrCheckCacheData($this->merchant);
-
+        
+        [$status, $matchedMerchantIds] = $this->dedupeCore->matchAndGetMatchedMIDs($this->merchant);
+        
         if(
             !empty($validationResponse['success']) &&
             $validationResponse['success'] === true &&
+            $status === false &&
             $this->isWebsiteLinkAnalysisSucceed($validationResponse['websiteLinkValidation'] ?? []) &&
             $this->isMccCategorisationAnalysisSucceed($validationResponse['mccValidation'] ?? [])
         )
         {
             (new Detail\Service())->putBusinessWebsiteUpdatePostWorkflow($payload['input'], $this->merchant);
-
+            
             return;
         }
-
-        $this->postBusinessWebsiteViaWorkflow($payload['urlType'], $payload['input'], $payload['workflow_detail_input']);
+    
+        $this->postBusinessWebsiteViaWorkflow(
+            $payload[DetailConstants::URLTYPE],
+            $payload[DetailConstants::INPUT],
+            $payload[DetailConstants::WORKFLOW_DETAIL_INPUT]);
     }
 
 
@@ -9583,13 +9582,9 @@ class Core extends Base\Core
             'terms_condition_link' => $input[DetailConstants::BUSINESS_WEBSITE_TNC],
             'refund_link' => $input[DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY],
             'contact_link' => $input[DetailConstants::BUSINESS_WEBSITE_CONTACT_US],
+            'shipping_link' => $input[DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY],
         ];
-
-        if(isset($input[DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY]))
-        {
-            $payload['additional_request_data']['user_entered_links']['shipping_link'] = $input[DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY];
-        }
-
+        
         return $payload;
     }
 
@@ -9684,10 +9679,10 @@ class Core extends Base\Core
         {
 
             $this->trace->error(TraceCode::OCR_SERVICE_VALIDATION_JOB_DISPATCH_ERROR, [
-                'merchantId'     => $this->merchant->getId(),
-                'message'        => $e->getMessage(),
-                'mccRequestId' => $mccRequestId,
-                'individualLinkRequestId' => $individualLinkRequestId,
+                'merchantId'                => $this->merchant->getId(),
+                'message'                   => $e->getMessage(),
+                'mccRequestId'              => $mccRequestId,
+                'individualLinkRequestId'   => $individualLinkRequestId,
             ]);
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
@@ -11860,20 +11855,37 @@ class Core extends Base\Core
     {
         (new Merchant\Service)->addOrRemoveMerchantFeatures($features);
     }
-
-    /**
-     * @return \RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationClient
-     */
-    protected function getMccCategorisationClient(?string $svcKey = null): MccCategorisationClient
+    
+    protected function getMccCategorisationClient(?string $svcKey = null)
     {
+        $mock = $this->app['config']['services.ocr_service.mock'];
+    
+        if ($mock === true)
+        {
+            //
+            // This config is not defined in application config , this is used in test case only
+            //
+            $mockStatus = $this->app['config']['services.response'] ?? Constant::SUCCESS;
+        
+            return new MccCategorisationClientMock($mockStatus);
+        }
+
         return new MccCategorisationClient($this->merchant, $svcKey);
     }
-
-    /**
-    * @return \RZP\Models\Merchant\AutoKyc\OcrService\ProcessIndividualLinkVerification\WebsiteIndividualLinkClient
-     */
-    protected function getWebsiteIndividualLinkClient(?string $svcKey = null): WebsiteIndividualLinkClient
+    
+    protected function getWebsiteIndividualLinkClient(?string $svcKey = null)
     {
+        $mock = $this->app['config']['services.ocr_service.mock'];
+    
+        if ($mock === true)
+        {
+            //
+            // This config is not defined in application config , this is used in test case only
+            //
+            $mockStatus = $this->app['config']['services.response'] ?? Constant::SUCCESS;
+        
+            return new WebsiteIndividualLinkClientMock($mockStatus);
+        }
         return new WebsiteIndividualLinkClient($this->merchant, $svcKey);
     }
 

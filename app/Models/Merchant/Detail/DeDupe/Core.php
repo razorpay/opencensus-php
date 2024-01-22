@@ -200,9 +200,9 @@ class Core extends Base\Core
     {
         $isMatch = $this->match($merchant);
 
-        if ($isMatch === false)
+        if (array_get($isMatch, 0, false) === false)
         {
-            return [false, null];
+            return [false, []];
         }
 
         $riskScores = $this->merchantRiskClient->getMerchantImpersonatedDetails(

@@ -806,6 +806,11 @@ class Constants
     const CMMA_OPEN_CASE_TYPE              = 'open';
     const WORKFLOW_STATUS_CHANGE_OPEN_TYPE = 'workflow_status_change';
     const CMMA_CASE_STATUS_TYPE            = 'status';
+    
+    const URLTYPE                                           ='urlType';
+    const WORKFLOW_DETAIL_INPUT                             = 'workflow_detail_input';
+    const FETCH_MERCHANT_ID_SAME_BUSINESS_WEBSITE_FROM_WDA  = 'fetch_merchant_id_same_business_website_from_wda';
+
     const CMMA_POS_CASE_NC_EVENT_TYPE      = "pos_nc_case_event_type";
     const UNDER_REVIEW                     = 'under_review';
 }

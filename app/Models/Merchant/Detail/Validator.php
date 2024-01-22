@@ -583,7 +583,7 @@ class Validator extends Base\Validator
         DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY     => 'required|max:255|custom:active_url',
         DetailConstants::BUSINESS_WEBSITE_TNC                => 'required|max:255|custom:active_url',
         DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY      => 'required|max:255|custom:active_url',
-        DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY    => 'sometimes|max:255|custom:active_url',
+        DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY    => 'required|max:255|custom:active_url',
         DetailConstants::API_VERSION                         => 'sometimes|string|in:'.DetailConstants::WEBSITE_VERSION_V1.','.DetailConstants::WEBSITE_VERSION_V2,
         DetailConstants::BUSINESS_WEBSITE_USERNAME           => 'sometimes|string|max:50',
         DetailConstants::BUSINESS_WEBSITE_PASSWORD           => 'sometimes|string|max:50',

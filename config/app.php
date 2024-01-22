@@ -815,5 +815,4 @@ return array(
     'magic_shopify_remove_coupon_decomp_experiment_id' => env('MAGIC_SHOPIFY_REMOVE_COUPON_DECOMP_EXP_ID'),
 
     'magic_merchant_remove_coupon_decomp_experiment_id' => env('MAGIC_MERCHANT_REMOVE_COUPON_DECOMP_EXP_ID'),
-
 );

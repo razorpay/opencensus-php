@@ -5103,6 +5103,34 @@ return [
             'status_code' => 200,
         ],
     ],
+  
+    'testBusinessWebsiteSaveForOCRSuccessfulValidation' => [
+        'request'  => [
+            'content' => [
+                'business_website_main_page'       => 'https://www.example.com',
+                'business_website_contact_us'      => 'https://www.example.com/contact_us',
+                'business_website_privacy_policy'  => 'https://www.example.com/privacy_policy',
+                'business_website_refund_policy'   => 'https://www.example.com/refund_policy',
+                'business_website_tnc'             => 'https://www.example.com/website_tnc',
+                'business_website_shipping_policy' => 'https://www.example.com/shipping',
+                'url_type' => 'website',
+                'version' => 'v2',
+            ],
+            'url'     => '/merchant/save_business_website/website',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+              'bvs_validation'          => true,
+              'mccRequestId'            => 'LGjQP2ZQxa02ms',
+              'individualLinkRequestId' => 'KiyvwAQlNX08Vv',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
     'testGstinSelfServeStatus' => [
         'request'  => [
