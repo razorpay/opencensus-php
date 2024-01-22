@@ -956,11 +956,13 @@ class Core extends Base\Core
             //
             // $this->createAddressEntityForB2B($input,$payment);
             //
-            // $this->saveSenderDetailsForIntlBankTransfer($input,$payment);
-
+            $this->saveSenderDetailsForIntlBankTransfer($input,$payment);
             $this->authorizePaymentForIntlBankTransfer($payment);
 
             $this->getNewProcessor($payment->merchant)->autoCapturePaymentIfApplicable($payment);
+
+
+            
         }
         catch (\Exception $e)
         {
@@ -1081,13 +1083,16 @@ class Core extends Base\Core
             ]);
         }
 
-        $billingAddressFromInput['type']    = Address\Type::BILLING_ADDRESS;
+        $billingAddressFromInput['type']    = Address\Type::SENDER_ADDRESS;
         $billingAddressFromInput['name']    = trim($senderDetails[0]);
         $billingAddressFromInput['zipcode'] = trim(last($address));
         $billingAddressFromInput['line1']   = trim($address[0]);
         $billingAddressFromInput['city']    = trim($address[1]);
         $billingAddressFromInput['country'] = trim($senderDetails[2]);
 
+        if(!ctype_digit($billingAddressFromInput['zipcode']) || strlen($billingAddressFromInput['zipcode'])<2 || strlen($billingAddressFromInput['zipcode'])>10) {
+            $billingAddressFromInput['zipcode']="";
+        }
         $this->trace->info(TraceCode::ADDRESS_CREATE_REQUEST,[
             'billing_address' => $billingAddressFromInput,
             'payment_id'   => $payment->getId()

@@ -17,6 +17,7 @@ class Type
     const SHIPPING_ADDRESS  = 'shipping_address';
     const BILLING_ADDRESS   = 'billing_address';
     const RESIDENTIAL       = 'residential';
+    const SENDER_ADDRESS    = 'sender_address';
 
     protected static $validEntityTypes = [
         self::CUSTOMER,
@@ -34,6 +35,7 @@ class Type
         ],
         self::PAYMENT  => [
             self::BILLING_ADDRESS,
+            self::SENDER_ADDRESS,
         ],
         self::TOKEN  => [
             self::BILLING_ADDRESS,

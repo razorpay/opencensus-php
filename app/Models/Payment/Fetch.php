@@ -62,7 +62,7 @@ class Fetch extends BaseFetch
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
             self::EXPAND_EACH =>
-                'filled|string|in:card,emi,emi_plan,disputes,transfer,token,transfer.recipient_settlement,transaction,transaction.settlement|custom:expand',
+                'filled|string|in:card,emi,sender_address,emi_plan,disputes,transfer,token,transfer.recipient_settlement,transaction,transaction.settlement|custom:expand',
             Entity::METHOD    => 'sometimes|string|required_with:flow',
             Entity::ORDER_ID  => 'sometimes|string|size:20',
             Entity::FLOW      => 'sometimes|string|in:in_app,intent,collect'

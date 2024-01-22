@@ -8,6 +8,7 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\User\Role;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Payment\B2bUploadInvoice;
 use RZP\Exception\BadRequestException;
@@ -421,7 +422,62 @@ class InternationalBankTransferTest extends TestCase
 
         $this->testSendNotificationForB2B($paymentEntity);
     }
+    public function testSenderDetailsStoringAndRetrieving()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], [], Role::OWNER);
 
+        $this->fixtures->create('merchant_international_integrations', [
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        // Test to increase txn limit for B2B intl_bank_transfer payments
+        // Higher limit is now Rs 8.5L base amount
+        // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
+        $this->mockMozartResponseForCurrencyCloud(85000);
+
+        $this->ba->directAuth();
+        $request = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $paymentEntity = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals('currency_cloud', $paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer', $paymentEntity['method']);
+        $this->assertEquals('ach', $paymentEntity['wallet']);
+        $this->assertEquals(83300000, $paymentEntity['base_amount']);
+        $this->assertEquals(8500000, $paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9', $paymentEntity['reference1']);
+
+        $this->testSendNotificationForB2B($paymentEntity);
+        $this->fixtures->merchant->addFeatures('enable_intl_bank_transfer', $paymentEntity['merchant_id']);
+        $addressPayload = [
+            'url'       => '/payments?skip=0&count=25&expand[]=sender_address',
+            'method'    => 'get',
+        ];
+        $this->ba->proxyAuth('rzp_test_' . $paymentEntity['merchant_id'], $merchantUser['id']);
+
+        $responseData = $this->makeRequestAndGetContent($addressPayload);
+        $this->assertNotNull($responseData);
+        $this->assertEquals('payment',$responseData['items'][0]['entity']);
+        $this->assertEquals($paymentEntity['id'],$responseData['items'][0]['id']);
+        $senderData = $responseData['items'][0]['sender_address'];
+        
+
+        $this->assertEquals('David Jenkins',$senderData['name']);
+        $this->assertEquals('560068',$senderData['zipcode']);
+        $this->assertEquals('31 High Street',$senderData['line1'] );
+        $this->assertEquals('Brighton',$senderData['city']);
+        $this->assertEquals('gb',$senderData['country']);
+
+        return $response;
+
+    }
     public function testCashManagerTransactionNotificationForCurrencyCloudForBACS()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -1175,7 +1231,7 @@ class InternationalBankTransferTest extends TestCase
                                 'currency'                => $currency,
                                 'additional_information'  => "USTRD-0001",
                                 'value_date'              => "2018-07-04T00:00:00+00:00",
-                                'sender'                  => "David Jenkins; 31 High Street, Brighton, East Sussex, BN1 2NW;GB;1111111111;;00000000",
+                                'sender'                  => "David Jenkins; 31 High Street, Brighton, East Sussex, 560068;GB;1111111111;;00000000",
                                 'receiving_account_number'=> null,
                                 "receiving_account_iban"  => null,
                                 "created_at"              => "2018-07-04T14:57:38+00:00",

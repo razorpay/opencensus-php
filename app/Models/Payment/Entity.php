@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants\Procurer;
 use RZP\Mail\Payment\Failed;
+use RZP\Models\Address;
 use RZP\Models\Address\Type;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
@@ -219,6 +220,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // Relations
     const CARD                  = 'card';
     const EMI                   = 'emi';
+    const SENDER_ADDRESS        = 'sender_address';
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
@@ -561,6 +563,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::GATEWAY_PROVIDER,
         // self::SUBSCRIPTION_ID,
         self::EMI,
+        self::SENDER_ADDRESS,
         self::EMI_PLAN,
         self::DISPUTES,
         self::CREATED_AT,
@@ -5306,6 +5309,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function emi()
     {
         return $this->belongsTo('RZP\Models\Emi\Entity', self::EMI_PLAN_ID)->withTrashed();
+    }
+
+    public function senderAddress()
+    {
+        return $this->hasOne(Address\Entity::class, Address\Entity::ENTITY_ID)->latest()->where(Address\Entity::TYPE, Address\Type::SENDER_ADDRESS);
     }
 
     public function emiPlan()
