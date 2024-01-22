@@ -331,6 +331,28 @@ class Service extends Base\Service
     }
 
     /**
+     * returns a cart object from cache so that it can be used in magic checkout micro-service
+     *
+     * @param array $input
+     * @return array
+     */
+    public function getCartDataFromCache(array $input): array
+    {
+        $cartId = $input['cart_id'];
+        // Set Merchant basic auth
+        $merchantId = $input['merchant_id'];
+        if (isset($merchantId) === false || isset($cartId) === false){
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, description: "cart_id and merchant_id both required");
+        }
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        $this->app['basicauth']->setMerchant($this->merchant);
+        $cartData = (new Cart())->getCartDataFromCache($cartId);
+        return [
+            'cart_data'   => $cartData,
+        ];
+    }
+
+    /**
      * This is a replica of createOrderAndGetPreferences() which will be used by MCS for decomp.
      * Creates a razorpay order for a given shopify checkout and returns order_id, preferences
      *

@@ -4593,6 +4593,7 @@ class Route
         // magic-checkout-service to decompose the above API out of API Monolith.
         // Target state is to move all logic from 1cc_shopify_order to MCS and remove both these routes.
         'one_cc_shopify_order_for_mcs'              => ['post',       'internal/mcs/shopify/order',                            'OneClickCheckoutController@createOrderAndGetPreferencesForMCS'          ],
+        'one_cc_shopify_cart_for_mcs'               => ['get',        'internal/1cc/order/cart',                               'OneClickCheckoutController@getCartFromCache'          ],
         '1cc_process_webhooks'                      => ['post',       '1cc/process_webhooks/{platform}',                                   'OneClickCheckoutController@processWebhook'              ],
         'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                           'MerchantController@updateShopify1ccConfig'                   ],
         '1cc_fetch_analytics'                       => ['post',       '1cc/analytics/shopify',                                 'OneClickCheckoutController@getOrderAnalytics'                   ],
@@ -6380,6 +6381,7 @@ class Route
         'customer_fetch_by_id_global',
         '1cc_shopify_order',
         'one_cc_shopify_order_for_mcs',
+        'one_cc_shopify_cart_for_mcs',
 
         'role_list_admins_internal',
 
@@ -17248,6 +17250,7 @@ class Route
             'payment_fetch_by_id_internal',
             'fetch_1cc_customer_consent_internal',
             'one_cc_shopify_order_for_mcs',
+            'one_cc_shopify_cart_for_mcs',
             'order_payments',
         ],
         'rto_prediction_service_api_web' => [

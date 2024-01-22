@@ -82,6 +82,30 @@ class Cart extends Base\Core
         return $cartObject ?? [];
     }
 
+    /**
+     * fetch cart object details using cart id from cache - called from MCS
+     * @param string cartId
+     * @return array
+     */
+    public function getCartDataFromCache(string $cartId)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $cartObject = $this->getCartFromCache($merchantId, $cartId);
+
+        if (empty($cartObject) === true)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_CACHE_CART_FETCH_FAIL,
+                [
+                    'type' => 'cart_fetch_from_cache_failed'
+                ]
+            );
+        }
+
+        return $cartObject ?? [];
+    }
+
     public function setCartToCache(string $merchantId, $cartObject)
     {
         return $this->cache->set(

@@ -119,6 +119,24 @@ class OneClickCheckoutController extends Controller
         }
     }
 
+    /**
+     * This is used from MCS to fetch cart objects from the cache
+     *
+     * @return mixed
+     * @throws BaseException
+     */
+    public function getCartFromCache()
+    {
+        $input = Request::all();
+        try
+        {
+            $result = (new Shopify\Service())->getCartDataFromCache($input);
+            return ApiResponse::json($result, 200);
+        } catch (\Throwable $e) {
+            return $this->handleError($e);
+        }
+    }
+
     public function getCheckoutOptions()
     {
         $input = Request::all();
