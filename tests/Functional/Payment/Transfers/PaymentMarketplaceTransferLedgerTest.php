@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Jobs\TransferProcess;
+use RZP\Models\Payment;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\MocksRazorx;
@@ -1112,6 +1114,120 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
             $ledgerOutboxEntity = $this->getDbLastEntity('ledger_outbox');
             $this->assertNull($ledgerOutboxEntity);
         }
+    }
+
+    public function testPaymentTransferReverseShadowOutboxPushWhenTransferPaymentAlreadyExists()
+    {
+        $this->initialiseLedger(1000000, 0, 0);
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], 10000000000001);
+
+        $transferId = "AnyRandomID123";
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($this->payment['id']);
+
+        $dummyTransferData = [
+            'id'                 => $transferId,
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp(),
+            'processed_at'       => Carbon::now()->addHours(-4)->getTimestamp(),
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        // create dummy payment
+        $this->fixtures->payment->create(
+            [
+                'id'          => 'dummyN3uSlFkHT',
+                'merchant_id' => '10000000000001',
+                'transfer_id' => 'AnyRandomID123',
+                'amount'      => 50000,
+                'currency'    => 'INR',
+                'method'      => 'transfer',
+                'status'      => 'captured',
+                'captured_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+                'fee'         => 0,
+                'tax'         => 0,
+            ]
+        );
+
+        // transfer entity exists
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertNotNull($transfer);
+        $this->assertEquals($transferId, $transfer['id']);
+
+        // process transfer, dummy payment already exists
+        (new TransferProcess('test', $this->payment['id'], 'payment'))->handle();
+
+        // only 1 dummy payment entity exists
+        $transferPayments = $this->getDbEntities('payment', ['transfer_id' => $transferId]);
+        $this->assertCount(1, $transferPayments);
+        $transferPayment = $transferPayments[0];
+        $this->assertNotNull($transferPayment);
+        $this->assertEquals('transfer', $transferPayment['method']);
+        $this->assertEquals($transferId, $transferPayment['transfer_id']);
+
+        // transfer txn and dummy payment txn not created
+        $this->assertNull($transfer['transaction_id']);
+        $this->assertNull($transferPayment['transaction_id']);
+        $transferTxn = $this->getDbEntity('transaction', ['type' => 'transfer', 'entity_id' => $transferId]);
+        $this->assertNull($transferTxn);
+        $transferPaymentTxn = $this->getDbEntity('transaction', ['type' => 'payment', 'entity_id' => sprintf('pay_%s',$transferPayment['id'])]);
+        $this->assertNull($transferPaymentTxn);
+
+        $expectedLedgerOutboxEntry = [
+            "currency" => "INR",
+            "transactor_event" =>  "transfer_processed",
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG",
+            "journals" =>[
+                [
+                    "merchant_id"=>"10000000000000",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "50000",
+                        "base_amount" => "50000",
+                        "merchant_payable_amount" => "50000",
+                        "merchant_balance_amount" => "50000",
+                        "tax" => "0",
+                        "transfer_commission" => "0",
+                    ],
+                    "additional_params"=>["entry_type"=>"debit"]
+                ],
+                [
+                    "merchant_id"=>"10000000000001",
+                    "currency"=>"INR",
+                    "money_params" => [
+                        "amount" => "50000",
+                        "base_amount" => "50000",
+                        "merchant_payable_amount" => "50000",
+                        "merchant_balance_amount" => "50000",
+                    ],
+                    "additional_params"=>["entry_type"=>"credit"]
+                ]
+            ],
+        ];
+
+        // fetch transfer journal payload from ledger_outbox
+        $ledgerOutboxEntity = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull($ledgerOutboxEntity);
+        $this->assertEquals( sprintf('%s-transfer_processed', 'trf_' . $transferId),$ledgerOutboxEntity['payload_name']);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals('trf_' . $transferId, $actualLedgerOutboxEntry['transactor_id']);
+        $this->assertNotNull($actualLedgerOutboxEntry['idempotency_key']);
     }
 
     /* ACK worker test cases */

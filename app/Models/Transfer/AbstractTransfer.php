@@ -264,8 +264,6 @@ abstract class AbstractTransfer
 
         $deadlockRetryAttempts = 3;
 
-        $originalPaymentAmountTransferred = $payment->getAmountTransferred();
-
         try
         {
             $transfer = $this->repo->transaction(function () use ($payment, $transfer)
@@ -302,7 +300,33 @@ abstract class AbstractTransfer
 
                     if (count($outboxEntries) === 0)
                     {
-                        $transferPayment = $this->createTransferredEntity($transfer, $payment);
+                        try
+                        {
+                            $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+
+                            $this->trace->info(
+                                TraceCode::TRANSFER_PAYMENT_EXISTS,
+                                [
+                                    'payment_id'    => $transferPayment->getId(),
+                                ]
+                            );
+                        }
+                        catch (BadRequestException $e)
+                        {
+                            if ($e->getCode() === ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
+                            {
+                                $transferPayment = null;
+                            }
+                            else
+                            {
+                                throw $e;
+                            }
+                        }
+
+                        if ($transferPayment === null)
+                        {
+                            $transferPayment = $this->createTransferredEntity($transfer, $payment);
+                        }
 
                         $transfer = $core->createReverseShadowLedgerEntriesForOrderAndPaymentTransfer($transfer, $transferPayment);
                     }
@@ -342,26 +366,6 @@ abstract class AbstractTransfer
         catch (\Exception $ex)
         {
             (new Metric())->pushTransferProcessFailedMetrics($ex);
-
-            $payment = $this->repo->payment->findOrFail($payment->getId());
-
-            if ($payment->isRoutedThroughPaymentsUpiPaymentService() === true)
-            {
-                if ($payment->getAmountTransferred() !== $originalPaymentAmountTransferred)
-                {
-                    $payment->setAmountTransferred($originalPaymentAmountTransferred);
-
-                    $this->repo->saveOrFail($payment);
-
-                    $this->trace->info(
-                        TraceCode::PAYMENT_AMOUNT_TRANSFERRED_RESET,
-                        [
-                            'payment_id'       => $payment->getId(),
-                            'original_amount'  => $originalPaymentAmountTransferred,
-                            'transfer_id'      => $transfer->getId(),
-                        ]);
-                }
-            }
 
             throw  $ex;
         }
