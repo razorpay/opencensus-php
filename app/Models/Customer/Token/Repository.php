@@ -575,7 +575,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        return $this->newQueryOnPaymentFetchReplica(600000)
+        return $this->newQueryOnPaymentFetchReplica(600000, $to)
                     ->select($selectCols,
                              'payments.id as payment_id',
                              'payments.amount as payment_amount',
@@ -658,7 +658,7 @@ class Repository extends Base\Repository
 
         $tokenTerminalIdColumn = $this->repo->token->dbColumn(Entity::TERMINAL_ID);
 
-        return $this->newQueryOnPaymentFetchReplica(600000)
+        return $this->newQueryOnPaymentFetchReplica(600000, $to)
             ->select('tokens.' . Entity::ACCOUNT_TYPE,
                 'tokens.' . Entity::BENEFICIARY_NAME,
                 'tokens.' . Entity::IFSC,
@@ -716,7 +716,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        return $this->newQueryOnPaymentFetchReplica(600000)
+        return $this->newQueryOnPaymentFetchReplica(600000, $to)
                     ->select($selectCols,
                             'payments.id as payment_id',
                             'payments.amount as payment_amount',
@@ -759,7 +759,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        $tokens = $this->newQueryOnPaymentFetchReplica(600000)
+        $tokens = $this->newQueryOnPaymentFetchReplica(600000, $to)
                         ->select($selectCols, 'payments.id as payment_id')
                         ->from(\DB::raw('`tokens`, `payments`'))
                         ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
@@ -858,7 +858,7 @@ class Repository extends Base\Repository
 
         $tokenTerminalIdColumn = $this->repo->token->dbColumn(Entity::TERMINAL_ID);
 
-        return $this->newQueryOnPaymentFetchReplica(600000)
+        return $this->newQueryOnPaymentFetchReplica(600000, $to)
               ->select('tokens.' . Entity::ACCOUNT_TYPE,
                        'tokens.' . Entity::BENEFICIARY_NAME,
                        'tokens.' . Entity::IFSC,

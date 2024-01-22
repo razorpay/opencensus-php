@@ -1406,8 +1406,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_REGISTER_RESPONSE_ERROR                      = 'EMANDATE_REGISTER_RESPONSE_ERROR';
     const EMANDATE_REGISTER_FILE_GENERATED                      = 'EMANDATE_REGISTER_FILE_GENERATED';
     const EMANDATE_FILE_GENERATED                               = 'EMANDATE_FILE_GENERATED';
+    
     const EMANDATE_DEBIT_REQUEST_ERROR                          = 'EMANDATE_DEBIT_REQUEST_ERROR';
     const EMANDATE_DEBIT_FILE_GENERATED                         = 'EMANDATE_DEBIT_FILE_GENERATED';
+    const DB_CONNECTION_LAG                                     = 'DB_CONNECTION_LAG';
+    
     const INVOICE_ENTITY_TYPE                                   = 'INVOICE_ENTITY_TYPE';
 
     const OCR_SERVICE_VALIDATION_EVENT_RECEIVED                 = 'OCR_SERVICE_VALIDATION_EVENT_RECEIVED';

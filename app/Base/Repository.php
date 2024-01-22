@@ -532,7 +532,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         return $this->newQueryWithConnection($slaveConnection);
     }
-
+    
     /**
      * This gives the connection to payment fetch Replica with a feature of `lagThreshold`.
      * If the current lag is more than the threshold provided, we will fail the query immediately with a
@@ -541,11 +541,11 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @param null $lagThreshold To be give in Milliseconds.
      *                           For example, 5 minutes lag threshold is 300000 milliseconds
-     *
+     * @param null $endTime
      * @return Builder
      * @throws Exception\ServerErrorException
      */
-    public function newQueryOnPaymentFetchReplica($lagThreshold = null)
+    public function newQueryOnPaymentFetchReplica($lagThreshold = null, $endTime = null)
     {
         $slaveConnection = $this->getPaymentFetchReplicaConnection();
 
@@ -560,10 +560,17 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         $replicationLagInMilli = $this->app['db.connector.mysql']->getReplicationLagInMilli($slaveConnection);
-
+        
+        $acceptDbLag = $this->acceptDBLag($endTime, $replicationLagInMilli);
+        
         if (($lagThreshold !== null) and
             ($replicationLagInMilli > $lagThreshold))
         {
+            if($acceptDbLag === true)
+            {
+                return $this->newQueryWithConnection($slaveConnection);
+            }
+            
             throw new Exception\ServerErrorException(
                 'Replication lag greater than the defined threshold',
                 ErrorCode::SERVER_ERROR_SLAVE_LAG_THRESHOLD_BREACHED,
@@ -574,6 +581,35 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return $this->newQueryWithConnection($slaveConnection);
+    }
+    
+    public function acceptDBLag($endTime, $dbReplicaLag): bool
+    {
+        try
+        {
+            $currentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
+            
+            $endTime = $endTime + (5 * 60);
+            
+            $timeDiff = ($currentTime - $endTime) * 1000;
+            
+            $this->trace->info(TraceCode::DB_CONNECTION_LAG, [
+                "current_time"          => $currentTime,
+                "end_time"              => $endTime,
+                "db_replica_lag_milli"  => $dbReplicaLag,
+                "time_diff"             => $timeDiff
+            ]);
+            if ($timeDiff > $dbReplicaLag)
+            {
+                return true;
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException($exception);
+        }
+        
+        return false;
     }
 
     public function find($id, $columns = array('*'), string $connectionType = null)

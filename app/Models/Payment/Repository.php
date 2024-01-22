@@ -3192,7 +3192,7 @@ EOT;
 
         $selectCols = $this->repo->payment->dbColumn('*');
 
-        $globalTokenQuery = $this->newQueryOnPaymentFetchReplica(600000)
+        $globalTokenQuery = $this->newQueryOnPaymentFetchReplica(600000, $to)
             ->select($selectCols)
             ->join(Table::TOKEN, Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn)
             ->join(Table::ENACH, $paymentIdColumn, '=', $enachPaymentIdColumn)
@@ -3206,7 +3206,7 @@ EOT;
             ->whereNotNull(Entity::AUTHORIZED_AT)
             ->with(['localToken', 'globalToken', 'customer', 'enach']);
 
-        $localTokenQuery = $this->newQueryOnPaymentFetchReplica(600000)
+        $localTokenQuery = $this->newQueryOnPaymentFetchReplica(600000, $to)
             ->select($selectCols)
             ->join(Table::TOKEN, Entity::TOKEN_ID, '=', $tokenIdColumn)
             ->join(Table::ENACH, $paymentIdColumn, '=', $enachPaymentIdColumn)
@@ -3247,7 +3247,7 @@ EOT;
 
         $selectCols = $this->repo->payment->dbColumn('*');
 
-        return $this->newQueryOnPaymentFetchReplica(600000)
+        return $this->newQueryOnPaymentFetchReplica(600000, $to)
                     ->select($selectCols)
                     ->join(
                         Table::TOKEN,
