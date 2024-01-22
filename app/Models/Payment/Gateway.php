@@ -342,6 +342,7 @@ class Gateway
 
     const TOKENISATION_CRYPTOGRAM_NOT_REQUIRED_GATEWAYS = [
         self::AXIS_TOKENHQ,
+        self::ICICI
     ];
 
     //

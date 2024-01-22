@@ -8534,7 +8534,7 @@ trait Authorize
 
                 $core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
 
-                SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId,  $payment->getId());
+                SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId,  $payment->getId(),$callbackData);
 
                 $this->trace->info(TraceCode::TRACE_TOKEN_DISPATCH_LOG, [
                     'tokenid'     =>  $token->getId(),
@@ -10082,10 +10082,17 @@ trait Authorize
 
         // make a call to smart router to get which terminal should be used to fetch cryptogram
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, null, null, $this->authenticationChannel);
+        $this->trace->info(TraceCode::TERMINAL_SELECTION, [
+                'gateway'=> $this->selectedTerminals[0]['gateway']
+        ]);
 
         $payment->card()->dissociate();
 
         if (in_array($this->selectedTerminals[0]['gateway'], Payment\Gateway::TOKENISATION_CRYPTOGRAM_NOT_REQUIRED_GATEWAYS)) {
+            if($this->selectedTerminals[0]['gateway'] == Payment\Gateway::ICICI){
+                $tokenType = "issuer";
+                $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant,$tokenType);
+            }
             // currently we only support axis terminals & it doesn't require cryptogram
             return $cryptogram;
         }else {

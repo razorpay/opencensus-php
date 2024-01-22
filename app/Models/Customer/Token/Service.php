@@ -2106,6 +2106,11 @@ class Service extends Base\Service
         $payment = $this->repo->payment->findOrFail($input['payment_id']);
 
         $card = $payment->card;
+        $callbackData = null;
+
+        if(!empty($input['callback_data'])) {
+            $callbackData = $input['callback_data'];
+        }
 
         $customer = $payment->customer;
 
@@ -2234,7 +2239,7 @@ class Service extends Base\Service
             'token'       => $token
         ]);
 
-        SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId,  $payment->getId());
+        SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId,  $payment->getId(),$callbackData);
 
         return $token->toArrayPublic();
     }

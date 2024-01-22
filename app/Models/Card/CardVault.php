@@ -597,6 +597,16 @@ class CardVault extends Base\Core
         {
             $input['merchant_token'] = $cardInput['merchant_token'];
         }
+        if ((empty($cardInput['issuer_token']) === false) &&
+            (empty($cardInput['provider_name']) === false) &&
+            (empty($cardInput['provider_type']) === false))
+        {
+            $input['card_tokenization'] = [
+            'issuer_token_number'  => $cardInput['issuer_token'],
+            'provider_name'  => $cardInput['provider_name'],
+            'provider_type' => $cardInput['provider_type'],
+            ];
+        }
 
         if ($cardInput['via_push_provisioning'] === true){
             $input['via_push_provisioning'] = true;

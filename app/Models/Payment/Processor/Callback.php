@@ -41,6 +41,7 @@ use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 trait Callback
 {
     protected $shouldAuthorizePaymentOnCallback = true;
+    protected $payCallbackData;
 
     /**
      * After payment initiation, bank redirects to us
@@ -675,6 +676,7 @@ trait Callback
         {
             $shouldLateAuthorize = true;
         }
+        $this->payCallbackData = $data;
 
         if ((Gateway::isWebhookEnabledGateway($payment->getGateway())) and ($payment->getStatus() === Payment\Status::FAILED) and ($s2sCallback === true))
         {
@@ -769,6 +771,9 @@ trait Callback
                         }
 
                         $callbackData = $this->processPaymentCallback($payment, $gatewayInput);
+                        if($callbackData == null){
+                            $callbackData = $this->payCallbackData;
+                        }
 
                         if ($payment->getStatus() === Payment\Status::AUTHENTICATED) {
                             return $this->postPaymentAuthenticateProcessing($payment);

@@ -1307,6 +1307,7 @@ class CardPaymentService
         unset($traceResponse['data']['content']['email']);
         unset($traceResponse['data']['content']['firstname']);
         unset($traceResponse['data']['content']['phone']);
+        unset($traceResponse['data']['issuer_token']);
 
         if (isset($traceResponse[Migration::EMI_PLANS]) === true)
         {

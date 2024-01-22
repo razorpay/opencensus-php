@@ -2172,7 +2172,7 @@ class Core extends Base\Core
         return $tokenStatus;
     }
 
-    public function migrateToTokenizedCard($token, $cardInput, $payment = null, $isAsync = false, $asyncTokenisationJobId = null)
+    public function migrateToTokenizedCard($token, $cardInput, $payment = null, $isAsync = false, $asyncTokenisationJobId = null,$callbackdata=null)
     {
         $cardInput += [
             'merchant_token' => $token->getId(),
@@ -2180,6 +2180,15 @@ class Core extends Base\Core
             'customer_id'    => $token->getCustomerId(),
             'email'          => ($payment !== null) ? $payment->getEmaiL() : ""
         ];
+        if(!empty($callbackdata)){
+           if(isset($callbackdata["issuer_token"]) && isset($callbackdata["provider_name"]) && isset($callbackdata["provider_type"])){
+               $cardInput += [
+                   'issuer_token' => $callbackdata["issuer_token"],
+                   'provider_name' => $callbackdata["provider_name"],
+                   'provider_type' => $callbackdata["provider_type"],
+               ];
+           }
+        }
 
         list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput, $payment, $asyncTokenisationJobId);
 

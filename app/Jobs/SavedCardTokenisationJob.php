@@ -51,7 +51,9 @@ class SavedCardTokenisationJob extends Job
      */
     protected $tokenCore;
 
-    public function __construct(string $mode, string $tokenId, string $asyncTokenisationJobId, $paymentId = null )
+    protected $callbackData;
+
+    public function __construct(string $mode, string $tokenId, string $asyncTokenisationJobId, $paymentId = null, $callbackData = null)
     {
         parent::__construct($mode);
 
@@ -60,6 +62,7 @@ class SavedCardTokenisationJob extends Job
         $this->paymentId = $paymentId;
 
         $this->asyncTokenisationJobId = $asyncTokenisationJobId;
+        $this->callbackData = $callbackData;
     }
 
     public function init(): void
@@ -94,6 +97,7 @@ class SavedCardTokenisationJob extends Job
                 'merchantId'                => $this->merchantId,
                 'async_tokenization_job_id' => $this->asyncTokenisationJobId,
                 'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
+                'tokenpan' => $this->callbackData,
             ]);
 
 
@@ -126,7 +130,7 @@ class SavedCardTokenisationJob extends Job
                 $cardInput['via_push_provisioning'] = true;
             }
 
-            $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId);
+            $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId,$this->callbackData);
 
             // Notify to mandateHQ for successful tokenisation
             if($token->isRecurring() === true and $token->getCardMandateId() !== null)
