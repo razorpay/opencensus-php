@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants\Country;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -897,7 +898,7 @@ class Core extends Base\Core
             $response['config']['preferences']['channel'] = (in_array($merchant->getChannel(), $ftsSupportedChannels) === true) ? strtoupper($merchant->getChannel()) : strtoupper(self::DEFAULT_FTS_CHANNEL);
         }
 
-        if($via === self::PAYOUT)
+        if($via === self::PAYOUT && strtolower($merchant->getCountry()) === Country::IN )
         {
             $response['config']['preferences']['channel'] = (in_array($merchant->getChannel(), $payoutSupportedChannels) === true) ? strtoupper($merchant->getChannel()) : strtoupper(self::DEFAULT_PAYOUT_CHANNEL);
         }
