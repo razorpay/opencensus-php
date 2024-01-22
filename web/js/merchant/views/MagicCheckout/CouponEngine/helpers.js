@@ -7,13 +7,14 @@ import {
   createProductDiscountPayload,
   createBuyXGetYPayload,
   createBulkDiscountPayload,
+  createFreeShippingCouponPayload,
 } from 'merchant/views/MagicCheckout/CouponEngine/components/createcoupon/helpers/createCouponPayloads';
 
 // constant imports
 import {
-  COUPON_TYPES,
   AVAILABLE_COUPON_TYPES,
   CREATE_COUPON_CONFIRMATION_MODAL_CONTENT,
+  COUPON_TYPES,
 } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 
 // ui element imports
@@ -106,6 +107,8 @@ export const createApiData = (couponName, data) => {
       return createBuyXGetYPayload(data);
     case 'bulk_order':
       return createBulkDiscountPayload(data);
+    case 'free_shipping':
+      return createFreeShippingCouponPayload(data);
     default:
       return null;
   }

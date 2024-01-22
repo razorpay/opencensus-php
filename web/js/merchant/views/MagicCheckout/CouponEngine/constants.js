@@ -69,7 +69,17 @@ export const COUPON_TYPES = [
   { label: 'Amount Off Order', name: 'amount_off_order' },
   { label: 'Buy X Get Y', name: 'buyx_gety' },
   { label: 'Bulk Order', name: 'bulk_order' },
+  { label: 'Free Shipping', name: 'free_shipping' },
 ];
+
+//todo: remove it post 100% rollout
+export const getCouponTypesList = (includeFreeShippingCoupon = true) => {
+  const couponTypes = [...COUPON_TYPES];
+  if (!includeFreeShippingCoupon) {
+    couponTypes.pop();
+  }
+  return couponTypes;
+};
 
 export const COUPON_STATUS = [
   { label: 'All', name: '' },
@@ -100,29 +110,44 @@ export const SORT_BY = [
 export const AVAILABLE_COUPON_TYPES = [
   {
     couponName: 'Amount discounted on orders',
-    couponDesc: 'Order discount',
+    couponDesc: 'Discount the total order amount',
     id: 1,
     type: 'amount_off_order',
   },
   {
     couponName: 'Amount discounted on products',
-    couponDesc: 'Product discount',
+    couponDesc: 'Discount specific products or collections of products',
     id: 2,
     type: 'amount_off_products',
   },
   {
     couponName: 'Buy X Get Y',
-    couponDesc: 'Product discount',
+    couponDesc: 'Discount products based on a customer’s purchase',
     id: 3,
     type: 'buyx_gety',
   },
   {
     couponName: 'Bulk discount',
-    couponDesc: 'Bundle and product discount',
+    couponDesc: 'Offer a discount on a bulk order',
     id: 4,
     type: 'bulk_order',
   },
+  {
+    couponName: 'Free shipping',
+    couponDesc: 'Offer free shipping on an order',
+    id: 5,
+    type: 'free_shipping',
+  },
 ];
+
+//todo: remove it post 100% rollout
+export const getAvailableCouponTypes = (includeFreeShippingCoupon = true) => {
+  const couponTypes = [...AVAILABLE_COUPON_TYPES];
+  if (!includeFreeShippingCoupon) {
+    couponTypes.pop();
+  }
+  return couponTypes;
+};
 
 export const DISPLAY_MESSAGES_FOR_UFH_MODAL = {
   process: 'The file is being processed. Please wait as this may take some time.',

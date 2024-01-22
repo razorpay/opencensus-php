@@ -219,6 +219,14 @@ const generateFieldsToValidate = (couponName) => {
     };
   }
 
+  // in case of free_shipping don't need to validate the discountValue field, because its always 100%. And as of now we dont have any specific validations for free_shipping coupon and no discountValue is there - all these things will come post MVP so for now just returning the commonFields.
+  if (couponName === 'free_shipping') {
+    delete commonFields.discountValue;
+    return {
+      ...commonFields,
+    };
+  }
+
   return {
     ...commonFields,
     ...specificValidators,

@@ -17,14 +17,14 @@ interface DiscountedItemsList {
   products_count?: string | number;
 }
 
-interface CouponEligibility {
+export interface CouponEligibility {
   customerGroup: string;
   customerList: string[];
   customerDetailsType: string;
   customerDisplayList: CustomerData | Record<string, unknown>;
 }
 
-interface CouponValidity {
+export interface CouponValidity {
   startDate: string;
   endDate: string;
   startTime: string;
@@ -33,7 +33,7 @@ interface CouponValidity {
   isLimitedUsage: boolean;
 }
 
-interface DiscountDetails {
+export interface DiscountDetails {
   discountType: string;
   discountValue: number;
   minimumType: string;
@@ -44,7 +44,7 @@ interface DiscountDetails {
   maxDiscountValue: number | string;
 }
 
-interface UsageRestriction {
+export interface UsageRestriction {
   isLimitedUsage: boolean;
   isRestrictedTotalUsage: boolean;
   maxUsage: number;
@@ -80,13 +80,14 @@ interface BulkDiscountDetails {
   hasLimitedUseagePerOrder: boolean;
 }
 
-interface CouponDetails {
+export interface CouponDetails {
   code: string;
   description: string;
   display: boolean;
   autoapply: boolean;
   prepaidMethodsOnly: boolean;
 }
+
 export type ShopifyCouponSyncResponse = {
   status: 'not-started' | 'completed' | 'in-progress' | '';
   last_sync_dates?: {

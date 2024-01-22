@@ -67,7 +67,6 @@ const ShopifySyncModal = ({ closeModal, merchantId, showNotification, updateSync
             <label>Start date</label>
             <Input.ToCalendar
               data-testid="shopify-sync-start-date"
-              autoRender
               data-name="date"
               placeholder="DD/MM/YYYY"
               size="half_small"
@@ -77,7 +76,7 @@ const ShopifySyncModal = ({ closeModal, merchantId, showNotification, updateSync
               disableFutureDates={true}
               required
               onChange={(date) => {
-                handleChange(moment(date).toISOString(), 'start_date');
+                handleChange(moment(date).startOf('day').toISOString(), 'start_date');
               }}
             />
           </div>
@@ -85,7 +84,6 @@ const ShopifySyncModal = ({ closeModal, merchantId, showNotification, updateSync
             <label>End date</label>
             <Input.ToCalendar
               data-testid="shopify-sync-end-date"
-              autoRender
               data-name="date"
               placeholder="DD/MM/YYYY"
               size="half_small"

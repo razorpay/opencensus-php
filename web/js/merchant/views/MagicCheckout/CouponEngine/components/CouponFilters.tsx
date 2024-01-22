@@ -1,4 +1,5 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
+import { useSplitzService } from 'common/splitz';
 
 // ui imports
 import Input from 'common/new-ui/Input';
@@ -6,12 +7,12 @@ import ListFilter from 'merchant/components/ListFilter';
 
 // constants imports
 import {
-  COUPON_TYPES,
   COUPON_STATUS,
   SORT_BY,
   COUPON_DISPLAY,
   COUPON_SOURCES,
   COUNT,
+  getCouponTypesList,
 } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 
 // Define the shape of the form data
@@ -52,6 +53,11 @@ const CouponFilters: React.FC<CouponFiltersProps> = ({
   tabName = 'all',
 }) => {
   const [formData, setFormData] = useState<FormData>(initialFiltersState);
+  const { abExperiments } = useSplitzService();
+  const shouldShowFreeShippingCoupon =
+    abExperiments?.magic_free_shipping_coupon?.variables?.result === 'on';
+
+  const COUPON_TYPES = getCouponTypesList(shouldShowFreeShippingCoupon);
 
   useEffect(() => {
     if (tabName === 'active' || tabName === 'expired' || tabName === 'published') {

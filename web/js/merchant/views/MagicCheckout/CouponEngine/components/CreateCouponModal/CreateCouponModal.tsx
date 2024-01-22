@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
+import { useSplitzService } from 'common/splitz';
 
 // ui elements
 import ModalHeader from 'common/ui/ModalHeader';
@@ -14,18 +15,24 @@ import {
 } from 'merchant/views/MagicCheckout/CouponEngine/components/CreateCouponModal/CreateCouponModalStyles';
 
 // helpers and constants
-import { AVAILABLE_COUPON_TYPES } from 'merchant/views/MagicCheckout/CouponEngine/constants';
+import { getAvailableCouponTypes } from 'merchant/views/MagicCheckout/CouponEngine/constants';
 import { closeModal } from 'merchant_common/reducers/modals';
 
 const CreateCouponModal = ({ closeModal }) => {
   const navigate = useNavigate();
+  const { abExperiments } = useSplitzService();
 
-  const navigateToCreateCoupoForm = (type: string) => {
+  const navigateToCreateCouponForm = (type: string) => {
     navigate(`/magic/coupons/create/${type}`);
 
     // close the modal to select the coupon type
     closeModal();
   };
+
+  const shouldShowFreeShippingCoupon =
+    abExperiments?.magic_free_shipping_coupon?.variables?.result === 'on';
+
+  const AVAILABLE_COUPON_TYPES = getAvailableCouponTypes(shouldShowFreeShippingCoupon);
 
   return (
     <Fragment>
@@ -36,7 +43,7 @@ const CreateCouponModal = ({ closeModal }) => {
             key={id}
             className="display-flex justify-space-between align-center"
             onClick={() => {
-              navigateToCreateCoupoForm(type);
+              navigateToCreateCouponForm(type);
             }}
           >
             <CategoryContent>

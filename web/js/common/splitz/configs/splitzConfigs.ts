@@ -521,6 +521,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'magic_free_shipping_coupon',
+          experimentId: {
+            beta: 'NOnCx61NWSEk0G',
+            production: 'NOnExCNWVaVdBv',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

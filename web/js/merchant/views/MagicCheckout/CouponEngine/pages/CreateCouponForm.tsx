@@ -135,6 +135,7 @@ const CreateCouponForm: React.FC<CreateCouponFormProps> = ({
       setErrorStates,
       flowName: flow,
     });
+
     setIsFormValid(isFormFieldsValid);
 
     // if form fields are not valid, return
