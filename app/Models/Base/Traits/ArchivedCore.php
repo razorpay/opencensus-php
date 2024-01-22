@@ -3,6 +3,7 @@
 namespace RZP\Models\Base\Traits;
 
 use App;
+use Database\Connection;
 use RZP\Error\ErrorCode;
 use Throwable;
 use RZP\Exception;
@@ -51,8 +52,11 @@ trait ArchivedCore
 
             $queryStartTime = millitime();
 
-            $entity = $this->newQueryAndResetEntityConnection(function () use ($id) {
-                return parent::findByPublicId($id, ConnectionType::ARCHIVED_DATA_REPLICA);
+            $entity = $this->newQueryAndResetEntityConnection(function () use ($id)
+            {
+                $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+                return parent::findByPublicId($id, $connection);
             });
 
             $entity->setArchived(true);
@@ -86,7 +90,9 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchant, $params)
             {
-                return parent::findByPublicIdAndMerchant($id, $merchant, $params,ConnectionType::ARCHIVED_DATA_REPLICA);
+                $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+                return parent::findByPublicIdAndMerchant($id, $merchant, $params,$connection);
             });
 
             $entity->setArchived(true);
@@ -120,7 +126,9 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchant, $params)
             {
-                return parent::findByIdAndMerchant($id, $merchant, $params,ConnectionType::ARCHIVED_DATA_REPLICA);
+                $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+                return parent::findByIdAndMerchant($id, $merchant, $params,$connection);
             });
 
             $entity->setArchived(true);
@@ -151,7 +159,9 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchantId)
             {
-                return parent::findByIdAndMerchantId($id, $merchantId, ConnectionType::ARCHIVED_DATA_REPLICA);
+                $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+                return parent::findByIdAndMerchantId($id, $merchantId, $connection);
             });
 
             $entity->setArchived(true);
@@ -182,7 +192,9 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $params)
             {
-                return parent::findOrFailByPublicIdWithParams($id, $params, ConnectionType::ARCHIVED_DATA_REPLICA);
+                $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+                return parent::findOrFailByPublicIdWithParams($id, $params, $connection);
             });
 
             $entity->setArchived(true);
@@ -213,7 +225,9 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $columns)
             {
-                return parent::findOrFailPublic($id, $columns, ConnectionType::ARCHIVED_DATA_REPLICA);
+                $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+                return parent::findOrFailPublic($id, $columns, $connection);
             });
 
             $entity->setArchived(true);
@@ -247,8 +261,11 @@ trait ArchivedCore
 
                 $queryStartTime = millitime();
 
-                $entity = $this->newQueryAndResetEntityConnection(function () use ($id, $columns) {
-                    return parent::findOrFail($id, $columns, ConnectionType::ARCHIVED_DATA_REPLICA);
+                $entity = $this->newQueryAndResetEntityConnection(function () use ($id, $columns)
+                {
+                    $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+                    return parent::findOrFail($id, $columns, $connection);
                 });
 
                 $entity->setArchived(true);
@@ -280,7 +297,9 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $columns)
             {
-                return parent::findOrFail($id, $columns, ConnectionType::ARCHIVED_DATA_REPLICA);
+                $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+                return parent::findOrFail($id, $columns, $connection);
             });
 
             $entity->setArchived(true);

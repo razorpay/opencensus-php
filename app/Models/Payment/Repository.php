@@ -2553,8 +2553,9 @@ EOT;
         // experiment added as P0 flows were going to TiDB
         if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
         {
-            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA))->whereNotNull(Entity::CAPTURED_AT)
+            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))->whereNotNull(Entity::CAPTURED_AT)
                             ->where(Entity::ORDER_ID, '=', $orderId)
+                            ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
                             ->first();
             $this->resetDefaultConnInEntity($payment);
 
@@ -2593,6 +2594,13 @@ EOT;
         ->first();
 
         return $payment;
+    }
+
+    public function findNonRearchPaymentsFromPaymentFetchReplica($id)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                        ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
+                        ->find($id);
     }
 
     //Resetting the connection to default as we don't want any subsequent DB calls going to this Archive data replica.
@@ -3906,10 +3914,11 @@ EOT;
         // added as P0 flows were going to TiDB
         if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA));
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA));
             $payments = $query
                 ->where(Entity::INVOICE_ID, $invoiceId)
                 ->where(Entity::STATUS, '=', Status::CAPTURED)
+                ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
                 ->get();
 
             $this->resetDefaultConnInEntities($payments);
@@ -4022,14 +4031,14 @@ EOT;
         }
 
         // Check id in archived data replica as the entity might be archived
-        $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->where(Entity::GATEWAY, $gateway)->find($id);
+        $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection())->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
 
         if ($obj !== null)
         {
             return [$obj, Mode::LIVE];
         }
 
-        $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->where(Entity::GATEWAY, $gateway)->find($id);
+        $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaTestConnection())->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
 
         if ($obj !== null)
         {
@@ -4068,7 +4077,7 @@ EOT;
         }
 
         // Check id in archived data replica as the entity might be archived
-        $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
+        $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection())->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
 
         if (($obj !== null) and
             ($obj->getAuthenticationGateway() !== null))
@@ -4076,7 +4085,7 @@ EOT;
             return Mode::LIVE;
         }
 
-        $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
+        $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaTestConnection())->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
 
         if (($obj !== null) and
             ($obj->getAuthenticationGateway() !== null))
@@ -4628,8 +4637,9 @@ EOT;
         // added as P0 flows were going to TiDB
         if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
         {
-            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA))
+            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
                             ->where(Entity::TOKEN_ID, $tokenId)
+                            ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
                             ->where(Entity::MERCHANT_ID, $merchantId)
                             ->where(Entity::METHOD, $method)
                             ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')

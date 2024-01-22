@@ -1422,6 +1422,26 @@ class Repository extends \Razorpay\Spine\Repository
         return $connection;
     }
 
+    public function getPaymentFetchReplicaLiveConnection()
+    {
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker', 'beta'], true) === true)
+        {
+            return Config::get('database.default');
+        }
+
+        return Connection::PAYMENT_FETCH_REPLICA_LIVE;
+    }
+
+    public function getPaymentFetchReplicaTestConnection()
+    {
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker', 'beta'], true) === true)
+        {
+            return Config::get('database.default');
+        }
+
+        return Connection::PAYMENT_FETCH_REPLICA_TEST;
+    }
+
     public function getAccountServiceReplicaConnection(string $mode = null)
     {
         if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker'], true) === true)
