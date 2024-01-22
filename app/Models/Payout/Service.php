@@ -82,6 +82,7 @@ use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Services\RazorpayLabs\SlackApp as SlackAppService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
+use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Models\Payout\Batch\Constants as BatchPayoutConstants;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
@@ -1613,6 +1614,8 @@ class Service extends Base\Service
     {
         // Only allowed for Rx payouts, mandates account number
         $balance = $this->processAccountNumber($input);
+
+        $this->checkIfDirectAccountIsActive($balance);
 
         (new Validator)->setStrictFalse()
             ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
@@ -4827,6 +4830,8 @@ class Service extends Base\Service
             $balance = $this->repo->balance->findByPublicIdAndMerchant($input[Payout\Entity::BALANCE_ID], $this->merchant);
         }
 
+        $this->checkIfDirectAccountIsActive($balance);
+
         $this->checkIfIciciDirectAccountPayoutShouldBeAllowed($input, $internal, $balance);
 
         if ($this->merchant->isFeatureEnabled(Features::ALLOW_NON_SAVED_CARDS) === true)
@@ -4857,6 +4862,39 @@ class Service extends Base\Service
                     }
                 }
             }
+        }
+    }
+
+    public function checkIfDirectAccountIsActive(Merchant\Balance\Entity $balance = null)
+    {
+        if (is_null($balance))
+        {
+            return;
+        }
+
+        if ($balance->isAccountTypeDirect())
+        {
+            /** @var BasDetails\Entity $basd */
+            $basd = $balance->bankingAccountStatementDetails;
+
+            if ((!is_null($basd)) and
+                (in_array($basd->getStatus(), BasDetails\Status::getStatusesForActiveCaFlows())))
+            {
+                return;
+            }
+
+            $this->trace->error(TraceCode::PAYOUTS_NOT_ALLOWED_DUE_TO_NO_BASD,
+                [
+                    'balance_id'  => $balance->getId(),
+                    'merchant_id' => $balance->getMerchantId()
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'API payouts are not available for this account'
+            );
         }
     }
 

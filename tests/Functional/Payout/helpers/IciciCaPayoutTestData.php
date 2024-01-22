@@ -824,6 +824,36 @@ return [
         ],
     ],
 
+    'testPayoutCreateWithIcici2FaWithBasDetailsArchived' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/2fa/create',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'API payouts are not available for this account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
     'testPayoutCreateWithIcici2FaInvalidPayoutPayload' => [
         'request'  => [
             'method'  => 'POST',

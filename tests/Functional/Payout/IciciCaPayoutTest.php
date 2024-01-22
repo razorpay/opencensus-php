@@ -2582,6 +2582,19 @@ class IciciCaPayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutCreateWithIcici2FaWithBasDetailsArchived()
+    {
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'status' => 'archived',
+        ] );
+
+        $this->ba->proxyAuth();
+
+        $this->liveSetUp();
+
+        $this->startTest();
+    }
+
     public function testPayoutCreateWithIcici2FaInvalidPayoutPayload()
     {
         $this->ba->proxyAuth();

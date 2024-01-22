@@ -271,6 +271,14 @@ class RblPayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutWithBASDetailsArchived()
+    {
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'status' => 'archived',
+        ] );
+
+        $this->startTest();
+    }
     public function testQueuedPayoutWithFetchAndUpdateBalanceFromGateway()
     {
         $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
@@ -881,6 +889,15 @@ class RblPayoutTest extends TestCase
 
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000003',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626906',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->fixtures->create('counter', [
             'account_type'          => 'direct',

@@ -69,6 +69,7 @@ use RZP\Jobs\OnHoldPayoutsProcess;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Jobs\PayoutAttachmentEmail;
 use RZP\Mail\Payout as PayoutMails;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\PayoutServiceDualWrite;
 use RZP\Mail\Payout\PendingApprovals;
 use RZP\Models\FundTransfer\Attempt;
@@ -185,6 +186,15 @@ class PayoutTest extends OAuthTestCase
             ]);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => $this->bankingBalance->getAccountNumber(),
+            Details\Entity::CHANNEL        => Details\Channel::AXIS,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->mockStorkService();
 
@@ -11576,6 +11586,15 @@ class PayoutTest extends OAuthTestCase
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
 
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626906",
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -11614,6 +11633,15 @@ class PayoutTest extends OAuthTestCase
 
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626906",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->fixtures->create(
             'fund_account',
@@ -13246,6 +13274,7 @@ class PayoutTest extends OAuthTestCase
             'channel'     => 'rbl',
         ];
 
+        /** @var Balance\Entity $bankingBalance */
         $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
             $balanceAttributes["balance"],
             '10000000000000',
@@ -13284,6 +13313,15 @@ class PayoutTest extends OAuthTestCase
 
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000003',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => $bankingBalance->getAccountNumber(),
+            Details\Entity::CHANNEL        => Details\Channel::AXIS,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
     }
 
     public function testWorkflowActionNotesTransformationForNumericAndEmptyKeys()
@@ -13912,6 +13950,15 @@ class PayoutTest extends OAuthTestCase
 
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626906",
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->fixtures->create('counter', [
             'account_type'          => 'direct',

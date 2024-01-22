@@ -9835,6 +9835,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_MERCHANT_DATA_FOR_MASTER_CARD_SEND                            = 'FETCH_MERCHANT_DATA_FOR_MASTER_CARD_SEND';
     const FETCH_REFUND_ENTITY_FOR_MCS_TRANSFER_FAILED                         = 'FETCH_REFUND_ENTITY_FOR_MCS_TRANSFER_FAILED';
 
+    const PAYOUTS_NOT_ALLOWED_DUE_TO_NO_BASD                = 'PAYOUTS_NOT_ALLOWED_DUE_TO_NO_BASD';
     const PAYOUT_GET_EMPTY_RESPONSE                         = 'PAYOUT_GET_EMPTY_RESPONSE';
 
     const EXTERNAL_REPO_RECURSION_TEST                      = 'EXTERNAL_REPO_RECURSION_TEST';

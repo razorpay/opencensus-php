@@ -507,7 +507,7 @@ class PayoutSmartRoutingTest extends TestCase
 
         $basFetchSuccess = false;
 
-        $this->mockBasFetch($basFetchSuccess, true);
+        $this->mockBasFetch($basFetchSuccess, true, 0);
 
         $boolFailureMetricCaptured = false;
 
@@ -527,17 +527,12 @@ class PayoutSmartRoutingTest extends TestCase
 
         $initialPayoutCount = count($this->getDbEntities('payout'));
 
-        $response = $this->startTest($this->testData['testSmartRouting_WithRoutingChoosingDirectAccount']);
+        $this->startTest();
 
         $finalPayoutCount = count($this->getDbEntities('payout'));
 
         // Asserting that payout got created
-        $this->assertEquals(1, $finalPayoutCount - $initialPayoutCount);
-
-        $payout = $this->getDbEntity('payout', ['id' => PayoutEntity::verifyIdAndStripSign($response['id'])]);
-
-        $this->assertEquals(PayoutStatus::CREATED, $payout->getStatus());
-        $this->assertEquals(array_first($directBalances)->getId(), $payout->getBalanceId());
+        $this->assertEquals(0, $finalPayoutCount - $initialPayoutCount);
 
         $this->assertTrue($boolFailureMetricCaptured);
         $this->assertFalse($ftsTransferSuccess);

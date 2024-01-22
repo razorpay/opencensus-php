@@ -17,8 +17,10 @@ use RZP\Models\FundTransfer\Mode;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\BankingAccountStatement\Details;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -415,6 +417,15 @@ class AttemptTest extends TestCase
 
         $this->createFundAccount();
 
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => $this->bankingBalance->getAccountNumber(),
+            Details\Entity::CHANNEL        => Details\Channel::AXIS,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
         $content = [
             'account_number'  => '2224440041626905',
             'amount'          => 200000,
@@ -493,6 +504,15 @@ class AttemptTest extends TestCase
         $this->createContact();
 
         $this->createFundAccount();
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => $this->bankingBalance->getAccountNumber(),
+            Details\Entity::CHANNEL        => Details\Channel::AXIS,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $content = [
             'account_number'  => '2224440041626905',
@@ -578,6 +598,15 @@ class AttemptTest extends TestCase
             9000000,
             AccountType::DIRECT,
             $channel);
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->createContact();
 

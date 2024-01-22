@@ -8,6 +8,7 @@ use Queue;
 use Mockery;
 use Carbon\Carbon;
 use Database\Connection;
+
 use RZP\Services\Mock\WorkflowService;
 use \WpOrg\Requests\Response;
 
@@ -31,6 +32,7 @@ use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Services\FTS\FundTransfer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payout\DataMigration;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Error\PublicErrorDescription;
@@ -45,6 +47,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Payout\PayoutTest;
 use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\BankingAccountStatement\Details;
 use RZP\Models\Counter\Entity as CounterEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Jobs\FreePayoutMigrationForPayoutsService;
@@ -6935,7 +6938,7 @@ class PayoutServiceTest extends TestCase
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
-        $this->fixtures->on('live')->create(
+        $balance1 = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -6945,6 +6948,15 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance1->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626907",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -6973,7 +6985,7 @@ class PayoutServiceTest extends TestCase
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
-        $this->fixtures->on('live')->create(
+        $balance1 = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -6983,6 +6995,15 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance1->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626907",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -7017,7 +7038,7 @@ class PayoutServiceTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content'][0]['payout']['skip_workflow'] = 'false';
         $this->testData[__FUNCTION__]['request']['content'][1]['payout']['skip_workflow'] = 'false';
 
-        $this->fixtures->on('live')->create(
+        $balance1 = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -7027,6 +7048,15 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance1->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626907",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -7059,7 +7089,7 @@ class PayoutServiceTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content'][1]['payout']['amount'] = '100';
 
 
-        $this->fixtures->on('live')->create(
+        $balance1 = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -7069,6 +7099,15 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance1->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626907",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -7127,7 +7166,7 @@ class PayoutServiceTest extends TestCase
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
-        $this->fixtures->on('live')->create(
+        $balance1 = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -7137,6 +7176,15 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance1->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626907",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -7161,7 +7209,7 @@ class PayoutServiceTest extends TestCase
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
-        $this->fixtures->on('live')->create(
+        $balance1 = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -7171,6 +7219,15 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance1->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626907",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->mockPayoutServiceCreateBulkPayout(2);
 
@@ -7306,7 +7363,7 @@ class PayoutServiceTest extends TestCase
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
-        $this->fixtures->on('live')->create(
+        $balance1 = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -7316,6 +7373,15 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance1->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626907",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -7352,7 +7418,7 @@ class PayoutServiceTest extends TestCase
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
-        $this->fixtures->on('live')->create(
+        $balance1 = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -7362,6 +7428,15 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance1->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626907",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
@@ -7408,7 +7483,7 @@ class PayoutServiceTest extends TestCase
 
         $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Channel::ICICI);
 
-        $this->fixtures->on('live')->create(
+        $balance1 = $this->fixtures->on('live')->create(
             'balance',
             [
                 'account_type'   => 'direct',
@@ -7418,6 +7493,15 @@ class PayoutServiceTest extends TestCase
                 'account_number' => 2224440041626907,
             ]
         );
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => UniqueIdEntity::generateUniqueId(),
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance1->getId(),
+            Details\Entity::ACCOUNT_NUMBER => "2224440041626907",
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->mockPayoutServiceCreateBulkPayout(2);
 
