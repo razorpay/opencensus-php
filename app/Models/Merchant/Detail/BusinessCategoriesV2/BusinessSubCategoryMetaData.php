@@ -93,6 +93,26 @@ class BusinessSubCategoryMetaData
         Sub::HOSPITAL
     ];
 
+    const REGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION_V2 = [
+        Sub::AD_AND_MARKETING,
+        Sub::CENTRAL,
+        Sub::CHARITY,
+        Sub::CONSULTING,
+        Sub::COUPONS,
+        Sub::EDUCATIONAL,
+        Sub::GOVERMENT_POSTAL_SERVICES,
+        Sub::MESSAGING,
+        Sub::PERSONAL,
+        Sub::SOCIAL_NETWORK,
+        Sub::STATE,
+        Sub::ALIMONY_AND_CHILD_SUPPORT,
+        Sub::AQUARIUMS_DOLPHINARIUMS_AND_SEAQUARIUMS,
+        Sub::HEALTH_PRODUCTS,
+        Sub::TELECOM,
+        Sub::TELECOMMUNICATION_SERVICE,
+        Sub::CONSULTING_AND_OUTSOURCING,
+    ];
+
     const UNREGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION = [
         Sub::AD_AND_MARKETING,
         Sub::DISTANCE_LEARNING,
@@ -120,6 +140,57 @@ class BusinessSubCategoryMetaData
         Sub::SAAS,
         Sub::CONSULTING_AND_OUTSOURCING,
         Sub::HOSPITAL
+    ];
+
+    const UNREGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION_V2 = [
+        Sub::AD_AND_MARKETING,
+        Sub::CONSULTING,
+        Sub::JEWELLERY_AND_WATCH_STORES,
+        Sub::HEALTH_PRODUCTS,
+        Sub::CONSULTING_AND_OUTSOURCING,
+    ];
+
+    const REGISTERED_GREYLISTED_MERCHANTS_ALLOWED_FOR_AUTOMATION = [
+        Sub::SNOWMOBILE_DEALERS,
+        Sub::DISCOUNT_STORES,
+        Sub::TAX_PAYMENTS,
+        Sub::WATCH_AND_JEWELLERY_REPAIR_STORES,
+        Sub::MOTOR_HOMES_AND_PARTS,
+        Sub::MOBILE_HOME_DEALERS,
+        Sub::TIMESHARES,
+        Sub::CRUISE_LINES,
+    ];
+
+    const UNREGISTERED_GREYLISTED_MERCHANTS_ALLOWED_FOR_AUTOMATION = [
+        Sub::PET_PRODUCTS,
+        Sub::AUTOMOBILE_PARTS_AND_EQUIPEMENTS,
+        Sub::HOUSEHOLD_APPLIANCE_STORES,
+        Sub::INDUSTRIAL_SUPPLIES,
+        Sub::MEAT_SUPPLY_STORES,
+        Sub::COMPUTER_SOFTWARE_STORES,
+        Sub::BICYCLE_STORES,
+        Sub::DISTANCE_LEARNING,
+        Sub::DAIRY_PRODUCTS,
+        Sub::BAKERIES,
+        Sub::DIETICIAN,
+        Sub::MEDICAL_EQUIPMENT_AND_SUPPLY_STORES,
+        Sub::OSTEOPATHS,
+        Sub::PODIATRISTS_AND_CHIROPODISTS,
+        Sub::DENTISTS_AND_ORTHODONTISTS,
+        Sub::HARDWARE_STORES,
+        Sub::OPHTHALMOLOGISTS,
+        Sub::ORTHOPEDIC_GOODS_STORES,
+        Sub::VETERINARY_SERVICES,
+        Sub::HEALTH_PRACTITIONERS_MEDICAL_SERVICES,
+        Sub::DEVELOPER,
+        Sub::SPACE_RENTAL,
+        Sub::DATA_PROCESSING,
+        Sub::FREIGHT,
+        Sub::END_TO_END_LOGISTICS,
+        Sub::MOVERS_AND_PACKERS,
+        Sub::DISTRIBUTION,
+        Sub::LEGAL,
+        Sub::CHIROPRACTORS,
     ];
 
     const SUB_CATEGORY_METADATA = [
@@ -4583,7 +4654,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US           => true,
                 self::SHIPPING             => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::STATIONERY_SUPPLIES                     => [
             Merchant::CATEGORY                                => '5111',
@@ -4603,7 +4674,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US           => true,
                 self::SHIPPING             => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HEATING_AND_PLUMBING_CONTRACTORS                   => [
             Merchant::CATEGORY                                => '1711',
@@ -5483,7 +5554,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US           => true,
                 self::SHIPPING             => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MOTORCYCLE_SHOPS_AND_DEALERS                       => [
             Merchant::CATEGORY                                => '5571',
@@ -6863,7 +6934,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US           => true,
                 self::SHIPPING             => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PHOTOGRAPHIC_STUDIO                                => [
             Merchant::CATEGORY                                => '7221',
@@ -7283,7 +7354,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US           => true,
                 self::SHIPPING             => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ANTIQUE_REPRODUCTION_STORES                        => [
             Merchant::CATEGORY                                => '5937',

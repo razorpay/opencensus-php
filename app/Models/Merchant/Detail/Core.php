@@ -6334,12 +6334,13 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchantDetails);
         }
 
-        $isWhitelisted = ($currentActivationFlow === ActivationFlow::WHITELIST);
+        //Added more checks to include a few greylisted merchants in automation activation logic
+        $isActivationFlowEligible = $this->isActivationFlowEligible($merchantDetails, $currentActivationFlow);
 
         $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
         $eligibleForAMP = (
-            $isWhitelisted === true and
+            $isActivationFlowEligible === true and
             $isImpersonated === false and
             $this->hasRiskTags($merchantDetails->merchant) === false and
             in_array($currentActivationStatus, $excludeActivationStatusList) === false and
@@ -6496,12 +6497,16 @@ class Core extends Base\Core
 
                     $activationFlow = $subcategoryMetaData[Entity::ACTIVATION_FLOW];
 
-                    if ($activationFlow !== ActivationFlow::WHITELIST)
+                    if ($merchantDetails->isUnregisteredBusiness() === true)
                     {
+                        $activationFlow = $subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW];
+                    }
+
+                    if ($this->isActivationFlowEligible($merchantDetails, $activationFlow) === false) {
                         return Status::ACTIVATED_MCC_PENDING;
                     }
 
-                    if ($this->isSubCategoryExcluded($mccResult[MVD\Constants::SUBCATEGORY], $businessType) === true)
+                    if ($this->isSubCategoryExcluded($merchant, $mccResult[MVD\Constants::SUBCATEGORY], $businessType) === true)
                     {
                         return Status::ACTIVATED_MCC_PENDING;
                     }
@@ -6524,7 +6529,7 @@ class Core extends Base\Core
         }
         else
         {
-            if ($this->isSubCategoryExcluded($merchantDetails->getBusinessSubcategory(), $businessType) === true)
+            if ($this->isSubCategoryExcluded($merchant, $merchantDetails->getBusinessSubcategory(), $businessType) === true)
             {
                 return Status::ACTIVATED_MCC_PENDING;
             }
@@ -6662,14 +6667,27 @@ class Core extends Base\Core
         return $subcategoryMetaData[SubcategoryV2::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION] === true;
     }
 
-    private function isSubCategoryExcluded($subCategory, $businessType): bool
+    /**
+     * @param Merchant\Entity $merchant
+     * @param $subCategory
+     * @param $businessType
+     * @return bool
+     */
+    private function isSubCategoryExcluded(Merchant\Entity $merchant, $subCategory, $businessType): bool
     {
-        switch ($businessType)
-        {
+        $subcategoryExclusionV2ExpEnabled = $this->isExclusionBasedOnBMCExpEnabled($merchant);
+
+        switch ($businessType) {
             case BusinessType::NOT_YET_REGISTERED:
             case BusinessType::INDIVIDUAL:
+                if ($subcategoryExclusionV2ExpEnabled === true) {
+                    return in_array($subCategory, SubcategoryV2::UNREGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION_V2);
+                }
                 return in_array($subCategory, SubcategoryV2::UNREGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION);
             default:
+                if ($subcategoryExclusionV2ExpEnabled === true) {
+                    return in_array($subCategory, SubcategoryV2::REGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION_V2);
+                }
                 return in_array($subCategory, SubcategoryV2::REGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION);
         }
     }
@@ -12284,6 +12302,66 @@ class Core extends Base\Core
             "status"        => $input['status'],
             "merchant_id"   => $accountId,
         ];
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     * @param string $activationFlow
+     * @return bool
+     */
+    private function isActivationFlowEligible(Entity $merchantDetails, string $activationFlow) : bool
+    {
+        if ($activationFlow === ActivationFlow::WHITELIST) return true;
+
+        if ($merchantDetails->merchant->isBlockedOrgForInstantActivation() === true) return false;
+
+        $merchant = $merchantDetails->merchant;
+
+        $subCategory = $merchantDetails->getBusinessSubcategory();
+
+        $businessType = $merchantDetails->getBusinessType();
+
+        $subcategoryExclusionV2ExpEnabled = $this->isExclusionBasedOnBMCExpEnabled($merchant);
+
+        if ($activationFlow === ActivationFlow::GREYLIST) {
+          if ($subcategoryExclusionV2ExpEnabled === false) return false;
+
+            switch ($businessType) {
+                case BusinessType::NOT_YET_REGISTERED:
+                case BusinessType::INDIVIDUAL:
+                    return in_array($subCategory, SubcategoryV2::UNREGISTERED_GREYLISTED_MERCHANTS_ALLOWED_FOR_AUTOMATION);
+                default:
+                    return in_array($subCategory, SubcategoryV2::REGISTERED_GREYLISTED_MERCHANTS_ALLOWED_FOR_AUTOMATION);
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @return bool
+     */
+    private function isExclusionBasedOnBMCExpEnabled(Merchant\Entity $merchant): bool
+    {
+        $isExpEnabledForBMCPhase2 = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id' => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.show_bmc_phase_2_questions'),
+            ],
+            'variables'
+        );
+
+        $isExpEnabledForSubCategoryExclusion = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id' => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.category_exclusion_based_on_bmc'),
+            ],
+            'variables'
+        );
+
+        return ($isExpEnabledForBMCPhase2 === true and $isExpEnabledForSubCategoryExclusion === true);
+
     }
 }
 

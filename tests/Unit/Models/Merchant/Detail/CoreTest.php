@@ -4127,6 +4127,247 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
+    // This test case verifies the inclusion of certain greylisted merchants into automation activation
+    public function testGetApplicableActivationStatusWebsiteActivatedForGreylistedMerchants()
+    {
+        Mail::fake();
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'transport',
+            'business_subcategory'      => 'cruise_lines',
+            'activation_flow'           => 'greylist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isEligibleForAutomationActivation'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'education',
+                'subcategory'       => 'college',
+                'predicted_mcc'     => 8220,
+                'confidence_score'  => 0.83
+            ]
+        ]);
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        //Experiment for BMC phase 2
+        $input = [
+            "experiment_id" => "N9Pxo0ZBl2pOk4",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        //Experiment for greylisted merchant inclusion
+        $input = [
+            "experiment_id" => "NPzm0s0tkW1W4s",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    // This test verifies that certain grey listed sub-categories should not be activated after bmc phase 2 experiment is enabled
+    public function testGetApplicableActivationStatusWebsiteURForGreylistedMerchants()
+    {
+        Mail::fake();
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'services',
+            'business_subcategory'      => 'alimony_and_child_support',
+            'activation_flow'           => 'greylist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->setMethods(['isEligibleForAutomationActivation'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('isEligibleForAutomationActivation')
+            ->willReturn(true);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'education',
+                'subcategory'       => 'college',
+                'predicted_mcc'     => 8220,
+                'confidence_score'  => 0.83
+            ]
+        ]);
+
+        $this->createSignatoryVerified($merchant->getId());
+
+        //Experiment for BMC phase 2
+        $input = [
+            "experiment_id" => "N9Pxo0ZBl2pOk4",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        //Experiment for greylisted merchant inclusion
+        $input = [
+            "experiment_id" => "NPzm0s0tkW1W4s",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
     public function testGetApplicableActivationStatusWebsiteActivatedPhantomOnboarding()
     {
         Mail::fake();
@@ -14322,7 +14563,7 @@ class CoreTest extends TestCase
         $method->setAccessible(true);
 
        // Call the protected method 'isSubCategoryExcluded' and store the result
-        $result = $method->invoke($merchantDetailCore, $merchantDetails->getBusinessSubcategory(), $merchantDetails->getBusinessType());
+        $result = $method->invoke($merchantDetailCore, $merchantDetails->merchant, $merchantDetails->getBusinessSubcategory(), $merchantDetails->getBusinessType());
 
         $this->assertEquals(true, $result);
 
@@ -14356,7 +14597,7 @@ class CoreTest extends TestCase
         $method->setAccessible(true);
 
         // Call the protected method 'isSubCategoryExcluded' and store the result
-        $result = $method->invoke($merchantDetailCore, $merchantDetails->getBusinessSubcategory(), $merchantDetails->getBusinessType());
+        $result = $method->invoke($merchantDetailCore, $merchantDetails->merchant, $merchantDetails->getBusinessSubcategory(), $merchantDetails->getBusinessType());
 
         $this->assertEquals(true, $result);
 
