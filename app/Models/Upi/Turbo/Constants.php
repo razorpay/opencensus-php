@@ -13,6 +13,7 @@ class Constants
     const GATEWAYS          = 'gateways';
     const ERROR_CODE        = 'error_code';
     const PUBLIC_ERROR_CODE = 'public_error_code';
+    const PAYER_ACCOUNT_TYPE = 'payer_account_type';
 
     const UPI_ERROR_CODES_DIR_PATH                   = "error_codes/error_codes/pg/upi/";
     const PG_COMMON_ERROR_CODES_FILE_PATH            = "error_codes/error_codes/pg/common/internal_error_codes.json";

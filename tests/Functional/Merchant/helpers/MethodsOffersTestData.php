@@ -596,6 +596,7 @@ return [
                     'collect' => 0,
                     'intent' => 0,
                 ],
+                'upi_config' => [],
                 'emi_plans' => [
                     'CITI' => [
                         'min_amount' =>300000,
@@ -660,6 +661,31 @@ return [
                         'plans' => [
                             '3' => 16.5,
                             '6' => 15,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCacheableMethodsForInAppBankAccountAndCreditCardEnabledMerchant' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'request_type' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'methods',
+                'upi' => true,
+                'in_app' => true,
+                'upi_config' => [
+                    'in_app' => [
+                        'payer_account_type' => [
+                            'bank_account' => true,
+                            'credit_card' => true,
                         ],
                     ],
                 ],

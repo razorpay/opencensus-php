@@ -28,6 +28,7 @@ use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Fpx;
+use RZP\Models\PaymentsUpi\PayerAccountType;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -494,8 +495,16 @@ class Core extends Base\Core
             $this->addCustomTextForCredIfApplicable($merchant, $methods, $data);
         }
 
-        if ($methods->isInAppEnabled() !== null) {
+        $data[Entity::UPI_CONFIG] = [];
+
+        if ($methods->isInAppEnabled() !== null)
+        {
             $data[Entity::IN_APP] = $methods->isInAppEnabled();
+
+            $data[Entity::UPI_CONFIG][Entity::IN_APP][\RZP\Models\Upi\Turbo\Constants::PAYER_ACCOUNT_TYPE] = [
+                PayerAccountType::PAYER_ACCOUNT_TYPE_CREDIT       => $methods->isInAppCreditCardEnabled() === true,
+                PayerAccountType::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT => $methods->isInAppEnabled() === true,
+            ];
         }
 
         if ($merchant->isRecurringEnabled() === true)

@@ -360,6 +360,7 @@ class Checkout
             'recurring',
             'upi_type',
             'wallet',
+            'upi_config',
         ];
 
         foreach ($expectedAsDictionaries as $key) {

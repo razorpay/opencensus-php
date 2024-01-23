@@ -317,6 +317,74 @@ class MethodsOffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCacheableMethodsForInAppBankAccountAndCreditCardEnabledMerchant()
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $methods = [
+            'upi'           => 1,
+            'addon_methods' => [
+                'upi' => [
+                    'in_app' => 1,
+                    'credit_card' => 1
+                ]
+            ]
+        ];
+
+        $this->fixtures->edit('methods', '10000000000000', $methods);
+
+        $this->startTest();
+    }
+
+    public function testGetCacheableMethodsForInAppBankAccountEnabledAndCreditCardDisabledMerchant()
+    {
+        $this->testGetCacheableMethodsForInAppBankAccountAndCreditCardEnabledMerchant();
+
+        $methods = [
+            'upi'           => 1,
+            'addon_methods' => [
+                'upi' => [
+                    'in_app' => 1,
+                    'credit_card' => 0
+                ]
+            ]
+        ];
+
+        $this->fixtures->edit('methods', '10000000000000', $methods);
+
+        $testData = $this->testData['testGetCacheableMethodsForInAppBankAccountAndCreditCardEnabledMerchant'];
+
+        $testData['response']['content']['upi_config']['in_app']['payer_account_type']['credit_card'] = false;
+
+        $this->startTest($testData);
+    }
+
+    public function testGetCacheableMethodsForOnlyInAppEnabledMerchant()
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $methods = [
+            'upi'           => 1,
+            'addon_methods' => [
+                'upi' => [
+                    'in_app' => 1,
+                ]
+            ]
+        ];
+
+        $this->fixtures->edit('methods', '10000000000000', $methods);
+
+        $testData = $this->testData['testGetCacheableMethodsForInAppBankAccountAndCreditCardEnabledMerchant'];
+
+        $testData['response']['content']['upi_config']['in_app']['payer_account_type']['credit_card'] = false;
+
+        $this->startTest();
+    }
+
     public function testGetOffersDataForCheckoutWithOrder(): void
     {
         $this->ba->checkoutServiceProxyAuth();

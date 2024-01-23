@@ -53,6 +53,7 @@ class Entity extends Base\PublicEntity
     const CARD_SUBTYPE      = 'card_subtype';
     const UPI               = 'upi';
     const UPI_TYPE          = 'upi_type';
+    const UPI_CONFIG        = 'upi_config';
     const BANK_TRANSFER     = 'bank_transfer';
     const AEPS              = 'aeps';
     const EMANDATE          = 'emandate';
