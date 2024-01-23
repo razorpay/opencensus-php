@@ -6,11 +6,13 @@ class Constants
 {
     //Gateway events
     const GATEWAY_CAPTURED                                  = "payment_gateway_captured";
+    const GATEWAY_CAPTURED_IN_PERSON                        = "payment_gateway_captured_in_person";
     const GATEWAY_CAPTURED_COMMISSION                       = "payment_gateway_capture_commission";
     const INR_CURRENCY                                      = "INR";
 
     //Merchant Capture events
     const MERCHANT_CAPTURED                                 = "payment_merchant_captured";
+    const MERCHANT_CAPTURED_IN_PERSON                       = "payment_merchant_captured_in_person";
     const TRANSFER                                          = "transfer_processed";
     const TRANSFER_DEBIT                                    = "transfer_debit";
     const TRANSFER_CREDIT                                   = "transfer_credit";
