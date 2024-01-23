@@ -15,6 +15,7 @@ use RZP\Http\Controllers\InstrumentRequestController;
 use RZP\Models\Admin\Org;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Gateway\Terminal\Constants;
+use RZP\Models\Terminal\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
@@ -242,7 +243,19 @@ class TerminalsService
         $options[self::CONNECT_TIMEOUT] = 5;
         $options[self::TIMEOUT] = 5;
 
-        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD], $options, $headers);
+        try
+        {
+            $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD], $options, $headers);
+        }
+        catch(\WpOrg\Requests\Exception $exception)
+        {
+            if ($this->isCurlTimeout($exception))
+            {
+                $this->pushTerminalSyncFailureEvent($terminal->getId(), Terminal\Constants::CREATE_OR_UPDATE);
+            }
+
+            throw $exception;
+        }
 
         $parsedResponse = $this->parseAndReturnResponse($response)['data']??[];
 
@@ -252,6 +265,55 @@ class TerminalsService
         }
 
         return $parsedResponse;
+    }
+
+
+    private function pushTerminalSyncFailureEvent($id, $action) {
+
+        try
+        {
+
+            $attempts = 1;
+
+            $producerKey = $id . '_' . $attempts;
+
+            $message = [
+                Entity::TERMINAL_ID => $id,
+                Terminal\Constants::ATTEMPTS => $attempts,
+                Terminal\Constants::ACTION => $action,
+                Terminal\Constants::TASK_ID => $this->app['request']->getTaskId() ?? gen_uuid()
+            ];
+
+            $topic = env('TERMINAL_SYNC_FAILURES_EVENT',Terminal\Constants::TERMINAL_SYNC_FAILURES_EVENT);
+
+            $kafkaProducer = (new KafkaProducer($topic, stringify($message), $producerKey));
+
+            $kafkaProducer->Produce();
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->info(TraceCode::TERMINALS_SYNC_FAILURES_EVENT_FAILED, [
+                'message'=>$message
+            ]);
+
+            $this->trace->count(Terminal\Metric::TERMINALS_SYNC_FAILURES_EVENT_FAILED, [
+                Terminal\Constants::ACTION => $action,
+            ]);
+        }
+    }
+
+    private function isCurlTimeout($exception)
+    {
+        if ( (empty($exception->getData()) === false) and
+        (curl_errno($exception->getData()) === CURLE_OPERATION_TIMEDOUT) )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
     }
 
     public function fetchTerminalById(string $terminalId): array
@@ -294,7 +356,19 @@ class TerminalsService
 
         $this->trace->info(TraceCode::TERMINAL_PROXY_CALL_ERROR_RETRY_ATTEMPT, ['content'=>$path]);
 
-        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+        try
+        {
+            $response = $this->sendRequest($path, '', $params[self::METHOD]);
+        }
+        catch(\WpOrg\Requests\Exception $exception)
+        {
+            if ($this->isCurlTimeout($exception))
+            {
+                $this->pushTerminalSyncFailureEvent($terminalId, Terminal\Constants::DELETE);
+            }
+
+            throw $exception;
+        }
 
         $parsedResponse = $this->parseAndReturnResponse($response)['data']??[];
 
