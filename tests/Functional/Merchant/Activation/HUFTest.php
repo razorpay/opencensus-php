@@ -8,6 +8,7 @@ use Queue;
 use Config;
 use RZP\Models\Base\EsDao;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
@@ -27,6 +28,7 @@ class HUFTest extends OAuthTestCase
 {
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use MocksSplitz;
 
     const DEFAULT_MERCHANT_ID = '10000000000000';
     const RZP_ORG                   = '100000razorpay';
@@ -120,5 +122,62 @@ class HUFTest extends OAuthTestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testGetBusinessTypeSubMerchantWithPartnershipExpOn()
+    {
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $this->createAndFetchMocks(true);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $subMerchant->getId()
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($subMerchant->id);
+
+        $this->ba->proxyAuth('rzp_test_' . $subMerchant->id, $merchantUser['id']);
+
+        $testData = $this->testData['testGetBusinessTypeExperimentOn'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGetBusinessTypeForPartnerWithPartnershipExpOn()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->edit('merchant', $merchant->getId(), ['partner_type' => 'aggregator']);
+
+        $this->createAndFetchMocks(true);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $merchant->getId()
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->id);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->id, $merchantUser['id']);
+
+        $testData = $this->testData['testGetBusinessTypeExperimentOn'];
+
+        $this->runRequestResponseFlow($testData);
     }
 }

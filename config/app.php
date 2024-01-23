@@ -819,4 +819,6 @@ return array(
     'show_bmc_phase_2_questions' => env('SHOW_BMC_PHASE_2_QUESTIONS'),
 
     'category_exclusion_based_on_bmc' => env('CATEGORY_EXCLUSION_BASED_ON_BMC'),
+
+    'partnership_unblock_huf_business_type_experiment_id' => env('PARTNERSHIP_UNBLOCK_HUF_BUSINESS_TYPE_EXP_ID'),
 );

@@ -10163,7 +10163,7 @@ class Core extends Base\Core
 
                     if ($isRazorxExperimentEnabled === true && (new Merchant\Core())->isBlockedMerchantType($merchant,[Merchant\Core::SUB_MERCHANT,
                                                                                                                        Merchant\Core::PARTNER_MERCHANT,
-                                                                                                                       Merchant\Core::LINKED_ACCOUNT])===false)
+                                                                                                                       Merchant\Core::LINKED_ACCOUNT], $businessType)===false)
                     {
                         array_push($result[$bucketName],
                                    [

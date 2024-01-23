@@ -7583,7 +7583,7 @@ class Core extends Base\Core
             $productRequestedForPaCb = [];
 
             $productRequestedForPaCb = (new TypeformCore)->getProductNamesFromActionEntityData($workflowActions);
-            
+
             $productRequested = array_merge($productRequested, $productRequestedForPaCb);
         }
 
@@ -9015,7 +9015,7 @@ class Core extends Base\Core
         }
     }
 
-    public function isBlockedMerchantType(Entity $merchant,array $blockedTypes)
+    public function isBlockedMerchantType(Entity $merchant,array $blockedTypes, string $businessType)
     {
         foreach ($blockedTypes as $blockedType)
         {
@@ -9028,7 +9028,7 @@ class Core extends Base\Core
                     }
                     break;
                 case self::PARTNER_MERCHANT:
-                    if ($merchant->isPartner()===true)
+                    if ($merchant->isPartner()===true && $this->isBusinessTypeEnabledForMerchant($merchant, $businessType) === false)
                     {
                         return true;
                     }
@@ -9040,7 +9040,8 @@ class Core extends Base\Core
                     }
                     break;
                 case self::SUB_MERCHANT:
-                    if ((new AccessMapCore)->isSubMerchant($merchant->getMerchantId()) === true)
+                    if ((new AccessMapCore)->isSubMerchant($merchant->getMerchantId()) === true &&
+                        $this->isBusinessTypeEnabledForMerchant($merchant, $businessType) === false)
                     {
                         return true;
                     }
@@ -10731,5 +10732,18 @@ class Core extends Base\Core
     private function isIndustryLevelQuery(string $filterName): bool
     {
         return in_array($filterName, AnalyticsConstants::INDUSTRY_LEVEL_QUERIES, true);
+    }
+
+    private function isBusinessTypeEnabledForMerchant(Entity $merchant, string $businessType) : bool
+    {
+        $requestData = ['mid' => $merchant->getId(), 'business_type' => $businessType];
+
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.partnership_unblock_huf_business_type_experiment_id'),
+            'request_data'  => json_encode($requestData)
+        ];
+
+        return $this->isSplitzExperimentEnable($properties, 'enable');
     }
 }
