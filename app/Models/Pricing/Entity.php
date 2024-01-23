@@ -43,6 +43,11 @@ class Entity extends Base\PublicEntity
     // to configure pricing for internal apps
     const APP_NAME                      = 'app_name';
 
+    // to configure pricing for turbo upi
+
+    const FLOW          = 'flow';
+    const IN_APP        = 'in_app';
+
     //
     // By default, all the rules are of type pricing
     // commission type pricing is used in partners to specify partner fixed commission or explicit commission
@@ -275,6 +280,13 @@ class Entity extends Base\PublicEntity
         {
             $input[self::PAYMENT_METHOD] = null;
         }
+
+        if ($input[self::FLOW] === self::IN_APP)
+        {
+            $input[self::PAYMENT_METHOD_TYPE] = self::IN_APP;
+            unset($input[self::FLOW]);
+        }
+
     }
 
     public function build(array $input = array())

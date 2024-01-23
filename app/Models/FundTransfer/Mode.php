@@ -33,6 +33,7 @@ class Mode extends Core
     const CARD = 'card';
 
     const UPI = 'UPI';
+    const IN_APP = 'in_app';
 
     // Card Transfer mode for M2P Integration via FTS
     const CT  = 'CT';

@@ -82,7 +82,14 @@ class Refund extends Base
     protected function applyRefundModeFilters($rules)
     {
         $mode = $this->entity->getModeRequested();
-
+        
+        $payment = $this->entity->payment;
+        
+        if ($payment->isInAppUPI() === true)
+        {
+            $mode = Pricing\Entity::IN_APP;
+        }
+        
         $filters = [
             [Pricing\Entity::PAYMENT_METHOD_TYPE, $mode, true, null],
         ];

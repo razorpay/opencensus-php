@@ -1393,6 +1393,7 @@ class Validator extends Base\Validator
                     case Payment\Method::UPI :
                         $validModes = [
                             FundTransfer\Mode::UPI,
+                            FundTransfer\Mode::IN_APP,
                         ];
 
                         break;

@@ -2962,6 +2962,7 @@ class PricingTest extends TestCase
             ],
             'upi' => [
                 'UPI',
+                'in_app',
             ],
             'netbanking' => [
                 'NEFT',
