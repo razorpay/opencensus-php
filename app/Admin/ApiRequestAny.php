@@ -9,6 +9,7 @@ use Trace;
 use Config;
 use Session;
 use Request;
+use App\Lib\Util;
 use App\Http\Headers;
 use App\User\Identity;
 use App\Trace\SpanTrace;
@@ -103,6 +104,11 @@ class ApiRequestAny
         'BAD_REQUEST_EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED',
         'BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED',
         'BAD_REQUEST_PASSWORD_ALREADY_SET'
+    ];
+
+    const WHITELISTED_QUERY_PARAMS_ROUTE_PREFIXES = [
+        'vendor-payments',
+        'gcoms'
     ];
 
     /**
@@ -619,6 +625,11 @@ class ApiRequestAny
         // if it contains `://`
         $path = str_replace('://', '', $path);
 
+
+        $input = Request::all();
+
+        $path = $this->updatePathWithQueryParams($path, $method, $input);
+
         $start_time = self::millitime();
 
         try
@@ -1121,4 +1132,28 @@ class ApiRequestAny
 
         return $errorDescription;
     }
+
+    protected function updatePathWithQueryParams(string $path, string $method, array $input = []): string
+    {
+        if (($method === 'GET') and
+            (empty($input) === false) and
+            ($this->shouldTransformToQueryParams($path) === true))
+        {
+            $query = http_build_query($input);
+
+            $path = "{$path}?{$query}";
+        }
+
+        return $path;
+    }
+
+    protected function shouldTransformToQueryParams(string $path): bool
+    {
+        return Util::arraySome(
+            self::WHITELISTED_QUERY_PARAMS_ROUTE_PREFIXES,
+            fn($prefix) => str_starts_with($path, $prefix)
+        );
+    }
 }
+
+
