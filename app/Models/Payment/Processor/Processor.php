@@ -10077,6 +10077,11 @@ class Processor
 
             $this->resetPaymentStatusAndRefundStatus($payment);
 
+            if ($payment->isExternal() === true)
+            {
+                $payment->setAttribute(RefundConstants::CAPTURE_REFUNDED_PAYMENT, true);
+            }
+
             $this->repo->saveOrFail($payment);
 
             $this->trace->info(
