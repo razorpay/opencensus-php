@@ -4,6 +4,7 @@
  * This scopes out commander shield from any theming change that may bleed in from dashboard
  */
 import { lightTheme as theme } from '@razorpay/blade-old-for-new-auth/src/tokens/theme';
+
 import { BANK_NAMES } from 'newAuth/utils';
 
 const colorScale = [
@@ -36,6 +37,7 @@ const OLD_BLUE_GRADIENT = 'linear-gradient(314deg, #54a5ff -40%, #03299C)';
 const bankBackgroundColors = {
   [BANK_NAMES.BOB]: '#FF5D27',
   [BANK_NAMES.ICICI]: theme.colors.background[600],
+  [BANK_NAMES.IDFC]: theme.colors.background[600],
   [BANK_NAMES.AXIS]: theme.colors.background[600],
   [BANK_NAMES.KKBK]: theme.colors.background[600],
   [BANK_NAMES.AXIS_EASY_PAY]: '#97144d',
@@ -104,6 +106,7 @@ export const getBankingCaptchaColor = (org) => {
   switch (org) {
     // works for white/light bg
     case BANK_NAMES.ICICI:
+    case BANK_NAMES.IDFC:
     case BANK_NAMES.AXIS:
     case BANK_NAMES.KKBK:
     case BANK_NAMES.YES_BANK:

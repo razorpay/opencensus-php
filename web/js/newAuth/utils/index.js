@@ -8,6 +8,8 @@ export const ROUTES = {
 export const BANK_NAMES = {
   /** https://icicibank.razorpay.com/signin */
   ICICI: 'icic',
+  /** https://idfcbank.razorpay.com/signin */
+  IDFC: 'IDFB',
   /** https://hdfc.razorpay.com/signin */
   HDFC: 'hdfc',
   /** https://bankofbaroda.razorpay.com/signin */
