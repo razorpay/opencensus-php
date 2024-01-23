@@ -240,8 +240,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
                                                     CardMandate\Entity $cardMandate, array $authenticationData, array $authorizationData): array
     {
         if ((isset($authenticationData[Constants::GATEWAY_REFERENCE_ID1])) and
-            (!empty($authenticationData[Constants::GATEWAY_REFERENCE_ID1])) and
-            ($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::CARD_MANDATE_3DS2, $this->app['rzp.mode']) === 'on'))
+            (!empty($authenticationData[Constants::GATEWAY_REFERENCE_ID1])))
         {
             // we get enrollment_status as "C" in the case of 3ds 2.0. hence we are changing it to "Y" as per the SIHUB requirement
             $authenticationData[Constants::ENROLLMENT_STATUS] = "Y";
@@ -251,6 +250,12 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             {
                 $authenticationData[Constants::XID] = $authenticationData[Constants::GATEWAY_REFERENCE_ID1];
             }
+        }
+
+        if (($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::CARD_RECURRING_CYBERSOURCE, $this->app['rzp.mode']) === 'on') and
+            (empty($authenticationData[Constants::CAVV_ALGORITHM])))
+        {
+            $authenticationData[Constants::CAVV_ALGORITHM] = "4";
         }
 
         $inputResponse = [

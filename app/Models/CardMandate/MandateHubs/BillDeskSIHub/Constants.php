@@ -52,6 +52,7 @@ class Constants
     const ECI                   = 'eci';
     const ENROLLMENT_STATUS     = 'enrollment_status';
     const GATEWAY_REFERENCE_ID1 = 'gateway_reference_id1';
+    const CAVV_ALGORITHM        = 'cavv_algorithm';
 
     const FREQUENCY_AS_PRESENTED = 'as_presented';
 }
