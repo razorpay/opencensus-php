@@ -183,6 +183,7 @@ class Constants
     const SOURCED_BY_WALNUT369            = 'sourced_by_walnut369';
     const LIQUILOANS_DIRECT_FEE           = 'liquiloans_direct_fee';
     const RAZORPAY_WALLET                 = 'razorpay_wallet';
+    const RAZORPAY_GCMS                   = 'razorpay_gcms';
     const SR_SENSITIVE_BUCKET_1           = 'sr_sensitive_bucket_1';
     const SR_SENSITIVE_BUCKET_2           = 'sr_sensitive_bucket_2';
     const SR_SENSITIVE_BUCKET_3           = 'sr_sensitive_bucket_3';
@@ -1970,6 +1971,9 @@ class Constants
     /* Merchant feature flag to show custom convenience fee message on checkout*/
     const CustomMessageForCFB = 'custom_message_for_cfb';
 
+    /* Merchant feature flag to enable GCMS on merchant dashboard*/
+    const RazorpayGCMS = 'razorpay_gcms';
+
     const SKIP_APPROVAL_FOR_CREATOR = 'skip_approval_for_creator';
 
     /**
@@ -2440,6 +2444,7 @@ class Constants
         self::PAYPAL_GTM_NOTIFICATION                      => true,
         self::REWARD_MERCHANT_DASHBOARD                    => true,
         self::RAZORPAY_WALLET                              => true,
+        self::RAZORPAY_GCMS                                => true,
         self::OFFER_ON_SUBSCRIPTION                        => true,
         self::AUTOMATED_LOC_ELIGIBLE                       => true,
         self::PREVENT_TEST_MODE                            => true,
@@ -3846,6 +3851,11 @@ class Constants
             'feature'       => self::RAZORPAY_WALLET,
             'display_name'  => 'Enable White-labelled wallet feature',
             'documentation' => 'Single source of truth for wallet feature enablement status for a merchant.'
+        ],
+        self::RAZORPAY_GCMS => [
+            'feature'       => self::RAZORPAY_GCMS,
+            'display_name'  => 'Enable GCMS feature',
+            'documentation' => ''
         ],
         self::REFUND_PENDING_STATUS => [
             'feature'       => self::REFUND_PENDING_STATUS,
