@@ -1,16 +1,19 @@
+import { Badge, Heading, Text } from '@razorpay/blade/components';
 import React from 'react';
-import { Text, Badge, Heading } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
 import { ProgressBar } from 'common/components/ProgressBar';
 import { Flex } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/PricingPlans.styles';
 import {
-  ProgressBarContainer,
   CardHeaderLeftItem,
+  ProgressBarContainer,
   StyledCardHeader,
 } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/components/CardHeader/CardHeader.styles';
 import { CardHeaderPropsT } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/components/CardHeader/CardHeader.types';
-import { STATUS_DATA } from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/data';
+import {
+  PRICING_PLAN_STATUS,
+  STATUS_DATA,
+} from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans/data';
 
 const CardHeader = ({
   isMobileResolution,
@@ -23,6 +26,7 @@ const CardHeader = ({
   const monthlyPlanAmount = Number(subscriptionPlanData?.plan?.monthly_plan_amount) / 100;
   const yearlyPlanAmount = Number(subscriptionPlanData?.plan?.yearly_plan_amount) / 100;
   const currentTime = new Date().getTime();
+  const cancelledStatus = subscriptionPlanData?.payment_subscription?.status;
 
   const pricing =
     subscriptionPlanData?.frequency === 'monthly'
@@ -30,14 +34,14 @@ const CardHeader = ({
       : `₹ ${yearlyPlanAmount}/Year`;
 
   const nextBillingDate = String(
-    new Date(timeToChargeAt * 1000).toLocaleString('en-IN', {
+    new Date((timeToChargeAt || timeSubscriptionEnds) * 1000).toLocaleString('en-IN', {
       day: '2-digit',
       month: '2-digit',
       year: '2-digit',
     }),
   );
 
-  const timeLeft = timeToChargeAt * 1000 - currentTime;
+  const timeLeft = (timeToChargeAt || timeSubscriptionEnds) * 1000 - currentTime;
   const noOfDaysLeftToCharge = Math.ceil(timeLeft / 1000 / 60 / 60 / 24);
 
   let percentDaysProgressed =
@@ -116,8 +120,19 @@ const CardHeader = ({
                   {noOfDaysLeftToCharge} Days left
                 </Text>
                 <Flex gap={2}>
-                  <Text size="small" weight="regular" type="normal">
-                    Next Billing Date:
+                  <Text
+                    size="small"
+                    weight="regular"
+                    type="normal"
+                    color={
+                      cancelledStatus === PRICING_PLAN_STATUS.cancelled
+                        ? 'feedback.text.negative.lowContrast'
+                        : 'surface.text.placeholder.lowContrast'
+                    }
+                  >
+                    {cancelledStatus === PRICING_PLAN_STATUS.cancelled
+                      ? 'Expiring At'
+                      : 'Next Billing Date:'}
                   </Text>
                   <Text size="small" weight="bold" type="normal">
                     {nextBillingDate}
@@ -177,8 +192,18 @@ const CardHeader = ({
                 </Text>
               </Flex>
               <Flex gap={3}>
-                <Heading size="small" weight="regular">
-                  Next Billing Date:
+                <Heading
+                  size="small"
+                  weight="regular"
+                  color={
+                    cancelledStatus === PRICING_PLAN_STATUS.cancelled
+                      ? 'feedback.text.negative.lowContrast'
+                      : 'surface.text.placeholder.lowContrast'
+                  }
+                >
+                  {cancelledStatus === PRICING_PLAN_STATUS.cancelled
+                    ? 'Expiring At'
+                    : 'Next Billing Date:'}
                 </Heading>
                 <Heading size="small" weight="bold">
                   {nextBillingDate}

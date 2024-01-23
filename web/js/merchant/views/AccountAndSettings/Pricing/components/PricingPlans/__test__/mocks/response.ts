@@ -1,22 +1,30 @@
 const getSubscriptionDataRes = ({
   subscriptionStatus,
   paymentSubscriptionStatus,
+  internalSubscription,
+  type = 'PG',
 }: {
   subscriptionStatus?: string;
   paymentSubscriptionStatus?: string;
+  internalSubscription?: string;
+  type?: 'PG' | 'INTERNAL';
 } = {}) => {
   return {
     subscription: {
       id: 'LB9aJUmmTXU5rl',
+      type,
       merchant_id: 'GJeIhxL2Ak2vDy',
       account_key: 'rzp_test_uA0ha3ZDeTHMB2',
       plan_id: 'LB9NO011N8zS13',
       frequency: 'monthly',
       payment_subscription_id: 'sub_LB9aIWgoDb88ra',
       status: subscriptionStatus || 'approved',
-      next_charge_at: '1677609000',
+      next_charge_at: '1831527576',
       current_start: '1675249959',
-      current_end: '1677609000',
+      current_end: '1831527576',
+      internal_subscription: {
+        status: internalSubscription || 'pending',
+      },
       payment_subscription: {
         id: 'sub_LB9aIWgoDb88ra',
         entity: 'subscription',

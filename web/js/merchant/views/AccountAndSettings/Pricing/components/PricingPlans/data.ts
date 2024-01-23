@@ -19,6 +19,7 @@ const PRICING_PLAN_STATUS = {
   pending: 'pending',
   processed: 'processed',
   processing: 'processing',
+  cancelled: 'cancelled',
 };
 const defaultErrorMessage = 'Error in fetching details. Please check later';
 
