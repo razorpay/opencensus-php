@@ -39,6 +39,8 @@ class Core extends Base\Core
 
     const UPDATE = 'update';
 
+    const OLD_IFSC_FOR_YBL_RZP_FEES = 'HDFC0000053';
+
     /** @var \RZP\Services\Mutex $mutex */
     protected $mutex;
 
@@ -841,19 +843,33 @@ class Core extends Base\Core
                                                                                      $feeRecoveryContact->getId(),
                                                                                      $ifscForFeeRecovery);
 
+        // fetching for migrated fund_accounts
+        if($balance->getChannel() === Balance\Channel::YESBANK and $feeRecoveryFundAccount === null)
+        {
+            $ifscForFeeRecovery = self::OLD_IFSC_FOR_YBL_RZP_FEES;
+
+            $feeRecoveryFundAccount = $this->repo->fund_account->fetchRzpFeesFundAccount($merchant->getId(),
+                $feeRecoveryContact->getId(),
+                $ifscForFeeRecovery);
+        }
+
         $fundAccountId = $feeRecoveryFundAccount->getPublicId();
 
         switch($balance->getChannel())
         {
             case Channel::AXIS:
-            case Channel::YESBANK:
-
                 $payoutMode = Payout\Mode::NEFT;
                 break;
 
             default:
                 $payoutMode = Payout\Mode::IFT;
                 break;
+        }
+
+        // We will have to keep this check until we migrate account_number in all YBL rzp_fees fund account.
+        if ($balance->getChannel() === Balance\Channel::YESBANK and str_starts_with($ifscForFeeRecovery, 'HDFC'))
+        {
+            $payoutMode = Payout\Mode::NEFT;
         }
 
         $payoutPayload = [
