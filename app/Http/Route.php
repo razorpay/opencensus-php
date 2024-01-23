@@ -1400,6 +1400,7 @@ class Route
         'capital_collections_admin'                => ['any',      'capital_collections/admin/{path?}',              'CapitalCollectionsController@handleAdminRequests'                  ],
         'capital_collections_dev_admin'            => ['any',      'capital_collections/dev_admin/{path?}',          'CapitalCollectionsController@handleAdminRequests'                  ],
         'capital_collections_webhook'              => ['any',      'capital_collections/orders/{path?}',             'CapitalCollectionsController@handleDirectRequests'                 ],
+        'capital_bnpl_service'                     => ['any',      'capital_bnpl/service/{path?}',                   'CapitalBnplController@handleProxyRequests'                         ],
         'capital_marketplace_oauth'                => ['any',      'marketplace/oauth/{path?}',                      'CapitalMarketplaceController@handleDirectRequests'                 ],
         'capital_marketplace_service'              => ['any',      'marketplace/service/{path?}',                    'CapitalMarketplaceController@handleProxyRequests'                  ],
         'capital_marketplace_admin'                => ['any',      'marketplace/admin/{path?}',                      'CapitalMarketplaceController@handleAdminRequests'                  ],
@@ -6723,6 +6724,7 @@ class Route
         'bvs_service_dashboard',
         'merchants_risk_service',
         'capital_collections_service',
+        'capital_bnpl_service',
         'capital_marketplace_service',
         'merchant_verify_attributes',
         'feature_get_status',
@@ -10800,6 +10802,7 @@ class Route
         'los_service'                                  => '*',
         'loc_service'                                  => '*',
         'capital_collections_service'                  => '*',
+        'capital_bnpl_service'                         => '*',
         'capital_marketplace_service'                  => '*',
         // common routes between banking and admin dashboard
         'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
@@ -16416,6 +16419,10 @@ class Route
         ],
 
         'capital_scorecard_client' => [
+            'internal_merchant_fetch',
+        ],
+
+        'capital_bnpl_client' => [
             'internal_merchant_fetch',
         ],
 

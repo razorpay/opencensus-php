@@ -324,9 +324,14 @@ return [
         'secret' => env('CAPITAL_SCORECARD_PASSWORD'),
     ],
 
+    'capital_bnpl_client' => [
+        'secret' => env('CAPITAL_BNPL_SECRET'),
+    ],
+
     'capital_collections_client' => [
         'secret' => env('CAPITAL_COLLECTIONS_PASSWORD'),
     ],
+
     'capital_cards_m2p' => [
         'secret' => env('CAPITAL_CARDS_M2P_WEBHOOK_SECRET','api')
     ],
@@ -964,6 +969,13 @@ return [
         'secret'        => env('APP_CAPITAL_COLLECTIONS_SECRET', 'api'),
         'timeout'       => env('APP_CAPITAL_COLLECTIONS_TIMEOUT', 60),
         'webhook_secret'=> env('APP_CAPITAL_COLLECTIONS_WEBHOOK_SECRET'),
+    ],
+
+    'capital_bnpl' => [
+        'url' => env('APP_CAPITAL_BNPL_URL'),
+        'username' => 'api',
+        'secret' => env('APP_CAPITAL_BNPL_SECRET'),
+        'timeout' => env('APP_CAPITAL_BNPL_TIMEOUT', 60),
     ],
 
     'payment_links' => [
