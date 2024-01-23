@@ -2906,6 +2906,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($upiMetadata[UpiMetadata\Entity::FLOW] === UpiMetadata\Flow::IN_APP));
     }
 
+    public function isInAppCreditCardOnUpi(): bool
+    {
+        return (
+            ($this->isInAppUPI() === true) and
+            ($this->getPayerAccountTypeAttribute() === PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_CREDIT)
+        );
+    }
+
     public function fetchUpiMetadataAttributeForValidation()
     {
         // if payment id is not existing return null

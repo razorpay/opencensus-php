@@ -622,6 +622,8 @@ class Payment extends Base
 
         $receiverType = $payment->getReceiverType();
 
+        $filters = [];
+
         /*
          * In case of UPI PL payments, order product_type will be payment_link_v2
          * In such case, we need to fetch default Pricing for UPI (no VPA fallback pricing)
@@ -657,6 +659,19 @@ class Payment extends Base
             }
         }
 
+        /*
+         *  For CC on Turbo UPI payments, separate pricing is to be applied INSTEAD of the base UPI pricing.
+         *  CC on Turbo UPI pricing is identified by
+         *  1. payment_method_type = in_app &
+         *  2. receiver_type = credit.
+         *  The filter payment_method = upi is already applied in the method getBasicPricingRuleFilters() before.
+         */
+        if ($payment->isInAppCreditCardOnUpi() === true)
+        {
+            $receiverType = PaymentsUpi\PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_CREDIT;
+            $filters[] = [Pricing\Entity::PAYMENT_METHOD_TYPE, Merchant\Methods\Entity::IN_APP, true, null];
+        }
+
         if ($payment->isPPIOnUpi()=== true)
         {
             if (($payment->isFeeBearerCustomer() === false) and
@@ -666,10 +681,7 @@ class Payment extends Base
             }
         }
 
-
-        $filters1 = [
-            [Pricing\Entity::RECEIVER_TYPE, $receiverType, true, null],
-        ];
+        $filters[] = [Pricing\Entity::RECEIVER_TYPE, $receiverType, true, null];
 
         $recurringType = $payment->getRecurringType();
 
@@ -694,9 +706,9 @@ class Payment extends Base
         }
 
         // this is to filter upi recurring (initial/auto) or onetime upi pricing rule
-        $filters1[] = [Pricing\Entity::PAYMENT_METHOD_SUBTYPE, $recurringType, false, null];
+        $filters[] = [Pricing\Entity::PAYMENT_METHOD_SUBTYPE, $recurringType, false, null];
 
-        $rules = $this->applyFiltersOnRules($rules, $filters1);
+        $rules = $this->applyFiltersOnRules($rules, $filters);
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 

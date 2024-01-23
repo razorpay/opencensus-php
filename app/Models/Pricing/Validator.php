@@ -377,7 +377,8 @@ class Validator extends Base\Validator
             Payment\Method::EMI,
             Payment\Method::EMANDATE,
             Payout\Method::FUND_TRANSFER,
-            Payment\Method::NACH
+            Payment\Method::NACH,
+            Payment\Method::UPI,
         ];
 
         if ($input[Entity::FEATURE] === Feature::REFUND)
@@ -428,6 +429,15 @@ class Validator extends Base\Validator
                         implode('/', $validPricingMethodTypes) .
                         ' in case of VAS type features');
                 }
+            }
+
+            if (($pricingMethod === Payment\Method::UPI) and
+                ($input[Entity::FEATURE] === Feature::PAYMENT) and
+                (Core::isInAppCreditCardPricingPlanCreationRequest($input) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The payment_method_type field for UPI pricing rules can only contain in_app'
+                );
             }
         }
     }

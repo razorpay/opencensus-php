@@ -404,6 +404,21 @@ return [
                     'amount_range_min'      => '400',
                     'amount_range_max'      => '600',
                     'update'                => ''
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'upi',
+                    'payment_method_type'   => 'in_app',
+                    'receiver_type'         => 'credit',
+                    'percent_rate'          => '5',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfh',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '',
+                    'amount_range_max'      => '',
+                    'update'                => ''
                 ]
             ],
             'url'       => '/pricing/rules/bulk',
@@ -412,7 +427,7 @@ return [
         'response' => [
             'content'   => [
                 'entity'    => 'collection',
-                'count'     => 16,
+                'count'     => 17,
                 'items'     => [
                     [
                         'success'           => true,
@@ -450,8 +465,7 @@ return [
                         'idempotency_key'   => 'batch_DZtFGiJXmcdLfn',
                         'success'           => false,
                         'error' => [
-                            'description'   => 'The payment method type field may be sent only ' .
-                                'when payment method is card/emi/emandate/fund_transfer/nach',
+                            'description'   => 'The payment_method_type field for UPI pricing rules can only contain in_app',
                             'code'          => 'BAD_REQUEST_VALIDATION_FAILURE'
                         ]
                     ],
@@ -521,6 +535,10 @@ return [
                             'code'          =>  "BAD_REQUEST_VALIDATION_FAILURE"
                         ]
                     ],
+                    [
+                        'idempotency_key'   => "batch_DxtFGiJXmcdLfh",
+                        'success'           => true
+                    ]
                 ]
             ],
             'status_code' => 200,

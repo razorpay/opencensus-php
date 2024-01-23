@@ -3,9 +3,10 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Models\Base;
-use RZP\Models\Admin\Action;
 use RZP\Trace\TraceCode;
-use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Admin\Action;
+use RZP\Models\Payment\Method;
+use RZP\Models\PaymentsUpi\PayerAccountType;
 
 class Core extends Base\Core
 {
@@ -194,5 +195,28 @@ class Core extends Base\Core
         $plan = new Plan([$rule]);
 
         return $plan;
+    }
+
+    public static function isInAppCreditCardPricingPlanCreationRequest($input): bool
+    {
+        if (
+            (empty($input[Entity::PAYMENT_METHOD]) === true) or
+            (empty($input[Entity::PAYMENT_METHOD_TYPE]) === true) or
+            (empty($input[Entity::RECEIVER_TYPE]) === true)
+        )
+        {
+            return false;
+        }
+
+        if (
+            ($input[Entity::PAYMENT_METHOD] === Method::UPI) and
+            ($input[Entity::PAYMENT_METHOD_TYPE] === \RZP\Models\Merchant\Methods\Entity::IN_APP) and
+            ($input[Entity::RECEIVER_TYPE] === PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_CREDIT)
+        )
+        {
+            return true;
+        }
+
+        return false;
     }
 }
