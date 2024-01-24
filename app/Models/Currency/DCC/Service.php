@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Currency\DCC;
 
+use RZP\Constants\Mode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Currency;
 use RZP\Models\Payment\Entity;
+use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
 
 class Service extends Base\Service
 {
@@ -83,11 +85,16 @@ class Service extends Base\Service
         return $key;
     }
 
-    private function getDCCMarkUpPercentage($rates, $requestedCurrency, $baseCurrency, $merchantMarkupPercent, $currencyLevelMarkupPercent, $method)
+    private function getDCCMarkUpPercentage($rates, $requestedCurrency, $baseCurrency, $merchantMarkupPercent, $currencyLevelMarkupPercent, $method, $dccMarkupMap)
     {
         if ($requestedCurrency === $baseCurrency)
         {
             return 0;
+        }
+
+        if (isset($dccMarkupMap) and isset($dccMarkupMap[$requestedCurrency]))
+        {
+            return $dccMarkupMap[$requestedCurrency];
         }
 
         /*Commented as markUpPercent is fetched from merchant level as of now.
@@ -102,7 +109,7 @@ class Service extends Base\Service
         {
             $key = $this->getCurrencyMethodLevelDCCMarkupMapKey($requestedCurrency, $method);
 
-            if(isset($currencyLevelMarkupPercent[$key]) === true) 
+            if(isset($currencyLevelMarkupPercent[$key]) === true)
             {
                 return $currencyLevelMarkupPercent[$key];
             }
@@ -148,7 +155,7 @@ class Service extends Base\Service
      * - Get or Update rates for the round off time
      * - convert currency to all supported currencies
      */
-    public function getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $merchantMarkupPercent, $method)
+    public function getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $merchantMarkupPercent, $method)
     {
         $roundedTime = $this->getCurrentRoundedTime();
 
@@ -163,6 +170,12 @@ class Service extends Base\Service
 
         $currencyLevelMarkups = $this->getCurrencyLevelDCCMarkups();
 
+        $mode = $this->mode ?? Mode::LIVE;
+        $dcsConfigService = app('dcs_config_service');
+        $dccResponse = $dcsConfigService->fetchConfiguration(DcsConfigConst::DCCCurrencyLevelMarkup,
+            $merchantID, [DcsConfigConst::CurrencyLevelMarkups], $mode);
+        $currencyLevelDCCMarkupMap = $this->formatCurrencyLevelDCCMarkupResponse($dccResponse);
+
         foreach (array_keys($supportedCurrencies) as $currency)
         {
             $denominationFactorMerchantCurrency = Currency\Currency::DENOMINATION_FACTOR[$currency];
@@ -170,7 +183,7 @@ class Service extends Base\Service
 
             if(isset($rates[$currency]) === true)
             {
-                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency, $baseCurrency, $merchantMarkupPercent, $currencyLevelMarkups, $method);
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency, $baseCurrency, $merchantMarkupPercent, $currencyLevelMarkups, $method, $currencyLevelDCCMarkupMap);
 
                 $forexRateConverted =  number_format($rates[$currency], 6, '.', '');
 
@@ -190,13 +203,37 @@ class Service extends Base\Service
         return $supportedCurrencies;
     }
 
-    public function getRequestedCurrencyDetails($baseCurrency, $baseAmount, $requestedCurrency, $currencyRequestId, $merchantMarkUpPercent, $method)
+    private function formatCurrencyLevelDCCMarkupResponse($dccResponse)
+    {
+        $currencyLevelDCCMarkupMap = [];
+
+        if(!isset($dccResponse) or !isset($dccResponse[DcsConfigConst::CurrencyLevelMarkups]) or
+            count($dccResponse[DcsConfigConst::CurrencyLevelMarkups]) === 0)
+        {
+            return $currencyLevelDCCMarkupMap;
+        }
+
+        foreach ($dccResponse[DcsConfigConst::CurrencyLevelMarkups] as $dccMarkup)
+        {
+            $currencyLevelDCCMarkupMap[$dccMarkup->getCurrencyCode()] = $dccMarkup->getMarkupPercentage();
+        }
+
+        return $currencyLevelDCCMarkupMap;
+    }
+
+    public function getRequestedCurrencyDetails($baseCurrency, $baseAmount, $requestedCurrency, $currencyRequestId, $merchantMarkUpPercent, $method, $merchantID)
     {
         $requestedCurrencyData = [];
 
         $ratesTimestamp = $this->redis->get($this->getCurrencyRequestDataRedisKey($currencyRequestId));
 
         $currencyLevelMarkups = $this->getCurrencyLevelDCCMarkups();
+
+        $mode = $this->mode ?? Mode::LIVE;
+        $dcsConfigService = app('dcs_config_service');
+        $dccResponse = $dcsConfigService->fetchConfiguration(DcsConfigConst::DCCCurrencyLevelMarkup,
+            $merchantID, [DcsConfigConst::CurrencyLevelMarkups], $mode);
+        $currencyLevelDCCMarkupMap = $this->formatCurrencyLevelDCCMarkupResponse($dccResponse);
 
         if (empty($ratesTimestamp) === false)
         {
@@ -206,7 +243,7 @@ class Service extends Base\Service
             {
                 $forexRate = number_format($rates[$requestedCurrency], 6, '.','');
 
-                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency, $baseCurrency, $merchantMarkUpPercent, $currencyLevelMarkups, $method);
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency, $baseCurrency, $merchantMarkUpPercent, $currencyLevelMarkups, $method, $currencyLevelDCCMarkupMap);
 
                 $denominationFactorMerchantCurrency = Currency\Currency::DENOMINATION_FACTOR[$requestedCurrency];
 
@@ -228,15 +265,15 @@ class Service extends Base\Service
         return $requestedCurrencyData;
     }
 
-    private function getCurrencyLevelDCCMarkups() 
+    private function getCurrencyLevelDCCMarkups()
     {
         $currencyLevelDCCMarkupFromConfig = ConfigKey::get(ConfigKey::CURRENCY_METHOD_LEVEL_DCC_MARKUP);
-        
-        if(isset($currencyLevelDCCMarkupFromConfig) === true) 
+
+        if(isset($currencyLevelDCCMarkupFromConfig) === true)
         {
             return $currencyLevelDCCMarkupFromConfig;
         }
-        
+
         return null;
     }
 
@@ -246,5 +283,5 @@ class Service extends Base\Service
         return sprintf(self::DCC_CURRENCY_METHOD_LEVEL_MARKUP_KEY, $method, $currency);
     }
 
-    
+
 }

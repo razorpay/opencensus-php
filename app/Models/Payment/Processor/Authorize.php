@@ -4013,7 +4013,7 @@ trait Authorize
 
             foreach ($dccItems as $item) {
                 $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $input[$item],
-                    $dccCurrency, $dccCurrencyRequestId, $dccMarkupPerc, $payment->getMethod());
+                    $dccCurrency, $dccCurrencyRequestId, $dccMarkupPerc, $payment->getMethod(), $payment->merchant->getId());
 
                 if (empty($requestedCurrencyData) === true) {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, 'currency_request_id',
@@ -4921,7 +4921,7 @@ trait Authorize
             $dccCurrencyRequestId = $input['currency_request_id'];
 
             $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
-                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentage(), $payment->getMethod());
+                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentage(), $payment->getMethod(), $payment->merchant->getId());
 
             if (empty($requestedCurrencyData) === true)
             {
@@ -4993,7 +4993,7 @@ trait Authorize
         }
 
         // Passing Method as Null Here, as we don't want to use Card Method's Currency Level Markup
-        $dccInfo = (new Payment\Service)->getDCCInfo($payment->getAmount(), $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage(), null);
+        $dccInfo = (new Payment\Service)->getDCCInfo($payment->merchant->getId(), $payment->getAmount(), $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage(), null);
 
         $requestedCurrencyData = $dccInfo['all_currencies'][$dccCurrency];
 
@@ -5233,7 +5233,7 @@ trait Authorize
 
             // markup of 5 is hardcoded at org-level
             $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
-                $dccCurrency, $dccCurrencyRequestId, Merchant\Entity::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL, $payment->getMethod());
+                $dccCurrency, $dccCurrencyRequestId, Merchant\Entity::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL, $payment->getMethod(), $payment->merchant->getId());
 
             if (empty($requestedCurrencyData) === true)
             {
@@ -5317,7 +5317,7 @@ trait Authorize
             $dccCurrencyRequestId = $input['currency_request_id'];
 
             $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
-                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentageForApps(), $payment->getMethod());
+                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentageForApps(), $payment->getMethod(), $payment->merchant->getId());
 
             if (empty($requestedCurrencyData) === true)
             {

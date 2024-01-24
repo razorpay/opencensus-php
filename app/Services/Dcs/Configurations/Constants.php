@@ -31,6 +31,9 @@ class Constants
 
     const AccountingIntegrationConfig = 'accounting_integration_config';
 
+    const DCCCurrencyLevelMarkup = 'dcc_currency_level_markup';
+    const CurrencyLevelMarkups = 'currency_level_markups';
+
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
      */
@@ -46,6 +49,7 @@ class Constants
         self::NcOptOutConfiguration          =>"rzp/platform/partner/optout/NeedsClarification",
         self::CountryDashboardConfigurations => "rzp/pg/country/dashboard/merchant/UIControls",
         self::AccountingIntegrationConfig    => "rzp/x/merchant/accounting/IntegrationSettings",
+        self::DCCCurrencyLevelMarkup         => "rzp/pg/merchant/cross_border/india/DCCConfig",
     ];
 
 }
