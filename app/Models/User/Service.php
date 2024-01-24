@@ -691,6 +691,13 @@ class Service extends Base\Service
         unset($input['source_app_id']);
         unset($input['oauth_referral']);
 
+        $this->trace->info(TraceCode::PARTNER_REFERRAL_VERIFY_OTP_REQUEST, [
+            'partner_referral_code' => $partnerReferralCode,
+            'source_app_id'         => $sourceAppId,
+            'oauth_referral'        => $isOauthReferral,
+            'is_phantom'            => $isPhantomOnboardingFlow
+        ]);
+
         $verifySuccess = $this->core->verifySignupOtp($input);
 
         unset($input[Entity::SKIP_SMS_REQUEST]);
@@ -1060,6 +1067,10 @@ class Service extends Base\Service
     {
         try
         {
+            $this->trace->info(TraceCode::PROCESS_REFERRAL_CODE, [
+                'merchant_id'   => $merchantId,
+                'referral_code' => $referralCode
+            ]);
 
             if (empty($referralCode) === true)
             {
