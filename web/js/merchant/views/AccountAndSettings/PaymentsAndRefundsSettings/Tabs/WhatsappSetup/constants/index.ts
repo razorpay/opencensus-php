@@ -9,9 +9,10 @@ export const BusinessServiceProvider = [
 ];
 
 export const SERVICE_PROVIDER_LOGIN_HREF: Record<string, string> = {
-  aisensy: 'https://wa.aisensy.com/ref/s9tftz9',
+  aisensy: 'https://www.app.aisensy.com/login/way-pay/settings',
 };
 
-export const SERVICE_PROVIDER_SIGNUP_HREF = 'https://wa.aisensy.com/ref/s9tftz9';
+export const SERVICE_PROVIDER_SIGNUP_HREF =
+  'https://www.app.aisensy.com/signup/way-pay/settings?partnerReferralId=6554846b83ab391559156d8b';
 
 export const FEATURE_WHATSAPP_PL = 'notify_via_whatsapp_plink';
