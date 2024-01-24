@@ -12,4 +12,4 @@ export COMPOSER_CACHE_DIR=".composer/cache"
 mkdir -p $COMPOSER_CACHE_DIR
 composer install --no-interaction --optimize-autoloader
 cp ./environment/.env.defaults ./environment/.env.testing
-APP_MODE=testing APP_ENV=testing php vendor/phpunit/phpunit/phpunit -d memory_limit=2048M --testsuite "Circuit Breaker Tests,User Session Tests,Unit Tests"
+APP_MODE=testing APP_ENV=testing php vendor/phpunit/phpunit/phpunit -d memory_limit=2048M --testsuite "Circuit Breaker Tests,User Session Tests,Unit Tests,Edge Tests"

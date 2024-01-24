@@ -5,6 +5,7 @@ selenium-server.jar
 *.swo
 *.swn
 *.swm
+dump.rdb
 .DS_Store
 web/.nyc_output
 Thumbs.db

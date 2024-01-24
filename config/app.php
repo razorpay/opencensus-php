@@ -179,6 +179,9 @@ return array(
 
         App\Providers\RequestOauthServiceProvider::class,
 
+        // Edge provider manages user session migration logic and interim support
+        App\Providers\EdgeServiceProvider::class,
+
         // Package providers follow
         Aws\Laravel\AwsServiceProvider::class,
         'Barryvdh\Debugbar\ServiceProvider',

@@ -23,6 +23,9 @@
         <testsuite name="Unit Tests">
             <directory>./Tests/Unit/app/Http/Middleware/</directory>
         </testsuite>
+        <testsuite name="Edge Tests">
+            <directory>./Tests/Unit/app/Edge/</directory>
+        </testsuite>
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing"/>

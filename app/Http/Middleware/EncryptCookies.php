@@ -24,7 +24,8 @@ class EncryptCookies extends BaseEncrypter
         'rzp_merchant_id',
         'rzp_user_id',
         'rzp_ab_uuid',
-        'rzp_usr_session'
+        'rzp_usr_session',
+        'rzp_access_token', // received from Edge
     ];
 
 
