@@ -548,31 +548,25 @@ trait Callback
             // if razorx was enabled  and stored in cache during create payment call  then we will fetch alt id and process the payment using alt id for  rupay
         if(isset($payment->card) && in_array($payment->card->getTrivia(), ['1','2'],true) === false && $payment->getGateway() === Gateway::PAYSECURE )
                  {
-                    if ($payment->getSave() === true and $payment->getAuthType() !== Payment\AuthType::OTP)
-                    {
-                        $variant = "off";
-                    }
-                    else
-                    {
-                        $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
 
-                        $variant = $this->cache->get($rupayRazorxCacheKey);
-                    }
+                     $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
+
+                     $variant = $this->cache->get($rupayRazorxCacheKey);
 
                     $this->trace->info(TraceCode::RAZORX_EXPERIMENT_RESULT,
                         [
                             'feature'   => $rupayRazorxCacheKey ,
                             'variant' => $variant,
                         ]);
-;
-                    if (strtolower($variant) === 'on')
+
+                     if (strtolower($variant) === 'on')
                      {
 
                         $input['card']['number'] =  (new Card\CardVault)->getCardNumber($payment->card->GetVaultToken(), $payment->card->toArray(), $payment->getGateway());
 
                         $this->fetchAltIdData($input, $gatewayInput, $payment, $input);
 
-                                  // Storing alt id data in cache
+                        // Storing alt id data in cache
                         if ($input['card']['trivia'] == '2'  && isset($input['alt_id_data']))
                         {
                             $keyAltId = $this->getAltIdCacheKey($input);
