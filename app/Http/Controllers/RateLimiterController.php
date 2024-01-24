@@ -239,7 +239,7 @@ class RateLimiterController extends EdgeThrottleController
         $method = $request->method();
 
         $path = '/rule/' . $id;
-        $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_DELETE, $id, $this->getRateLimitRule($path));
+        $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_DELETE, $id, $this->getRateLimitRule($id));
 
         $response = $this->fetchResponse($method, $path);
 
