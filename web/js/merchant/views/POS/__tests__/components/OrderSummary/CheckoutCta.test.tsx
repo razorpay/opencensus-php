@@ -388,4 +388,45 @@ describe('<CheckoutCta/>', () => {
       );
     });
   });
+
+  test('should call activation api with correct payload if user has online presence and has some online activation status but no shop images', async () => {
+    window.location.assign = jest.fn();
+    const newUser = {
+      ...MOCK_USER,
+      business_website: 'www.mock-website.com',
+      pos_activation_status: null,
+      submitted: 1,
+      activation_status: 'under_review',
+      merchant_business_detail: {
+        website_details: {
+          physical_store: true,
+        },
+      },
+      documents: {},
+    };
+    renderApp(undefined, newUser);
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    await userEvent.click(screen.getByText('Confirm Address & Pay'));
+    const activationServiceSpy = jest.spyOn(posServices, 'createActvationCase');
+    await waitFor(() => {
+      expect(activationServiceSpy).toHaveBeenCalled();
+    });
+    await waitFor(() => {
+      expect(CheckoutMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: '18% GST included',
+          notes: {
+            type: 'Pos Device Store',
+            merchant_id: 'mock-user-id',
+            device_order_id: 'mock-order-id',
+          },
+          order_id: 'order_mock-order-id',
+          name: 'Razorpay POS',
+          theme: {
+            color: '#3005BF2',
+          },
+        }),
+      );
+    });
+  });
 });

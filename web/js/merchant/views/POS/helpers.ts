@@ -818,9 +818,10 @@ export const preCheckoutAdditionalDetails = ({
       isCaseCreateRequired: false,
     };
   } else if (
-    !isPOSPaymentChannelSelected &&
-    checkIfMerchantHasOnlinePresence(user) &&
-    !hasShopImages
+    (checkIfMerchantHasOnlinePresence(user) && !isPOSPaymentChannelSelected && !hasShopImages) ||
+    (checkIfMerchantHasOnlinePresence(user) &&
+      !!user?.activation_status &&
+      !user?.pos_activation_status)
   ) {
     return {
       isRequired: false,
