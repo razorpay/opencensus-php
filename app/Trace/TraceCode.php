@@ -260,7 +260,7 @@ class TraceCode
     const OAUTH_MERCHANT_ACTIVATION_DETAILS         = 'OAUTH_MERCHANT_ACTIVATION_DETAILS';
 
     const USER_RENDER_DATA                          = 'USER_RENDER_DATA';
-    
+
     const MAGIC_ANALYTICS_OAUTH_CALLBACK_FAILED               = 'MAGIC_ANALYTICS_OAUTH_CALLBACK_FAILED';
 
     const INVALIDATE_ORG_CACHE                      = 'INVALIDATE_ORG_CACHE';
@@ -268,6 +268,8 @@ class TraceCode
     const PROMISE_BUILT_TIME                        = 'PROMISE_BUILT_TIME';
 
     const ERROR_FETCHING_MERCHANT_DETAILS           = 'ERROR_FETCHING_MERCHANT_DETAILS';
+
+    const INFO_USES_X_SIGNUP_FLOW_V2_HEADER           = 'INFO_USES_X_SIGNUP_FLOW_V2_HEADER';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
