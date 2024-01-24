@@ -375,4 +375,10 @@ class Constants
     const LOW = 'low';
 
     const TYPE_COD_FEE_COUPON = 'cod_fee';
+
+    // AppType is a tenancy key used when installation Shopify app.
+    // Each app installation will generate it's own set of access tokens and scopes.
+    // As this value is shared with FE, we are not adding the full prefix.
+    const SHOPIFY_APP_TYPE_MAGIC_CHECKOUT = "magic_checkout";
+    const SHOPIFY_APP_TYPE_SOPC           = 'sopc';
 }

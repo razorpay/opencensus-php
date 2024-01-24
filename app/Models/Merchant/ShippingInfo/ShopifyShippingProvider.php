@@ -28,6 +28,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\OneClickCheckout\DomainUtils;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Constants;
 use RZP\Models\Merchant\ShippingInfo\Constants as ShippingInfoConstants;
+use RZP\Models\Merchant\OneClickCheckout\Constants as OneClickCheckoutConstants;
 use RZP\Models\Customer;
 
 class ShopifyShippingProvider extends Base\Service
@@ -105,6 +106,8 @@ class ShopifyShippingProvider extends Base\Service
             $isDigitalProduct = false;
 
             $referenceId = $input['reference_id'];
+
+            $input['app_type'] = $input['app_type'] ?? OneClickCheckoutConstants::SHOPIFY_APP_TYPE_MAGIC_CHECKOUT;
 
             [$decodedResponse, $cart, $cachedResponse] = $this->fetchShippingResponseFromUsingCheckoutId(
                 $input,
@@ -868,9 +871,9 @@ class ShopifyShippingProvider extends Base\Service
                 $orderAmount,
                 $shippingMethodProviderConfig,
                 $shopifyShippingOverride,
-                $shippingVariant
+                $shippingVariant,
+                $input['app_type']
             );
-
             return [$decodedResponse, $cart, $cachedShippingInfo];
 
         }
@@ -942,13 +945,15 @@ class ShopifyShippingProvider extends Base\Service
         $orderAmount,
         $shippingMethodProviderConfig,
         $shopifyShippingOverride,
-        $shippingVariant
+        $shippingVariant,
+        string $appType
     ): array
     {
         if ($shopifyShippingOverride === false) {
             $decodedResponse = (new Shopify\Service)->getShippingInfo([
                 'order_id' => $referenceId,
-                'address' => array_merge($address, ['id' => 0]),
+                'address'  => array_merge($address, ['id' => 0]),
+                'app_type' => $appType,
             ]);
 
             if (empty($decodedResponse['use_fallback']) === false) {

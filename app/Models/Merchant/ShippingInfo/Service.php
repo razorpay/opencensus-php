@@ -277,10 +277,13 @@ class Service extends Base\Service
                 // The current conditions only allow shopify merchants to have fallback configuration
                 // shopifyShippingOverride allows shopify merchants to use rzp shipping platform
                 $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_SHOPIFY_CALL_COUNT, $dimensions);
+                // While Magic X will function without using the Razorpay order flow, we are still adding
+                // app_type for future proofing since no one likes deploying php code again and again...
                 $decodedResponse = (new Shopify\Service)->getShippingInfo([
                     'rzp_order_id' => $orderId,
-                    'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
-                    'address' => array_merge($address, [self::SHIPPING_INFO_ID => 0]),
+                    'order_id'     => $order->toArrayPublic()['notes']['storefront_id'],
+                    'address'      => array_merge($address, [self::SHIPPING_INFO_ID => 0]),
+                    'app_type'     => $input['app_type'] ?? OneClickCheckoutConstants::SHOPIFY_APP_TYPE_MAGIC_CHECKOUT,
                 ]);
                 $isDigitalProduct = $decodedResponse['is_digital_product'];
                 unset($decodedResponse['is_digital_product']);

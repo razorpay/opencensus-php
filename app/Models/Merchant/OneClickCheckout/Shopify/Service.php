@@ -1381,18 +1381,22 @@ class Service extends Base\Service
         $checkoutId = $input['order_id'];
         $address = $input['address'];
         $orderId = $input['rzp_order_id'] ?? null;
-
+        $appType = $input['app_type'] ?? OneClickCheckoutConstants::SHOPIFY_APP_TYPE_MAGIC_CHECKOUT;
+        if ($appType !== OneClickCheckoutConstants::SHOPIFY_APP_TYPE_SOPC) {
+            // Adding this for type safety, works like a runtime enum check.
+            $appType = OneClickCheckoutConstants::SHOPIFY_APP_TYPE_MAGIC_CHECKOUT;
+        }
         $address['city'] = empty($address['city']) === false ? $address['city'] : 'NA';
 
         $address['zipcode'] = empty($address['zipcode']) === false ? $address['zipcode'] : $address['state_code']; //handles null check
 
-        return $this->getShippingForOneAddress($orderId, $checkoutId, $address);
+        return $this->getShippingForOneAddress($orderId, $checkoutId, $address, $appType);
     }
 
     // get serviceability and fee for single address
-    public function getShippingForOneAddress($orderId, string $checkoutId, array $address): array
+    public function getShippingForOneAddress($orderId, string $checkoutId, array $address, string $appType): array
     {
-        $response = (new Core)->updateShippingAddress($checkoutId, $address);
+        $response = (new Core)->updateShippingAddress($checkoutId, $address, $appType);
 
         $digitalProductConfig = (new Merchant1ccConfig\Repository())->
         findByMerchantAndConfigType($this->merchant->getId(), Type::ONE_CC_HANDLE_DIGITAL_PRODUCT);
@@ -1408,7 +1412,7 @@ class Service extends Base\Service
             'taxes_included' => $checkout['taxesIncluded'],
         ];
 
-        $rates = (new Core)->sleepAndPollForShippingInfo($checkoutId);
+        $rates = (new Core)->sleepAndPollForShippingInfo($checkoutId, $appType);
 
         // Either any of the feature flag is enabled we will consider the total tax amount from calculate draft order flow.
         if (($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_OPT_SHIPPING_TAX) === true || $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_TAX_INCLUSION) === true) && $orderId != null)
@@ -1545,7 +1549,7 @@ class Service extends Base\Service
 
         $address['zipcode'] = empty($address['zipcode']) === false ? $address['zipcode'] : $address['state_code']; //handles null check
 
-        $response = (new Core)->updateShippingAddress($checkoutId, $address);
+        $response = (new Core)->updateShippingAddress($checkoutId, $address, OneClickCheckoutConstants::SHOPIFY_APP_TYPE_MAGIC_CHECKOUT);
         // Based on logs the checkout response is still available if `errors` or `checkoutUserErrors` exists
         // for this mutation.
         $checkout = $response['data']['checkoutShippingAddressUpdateV2']['checkout'];

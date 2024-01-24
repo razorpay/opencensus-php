@@ -140,7 +140,7 @@ class Core extends Base\Core
         return $res;
     }
 
-    public function getAvailableShippingRates($checkoutId)
+    public function getAvailableShippingRates($checkoutId, string $appType)
     {
         $client = $this->getShopifyClientByMerchant();
         $mutation = (new Mutations)->getPollForShippingRatesMutation();
@@ -158,7 +158,7 @@ class Core extends Base\Core
         $start = millitime();
         if ($useMCS)
         {
-            $payload = ['checkout_id' => $checkoutId];
+            $payload = ['checkout_id' => $checkoutId, 'app_type' => $appType];
             $response = (new MagicCheckoutService\Service())->pollForShippingRates($payload);
         }
         else
@@ -268,7 +268,7 @@ class Core extends Base\Core
         return $config;
     }
 
-    public function updateShippingAddress($checkoutId, $address)
+    public function updateShippingAddress($checkoutId, $address, string $appType)
     {
         $client = $this->getShopifyClientByMerchant();
 
@@ -327,7 +327,11 @@ class Core extends Base\Core
             $addr = $shippingAddress;
             $addr['first_name'] = $shippingAddress['firstName'];
             $addr['last_name'] = $shippingAddress['lastName'];
-            $payload = ['checkout_id' => $checkoutId, 'address' => $addr];
+            $payload = [
+                'checkout_id' => $checkoutId,
+                'address'     => $addr,
+                'app_type'    => $appType,
+            ];
             $response = (new MagicCheckoutService\Service())->updateShippingAddress($payload);
         }
         else
@@ -340,7 +344,7 @@ class Core extends Base\Core
     }
 
     // processing is async so we need to sleep and poll
-    public function sleepAndPollForShippingInfo(string $checkoutId, int $maxTries = 5)
+    public function sleepAndPollForShippingInfo(string $checkoutId, string $appType, int $maxTries = 5)
     {
         $start = millitime();
 
@@ -353,7 +357,7 @@ class Core extends Base\Core
 
             $currentTries++;
 
-            $body = $this->getAvailableShippingRates($checkoutId);
+            $body = $this->getAvailableShippingRates($checkoutId, $appType);
 
             if (
               empty($body['errors']) === false
