@@ -30,7 +30,7 @@ class Repository extends BaseRepository
         {
             $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
             {
-                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA))
                              ->where(Entity::ENTITY_TYPE, $entityType)
                              ->where(Entity::ENTITY_ID, $entityId)
                              ->first();
@@ -52,7 +52,7 @@ class Repository extends BaseRepository
         {
             $entityOrigin = $this->newQueryAndResetEntityConnection(function () use ($entityType, $entityId)
             {
-                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+                return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA))
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->first();
