@@ -330,6 +330,7 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
             Entity::CPS_ROUTE => 4,
             Entity::ERROR_CODE => 'BAD_REQUEST_ERROR',
             Entity::INTERNAL_ERROR_CODE => 'BAD_REQUEST_PAYMENT_DECLINED_BY_CUSTOMER',
+            Entity::REFERENCE2 => 'credit_card'
         ], $payment);
     }
 

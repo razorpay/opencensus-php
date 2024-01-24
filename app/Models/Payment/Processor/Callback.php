@@ -1105,10 +1105,14 @@ trait Callback
         }
         else
         {
-            $e->setData(['payment_id'  => $this->payment->getPublicId(),
+            $e->setData([
+                'payment_id'  => $this->payment->getPublicId(),
                 'order_id'    => $this->payment->getPublicOrderId(),
                 'method'      => $this->payment->getMethod(),
-                'application' => $this->payment->getAuthenticationGateway()]);
+                'application' => $this->payment->getAuthenticationGateway(),
+                'previous_exception_data' => $previousExceptionData,
+                ]
+            );
         }
 
         if (Error\Error::hasAction($internalErrorCode) === false)

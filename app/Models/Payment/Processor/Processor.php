@@ -7123,6 +7123,10 @@ class Processor
             }
         }
 
+        $previousExceptionData = $exception->getData()['previous_exception_data'];
+
+        $this->setPayerAcccountTypeIfApplicable($payment, $previousExceptionData);
+
         if (($exception instanceof Exception\GatewayErrorException) and
             ($this->payment->merchant !== null) and
             ($this->payment->merchant->isFeatureEnabled(Features::EXPOSE_GATEWAY_ERRORS) === true))

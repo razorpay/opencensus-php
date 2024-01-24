@@ -709,6 +709,7 @@ class Service
         $gatewayErrorCode = $metadata['gateway_error_code'];
         $gatewayErrorDesc = $metadata['gateway_error_description'];
         $httpCode = $metadata['http_code'] ?? null;
+        $data     = [];
 
         if ($httpCode !== null)
         {
@@ -735,11 +736,16 @@ class Service
             return;
         }
 
+        if ($this->action == Payment\Action::CALLBACK)
+        {
+            $data = $response['data'];
+        }
+
         throw new Exception\GatewayErrorException(
             $internalErrorCode,
             $gatewayErrorCode,
             $gatewayErrorDesc,
-            [],
+            $data,
             null,
             $this->action);
     }

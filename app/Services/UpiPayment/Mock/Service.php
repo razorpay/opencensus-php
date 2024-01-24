@@ -234,6 +234,7 @@ class Service extends UpiPaymentService
             ],
             'amount_authorized' => (string) $payment['amount_authorized'],
             'currency'          => $payment['currency'],
+            'payer_account_type'=> 'credit_card',
         ];
 
         if ($gateway === 'upi_axis')
@@ -264,6 +265,7 @@ class Service extends UpiPaymentService
             ],
             'amount_authorized' => (string) $payment['amount_authorized'],
             'currency'          => $payment['currency'],
+            'payer_account_type'=> 'credit_card',
         ];
 
         if ($gateway === 'upi_axis')
