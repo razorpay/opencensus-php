@@ -38,6 +38,7 @@ class Gateway
     const LYRA                   = 'lyra';
     const INGENICO               = 'ingenico';
     const BILLDESK_OPTIMIZER     = 'billdesk_optimizer';
+    const EASEBUZZ_OPTIMIZER     = 'easebuzz_optimizer';
     const CHECKOUT_DOT_COM_OPTIMIZER = 'checkout_dot_com_optimizer';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
@@ -459,7 +460,8 @@ class Gateway
         self::FIRST_DATA => [
             'default'               => self::FIRST_DATA,
             self::ACQUIRER_ICIC     => self::FIRST_DATA,
-        ]
+        ],
+        self::EASEBUZZ_OPTIMIZER    => self::EASEBUZZ_OPTIMIZER,
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -499,6 +501,7 @@ class Gateway
         self::WALLET_RAZORPAYWALLET => self::WALLET_RAZORPAYWALLET,
         self::WALLET_OPENWALLET     => self::WALLET_OPENWALLET,
         self::FIRST_DATA            => self::FIRST_DATA,
+        self::EASEBUZZ_OPTIMIZER    => self::EASEBUZZ_OPTIMIZER,
         self::RZPXPOSTPAID          => self::RZPXPOSTPAID,
     ];
 
@@ -628,6 +631,7 @@ class Gateway
         self::BILLDESK_OPTIMIZER,
         self::CHECKOUT_DOT_COM_OPTIMIZER,
         self::OPTIMIZER_RAZORPAY,
+        self::EASEBUZZ_OPTIMIZER
     ];
 
     const OPTIMIZER_TOKENIZATION_SUPPORTED_GATEWAYS = [
@@ -640,6 +644,7 @@ class Gateway
         self::BILLDESK_OPTIMIZER,
         self::PAYTM,
         self::OPTIMIZER_RAZORPAY,
+        self::EASEBUZZ_OPTIMIZER
     ];
 
     const SKIP_TPV_EDIT_OPTIMIZER_GATEWAYS = [
@@ -1666,6 +1671,7 @@ class Gateway
             self::CHECKOUT_DOT_COM_OPTIMIZER,
             self::HDFC_EZETAP,
             self::OPTIMIZER_RAZORPAY,
+            self::EASEBUZZ_OPTIMIZER
         ],
 
         Method::NETBANKING => [
@@ -1792,6 +1798,7 @@ class Gateway
             self::OPTIMIZER_RAZORPAY,
             self::UPI_KOTAK,
             self::ATOM,
+            self::EASEBUZZ_OPTIMIZER
         ],
 
         Method::AEPS => [
@@ -1979,6 +1986,7 @@ class Gateway
         self::BILLDESK_OPTIMIZER,
         self::CCAVENUE,
         self::OPTIMIZER_RAZORPAY,
+        self::EASEBUZZ_OPTIMIZER
     ];
 
     public static $immediateVerifyGateways = [
@@ -2270,6 +2278,14 @@ class Gateway
             Network::DISC,
             Network::DICL,
             Network::JCB,
+        ],
+        self:: EASEBUZZ_OPTIMIZER => [
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
+            Network::RUPAY,
+            Network::DICL,
+            Network::DISC,
         ],
     ];
 
@@ -3155,6 +3171,7 @@ class Gateway
         Gateway::BILLDESK_OPTIMIZER,
         Gateway::CCAVENUE,
         Gateway::OPTIMIZER_RAZORPAY,
+        Gateway::EASEBUZZ_OPTIMIZER
     ];
 
     /**
@@ -3652,6 +3669,7 @@ class Gateway
         Gateway::CHECKOUT_DOT_COM_OPTIMIZER => Gateway::CHECKOUT_DOT_COM_OPTIMIZER,
         Gateway::ICICI            => Gateway::ICICI,
         Gateway::OPTIMIZER_RAZORPAY => Gateway::OPTIMIZER_RAZORPAY,
+        Gateway::EASEBUZZ_OPTIMIZER => Gateway::EASEBUZZ_OPTIMIZER
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -3686,6 +3704,7 @@ class Gateway
         Gateway::BILLDESK_OPTIMIZER,
         Gateway::CCAVENUE,
         Gateway::OPTIMIZER_RAZORPAY,
+        Gateway::EASEBUZZ_OPTIMIZER
     ];
 
     public static $upiQrGateways = [
@@ -4668,6 +4687,7 @@ class Gateway
             self::AXIS_TOKENHQ,
             self::ICICI,
             self::OPTIMIZER_RAZORPAY,
+            self::EASEBUZZ_OPTIMIZER
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4714,6 +4734,7 @@ class Gateway
             self::AXIS_TOKENHQ,
             self::ICICI,
             self::OPTIMIZER_RAZORPAY,
+            self::EASEBUZZ_OPTIMIZER
         ];
 
         return (in_array($gateway, $gateways, true));

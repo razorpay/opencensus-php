@@ -3372,6 +3372,7 @@ class Validator extends Base\Validator
             Gateway::BILLDESK_OPTIMIZER,
             Gateway::AXIS_TOKENHQ,
             Gateway::OPTIMIZER_RAZORPAY,
+            Gateway::EASEBUZZ_OPTIMIZER,
             Gateway::CHECKOUT_DOT_COM_OPTIMIZER
         ];
 

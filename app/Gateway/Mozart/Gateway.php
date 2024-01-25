@@ -2265,6 +2265,11 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => null,
             ],
+            Payment\Gateway::EASEBUZZ_OPTIMIZER => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => null,
+            ]
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -2459,6 +2464,11 @@ class Gateway extends Base\Gateway
                 Action::UPDATE_TOKEN        => null,
             ],
             Payment\Gateway::OPTIMIZER_RAZORPAY => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => null,
+            ],
+            Payment\Gateway::EASEBUZZ_OPTIMIZER => [
                 Action::PAY_INIT      => null,
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => null,
@@ -3302,7 +3312,7 @@ class Gateway extends Base\Gateway
 
         $traceReq = [
             'method' => $request['method'],
-            'url'    => $request['url'],
+            'url'    => $request['url']
         ];
 
         $this->traceGatewayPaymentRequest($traceReq, $input, $requestTraceCode);

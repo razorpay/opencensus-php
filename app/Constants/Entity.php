@@ -316,6 +316,7 @@ class Entity
     const LYRA                   = 'lyra';
     const INGENICO               = 'ingenico';
     const BILLDESK_OPTIMIZER     = 'billdesk_optimizer';
+    const EASEBUZZ_OPTIMIZER     = 'easebuzz_optimizer';
     const CHECKOUT_DOT_COM_OPTIMIZER  = 'checkout_dot_com_optimizer';
     const ENACH                  = 'enach';
     const SHARP                  = 'sharp';
@@ -1244,6 +1245,7 @@ class Entity
         self::UPI_NPCI               => \RZP\Gateway\Upi\Npci::class,
         self::CASHFREE               => \RZP\Gateway\Upi\Cashfree::class,
         self::BILLDESK_OPTIMIZER     => \RZP\Gateway\Upi\BilldeskOptimizer::class,
+        self::EASEBUZZ_OPTIMIZER     => \RZP\Gateway\Upi\EasebuzzOptimizer::class,
         self::PINELABS               => \RZP\Gateway\Upi\Pinelabs::class,
         self::PAYU                   => \RZP\Gateway\Upi\Payu::class,
         self::OPTIMIZER_RAZORPAY     => \RZP\Gateway\Upi\OptimizerRazorpay::class,
@@ -1576,6 +1578,7 @@ class Entity
         self::PINELABS               => \RZP\Gateway\Upi\Base::class,
         self::PAYU                   => \RZP\Gateway\Upi\Base::class,
         self::OPTIMIZER_RAZORPAY     => \RZP\Gateway\Upi\Base::class,
+        self::EASEBUZZ_OPTIMIZER     => \RZP\Gateway\Upi\Base::class,
         self::PAYTM                  => \RZP\Gateway\Upi\Base::class,
         self::UPI_KOTAK              => \RZP\Gateway\Upi\Base::class,
         self::UPI_RZPRBL             => \RZP\Gateway\Upi\Base::class,
