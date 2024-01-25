@@ -110,5 +110,5 @@ export const trackingExperimentsTestProp = {
 export const PARTNER_SWITCH_KEY = 'PARTNER_SWITCH_KEY';
 
 export const PARTNER_SWITCH_TERMS_AND_CONDITIONS =
-  'https://razorpay.com/s/terms/partner/aggregator-and-platform';
+  'https://razorpay.com/s/terms/partners/aggregator-and-platform';
 export const PARTNER_SWITCH_PRIVACY_POLICY = 'https://razorpay.com/privacy';
