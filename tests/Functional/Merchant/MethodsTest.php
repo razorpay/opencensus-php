@@ -1444,7 +1444,6 @@ class MethodsTest extends TestCase
 
     public function testEnableInAppCreditCard()
     {
-
         $this->testInAppUPI();
 
         $request = [
@@ -1458,11 +1457,35 @@ class MethodsTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $response = $this->makeRequestAndGetContent($request);
+        $this->makeRequestAndGetContent($request);
 
         $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
 
         $this->assertTrue($merchantMethods->isInAppCreditCardEnabled());
+    }
+
+    public function testDisableInAppMethods()
+    {
+        $this->testEnableInAppCreditCard();
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'convertContentToString' => false,
+            'content' => [
+                'in_app_credit_card' => 0,
+                'in_app' => 0
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isInAppEnabled());
+        $this->assertFalse($merchantMethods->isInAppCreditCardEnabled());
     }
 
     public function testEnableTrustlyForMerchant()

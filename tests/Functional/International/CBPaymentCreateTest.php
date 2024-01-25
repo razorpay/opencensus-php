@@ -2424,7 +2424,7 @@ class CBPaymentCreateTest extends TestCase
         ]);
 
         // create order
-        $order = $this->fixtures->create('order', 
+        $order = $this->fixtures->create('order',
             [
                 'amount' => 1000,
                 'currency' => 'INR',

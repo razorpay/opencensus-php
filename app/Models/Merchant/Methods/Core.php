@@ -1613,16 +1613,11 @@ class Core extends Base\Core
      */
     private function handleEnableDisableForInAppPaymentMethods(Entity $methods, $input, $mcc)
     {
-        $isInAppAlreadyEnabled = $methods->isInAppEnabled() === true;
-        $isInAppCreditCardAlreadyEnabled = $methods->isInAppCreditCardEnabled() === true;
-
         // in_app cannot be disabled if in_app_credit_card is being enabled or already enabled
         if (isset($input[Entity::IN_APP]) and
             boolval($input[Entity::IN_APP]) === false)
         {
-            if ((isset($input[Entity::IN_APP_CREDIT_CARD]) and
-                 boolval($input[Entity::IN_APP_CREDIT_CARD]) === true) or
-                $isInAppCreditCardAlreadyEnabled === true)
+            if ($this->isInAppDisablementAllowed($methods, $input) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "in_app cannot be disabled when in_app_credit_card is enabled"
@@ -1634,7 +1629,7 @@ class Core extends Base\Core
         if (isset($input[Entity::IN_APP_CREDIT_CARD]) and
             boolval($input[Entity::IN_APP_CREDIT_CARD]) === true)
         {
-            if (($isInAppAlreadyEnabled === false) and (!isset($input[Entity::IN_APP]) or (isset($input[Entity::IN_APP]) and boolval($input[Entity::IN_APP]) === false)))
+            if ($this->isInAppCreditCardEnablementAllowed($methods, $input) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "in_app_credit_card cannot be enabled if in_app is not being enabled and not already enabled"
@@ -1647,5 +1642,37 @@ class Core extends Base\Core
         {
             (new Validator)->validateCategoryForInAppCreditCard($mcc);
         }
+    }
+
+    private function isInAppDisablementAllowed(Entity $methods, $input): bool
+    {
+        $isInAppCreditCardBeingEnabled = (isset($input[Entity::IN_APP_CREDIT_CARD]) and
+                                          boolval($input[Entity::IN_APP_CREDIT_CARD]) === true);
+
+        $isInAppCreditCardAlreadyEnabled = $methods->isInAppCreditCardEnabled() === true;
+
+        $isInAppCreditCardBeingDisabled = (isset($input[Entity::IN_APP_CREDIT_CARD]) and
+                                           boolval($input[Entity::IN_APP_CREDIT_CARD]) === false);
+
+        if ($isInAppCreditCardBeingEnabled or ($isInAppCreditCardAlreadyEnabled and !$isInAppCreditCardBeingDisabled))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function isInAppCreditCardEnablementAllowed(Entity $methods, $input): bool
+    {
+        $isInAppAlreadyEnabled = $methods->isInAppEnabled() === true;
+        $isInAppMethodChangeRequest = isset($input[Entity::IN_APP]);
+        $isInAppBeingDisabled = (isset($input[Entity::IN_APP]) and boolval($input[Entity::IN_APP]) === false);
+
+        if ($isInAppAlreadyEnabled === false and (!$isInAppMethodChangeRequest or $isInAppBeingDisabled))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

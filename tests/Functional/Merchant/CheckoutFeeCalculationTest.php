@@ -9,6 +9,7 @@ use Event;
 use Redis;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\TrustedBadge\Entity as TrustedBadge;
 use RZP\Services\Mock;
 use RZP\Models\Base\EsDao;
@@ -704,4 +705,183 @@ class CheckoutFeeCalculationTest extends TestCase
 
     }
 
+    public function testCorrectFeesCalculatedForCFBMerchantOnCConTurboUpi()
+    {
+        $this->setUpForTurboUpiPricingCalculations();
+
+        $paymentAmount = 100000;
+
+        $calculateFeesRequest = [
+            'url'     => '/payments/calculate/fees',
+            'method'  => 'POST',
+            'content' => [
+                'amount'   => $paymentAmount,
+                'currency' => 'INR',
+                'method'   => 'upi',
+                'email'    => 'qa.testing@razorpay.com',
+                'contact'  => '+918888888888',
+                'upi'      => [
+                    'flow'               => 'in_app',
+                    'payer_account_type' => 'credit_card',
+                ],
+            ],
+        ];
+
+        $this->ba->publicAuth();
+
+        $calculateFeesResponse = $this->makeRequestAndGetContent($calculateFeesRequest);
+
+        s($calculateFeesResponse);
+
+        //Expected fees is upi_inapp addon pricing + cc on turbo upi pricing
+        $expectedFeesResponse = $this->getExpectedFeeBreakUpForCheckout($paymentAmount,
+                                                                        0.05, // cc on turbo upi pricing (5%)
+                                                                        0.04); // upi_inapp addon pricing (4%)
+
+        $this->assertArraySelectiveEquals($expectedFeesResponse, $calculateFeesResponse);
+    }
+
+    public function testCorrectFeesCalculatedForCFBMerchantOnTurboUpi()
+    {
+        $this->setUpForTurboUpiPricingCalculations();
+
+        $paymentAmount = 100000;
+
+        $calculateFeesRequest = [
+            'url'     => '/payments/calculate/fees',
+            'method'  => 'POST',
+            'content' => [
+                'amount'   => $paymentAmount,
+                'currency' => 'INR',
+                'method'   => 'upi',
+                'email'    => 'qa.testing@razorpay.com',
+                'contact'  => '+918888888888',
+                'upi'      => [
+                    'flow'               => 'in_app',
+                    'payer_account_type' => 'bank_account',
+                ],
+            ],
+        ];
+
+        $this->ba->publicAuth();
+
+        $calculateFeesResponse = $this->makeRequestAndGetContent($calculateFeesRequest);
+
+        s($calculateFeesResponse);
+
+        //Expected fees is upi_inapp addon pricing + base upi pricing (since here payer_account_type = 'bank_account')
+        $expectedFeesResponse = $this->getExpectedFeeBreakUpForCheckout($paymentAmount,
+                                                                        0.03, // base upi pricing (3%)
+                                                                        0.04 // upi_inapp addon pricing (4%)
+                                );
+
+        $this->assertArraySelectiveEquals($expectedFeesResponse, $calculateFeesResponse);
+    }
+
+    private function getExpectedFeeBreakUpForCheckout(int $paymentAmount, $applicablePricingFraction, $addonPricingFraction): array
+    {
+        $expectedFeesExcludingTax      = ($applicablePricingFraction + $addonPricingFraction) * $paymentAmount;
+        $expectedTax                   = (0.18) * $expectedFeesExcludingTax;
+        $totalExpectedFeesIncludingTax = $expectedFeesExcludingTax + $expectedTax;
+        $totalExpectedAmount           = $totalExpectedFeesIncludingTax + $paymentAmount;
+
+        return [
+            'input'   => [
+                'amount' => (int) ($paymentAmount + $expectedFeesExcludingTax + $expectedTax),
+                'fee'    => (int) ($expectedFeesExcludingTax + $expectedTax),
+                'tax'    => (int) $expectedTax
+            ],
+            'display' => [
+                'originalAmount'  => (int) ($paymentAmount / 100),
+                'original_amount' => (int) ($paymentAmount / 100),
+                'fees'            => (float) bcdiv($totalExpectedFeesIncludingTax, 100, 1),
+                'razorpay_fee'    => (int) ($expectedFeesExcludingTax / 100),
+                'tax'             => (float) bcdiv($expectedTax, 100, 1),
+                'amount'          => (float) bcdiv($totalExpectedAmount,100, 1),
+                'currency'        => "INR"
+            ],
+        ];
+    }
+
+    private function setUpForTurboUpiPricingCalculations()
+    {
+        $plans = [
+            // base upi pricing
+            [
+                'plan_id'             => 'random12345678',
+                'plan_name'           => 'CConTurboUpiCFBPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'upi',
+                'percent_rate'        => 300,
+                'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
+                'international'       => 0,
+                'fee_bearer'          => FeeBearer::CUSTOMER,
+            ],
+            // add-on turbo upi pricing
+            [
+                'plan_id'             => 'random12345678',
+                'plan_name'           => 'CConTurboUpiCFBPlan',
+                'feature'             => 'upi_inapp',
+                'payment_method'      => 'upi',
+                'percent_rate'        => 400,
+                'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
+                'international'       => 1,
+                'fee_bearer'          => FeeBearer::CUSTOMER,
+            ],
+            // cc on turbo upi pricing
+            [
+                'plan_id'             => 'random12345678',
+                'plan_name'           => 'CConTurboUpiCFBPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'upi',
+                'payment_method_type' => 'in_app',
+                'receiver_type'       => 'credit',
+                'percent_rate'        => 500,
+                'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
+                'international'       => 0,
+                'fee_bearer'          => FeeBearer::CUSTOMER,
+            ],
+            [
+                'plan_id'             => 'Lwxtwg54MYaNTw',
+                'plan_name'           => 'DefaultCConUpiPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'upi',
+                'receiver_type'       => 'credit',
+                'percent_rate'        => 600,
+                'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
+                'international'       => 0,
+                'fee_bearer'          => FeeBearer::CUSTOMER,
+            ]
+        ];
+
+        foreach ($plans as $plan)
+        {
+            $this->fixtures->create('pricing', $plan);
+        }
+
+        $merchantAttributes = [
+            'fee_bearer'        => FeeBearer::CUSTOMER,
+            'pricing_plan_id'   => 'random12345678',
+        ];
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+        $this->fixtures->edit('merchant', '10000000000000', $merchantAttributes);
+
+        //Now we enable in_app payment methods on the merchant
+        $methods = [
+            'upi'           => 1,
+            'addon_methods' => [
+                'upi' => [
+                    'in_app'             => 1,
+                    'in_app_credit_card' => 1
+                ]
+            ]
+        ];
+
+        $this->fixtures->edit('methods', '10000000000000', $methods);
+    }
 }

@@ -3898,6 +3898,8 @@ trait Authorize
 
                 $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
+                $this->setPayerAcccountTypeIfApplicable($payment, $input);
+
                 $this->processCurrencyConversions($payment, $input);
 
                 $this->attachEntityOrigin($payment);
