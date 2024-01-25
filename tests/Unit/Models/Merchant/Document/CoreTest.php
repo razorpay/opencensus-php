@@ -128,7 +128,7 @@ class CoreTest extends TestCase
         $this->assertTrue($shouldPerformOCR);
     }
 
-    public function testShouldIgnoreLockValidation()
+    public function testValidateLockForPos()
     {
         $input = [
             "document_type"   => "shop_front"
@@ -136,12 +136,12 @@ class CoreTest extends TestCase
 
         $documentCore = new DocumentCore();
 
-        $shouldIgnoreLock =  $documentCore->shouldIgnoreLockValidation($input);
+        $shouldValidateLock =  $documentCore->shouldValidateLock($input, true);
 
-        $this->assertEquals( true, $shouldIgnoreLock );
+        $this->assertEquals( false, $shouldValidateLock );
     }
 
-    public function testShouldIgnoreLockValidation1()
+    public function testValidateLockForPos1()
     {
         $input = [
             "document_type"   => "mmtc_pamp_license"
@@ -149,8 +149,8 @@ class CoreTest extends TestCase
 
         $documentCore = new DocumentCore();
 
-        $shouldIgnoreLock =  $documentCore->shouldIgnoreLockValidation($input);
+        $shouldValidateLock =  $documentCore->shouldValidateLock($input, true);
 
-        $this->assertEquals( false, $shouldIgnoreLock );
+        $this->assertEquals( true, $shouldValidateLock );
     }
 }

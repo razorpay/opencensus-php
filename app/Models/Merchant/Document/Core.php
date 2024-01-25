@@ -208,9 +208,9 @@ class Core extends Base\Core
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
-        $shouldIgnoreLockValidationForL3Form = $this->shouldIgnoreLockValidation($input);
+        $validateLock = $this->shouldValidateLock($input, $validateLock);
 
-        if ($validateLock === true or $shouldIgnoreLockValidationForL3Form === true)
+        if ($validateLock === true)
         {
             $merchantDetails->getValidator()->validateIsNotLocked();
         }
@@ -836,13 +836,13 @@ class Core extends Base\Core
         }
     }
 
-    public function shouldIgnoreLockValidation(array $input) :bool
+    public function shouldValidateLock(array $input, bool $validateLock) :bool
     {
         if (in_array($input[Constants::DOCUMENT_TYPE], Type::VALID_POS_DOCUMENTS) === true)
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return $validateLock;
     }
 }
