@@ -909,7 +909,7 @@ class Service extends Base\Service
                                                 $data = json_decode($data['raw'], true);
                                             }
                                         }
-                                        catch (\Exception $ex)
+                                        catch (\Throwable $ex)
                                         {
                                             // Sometimes we try to fetch some entries generically and that may not applicable for a particular refund
                                             // In such cases we do not want this exception to fail returning other necessary data
@@ -1447,7 +1447,7 @@ class Service extends Base\Service
 
                 $this->getNewProcessor($merchant)->refundPaymentUpdate($payment, $refundInput);
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $result[$refundInput[RefundConstants::ID]] = [
                     RefundConstants::ERROR => [
@@ -1502,7 +1502,7 @@ class Service extends Base\Service
 
             $result = $this->getNewProcessor($merchant)->scroogeRefundTransactionCreate($payment, $refundInput);
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $result = RefundHelpers::getScroogeRefundTransactionCreateResponse($ex);
         }
@@ -2401,7 +2401,7 @@ class Service extends Base\Service
                     return $refund;
                 });
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->trace->traceException($ex, null, null, ['refund_id' => $refundId]);
 
@@ -3259,7 +3259,7 @@ class Service extends Base\Service
                     // }
                 }
             }
-            catch (\Exception $exception)
+            catch (\Throwable $exception)
             {
                 $this->trace->traceException($exception);
 
