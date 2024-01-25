@@ -5,6 +5,7 @@ namespace RZP\Models\Ledger\ReverseShadow\Payments;
 use Ramsey\Uuid\Uuid;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Balance\Type;

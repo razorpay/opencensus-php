@@ -25,6 +25,6 @@ class Constants
 
 
     const MAX_RETRY_COUNT           = 3;
-    const MAX_RETRY_COUNT_CRON      = 30;
+    const MAX_RETRY_COUNT_CRON      = 15;
     const RETRY_COUNT               = 'retry_count';
 }
