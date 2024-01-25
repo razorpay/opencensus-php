@@ -35,7 +35,6 @@ use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Notify as NotifyTrait;
-use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
@@ -133,6 +132,8 @@ class Activate extends Base\Core
         // set methods before activating
         $merchant->setDefaultMethodsBasedOnCategory();
 
+        //creating terminal request for CARD only
+        $this->sendTerminalCreationRequest($merchant, DEConstants::CARD);
         //creating terminal request for UPI only
         $this->sendTerminalCreationRequest($merchant, DEConstants::UPI);
 
@@ -380,6 +381,8 @@ class Activate extends Base\Core
 
         $merchant->releaseFunds();
 
+        //creating terminal request for CARD only
+        $this->sendTerminalCreationRequest($merchant, DEConstants::CARD);
         //creating terminal request for UPI only
         $this->sendTerminalCreationRequest($merchant, DEConstants::UPI);
 
@@ -1240,6 +1243,10 @@ class Activate extends Base\Core
             case DEConstants::UPI:
                 $this->sendTerminalCreationRequestForUPI($paymentMethod, $merchant, DEConstants::CREATE, DEConstants::ONLINE, DEConstants::UPI_INSTRUMENT);
                 break;
+            case DEConstants::CARD:
+                $this->sendTerminalCreationRequestForCard($paymentMethod, $merchant, DEConstants::CREATE);
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Invalid payment method passed for terminal creation');
@@ -1283,6 +1290,42 @@ class Activate extends Base\Core
             ];
 
             $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::UPI_WRAPPER_REQUESTED);
+        }
+    }
+
+    /**
+     * @param $paymentMethod
+     * @param $merchant
+     * @param $action
+     */
+    private function sendTerminalCreationRequestForCard($paymentMethod, $merchant, $action): void
+    {
+        if ((new MethodsCore())->isCardPaymentMethodAllowed($merchant) === true)
+        {
+            $topic = env('PAYMENT_METHOD_ENABLE_KAFKA_TOPIC_NAME');
+
+            $event = [
+                'merchant_id'    => $merchant->getId(),
+                'payment_method' => $paymentMethod,
+                'action'         => $action,
+                'task_id'        => $this->app['request']->getTaskId() ?? gen_uuid(),
+            ];
+
+            $this->trace->info(TraceCode::TERMINAL_CREATION_EVENT_SENT, [
+                'merchant_id' => $merchant->getId(),
+                'topic'       => $topic,
+                'event_data'  => $event
+            ]);
+
+            app('kafkaProducerClient')->produce($topic, stringify($event));
+
+            $eventAttributes = [
+                'merchant_id'     => $merchant->getId(),
+                'event_timestamp' => Carbon::now()->getTimestamp(),
+                'type'            => DEConstants::EVENT_TYPE_ONBOARDING
+            ];
+
+            $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::CARD_WRAPPER_REQUESTED);
         }
     }
 

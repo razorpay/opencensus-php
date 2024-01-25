@@ -129,6 +129,9 @@ class EventCode
     //UPI Terminal creation
     const UPI_WRAPPER_REQUESTED = "UPI Wrapper Requested";
 
+    //Card Terminal creation
+    const CARD_WRAPPER_REQUESTED = "CARD Wrapper Requested";
+
     // Settlement Clearance
 
     const ACQ_SETTLEMENT_CLEARANCE_WORKFLOW_CREATED = 'Acq Settlement Clearance Workflow Created';

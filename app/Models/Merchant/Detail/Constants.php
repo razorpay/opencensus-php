@@ -219,6 +219,7 @@ class Constants
     const UPI_INSTRUMENT           = 'pg.upi.onboarding.online.upi';
     const EVENT_TYPE_ONBOARDING    = 'onboarding';
 
+    const CARD                     = 'CARD';
     const SUBCATEGORY_RECOMMENDATIONS           = 'subcategory_recommendations';
     const SHOW_SUBCATEGORY_RECOMMENDATIONS      = 'show_subcategory_recommendations';
     const MERCHANT_ACTIVATION_FETCH_INTERNAL    = 'merchant_activation_fetch_internal';
@@ -806,7 +807,7 @@ class Constants
     const CMMA_OPEN_CASE_TYPE              = 'open';
     const WORKFLOW_STATUS_CHANGE_OPEN_TYPE = 'workflow_status_change';
     const CMMA_CASE_STATUS_TYPE            = 'status';
-    
+
     const URLTYPE                                           ='urlType';
     const WORKFLOW_DETAIL_INPUT                             = 'workflow_detail_input';
     const FETCH_MERCHANT_ID_SAME_BUSINESS_WEBSITE_FROM_WDA  = 'fetch_merchant_id_same_business_website_from_wda';

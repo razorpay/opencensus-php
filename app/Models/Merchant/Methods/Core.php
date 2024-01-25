@@ -12,6 +12,8 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -41,7 +43,6 @@ use RZP\Models\Emi\CreditEmiProvider;
 use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Emi\CardlessEmiProvider;
-use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Base\UniqueIdEntity;
 
 class Core extends Base\Core
@@ -1565,6 +1566,21 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function isCardPaymentMethodAllowed($merchant)
+    {
+        if ($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID) {
+            return false;
+        }
+        $result = $this->app->razorx->getTreatment(DEConstants::CARD, RazorxTreatment::MERCHANT_ALT_ID_ONBOARDING, $this->mode);
+        if ($result === 'on') {
+            $this->trace->info(TraceCode::MERCHANT_ALT_ID_ONBOARDING_ENABLED, [
+                'merchant_id' => $merchant->getId(),
+            ]);
+            return true;
+        }
+        return false;
     }
 
     public function shouldDisableUpiByDefault($merchant): bool
