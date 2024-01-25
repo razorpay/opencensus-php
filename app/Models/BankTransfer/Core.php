@@ -956,13 +956,29 @@ class Core extends Base\Core
             //
             // $this->createAddressEntityForB2B($input,$payment);
             //
-            $this->saveSenderDetailsForIntlBankTransfer($input,$payment);
+            try {
+                $this->saveSenderDetailsForIntlBankTransfer($input,$payment);
+            }
+            catch (\Throwable $e) {
+                $error = $e->getError();
+                $errMsg = $e->getMessage() ?? '';
+                $errCode = $error->getInternalErrorCode() ?? '';
+                $this->trace->error(
+                    TraceCode::SAVE_SENDER_ADDRESS_FAILED,
+                    [
+                        'err_msg'     => $errMsg,
+                        'err_code'    => $errCode,
+                        'merchant_id' => $merchantId,
+                        'gateway'     => Payment\Gateway::CURRENCY_CLOUD,
+                    ]);
+
+            }
             $this->authorizePaymentForIntlBankTransfer($payment);
 
             $this->getNewProcessor($payment->merchant)->autoCapturePaymentIfApplicable($payment);
 
 
-            
+
         }
         catch (\Exception $e)
         {
@@ -1073,6 +1089,7 @@ class Core extends Base\Core
         /*
             Sample Address by Gateway - "sender": "Joe Bloggs;1 Street, City, GB, Postcode;GB;1111111111;;00000000",
         */
+        // "FUNDACIO INSTITUT D'INVESTIGACIO SA;ES;ES;ES2021000551580200293352;CAIXESBBXXX;"
         $senderDetails = explode(';',$response['sender']);
         $address = explode(',',$senderDetails[1]);
 
@@ -1083,23 +1100,25 @@ class Core extends Base\Core
             ]);
         }
 
-        $billingAddressFromInput['type']    = Address\Type::SENDER_ADDRESS;
-        $billingAddressFromInput['name']    = trim($senderDetails[0]);
-        $billingAddressFromInput['zipcode'] = trim(last($address));
-        $billingAddressFromInput['line1']   = trim($address[0]);
-        $billingAddressFromInput['city']    = trim($address[1]);
-        $billingAddressFromInput['country'] = trim($senderDetails[2]);
+        $billingAddressFromInput['type']        = Address\Type::SENDER_ADDRESS;
+        $billingAddressFromInput['name']        = trim($senderDetails[0]);
+        $billingAddressFromInput['zipcode']     = trim(last($address));
+        $billingAddressFromInput['line1']       = trim($address[0]);
+        if(count($address)>1) {
+            $billingAddressFromInput['city']    = trim($address[1]);
+        }
+        $billingAddressFromInput['country']     = trim($senderDetails[2]);
 
-        if(!ctype_digit($billingAddressFromInput['zipcode']) || strlen($billingAddressFromInput['zipcode'])<2 || strlen($billingAddressFromInput['zipcode'])>10) {
-            $billingAddressFromInput['zipcode']="";
+        if(!ctype_digit($billingAddressFromInput['zipcode']) or strlen($billingAddressFromInput['zipcode'])<2 or strlen($billingAddressFromInput['zipcode'])>10) {
+            unset($billingAddressFromInput['zipcode']);
         }
         $this->trace->info(TraceCode::ADDRESS_CREATE_REQUEST,[
             'billing_address' => $billingAddressFromInput,
             'payment_id'   => $payment->getId()
         ]);
-
-        (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
-
+        if(isset($billingAddressFromInput['country']) or isset($billingAddressFromInput['name'])) {
+            (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
+        }
     }
 
     protected function authorizePaymentForIntlBankTransfer($payment)

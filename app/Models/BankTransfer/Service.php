@@ -1047,7 +1047,7 @@ class Service extends Base\Service
                 'edd_status' => $eddStatus,
             ]);
         }
-        
+
         if ($this->merchant->hasValidPurposeCodeForGlobalBankTransfer() === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PURPOSE_CODE_FOR_INTL_PAYMENTS, null,
