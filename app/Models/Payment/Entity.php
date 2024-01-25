@@ -66,15 +66,16 @@ use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Fpx;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\QrPayment\Constants as QRConstant;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 use RZP\Models\Payment\Refund\TransactionTrackerMessages;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\RequestSource;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 use RZP\Models\PaymentsUpi;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
-
 /**
  * @property Subscription\Entity    $subscription
  * @property Invoice\Entity         $invoice
@@ -5831,6 +5832,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             $paymentArray[Payment\Entity::CURRENCY] = $orderEntity->getCurrency();
         }
+
+        if ($this->isQrV2Payment()  and $receiver->getRequestSource() === RequestSource::EZETAP)
+        {
+            $paymentArray[Payment\Entity::SOURCE_CHANNEL] = QRConstant::PAYMENT_TYPE_IN_PERSON;
+        }
+
 
         return $paymentArray;
     }
