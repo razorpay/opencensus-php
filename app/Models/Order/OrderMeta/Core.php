@@ -408,6 +408,7 @@ class Core extends Base\Core
         $lineItemsTotal = $value[Order1cc\Fields::LINE_ITEMS_TOTAL];
 
         $discount = 0;
+        $shippingDiscount = 0;
         // Only supports 1 promotion
         if (isset($value[Order1cc\Fields::PROMOTIONS]) === true
             and count($value[Order1cc\Fields::PROMOTIONS]) > 0) {
@@ -419,7 +420,12 @@ class Core extends Base\Core
             if (count($couponsApplied) > 0) {
                 foreach($couponsApplied as $couponApplied)
                 {
-                    $discount = $discount + $couponApplied[Order1cc\Fields::PROMOTIONS_VALUE] ?? 0;
+                    if ((isset($couponApplied[Order1cc\Fields::PROMOTIONS_TYPE]) === true && $couponApplied[Order1cc\Fields::PROMOTIONS_TYPE] === Order1cc\Fields::SHIPPING_FEE) &&
+                    (isset($couponApplied[Order1cc\Fields::PROMOTIONS_VALUE_TYPE]) === true && $couponApplied[Order1cc\Fields::PROMOTIONS_VALUE_TYPE] === "free")) {
+                        $shippingDiscount = $shippingFee;
+                        continue;
+                  }
+                  $discount = $discount + $couponApplied[Order1cc\Fields::PROMOTIONS_VALUE] ?? 0;
                 }
             }
         }
@@ -430,7 +436,7 @@ class Core extends Base\Core
         $minimumCartAmountAllowed = 100;
         $subTotal = $lineItemsTotal + $shippingFee;
         $afterDiscountCartAmount = max(0,$lineItemsTotal-$discount);
-        $netPrice = max($minimumCartAmountAllowed, $afterDiscountCartAmount + $shippingFee + $taxValue);
+        $netPrice = max($minimumCartAmountAllowed, $afterDiscountCartAmount + $shippingFee + $taxValue - $shippingDiscount);
 
         if (isset($value[Order1cc\Fields::PROMOTIONS]) === true
             and count($value[Order1cc\Fields::PROMOTIONS]) > 0) {
