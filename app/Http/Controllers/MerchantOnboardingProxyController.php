@@ -504,7 +504,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     {
         try
         {
-            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchantId);
 
             //Check for Google OAuth merchants
             $merchant = $this->repo->merchant->findOrFail($merchantId);
@@ -530,7 +530,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
                                                           self::ENABLE) === true or $merchantCountryCode === 'MY')
             {
                 $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
-                    'shouldMerchantOnboardViaPGOS-merchantId' => $merchantId,
+                    'merchantId' => $merchantId,
+                    'userDeviceDetails' => $userDeviceDetail,
                 ]);
 
                 if (empty($userDeviceDetail) === false)
@@ -539,6 +540,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
                     if (empty($merchantOnboardedViaService) === false)
                     {
+                        $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+                            'merchantId' => $merchantId,
+                            'service' => $merchantOnboardedViaService,
+                            'shouldOnboardViaPGOS' => $merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS,
+                        ]);
+
                         return $merchantOnboardedViaService === DeviceDetailConstants::SERVICE_PGOS;
                     }
                 }

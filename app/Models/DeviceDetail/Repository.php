@@ -54,6 +54,20 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function fetchByMerchantIdAndUserRoleFromMaster(string $merchantId, $role = Role::OWNER)
+    {
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $userIdColumn = $this->dbColumn(Entity::USER_ID);
+        $merchantUserIdColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::USER_ID);
+        $merchantUserRoleColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::ROLE);
+
+        return $this->newQuery()
+            ->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $userIdColumn)
+            ->where($merchantIdColumn, '=', $merchantId)
+            ->where($merchantUserRoleColumn, '=', $role)
+            ->first();
+    }
+
     public function filterSignupCampaignAndSourceFromMerchantIdList(array $merchantIdList, string $signupCampaign, array $signupSources, $role = Role::OWNER)
     {
         // TODO Phantom Onboarding add for phantom_onboarding signup campaign as well
