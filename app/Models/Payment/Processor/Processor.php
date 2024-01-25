@@ -414,6 +414,11 @@ class Processor
     const ALLOW_NON_RZP_ORG_MERCHANTS_ON_REARCH_UPS = 'allow_non_rzp_org_merchants_on_rearch_ups';
 
     /**
+     * Razorx flag to allow Apps merchants on re-arch flow
+     */
+    const ALLOW_APPS_MERCHANTS_ON_REARCH_UPS = 'allow_apps_merchants_on_rearch_ups';
+
+    /**
      * Razorx flag to allow route from ups re-arch flow
      */
     const ALLOW_ROUTE_ON_REARCH_UPS_V2 = 'allow_route_on_rearch_ups_v2';
@@ -2252,8 +2257,10 @@ class Processor
                 // Check if product ID exists in the order
                 if ($order->getProductId() !== null)
                 {
-                    $routeViaReArch = false;
-                    $dimensions[25] = 1;
+                    if ($this->shouldRouteAppsViaUPS($order) === false) {
+                        $routeViaReArch = false;
+                        $dimensions[25] = 1;
+                    }
                 }
 
                 // Check if fee config ID exists in the order
@@ -11261,6 +11268,30 @@ class Processor
             'variant'     => $variant,
             'mode'        => $this->mode,
             'feature'     => $feature,
+        ]);
+
+        return str_starts_with($variant, 'on') === true;
+    }
+
+    /**
+     * shouldRouteAppsViaUPS checks if Apps traffic should be routed to UPI Rearch flow
+     * @param $order
+     * @return bool
+     */
+    public function shouldRouteAppsViaUPS($order): bool
+    {
+        $productType = optional($order)->getProductType() ?? 'unknown';
+
+        $feature = self::ALLOW_APPS_MERCHANTS_ON_REARCH_UPS . '_' . $productType;
+
+        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(), $feature, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_APPS_RAZORX_VARIANT, [
+            'merchant_id'  => $this->merchant->getMerchantId(),
+            'product_type' => $productType,
+            'variant'      => $variant,
+            'mode'         => $this->mode,
+            'feature'      => $feature,
         ]);
 
         return str_starts_with($variant, 'on') === true;
