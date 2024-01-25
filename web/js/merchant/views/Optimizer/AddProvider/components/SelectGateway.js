@@ -37,6 +37,7 @@ const SelectGateway = (props) => {
     selectedProvider,
     categorizedProviders = {},
     hasSeamlessOption,
+    hasAccountTypeOption,
     selectProvider,
     changeGateway,
   } = props;
@@ -209,7 +210,11 @@ const SelectGateway = (props) => {
         ) : (
           <Box display="flex" flexDirection="column" gap="spacing.3" alignItems="end">
             <Text color="surface.text.subdued.lowContrast">
-              {isFormEdit ? 'STEP 1' : hasSeamlessOption ? 'STEP 1 OUT OF 4' : 'STEP 1 OUT OF 3'}
+              {isFormEdit
+                ? 'STEP 1'
+                : hasSeamlessOption || hasAccountTypeOption
+                ? 'STEP 1 OUT OF 4'
+                : 'STEP 1 OUT OF 3'}
             </Text>
             {!selectedProvider && (
               <Box display="flex" gap="spacing.3">

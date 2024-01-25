@@ -23,6 +23,7 @@ import {
   WALLET_AUTO_DEBIT_KEY,
   PROVIDER_KEYS,
   SEAMLESS_PROVIDERS,
+  RAZORPAY_GATEWAY_KEY,
 } from 'merchant/views/Navigator/constants';
 import { addProvider, editProvider } from 'merchant/views/Navigator/service';
 import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
@@ -115,7 +116,10 @@ class AddProvider extends React.Component {
         // check if gateway has seamless option enabled
         const hasSeamlessOption =
           SEAMLESS_PROVIDERS?.includes(Gateway) &&
-          Gateway_details?.hasOwnProperty('optimizer_seamless_disabled');
+          Gateway_details?.hasOwnProperty(PROVIDER_KEYS.SEAMLESS_KEY);
+        const hasAccountTypeOption =
+          Gateway === RAZORPAY_GATEWAY_KEY &&
+          Gateway_details?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
 
         const paymentMethods = Gateway_details?.['Payment Methods'] ?? [];
         const hasNBMethod = paymentMethods.includes('netbanking');
@@ -139,7 +143,7 @@ class AddProvider extends React.Component {
             },
             2: {
               edit: hasSeamlessOption,
-              show: hasSeamlessOption,
+              show: hasSeamlessOption || hasAccountTypeOption,
             },
             3: {
               edit: !hasSeamlessOption,
@@ -159,8 +163,11 @@ class AddProvider extends React.Component {
     }
   };
 
+  // Case insensitive check
   isProviderNameUnique = (name, activeProviders) =>
-    activeProviders.some(({ Provider_name }) => Provider_name === name);
+    activeProviders.some(
+      ({ Provider_name }) => Provider_name?.toLowerCase() === name?.toLowerCase(),
+    );
 
   generateUniqueProviderName(selectedProvider, activeProviders) {
     let uniqueName = selectedProvider;
@@ -200,9 +207,11 @@ class AddProvider extends React.Component {
         const { providers, provider } = prevState;
         const newProviderObj = { ...provider };
         newProviderObj.Gateway = selectedProvider;
+        const providerName =
+          selectedProvider === RAZORPAY_GATEWAY_KEY ? 'razorpay' : selectedProvider;
         // This logic ensures that Provider_name is unique among activeProviders.
         newProviderObj.Provider_name = this.generateUniqueProviderName(
-          selectedProvider,
+          providerName,
           activeProviders,
         );
 
@@ -274,10 +283,14 @@ class AddProvider extends React.Component {
         // check if gateway has seamless option enabled
         const hasSeamlessOption =
           SEAMLESS_PROVIDERS?.includes(selectedProvider) &&
-          providers?.[selectedProvider]?.hasOwnProperty('optimizer_seamless_disabled');
+          providers?.[selectedProvider]?.hasOwnProperty(PROVIDER_KEYS.SEAMLESS_KEY);
+        // check if account type required for gateway acquirer
+        const hasAccountTypeOption =
+          selectedProvider === RAZORPAY_GATEWAY_KEY &&
+          providers?.[selectedProvider]?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
 
-        if (nextStep === 2 && !hasSeamlessOption) {
-          nextStep += 1; // Skip step 2 if gateway doesn't support seamless integration
+        if (nextStep === 2 && !(hasSeamlessOption || hasAccountTypeOption)) {
+          nextStep += 1; // Skip step 2 if gateway doesn't support seamless integration or account type
         }
 
         steps[currentStep].edit = false;
@@ -321,6 +334,11 @@ class AddProvider extends React.Component {
       'optimizer_seamless_disabled',
     );
 
+    // check if account type is selected for gateway acquirer
+    const isAccountTypeNotSelected =
+      selectedProviderWithAcquirer === RAZORPAY_GATEWAY_KEY &&
+      !provider?.Gateway_details?.['Gateway Acquirer'];
+
     // step3 validation
     const isProviderNameEmpty = (provider?.Provider_name || '').trim();
     const isProviderDescriptionEmpty = (provider?.Description || '').trim();
@@ -340,6 +358,9 @@ class AddProvider extends React.Component {
         break;
       case 2:
         if (seamlessOptionExist && !seamlessRadioValue) {
+          isDisabled = true;
+        }
+        if (isAccountTypeNotSelected) {
           isDisabled = true;
         }
         break;
@@ -398,7 +419,11 @@ class AddProvider extends React.Component {
         let isProviderNameValid = true;
         const { activeProviders } = this.props;
         activeProviders?.forEach((item) => {
-          if (value === item?.Provider_name && item?.Terminal_id !== provider?.Terminal_id) {
+          // Case insensitive check
+          if (
+            value?.toLowerCase() === item?.Provider_name?.toLowerCase() &&
+            (item?.Provider_name === 'razorpay' || item?.Terminal_id !== provider?.Terminal_id)
+          ) {
             isProviderNameValid = false;
           }
         });
@@ -745,6 +770,9 @@ class AddProvider extends React.Component {
     } = this.state;
 
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
+    const hasAccountTypeOption =
+      selectedProviderWithAcquirer === RAZORPAY_GATEWAY_KEY &&
+      providers?.[selectedProviderWithAcquirer]?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
 
     return (
       <Box
@@ -778,6 +806,7 @@ class AddProvider extends React.Component {
                 categorizedProviders={categorizedProviders}
                 gatewayDetails={provider?.Gateway_details}
                 hasSeamlessOption={hasSeamlessOption}
+                hasAccountTypeOption={hasAccountTypeOption}
                 selectProvider={this.selectProvider}
                 changeGateway={this.changeGateway}
                 onEditClick={this.onEditClick}
@@ -793,6 +822,7 @@ class AddProvider extends React.Component {
                   selectedProvider={selectedProviderWithAcquirer}
                   gatewayDetails={provider?.Gateway_details}
                   toggleIntegrationType={this.toggleIntegrationType}
+                  changeGatewayDetails={this.changeGatewayDetails}
                   validateStep={this.disableStep}
                   onNextClick={this.goNext}
                   onEditClick={this.onEditClick}
@@ -808,7 +838,7 @@ class AddProvider extends React.Component {
                   selectedProvider={selectedProviderWithAcquirer}
                   provider={provider}
                   isProviderNameValid={isProviderNameValid}
-                  hasSeamlessOption={hasSeamlessOption}
+                  hasSeamlessOption={hasSeamlessOption || hasAccountTypeOption}
                   changeProviderDetails={this.changeProviderDetails}
                   validateStep={this.disableStep}
                   onNextClick={this.goNext}
@@ -827,7 +857,7 @@ class AddProvider extends React.Component {
                   isPaytmAutoDebitEnabled={user.isPaytmAutoDebitEnabled}
                   validationErrors={validationErrors}
                   isSubmitting={isSaving}
-                  hasSeamlessOption={hasSeamlessOption}
+                  hasSeamlessOption={hasSeamlessOption || hasAccountTypeOption}
                   changeGatewayDetails={this.changeGatewayDetails}
                   changeGatewayWallets={this.changeGatewayWallets}
                   changeEnableAutoDebitSwitch={this.changeEnableAutoDebitSwitch}

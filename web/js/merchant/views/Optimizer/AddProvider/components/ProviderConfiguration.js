@@ -22,6 +22,7 @@ import {
   INSTANT_PROVIDER_UNSUPPORTED_METHODS,
   METHODS_MAP,
   TPV_OPTIONS,
+  SKIP_INPUT_FOR_PROVIDER_KEYS,
 } from 'merchant/views/Navigator/constants';
 
 import WalletAutoDebit from './WalletAutoDebit';
@@ -66,7 +67,7 @@ const ProviderConfiguration = (props) => {
 
   // Filter out the fields that are required in this step3.
   const fields = Object.entries(selectedProviderDetails).reduce((acc, [label, value]) => {
-    if (!['Gateway Name', 'optimizer_seamless_disabled', PROVIDER_KEYS.SODEXO].includes(label)) {
+    if (!SKIP_INPUT_FOR_PROVIDER_KEYS.includes(label)) {
       // Need to show auto debit fields at the end of the list in mentioned order
       if (selectedProvider === 'paytm' && PAYTM_AUTO_DEBIT_FIELDS.includes(label)) {
         if (label === 'ENABLE_AUTO_DEBIT') {

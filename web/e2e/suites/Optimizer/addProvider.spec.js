@@ -20,6 +20,11 @@ const ELEMENTS = {
     '[data-testid="integration-type"] label[data-blade-component="radio-label"] [data-blade-component="base-text"]:text("Instant (beta)")',
   SERVER_TO_SERVER:
     '[data-testid="integration-type"] label[data-blade-component="radio-label"] [data-blade-component="base-text"]:text("Server-to-Server")',
+  REGULAR_ACCOUNT_TYPE:
+    '[data-testid="account-type"] label[data-blade-component="radio-label"] [data-blade-component="base-text"]:text("Regular")',
+  BANKING_VAS_ACCOUNT_TYPE:
+    '[data-testid="account-type"] label[data-blade-component="radio-label"] [data-blade-component="base-text"]:text("Banking VAS")',
+  SELECT_BANK_NAME: 'button[role="combobox"][placeholder="Select bank"]',
   PROVIDER_NAME: 'input[name="Provider_name"]',
   PROVIDER_DESCRIPTION: 'textarea[name="Description"]',
   PROVIDER_KEY: 'input[name="Key"]',
@@ -33,6 +38,7 @@ const ELEMENTS = {
   PROVIDER_NON_TPV: 'input[name="TPV"][value="0"]',
   PROVIDER_TPV_ONLY: 'input[name="TPV"][value="1"]',
   PROVIDER_TPV_BOTH: 'input[name="TPV"][value="2"]',
+  PROVIDER_SECRET: 'input[name="Secret"]',
 };
 
 const assertSelectGateway = async ({ page, searchTerm, provider }) => {
@@ -58,6 +64,27 @@ const assertIntegrationType = async ({ page, radioSelector, noteText }) => {
   expect(radioLabel).toBeVisible();
   await radioLabel.click();
   expect(page.getByText(noteText, { exact: true })).toBeVisible();
+  await clickButton(page, 'Next');
+};
+
+const assertAccountType = async ({ page, radioSelector, isBankingVas }) => {
+  await commonStepAssertions(page, {
+    primaryText: 'Select account type',
+    secondaryText: 'Select the type of account for the selected gateway',
+    stepText: 'STEP 2 OUT OF 4',
+  });
+  expect(page.getByRole('button', { name: 'Next' })).toBeDisabled();
+  const radioLabel = await page.locator(radioSelector);
+  expect(radioLabel).toBeVisible();
+  await radioLabel.click();
+  if (isBankingVas) {
+    const selectBank = await page.locator(ELEMENTS.SELECT_BANK_NAME);
+    expect(selectBank).toBeVisible();
+    await selectBank.click();
+    const axisBankOption = await page.locator('button[role="option"][data-value="axis_vas"]');
+    expect(axisBankOption).toBeVisible();
+    await axisBankOption.click();
+  }
   await clickButton(page, 'Next');
 };
 
@@ -264,6 +291,88 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
       await clickButton(page, 'Go Back');
     } catch (error) {
       console.error('Error Add Billdesk Provider: ', error?.message);
+    }
+  });
+
+  test('Add optimizer razorpay provider for regular account type', async ({ page }) => {
+    try {
+      await navigateToOptimizer(page);
+      await clickButton(page, 'Add Provider');
+      // Step 1
+      await assertSelectGateway({ page, searchTerm: 'razorpay', provider: 'optimizer_razorpay' });
+      // Step 2
+      await assertAccountType({
+        page,
+        radioSelector: ELEMENTS.REGULAR_ACCOUNT_TYPE,
+        isBankingVas: false,
+      });
+      // Step 3
+      await assertProviderDetails({ page, stepText: 'STEP 3 OUT OF 4' });
+      // Step 4
+      await commonStepAssertions(page, {
+        primaryText: 'Razorpay Production API Details',
+        secondaryText:
+          'Please make sure you enter the production API details only and NOT the Test Details',
+        stepText: 'STEP 4 OUT OF 4',
+      });
+      const methods = [
+        METHODS_MAP[METHODS.CARD],
+        METHODS_MAP[METHODS.NETBANKING],
+        METHODS_MAP[METHODS.UPI],
+      ];
+      const submitBtn = page.getByRole('button', { name: 'Submit' });
+      await expect(submitBtn).toBeDisabled();
+      expect(page.getByText('Key', { exact: true })).toBeVisible();
+      expect(page.getByText('Secret', { exact: true })).toBeVisible();
+      expect(page.getByText('Payment Methods', { exact: true })).toBeVisible();
+      await typeTextIntoElement(page, ELEMENTS.PROVIDER_KEY, 'ABC678TEST');
+      await typeTextIntoElement(page, ELEMENTS.PROVIDER_SECRET, 'IJK762TEST');
+      await clickMethodsByText(page, methods);
+      expect(submitBtn).toBeEnabled();
+      await clickButton(page, 'Go Back');
+    } catch (error) {
+      console.error('Error Add optimizer razorpay provider: ', error?.message);
+    }
+  });
+
+  test('Add optimizer razorpay provider for banking vas account type', async ({ page }) => {
+    try {
+      await navigateToOptimizer(page);
+      await clickButton(page, 'Add Provider');
+      // Step 1
+      await assertSelectGateway({ page, searchTerm: 'razorpay', provider: 'optimizer_razorpay' });
+      // Step 2
+      await assertAccountType({
+        page,
+        radioSelector: ELEMENTS.BANKING_VAS_ACCOUNT_TYPE,
+        isBankingVas: true,
+      });
+      // Step 3
+      await assertProviderDetails({ page, stepText: 'STEP 3 OUT OF 4' });
+      // Step 4
+      await commonStepAssertions(page, {
+        primaryText: 'Razorpay Production API Details',
+        secondaryText:
+          'Please make sure you enter the production API details only and NOT the Test Details',
+        stepText: 'STEP 4 OUT OF 4',
+      });
+      const methods = [
+        METHODS_MAP[METHODS.CARD],
+        METHODS_MAP[METHODS.NETBANKING],
+        METHODS_MAP[METHODS.UPI],
+      ];
+      const submitBtn = page.getByRole('button', { name: 'Submit' });
+      await expect(submitBtn).toBeDisabled();
+      expect(page.getByText('Key', { exact: true })).toBeVisible();
+      expect(page.getByText('Secret', { exact: true })).toBeVisible();
+      expect(page.getByText('Payment Methods', { exact: true })).toBeVisible();
+      await typeTextIntoElement(page, ELEMENTS.PROVIDER_KEY, 'ABC678TEST');
+      await typeTextIntoElement(page, ELEMENTS.PROVIDER_SECRET, 'IJK762TEST');
+      await clickMethodsByText(page, methods);
+      expect(submitBtn).toBeEnabled();
+      await clickButton(page, 'Go Back');
+    } catch (error) {
+      console.error('Error Add optimizer razorpay provider: ', error?.message);
     }
   });
 });

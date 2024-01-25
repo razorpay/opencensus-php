@@ -9,6 +9,7 @@ import {
   PAYTM_PROVIDER,
   NETBANKING_AXIS_PROVIDER,
   CKO_PROVIDER,
+  OPTIMIZER_RAZORPAY_PROVIDER,
 } from 'merchant/views/Navigator/components/AddProvider/components/__test__/mocks/Step3';
 import { SUPPORTED_GATEWAYS } from 'merchant/views/Navigator/components/AddProvider/components/__test__/mocks/constants';
 import ProviderConfiguration from 'merchant/views/Optimizer/AddProvider/components/ProviderConfiguration';
@@ -20,6 +21,7 @@ describe('Add Provider > ProviderConfiguration', () => {
   beforeEach(() => {
     mockProps = {
       isEdit: false,
+      isFormEdit: true,
       providers: SUPPORTED_GATEWAYS,
       provider: {
         Gateway: 'payu',
@@ -27,6 +29,8 @@ describe('Add Provider > ProviderConfiguration', () => {
           'Payment Methods': [],
         },
       },
+      hasSeamlessOption: true,
+      validationErrors: {},
     };
 
     console.error = jest.fn(); // Silence error messages
@@ -148,6 +152,33 @@ describe('Add Provider > ProviderConfiguration', () => {
     test.each(FIELDS)('should rendered the requried fields: %s', (field) => {
       render(<App {...CKO_PROVIDER} />);
       expect(screen.getByText(titleCase(field))).toBeInTheDocument();
+    });
+  });
+
+  describe('For optimizer_razorpay gateway', () => {
+    const FIELDS = ['Key', 'Secret', 'Payment Methods'];
+
+    test('should render without any errors', () => {
+      expect(() => render(<App {...OPTIMIZER_RAZORPAY_PROVIDER} />)).not.toThrowError();
+    });
+
+    test('should render correct text for gateway', () => {
+      render(<App {...mockProps} {...OPTIMIZER_RAZORPAY_PROVIDER} />);
+      expect(
+        screen.getByRole('heading', { name: 'Razorpay Production API Details' }),
+      ).toBeInTheDocument();
+      expect(screen.getByText('STEP 4 OUT OF 4')).toBeInTheDocument();
+      expect(screen.getByText('Where do I find Razorpay API Keys details?')).toBeInTheDocument();
+    });
+
+    test.each(FIELDS)('should rendered the required fields: %s', (field) => {
+      render(<App {...OPTIMIZER_RAZORPAY_PROVIDER} />);
+      expect(screen.getByText(field)).toBeInTheDocument();
+    });
+
+    test('should not render Gateway Acquirer field', () => {
+      render(<App {...OPTIMIZER_RAZORPAY_PROVIDER} />);
+      expect(screen.queryByText('Gateway Acquirer')).not.toBeInTheDocument();
     });
   });
 });

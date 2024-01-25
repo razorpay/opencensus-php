@@ -1,7 +1,6 @@
 import {
   BANK_GATEWAYS,
   INTERNATIONAL_GATEWAYS,
-  INCOMPLETE_GATEWAY,
   METHODS_MAP,
   TPV_OPTIONS,
 } from 'merchant/views/Navigator/constants';
@@ -19,11 +18,7 @@ export function categorizeGateways(providersList = {}, abExperiments) {
 
   // filter gateways with empty payment methods and sort the gateway keys based on payment methods length
   const gatewayKeys = Object.keys(providersList)
-    .filter(
-      (key) =>
-        !INCOMPLETE_GATEWAY.includes(key) &&
-        (providersList[key]?.['Payment Methods']?.data_value || []).length > 0,
-    )
+    .filter((key) => (providersList[key]?.['Payment Methods']?.data_value || []).length > 0)
     .sort((a, b) => {
       const paymentMethodsA = providersList[a]?.['Payment Methods']?.data_value || [];
       const paymentMethodsB = providersList[b]?.['Payment Methods']?.data_value || [];

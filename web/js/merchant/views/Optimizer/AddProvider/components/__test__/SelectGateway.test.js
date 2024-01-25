@@ -3,7 +3,7 @@ import { BladeProvider } from '@razorpay/blade/components';
 import { paymentTheme } from '@razorpay/blade/tokens';
 
 import { deepClone } from 'common/utils/rzp-utils';
-import { GATEWAY_CATEGORIES } from 'merchant/views/Navigator/constants';
+import { GATEWAY_CATEGORIES, RAZORPAY_GATEWAY_KEY } from 'merchant/views/Navigator/constants';
 import SelectGateway from 'merchant/views/Optimizer/AddProvider/components/SelectGateway';
 import { render, screen, waitFor, fireEvent } from 'test-utils';
 
@@ -29,6 +29,12 @@ const mockProps = {
       'Gateway Name': { data_value: 'Checkout.com' },
       'Payment Methods': {
         data_value: ['card'],
+      },
+    },
+    optimizer_razorpay: {
+      'Gateway Name': { data_value: 'Razorpay' },
+      'Payment Methods': {
+        data_value: ['card', 'upi', 'netbanking'],
       },
     },
   },
@@ -192,5 +198,13 @@ describe('Add Provider SelectGateway component', () => {
       expect(getByText('PayU')).toBeInTheDocument();
       expect(queryByText(/Change gateway/)).not.toBeInTheDocument();
     });
+  });
+
+  it('should render correct step for optimizer_razorpay provider edit', () => {
+    mockProps.isFormEdit = false;
+    mockProps.isEdit = true;
+    mockProps.hasAccountTypeOption = true;
+    render(<App {...mockProps} selectedProvider={RAZORPAY_GATEWAY_KEY} />);
+    expect(screen.getByText('STEP 1 OUT OF 4')).toBeInTheDocument();
   });
 });
