@@ -67,8 +67,7 @@ class Service extends \RZP\Models\Base\Service
             $this->trace->count(Metric::UPDATE_CUSTOMERS_DETAILS_REQUEST_COUNT, $dimensions);
 
             try {
-                $shouldUpdateUsage = (new OneCcUtils())->canRouteToCheckoutServiceForAddressSorting();
-                if (!empty($input['customer_details']['shipping_address']['id']) && !empty($input['customer_details']['billing_address']) && $shouldUpdateUsage === true) {
+                if (!empty($input['customer_details']['shipping_address']['id']) && !empty($input['customer_details']['billing_address'])) {
                     $addressId = $input['customer_details']['shipping_address']['id'];
                     $customer = (new Customer\Service)->getMagicCustomer();
                     if ($customer != null) {
