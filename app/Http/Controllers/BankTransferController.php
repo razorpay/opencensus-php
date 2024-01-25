@@ -650,6 +650,16 @@ class BankTransferController extends Controller
         $provider  = Provider::AXIS;
 
         $payerAccount = isset($input['Sndr_acnt'])?$input['Sndr_acnt']:'';
+
+        // correction of HSBC account number
+        // original account number = "IN HSBC 054-123456-001"
+        // correct account number = "054123456001"
+        $hsbc_acc_no_pattern = '/IN\s+HSBC\s+(\d{3}-\d{6}-\d{3})/';
+        if (preg_match($hsbc_acc_no_pattern, $payerAccount, $matches))
+        {
+            $payerAccount = preg_replace('/IN\s+HSBC\s+|-/', '', $payerAccount);
+        }
+
         $payerName = isset($input['Sndr_nm'])?$input['Sndr_nm']:'';
 
         $xCorpCode = $this->config['applications.axis_va.x_corp_code'];

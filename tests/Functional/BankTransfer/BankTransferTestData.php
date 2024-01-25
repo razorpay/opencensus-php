@@ -2792,6 +2792,36 @@ return [
         ]
     ],
 
+    'testValidateBankTransferAxisForHSBC' => [
+        'request' => [
+            'url'     => '/ecollect/validate/axis/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_AXIS_SECRET',
+            ],
+            'content' => [
+                'UTR'         => 'HSBCR22024011023201234',
+                'Bene_acc_no' => '984573575881234',
+                'Req_type'    => 'validation',
+                'Req_dt_time' => '2021-06-28 00:00:00',
+                'Txn_amnt'    => '2.00',
+                'Corp_code'   => 'RAZP',
+                'Pmode'       => 'rtgs',
+                'Sndr_acnt'   => 'IN HSBC 073-355356-001',
+                'Sndr_nm'     => 'XYZ',
+                'Sndr_ifsc'   => 'HDFC0000522',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Stts_flg' => 'S',
+                'Err_cd'   => '000',
+                'message'  => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testValidateBankTransferAxisForImps' => [
         'request' => [
             'url'     => '/ecollect/validate/axis/test',

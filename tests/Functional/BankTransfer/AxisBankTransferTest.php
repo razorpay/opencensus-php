@@ -261,6 +261,29 @@ class AxisBankTransferTest extends TestCase
         $this->assertEquals('Success', $response['message']);
     }
 
+    public function testValidateBankTransferAxisForHSBC()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Bene_acc_no'] = $this->getAxisVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/ecollect/validate/axis/test',
+            'method' => 'post',
+            'server' => $testData['request']['server'],
+            'content' => $testData['request']['content']
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // Test needs more assertions
+        $this->assertEquals('S', $response['Stts_flg']);
+        $this->assertEquals('000', $response['Err_cd']);
+        $this->assertEquals('Success', $response['message']);
+    }
+
     public function testAxisBankTransferValidateCustomerFeeMerchant()
     {
         $this->fixtures->merchant->enableConvenienceFeeModel('10000000000000');
