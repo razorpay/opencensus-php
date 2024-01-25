@@ -798,7 +798,7 @@ trait Authorize
                         {
 
                         // paysecure rupay save=1 flow and recurring  will happen via token pan and cryptogram
-                            if ($payment->card->isRuPay() === true &&  $payment->getGateway() === GATEWAY::PAYSECURE && $payment->isRecurring() === false )
+                            if ($payment->card->isRuPay() === true &&  $payment->getGateway() === GATEWAY::PAYSECURE)
                             {
 
                                 $rupayRazorxCacheKey =  implode('_', [self::RUPAY_ALT_ID_RAZORX_RESULT,$payment->getId()]);
