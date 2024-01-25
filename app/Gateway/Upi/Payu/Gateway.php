@@ -23,7 +23,9 @@ class Gateway extends Base\Gateway
 
     use CommonGatewayTrait;
 
-    use Base\RecurringTrait;
+    use Base\RecurringTrait {
+        debit as protected upiDebit;
+    }
 
     const ACQUIRER = 'payu';
 
@@ -50,6 +52,19 @@ class Gateway extends Base\Gateway
             return $this->walletAuthorize($input);
         }
         throw new LogicException('Invalid Payment method, authorize request failed');
+    }
+
+    public function debit(array $input)
+    {
+        if((isset($input['payment']['method']) === true) and
+            ($input['payment']['method'] === Payment\Method::UPI) and
+            ($input['payment']['recurring'] === true))
+        {
+            return $this->upiDebit($input);
+
+        }
+
+        $this->input = $input;
     }
 
     protected function updateGatewayPaymentResponse(Entity $payment, array $response, bool $shouldMap = true)

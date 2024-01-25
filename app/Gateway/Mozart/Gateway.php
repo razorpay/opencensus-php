@@ -2758,7 +2758,10 @@ class Gateway extends Base\Gateway
                 // Adding this check as all the mozart gateways do not support formatted amount response
                 // They will have to be migrated eventually as well to this flow. When all gateways are
                 // migrated, this check should be removed
-                if ($this->formattedResponseAmountGateway($input['payment']['gateway']))
+                if ($this->formattedResponseAmountGateway($input['payment']['gateway']) or
+                    ((in_array($input['payment']['gateway'],RecurringTrait::$optimizerUpiRecurringGateway) === true) and
+                        ($input['payment']['recurring'] === true) and ($input['payment']['method'] === Payment\Method::UPI)
+                    ))
                 {
                     $dbAmount      = number_format($input['payment']['amount'] / 100, 2, '.', '');
                     $gatewayAmount = number_format($response['data']['amount'], 2, '.', '');
@@ -2860,8 +2863,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::UPI_SBI,
             Payment\Gateway::NETBANKING_KVB,
-            Payment\Gateway::CRED,
-            Payment\Gateway::PAYU
+            Payment\Gateway::CRED
         ];
 
         return in_array($gateway, $formattedAmountGateways, true);
