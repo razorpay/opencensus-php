@@ -817,14 +817,8 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals($rrn, $payment['reference16']);
     }
 
-    protected function enableRazorXTreatmentForClosedQrAutoCapture()
-    {
-        $this->setMockRazorxTreatment([RazorxTreatment::QR_PAYMENT_AUTO_CAPTURE_FOR_CLOSED_QR => RazorxTreatment::RAZORX_VARIANT_ON]);
-    }
-
     public function testDelayedCallbackOnSingleUseQrCode()
     {
-        $this->enableRazorXTreatmentForClosedQrAutoCapture();
 
         $qrCode = $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 4000,
@@ -870,7 +864,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     public function testDelayedCallbackOnMultipleUseQrCode()
     {
-        $this->enableRazorXTreatmentForClosedQrAutoCapture();
 
         $qrCode = $this->createQrCode(
             ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 4000,

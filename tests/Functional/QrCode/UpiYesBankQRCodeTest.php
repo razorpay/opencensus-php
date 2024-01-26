@@ -194,10 +194,11 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->makeUpiYesBankPayment($qrCodeEntity);
 
-        $this->runQrPaymentEntityAssertions(false);
+        $this->runQrPaymentEntityAssertions();
 
+        //Payment made before Closing Time so, we will accept this Callback
         $refund = $this->getDbLastEntity('refund');
-        $this->assertEquals(UnexpectedPaymentReason::QR_PAYMENT_ON_CLOSED_QR_CODE, $refund['notes']['refund_reason']);
+        $this->assertNull($refund,'Refund Entity should be null');
     }
 
     public function testPaymentForInvalidQrCode()

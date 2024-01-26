@@ -610,8 +610,7 @@ class Processor extends Base\Core
         {
             $isPaymentExpected = false;
 
-            if ($this->checkIfExperimentEnabledForExpiry($this->qrCode) === true and
-                $qrPayment->getTransactionTime() !== null)
+            if($qrPayment->getTransactionTime() !== null)
             {
 
                 if (($this->qrCode->getClosedAt() !== null) and
@@ -651,20 +650,6 @@ class Processor extends Base\Core
         }
 
         $qrPayment->setExpected(true);
-    }
-
-    public function checkIfExperimentEnabledForExpiry($qrCode)
-    {
-        $variant = $this->app['razorx']->getTreatment($qrCode->getMerchantId(),
-                                                      RazorxTreatment::QR_PAYMENT_AUTO_CAPTURE_FOR_CLOSED_QR,
-                                                      $this->mode
-        );
-        if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     /**

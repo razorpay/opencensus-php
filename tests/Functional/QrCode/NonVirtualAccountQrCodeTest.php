@@ -1260,16 +1260,17 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $qrPayment = $this->getDbLastEntity('qr_payment');
         $payment = $this->getLastEntity('payment', true);
 
+        //Payment made before Closing Time so, we will accept this Callback
         $refund = $this->getDbLastEntity('refund');
-        $this->assertEquals(UnexpectedPaymentReason::QR_PAYMENT_ON_CLOSED_QR_CODE, $refund['notes']['refund_reason']);
+        $this->assertNull($refund,'Refund Entity should be null');
 
         $this->assertEquals('upi', $payment['method']);
-        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(4000, $payment['amount']);
         $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
         $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
 
-        $this->assertEquals(0, $qrPayment['expected']);
+        $this->assertEquals(true, $qrPayment['expected']);
 
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);

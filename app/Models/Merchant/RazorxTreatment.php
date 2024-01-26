@@ -272,7 +272,6 @@ final class RazorxTreatment
 
     const QR_ON_EMAIL = 'qr_on_email';
 
-    const QR_PAYMENT_AUTO_CAPTURE_FOR_CLOSED_QR = 'qr_payment_auto_capture_for_closed_qr';
 
     // experiment for merchant when trim migration in progress
     const TRIM_MIGRATION_IN_PROGRESS = 'trim_migration_in_progress';
