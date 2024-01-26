@@ -34,6 +34,8 @@ class KafkaMessageProcessor
 
     const ASV_MERCHANT_UPDATE_EVENTS = 'asv-merchant-update-events';
 
+    const ES_SYNC_EVENTS = 'es-sync';
+
     /** @var Application $app */
     protected $app;
 
@@ -175,7 +177,9 @@ class KafkaMessageProcessor
             case self::PARTNERSHIPS_OUTBOX_EVENTS:
                 return new KafkaJobs\PartnershipsOutboxEventHandlerJob($payload, $mode);
             case self::API_KAFKA_CONSUMER_BVS_VIDEO_KYC_EVENTS:
-                    return new KafkaJobs\BvsVideoKYCEventsJob($payload['data'], $mode);
+                return new KafkaJobs\BvsVideoKYCEventsJob($payload['data'], $mode);
+            case self::ES_SYNC_EVENTS:
+                return new KafkaJobs\EsPaymentEntitySync($payload, $mode);
 
             default:
                 return null;
