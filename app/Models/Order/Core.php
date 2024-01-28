@@ -51,8 +51,19 @@ class Core extends Base\Core
         if ($routeToPGRouter === true)
         {
 //            $this->trace->info(TraceCode::ORDER_ROUTING_TO_PG_ROUTER);
+            $publicKey = App::getFacadeRoot()['basicauth']->getPublicKey();
 
-            $input['public_key'] = App::getFacadeRoot()['basicauth']->getPublicKey();
+            if (empty($publicKey) === true && in_array($input['product_type'], \RZP\Models\PaymentLink\Entity::paymentLinkEntityProductTypes()))
+            {
+                $publicKey = 'rzp_'.$this->mode.'_'.$merchant->getId();
+                $keyEntity = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+                if (isset($keyEntity) === true)
+                {
+                    $publicKey = $keyEntity->getPublicKey($this->mode);
+                }
+            }
+
+            $input['public_key'] = $publicKey;
 
             $orderService->checkForDefaultOffers($input);
 
