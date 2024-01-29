@@ -1637,6 +1637,13 @@ class Header
     const CREATE_BULK_GIFT_CARD_CONTACT = 'Contact (Optional)';
     const CREATE_BULK_GIFT_CARD_BUYER_USER_ID = 'Buyer User ID (Optional)';
 
+    // GCOMS: Provide EMAILS against orderID for gift-cards delivery
+    const UPLOAD_BULK_EMAIL_ORDER_ID = "Order ID";
+    const UPLOAD_BULK_EMAIL_PROGRAM_ID = "Program ID";
+    const UPLOAD_BULK_EMAIL_PROGRAM_NAME = "Program Name (Optional)";
+    const UPLOAD_BULK_EMAIL_DENOMINATION = "Denomination (in Rupees)";
+    const UPLOAD_BULK_EMAIL_EMAIL = "Email";
+
     // consent collection for creation of local tokens
     //input
     const CONSENT_COLLECTION_MERCHANT_ID = 'merchantId';
@@ -1695,6 +1702,14 @@ class Header
     const MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS = [
         Header::CREATE_BULK_GIFT_CARD_PROGRAM_ID,
         Header::CREATE_BULK_GIFT_CARD_AMOUNT
+    ];
+
+    // mandatory headers for email upload
+    const MANDATORY_HEADERS_FOR_UPLOAD_BULK_EMAILS = [
+        Header::UPLOAD_BULK_EMAIL_ORDER_ID,
+        Header::UPLOAD_BULK_EMAIL_PROGRAM_ID,
+        Header::UPLOAD_BULK_EMAIL_DENOMINATION,
+        Header::UPLOAD_BULK_EMAIL_EMAIL
     ];
 
     // Following is a list of columns that are mandatory headers in the fund account (contact) batch file
@@ -5650,6 +5665,17 @@ class Header
             self::OUTPUT => []
         ],
 
+        TYPE::UPLOAD_BULK_EMAILS => [
+            self::INPUT => [
+                self::UPLOAD_BULK_EMAIL_ORDER_ID,
+                self::UPLOAD_BULK_EMAIL_PROGRAM_ID,
+                self::UPLOAD_BULK_EMAIL_PROGRAM_NAME,
+                self::UPLOAD_BULK_EMAIL_DENOMINATION,
+                self::UPLOAD_BULK_EMAIL_EMAIL,
+            ],
+            self::OUTPUT => []
+        ],
+
 
         Type::PARTNER_SUBMERCHANT_REFERRAL_INVITE => [
             self::INPUT => [
@@ -5890,6 +5916,11 @@ class Header
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS);
         }
 
+        if ($type === Type::UPLOAD_BULK_EMAILS)
+        {
+            self::validateGCOMSBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_UPLOAD_BULK_EMAILS);
+        }
+
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
         // Since some headers can be skipped, we are also allowing for rearrangement of headers
         // and hence there are no strict checks inside payout batch file header validations.
@@ -6020,6 +6051,44 @@ class Header
     }
 
     public static function validateWalletBatchHeaders(array $expectedHeaders, array $actualHeaders, array $mandatoryHeaders)
+    {
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                $msg = 'Uploaded file has has invalid header [%s]';
+
+                $msg = sprintf($msg, $actualHeader);
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+
+    }
+
+    public static function validateGCOMSBatchHeaders(array $expectedHeaders, array $actualHeaders, array $mandatoryHeaders)
     {
         foreach ($actualHeaders as $actualHeader)
         {

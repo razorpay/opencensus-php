@@ -23,6 +23,9 @@ class Type
     const CREATE_WALLET_CONTAINER_REVERSALS = 'create_wallet_container_reversals';
     const CREATE_BULK_GIFT_CARDS            = 'create_bulk_gift_cards';
 
+    // GCOMS batch types
+    CONST UPLOAD_BULK_EMAILS = 'upload_bulk_emails';
+
 
     //Cod eligibility attribute batch
     const ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST = 'one_cc_cod_eligibility_attribute_whitelist_upsert';
@@ -605,7 +608,8 @@ class Type
         self::CREATE_WALLET_USER_CONTAINERS,
         self::IRCTC_SETTLEMENT,
         self::CREATE_WALLET_CONTAINER_REVERSALS,
-        self::CREATE_BULK_GIFT_CARDS
+        self::CREATE_BULK_GIFT_CARDS,
+        self::UPLOAD_BULK_EMAILS
     ];
 
     /**
@@ -704,7 +708,8 @@ class Type
         self::PARTNER_SUBMERCHANT_REFERRAL_INVITE,
         self::CREATE_WALLET_USER_CONTAINERS,
         self::CREATE_WALLET_CONTAINER_REVERSALS,
-        self::CREATE_BULK_GIFT_CARDS
+        self::CREATE_BULK_GIFT_CARDS,
+        self::UPLOAD_BULK_EMAILS
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
