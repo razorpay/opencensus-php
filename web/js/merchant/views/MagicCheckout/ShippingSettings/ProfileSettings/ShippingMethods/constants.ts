@@ -21,12 +21,12 @@ export const getDefaultFormValues = () =>
       name: {
         value: '',
         error: '',
-        validation: (val: string): boolean => val.length > 3 && val.length < 30,
+        validation: (val: string): boolean => val.length > 3 && val.length < 35,
       },
       description: {
         value: '',
         error: '',
-        validation: (val: string): boolean => val.length > 3 && val.length < 30,
+        validation: (val: string): boolean => val.length > 3 && val.length < 35,
       },
       etd: {
         value: '',
