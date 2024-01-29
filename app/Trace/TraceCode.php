@@ -2901,6 +2901,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PANSOURCE_CHANGE_RAZORX_VARIANT                       = 'PANSOURCE_CHANGE_RAZORX_VARIANT';
     const PANSOURCE_CHANGE_MIGRATION_RAZORX_VARIANT             = 'PANSOURCE_CHANGE_MIGRATION_RAZORX_VARIANT';
+    const BIN_SERVICE_DUAL_WRITE_VARIANT                        = 'BIN_SERVICE_DUAL_WRITE_VARIANT';
     const OTPELF_REQUEST                                        = 'OTPELF_REQUEST';
     const OTPELF_RESPONSE                                       = 'OTPELF_RESPONSE';
     const TOKENEX_REQUEST                                       = 'TOKENEX_REQUEST';
@@ -11009,6 +11010,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AMEX_INTERNATIONAL_PRICING_ERROR                     = "AMEX_INTERNATIONAL_PRICING_ERROR";
 
     const IN_APP_CREDIT_CARD_METHOD_ENABLED_CHECK_FAILED       = 'IN_APP_CREDIT_CARD_METHOD_ENABLED_CHECK_FAILED';
+    const BIN_SERVICE_REQUEST                                  = 'BIN_SERVICE_REQUEST';
+
+    const BIN_SERVICE_ERROR                                     = 'BIN_SERVICE_ERROR';
+    const BIN_SERVICE_RESPONSE                                  = 'BIN_SERVICE_RESPONSE';
+    const BIN_SERVICE_RETRY                                     = 'BIN_SERVICE_RETRY';
     const TURBO_UPI_PAYMENT_PAYER_ACCOUNT_TYPE_MISMATCH        = 'TURBO_UPI_PAYMENT_PAYER_ACCOUNT_TYPE_MISMATCH';
 
     const BVS_VIDEO_KYC_EVENTS_JOB_REQUEST                     = 'BVS_VIDEO_KYC_EVENTS_JOB_REQUEST';

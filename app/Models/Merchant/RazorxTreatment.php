@@ -1004,4 +1004,6 @@ final class RazorxTreatment
 
     const ALLOW_EMAIL_OPTIONAL_FOR_PARTNER = 'allow_email_optional_for_partner';
 
+    public const ALLOW_BIN_SERVICE_DUAL_WRITE = 'allow_bin_service_dual_write';
+
 }

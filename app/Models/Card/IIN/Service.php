@@ -7,9 +7,12 @@ use RZP\Diag\EventCode;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\BinService;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Payment\Method;
@@ -35,6 +38,12 @@ class Service extends Base\Service
         $iin = $this->repo->iin->findOrFail($id);
 
         $this->formatEditInput($iin, $input);
+
+        //adding bin service update for dual write
+        if ($this->shouldDualWrite() === true)
+        {
+            $this->updateBinServiceData($iin, $input);
+        }
 
         $iin->edit($input);
 
@@ -258,6 +267,10 @@ class Service extends Base\Service
     {
         $iin = $this->repo->iin->findOrFail($id);
 
+        //adding bin service update for dual write
+        if ($this->shouldDualWrite() === true) {
+            $this->updateBinServiceFlows($iin, $flow, "disable");
+        }
         $iin->disableFlow($flow);
 
         $this->repo->saveOrFail($iin);
@@ -269,6 +282,10 @@ class Service extends Base\Service
     {
         $iin = $this->repo->iin->findOrFail($id);
 
+        //adding bin service update for dual write
+        if ($this->shouldDualWrite() === true) {
+            $this->updateBinServiceFlows($iin, $flow, "enable");
+        }
         $iin->enableFlow($flow);
 
         $this->repo->saveOrFail($iin);
@@ -751,4 +768,134 @@ class Service extends Base\Service
 
         return [];
     }
+
+    public function updateBinServiceFlows($iin, $input, $type)
+    {
+        $binService = (new BinService());
+        $flows = $iin->getFlows();
+        $existingFlowData = Flow::getEnabledFlows($flows);
+        // Disable flows present in $input
+
+        if($type === "disable"){
+            $this->disableFlows($existingFlowData, $input);
+        } else {
+            $this->enableFlows($existingFlowData, $input);
+        }
+
+        $url = "iins/".$iin['iin']."/features";
+        $enabled = $iin->isEnabled();
+        $locked = $iin->isLocked();
+        $emi = $iin->isEmiAvailable();
+        $recurring = $iin->isRecurring();
+        $request = [
+            'enabled' => $enabled,
+            'locked' => $locked,
+            'emi' => $emi,
+            'recurring' => $recurring,
+            'features' => $existingFlowData,
+        ];
+
+        $namespace = "RZP/".strtoupper($iin->getCountry())."/".strtoupper($iin->getType());
+        $binService->sendRequest($url, 'PATCH', $request, $namespace);
+    }
+
+    public function disableFlows(&$existingFlowData, $flowsToDisable): void
+    {
+        $keyToRemove = array_search($flowsToDisable, $existingFlowData);
+        if ($keyToRemove !== false) {
+            unset($existingFlowData[$keyToRemove]);
+        }
+    }
+
+    public function enableFlows(&$existingFlowData, $flowsToEnable): void
+    {
+        if (!in_array($flowsToEnable, $existingFlowData)) {
+                $existingFlowData[] = $flowsToEnable;
+        }
+    }
+
+    public function updateBinServiceData($iin, $input)
+    {
+        $binService = (new BinService());
+
+        $request = $this->formatRequest($iin, $input);
+
+        $url = "iins/".$iin['iin'];
+
+        $namespace = "RZP/".strtoupper($request["country"])."/".strtoupper($request["type"]);
+
+        $binService->sendRequest($url, 'PATCH', $request, $namespace);
+    }
+
+    private function formatRequest($iin, $input)
+    {
+        $request = [
+            "iin" => $iin['iin'] ?? "",
+            "network" => $input["network"] ?? "",
+            "issuer" => $input["issuer"] ?? "",
+            "issuerName" => $input["issuer_name"] ?? "",
+            "country" => $input["country"] ?? "",
+            "type" => $input["type"] ?? "",
+            "subType" => $input["sub_type"] ?? "",
+            "messageType" => $input["message_type"] ?? "",
+            "category" => $input["category"] ?? "",
+            "iinLength" => strlen($iin['iin']),
+            "trivia" => $iin['trivia'],
+            "features" => $this->getFlows($input)
+        ];
+
+        $mandates = [];
+        foreach ($input['mandate_hubs'] as $key => $value) {
+            if ($value === "1") {
+                $mandates[] = $key;
+            }
+        }
+        $request['mandate_hubs'] = $mandates;
+
+        return $request;
+    }
+
+    private function getFlows($input)
+    {
+        $features = [];
+
+        foreach ($input['flows'] as $key => $value) {
+            if ($value === "1") {
+                $features[] = $key;
+            }
+        }
+        if ($input['recurring'] == '1') {
+            $data['recurring'] = true;
+        }
+        if ($input['enabled'] == '1') {
+            $data['enabled'] = true;
+        }
+        if ($input['emi'] == '1') {
+            $data['emi'] = true;
+        }
+        if ($input['locked'] == '1') {
+            $data['locked'] = true;
+        }
+
+        $data['features'] = $features;
+        return $data;
+    }
+
+    public function shouldDualWrite(): bool
+    {
+        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),RazorxTreatment::ALLOW_BIN_SERVICE_DUAL_WRITE, $this->mode);
+
+        $this->trace->info(TraceCode::BIN_SERVICE_DUAL_WRITE_VARIANT, [
+            'razorx_variant' => $variant,
+            'mode' => $this->mode,
+            'env' => $this->app['env'],
+        ]);
+
+        if (strtolower($variant) === 'on')
+        {
+            return true;
+        }
+        return false;
+    }
+
 }

@@ -340,6 +340,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new CardPaymentService();
         });
 
+        $this->app->singleton('bin.service', function($app)
+        {
+            return new BinService();
+        });
+
         $this->app->singleton('upi.payments', function($app)
         {
             $upsMock = $app['config']->get('applications.upi_payment_service.mock');

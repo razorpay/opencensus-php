@@ -2973,6 +2973,10 @@ class Service extends Base\Service
 
             if ($otpRead === '1')
             {
+                //adding bin service update for dual write
+                if ((new IIN\Service())->shouldDualWrite() === true) {
+                    (new IIN\Service())->updateBinServiceFlows($iin, "otp", "enable");
+                }
                 $iin->setOtpRead(true);
                 $this->repo->saveOrFail($iin);
             }

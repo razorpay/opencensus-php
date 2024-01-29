@@ -239,6 +239,12 @@ return [
         ],
     ],
 
+    'bin_service' => [
+        'username'  => env('BIN_SERVICE_USERNAME'),
+        'password'  => env('BIN_SERVICE_PASSWORD'),
+        'url'  => env('BIN_SERVICE_LIVE_URL'),
+    ],
+
     'barricade' => [
         'secret'  => env('BARRICADE_SERVICE_SECRET'),
     ],
