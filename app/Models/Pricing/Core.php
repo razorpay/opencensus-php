@@ -93,7 +93,10 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_UPDATE_ATTEMPT,
-            ['id' => $ruleId]);
+            [
+                'id' => $ruleId,
+                'plan id' => $planId,
+            ]);
 
         $rule = $this->repo->pricing->getPlanRule($planId, $ruleId, $orgId);
 
@@ -157,7 +160,10 @@ class Core extends Base\Core
 
         $plan = $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules, $ruleOrgId)
         {
-            $this->trace->info(TraceCode::PRICING_PLAN_CREATE_ATTEMPT,$this->redactSensitiveInfoFromLogs($inputRules[0]));
+            $this->trace->info(TraceCode::PRICING_PLAN_CREATE_ATTEMPT,[
+                'Rule :' => $this->redactSensitiveInfoFromLogs($inputRules[0]),
+                'New Plan Name:' => $planName,
+            ]);
 
             $plan = $this->createPlan($planName, $inputRules[0], $ruleOrgId);
 

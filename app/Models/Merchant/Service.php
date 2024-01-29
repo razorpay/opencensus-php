@@ -5031,11 +5031,25 @@ class Service extends Base\Service
         $merchantCore->addMerchantEmailToMailingList($merchant, [Constants::LIVE_SETTLEMENT_DEFAULT]);
     }
 
-    public function getOnDemandEarlySettlementPricingForMerchant($pricingFeature = PricingFeature::PAYOUT)
+    public function getOnDemandEarlySettlementPricingForMerchant($pricingFeature = PricingFeature::PAYOUT, $planID = "")
     {
         // This is a wrapper over getPricingPlans to fetch payout pricing for given
         // pricingPlanId along with corresponding rules
         $pricingPlanId = $this->merchant->getPricingPlanId();
+        $this->trace->info(
+            TraceCode::MERCHANT_ON_DEMAND_PRICING_FETCH, [
+            'Merchant Plan ID :' => $pricingPlanId
+        ]);
+
+        if ($planID != "" && $pricingPlanId != $planID){
+            $this->trace->info(
+                TraceCode::MERCHANT_ON_DEMAND_PRICING_FETCH_PLAN_MISMATCH, [
+                'Merchant Plan ID :' => $pricingPlanId,
+                'New Plan ID :' => $planID,
+            ]);
+
+            $pricingPlanId = $planID;
+        }
 
         $onDemandPricing = $this->repo->pricing
                                     ->getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId($pricingPlanId,
@@ -5085,7 +5099,7 @@ class Service extends Base\Service
                 $plan = $newPlan;
 
                 // Currently we have just one rule id for on demand
-                $onDemandPricingRuleId = $this->getOnDemandEarlySettlementPricingForMerchant($pricingFeature)->getId();
+                $onDemandPricingRuleId = $this->getOnDemandEarlySettlementPricingForMerchant($pricingFeature, $plan->getId())->getId();
             }
 
             $updatedPlanRule = (new Pricing\Service())->updatePlanRule($plan->getId(),
