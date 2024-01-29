@@ -806,6 +806,11 @@ trait Authorize
                                  //caching razorx response since we need to fetch alt id callback based on this response , during /authorize call we need to send guest checkout indicator thats why we need this razorx call here
                                  $this->cache->put($rupayRazorxCacheKey,"on", self::RUPAY_ALT_ID_RAZORX_TTL);
                             }
+                            else if ($payment->card->isRuPay() === true &&  $payment->getGateway() === GATEWAY::HDFC)
+                            {
+                                $payment->card->setTrivia('2');
+                                $this->repo->saveOrFail($payment->card);
+                            }
                             else if ($payment->getGateway() !== GATEWAY::PAYSECURE)
                             {
                                 $this->fetchAltIdData($input, $gatewayInput, $payment, $terminalGatewayInput, $currentTerminal);

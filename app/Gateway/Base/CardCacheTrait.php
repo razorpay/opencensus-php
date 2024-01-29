@@ -5,6 +5,7 @@ namespace RZP\Gateway\Base;
 use RZP\Models\CapitalVirtualCards\Core;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 
 /*                                                            *\
 |-------------------------------------------------------------|
@@ -121,7 +122,12 @@ trait CardCacheTrait
             $input['card'][Card\Entity::TOKEN_PROVIDER]   = $data[Card\Entity::TOKEN_PROVIDER];
         }
 
-        if (($input['card'][Card\Entity::TRIVIA] === '2') && Card\Entity::isExternalAltIdPayment($input['card']) === false){
+        if (($input['card'][Card\Entity::TRIVIA] === '2') && Card\Entity::isExternalAltIdPayment($input['card']) === false ){
+
+            if ($gateway === Payment\Gateway::HDFC && strtolower($input['card']['network']) === "rupay")
+            {
+                return;
+            }
 
             $altIdData = $this->getAltIdDetailsFromCache($input);
 
