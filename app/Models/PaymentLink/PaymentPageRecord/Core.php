@@ -134,9 +134,11 @@ class Core extends Base\Core
      */
     public function modifyInputForPaymentPageRecord(Base\Entity $paymentPage, string $batch_id, array $input, array &$errors)
     {
+        $optionalBlankUDFFields = [];
+
         $id = PaymentLink::stripDefaultSign($paymentPage->getId());
 
-        $response = $this->setUdfParameters($paymentPage, $input, $errors);
+        $response = $this->setUdfParameters($paymentPage, $input, $errors, $optionalBlankUDFFields);
 
         $this->validateUDFWithRegex($paymentPage, $input, $errors);
 
@@ -146,7 +148,7 @@ class Core extends Base\Core
 
         $response[Entity::MERCHANT_ID] = $paymentPage->getMerchantId();
 
-        $response = $this->populateCustomFieldSchema($id, $paymentPage->getMerchantId(), $response);
+        $response = $this->populateCustomFieldSchema($id, $paymentPage->getMerchantId(), $response, $optionalBlankUDFFields);
 
         $response = $this->uniqueRefIdValidations($response, $errors);
 
@@ -201,7 +203,7 @@ class Core extends Base\Core
         }
     }
 
-    public function setUdfParameters(Base\Entity $paymentPage, array &$input, array &$errors)
+    public function setUdfParameters(Base\Entity $paymentPage, array &$input, array &$errors, array &$optionalBlankUDFFields)
     {
         $id = PaymentLink::stripDefaultSign($paymentPage->getId());
 
@@ -221,6 +223,17 @@ class Core extends Base\Core
                 (!in_array($udf[PaymentLink::TITLE],$keys)))
             {
                 array_push($errors, 'Mandatory field entry missing for '.$udf[PaymentLink::TITLE]);
+            }
+
+            // if a field is optional and blank, remove it
+            if (($udf[Entity::REQUIRED] === false) and
+                (isset($input[$udf[PaymentLink::TITLE]])) and
+                ($input[$udf[PaymentLink::TITLE]] === ''))
+            {
+                // Record this field for adding it to custom_field_schema later
+                array_push($optionalBlankUDFFields, $udf[PaymentLink::TITLE]);
+                unset($input[$udf[PaymentLink::TITLE]]);
+                continue;
             }
 
             if (($udf['pattern'] === 'date') and (isset($input[$udf[PaymentLink::TITLE]]) == true))
@@ -342,7 +355,7 @@ class Core extends Base\Core
             {
                 $lateFeeRate = $input[$item[PaymentLink::NAME]];
 
-                if ($lateFeeRate !== null)
+                if (($lateFeeRate !== null) and ($lateFeeRate !== ''))
                 {
                     // currently only one late_fee_rate will be present
                     $other_details[Entity::LATE_FEE_PRICES] = [
@@ -358,8 +371,8 @@ class Core extends Base\Core
 
 
             // add all price fields in amount
-            if ((isset($input[$item[PaymentLink::NAME]]) === true) and 
-               (strlen($input[$item[PaymentLink::NAME]]) > 0)) 
+            if ((isset($input[$item[PaymentLink::NAME]]) === true) and
+               (strlen($input[$item[PaymentLink::NAME]]) > 0))
             {
                 $resp[Entity::AMOUNT] = $resp[Entity::AMOUNT] + $input[$item[PaymentLink::NAME]];
                 
@@ -498,12 +511,11 @@ class Core extends Base\Core
         return $nextTitle;
     }
 
-    public function populateCustomFieldSchema(string $id, string $merchantId, array $response): array
+    public function populateCustomFieldSchema(string $id, string $merchantId, array $response, array &$optionalBlankUDFFields): array
     {
         $allFields = (new Settings())->getSettings($id, 'payment_link', PaymentLink::ALL_FIELDS);
 
         $allFields = json_decode($allFields['value'], true);
-
         $otherDetails = json_decode($response[Entity::OTHER_DETAILS], true);
 
         $custom_field_schema = [];
@@ -520,6 +532,20 @@ class Core extends Base\Core
 
                 $lastFieldTitle = $fieldTitle;
             }
+        }
+
+        // add missing udf fields in other details to custom_field_schema
+        foreach ($optionalBlankUDFFields as $key)
+        {
+            if (array_key_exists($key, $allFields) === true)
+            {
+                $fieldTitle = $allFields[$key];
+
+                $custom_field_schema[$fieldTitle] = ['key' => $key, 'value' => '' ,'dataType' => Constants::STRING];
+
+                $lastFieldTitle = $fieldTitle;
+            }
+
         }
 
         // for all optional fields that were skipped, add blank values

@@ -2437,7 +2437,9 @@ Secondary reference id should be unique, duplicate value for test123";
             'Primary reference id' => 1231231234,
             'Phone' => '1231231234',
             'DOB' => 'test123',
-            'item1' => 10000
+            'item1' => 10000,
+            'Due date' => '',
+            'Penalty Fee' => '',
         ]);
 
         $this->assertEquals('', '',$res['error_code']);
@@ -2561,6 +2563,33 @@ Secondary reference id should be unique, duplicate value for test123";
         self::assertEquals(600, $res['total_pending_revenue']);
         self::assertEquals(10, $res['total_pending_late_fee']);
 
+    }
+
+    public function testFormBuilderRemoveOptionalBlankUDFFIelds()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $res = $this->startTest();
+
+        $id = $res['id'];
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'Secondary Reference ID' => 'test',
+            'DOB' => '',
+            'item1' => 100
+        ]);
+
+        $this->assertEquals('', '',$res['error_code']);
+        $this->assertEquals('', '',$res['error_description']);
+
+        $entity = $this->getDbLastEntity("payment_page_record");
+
+        $entityArray = $entity->toArray();
+
+        $this->assertEquals($entityArray['custom_field_schema'], '{"field_4": {"key": "Secondary Reference ID", "value": "test", "dataType": "string"}, "field_5": {"key": "DOB", "value": "", "dataType": "string"}, "field_6": {"key": "item1", "value": "100", "dataType": "string"}}');
     }
 
 

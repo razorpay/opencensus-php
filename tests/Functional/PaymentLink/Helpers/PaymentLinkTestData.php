@@ -2016,6 +2016,45 @@ return [
         ],
     ],
 
+    'testFormBuilderRemoveOptionalBlankUDFFIelds' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Primary reference id\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":8,\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"Phone\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"Secondary Reference ID\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}},{\"name\":\"dob\",\"required\":false,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"date\",\"settings\":{\"position\":5}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'item1',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
 
     'testInactivePaymentLinkSendNotification' => [
         'request'  => [
