@@ -524,6 +524,13 @@ class CardPaymentService
             unset($input['payment']['billing_address']);
         }
 
+        // Adding this condition to unset billing_address
+        // in case if added by subscription or somehow skipped by UI
+        if(!isset($input['payment']['billing_address']) || empty($input['payment']['billing_address']))
+        {
+            unset($input['payment']['billing_address']);
+        }
+
         if($action === ACTION::FORCE_AUTHORIZE_FAILED and (in_array($gateway, Payment\Gateway::FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS, true) === true))
         {
             unset($input['gateway']);
