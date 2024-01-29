@@ -3,11 +3,13 @@
 namespace RZP\Models\Pricing;
 
 use App;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Error\Error;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Gateway\Terminal\Constants;
+use RZP\Models\Partner\Commission\Calculator;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -602,6 +604,56 @@ class Service extends Base\Service
         // Return the new plan
         return $newplan;
     }
+
+    public function fetchPlanForSDK($id, array $input = [])
+    {
+        if (empty($id) === true) {
+            throw new Exception\BadRequestValidationFailureException("Plan Id is a required field");
+        }
+        if (empty($input[Pricing\Entity::TYPE]) === false) {
+            $type = $input[Pricing\Entity::TYPE];
+        }
+        $skipOrgIdCheck = filter_var($input['skip_org_id_check'], FILTER_VALIDATE_BOOLEAN);
+
+        $assignedPlan = $this->repo->pricing->getPlan($id, $type, skipOrgCheck:$skipOrgIdCheck);
+
+        $additionalFlags = $this->getAdditionalFlags($input, $assignedPlan);
+
+        return array_merge($assignedPlan->toArrayPublic(), $additionalFlags);
+    }
+
+    private function getAdditionalFlags(array $input, Plan $assignedPlan)
+    {
+        $paymentId = $input['payment_id'] ?? null;
+        $response = [
+            'fixed_fee_rule_present' => false,
+            'custom_oauth_plan_present' => false,
+            'explicit_commission_plan_present' => false,
+        ];
+        if(empty($paymentId) === true) {
+            return $response;
+        }
+        try {
+            $payment = $this->repo->payment->findByPublicId($paymentId);
+            if ($assignedPlan->hasFixedFeeRuleForPaymentMethod($payment->getMethod())) {
+                $response['fixed_fee_rule_present'] = true;
+            }
+            $commissionCalculator = (new Calculator($payment));
+            if ($commissionCalculator->shouldChargePartnerFees() === true and $commissionCalculator->getExplicitPricingPlan() !== null) {
+                $response['explicit_commission_plan_present'] = true;
+            }
+            $feeCalculator = new Fee();
+            if ($feeCalculator->getCustomPricingPlan($payment) !== null) {
+                $response['custom_oauth_plan_present'] = true;
+            }
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::PRICING_ADDITIONAL_FLAGS_PLAN_FETCH_ERROR,
+                array_merge($input, ['assigned_plan'=> $assignedPlan->getId()])
+            );
+        }
+        return $response;
+    }
+
     public function getPlanById($id, array $input = [])
     {
         $type = null;

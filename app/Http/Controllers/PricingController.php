@@ -40,11 +40,12 @@ class PricingController extends Controller
         });
     }
 
+    // This endpoint is used to fetch plan input for charge-collections SDK
     public function fetchPlan($id)
     {
         $input = Request::all();
 
-        $data = $this->service()->getPlanById($id, $input);
+        $data = $this->service()->fetchPlanForSDK($id, $input);
 
         return ApiResponse::json($data);
     }

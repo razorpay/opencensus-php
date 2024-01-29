@@ -14,6 +14,7 @@ use RZP\Constants\Entity as E;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
+use RZP\Tests\Functional\Partner\Commission\Base\Setup;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use Illuminate\Cache\Events\CacheHit;
@@ -810,6 +811,29 @@ class PricingTest extends TestCase
 
         $this->startTest($testData);
 
+    }
+    public function testFetchPricingPlanWithAdditionalFlags() {
+        $id = $this->createPricingPlan2()['id'];
+        $testData = $this->testData[$this->getName()];
+        $testData['request']['url'] = $testData['request']['url'] . $id;
+        $this->ba->pricingAppAuth('test');
+        $postSetupData = [];
+        $this->setupFixturesForCommissionPricing($testData['setup'], $postSetupData);
+        $paymentId = $postSetupData['source_entity']->getPublicId() ?? null;
+        $testData['request']['content']['payment_id'] = $paymentId;
+        $this->startTest($testData);
+    }
+
+
+    protected function setupFixturesForCommissionPricing(array $setupRequests, array & $output)
+    {
+        $setup = new Setup($this->fixtures);
+        foreach($setupRequests as $setupRequest => $data)
+        {
+            $setupFunction = studly_case($setupRequest);
+
+            $setup->$setupFunction($data, $output);
+        }
     }
 
     public function testGetPricingPlan()

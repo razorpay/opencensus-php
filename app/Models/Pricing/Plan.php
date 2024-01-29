@@ -502,4 +502,20 @@ class Plan extends PublicCollection
 
         return false;
     }
+
+    public function hasFixedFeeRuleForPaymentMethod($paymentMethod)
+    {
+        /** @var Entity $rule */
+        foreach ($this->items as $rule)
+        {
+            if ($rule->getFeature() == Feature::PAYMENT and $rule->isPrimaryProduct() and
+                $rule->getPaymentMethod() == $paymentMethod and ($rule->getFixedRate() > 0))
+            {
+                return true;
+            }
+        }
+
+        return false;
+
+    }
 }

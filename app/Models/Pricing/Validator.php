@@ -158,6 +158,10 @@ class Validator extends Base\Validator
         Pricing\Calculator\PayAsYouGo::FREQUENCY    => 'sometimes|nullable|in:daily,weekly,monthly,yearly'
     ];
 
+    protected static  $fetchPlanForSDKRules = [
+        'payment_id' => 'sometimes|nullable|string|size:14',
+    ];
+
     protected function validatePlanName($input)
     {
         // If no plan name, then set it to null

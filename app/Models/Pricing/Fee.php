@@ -642,7 +642,7 @@ class Fee extends Base\Core
         return Product::PRIMARY;
     }
 
-    protected function getCustomPricingPlan(PublicEntity $entity)
+    public function getCustomPricingPlan(PublicEntity $entity)
     {
         if (($entity->getEntityName() === EntityConstants::PAYMENT))
         {

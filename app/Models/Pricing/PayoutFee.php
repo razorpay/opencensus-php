@@ -12,7 +12,7 @@ class PayoutFee extends Fee
     // This Plan ID is synced with Prod. It is used to assign a custom pricing to fee_recovery payouts.
     const ZERO_PRICING_PLAN_ID_RBL   = 'EDoLfqMMBHVYGR';
 
-    protected function getCustomPricingPlan(PublicEntity $payout)
+    public function getCustomPricingPlan(PublicEntity $payout)
     {
         if ($payout->getPurpose() === Purpose::RZP_FEES)
         {
