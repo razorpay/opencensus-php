@@ -69,6 +69,20 @@ trait ExternalScroogeRepo
         return parent::findByPublicId($id, $connectionType);
     }
 
+    public function find($refundId, $columns = array('*'), string $connectionType = null)
+    {
+        $refundIds=[$refundId];
+        if ($this->repo->refund->isScroogeReadMigrationEnabled2() === true) {
+            $refunds = $this->repo->refund->findRefundByIds($refundIds);
+            if(empty($refunds) == true){
+                return null;
+            }
+            return $refunds[0];
+        }else{
+            return parent::find($refundId,$columns);
+        }
+    }
+
     public function findByPublicIdAndMerchant(
         string $id,
         MerchantEntity $merchant,
@@ -449,6 +463,151 @@ trait ExternalScroogeRepo
 
         $this->trace->info(
             TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isScroogeReadMigration2($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_2,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isScroogeReadMigrationEnabled2($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_2,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_2,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isScroogeReadMigrationForIrctc($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_IRCTC,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_IRCTC,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isScroogeReadMigrationForGateways($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_GATEWAYS,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_GATEWAYS,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public function isScroogeReadMigrationEnabledTidb($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_SHADOW,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_SHADOW,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isScroogeReadMigrationTidb($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
             [
                 'result'    => $result,
                 'mode'      => $mode,
@@ -906,6 +1065,58 @@ trait ExternalScroogeRepo
         $data = [
             'model'      => $this->entityName,
             'payment_id'    => $paymentId,
+            'operation'  => 'find'
+        ];
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    private function findByPaymentIdAndReference3FromScrooge(string $paymentId, int $seqNo, $input = [])
+    {
+        $class = Entity::getExternalRepoSingleton($this->entity);
+
+        try
+        {
+
+            $scrooge_fetch_query = [
+                'query' => [
+                    'refunds' => [
+                        'payment_id'=> $paymentId,
+                    ],
+                    'gateway_keys'=>[
+                        'name'=> 'sequence_no',
+                        'value'=> $seqNo,
+                    ],
+                ],
+            ];
+
+            $entity = $class->fetchRefunds($scrooge_fetch_query);
+
+            if (empty($entity) === false)
+            {
+                $relations = $this->getExpandsForQueryFromInput($input);
+
+                $entity->loadMissing($relations);
+
+                return $entity;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+                [
+                    'data'        => $e->getMessage(),
+                ]);
+        }
+
+        $data = [
+            'model'      => $this->entityName,
+            'payment_id'    => $paymentId,
+            'sequence_no'=> $seqNo,
             'operation'  => 'find'
         ];
 

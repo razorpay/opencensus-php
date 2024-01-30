@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstants;
+use stdClass;
 
 trait ScroogeRepo
 {
@@ -78,7 +79,7 @@ trait ScroogeRepo
                 $apiResponse     = $this->findForPaymentAndAmountFromApi($paymentId,$amount);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    $apiResponse->toArray(), $scroogeResponse->toArray(), ['method_name' => __FUNCTION__]);
+                    $apiResponse->toArray(), $scroogeResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
                 //Razorx check
                 if ($this->isScroogeReadMigration() == true)
@@ -134,7 +135,7 @@ trait ScroogeRepo
                 $apiResponse     = $this->fetchRefundByRefundIdsFromApi($refundIds);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    $apiResponse->toArray(), $scroogeResponse, ['method_name' => __FUNCTION__]);
+                    $apiResponse->toArray(), $scroogeResponse, ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
                 //Razorx check
                 if ($this->isScroogeReadMigration() == true)
@@ -177,7 +178,7 @@ trait ScroogeRepo
                 $apiResponse     = $this->findByReceiptAndMerchantFromApi($receipt, $merchantId);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    [$apiResponse], $scroogeResponse->toArray(), ['method_name' => __FUNCTION__]);
+                    [$apiResponse], $scroogeResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
                 if ($this->isScroogeReadMigration() == true)
                 {
@@ -221,7 +222,7 @@ trait ScroogeRepo
                 $apiResponse     = $this->findByReversalIdAndMerchantFromApi($reversalId, $accountId, $relations);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    [$apiResponse], $scroogeResponse->toArray(), ['method_name' => __FUNCTION__]);
+                    [$apiResponse], $scroogeResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
                 if ($this->isScroogeReadMigration() == true)
                 {
@@ -268,7 +269,7 @@ trait ScroogeRepo
                 $apiResponse     = $this->findForPaymentAndBaseAmountFromApi($paymentId, $baseAmount);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    $apiResponse->toArray(), $scroogeResponse->toArray(), ['method_name' => __FUNCTION__]);
+                    $apiResponse->toArray(), $scroogeResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
                 if ($this->isScroogeReadMigration() == true)
                 {
@@ -314,7 +315,7 @@ trait ScroogeRepo
                 $apiResponse     = $this->fetchFirstForPaymentIdFromApi($paymentId);
 
                 (new Service())->compareRefundsAndLogDifference(
-                    [$apiResponse], [$scroogeResponse], ['method_name' => __FUNCTION__]);
+                    [$apiResponse], [$scroogeResponse], ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION]);
 
                 if ($this->isScroogeReadMigration() == true)
                 {
@@ -335,6 +336,196 @@ trait ScroogeRepo
         }
 
         return $this->fetchFirstForPaymentIdFromApi($paymentId);
+    }
+
+    public function compareAndFindByPaymentIdAndReference3FromScrooge(string $paymentId, int $seqNo)
+    {
+        $this->entityName = $this->entity;
+
+        try
+        {
+            $routeName = $this->route->getCurrentRouteName();
+
+            $this->trace->info(
+                TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2,
+                [
+                    'method_name'     => __FUNCTION__,
+                    'payment_id'      => $paymentId,
+                    'sequence_no'     => $seqNo,
+                    'route_name'      => $routeName,
+                ]);
+
+            $scroogeResponse = $this->findByPaymentIdAndReference3FromScrooge($paymentId, $seqNo);
+            $apiResponse     = $this->findByPaymentIdAndReference3FromApi($paymentId, $seqNo);
+
+            (new Service())->compareRefundsAndLogDifference(
+                [$apiResponse], $scroogeResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
+
+            if ($this->isScroogeReadMigration2() == true)
+            {
+                return $scroogeResponse;
+            }
+            return $apiResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SCROOGE_ENTITY_FETCH_FAILURE,
+                [
+                    'payment_id' => $paymentId,
+                    'sequence_no'=> $seqNo,
+                ]);
+        }
+
+        return $this->findByPaymentIdAndReference3FromApi($paymentId, $seqNo);
+    }
+
+    public function compareAndFetchRefundsForGatewaysBetweenTimestampsFromTidb($type, $gatewayCodes, $from, $to, $gateway)
+    {
+        $this->entityName = $this->entity;
+
+        try
+        {
+            $routeName = $this->route->getCurrentRouteName();
+
+            $this->trace->info(
+                TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2,
+                [
+                    'method_name' => __FUNCTION__,
+                    'type' => $type,
+                    'gateway_codes' => $gatewayCodes,
+                    'from' => $from,
+                    'to' => $to,
+                    'gateway' => $gateway,
+                    'route_name' => $routeName,
+                ]);
+
+            $tidbResponse = $this->repo->refund_tidb->fetchRefundsForGatewaysBetweenTimestampsFromTidb($type, $gatewayCodes, $from, $to, $gateway);
+            $apiResponse     = $this->fetchRefundsForGatewaysBetweenTimestampsFromApi($type, $gatewayCodes, $from, $to, $gateway);
+
+            (new Service())->compareRefundsAndLogDifference(
+                $apiResponse, $tidbResponse, ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
+
+            if ($this->isScroogeReadMigration2() == true)
+            {
+                return $tidbResponse;
+            }
+            return $apiResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TIDB_REFUND_ENTITY_FETCH_FAILURE,
+                [
+                    'type' => $type,
+                    'gateway_codes' => $gatewayCodes,
+                    'from' => $from,
+                    'to' => $to,
+                    'gateway' => $gateway,
+                ]);
+        }
+
+        return $this->fetchRefundsForGatewaysBetweenTimestampsFromApi($type, $gatewayCodes, $from, $to, $gateway);
+    }
+
+//    public function compareAndFetchFailedRefundsForGatewayBetweenTimestampsFromTidb($from, $to, $gateway)
+//    {
+//        $this->entityName = $this->entity;
+//
+//        try
+//        {
+//            $routeName = $this->route->getCurrentRouteName();
+//
+//            $this->trace->info(
+//                TraceCode::SCROOGE_MISC_QUERIES_MIGRATION,
+//                [
+//                    'method_name' => __FUNCTION__,
+//                    'from' => $from,
+//                    'to' => $to,
+//                    'gateway' => $gateway,
+//                    'route_name' => $routeName,
+//                ]);
+//
+//            $tidbResponse = $this->repo->refund_tidb->fetchFailedRefundsForGatewayBetweenTimestampsFromTidb($from, $to, $gateway);
+//            $apiResponse     = $this->fetchFailedRefundsForGatewayBetweenTimestampsFromApi($from, $to, $gateway);
+//
+//            $this->app['trace']->info(TraceCode::NODAL_BEN_ADD_REQUEST, [
+//                '$tidbResponse' => $tidbResponse,
+//                '$apiResponse' => $apiResponse,
+//                'route'        => $this->route
+//            ]);
+//
+//            (new Service())->compareRefundsAndLogDifference(
+//                $apiResponse->toArray(), $tidbResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
+//
+//            if ($this->isScroogeReadMigration2() == true)
+//            {
+//                return $tidbResponse;
+//            }
+//            return $apiResponse;
+//        }
+//        catch (\Throwable $e)
+//        {
+//            $this->trace->traceException(
+//                $e,
+//                Trace::ERROR,
+//                TraceCode::TIDB_REFUND_ENTITY_FETCH_FAILURE,
+//                [
+//                    'from' => $from,
+//                    'to' => $to,
+//                    'gateway' => $gateway,
+//                ]);
+//        }
+//
+//        return $this->fetchFailedRefundsForGatewayBetweenTimestampsFromApi($from, $to, $gateway);
+//    }
+
+
+    public function compareAndFetchIrctcDeltaRefundsFromTidb(string $merchantId, int $from, int $to)
+    {
+        $this->entityName = $this->entity;
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2,
+                [
+                    'method_name' => __FUNCTION__,
+                    '$merchantId'=> $merchantId,
+                    '$from' => $from,
+                    '$to' => $to,
+                ]);
+
+            $tidbResponse = $this->repo->refund_tidb->fetchIrctcDeltaRefundsFromTidb($merchantId,$from,$to);
+            $apiResponse     = $this->fetchIrctcDeltaRefundsFromApi($merchantId,$from,$to);
+
+            (new Service())->compareRefundsAndLogDifference(
+                $apiResponse->toArray(), $tidbResponse->toArray(), ['method_name' => __FUNCTION__, 'type'=> TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_2]);
+
+            if ($this->isScroogeReadMigration2() == true)
+            {
+                return $tidbResponse;
+            }
+            return $apiResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TIDB_REFUND_ENTITY_FETCH_FAILURE,
+                [
+                    'merchant_id' => $merchantId,
+                    'from' => $from,
+                    'to' => $to,
+                ]);
+        }
+
+        return $this->fetchIrctcDeltaRefundsFromApi($merchantId,$from,$to);
     }
 }
 

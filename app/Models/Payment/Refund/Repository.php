@@ -149,27 +149,19 @@ class Repository extends Base\Repository
             ->select($refundData)
             ->get();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-        $variant = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_SHADOW,
-            $mode);
-
-        if(strtolower($variant) === 'on' && $this->app->environment('production') === true){
+        if($this->repo->refund->isScroogeReadMigrationEnabledTidb() == true){
             $refundstidb = $this->repo->refund_tidb->fetchEmiRefundsWithCardTerminalsBetweenFromTidb($from,$to,$bank,$type);
 
             (new Service())->compareRefundsAndLogDifference(
-                $refunds->toArray(), $refundstidb->toArray(), ['method_name' => __FUNCTION__]);
+                $refunds->toArray(), $refundstidb->toArray(), [
+                'method_name' => __FUNCTION__,
+                'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
+            ]);
 
-            $isTidbEnabled = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-                RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
-                $mode);
-
-            if(strtolower($isTidbEnabled) === 'on'){
+            if($this->repo->refund->isScroogeReadMigrationTidb() == true){
                 return $refundstidb;
             }
         }
-
         return $refunds;
     }
 
@@ -204,23 +196,18 @@ class Repository extends Base\Repository
             ->select($refundData)
             ->get();
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variant = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-            RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB_SHADOW,
-            $mode);
-
-        if(strtolower($variant) === 'on' && $this->app->environment('production') === true){
+        if($this->repo->refund->isScroogeReadMigrationEnabledTidb() == true){
             $refundstidb = $this->repo->refund_tidb->fetchCardRefundsForMerchantAndGatewayBetweenFromTidb($from,$to,$merchantIds);
 
 
             (new Service())->compareRefundsAndLogDifference(
-                $refunds->toArray(), $refundstidb->toArray(), ['method_name' => __FUNCTION__]);
+                $refunds->toArray(), $refundstidb->toArray(), [
+                    'method_name' => __FUNCTION__,
+                    'type' => TraceCode::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
+                ]);
 
-            $isTidbEnabled = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
-                RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_TIDB,
-                $mode);
-            if(strtolower($isTidbEnabled) === 'on'){
+            if($this->repo->refund->isScroogeReadMigrationTidb() == true){
                 return $refundstidb;
             }
         }
@@ -623,6 +610,14 @@ class Repository extends Base\Repository
 
     public function fetchRefundsForGatewaysBetweenTimestamps($type, $gatewayCodes, $from, $to, $gateway)
     {
+        if ($this->isScroogeReadMigrationForGateways() === true) {
+            return $this->compareAndFetchRefundsForGatewaysBetweenTimestampsFromTidb($type, $gatewayCodes, $from, $to, $gateway);
+        }
+        return $this->fetchRefundsForGatewaysBetweenTimestampsFromApi($type, $gatewayCodes, $from, $to, $gateway);
+    }
+
+    public function fetchRefundsForGatewaysBetweenTimestampsFromApi($type, $gatewayCodes, $from, $to, $gateway)
+    {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchRefundsForGatewaysBetweenTimestamps',
             'route'        => $this->route
@@ -729,6 +724,14 @@ class Repository extends Base\Repository
     }
 
     public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)
+    {
+//        if ($this->isScroogeReadMigrationEnabled2() === true && $this->app->environment('production') === true) {
+//            return $this->fetchFailedRefundsForGatewayBetweenTimestampsRelationalLoad($from, $to, $gateway);
+//        }
+        return $this->fetchFailedRefundsForGatewayBetweenTimestampsFromApi( $from, $to, $gateway);
+    }
+
+    public function fetchFailedRefundsForGatewayBetweenTimestampsFromApi($from, $to, $gateway)
     {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchFailedRefundsForGatewayBetweenTimestamps',
@@ -979,6 +982,16 @@ class Repository extends Base\Repository
 
     public function fetchIrctcDeltaRefunds(string $merchantId, int $from, int $to)
     {
+
+        if ($this->isScroogeReadMigrationForIrctc() === true) {
+            return $this->compareAndFetchIrctcDeltaRefundsFromTidb($merchantId, $from, $to);
+        }
+        return $this->fetchIrctcDeltaRefundsFromApi($merchantId, $from, $to);
+
+    }
+
+    public function fetchIrctcDeltaRefundsFromApi(string $merchantId, int $from, int $to)
+    {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchIrctcDeltaRefunds',
             'route'        => $this->route
@@ -1020,14 +1033,25 @@ class Repository extends Base\Repository
 
     public function findByPaymentIdAndReference3(string $paymentId, int $seqNo)
     {
+
+        if ($this->isScroogeReadMigrationEnabled2() === true) {
+            return $this->compareAndFindByPaymentIdAndReference3FromScrooge($paymentId, $seqNo);
+        }
+        return $this->findByPaymentIdAndReference3FromApi($paymentId, $seqNo);
+
+    }
+
+    public function findByPaymentIdAndReference3FromApi(string $paymentId, int $seqNo)
+    {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'findByPaymentIdAndReference3',
             'route'        => $this->route
         ]);
+
         return $this->newQuery()
-                    ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
-                    ->where(Refund\Entity::REFERENCE3, '=', $seqNo)
-                    ->firstOrFailPublic();
+            ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
+            ->where(Refund\Entity::REFERENCE3, '=', $seqNo)
+            ->firstOrFailPublic();
     }
 
     /**
@@ -1189,4 +1213,6 @@ class Repository extends Base\Repository
             ->select($refundData)
             ->get();
     }
+
+
 }

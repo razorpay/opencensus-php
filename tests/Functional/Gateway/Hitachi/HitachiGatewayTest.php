@@ -141,6 +141,29 @@ class HitachiGatewayTest extends TestCase
 
     }
 
+    protected function setMockRazorxTreatment(array $razorxTreatment, string $defaultBehaviour = 'control')
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use ($razorxTreatment, $defaultBehaviour)
+                {
+                    if (array_key_exists($feature, $razorxTreatment) === true)
+                    {
+                        return $razorxTreatment[$feature];
+                    }
+
+                    return strtolower($defaultBehaviour);
+                }));
+    }
+
     public function testSuccessful13DigitPanForEnrolledCard()
     {
         $this->assertEquals([], $this->app['gateway_downtime_metric']->getMetrics());
@@ -1269,6 +1292,8 @@ class HitachiGatewayTest extends TestCase
 
     public function testVerifyRefundSuccessfulOnGateway()
     {
+        $this->setMockRazorxTreatment([RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_2 => 'control']);
+
         $this->doAuthAndCapturePayment($this->payment);
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -1309,6 +1334,8 @@ class HitachiGatewayTest extends TestCase
 
     public function testVerifyRefundFailedOnGateway()
     {
+        $this->setMockRazorxTreatment([RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_2 => 'control']);
+
         $this->doAuthAndCapturePayment($this->payment);
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -1357,6 +1384,8 @@ class HitachiGatewayTest extends TestCase
 
     public function testNullResponseInVerifyRefund()
     {
+        $this->setMockRazorxTreatment([RazorxTreatment::SCROOGE_MISC_QUERIES_MIGRATION_ENABLED_2 => 'control']);
+
         $this->doAuthAndCapturePayment($this->payment);
 
         $this->mockServerContentFunction(function (& $content, $action = null)
