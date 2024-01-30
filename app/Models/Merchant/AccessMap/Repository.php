@@ -321,7 +321,7 @@ class Repository extends Base\Repository
         $merchantsId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantsLive = Table::MERCHANT . '.' . Merchant\Entity::LIVE;
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
                     ->where(Entity::ENTITY_OWNER_ID, $partnerId)
                     ->join(Table::MERCHANT, $accessMapsMerchantId, $merchantsId)
                     ->where($merchantsLive, true)
