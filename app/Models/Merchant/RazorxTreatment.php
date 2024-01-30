@@ -866,6 +866,9 @@ final class RazorxTreatment
     // Experiment to enable mandate non-revokable
     const UPI_AUTOPAY_REVOKABLE_FEATURE = 'UPI_AUTOPAY_REVOKABLE_FEATURE';
 
+    // Experiment to show initial amount to customer on PSP app
+    const UPI_AUTOPAY_SHOW_INITIAL_AMOUNT = 'upi_autopay_show_initial_amount';
+
     // Experiment to increase debit retries for merchants
     const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES = 'upi_autopay_increase_debit_retries';
 

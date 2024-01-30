@@ -22,6 +22,7 @@ use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Upi\Base\MandateTrait;
 use RZP\Gateway\Upi\Base\RecurringTrait;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Models\Payment\Processor\App as AppMethod;
@@ -1692,6 +1693,8 @@ class Gateway extends Base\Gateway
         $this->checkTpvAndModifyOrder($content, $input);
 
         $this->setPaymentVpaForUpiRecurringIntent($content, $input);
+
+        $this->setFirstAmountFlagForUpiRecurring($content, $input);
 
         $prefix = 'payments';
 
@@ -3691,6 +3694,21 @@ class Gateway extends Base\Gateway
             (isset($content['entities']['payment']['vpa']) === false))
         {
             $content['entities']['payment']['vpa'] = $input['upi']['vpa'] ?? null;
+        }
+    }
+
+    protected function setFirstAmountFlagForUpiRecurring(& $content, $input): void
+    {
+        if (($this->isUpiRecurringPayment($input['payment']) === true) and
+            ($input['payment']['recurring_type'] === 'initial'))
+        {
+            $variant = $this->app->razorx->getTreatment($input['payment']['merchant_id'],
+                RazorxTreatment::UPI_AUTOPAY_SHOW_INITIAL_AMOUNT, $this->mode);
+
+            if(strtolower($variant) === 'on')
+            {
+                $content['entities']['fam'] = true;
+            }
         }
     }
 
