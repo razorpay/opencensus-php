@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -210,6 +211,7 @@ class Validator extends Base\Validator
         'description'                                            => 'required|string',
         'phone'                                                  => 'required',
         'attachments'                                            => 'sometimes',
+        'attachments.*'                                          => 'sometimes|custom:attachment',
         'priority'                                               => 'required:min:1|max:4',
         'cc_emails'                                              => 'sometimes|array',
         'custom_fields'                                          => 'required|array',
@@ -226,6 +228,7 @@ class Validator extends Base\Validator
         'description'                                            => 'required|string',
         'phone'                                                  => 'sometimes',
         'attachments'                                            => 'sometimes',
+        'attachments.*'                                          => 'sometimes|custom:attachment',
         'priority'                                               => 'required:min:1|max:4',
         'cc_emails'                                              => 'sometimes|array',
         'custom_fields'                                          => 'required|array',
@@ -243,9 +246,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $createSupportDashboardXTicketReplyRules = [
-        'user_id'     => 'required',
-        'body'        => 'sometimes|string',
-        'attachments' => 'sometimes',
+        'user_id'       => 'required',
+        'body'          => 'sometimes|string',
+        'attachments'   => 'sometimes',
+        'attachments.*' => 'sometimes|custom:attachment',
     ];
 
     protected static $createCustomerTicketReplyRules = [
@@ -355,8 +359,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $createSupportDashboardXGrievanceRules = [
-        'description' => 'required|string',
-        'attachments' => 'sometimes',
+        'description'   => 'required|string',
+        'attachments'   => 'sometimes',
+        'attachments.*' => 'sometimes|custom:attachment',
     ];
 
     protected static $postOtpRules = [
@@ -510,7 +515,9 @@ class Validator extends Base\Validator
 
         $content = $attachment->getContent();
 
-        $this->validateMagicBytes($extension, $content, $attachment);
+        // commenting this as magic byte validations are failing
+        // slack : https://razorpay.slack.com/archives/C3UAR8DQE/p1706168495214319?thread_ts=1691472053.875259&cid=C3UAR8DQE
+        // $this->validateMagicBytes($extension, $content, $attachment);
 
         $this->validateFileSize($content);
 
