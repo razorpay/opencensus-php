@@ -38,6 +38,8 @@ const ELEMENTS = {
   PROVIDER_NON_TPV: 'input[name="TPV"][value="0"]',
   PROVIDER_TPV_ONLY: 'input[name="TPV"][value="1"]',
   PROVIDER_TPV_BOTH: 'input[name="TPV"][value="2"]',
+  PROVIDER_APP_ID: 'App ID',
+  PROVIDER_APP_SECRET: 'App secret Key',
   PROVIDER_SECRET: 'input[name="Secret"]',
 };
 
@@ -291,6 +293,37 @@ test.describe.parallel('Optimizer (Live Mode) @flow=optimizer @project=payments'
       await clickButton(page, 'Go Back');
     } catch (error) {
       console.error('Error Add Billdesk Provider: ', error?.message);
+    }
+  });
+
+  test('Add Easebuzz Optimizer Provider', async ({ page }) => {
+    try {
+      await navigateToOptimizer(page);
+      await clickButton(page, 'Add Provider');
+      // Step 1
+      await assertSelectGateway({ page, searchTerm: 'easebuzz', provider: 'easebuzz_optimizer' });
+      // Step 2
+      await assertProviderDetails({ page, stepText: 'STEP 2 OUT OF 3' });
+      // Step 3
+      await commonStepAssertions(page, {
+        primaryText: 'Easebuzz Optimizer Production API Details',
+        stepText: 'STEP 3 OUT OF 3',
+      });
+      const methods = [METHODS_MAP[METHODS.CARD], METHODS_MAP[METHODS.UPI]];
+      const submitBtn = page.getByRole('button', { name: 'Submit' });
+      await expect(submitBtn).toBeDisabled();
+      expect(page.getByText('App Id', { exact: true })).toBeVisible();
+      expect(page.getByText('App secret Key', { exact: true })).toBeVisible();
+      expect(page.getByText('Payment Methods', { exact: true })).toBeVisible();
+      await typeTextIntoElement(page, ELEMENTS.PROVIDER_APP_ID, 'ABCDE12345');
+      await typeTextIntoElement(page, ELEMENTS.PROVIDER_APP_SECRET, 'ABCDEFGHIJ');
+      await clickMethodsByText(page, methods);
+      // Assert for TPV options
+      await assertTPVOption(page);
+      expect(submitBtn).toBeEnabled();
+      await clickButton(page, 'Go Back');
+    } catch (error) {
+      console.error('Error Add Easebuzz Optimizer Provider: ', error?.message);
     }
   });
 

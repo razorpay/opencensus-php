@@ -629,6 +629,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'easebuzz_optimizer_gateway',
+          experimentId: {
+            beta: 'NS38QuzGdG77EL',
+            production: 'NRyZtAZn92wFlI',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

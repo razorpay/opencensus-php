@@ -1313,6 +1313,7 @@ export const gatewayLogos = {
   upi_icici: getLogoPath('icici'),
   netbanking_axis: getLogoPath('axis'),
   checkout_dot_com_optimizer: require('assets/optimizer/cko.png'),
+  easebuzz_optimizer: require('assets/optimizer/easebuzz_optimizer.png'),
 };
 
 export const mapRulesObjectToArray = (e) => {
