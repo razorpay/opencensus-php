@@ -671,6 +671,14 @@ class Payment extends Base
             $receiverType = PaymentsUpi\PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_CREDIT;
             $filters[] = [Pricing\Entity::PAYMENT_METHOD_TYPE, Merchant\Methods\Entity::IN_APP, true, null];
         }
+        /*
+         * If, on the other hand, it's not a cc on turbo upi payment, we should filter out the in_app rule so that
+         * there is no rule conflict at the end and the correct filter gets applied for a non cc on turbo upi payment
+         */
+        else
+        {
+            $filters[] = [Pricing\Entity::PAYMENT_METHOD_TYPE, null, false, false];
+        }
 
         if ($payment->isPPIOnUpi()=== true)
         {
