@@ -474,6 +474,10 @@ const GCMSProgramDetails = lazy(() =>
   import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Programs/ProgramDetails'),
 );
 
+const GCMSOrders = lazy(() =>
+  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Orders'),
+);
+
 // const POS = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
 const Pos = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
 
@@ -1079,7 +1083,7 @@ class Content extends Component {
             />
 
             <Route
-              path={`batchpaymentpages/:id/:entity_name/*`}
+              path="batchpaymentpages/:id/:entity_name/*"
               element={
                 <RouteGuard additionalCondition={(user) => user.isPaymentPageFileUploadEnabled}>
                   <PaymentPagesDetails isBatchPaymentPages />
@@ -1149,6 +1153,7 @@ class Content extends Component {
               </RouteGuard>
             }
           />
+
           <Route path="super-checkout/*" element={<Navigate to="/magic" replace />} />
 
           <Route path="paymentbuttons/*">
@@ -1981,7 +1986,6 @@ class Content extends Component {
               </RouteGuard>
             }
           />
-
           <Route
             path="pos/*"
             element={
@@ -2035,6 +2039,18 @@ class Content extends Component {
                 }
               />
             </Route>
+            <Route
+              path="orders/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                  }
+                >
+                  <GCMSOrders />
+                </RouteGuard>
+              }
+            />
           </Route>
         </Routes>
       </Suspense>

@@ -66,6 +66,7 @@ const routes = {
   INTERNATIONAL_PAYMENTS: '/app/payment-methods/international-payments',
   WALLET_REPORTS: '/app/wallet/reports',
   GCMS_PROGRAMS: '/app/gcms/programs',
+  GCMS_ORDERS: '/app/gcms/orders',
 };
 
 const EmailCredentials = [

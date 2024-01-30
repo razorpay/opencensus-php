@@ -5,7 +5,7 @@ const EmptyList = ({ description }) => (
   </div>
 );
 
-export const EmptyListWithTableRow = props => (
+export const EmptyListWithTableRow = (props) => (
   <tr>
     <td class="text-center empty-table" colSpan={props.colSpan}>
       <EmptyList {...props} />

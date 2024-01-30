@@ -12,3 +12,44 @@ export const PROGRAM_TYPES = {
     color: '#30C5D8',
   },
 };
+
+export const ORDERS_STATUS = {
+  draft: {
+    label: 'Draft',
+    value: 'draft',
+    color: 'neutral',
+  },
+  under_review: {
+    label: 'Under Review',
+    value: 'under_review',
+    color: 'notice',
+  },
+  processed: {
+    label: 'Processed',
+    value: 'processed',
+    color: 'positive',
+  },
+  submitted: {
+    label: 'Submitted',
+    value: 'submitted',
+    color: 'information',
+  },
+  cancelled: {
+    label: 'Cancelled',
+    value: 'cancelled',
+    color: 'negative',
+  },
+  //For status in filters dropdown
+  all: {
+    label: 'All',
+    value: 'all',
+    color: 'neutral',
+  },
+};
+
+export const DATE_RANGE_PRESETS: [string, number, string][] = [
+  ['All Time', -30, 'days'],
+  ['Past 7 Days', -7, 'days'],
+  ['Past 30 Days', -30, 'days'],
+  ['Past 90 Days', -90, 'days'],
+];
