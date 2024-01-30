@@ -7,6 +7,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { withSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 import ListContainer from 'merchant/containers/ListContainer';
 import { b2bActions } from 'merchant/reducers/b2bExports';
 import { fetchB2bPayments } from 'merchant/reducers/collection';
@@ -183,8 +184,15 @@ class PaymentsListContainer extends ListContainer {
   }
 
   render() {
-    const { data, isLoading, invoiceFetching, invoicesUploading } = this.props;
+    const { data, isLoading, invoiceFetching, invoicesUploading, splitz } = this.props;
     const { skip, count } = this.state;
+
+    const { abExperiments } = splitz || {
+      abExperiments: { UploadInvoiceSenderAddr: undefined },
+    };
+    const isSenderDetailsEnabled = abExperiments?.UploadInvoiceSenderAddr
+      ? isExperimentEnabled(abExperiments.UploadInvoiceSenderAddr)
+      : false;
 
     return (
       <ErrorBoundary resetOnProps rank={Ranks.P1} team={Teams.CROSS_BORDER}>
@@ -222,9 +230,10 @@ class PaymentsListContainer extends ListContainer {
             skip={skip}
             items={data.items}
             loading={isLoading}
-            EmptyComponent={EmptyComponent}
             uploadState={invoicesUploading}
             invoiceFetching={invoiceFetching}
+            isSenderDetailsEnabled={isSenderDetailsEnabled}
+            EmptyComponent={EmptyComponent}
             paginate={this.paginate}
             onView={this.onView}
             onUpload={this.onUploadInvoice}

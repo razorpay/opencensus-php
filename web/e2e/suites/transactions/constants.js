@@ -33,3 +33,12 @@ export const refunds = {
     },
   },
 };
+
+export const uploadInvoices = {
+  paymentId: {
+    allDetails: 'pay_NMU5tjbkt8Vxys',
+    noSenderName: 'pay_NMTpcCTxFlzjg2',
+    noSenderCountry: 'pay_NMOIqK82Wvu7I7',
+    noSenderAddr: 'pay_NMOMXwQAgFtuK2',
+  },
+};

@@ -1,8 +1,8 @@
 // testing utils
+import ListTable from 'merchant/views/Transactions/v1/B2bPayments/components/ListTable';
 import { render, fireEvent, waitFor, userEvent, screen } from 'test-utils';
 
 // component
-import ListTable from 'merchant/views/Transactions/v1/B2bPayments/components/ListTable';
 
 const testTxn = [
   {
@@ -51,7 +51,36 @@ const renderComponent = (props) => {
   });
 };
 
+const renderSenderAddress = (senderAddress, { isSenderDetailsEnabled = true } = {}) => {
+  renderComponent({
+    items: testTxn.map((txn) => ({ ...txn, sender_address: senderAddress })),
+    uploadState: {},
+    isSenderDetailsEnabled,
+  });
+
+  if (isSenderDetailsEnabled) {
+    expect(screen.getByText('Sender Details')).toBeInTheDocument();
+  } else {
+    expect(screen.queryByText('Sender Details')).not.toBeInTheDocument();
+  }
+};
+
+const assertSenderDetailsNotAvailable = () => {
+  expect(screen.queryByText('Name not available')).toBeInTheDocument();
+  expect(screen.queryByText('Country not available')).toBeInTheDocument();
+};
+
 describe('Test <ListTable />', () => {
+  beforeEach(() => {
+    console.error = jest.fn(); // Silence error messages
+    console.warn = jest.fn(); // Silence warning messages
+  });
+
+  afterEach(() => {
+    console.error.mockRestore(); // Restore the original console.error
+    console.warn.mockRestore(); // Restore the original console.warn
+  });
+
   test('Should render without breaking', () => {
     expect(renderComponent({ items: [] })).toBeDefined();
   });
@@ -133,5 +162,51 @@ describe('Test <ListTable />', () => {
     expect(screen.queryByText('Upload')).not.toBeInTheDocument();
     expect(screen.getByText('Add/Update Buyer Address')).toBeInTheDocument();
     expect(screen.getByText('VIEW')).toBeInTheDocument();
+  });
+
+  test('should not render show sender details', () => {
+    renderSenderAddress(null, { isSenderDetailsEnabled: false });
+  });
+
+  test('should show sender details', () => {
+    const senderAddress = { name: 'Sample name', country: 'Sample country' };
+    renderSenderAddress(senderAddress);
+
+    expect(screen.queryByText(senderAddress.name)).toBeInTheDocument();
+    expect(screen.queryByText(senderAddress.country)).toBeInTheDocument();
+  });
+
+  test('should show sender details - Name not available', () => {
+    const senderAddress = { name: null, country: 'Sample country' };
+    renderSenderAddress(senderAddress);
+
+    expect(screen.queryByText('Name not available')).toBeInTheDocument();
+    expect(screen.queryByText(senderAddress.country)).toBeInTheDocument();
+  });
+
+  test('should show sender details - Country not available', () => {
+    const senderAddress = { name: 'Sample name', country: null };
+    renderSenderAddress(senderAddress);
+
+    expect(screen.queryByText(senderAddress.name)).toBeInTheDocument();
+    expect(screen.queryByText('Country not available')).toBeInTheDocument();
+  });
+
+  test('should show sender details - Name and country not available', () => {
+    const senderAddress = { name: null, country: null };
+    renderSenderAddress(senderAddress);
+    assertSenderDetailsNotAvailable();
+  });
+
+  test('should show sender details - Name and country with undefined values', () => {
+    const senderAddress = { name: undefined, country: undefined };
+    renderSenderAddress(senderAddress);
+    assertSenderDetailsNotAvailable();
+  });
+
+  test('should show sender details - Name and country with empty strings', () => {
+    const senderAddress = { name: '', country: '' };
+    renderSenderAddress(senderAddress);
+    assertSenderDetailsNotAvailable();
   });
 });

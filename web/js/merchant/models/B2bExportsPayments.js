@@ -5,7 +5,7 @@ class B2bExportsPayments extends GenericEntity {
   resourceUrl = 'payments';
 
   fetchAll(params = {}) {
-    return super.fetchAll({ ...params, intl_bank_transfer: 1 });
+    return super.fetchAll({ ...params, intl_bank_transfer: 1, 'expand[]': 'sender_address' });
   }
 
   async uploadInvoice(id, data) {

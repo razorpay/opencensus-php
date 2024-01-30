@@ -4,7 +4,9 @@ import { Button, UploadIcon, PlusIcon, EyeIcon, Link } from '@razorpay/blade/com
 import { useSplitzService } from 'common/splitz';
 import { paymentId, amount, createdAt, status } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
+import SenderDetails from 'merchant/views/Transactions/v1/B2bPayments/components/SenderDetails';
 import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
+
 import './styles.styl';
 
 const _paymentId = (splitz) => {
@@ -33,6 +35,7 @@ const ListTable = ({
   uploadState,
   invoiceFetching,
   onBuyerAddressClick,
+  isSenderDetailsEnabled,
   ...props
 }) => {
   const splitz = useSplitzService();
@@ -121,13 +124,36 @@ const ListTable = ({
     [uploadState, invoiceFetching, onView, handleUploadClick, onBuyerAddressClick],
   );
 
+  const senderDetailsColumn = {
+    title: 'Sender Details',
+    value: (item) => {
+      const { sender_address } = item ?? {};
+      const { name = '', country = '' } = sender_address ?? {};
+
+      return <SenderDetails name={name} country={country} />;
+    },
+  };
+
+  const tableColumns = [
+    _paymentId(splitz),
+    amount,
+    createdAt,
+    paymentMethodColumn,
+    status,
+    actionColumn,
+  ];
+
+  if (isSenderDetailsEnabled) {
+    /**
+     * Insert senderDetailsColumn before the last element (at length - 1)
+     * array.splice(indexToInsertAt, 0, elementToInsert);
+     */
+    tableColumns.splice(tableColumns.length - 1, 0, senderDetailsColumn);
+  }
+
   return (
     <>
-      <EntityTable
-        title="Payments"
-        columns={[_paymentId(splitz), amount, createdAt, paymentMethodColumn, status, actionColumn]}
-        {...props}
-      />
+      <EntityTable title="Payments" columns={tableColumns} {...props} />
       <input
         type="file"
         ref={fileUploaderRef}

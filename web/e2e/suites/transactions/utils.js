@@ -5,9 +5,11 @@ import { routes } from '../../utils/constants';
 
 const { switchToTestMode } = require('../../utils');
 
-export const navigateToTransactions = async (page) => {
+export const navigateToTransactions = async (page, mode) => {
   await navigateTo(page, routes.DASHBOARD);
-  await switchToTestMode({ page });
+  if (mode !== 'live') {
+    await switchToTestMode({ page });
+  }
   await page.getByRole('link', { name: 'Transactions' }).click();
   await expect(page).toHaveURL(routes.PAYMENTS);
   await expect(page.getByRole('link', { name: 'Payments', exact: true })).toBeVisible();
@@ -66,4 +68,33 @@ export const assertRefundDetails = async ({ page, id, amount }) => {
   await expect(refundDetails.getByText('Timeline')).toBeVisible();
   await expect(refundDetails.getByText('Refund processing')).toBeVisible();
   await expect(refundDetails.getByText('Refund processed')).toBeVisible();
+};
+
+export const assertColumnsVisibility = async (page, columns) => {
+  for await (const column of columns) {
+    await expect(page.getByRole('cell', { name: column })).toBeVisible();
+  }
+};
+
+export const waitForApiResponse = async ({ page, id }) => {
+  try {
+    await Promise.race([
+      page.waitForResponse((response) => response.url().includes('&intl_bank_transfer=1')),
+      page.waitForTimeout(2000),
+    ]);
+  } catch (error) {
+    throw new Error(`${id}: Timeout waiting for the API response.`);
+  }
+};
+
+export const assertSearch = async ({ page, id }) => {
+  await page.locator('input[name="id"]').fill(id);
+  await page.getByRole('button', { name: 'Search' }).click();
+  await waitForApiResponse({ page, id });
+};
+
+export const assertPaymentDetails = async ({ page, details }) => {
+  for await (const detail of details) {
+    await expect(page.getByRole('cell', { name: detail })).toBeVisible({ timeout: 3000 });
+  }
 };

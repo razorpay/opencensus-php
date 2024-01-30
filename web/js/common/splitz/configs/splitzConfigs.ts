@@ -822,5 +822,27 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      matchByDashboard: ['product'],
+      routesToMatch: [UPLOAD_INVOICES],
+      abExperiments: [
+        {
+          uniqueHashKey: 'UploadInvoiceSenderAddr',
+          experimentId: {
+            beta: 'NSXliTmcp9pgO5',
+            production: 'NSlkvKmQmH5mg3',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };
