@@ -1429,6 +1429,12 @@ class InternationalBankTransferTest extends TestCase
 
             $this->assertEquals($expectedId, $actualId);
 
+            if(isset($mail->viewData['sender_address']) and isset($mail->viewData['sender_address']['sender_name']) and isset($mail->viewData['sender_address']['sender_country'])) {
+                $actualSenderName       =   $mail->viewData['sender_address']['sender_name'];
+                $actualSenderCountry    =   $mail->viewData['sender_address']['sender_country'];
+                $this->assertEquals("David Jenkins",$actualSenderName);
+                $this->assertEquals("united kingdom",$actualSenderCountry);
+            }
             return true;
         });
     }

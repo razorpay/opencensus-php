@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\Utility;
+use RZP\Models\Address;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Base\OrgWiseConfig;
 use RZP\Mail\Payment as PaymentMail;
@@ -91,6 +92,7 @@ class Notify
 
         $this->trace = $this->app['trace'];
 
+        $this->repo  = $this->app['repo'];
         $this->refreshTemplate();
     }
 
@@ -161,6 +163,17 @@ class Notify
 
         if (Payment\Event::isMerchantEvent($event) === true)
         {
+            if($event === Payment\Event::B2B_UPLOAD_INVOICE) {
+                $addresses = $this->repo->address->fetchAddressesForEntity(
+                    $this->payment,
+                    ['type' => Address\Type::SENDER_ADDRESS]
+                );
+                if(count($addresses)>0) {
+                    $this->template['sender_address']['sender_name']=$addresses->first()->getName();
+                    $this->template['sender_address']['sender_country']=$addresses->first()->getCountryName();
+                }
+
+            }
             $mailableClass = $this->getMailableClass($event);
 
             $mailable = new $mailableClass($this->template, true);

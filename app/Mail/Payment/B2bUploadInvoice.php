@@ -64,6 +64,11 @@ class B2bUploadInvoice extends Base
             ],
         ];
 
+        if(isset($data['sender_address']) and isset($data['sender_address']['sender_name']) and isset($data['sender_address']['sender_country'])) {
+            $storkParams['params']['sender_name']       =   $data['sender_address']['sender_name'];
+            $storkParams['params']['sender_country']    =   $data['sender_address']['sender_country'];
+            $storkParams['template_name']               =   'b2b_invoice_upload_with_sender_details';
+        }
         return $storkParams;
     }
 }
