@@ -127,7 +127,7 @@ const PdpActions = ({ productCode, plan, containerRef }: PdpActionsProps): JSX.E
             minWidth="750px"
           >
             <Box>
-              <Heading>Android Smart POS</Heading>
+              <Heading>{productDescription.productTitle}</Heading>
               <Box display="flex" alignItems="center">
                 {pricingBreakups.map(({ key, value, description }, index) => (
                   <Box

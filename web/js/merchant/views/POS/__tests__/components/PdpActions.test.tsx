@@ -107,6 +107,7 @@ describe('<PdpActions/>', () => {
     renderApp({});
     await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
     const floatinWidget = screen.getByTestId('pdp-floating-actions');
+    expect(within(floatinWidget).getByText(/Mock Product/)).toBeVisible();
     expect(within(floatinWidget).getByText(/300/)).toBeVisible();
     expect(within(floatinWidget).getByText(/Monthly Subscription/)).toBeVisible();
     expect(within(floatinWidget).getByText(/Setup Fee/)).toBeVisible();

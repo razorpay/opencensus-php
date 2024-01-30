@@ -39,4 +39,4 @@ web/js/merchant/views/Navigator                   @parth-p-ui @prem-io
 web/js/merchant/views/Optimizer                   @parth-p-ui @prem-io
 config/splitz.php                                 @sandeshdamkondwar @abhayp
 web/js/merchant/views/Transactions/v2             @razorpay/ssab-fe
-web/js/merchant/views/POS                         @amitabh-blade @AniketOnWeb @shivam-rzp
+web/js/merchant/views/POS                         @amitabh-blade @prashant-kush @nashcheez
