@@ -3,6 +3,7 @@
 namespace Functional\Merchant;
 
 use RZP\Constants\Mode;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\Stakeholder\Metric;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -14,6 +15,7 @@ use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class StakeholderTest extends OAuthTestCase
 {
+    use MocksSplitz;
     use TestsMetrics;
     use PartnerTrait;
     use DbEntityFetchTrait;

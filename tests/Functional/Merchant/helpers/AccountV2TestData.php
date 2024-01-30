@@ -1292,14 +1292,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid partner action'
+                    'description' => 'The partner does not have access to the merchant'
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
         ],
     ],
 
@@ -2480,6 +2480,26 @@ return [
         'request' => [
             'url'    => '/v2/accounts',
             'method' => 'POST',
+            'content' => [
+                'email'               => 'testcreateaccountab@razorpay.com',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'business_type'       => 'partnership',
+                'phone'               => '9999999999',
+                'profile' => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'addresses'      => [
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+            ],
         ],
         'response' => [
             'content' => [

@@ -2465,7 +2465,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
 
-        $this->blockOnboardingApisAccess();
+        $this->blockOnboardingApisAccess("DefaultPartner");
 
         $this->runRequestResponseFlow($testData);
     }

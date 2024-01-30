@@ -484,11 +484,6 @@
             <file>./tests/Functional/Merchant/AccountV2Test.php</file>
             <file>./tests/Functional/Merchant/StakeholderTest.php</file>
             <file>./tests/Functional/Merchant/WebhookV2Test.php</file>
-
-            <file>./tests/Unit/Models/Merchant/MerchantTest.php</file>
-            <file>./tests/Unit/Models/Merchant/Detail/CoreTest.php</file>
-            <file>./tests/Unit/Models/Merchant/Detail/NeedsClarificationTest.php</file>
-            <file>./tests/Unit/Models/Merchant/Escalations/CoreTest.php</file>
         </testsuite>
         <testsuite name="SMEP Partnerships Test Suite">
             <directory>./tests/Functional/Partner/</directory>

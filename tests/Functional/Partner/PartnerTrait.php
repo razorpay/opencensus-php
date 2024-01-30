@@ -1031,10 +1031,10 @@ trait PartnerTrait
         return $partnerId;
     }
 
-    public function allowOnboardingApisAccess(string $merchantId = "10000000000000"): void
+    public function allowOnboardingApisAccess(string $merchantId = "10000000000000", int $times = 1): void
     {
         $input = [
-            "experiment_id" => "NI6yG7xTin7jgY", // exp to block onboarding apis access
+            "experiment_id" => "NI6yG7xTin7jgY", // exp to enable onboarding apis access
             "id"            => $merchantId
         ];
 
@@ -1048,7 +1048,7 @@ trait PartnerTrait
 
         $this->getSplitzMock()
              ->shouldReceive('evaluateRequest')
-             ->once()
+             ->times($times)
              ->with($input)
              ->andReturn($output);
     }
@@ -1056,7 +1056,7 @@ trait PartnerTrait
     public function blockOnboardingApisAccess(string $merchantId = "10000000000000"): void
     {
         $input = [
-            "experiment_id" => "NI6yG7xTin7jgY", // exp to block onboarding apis access
+            "experiment_id" => "NI6yG7xTin7jgY", // exp to enable onboarding apis access
             "id" => $merchantId
         ];
 

@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Config;
 use RZP\Constants\Mode;
 use Illuminate\Http\UploadedFile;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\Document\Metric;
 use RZP\Tests\Functional\Partner\Constants;
@@ -17,6 +18,7 @@ use RZP\Models\Merchant\Document as MerchantDocument;
 
 class AccountV2DocumentsTest extends OAuthTestCase
 {
+    use MocksSplitz;
     use TestsMetrics;
     use PartnerTrait;
     use DbEntityFetchTrait;

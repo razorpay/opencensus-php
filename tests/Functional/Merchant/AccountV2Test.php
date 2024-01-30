@@ -81,11 +81,13 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $response = $this->startTest();
 
         $accountId = $response['id'];
 
-        $this->validateSubMerchantTagging($accountId, '10000000000000');
+        $this->validateSubMerchantTagging($accountId, self::DEFAULT_MERCHANT_ID);
 
         $this->validateSupportingEntitiesCreation($accountId);
     }
@@ -94,12 +96,14 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $testData = $this->testData['testCreateAccountV2ForMandatoryFilledRequest'];
 
         $metricCaptured = false;
 
         $expectedDimensions = [
-            'partner_id'     => '10000000000000',
+            'partner_id'     => self::DEFAULT_MERCHANT_ID,
         ];
 
         $this->mockSplitzEvaluation();
@@ -118,6 +122,8 @@ class AccountV2Test extends TestCase
     public function testCreateAccountV2ForCompletelyFilledRequest()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -152,6 +158,8 @@ class AccountV2Test extends TestCase
 
         Mail::assertNotQueued(CreateSubMerchantMail::class);
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $this->startTest();
     }
 
@@ -170,6 +178,8 @@ class AccountV2Test extends TestCase
         $testData['exception'] = $this->testData['testCreateAccountV2WithInvalidStateName']['exception'];
 
         Mail::assertNotQueued(CreateSubMerchantMail::class);
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
 
         $this->runRequestResponseFlow($testData);
     }
@@ -190,12 +200,16 @@ class AccountV2Test extends TestCase
 
         Mail::assertNotQueued(CreateSubMerchantMail::class);
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $this->runRequestResponseFlow($testData);
     }
 
     public function testCreateAccountV2ForCompletelyFilledRegisteredBusinessRequest()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
 
         $output["response"]["variant"]["name"] = "enable";
 
@@ -220,8 +234,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
@@ -247,6 +263,8 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $this->startTest();
     }
 
@@ -254,8 +272,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
@@ -289,8 +309,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
@@ -324,8 +346,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
@@ -365,8 +389,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
@@ -393,6 +419,8 @@ class AccountV2Test extends TestCase
     public function testEditAccountV2ProfileAddress()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -423,6 +451,8 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
+
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
         $result = $this->runRequestResponseFlow($testData);
@@ -438,12 +468,16 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 0);
+
         $this->startTest();
     }
 
     public function testEditAccountWithEmptyCustomerFacingBusinessName()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
@@ -459,6 +493,8 @@ class AccountV2Test extends TestCase
     public function testFetchAccountV2()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -484,6 +520,8 @@ class AccountV2Test extends TestCase
     public function testFetchAccountV2WithNullAdditionalWebsites()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -629,6 +667,8 @@ class AccountV2Test extends TestCase
     {
         $this->setPurePlatformContext(Mode::TEST, false);
 
+        $this->allowOnboardingApisAccess(Constants::DEFAULT_PLATFORM_MERCHANT_ID, 1);
+
         $subMerchantDetails = [
             'merchant_id'           => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
             'business_type'         => 2,
@@ -645,14 +685,14 @@ class AccountV2Test extends TestCase
         $metricCaptured = false;
 
         $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
-
-        $output = [
-            "response" => [
-                "variant" => null
-            ]
-        ];
-
-        $this->mockSplitzTreatmentWithOutput($output);
+        //
+        //$output = [
+        //    "response" => [
+        //        "variant" => null
+        //    ]
+        //];
+        //
+        //$this->mockSplitzTreatmentWithOutput($output);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -706,7 +746,7 @@ class AccountV2Test extends TestCase
 
         $accountId = $response['id'];
 
-        $this->validateSubMerchantTagging($accountId, '10000000000000');
+        $this->validateSubMerchantTagging($accountId, self::DEFAULT_MERCHANT_ID);
 
         $this->validateSupportingEntitiesCreation($accountId);
     }
@@ -739,10 +779,12 @@ class AccountV2Test extends TestCase
 
         $this->setUpPartnerWithKycHandled(MerchantConstants::RESELLER);
 
-        $testData = $this->testData['testCreateAccountV2ByCapitalPartnerFailed'];
+        $testData = $this->testData['testCreateAccountV2ForMandatoryFilledByCapitalPartner'];
+
+        $result = $this->runRequestResponseFlow($testData);
 
         $testData['request']['method'] = 'GET';
-        $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
 
         $this->startTest($testData);
     }
@@ -750,6 +792,8 @@ class AccountV2Test extends TestCase
     public function testDeleteAccountV2()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
@@ -762,9 +806,36 @@ class AccountV2Test extends TestCase
         $this->startTest($testData);
     }
 
+    public function testDeleteAccountV2WithLinkedAccounts()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $accountID = $result['id'];
+
+        $this->fixtures->create("merchant", [
+            'parent_id' => Account\Entity::verifyIdAndSilentlyStripSign($accountID),
+            'live' => true,
+            'hold_funds' => false
+        ]);
+
+        $testData = $this->testData['testDeleteAccountV2'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+    }
+
     public function testEditAccountV2PostDelete()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 3);
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
@@ -838,10 +909,10 @@ class AccountV2Test extends TestCase
     {
         $input = [
             "experiment_id" => "JIRYzx7YtMuB18",
-            "id"            => "10000000000000",
+            "id"            => self::DEFAULT_MERCHANT_ID,
             'request_data'  => json_encode(
                 [
-                    'id' => "10000000000000",
+                    'id' => self::DEFAULT_MERCHANT_ID,
                 ]),
         ];
 
@@ -857,7 +928,7 @@ class AccountV2Test extends TestCase
 
         $input = [
             "experiment_id" => "KJfPdCoug8vfap",
-            "id"            => "10000000000000"
+            "id"            => self::DEFAULT_MERCHANT_ID
         ];
 
         $output ["response"]["variant"] ["name" ] = "enable";
@@ -869,8 +940,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
@@ -920,8 +993,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
@@ -956,8 +1031,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
@@ -1003,8 +1080,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 3);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
@@ -1053,6 +1132,8 @@ class AccountV2Test extends TestCase
     public function testEditAccountHavingNonEnglishDescription()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -1105,6 +1186,8 @@ class AccountV2Test extends TestCase
     {
         [$client] = $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $this->fixtures->create("partner_config", [
             'entity_id' => $client['application_id'],
             'entity_type' => 'application',
@@ -1126,6 +1209,8 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $response = $this->startTest();
 
         $accountId = $response['id'];
@@ -1142,6 +1227,8 @@ class AccountV2Test extends TestCase
         Mail::fake();
 
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
@@ -1164,6 +1251,8 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
+
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
         $result = $this->runRequestResponseFlow($testData);
@@ -1180,6 +1269,8 @@ class AccountV2Test extends TestCase
         Mail::fake();
 
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
@@ -1200,6 +1291,8 @@ class AccountV2Test extends TestCase
 
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
         $testData['request']['content']['phone'] = '+919048721302112';
@@ -1216,6 +1309,8 @@ class AccountV2Test extends TestCase
     public function testEditAccountV2WithInvalidPhone()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
@@ -1234,6 +1329,8 @@ class AccountV2Test extends TestCase
 
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
         $testData['request']['content']['apps']['android'][0]['randomKey'] = 'randomValue';
@@ -1251,6 +1348,8 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
+
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
         $result = $this->runRequestResponseFlow($testData);
@@ -1266,10 +1365,12 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'instant_activation_v2_api',
         ];
@@ -1291,8 +1392,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding'
         ];
@@ -1300,7 +1403,7 @@ class AccountV2Test extends TestCase
         (new Core())->create($featureParams, true);
 
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'instant_activation_v2_api'
         ];
@@ -1323,6 +1426,8 @@ class AccountV2Test extends TestCase
     public function testCreateAccountV2WithDefaultPaymentConfig()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
 
         $this->mockSplitzEvaluation();
 
@@ -1361,7 +1466,7 @@ class AccountV2Test extends TestCase
 
         $this->assertNotNull($linkedAccount->getParentId());
 
-        $this->assertEquals('10000000000000', $linkedAccount->getParentId());
+        $this->assertEquals(self::DEFAULT_MERCHANT_ID, $linkedAccount->getParentId());
 
         return $linkedAccount;
     }
@@ -1386,7 +1491,7 @@ class AccountV2Test extends TestCase
         $this->app->instance('ledger', $mockLedger);
 
         $mockLedger->shouldReceive('createAccountsOnEvent')
-            ->times(1)
+            ->times(2)
             ->andReturn([
                 'body' => [
                     "accounts" => [
@@ -1441,7 +1546,7 @@ class AccountV2Test extends TestCase
 
         $this->assertNotNull($linkedAccount->getParentId());
 
-        $this->assertEquals('10000000000000', $linkedAccount->getParentId());
+        $this->assertEquals(self::DEFAULT_MERCHANT_ID, $linkedAccount->getParentId());
 
         (new MerchantSupportingEntitiesCreateJob($this->mode, $merchantId, $linkedAccount->getParentId()))->handle();
 
@@ -1474,7 +1579,7 @@ class AccountV2Test extends TestCase
 
         (new MerchantSupportingEntitiesCreateJob($this->mode, $merchantId, $linkedAccount->getParentId()))->handle();
 
-        $this->assertEquals('10000000000000', $linkedAccount->getParentId());
+        $this->assertEquals(self::DEFAULT_MERCHANT_ID, $linkedAccount->getParentId());
 
         $featuresArray = $this->getDbEntity('feature',
             [
@@ -1498,7 +1603,7 @@ class AccountV2Test extends TestCase
         $this->mockDCS();
 
         $mockLedger->shouldReceive('createAccountsOnEvent')
-            ->times(1)
+            ->times(2)
             ->andThrow(new \RZP\Exception\RuntimeException(
                 'Unexpected response code received from Ledger service.',
                 [
@@ -1545,8 +1650,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
+
         $featureParams = [
-            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_ID   => self::DEFAULT_MERCHANT_ID,
             Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
@@ -1579,6 +1686,8 @@ class AccountV2Test extends TestCase
     public function testAccountStatusWhenMerchantActivationStatusIsActivatedWhenExpIsEnabled()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -1616,6 +1725,8 @@ class AccountV2Test extends TestCase
     public function testAccountStatusWhenMerchantActivationStatusIsActivatedWhenExpIsNotEnabled()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
 
         $metricsMock = $this->createMetricsMock();
 
@@ -1659,6 +1770,8 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 2);
+
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
         $result = $this->runRequestResponseFlow($testData);
@@ -1678,7 +1791,7 @@ class AccountV2Test extends TestCase
     {
         $input = [
             "experiment_id" => "LPIyq5qAHqpMsj",
-            "id"            => "10000000000000"
+            "id"            => self::DEFAULT_MERCHANT_ID
         ];
 
         $this->mockSplitzTreatment($input, $output);
@@ -1687,6 +1800,8 @@ class AccountV2Test extends TestCase
     public function testUpiPaymentMethodUnsetDuringAccountCreation()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
 
         $this->mockRazorxTreatment();
 
@@ -1706,6 +1821,8 @@ class AccountV2Test extends TestCase
     public function testUpiPaymentMethodSetDuringAccountCreation()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
 
         $this->mockRazorxTreatment('off');
 
@@ -1814,9 +1931,9 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
-        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+        $this->allowOnboardingApisAccess(self::DEFAULT_MERCHANT_ID, 1);
 
-        $this->allowOnboardingApisAccess();
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
         $result = $this->runRequestResponseFlow($testData);
 
@@ -1826,7 +1943,7 @@ class AccountV2Test extends TestCase
 
         $this->blockOnboardingApisAccess();
 
-        $this->startTest();
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testUpdateAccountValidationFailureForPrefill()

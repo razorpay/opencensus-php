@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Error\ErrorCode;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\Webhook\Event;
 use Illuminate\Database\Eloquent\Factory;
@@ -10,11 +11,12 @@ use Mail;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
-use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\WebhookV2\Metric;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -23,6 +25,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class WebhookV2Test extends TestCase
 {
+    use MocksSplitz;
     use TestsMetrics;
     use PartnerTrait;
     use TestsWebhookEvents;
@@ -853,9 +856,22 @@ class WebhookV2Test extends TestCase
         $testData = $this->testData['testCreateOnboardingWebhookForPurePlatform'];
         $testData['request']['url'] = '/v2/accounts/acc_'. Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID .'/webhooks';
 
-        $this->expectStorkServiceRequestForAction('createWebhookForOnboardingForPurePlatform');
-
         $this->blockOnboardingApisAccess('1000000000plat');
+
+        $testData['response'] = [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400
+        ];
+
+        $testData['exception'] = [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ];
 
         // creating a sub-merchant webhook
         $this->runRequestResponseFlow($testData);
@@ -881,15 +897,30 @@ class WebhookV2Test extends TestCase
 
         $this->expectStorkServiceRequestForAction('createWebhookForOnboarding');
 
+        $this->allowOnboardingApisAccess($partner->getId());
+
         // creating a sub-merchant webhook
         $response = $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
 
-        $this->expectStorkServiceRequestForAction('updateWebhookForOnboarding');
-
         $this->blockOnboardingApisAccess($partner->getId());
+
+        $testData['response'] = [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400
+        ];
+
+        $testData['exception'] = [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ];
 
         // updating a sub-merchant webhook
         $this->runRequestResponseFlow($testData);
