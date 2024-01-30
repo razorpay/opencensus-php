@@ -5818,6 +5818,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 if (array_get($paymentArray, '_.flow') !== 'intent')
                 {
                     $paymentArray[self::VPA] = self::DUMMY_VPA;
+
+                    if(($receiver !== null) and
+                        ($receiver instanceof QrV2\Entity) and
+                        ($receiver->getRequestSource() === RequestSource::EZETAP))
+                        {
+                            $paymentArray[Payment\Entity::SOURCE_CHANNEL] = QRConstant::PAYMENT_TYPE_IN_PERSON;
+                        }
                 }
                 break;
 
@@ -5832,12 +5839,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             $paymentArray[Payment\Entity::CURRENCY] = $orderEntity->getCurrency();
         }
-
-        if ($this->isQrV2Payment()  and $receiver->getRequestSource() === RequestSource::EZETAP)
-        {
-            $paymentArray[Payment\Entity::SOURCE_CHANNEL] = QRConstant::PAYMENT_TYPE_IN_PERSON;
-        }
-
 
         return $paymentArray;
     }
