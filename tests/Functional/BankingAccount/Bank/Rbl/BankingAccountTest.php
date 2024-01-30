@@ -4149,7 +4149,7 @@ class BankingAccountTest extends TestCase
             $bankingAccount->getMerchantId());
     }
 
-    public function testUpdateBankingAccountDocketInitiation()
+    protected function initialSetupForDocketInitiation()
     {
         Mail::fake();
 
@@ -4164,6 +4164,7 @@ class BankingAccountTest extends TestCase
 
         $merchant = $this->fixtures->edit('merchant', $merchantId, [
             'name'  => 'Merchant Name',
+            'category'  => null,
         ]);
 
         $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'skip_dwt_eligible', 'enabled');
@@ -4224,8 +4225,8 @@ class BankingAccountTest extends TestCase
                     'declaration_step'                   => 1,
                     'additional_details'                 => [
                         'business_details' => [
-                            'category' => 'financial_services',
-                            'sub_category' => 'lending',
+                            'category' => 'healthcare',
+                            'sub_category' => 'electrical_purpose_distilled_water',
                         ]
                     ]
                 ]
@@ -4233,6 +4234,112 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->ba->adminAuth();
+
+        return [$request, $bankingAccount];
+    }
+
+    public function testUpdateBankingAccountDocketInitiation()
+    {
+        [$request, $bankingAccount] = $this->initialSetupForDocketInitiation();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(Status::PICKED, $response[BankingAccount\Entity::STATUS]);
+        $this->assertEquals(Status::DOCKET_INITIATED, $response[BankingAccount\Entity::SUB_STATUS]);
+
+        Mail::assertQueued(DocketMail::class);
+    }
+
+    public function testgetMccCodeNewMappingViaUpdateBankingAccountDocketInitiation()
+    {
+        [$request, $bankingAccount] = $this->initialSetupForDocketInitiation();
+
+        $basMock = $this->bankingAccountServiceMock;
+
+        $basMock->shouldReceive('getGeneratedRblCredentials')
+            ->once()
+            ->andReturns([
+                'banking_account_id'       => $bankingAccount['id'],
+                'merchant_id'              => 'L6NxGyvDkztFol',
+                'merchant_name'            => 'TEST MERCHANT',
+                'email'                    => 'x.rbl..4@razorpay.com',
+                'dev_portal_password'      => 'RERPD32rhbtg',
+                'ldap_id'                  => '4BK27SE1V1',
+                'ldap_password'            => 'TMAYH38ymhbp',
+            ]);
+
+        $basMock->shouldReceive('generatedRblCredentials')
+            ->once()
+            ->withArgs(function($bankingAccountId, $rblCredentialsPayload) {
+                $this->assertEquals($rblCredentialsPayload['mcc_code'], '5251');
+                return true;
+            })
+            ->andReturns([
+                'banking_account_id'       => $bankingAccount['id'],
+                'merchant_id'              => 'L6NxGyvDkztFol',
+                'merchant_name'            => 'TEST MERCHANT',
+                'email'                    => 'x.rbl..4@razorpay.com',
+                'dev_portal_password'      => 'RERPD32rhbtg',
+                'ldap_id'                  => '4BK27SE1V1',
+                'ldap_password'            => 'TMAYH38ymhbp',
+                'upi_handle1'              => 'testUsername@rzp',
+                'upi_handle2'              => 'payouts.puv27-2@rbl',
+                'upi_handle3'              => 'payouts.rrp73-3@rbl',
+                'mcc_code'                 => '6012',
+            ]);
+
+        $this->app->instance('banking_account_service', $basMock);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(Status::PICKED, $response[BankingAccount\Entity::STATUS]);
+        $this->assertEquals(Status::DOCKET_INITIATED, $response[BankingAccount\Entity::SUB_STATUS]);
+
+        Mail::assertQueued(DocketMail::class);
+    }
+
+    public function testgetMccCodeOldMappingViaUpdateBankingAccountDocketInitiation()
+    {
+        [$request, $bankingAccount] = $this->initialSetupForDocketInitiation();
+
+        $request['content']['activation_detail']['additional_details']['business_details']['category'] = 'government';
+        $request['content']['activation_detail']['additional_details']['business_details']['sub_category'] = 'goverment_postal_services';
+
+        $basMock = $this->bankingAccountServiceMock;
+
+        $basMock->shouldReceive('getGeneratedRblCredentials')
+            ->once()
+            ->andReturns([
+                'banking_account_id'       => $bankingAccount['id'],
+                'merchant_id'              => 'L6NxGyvDkztFol',
+                'merchant_name'            => 'TEST MERCHANT',
+                'email'                    => 'x.rbl..4@razorpay.com',
+                'dev_portal_password'      => 'RERPD32rhbtg',
+                'ldap_id'                  => '4BK27SE1V1',
+                'ldap_password'            => 'TMAYH38ymhbp',
+            ]);
+
+        $basMock->shouldReceive('generatedRblCredentials')
+            ->once()
+            ->withArgs(function($bankingAccountId, $rblCredentialsPayload) {
+                $this->assertEquals($rblCredentialsPayload['mcc_code'], '9402');
+                return true;
+            })
+            ->andReturns([
+                'banking_account_id'       => $bankingAccount['id'],
+                'merchant_id'              => 'L6NxGyvDkztFol',
+                'merchant_name'            => 'TEST MERCHANT',
+                'email'                    => 'x.rbl..4@razorpay.com',
+                'dev_portal_password'      => 'RERPD32rhbtg',
+                'ldap_id'                  => '4BK27SE1V1',
+                'ldap_password'            => 'TMAYH38ymhbp',
+                'upi_handle1'              => 'testUsername@rzp',
+                'upi_handle2'              => 'payouts.puv27-2@rbl',
+                'upi_handle3'              => 'payouts.rrp73-3@rbl',
+                'mcc_code'                 => '6012',
+            ]);
+
+        $this->app->instance('banking_account_service', $basMock);
 
         $response = $this->makeRequestAndGetContent($request);
 
