@@ -332,4 +332,87 @@ class Core extends Base\Core
         }
     }
 
+    public function createTransactionMessageForCustomerWalletLoading(Transfer\Entity $transfer): array
+    {
+        $debitTransaction = $transfer->transaction;
+        $merchant = $debitTransaction->merchant;
+
+        $transactionMessage = [
+            Constants::API_TRANSACTION_ID        => $debitTransaction->getId(),
+            Constants::MERCHANT_ID               => $debitTransaction->getMerchantId(),
+            Constants::CURRENCY                  => $merchant->getCurrency(),
+            Constants::TRANSACTION_DATE          => $debitTransaction->getCreatedAt(),
+            Constants::LEDGER_INTEGRATION_MODE   => Constants::REVERSE_SHADOW,
+            Constants::IDEMPOTENCY_KEY           => Uuid::uuid1(),
+            Constants::TENANT                    => Constants::TENANT_PG,
+        ];
+
+        $additionalParams = $this->fetchRulesForTransferCredits($debitTransaction);
+        $additionalParams = (count($additionalParams) > 0) ? $additionalParams : null;
+
+        $moneyParams = $this->generateMoneyParamsForCustomerWalletLoadingDebit($debitTransaction);
+
+        $transferData = [
+            Constants::TRANSACTOR_EVENT             => Constants::CUSTOMER_WALLET_LOADING,
+            Constants::TRANSACTOR_ID                => $transfer->getPublicId(),
+            Constants::MONEY_PARAMS                 => $moneyParams,
+            Constants::ADDITIONAL_PARAMS            => $additionalParams
+        ];
+
+        return array_merge($transactionMessage, $transferData);
+    }
+
+    public function fetchRulesForTransferCredits(Transaction\Entity $transaction)
+    {
+        $rule = [];
+
+        if($transaction->isGratis() === true)
+        {
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS;
+        }
+
+        if($transaction->isFeeCredits() === true)
+        {
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::FEE_CREDITS;
+        }
+
+        return $rule;
+    }
+
+    public function generateMoneyParamsForCustomerWalletLoadingDebit(Transaction\Entity  $transaction): array
+    {
+        $moneyParams = [];
+
+        $amount = $transaction->getAmount();
+        $tax = $transaction->getTax() !== null ? $transaction->getTax() : 0;
+        $fee = $transaction->getFee() != null ? $transaction->getFee() - $tax : 0;
+
+        $moneyParams[Constants::AMOUNT]                         = strval($amount);
+        $moneyParams[Constants::BASE_AMOUNT]                    = strval($amount);
+
+        if($transaction->isFeeCredits() === true)
+        {
+            $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+            $moneyParams[Constants::TAX]                        = strval($tax);
+            $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($fee);
+            $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $fee);
+        }
+        else if ($transaction->isGratis() === true)
+        {
+            $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+        }
+        // Normal transfer debit scenario (commissions considered)
+        else
+        {
+            $moneyParams[Constants::CUSTOMER_WALLET_AMOUNT]     = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount + $fee + $tax);
+            $moneyParams[Constants::TAX]                        = strval($tax);
+            $moneyParams[Constants::TRANSFER_COMMISSION]        = strval($fee);
+        }
+
+        return $moneyParams;
+    }
+
 }

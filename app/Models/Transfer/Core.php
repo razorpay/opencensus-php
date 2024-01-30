@@ -517,8 +517,8 @@ class Core extends Base\Core
     {
         $transfer = $this->buildTransferEntity($source, $to, $input, $merchant);
 
-        // Create transfer transaction only if reverse shadow is not enabled
-        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        // Create transfer transaction only if reverse shadow is not enabled or if method is customer wallet loading
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false or (isset($input[ToType::CUSTOMER]) === true))
         {
             return $this->createTransactionForTransfer($transfer);
         }
@@ -777,13 +777,58 @@ class Core extends Base\Core
                 $to->getId(),
                 $merchant);
 
-            $this->createLedgerEntriesForCustomerTransfer($transfer, $merchant);
+            $this->createLedgerEntriesForCustomerTransferReverseShadow($transfer);
+
             return $transfer;
+        }
+    }
+
+    public function createLedgerEntriesForCustomerTransferReverseShadow(Transfer\Entity $transfer)
+    {
+        $merchant = $transfer->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $transactionMessage = (new ReverseShadowTransfersCore())->createTransactionMessageForCustomerWalletLoading($transfer);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage) {
+                // Job will be dispatched only if the transaction commits.
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
+            }));
+
+            $this->trace->info(
+                TraceCode::CUSTOMER_WALLET_LOADING_LEDGER_EVENT_TRIGGERED,
+                [
+                    'transfer_id'           => $transfer->getId(),
+                    'message'               => $transactionMessage,
+                ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::PG_LEDGER_ROUTE_ENTRY_FAILED,
+                [
+                    'transfer_id'           => $transfer->getId(),
+                ]);
         }
     }
 
     public function createLedgerEntriesForCustomerTransfer($transfer, Merchant\Entity $merchant)
     {
+        // Shadow mode will not be used anymore
+        return;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            return;
+        }
 
         if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
         {

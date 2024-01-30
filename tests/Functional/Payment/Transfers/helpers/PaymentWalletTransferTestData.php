@@ -255,5 +255,31 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
         ],
-    ]
+    ],
+
+    'testTransferAndVerifyCustomerBalanceOnReverseShadow' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'customer' => null,
+                        'amount'   => null,
+                        'currency' => 'INR',
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity' => 'transfer'
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

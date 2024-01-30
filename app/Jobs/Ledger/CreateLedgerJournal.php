@@ -40,8 +40,6 @@ class CreateLedgerJournal extends Job
     {
         parent::handle();
 
-        return;
-
        if($this->mode === Mode::TEST)
        {
            return;
@@ -52,6 +50,11 @@ class CreateLedgerJournal extends Job
         $message = [
             LedgerConstants::KAFKA_MESSAGE_DATA      => $this->transactionMessage,
         ];
+
+        if($this->transactionMessage[LedgerConstants::TRANSACTOR_EVENT] != LedgerConstants::CUSTOMER_WALLET_LOADING)
+        {
+            return;
+        }
 
         if ($this->isBulkJournalRequest === true)
         {

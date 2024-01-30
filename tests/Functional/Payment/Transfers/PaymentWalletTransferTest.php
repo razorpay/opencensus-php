@@ -284,4 +284,37 @@ class PaymentWalletTransferTest extends TestCase
 
         return $txn['items'][0];
     }
+
+    public function testTransferAndVerifyCustomerBalanceOnReverseShadow()
+    {
+        $customerBalance = $this->fixtures->create('customer:customer_balance', ['balance' => 14000]);
+
+        $this->fixtures->merchant->addFeatures(['openwallet']);
+
+        $customerPublicId = $customerBalance->customer->getPublicId();
+
+        $oldBalanceAmount = $customerBalance->getBalance();
+
+        $amount = $this->payment['amount'];
+
+        $this->capturePayment($this->payment['id'], $amount);
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->setCustomerTransferArray($this->testData[__FUNCTION__], $customerPublicId, $amount);
+
+        $this->startTest();
+
+        $customerBalance = $this->getLastEntity('customer_balance', true);
+
+        $this->assertSame($customerPublicId, $customerBalance['customer_id']);
+
+        $this->assertSame($oldBalanceAmount + $amount, $customerBalance['balance']);
+
+        $this->checkLastTransferEntity($customerPublicId, 'customer', $amount);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction);
+    }
 }
