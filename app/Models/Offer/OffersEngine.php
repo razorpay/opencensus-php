@@ -313,7 +313,7 @@ class OffersEngine extends Base\Core
         {
             // set the percent rate for corresponding tenure for lc emi
             return [
-                $offer[Entity::EMI_DURATIONS][0] => $offer[Entity::LOW_COST_EMI][Constants::DISCOUNT_TO_AVAIL][Constants::DISCOUNT_PERCENTAGE],
+                $offer[Entity::EMI_DURATIONS][0] => $offer[Entity::PERCENT_RATE],
             ];
         }
 

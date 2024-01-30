@@ -54,6 +54,11 @@ class Service extends Base\Service
 
         $merchantIds = $input['merchant_ids'];
 
+        if (sizeof($merchantIds) > 500)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BULK_OFFER_MERCHANT_LIMIT_EXCEEDED);
+        }
+
         $success = 0;
         $failures = [];
 

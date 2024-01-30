@@ -937,6 +937,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CASHBACK_CRITERIA_MISSING                                 = 'Either of percent_rate, min_txn_amount, max_cashback, min_cashback is required';
     const BAD_REQUEST_INVALID_OFFER_DURATION                                    = 'Offer end date must be later than offer start date';
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                      = 'Offer already exists. Please check the values and try again';
+    const BAD_REQUEST_BULK_OFFER_MERCHANT_LIMIT_EXCEEDED                        = 'More than 500 merchant_ids not allowed in Bulk Offer create action.';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK           = 'Flat cashback cannot be combined wih percent rate or max cashback in an offer';
     const BAD_REQUEST_MAX_CASHBACK_WITHOUT_PERCENT_RATE                         = 'Max cashback should be combined wih percent rate';
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                              = 'Iins can only be editable for card offer';
