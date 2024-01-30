@@ -84,6 +84,14 @@ class Validator extends Base\Validator
         Entity::SIGNUP_VIA_EMAIL                => 'sometimes|in:0,1',
     ];
 
+    protected static $createSubmerchantSignupRules = [
+        Entity::ID                              => 'sometimes|max:14',
+        Entity::NAME                            => 'sometimes|string|max:200',
+        Entity::EMAIL                           => 'sometimes|string|email',
+        Entity::CONTACT_MOBILE                  => 'required|max:15|contact_syntax',
+        Entity::SIGNUP_VIA_EMAIL                => 'sometimes|in:0,1',
+    ];
+
     protected static $signupOtpRules = [
         Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
         Entity::EMAIL                           => 'required_without:contact_mobile|email',

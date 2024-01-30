@@ -2545,11 +2545,166 @@ return [
                 'phone'               => '+919999999999',
                 'business_type'       => '',
                 'profile'             => [
-                    'category'       => null,
-                    'subcategory'    => null,
-                    'addresses'      => []
+                    'category'        => null,
+                    'subcategory'     => null,
+                    'addresses'       => []
                 ],
                 'notes'               => []
+            ],
+        ],
+    ],
+
+    'testUpdateAccountValidationFailureForPrefill' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'PATCH',
+            'content' => [
+                'phone'           => '9999999999',
+                'email'           => 'test@razorpay.com',
+                'contact_name'    => 'test'
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'The business registered city may only contain alphabets, digits and spaces.'
+                ],
+            ],
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateAccountForPrefillFlow' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'PATCH',
+            'content' => [
+                'contact_name'                  => 'contactname',
+                'legal_business_name'           => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name' => 'Acme',
+                'business_type'                 => 'partnership',
+                'profile'                       => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'addresses'      => [
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'legal_info'                    => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand'                         => [
+                    'color' => 'FFFFFF',
+                ],
+                'contact_info'                  => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'apps'                          => [
+                    'websites' => [
+                        'https://www.example.com/'
+                    ],
+                    'android'  => [
+                        [
+                            'url'  => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                            'name' => 'razorpay'
+                        ]
+                    ],
+                    'ios'      => [
+                        [
+                            'url'  => 'https://apps.apple.com/in/app/twitter/id333903271',
+                            'name' => 'twitter'
+                        ]
+                    ]
+                ],
+                'notes'                         => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'                          => 'standard',
+                'status'                        => 'created',
+                'phone'                         => '+919999999999',
+                'business_type'                 => 'partnership',
+                'contact_name'                  => 'contactname',
+                'legal_business_name'           => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name' => 'Acme',
+                'legal_info'                    => [
+                    'pan' => 'AAACL1234C',
+                    'gst' => '18AABCU9603R1ZM'
+                ],
+                'brand'                         => [
+                    'color' => 'FFFFFF',
+                ],
+                'contact_info'                  => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'apps'                          => [
+                    'websites' => [
+                        'https://www.example.com/'
+                    ],
+                    'android'  => [
+                        [
+                            'url'  => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app',
+                            'name' => 'razorpay'
+                        ]
+                    ],
+                    'ios'      => [
+                        [
+                            'url'  => 'https://apps.apple.com/in/app/twitter/id333903271',
+                            'name' => 'twitter'
+                        ]
+                    ]
+                ],
+                'notes'                         => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
             ],
         ],
     ],

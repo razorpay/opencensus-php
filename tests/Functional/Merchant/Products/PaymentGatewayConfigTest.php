@@ -2469,5 +2469,51 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->runRequestResponseFlow($testData);
     }
+
+    public function testCreateProductConfigWithoutTncForPrefill()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->mockTerminalServiceResponse();
+
+        $testData = $this->testData['createPrefillAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateProductConfigForPrefill'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->storkMock->shouldReceive('optOutForWhatsapp')->once();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCreateProductConfigValidationForPrefill()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], PartnerConstants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->mockTerminalServiceResponse();
+
+        $testData = $this->testData['createPrefillAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateProductConfigForPrefill'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->storkMock->shouldReceive('optOutForWhatsapp')->once();
+
+        $this->runRequestResponseFlow($testData);
+    }
 }
 

@@ -7431,7 +7431,7 @@ class Service extends Base\Service
         $createdNew      = false;
 
         if ((($merchant->isPartner() === true) or ($merchant->isMarketplace() === true)) and
-            ($subMerchant->getEmail() !== $merchant->getEmail()))
+            (!empty($subMerchant->getEmail())) and ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
             [$subMerchantUser, $createdNew] =
                 $this->createOrFetchUserAndAttachMerchant($subMerchant, $subMerchant->getEmail(), $product);

@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Product\TncMap;
 use RZP\Models\Merchant\Product\Util\Constants;
+use RZP\Models\Merchant\Account\Constants as AccountConstants;
 
 class Validator extends Base\Validator
 {
@@ -17,13 +18,17 @@ class Validator extends Base\Validator
         'ip'           => 'sometimes|ip',
     ];
 
+    protected static $createProductRules = [
+        'product_name' => 'required|string|custom',
+    ];
+
     protected static $createLocRules = [
         'product_name' => 'required|string',
     ];
 
     protected static $createValidators = [
         'tnc_input_check'
-        ];
+    ];
 
     public function __construct($entity = null)
     {
@@ -97,6 +102,20 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'ip is/are not required and should not be sent');
             }
+        }
+    }
+
+    public function validateCreateProductRequest(array $input)
+    {
+        $isPhantomPrefillEnabled = \Request::all()[AccountConstants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled)
+        {
+            $this->validateInput('create_product', $input);
+        }
+        else
+        {
+            $this->validateInput('create', $input);
         }
     }
 }

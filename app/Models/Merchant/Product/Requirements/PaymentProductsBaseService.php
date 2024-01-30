@@ -312,9 +312,11 @@ class PaymentProductsBaseService extends Base\Service
 
         if ($hasPendingTnc === true)
         {
+            $isPhantomPrefillEnabled = \Request::all()[Account\Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
             $requirement[Constants::FIELD_REFERENCE] = Constants::TNC_ACCEPTED;
 
-            $requirement[Constants::RESOLUTION_URL] = Constants::PAYMENT_CONFIG_RESOLUTION_URL;
+            $requirement[Constants::RESOLUTION_URL] = $isPhantomPrefillEnabled ? 'NA' : Constants::PAYMENT_CONFIG_RESOLUTION_URL;
 
             $requirement[Constants::STATUS] = Constants::REQUIRED;
 

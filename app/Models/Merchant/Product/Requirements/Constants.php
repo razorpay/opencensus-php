@@ -56,7 +56,8 @@ class Constants
     const BUSINESS_REQUIREMENT_FIELDS = [
         Detail\Entity::BUSINESS_CATEGORY,
         Detail\Entity::BUSINESS_SUBCATEGORY,
-        Detail\Entity::BUSINESS_TYPE
+        Detail\Entity::BUSINESS_TYPE,
+        Detail\Entity::BUSINESS_NAME,
     ];
 
     const LINKED_ACCOUNT_BUSINESS_REQUIREMENT_FIELDS = [

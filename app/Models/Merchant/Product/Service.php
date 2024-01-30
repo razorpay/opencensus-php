@@ -90,7 +90,7 @@ class Service extends Base\Service
     {
         list($merchant, $partner) = $this->validateAndSetMerchantContext($merchantId);
 
-        (new Validator())->validateInput('create', $payload);
+        (new Validator())->validateCreateProductRequest($payload);
 
         $merchantProductInput = $this->getMerchantProductInput($payload);
 
@@ -252,6 +252,7 @@ class Service extends Base\Service
 
             // don't check API access here as product info is not available
             (new Account\Core)->validatePartnerAccess($this->merchant, $merchantId, Merchant\AccountV2\Type::STANDARD, false);
+            (new Merchant\AccountV2\Core())->checkAndSetPhantomPrefillEnabledContextForPartner($partner, $merchant->getId());
 
             $this->app['basicauth']->setPartnerMerchantId($this->merchant->getId());
         }

@@ -11,7 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Product\TncMap;
-
+use RZP\Models\Merchant\Account\Constants as AccountConstants;
 
 class Validator extends Base\Validator
 {
@@ -25,6 +25,17 @@ class Validator extends Base\Validator
         Util\Constants::REFUND          => 'sometimes|array',
         Util\Constants::PAYMENT_METHODS => 'sometimes|array',
         Util\Constants::TNC_ACCEPTED    => 'sometimes|boolean|in:1',
+        Util\Constants::OTP             => 'sometimes|array',
+        Util\Constants::IP              => 'sometimes|ip',
+    ];
+
+    protected static $pgPrefillRules             = [
+        Util\Constants::SETTLEMENTS     => 'sometimes|array',
+        Util\Constants::CHECKOUT        => 'sometimes|array',
+        Util\Constants::PAYMENT_CAPTURE => 'sometimes|array',
+        Util\Constants::NOTIFICATIONS   => 'sometimes|array',
+        Util\Constants::REFUND          => 'sometimes|array',
+        Util\Constants::PAYMENT_METHODS => 'sometimes|array',
         Util\Constants::OTP             => 'sometimes|array',
         Util\Constants::IP              => 'sometimes|ip',
     ];
@@ -237,6 +248,20 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_AND_IP_NOT_TOGETHER);
             }
+        }
+    }
+
+    public function validatePGRequest(array $input)
+    {
+        $isPhantomPrefillEnabled = \Request::all()[AccountConstants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled)
+        {
+            $this->validateInput('pg_prefill', $input);
+        }
+        else
+        {
+            $this->validateInput('pg', $input);
         }
     }
 

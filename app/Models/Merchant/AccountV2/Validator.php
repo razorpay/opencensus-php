@@ -69,6 +69,19 @@ class Validator extends Merchant\Validator
         Constants::NOTES                           => 'sometimes|notes',
     ];
 
+    protected static $editAccountPrefillRules   = [
+        Constants::CONTACT_NAME                  => array('sometimes', 'max:255', 'regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
+        Constants::LEGAL_BUSINESS_NAME           => 'sometimes|string',
+        Constants::CUSTOMER_FACING_BUSINESS_NAME => 'filled|string',
+        Constants::PROFILE                       => 'sometimes|array',
+        Constants::LEGAL_INFO                    => 'sometimes|array',
+        Constants::CONTACT_INFO                  => 'sometimes|array',
+        Constants::APPS                          => 'sometimes|array',
+        Constants::BRAND                         => 'sometimes|array',
+        Constants::BUSINESS_TYPE                 => 'sometimes|string',
+        Constants::NOTES                         => 'sometimes|notes',
+    ];
+
     protected static $createCapitalAccountRules = [
         Constants::REFERENCE_ID                    => 'sometimes',
         Constants::EMAIL                           => 'required|email',
@@ -499,6 +512,20 @@ class Validator extends Merchant\Validator
         else
         {
             $this->validateInput('create_account', $input);
+        }
+    }
+
+    public function validateEditAccountRequest(array $input)
+    {
+        $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled)
+        {
+            $this->validateInput('edit_account_prefill', $input);
+        }
+        else
+        {
+            $this->validateInput('edit_account', $input);
         }
     }
 }

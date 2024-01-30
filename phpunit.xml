@@ -285,6 +285,7 @@
         </testsuite>
         <testsuite name="Feature-7-2 Test Suite">
             <directory>./tests/Functional/Merchant/Products</directory>
+            <file>./tests/Functional/Merchant/AccountV2Test.php</file>
         </testsuite>
         <testsuite name="Payment Test Suite">
             <directory>./tests/Functional/Payment/</directory>

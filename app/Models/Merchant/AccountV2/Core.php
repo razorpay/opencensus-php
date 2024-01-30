@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AccountV2;
 
 use Request;
 use RZP\Exception;
+use Lib\PhoneBook;
 use RZP\Models\User;
 use RZP\Trace\Tracer;
 use RZP\Models\Feature;
@@ -15,6 +16,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Product;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Constants\Entity as EntityConstants;
@@ -40,7 +42,7 @@ class Core extends Merchant\Core
 
         $accountCoreV1->validatePartnerAccess($partner,null, $accountType);
 
-        $this->checkIfPhantomPrefillIsEnabledForPartner($partner);
+        $this->checkAndSetPhantomPrefillEnabledContextForPartner($partner, null, $accountType);
 
         $requestedProduct = ProductConstants::PRIMARY;
 
@@ -142,6 +144,8 @@ class Core extends Merchant\Core
 
         $accountCoreV1->validatePartnerAccess($partner, $accountId);
 
+        $this->checkAndSetPhantomPrefillEnabledContextForPartner($partner, $accountId);
+
         Entity::verifyIdAndStripSign($accountId);
 
         $this->validateAccountSuspension($accountId);
@@ -150,7 +154,7 @@ class Core extends Merchant\Core
 
         if(empty($subMerchantDetails) === false && $subMerchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
         {
-            (new Validator)->validateInput('edit_account', $input);
+            (new Validator)->validateEditAccountRequest($input);
         }
 
         $validationDuration = (microtime(true) - $functionStartTime) * 1000;
@@ -296,7 +300,7 @@ class Core extends Merchant\Core
             $merchantDetailsCore->saveMerchantDetails($detailInput, $subMerchant);
         });
 
-        $this->updateUserIfApplicable($detailInput, $subMerchant->getEmail());
+        $this->updateOrCreateUserIfApplicable($detailInput, $subMerchant);
 
         $this->updateNCFieldsAcknowledgedIfApplicable($detailInput, $subMerchant);
 
@@ -506,21 +510,83 @@ class Core extends Merchant\Core
         }
     }
 
-    private function updateUserIfApplicable(array $input, string $subMerchantEmail): void
+    /**
+     * @throws BadRequestException
+     */
+    private function updateOrCreateUserIfApplicable(array $input, Merchant\Entity $subMerchant): void
     {
+        $isPhantomPrefillEnabled = \Request::all()[Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
         if(isset($input[Detail\Entity::CONTACT_MOBILE]) === true)
         {
-            $subMerchantUser = $this->repo->user->getUserFromEmail($subMerchantEmail);
-
-            // In case of Linked Accounts Submerchant user can be null sometimes.
-            // Submerchant user is onlu created when dashboard_access is given.
-            if (empty($subMerchantUser) === false)
+            if (!empty($subMerchant->getEmail()))
             {
-                $payload = [Detail\Entity::CONTACT_MOBILE => $input[Detail\Entity::CONTACT_MOBILE]];
+                $subMerchantUser = $this->repo->user->getUserFromEmail($subMerchant->getEmail());
 
-                (new User\Core)->edit($subMerchantUser, $payload);
+                // In case of Linked Accounts Submerchant user can be null sometimes.
+                // Submerchant user is onlu created when dashboard_access is given.
+                if (empty($subMerchantUser) === false)
+                {
+                    $payload = [Detail\Entity::CONTACT_MOBILE => $input[Detail\Entity::CONTACT_MOBILE]];
+
+                    (new User\Core)->edit($subMerchantUser, $payload);
+                }
+            }
+            else if ($isPhantomPrefillEnabled)
+            {
+                $this->createUserContactDetails($input, $subMerchant);
             }
         }
+
+        if ($isPhantomPrefillEnabled && isset($input[Detail\Entity::BUSINESS_NAME]))
+        {
+            $this->updateUserContactDetails($input, $subMerchant);
+        }
+    }
+
+    private function updateUserContactDetails(array $input, Merchant\Entity $subMerchant)
+    {
+        $merchantDetail = $subMerchant->merchantDetail;
+
+        $number = new PhoneBook($merchantDetail->getContactMobile());
+
+        $phoneNumber = $number->format(PhoneBook::DOMESTIC);
+
+        $subMerchantUser = $this->repo->user->findByMobile($phoneNumber)->first();
+
+        if (!empty($subMerchantUser))
+        {
+            $payload = [User\Entity::NAME => $input[Detail\Entity::BUSINESS_NAME]];
+
+            (new User\Core)->edit($subMerchantUser, $payload);
+        }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function createUserContactDetails(array $input, Merchant\Entity $subMerchant)
+    {
+        $subMerchantUser = $this->repo->user->findByMobile($input[Detail\Entity::CONTACT_MOBILE])->first();
+
+        if (!empty($subMerchantUser))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS);
+        }
+
+        $payload = [
+            User\Entity::CONTACT_MOBILE        => $input[Detail\Entity::CONTACT_MOBILE],
+            User\Entity::SIGNUP_VIA_EMAIL      => 0,
+            User\Entity::NAME                  => $input[Detail\Entity::BUSINESS_NAME] ?? '',
+        ];
+
+        $isLinkedAccountUser = ($subMerchant->isLinkedAccount() === true);
+
+        $subMerchantUser = (new User\Core)->create($payload, 'createSubmerchantSignup', $isLinkedAccountUser);
+
+        $product = $input[Merchant\Entity::PRODUCT] ?? ProductConstants::PRIMARY;
+
+        (new MerchantCore())->attachSubMerchantUser($subMerchantUser->getId(), $subMerchant, $product);
     }
 
     private function getDimensionsForAccountV2Metrics(Detail\Entity $merchantDetails, Merchant\Entity $partner): array
@@ -722,13 +788,16 @@ class Core extends Merchant\Core
         ];
     }
 
-    private function checkIfPhantomPrefillIsEnabledForPartner(Merchant\Entity $partner) : void
+
+    public function checkAndSetPhantomPrefillEnabledContextForPartner(Merchant\Entity $partner, string $accountId = null, string $accountType = null) : void
     {
         $phantomPrefillEnabled = false;
 
         if ($partner->isCobrandedOnboardingEnabled())
         {
-            $phantomPrefillEnabled = true;
+            $isRouteAccount = (new Merchant\Account\Core())->checkIfRouteAccount($accountId, $accountType);
+
+            $phantomPrefillEnabled = !$isRouteAccount;
         }
 
         Request::instance()->request->add([Constants::PHANTOM_PREFILL_ENABLED => $phantomPrefillEnabled]);

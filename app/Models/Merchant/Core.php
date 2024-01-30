@@ -433,7 +433,7 @@ class Core extends Base\Core
         $legalEntity           = null;
         $externalLegalEntityId = null;
 
-        $input['email'] = empty($input['email']) ? $aggregatorMerchant->getEmail() : $input['email'];
+        $this->getEmailInputDataForSubMerchant($aggregatorMerchant, $input);
 
         $jobInput = $this->getInputDataForSubMSupportEntities($input);
 
@@ -606,6 +606,17 @@ class Core extends Base\Core
         return $jobInput;
     }
 
+    private function getEmailInputDataForSubMerchant(Entity $partner, array &$input) : void
+    {
+        $isPhantomPrefillEnabled = \Request::all()[Account\Constants::PHANTOM_PREFILL_ENABLED] ?? false;
+
+        if ($isPhantomPrefillEnabled)
+        {
+            return;
+        }
+
+        $input['email'] = empty($input['email']) ? $partner->getEmail() : $input['email'];
+    }
 
     public function associateLegalEntityToSubmerchant(Entity $subMerchant, array $input)
     {

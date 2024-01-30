@@ -1752,6 +1752,13 @@ class AccountV2Test extends TestCase
 
         $this->assertEmpty($stakeholders);
 
+
+        $users = $this->getDbEntities('users', ['contact_mobile' => '9999999999']);
+
+        $this->assertCount(1, $users);
+
+        $this->assertEmpty($users[0]['email']);
+
         $this->assertTrue($metricCaptured);
     }
 
@@ -1820,5 +1827,39 @@ class AccountV2Test extends TestCase
         $this->blockOnboardingApisAccess();
 
         $this->startTest();
+    }
+
+    public function testUpdateAccountValidationFailureForPrefill()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData['testAccountCreationWithOnlyPhoneNumberForPhantomPartners'];
+
+        $result = $this->startTest($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdateAccountForPrefillFlow()
+    {
+        $this->setPurePlatformContext(Mode::TEST, false);
+
+        $this->fixtures->merchant->addFeatures(['cobranded_onboarding'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData['testAccountCreationWithOnlyPhoneNumberForPhantomPartners'];
+
+        $result = $this->startTest($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
     }
 }

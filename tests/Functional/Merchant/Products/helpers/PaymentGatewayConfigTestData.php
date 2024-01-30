@@ -3002,4 +3002,61 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
+
+    'testCreateProductConfigForPrefill' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'product_name' => 'payment_gateway'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'activation_status' => 'needs_clarification',
+                'requirements' => [
+                    [
+                        "field_reference"=> "profile.category",
+                        "status"=> "required",
+                        "reason_code"=> "field_missing"
+                    ],
+                    [
+                        "field_reference"=> "profile.subcategory",
+                        "status"=> "required",
+                        "reason_code"=> "field_missing"
+                    ],
+                    [
+                        "field_reference"=> "business_type",
+                        "status"=> "required",
+                        "reason_code"=> "field_missing"
+                    ],
+                    [
+                        "field_reference"=> "legal_business_name",
+                        "status"=> "required",
+                        "reason_code"=> "field_missing"
+                    ],
+                ]
+            ],
+        ]
+    ],
+
+    'testCreateProductConfigValidationForPrefill' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'product_name' => 'payment_gateway',
+                'tnc_accepted' => true,
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'tnc_accepted is not allowed',
+                ]
+            ],
+            'status_code' => 400
+        ],
+    ],
 ];
