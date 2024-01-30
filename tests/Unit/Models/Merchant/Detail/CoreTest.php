@@ -4238,7 +4238,7 @@ class CoreTest extends TestCase
 
         //Experiment for greylisted merchant inclusion
         $input = [
-            "experiment_id" => "NPzm0s0tkW1W4s",
+            "experiment_id" => "NST3LYqGIRTkv6",
             "id"            => $merchant->getId(),
         ];
 
@@ -4351,7 +4351,7 @@ class CoreTest extends TestCase
 
         //Experiment for greylisted merchant inclusion
         $input = [
-            "experiment_id" => "NPzm0s0tkW1W4s",
+            "experiment_id" => "NST3LYqGIRTkv6",
             "id"            => $merchant->getId(),
         ];
 
@@ -4362,8 +4362,6 @@ class CoreTest extends TestCase
                 ]
             ]
         ];
-
-        $this->mockSplitzTreatment($input, $output);
 
         $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }

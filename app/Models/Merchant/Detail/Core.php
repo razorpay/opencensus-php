@@ -6675,17 +6675,23 @@ class Core extends Base\Core
      */
     private function isSubCategoryExcluded(Merchant\Entity $merchant, $subCategory, $businessType): bool
     {
-        $subcategoryExclusionV2ExpEnabled = $this->isExclusionBasedOnBMCExpEnabled($merchant);
+        $isExpEnabledForSubCategoryExclusion = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.subcategory_exclusion_for_automation'),
+            ],
+            'variables'
+        );
 
         switch ($businessType) {
             case BusinessType::NOT_YET_REGISTERED:
             case BusinessType::INDIVIDUAL:
-                if ($subcategoryExclusionV2ExpEnabled === true) {
+                if ($isExpEnabledForSubCategoryExclusion === true) {
                     return in_array($subCategory, SubcategoryV2::UNREGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION_V2);
                 }
                 return in_array($subCategory, SubcategoryV2::UNREGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION);
             default:
-                if ($subcategoryExclusionV2ExpEnabled === true) {
+                if ($isExpEnabledForSubCategoryExclusion === true) {
                     return in_array($subCategory, SubcategoryV2::REGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION_V2);
                 }
                 return in_array($subCategory, SubcategoryV2::REGISTERED_SUBCATEGORIES_NOT_ALLOWED_FOR_AUTOMATION);
@@ -9504,7 +9510,7 @@ class Core extends Base\Core
 
         $this->app['cache']->delete($cacheKey);
     }
-    
+
     /**
      * Update website details after validation.
      *
@@ -9517,9 +9523,9 @@ class Core extends Base\Core
         $validationResponse = $payload['validationResponse'] ?? [];
 
         $this->deleteMerchantWebsiteAutomatedOcrCheckCacheData($this->merchant);
-        
+
         [$status, $matchedMerchantIds] = $this->dedupeCore->matchAndGetMatchedMIDs($this->merchant);
-        
+
         if(
             !empty($validationResponse['success']) &&
             $validationResponse['success'] === true &&
@@ -9529,10 +9535,10 @@ class Core extends Base\Core
         )
         {
             (new Detail\Service())->putBusinessWebsiteUpdatePostWorkflow($payload['input'], $this->merchant);
-            
+
             return;
         }
-    
+
         $this->postBusinessWebsiteViaWorkflow(
             $payload[DetailConstants::URLTYPE],
             $payload[DetailConstants::INPUT],
@@ -9633,7 +9639,7 @@ class Core extends Base\Core
             'contact_link' => $input[DetailConstants::BUSINESS_WEBSITE_CONTACT_US],
             'shipping_link' => $input[DetailConstants::BUSINESS_WEBSITE_SHIPPING_POLICY],
         ];
-        
+
         return $payload;
     }
 
@@ -11904,35 +11910,35 @@ class Core extends Base\Core
     {
         (new Merchant\Service)->addOrRemoveMerchantFeatures($features);
     }
-    
+
     protected function getMccCategorisationClient(?string $svcKey = null)
     {
         $mock = $this->app['config']['services.ocr_service.mock'];
-    
+
         if ($mock === true)
         {
             //
             // This config is not defined in application config , this is used in test case only
             //
             $mockStatus = $this->app['config']['services.response'] ?? Constant::SUCCESS;
-        
+
             return new MccCategorisationClientMock($mockStatus);
         }
 
         return new MccCategorisationClient($this->merchant, $svcKey);
     }
-    
+
     protected function getWebsiteIndividualLinkClient(?string $svcKey = null)
     {
         $mock = $this->app['config']['services.ocr_service.mock'];
-    
+
         if ($mock === true)
         {
             //
             // This config is not defined in application config , this is used in test case only
             //
             $mockStatus = $this->app['config']['services.response'] ?? Constant::SUCCESS;
-        
+
             return new WebsiteIndividualLinkClientMock($mockStatus);
         }
         return new WebsiteIndividualLinkClient($this->merchant, $svcKey);
@@ -12332,10 +12338,10 @@ class Core extends Base\Core
 
         $businessType = $merchantDetails->getBusinessType();
 
-        $subcategoryExclusionV2ExpEnabled = $this->isExclusionBasedOnBMCExpEnabled($merchant);
+        $subcategoryInclusionExpEnabled = $this->isGreyListedMerchantIncludedForAutomation($merchant);
 
         if ($activationFlow === ActivationFlow::GREYLIST) {
-          if ($subcategoryExclusionV2ExpEnabled === false) return false;
+          if ($subcategoryInclusionExpEnabled === false) return false;
 
             switch ($businessType) {
                 case BusinessType::NOT_YET_REGISTERED:
@@ -12353,7 +12359,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @return bool
      */
-    private function isExclusionBasedOnBMCExpEnabled(Merchant\Entity $merchant): bool
+    private function isGreyListedMerchantIncludedForAutomation(Merchant\Entity $merchant): bool
     {
         $isExpEnabledForBMCPhase2 = (new Merchant\Core)->isSplitzExperimentEnable(
             [
@@ -12363,15 +12369,15 @@ class Core extends Base\Core
             'variables'
         );
 
-        $isExpEnabledForSubCategoryExclusion = (new Merchant\Core)->isSplitzExperimentEnable(
+        $isExpEnabledForGreylistedInclusion = (new Merchant\Core)->isSplitzExperimentEnable(
             [
                 'id' => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.category_exclusion_based_on_bmc'),
+                'experiment_id' => $this->app['config']->get('app.greylisted_inclusion_for_automation'),
             ],
             'variables'
         );
 
-        return ($isExpEnabledForBMCPhase2 === true and $isExpEnabledForSubCategoryExclusion === true);
+        return ($isExpEnabledForBMCPhase2 === true and $isExpEnabledForGreylistedInclusion === true);
 
     }
 }

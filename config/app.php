@@ -818,7 +818,9 @@ return array(
 
     'show_bmc_phase_2_questions' => env('SHOW_BMC_PHASE_2_QUESTIONS'),
 
-    'category_exclusion_based_on_bmc' => env('CATEGORY_EXCLUSION_BASED_ON_BMC'),
+    'greylisted_inclusion_for_automation' => env('GREYLISTED_INCLUSION_FOR_AUTOMATION'),
+
+    'subcategory_exclusion_for_automation' => env('SUBCATEGORY_EXCLUSION_FOR_AUTOMATION'),
 
     'partnership_unblock_huf_business_type_experiment_id' => env('PARTNERSHIP_UNBLOCK_HUF_BUSINESS_TYPE_EXP_ID'),
 );
