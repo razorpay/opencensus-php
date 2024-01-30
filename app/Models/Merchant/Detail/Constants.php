@@ -433,6 +433,8 @@ class Constants
     const ACCOUNT_PREFIX = "account_prefix";
     const IFSC_PREFIX    = "ifsc_prefix";
 
+    const FEE_BASED_GATING_FLOW  = "fee_based_gating_flow";
+
     const VIRTUAL_BANK_ACCOUNTS_PREFIX = [
         [
             self::ACCOUNT_PREFIX => "222333",

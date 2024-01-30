@@ -1025,6 +1025,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_COUPON_CODE                                       = 'Coupon code not found';
     const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                             = 'Coupon code not valid for this merchant';
     const BAD_REQUEST_COUPON_NOT_APPLICABLE                                     = 'Coupon code is not applicable right now';
+    const INVALID_ACTIVATION_STATUS_CHANGE                                      = 'Invalid activation status change';
     const BAD_REQUEST_COUPON_EXPIRED                                            = 'Coupon code is expired';
     const BAD_REQUEST_COUPON_ALREADY_EXISTS                                     = 'Coupon code already exists';
 

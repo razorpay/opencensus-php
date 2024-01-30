@@ -8158,6 +8158,17 @@ class Core extends Base\Core
         return [$merchant, $merchantDetails];
     }
 
+
+    /*
+     * set merchant for internal api like call from pgos wont have authentication so in that case $this->merchant is null.
+     * setting it here because this->merchant is a protected variable, so not possible to modify in other files.
+     */
+    public function setMerchantForInternalApi(Merchant\Entity $merchant)
+    {
+        $this->merchant = $this->merchant ?? $merchant;
+    }
+
+
     /**
      * Fetches merchant and merchant details from merchant_id
      *

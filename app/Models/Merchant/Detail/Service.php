@@ -4877,6 +4877,47 @@ class Service extends Base\Service
                 $merchant = $this->repo->merchant->findOrFail($merchantId);
                 unset($input[DetailConstants::ACTION]);
                 unset($input[DetailConstants::MERCHANT_ID]);
+
+                if(isset($input[DetailConstants::FEE_BASED_GATING_FLOW]) === true and $input[DetailConstants::FEE_BASED_GATING_FLOW] === true)
+                {
+                    $startTime = microtime(true);
+
+                    unset($input[DetailConstants::FEE_BASED_GATING_FLOW]);
+
+                    $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
+
+                    if (empty($merchant) === false and optional($deviceDetail)->getSignupCampaign() === DDConstants::EASY_ONBOARDING)
+                    {
+                        $this->core->setMerchantForInternalApi($merchant);
+
+                        $newActivationStatus = $this->core->getApplicableActivationStatus($merchant->merchantDetail);
+
+                        $this->trace->info(TraceCode::APPLICABLE_ACTIVATION_STATUS_IN_FEE_BASED_GATING_FLOW, [
+                            'merchant'                     => $merchantId,
+                            'applicable_activation_status' => $newActivationStatus
+                        ]);
+
+                        if($newActivationStatus !== Status::UNDER_REVIEW)
+                        {
+                            $this->trace->info(TraceCode::MERCHANT_APPLICABLE_STATUS_DOES_NOT_MATCH, [
+                                'merchant'          => $merchantId,
+                                'input'             => $input,
+                                'applicable_status' => $newActivationStatus
+                            ]);
+
+                            // move the merchant to eligible activation_status
+                            $input[Entity::ACTIVATION_STATUS] = $newActivationStatus;
+
+                        }
+
+                    }
+
+                    $this->trace->info(TraceCode::FEE_BASED__GATING_ELIGIBILITY_CHECK_LATENCY, [
+
+                        'start_time'                  => $startTime * 1000,
+                        'overall_duration'            => (microtime(true) - $startTime) * 1000,
+                    ]);
+                }
                 return $this->core->updateActivationStatus($merchant, $input, $merchant);
             case 'UPDATE_MERCHANT_ENTITY':
                 $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST_PGOS, [
@@ -5107,7 +5148,7 @@ class Service extends Base\Service
         {
             $input['merchant_id'] = $this->merchant->getId();
         }
-        
+
         (new Validator)->validateInput(__FUNCTION__, $input);
 
         $vcipEntities = $this->core->fetchAllVCIPEntity($input);
@@ -5152,7 +5193,7 @@ class Service extends Base\Service
         {
             $input['merchant_id'] = $this->merchant->getId();
         }
-        
+
         (new Validator)->validateInput(__FUNCTION__, $input);
 
         $latestVCIPEntity = $this->core->getLatestVCIPEntity($input);
@@ -5173,7 +5214,7 @@ class Service extends Base\Service
                 $vcipEntityStatus['comments'] = $latestVCIPEntity['details']->rejection_details->comments ?? '';
             }
         }
-        
+
         $eddStatus = $this->core->getEDDStatus($input);
 
         $response = [
