@@ -19,6 +19,9 @@ class CardlessEmi extends Service
     const PROVIDER_REFERENCE_NUMBER   = 'provider_reference_number';
     const ADDITIONAL_DATA             = 'additional_data';
 
+    const CASH_OUTFLOW_AMOUNT             = 'cash_outflow_amount';
+
+
     public function action(string $method, string $gateway, string $action, array $input)
     {
 

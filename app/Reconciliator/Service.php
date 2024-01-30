@@ -27,6 +27,7 @@ use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Services\NbPlus\Wallet as Wallet;
+use RZP\Services\NbPlus\CardlessEmi as CardlessEmi;
 use RZP\Jobs\UpsRecon\UpsGatewayEntityUpdate;
 use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
@@ -788,7 +789,7 @@ class Service extends Base\Service
 
         $method = $payment->getMethod();
 
-        if($method == Payment\Method::NETBANKING or $method == Payment\Method::WALLET)
+        if($method == Payment\Method::NETBANKING or $method == Payment\Method::WALLET or $method == Payment\Method::CARDLESS_EMI)
         {
             return $this->updateNetbankingReconciliationData($input, $payment);
         }
@@ -984,6 +985,9 @@ class Service extends Base\Service
             case Payment\Method::WALLET:
                 (new Validator)->validateUpdateWalletReconData($input);
                 break;
+            case Payment\Method::CARDLESS_EMI;
+                (new Validator)->validateUpdateCardlessEmiReconData($input);
+                break;
         }
 
         $paymentId = $input['payment_id'];
@@ -1022,6 +1026,9 @@ class Service extends Base\Service
                     break;
                 case Payment\Method::WALLET:
                     $this->updateWalletGatewayData($input, $payment);
+                    break;
+                case Payment\Method::CARDLESS_EMI:
+                    $this->updateCardlessEmiGatewayData($input, $payment);
                     break;
             }
 
@@ -1859,6 +1866,19 @@ class Service extends Base\Service
         ];
 
         (New NbPlusServiceRecon)->dispatchToNbplusServiceWalletQueue($data);
+    }
+
+    private function updateCardlessEmiGatewayData(array $input, Payment\Entity $payment)
+    {
+        $data = [
+                'payment_id' => $payment->getId(),
+                CardlessEmi::GATEWAY_REFERENCE_NUMBER => $input['cardless_emi']['gateway_reference_number'] ?? null,
+                CardlessEmi::ADDITIONAL_DATA => [
+                    CardlessEmi::CASH_OUTFLOW_AMOUNT  => $input['cardless_emi'][CardlessEmi::ADDITIONAL_DATA][CardlessEmi::CASH_OUTFLOW_AMOUNT],
+                ]
+        ];
+
+        (New NbPlusServiceRecon)->dispatchCardlessEmiDataToNbplusServiceQueue($data);
     }
 
     protected function recordGatewayFeeAndServiceTax($transaction , $reconGatewayFee, $reconGatewayServiceTax)

@@ -24,6 +24,7 @@ class Service
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
     const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
     const X_REQUEST_ID             = 'X-Request-ID';
+    const FETCH_PID_FROM_REF_QUERY =  "SELECT payment_id FROM hive.realtime_payments_nbplus_live.cardless_emi_gateway WHERE gateway='%s' and provider_reference_number = '%s'";
 
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
@@ -193,6 +194,20 @@ class Service
         }
 
         return $response[Response::RESPONSE];
+    }
+
+    public function fetchPaymentIdFromProviderReferenceNumber($verificationFields)
+    {
+        $dataLakeQuery = sprintf(self::FETCH_PID_FROM_REF_QUERY, $verificationFields['gateway'], $verificationFields['provider_reference_number']);
+
+        $response = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        if(empty($response) === false && isset($response[0]['payment_id']) === true)
+        {
+            return $response[0]['payment_id'];
+        }
+
+        return [];
     }
 
     protected function getMetaData($input)

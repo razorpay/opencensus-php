@@ -23,6 +23,7 @@ use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
+use RZP\Services\NbPlus\CardlessEmi as CardlessEmi;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use RZP\Models\UpiMandate;
@@ -1398,17 +1399,16 @@ trait Callback
     }
 
     protected function addDiscountToLiquiloans($payment, $callbackData) {
-
         if ($this->merchant->isFeatureEnabled(Feature\Constants::LIQUILOANS_DIRECT_FEE) === true)
         {
             // apply discount
-            $disbursedAmount = (float) $callbackData['additional_data']['disbursed_amount'];
-            if( (empty($disbursedAmount) == true ) or ($payment->getAmount() == $disbursedAmount) or ($disbursedAmount == 0))
+            $cashOutflowAmount = (float) $callbackData[CardlessEmi::ADDITIONAL_DATA][CardlessEmi::CASH_OUTFLOW_AMOUNT];
+            if( (empty($cashOutflowAmount) == true ) or ($payment->getAmount() == $cashOutflowAmount) or ($cashOutflowAmount == 0))
             {
                 return;
             }
 
-            $discountedAmount = (int) ($payment->getAmount() - $disbursedAmount );
+            $discountedAmount = (int) ($payment->getAmount() - $cashOutflowAmount );
 
             $discountInput = [Discount\Entity::AMOUNT => $discountedAmount];
             (new Discount\Service)->create($discountInput, $payment, null);

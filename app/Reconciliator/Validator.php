@@ -246,7 +246,8 @@ class Validator extends Base\Core
         'gateway_settled_at'            => 'sometimes|epoch',
         'netbanking'                    => 'sometimes',
         'wallet'                        => 'sometimes',
-        'card'                          => 'sometimes'
+        'card'                          => 'sometimes',
+        'cardless_emi'                  => 'sometimes',
     ];
 
     const UPDATE_BANK_TRANSFER_RECON_DATA_RULES = [
@@ -259,11 +260,13 @@ class Validator extends Base\Core
         'wallet'                        => 'sometimes',
         'card'                          => 'sometimes',
         'upi'                           => 'sometimes',
+        'cardless_emi'                  => 'sometimes',
     ];
 
     const UPDATE_NETBANKING_RECON_DATA_RULES = [
         'payment_id'                                       => 'required|string|size:14',
         'netbanking'                                       => 'required|array',
+        'cardless_emi'                                     => 'sometimes',
         'wallet'                                           => 'sometimes',
         'upi'                                              => 'sometimes',
         'card'                                             => 'sometimes',
@@ -285,6 +288,7 @@ class Validator extends Base\Core
         'upi'                                              => 'sometimes',
         'gateway_settled_at'                               => 'sometimes|epoch',
         'wallet'                                           => 'sometimes|array',
+        'cardless_emi'                                     => 'sometimes',
         'card'                                             => 'required|array',
         'card.auth_code'                                   => 'required|string',
         'card.rrn'                                         => 'sometimes|string',
@@ -304,9 +308,25 @@ class Validator extends Base\Core
         'netbanking'                                       => 'sometimes',
         'upi'                                              => 'sometimes',
         'card'                                             => 'sometimes',
+        'cardless_emi'                                     => 'sometimes',
         'gateway_settled_at'                               => 'sometimes|epoch',
         'wallet'                                           => 'required|array',
         'wallet.wallet_transaction_id'                     => 'sometimes|string',
+        'reconciled_type'                                  => 'required|string',
+        'amount'                                           => 'required',
+        'reconciled_at'                                    => 'required|filled|epoch',
+    ];
+
+    const UPDATE_CARDLESS_EMI_RECON_DATA_RULES = [
+        'payment_id'                                       => 'required|string|size:14',
+        'netbanking'                                       => 'sometimes',
+        'upi'                                              => 'sometimes',
+        'card'                                             => 'sometimes',
+        'wallet'                                           => 'sometimes|string',
+        'gateway_settled_at'                               => 'sometimes|epoch',
+        'cardless_emi'                                     => 'required|array',
+        'cardless_emi.additional_data'                     => 'sometimes',
+        'cardless_emi.additional_data.cash_outflow_amount' => 'sometimes',
         'reconciled_type'                                  => 'required|string',
         'amount'                                           => 'required',
         'reconciled_at'                                    => 'required|filled|epoch',
@@ -1097,6 +1117,14 @@ class Validator extends Base\Core
     public function validateUpdateWalletReconData(array $input)
     {
         (new JitValidator)->rules(self::UPDATE_WALLET_RECON_DATA_RULES)
+            ->caller($this)
+            ->input($input)
+            ->validate();
+    }
+
+    public function validateUpdateCardlessEmiReconData(array $input)
+    {
+        (new JitValidator)->rules(self::UPDATE_CARDLESS_EMI_RECON_DATA_RULES)
             ->caller($this)
             ->input($input)
             ->validate();

@@ -8625,6 +8625,11 @@ trait Authorize
             $this->addDiscountToWalnut369($payment, $response);
         }
 
+        if ($payment->isCardlessEmiLiquiloans() === true)
+        {
+            $this->addDiscountToLiquiloans($payment, $response);
+        }
+
         if ($payment->hasOrder() === false)
         {
             return;

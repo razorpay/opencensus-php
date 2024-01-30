@@ -23,8 +23,9 @@ trait CardlessEmiReconTrait
         $this->dispatchCardlessEmiDataToNbplusServiceQueue($data);
     }
 
-    protected function dispatchCardlessEmiDataToNbplusServiceQueue($data)
+    public function dispatchCardlessEmiDataToNbplusServiceQueue($data)
     {
+
         $pushData['entity_name'] = Method::CARDLESS_EMI;
         $pushData['recon_data']  = $data;
 

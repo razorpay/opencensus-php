@@ -13,6 +13,7 @@ use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
+use RZP\Services\NbPlus\CardlessEmi as CardlessEmiService;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Base\Luhn;
@@ -6197,6 +6198,32 @@ class Service extends Base\Service
 
     }
 
+    public function getPaymentIdFromInput($input)
+    {
+        $paymentId = $input['payment']['id'];
+
+        if ($input['cardless_emi']['gateway'] == Payment\Processor\CardlessEmi::LIQUILOANS) {
+
+            $urn =  $input['cardless_emi'][CardlessEmiService::PROVIDER_REFERENCE_NUMBER];
+
+            $request = [
+                'gateway' => Payment\Processor\CardlessEmi::LIQUILOANS,
+                CardlessEmiService::PROVIDER_REFERENCE_NUMBER => $urn
+            ];
+
+            $paymentId = $this->app['nbplus.payments']->fetchPaymentIdFromProviderReferenceNumber($request);
+
+            if ($paymentId == null) {
+                throw new Exception\BadRequestValidationFailureException(
+                    Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_NOT_FOUND
+                );
+            }
+        }
+
+        return $paymentId;
+    }
+
+
     /**
      * Authorizes failed payment based on ART input
      * [force_authorize_failed,verify_authorize_failed]
@@ -6211,6 +6238,7 @@ class Service extends Base\Service
         $fields = [
             EntityConstants::WALLET,
             EntityConstants::NETBANKING,
+            EntityConstants::CARDLESS_EMI,
             EntityConstants::PAYMENT,
             Entity::META,
         ];
@@ -6225,13 +6253,16 @@ class Service extends Base\Service
             case Payment\Method::WALLET:
                 (new Payment\Validator)->validateInput('authorize_failed_wallet_payment', $input);
                 break;
+            case Payment\Method::CARDLESS_EMI:
+                (new Payment\Validator)->validateInput('authorize_failed_cardless_emi_payment', $input);
+                break;
             default:
                 throw new Exception\BadRequestValidationFailureException(
                     Error\PublicErrorDescription::BAD_REQUEST_INVALID_PAYMENT_METHOD
                 );
         }
 
-        $paymentId = $input['payment']['id'];
+        $paymentId = $this->getPaymentIdFromInput($input);
 
         $payment = $this->repo->payment->findOrFail($paymentId);
 
@@ -6431,6 +6462,9 @@ class Service extends Base\Service
                 break;
             case Payment\Method::WALLET:
                 $input['gateway_payment_id'] = $input['wallet']['wallet_transaction_id'];
+                break;
+            case Payment\Method::CARDLESS_EMI:
+                $input[CardlessEmiService::ADDITIONAL_DATA] = $input['cardless_emi'][CardlessEmiService::ADDITIONAL_DATA];
                 break;
         }
 
@@ -6829,6 +6863,12 @@ class Service extends Base\Service
                 Payment\Entity::REFERENCE2  => $input['card']['auth_code']
             ];
         }
+         else if($input['payment']['method'] == Method::CARDLESS_EMI) {
+             return [
+                 Payment\Entity::REFERENCE1 => $input['cardless_emi']['gateway_reference_number'],
+             ];
+         }
+
         return [];
     }
 

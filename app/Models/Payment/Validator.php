@@ -510,6 +510,21 @@ class Validator extends Base\Validator
         'meta.version'                         => 'required',
     ];
 
+    protected static $authorizeFailedCardlessEmiPaymentRules = [
+        'payment'                                => 'sometimes',
+        'wallet'                                 => 'sometimes',
+        'netbanking'                             => 'sometimes',
+        'cardless_emi'                           => 'required|array',
+        'cardless_emi.gateway_reference_number'  => 'required',
+        'cardless_emi.status_code'               => 'sometimes',
+        'cardless_emi.provider_reference_number' => 'required',
+        'cardless_emi.gateway'                   => 'required',
+        'meta'                                   => 'required|array',
+        'meta.force_auth_payment'                => 'required|boolean',
+        'meta.art_request_id'                    => 'required',
+        'meta.version'                           => 'required',
+    ];
+
     protected static $authorizeFailedCardPaymentRules = [
         'payment'                              => 'required|array',
         'payment.method'                       => 'required|string|in:card',
