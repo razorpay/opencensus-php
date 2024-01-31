@@ -1144,6 +1144,9 @@ class Service extends Base\Service
         {
             $configName = $config['config'];
             $configValue = $config->getValue() === '1';
+            if ($platform == Constants::WOOCOMMERCE && in_array($configName, Constants::WOOC_SPECIFIC_CONFIGS) === true) {
+                $response[$configName] = $configValue;
+            }
             if (in_array($configName, Constants::CONFIG_FLAGS) === true) {
                 $response[$configName] =  $configValue;
             }
@@ -1632,6 +1635,12 @@ class Service extends Base\Service
         {
             $domainUrlConfig = $this->merchant->get1ccConfig(Constants::DOMAIN_URL);
             $result[Constants::DOMAIN_URL] = $domainUrlConfig != null ? $domainUrlConfig->getValue() : "";
+        }
+
+        if (in_array(Constants::TERRA_WALLET, $requestedKeys) === true)
+        {
+            $terraWalletConfig = $this->merchant->get1ccConfig(Constants::TERRA_WALLET);
+            $result[Constants::TERRA_WALLET] = $terraWalletConfig !== null && $terraWalletConfig->getValue() === "1";
         }
 
         foreach ($merchantAuthConfigs as $key => $value)

@@ -465,7 +465,7 @@ class Service extends Base\Service
 
         $minimumAllowedCartAmount = 100; // minimum cart amount should be Rs 1.
 
-        $nectorCoinsDiscount = (new CommonUtils())->getNectorCoinsApplied($promotions);
+        $nectorCoinsDiscount = (new CommonUtils())->getDiscountAmountByPromotionType($promotions, Constants::NECTOR_COINS);
 
         $cartAmountAfterDiscount = max(0,$lineItemsTotal-$discount-$nectorCoinsDiscount);
 

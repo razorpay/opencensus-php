@@ -40,6 +40,7 @@ class Validator extends Base\Validator
         'one_cc_prepay_cod_conversion'       => 'sometimes|array',
         "shipping_engine"                => 'sometimes|boolean',
         "shipping_source"                => 'sometimes|string|in:shiprocket,merchant,null',
+        "terra_wallet"                   => 'sometimes|boolean',
     ];
 
     protected static $shopifyRules = [
@@ -269,7 +270,7 @@ class Validator extends Base\Validator
     {
         $allowedAuthConfigKeys = Constants::WOOCOMMERCE_AUTH;
 
-        $allowedConfigs = [Constants::DOMAIN_URL];
+        $allowedConfigs = [Constants::DOMAIN_URL, Constants::TERRA_WALLET];
 
         $keysRequested = explode(',', $keys);
 

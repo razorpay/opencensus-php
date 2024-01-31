@@ -144,7 +144,8 @@ class CommonUtils extends Base\Core
             if (isset($coupon[OrderOneCCFields::PROMOTIONS_TYPE]) === false ||
                     $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== OrderOneCCFields::GIFT_CARD &&
                     $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::NECTOR_COINS &&
-                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::TYPE_COD_FEE_COUPON ) {
+                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::TYPE_COD_FEE_COUPON &&
+                    $coupon[OrderOneCCFields::PROMOTIONS_TYPE] !== Constants::TERRA_WALLET ) {
                     $discount = $coupon[OrderOneCCFields::PROMOTIONS_VALUE] ?? 0;
                     return $discount;
             }
@@ -153,14 +154,14 @@ class CommonUtils extends Base\Core
         return $discount;
     }
 
-    public function getNectorCoinsApplied(array $promotions) {
+    public function getDiscountAmountByPromotionType(array $promotions, string $promotionType) {
         $discount = 0;
         if (empty($promotions) === true) {
             return $discount;
         }
 
         foreach ($promotions as $coupon) {
-            if (isset($coupon[OrderOneCCFields::PROMOTIONS_TYPE]) === true && $coupon[OrderOneCCFields::PROMOTIONS_TYPE] === Constants::NECTOR_COINS) {
+            if (isset($coupon[OrderOneCCFields::PROMOTIONS_TYPE]) === true && $coupon[OrderOneCCFields::PROMOTIONS_TYPE] === $promotionType) {
                 $discount = $coupon[OrderOneCCFields::PROMOTIONS_VALUE] ?? 0;
                 return $discount;
             }

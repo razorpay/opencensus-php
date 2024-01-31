@@ -121,6 +121,9 @@ class Constants
 
     const ONE_CC_HIDE_COD_WHEN_DISABLED = "one_cc_hide_cod_when_disabled";
 
+    const TERRA_WALLET = "terra_wallet";
+    const TERRA_WALLET_VALUE = "terra_wallet_value";
+
     const SHOPIFY_API_TYPES = [
         self::STOREFRONT,
         self::ADMIN_REST,
@@ -218,6 +221,7 @@ class Constants
      */
     const WOOC_SPECIFIC_CONFIGS = [
         self::COD_ENGINE,
+        self::TERRA_WALLET,
     ];
 
     const CONFIG_CUM_FEATURE_FLAGS = [
