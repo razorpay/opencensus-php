@@ -815,7 +815,7 @@ class Core extends Base\Core
         $fetchActive = $input[SubscriptionOffer\Entity::ACTIVE] ?? true;
         $fetchExpired = $input[SubscriptionOffer\Entity::EXPIRED] ?? false;
 
-        $offer = $this->repo->offer->fetchSubscriptionOfferById($offerId, $fetchActive, $fetchExpired);
+        $offer = $this->repo->offer->fetchSubscriptionOfferById($offerId, $this->merchant->getId(), $fetchActive, $fetchExpired);
 
         $data = [
             SubscriptionOffer\Entity::DISCOUNTED_AMOUNT => (int)$input['amount'],

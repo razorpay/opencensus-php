@@ -126,7 +126,7 @@ class Service extends Base\Service
 
         if ($offer->getProductType() === ProductType::SUBSCRIPTION)
         {
-            $offer = $this->repo->offer->fetchSubscriptionOfferById($offer->getId(), false, true);
+            $offer = $this->repo->offer->fetchSubscriptionOfferById($offer->getId(), $this->merchant->getId(), false, true);
         }
 
         return $offer->toArrayProxy();

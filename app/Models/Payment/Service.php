@@ -4471,7 +4471,7 @@ class Service extends Base\Service
         {
             $discountAmount = $paidOffer->getDiscountAmountForPayment($payment->order->getAmount(), $payment);
 
-            $paidOfferSubscription = $this->repo->offer->fetchSubscriptionOfferById($paidOffer->getId());
+            $paidOfferSubscription = $this->repo->offer->fetchSubscriptionOfferById($paidOffer->getId(), $payment->getMerchantId());
 
             // TODO Change to gettter after offer team approval
             $paidOfferSubscriptionDetails = [

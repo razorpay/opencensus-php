@@ -158,9 +158,9 @@ class Repository extends Base\Repository
         return $offerQuery->get();
     }
 
-    public function fetchSubscriptionOfferById(string $offerId, bool $fetchActive = true, bool $fetchExpired = false)
+    public function fetchSubscriptionOfferById(string $offerId, string $merchantId, bool $fetchActive = true, bool $fetchExpired = false)
     {
-        $oeResponse = $this->fetchSubscriptionOfferByIdFromOE($offerId, $this->merchant->getId(), $fetchActive, $fetchExpired);
+        $oeResponse = $this->fetchSubscriptionOfferByIdFromOE($offerId, $merchantId, $fetchActive, $fetchExpired);
 
         // if response is empty fallback to API query
         if (empty($oeResponse) === false)
