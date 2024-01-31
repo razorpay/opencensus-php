@@ -134,6 +134,17 @@ const OffersForYou = ({
     setIsStopped(true);
   };
 
+  //  Dont show Exclusive Offer button when none of the conditions are met
+  //  these conditions are borrowed from handleClick function
+  //  update this code whenever conditions are updated
+  if (!showMobileNav) {
+    if (!canShowOnboardingOffers && !exclusive_offers?.id && !user.isProjectMoonshineEnabled) {
+      return null;
+    }
+  } else if (!user.isProjectNitroEnabled) {
+    return null;
+  }
+
   return (
     <li className={!showMobileNav ? 'offers-for-you' : 'offers-for-you-mobile'}>
       <a onClick={handleClick}>
