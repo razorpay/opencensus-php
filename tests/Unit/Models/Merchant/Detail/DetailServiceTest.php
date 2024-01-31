@@ -134,7 +134,7 @@ class DetailServiceTest extends TestCase
 
         $this->createMerchantTestDependencyMocks();
 
-        $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
+        $this->repoMock->shouldReceive('transactionOnLiveAndTestAndAsv')->andReturn([]);
 
         $this->coreMock->shouldReceive('setModeAndDefaultConnection')->andReturn();
 
@@ -197,7 +197,7 @@ class DetailServiceTest extends TestCase
 
         $this->createMerchantTestDependencyMocks();
 
-        $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
+        $this->repoMock->shouldReceive('transactionOnLiveAndTestAndAsv')->andReturn([]);
 
         $this->merchantEntityMock->shouldReceive('isNoDocOnboardingEnabled')->andReturn(false);
 
@@ -289,7 +289,7 @@ class DetailServiceTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('isNoDocOnboardingEnabled')->andReturn(false);
 
-        $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn($response);
+        $this->repoMock->shouldReceive('transactionOnLiveAndTestAndAsv')->andReturn($response);
 
         $this->merchantEntityMock->shouldReceive('toArrayEvent')->andReturn([]);
 
@@ -906,7 +906,7 @@ class DetailServiceTest extends TestCase
 
         $this->getMerchantAttributeMock();
 
-        $this->repoMock->shouldReceive('transaction')->andReturn($returnResp);
+        $this->repoMock->shouldReceive('transactionOnLiveAndTestAndAsv')->andReturn($returnResp);
     }
 
     public function testMidBelongsToMswipe()

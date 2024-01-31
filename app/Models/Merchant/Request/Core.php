@@ -45,7 +45,7 @@ class Core extends Base\Core
 
         $request->merchant()->associate($merchant);
 
-        $this->repo->transactionOnLiveAndTest(function() use($request, $input, $submissions)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use($request, $input, $submissions)
         {
             $this->repo->saveOrFail($request);
 
@@ -155,7 +155,7 @@ class Core extends Base\Core
 
         $status = $input[Entity::STATUS];
 
-        $this->repo->transactionOnLiveAndTest(function() use(
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use(
             $request,
             $oldRequestDetails,
             $newRequestDetails,

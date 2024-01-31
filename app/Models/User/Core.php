@@ -3061,7 +3061,7 @@ class Core extends Base\Core
             // reset the password of the user as well.
             $this->invalidatePassword($user);
 
-            $this->repo->transactionOnLiveAndTest(function() use ($user) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user) {
                 $this->invalidateContactInfo($user);
             });
         }
@@ -3118,7 +3118,7 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($user, $contact)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $contact)
         {
             $user->setContactMobile($contact);
 
@@ -3993,7 +3993,7 @@ class Core extends Base\Core
         ]);
 
 
-        if((new AsvRouter())->shouldRouteWriteRequestToAccountService($this::class, __function__, $user->getId()))
+        if(!$this->repo->isTransactionActive() && (new AsvRouter())->shouldRouteWriteRequestToAccountService($this::class, __function__, $user->getId()))
         {
             $merchantEntities = $user->getNonSuspendedMerchants($limit);
         } else {
@@ -5051,14 +5051,14 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($user);
             });
 
-            $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input) {
                 $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
                 $this->repo->saveOrFail($merchant);
             });
 
             $merchantDetails = $this->merchant->merchantDetail;
 
-            $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input) {
                 $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
                 $this->repo->saveOrFail($merchantDetails);
             });
@@ -6546,7 +6546,7 @@ class Core extends Base\Core
         $merchant_detail = $merchant->merchantDetail;
 
 
-        $this->repo->transactionOnLiveAndTest(function() use ($user, $merchant, $merchant_detail, $email)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $merchant, $merchant_detail, $email)
         {
             $user->setEmail($email);
             $user->setConfirmTokenNull();

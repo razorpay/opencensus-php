@@ -64,7 +64,7 @@ class Core extends Merchant\Core
         $bankAccountDetailsInput = $this->getBankAccountDetailsFromInput($input[Entity::BANK_ACCOUNT] ?? []);
         $merchantDetailsInput    = array_merge($merchantDetailsInput, $bankAccountDetailsInput);
 
-        $account = $this->repo->transactionOnLiveAndTest(function () use (
+        $account = $this->repo->transactionOnLiveAndTestAndAsv(function () use (
             $input,
             $parentMerchant,
             $merchantDetailsInput)
@@ -140,7 +140,7 @@ class Core extends Merchant\Core
 
         $input = Helper::modifyAccountInput($input);
 
-        $subMerchant = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
+        $subMerchant = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $partner)
         {
             $subMerchant = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_ASSOCIATED_ENTITIES], function () use ($partner, $input) {
 
@@ -155,7 +155,7 @@ class Core extends Merchant\Core
             return $subMerchant;
         });
 
-        $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $subMerchant)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $partner, $subMerchant)
         {
             if ($partner->isKycHandledByPartner() === true)
             {
@@ -208,7 +208,7 @@ class Core extends Merchant\Core
 
         $input = Helper::modifyAccountInput($input);
 
-        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId)
+        $account = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $partner, $accountId)
         {
             $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $accountId) {
 

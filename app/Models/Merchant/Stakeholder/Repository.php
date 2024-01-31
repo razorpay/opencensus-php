@@ -18,7 +18,7 @@ use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
-    use RepositoryUpdateTestAndLive;
+    use Base\RepositoryUpdateTestAndLiveAndAsv;
     use AsvFetchCommon;
     use AsvFind;
 

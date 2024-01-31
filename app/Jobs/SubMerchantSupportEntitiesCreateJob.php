@@ -87,7 +87,7 @@ class SubMerchantSupportEntitiesCreateJob extends Job
                 $this->mutex->acquireAndRelease(
                     $mutexKey,
                     function() use ($merchant, $partner) {
-                        $this->repoManager->transactionOnLiveAndTest(
+                        $this->repoManager->transactionOnLiveAndTestAndAsv(
                             function() use ($merchant, $partner) {
                                 $merchantCore = (new Merchant\Core());
                                 $merchantCore->addMerchantSupportingEntitiesAsync($merchant, $partner);

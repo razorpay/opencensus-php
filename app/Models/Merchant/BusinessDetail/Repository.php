@@ -17,7 +17,7 @@ use RZP\Modules\Acs\Wrapper\MerchantBusinessDetail as MerchantBusinessDetailWrap
 
 class Repository extends Base\Repository
 {
-    use RepositoryUpdateTestAndLive;
+    use Base\RepositoryUpdateTestAndLiveAndAsv;
     use AsvFetchCommon;
     use AsvFind;
 

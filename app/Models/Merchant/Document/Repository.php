@@ -14,7 +14,7 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
+    use Base\RepositoryUpdateTestAndLiveAndAsv;
     use AsvFetchCommon;
     use AsvFind;
 

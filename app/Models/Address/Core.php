@@ -65,7 +65,7 @@ class Core extends Base\Core
         $address = (new Entity)->build($input);
         $address->generateAndSetUniqueId();
 
-        return $this->repo->transaction(function() use ($address, $entity)
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($address, $entity)
         {
             $address->sourceAssociate($entity);
 
@@ -89,7 +89,7 @@ class Core extends Base\Core
 
         unset($input[Entity::TYPE]);
 
-        return $this->repo->transaction(function () use ($address, $input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($address, $input) {
 
             if($address->getEntityType() === Type::CUSTOMER)
             {
@@ -185,7 +185,7 @@ class Core extends Base\Core
                 'entity_id'     => $entity->getId(),
             ]);
 
-        return $this->repo->transaction(function() use ($address, $entity)
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($address, $entity)
         {
             if ($address->isPrimary() === true)
             {
@@ -241,7 +241,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->repo->transactionOnLiveAndTest(function () use ($currentPrimaryAddress, $address, $entity)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($currentPrimaryAddress, $address, $entity)
         {
             // If there is no current primary address, there's no need to do anything
 

@@ -153,7 +153,7 @@ class PennyTesting extends Base\Core
             $merchantId,
             function() use ($input, $merchantId) {
 
-                $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantId) {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $merchantId) {
 
                     [$merchant, $merchantDetails] = (New Merchant\Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
 

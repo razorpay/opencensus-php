@@ -71,7 +71,7 @@ class Core extends Base\Core
 
     public function saveStakeholder($id, string $merchantId, array $input, string $rule='edit'): Entity
     {
-        return $this->repo->transactionOnLiveAndTest(function () use ($id, $merchantId, $input, $rule) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($id, $merchantId, $input, $rule) {
             $startTime = microtime(true);
 
             $merchant = $this->repo->merchant->findOrFail($merchantId);

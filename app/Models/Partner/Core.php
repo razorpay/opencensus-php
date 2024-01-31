@@ -1308,7 +1308,7 @@ class Core extends Detail\Core
 
         try
         {
-            $this->repo->transactionOnLiveAndTest(function () use (
+            $this->repo->transactionOnLiveAndTestAndAsv(function () use (
                 $partner, $existingAppId, $newManagedAppId, $newReferredAppId, $defaultConfig, $accessMaps, $subMerchants
             )
             {
@@ -1370,7 +1370,7 @@ class Core extends Detail\Core
 
         try
         {
-            $this->repo->transactionOnLiveAndTest(function () use (
+            $this->repo->transactionOnLiveAndTestAndAsv(function () use (
                 $partner, $existingAppIds, $deletedAppIds, $defaultConfig, $accessMaps, $subMerchants
             )
             {

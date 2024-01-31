@@ -531,7 +531,7 @@ class Core extends Base\Core
         }
         $pricingPlanId = $merchant->getPricingPlanId();
 
-        $this->repo->transactionOnLiveAndTest(function () use ($merchant, $pricingPlanId, $percentRate, $pricingFeature)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchant, $pricingPlanId, $percentRate, $pricingFeature)
         {
             $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 

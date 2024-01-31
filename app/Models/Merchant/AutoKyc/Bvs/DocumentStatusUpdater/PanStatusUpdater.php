@@ -192,7 +192,7 @@ class PanStatusUpdater extends DefaultStatusUpdater
 
        $merchantDetails = $this->merchantDetails;
 
-       $this->repo->transactionOnLiveAndTest(function () use ($merchantDetails, $gst) {
+       $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchantDetails, $gst) {
 
            $this->trace->info(
                TraceCode::SAVE_MERCHANT_DETAILS_FOR_NO_DOC,

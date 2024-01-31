@@ -339,7 +339,7 @@ class Core extends Base\Core
             $merchantDetails->getValidator()->validateIsNotLocked();
         }
 
-        $this->repo->transaction(function() use ($documentType, $merchant, $merchantDetails, $params, $document, $entity) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($documentType, $merchant, $merchantDetails, $params, $document, $entity) {
 
             $uploadedDocuments = $this->storeInMerchantDocument($merchant, $entity, $params, $document);
 

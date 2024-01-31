@@ -1088,7 +1088,7 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
-        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input) {
+        $merchant = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input) {
             $merchant = $this->core()->edit($merchant, $input);
 
             if (isset($input[Entity::FEE_BEARER]) === true)
@@ -4461,7 +4461,7 @@ class Service extends Base\Service
     {
         if ($this->merchant->isPostpaid() === false)
         {
-            return $this->repo->transactionOnLiveAndTest(function () use($pricingFeature, $pricingPlanId, $percentRate)
+            return $this->repo->transactionOnLiveAndTestAndAsv(function () use($pricingFeature, $pricingPlanId, $percentRate)
 
             {
                 // Replicates plan for this merchant if it was shared
@@ -5161,7 +5161,7 @@ class Service extends Base\Service
 
         $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
 
-        $this->repo->transactionOnLiveAndTest(function () use($schedule, $scheduledTasks, &$pricingForMerchant)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use($schedule, $scheduledTasks, &$pricingForMerchant)
         {
             foreach ($scheduledTasks as $scheduledTask)
             {
@@ -5231,7 +5231,7 @@ class Service extends Base\Service
 
     public function disableScheduledES($initialOndemandPricing, $initialScheduleId)
     {
-        $this->repo->transactionOnLiveAndTest(function () use($initialOndemandPricing, $initialScheduleId)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use($initialOndemandPricing, $initialScheduleId)
         {
 
             $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant,
@@ -5262,7 +5262,7 @@ class Service extends Base\Service
     {
         $pricingForMerchant = $this->getScheduledEarlySettlementPricingForMerchant();
 
-        $this->repo->transactionOnLiveAndTest(function ()
+        $this->repo->transactionOnLiveAndTestAndAsv(function ()
         {
             // Pricing plan updates, if required, need not be blocked by workflows.
             $this->app['workflow']->skipWorkflows(function () use (&$pricingForMerchant)
@@ -6370,7 +6370,7 @@ class Service extends Base\Service
                 ]);
             try
             {
-                $this->repo->transactionOnLiveAndTest(function() use ($planId)
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($planId)
                 {
                     $plan = $this->repo->pricing->getPricingPlanById($planId);
 
@@ -7300,7 +7300,7 @@ class Service extends Base\Service
 
         list($subMerchant, $newUser, $createdNew, $response) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS_INTERNAL], function () use ($input, $merchant, $ownerId, $product, $actualProduct, $createFlags) {
             if ($createFlags['v2CreateFlow'] === false) {
-                [$subMerchant, $newUser, $createdNew, $response] = $this->repo->transactionOnLiveAndTest(function () use (
+                [$subMerchant, $newUser, $createdNew, $response] = $this->repo->transactionOnLiveAndTestAndAsv(function () use (
                     $input,
                     $merchant,
                     $ownerId,
@@ -8187,7 +8187,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->find($merchantId);
 
-        $this->repo->transaction(function()
+        $this->repo->transactionOnLiveAndTestAndAsv(function()
             use ($merchant, $input)
         {
             if($input['create_va'])
@@ -8441,7 +8441,7 @@ class Service extends Base\Service
         {
             $isolationLevelIssue = false;
 
-            $this->repo->transactionOnLiveAndTest(function() use
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use
             ($product, &$wasBankingEnabledNow, &$wasSwitchToPG, $merchant, &$afterEmailVerified, &$isolationLevelIssue, &$currentAttempt)
             {
                 try
@@ -9766,7 +9766,7 @@ class Service extends Base\Service
         //
         $originalMode = $this->app['basicauth']->getMode();
 
-        $this->repo->transactionOnLiveAndTest(function () use($configInput, $merchant)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use($configInput, $merchant)
         {
             try
             {
@@ -10991,7 +10991,7 @@ class Service extends Base\Service
 
         (new Validator())->validateIsActivated($merchant);
 
-        $planId = $this->repo->transactionOnLiveAndTest(function () use($merchant, $input)
+        $planId = $this->repo->transactionOnLiveAndTestAndAsv(function () use($merchant, $input)
         {
             $oldPlanId = $merchant->getPricingPlanId();
 

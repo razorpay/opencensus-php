@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use Database\Connection;
 use DB;
 use Closure;
 use Carbon\Carbon;
@@ -1087,7 +1088,7 @@ class Repository extends Base\Repository
 
 
 
-        if($this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $merchantId)) {
+        if(!$this->repo->isTransactionActive() && $this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $merchantId)) {
             $merchant = $this->findForWrite($merchantId);
         } else {
             $query = $useWritePdo === true ?  $this->newQueryWithConnection($mode)->useWritePdo() : $this->newQuery();
@@ -2488,7 +2489,12 @@ class Repository extends Base\Repository
             ];
         }
 
-        foreach ([Mode::LIVE, Mode::TEST] as $mode)
+        $connectionArray = [Mode::LIVE, Mode::TEST];
+        if ($this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $linkedAccountMids[0])) {
+            $connectionArray = [Mode::LIVE, Mode::TEST, Connection::ASV_WRITER];
+        }
+
+        foreach ($connectionArray as $mode)
         {
             $updatedCount = $this->newQueryWithConnection($mode)
                 ->whereIn(Entity::ID, $linkedAccountMids)
@@ -2519,7 +2525,7 @@ class Repository extends Base\Repository
     }
 
     public function findMerchantsByIds(array $ids) {
-        if (sizeof($ids) > 0 && $this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $ids[0]))
+        if (!$this->repo->isTransactionActive() && sizeof($ids) > 0 && $this->asvRouter->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $ids[0]))
         {
             try {
                 $this->trace->info(TraceCode::ACCOUNT_SERVICE_FILTER_REQUEST, [

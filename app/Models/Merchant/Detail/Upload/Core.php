@@ -77,7 +77,7 @@ class Core extends Base\Core
             $merchantDetailsInput['contact_email'],
             function () use ($merchantDetailsInput) {
 
-                return $this->repo->transactionOnLiveAndTest(function () use(
+                return $this->repo->transactionOnLiveAndTestAndAsv(function () use(
                     $merchantDetailsInput
                 ) {
                     $user = $this->createUser(
@@ -126,7 +126,7 @@ class Core extends Base\Core
 
             $parser->preProcessMerchantEntry($processedEntry);
 
-            $merchant = $this->repo->transactionOnLiveAndTest(function () use ($processedEntry, $parser, &$entry)
+            $merchant = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($processedEntry, $parser, &$entry)
             {
                 $user = $this->createUser($processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
                     $processedEntry[UConstants::IS_DS_MERCHANT], $processedEntry[Header::MIQ_CONTACT_NUMBER]);

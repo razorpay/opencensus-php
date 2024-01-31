@@ -484,19 +484,19 @@ class Service extends Base\Service
 
         if (empty($emailUser) === true and $skipStoringUnverifiedEmail === false)
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($user, $input) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($user, $input) {
                 $user->setEmail($input[Merchant\Entity::EMAIL]);
                 $this->repo->saveOrFail($user);
             });
 
-            $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input) {
                 $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
                 $this->repo->saveOrFail($merchant);
             });
 
             $merchantDetails = $this->merchant->merchantDetail;
 
-            $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input) {
                 $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
                 $this->repo->saveOrFail($merchantDetails);
             });
@@ -1220,7 +1220,7 @@ class Service extends Base\Service
 
         $fileAttributes = $this->storeActivationFile($merchantDetails, $input);
 
-        $response = $this->repo->transaction(function() use ($merchant, $merchantDetails, $input, $fileAttributes) {
+        $response = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $merchantDetails, $input, $fileAttributes) {
 
             $this->handleMerchantDocument($input, $merchantDetails, $merchant, $fileAttributes);
 
@@ -1821,7 +1821,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input)
         {
             $this->core()->changeMerchantUserMobile($merchant, $input);
 
@@ -2198,7 +2198,7 @@ class Service extends Base\Service
             $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input, $referral)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input, $referral)
         {
             $this->applyCoupon($input);
 
@@ -2388,7 +2388,7 @@ class Service extends Base\Service
 
                         // this transaction is here because we want the async retry to be triggered
                         // even if the partner<>sbm passes but creating the capital application fails
-                        $this->repo->transactionOnLiveAndTest(
+                        $this->repo->transactionOnLiveAndTestAndAsv(
                             function () use ($merchant, $partner, $referral, $referralInput, $accessMaps)
                             {
                                 // Note: Passing $isSignUpFlow as false, since the parent function

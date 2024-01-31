@@ -140,7 +140,7 @@ class SubMerchantBatchUtility extends Base\Core
             ]
         );
 
-        $subMerchant = $this->repo->transactionOnLiveAndTest(function() use (& $entry, $configs)
+        $subMerchant = $this->repo->transactionOnLiveAndTestAndAsv(function() use (& $entry, $configs)
         {
             $this->preProcessConfigs($configs);
             $subMerchant = $this->createSubMerchantForEntry($entry);

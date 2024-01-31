@@ -74,7 +74,7 @@ class Core extends Merchant\Core
 
         $account = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_ENTITIES], function () use ($input, $partner, $isLocOnboardingEnabled) {
 
-        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $isLocOnboardingEnabled)
+        $account = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $partner, $isLocOnboardingEnabled)
         {
             $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
 
@@ -160,7 +160,7 @@ class Core extends Merchant\Core
         $validationDuration = (microtime(true) - $functionStartTime) * 1000;
 
         $this->executeTosAcceptanceExperiment($input, $partner);
-        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId, $subMerchantDetails)
+        $account = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $partner, $accountId, $subMerchantDetails)
         {
             $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $accountId) {
                 $subMerchant = $this->fillSubMerchant($accountId, $input);

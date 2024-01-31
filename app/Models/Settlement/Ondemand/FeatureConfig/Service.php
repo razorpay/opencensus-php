@@ -42,7 +42,7 @@ class Service extends Base\Service
                     {
                         (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_INPUT, $input);
 
-                        $this->repo->transaction(function () use ($input)
+                        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input)
                         {
                             $merchant = $this->repo->merchant->find($input[Entity::MERCHANT_ID]);
 

@@ -103,7 +103,7 @@ class MigratePurePlatformToResellerPartner extends Core
             list($configs, $accessMaps, $subMs) = $this->fetchAndValidatePurePlatformPartnerEntities($partner, $existingAppIds);
             $accessMaps = $accessMaps->groupBy(AccessMap\Entity::MERCHANT_ID);
 
-            $this->repo->transactionOnLiveAndTest(function () use (
+            $this->repo->transactionOnLiveAndTestAndAsv(function () use (
                 $partner, $existingAppIds, $configs, $accessMaps, $subMs
             ) {
                 $partner->setPartnerType(MerchantConstants::RESELLER);

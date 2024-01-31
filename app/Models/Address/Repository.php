@@ -7,7 +7,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Address\Entity as AddressEntity;
-use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\Base\RepositoryUpdateTestAndLiveAndAsv;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\Traits\AsvFetch;
@@ -21,7 +21,7 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant
 class Repository extends Base\Repository
 {
 
-    use RepositoryUpdateTestAndLive;
+    use RepositoryUpdateTestAndLiveAndAsv;
     use AsvFetchCommon;
     protected $entity = 'address';
 
@@ -245,9 +245,9 @@ class Repository extends Base\Repository
      */
     public function __saveOrFail(MerchantStakeholderEntity $stakeholderEntity, AddressEntity $addressEntity)
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($stakeholderEntity, $addressEntity) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($stakeholderEntity, $addressEntity) {
             $this->repo->saveOrFail($addressEntity);
-            (new MerchantStakeholderWrapper())->SaveOrFailAddress($stakeholderEntity, $addressEntity);
+           // (new MerchantStakeholderWrapper())->SaveOrFail[Address($stakeholderEntity, $addressEntity);
         });
     }
 

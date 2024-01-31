@@ -23,7 +23,7 @@ class Core extends Base\Core
                                MerchantConstants::INPUT       => $input
                            ]);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input) {
 
             $mutexResource = self::BUSINESS_DETAIL_CREATE_MUTEX_PREFIX . $merchantDetails->getMerchantId();
 
@@ -95,7 +95,7 @@ class Core extends Base\Core
                                MerchantConstants::INPUT       => $input
                            ]);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input) {
 
             $mutexResource = self::BUSINESS_DETAIL_CREATE_MUTEX_PREFIX . $merchantDetails->getMerchantId();
 
@@ -211,7 +211,7 @@ class Core extends Base\Core
 
     public function updateLeadScoreComponents(Detail\Entity $merchantDetails, $newLeadScore)
     {
-        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $newLeadScore) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $newLeadScore) {
             $mutexResource = self::BUSINESS_DETAIL_CREATE_MUTEX_PREFIX . $merchantDetails->getMerchantId();
             return $this->app[MerchantConstants::API_MUTEX]->acquireAndRelease
             ($mutexResource,

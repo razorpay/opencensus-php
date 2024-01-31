@@ -94,7 +94,7 @@ class GstInStatusUpdater extends DefaultStatusUpdater
 
             $merchantDetails = $this->merchantDetails;
 
-            $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails) {
 
                 $this->trace->info(
                     TraceCode::SAVE_MERCHANT_DETAILS_FOR_NO_DOC_IN_GSTIN_STATUS_UPDATER,
@@ -130,7 +130,7 @@ class GstInStatusUpdater extends DefaultStatusUpdater
 
                 $merchantDetails = $this->merchantDetails;
 
-                $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails) {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails) {
 
                     $this->trace->info(
                         TraceCode::SAVE_MERCHANT_DETAILS_FOR_NO_DOC_IN_GSTIN_STATUS_UPDATER,
@@ -157,7 +157,7 @@ class GstInStatusUpdater extends DefaultStatusUpdater
 
                 $merchantDetails = $this->merchantDetails;
 
-                $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails) {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails) {
 
                     $this->trace->info(
                         TraceCode::SAVE_MERCHANT_DETAILS_FOR_NO_DOC_IN_GSTIN_STATUS_UPDATER,

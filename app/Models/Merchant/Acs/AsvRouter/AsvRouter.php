@@ -265,7 +265,6 @@ class AsvRouter
     public function shouldRouteWriteRequestToAccountService($repoClass, $functionName, $id): bool
     {
         try {
-
             if ($this->isWriteFlowOrFailure() === false) {
                 return false;
             }

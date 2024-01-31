@@ -118,7 +118,7 @@ class Service extends Base\Service
 
         $this->validator->validateAdminClarificationReasons($merchantId, $input);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($merchantId, $input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantId, $input) {
 
             if ($this->isEligibleForRevampNC($merchantId) === true)
             {
@@ -339,7 +339,7 @@ class Service extends Base\Service
     {
         if (isset($details[Entity::COMMENT_DATA]) === true)
         {
-            return $this->repo->transactionOnLiveAndTest(function() use ($merchantId, $groupName, $details) {
+            return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantId, $groupName, $details) {
 
                 //updating field values in the group
                 $groupClarificationDetails = $this->saveClarifications($merchantId, $groupName, $details);
@@ -376,7 +376,7 @@ class Service extends Base\Service
     {
         if (isset($details[Constants::FIELD_DETAILS]) === true)
         {
-            return $this->repo->transactionOnLiveAndTest(function() use ($merchantId, $groupName, $details) {
+            return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantId, $groupName, $details) {
 
                 $this->saveClarifications($merchantId, $groupName, $details);
 
@@ -393,7 +393,7 @@ class Service extends Base\Service
     {
         if (isset($details[Constants::FIELD_DETAILS]) === true)
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($merchantId, $groupName, $details) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantId, $groupName, $details) {
 
                 //validate document is existing or not and remove document fields details
                 $fieldsInput = $this->validator->validateAndRemoveDocumentFields($details[Constants::FIELD_DETAILS]);
@@ -503,7 +503,7 @@ class Service extends Base\Service
             //validate if all clarifications are in submitted state
             $this->validator->validateNCSubmission($merchantId);
 
-            return $this->repo->transactionOnLiveAndTest(function() use ($merchantId) {
+            return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantId) {
 
                 $merchantActivationInput = [Constants::SUBMIT => '1'];
 

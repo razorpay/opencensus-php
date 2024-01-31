@@ -81,7 +81,7 @@ class MigrateResellerToPurePlatformPartner extends Core
                 $existingAppId, $partner
             );
 
-            $this->repo->transactionOnLiveAndTest(function () use (
+            $this->repo->transactionOnLiveAndTestAndAsv(function () use (
                 $partner, $existingAppId, $configs, $accessMaps, $subMs, $kyc_states
             ) {
                 $isDefautConfigExpEnabled = (new MerchantCore)->isCreateDefaultPartnerConfigExpEnabled($partner->getId());

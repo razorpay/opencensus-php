@@ -34,7 +34,7 @@ class Core extends Base\Core
 
         $request[Entity::CONFIG_TYPE] = $type;
 
-        $this->repo->transactionOnLiveAndTest(function() use ($request) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($request) {
             $this->repo->saveOrFail($request);
         });
 

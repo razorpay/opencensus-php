@@ -207,7 +207,7 @@ class Activate extends Base\Core
         //to be removed once hold funds issue is resolved
         $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $merchantDetail, $merchantCore)
         {
             $this->repo->saveOrFail($merchant);
 
@@ -394,7 +394,7 @@ class Activate extends Base\Core
 
         $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $merchantDetail, $merchantCore)
         {
             $this->repo->saveOrFail($merchant);
 
@@ -836,7 +836,7 @@ class Activate extends Base\Core
 
         // Creating the live and test mode entities in a db txn
         // Either both get created or none
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant)
         {
             try
             {

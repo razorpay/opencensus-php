@@ -680,8 +680,8 @@ class Core extends Base\Core
             $ba = $ba->build($input,$bankValidator);
 
         if ($merchant->isFeatureEnabled(Feature\Constants::OPGSP_IMPORT_FLOW) === false and
-            $merchant->isLRSFlowEnabled() === false and 
-            ($merchant->isJpmcImportFlowEnabled() === false) and 
+            $merchant->isLRSFlowEnabled() === false and
+            ($merchant->isJpmcImportFlowEnabled() === false) and
             ($authType !== 'migrated'))
         {
             $ba->getValidator()->validateIfscCode($input, $mode);

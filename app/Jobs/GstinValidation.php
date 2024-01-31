@@ -67,7 +67,7 @@ class GstinValidation extends  Job
 
             $merchantDetails = $this->merchantDetails ;
 
-            $this->repoManager->transactionOnLiveAndTest(function() use ($merchantDetails) {
+            $this->repoManager->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails) {
 
                     $this->repoManager->merchant_detail->saveOrFail($merchantDetails);
             });

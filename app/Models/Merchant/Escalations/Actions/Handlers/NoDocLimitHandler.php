@@ -22,7 +22,7 @@ class NoDocLimitHandler extends Handler
                 $merchantId,
                 function() use ($merchantId, $action, $params)
                 {
-                    $this->repo->transactionOnLiveAndTest(function () use ($merchantId, $action, $params)
+                    $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchantId, $action, $params)
                     {
                         $startTime = microtime(true);
 

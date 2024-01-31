@@ -383,7 +383,7 @@ class Core extends Base\Core
             $merchant->getId(),
             function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails, $activationFormMilestone, $startTime,$oldBusinessDetail) {
 
-                $result = $this->repo->transactionOnLiveAndTest(function() use (
+                $result = $this->repo->transactionOnLiveAndTestAndAsv(function() use (
                     $input,
                     $merchantDetails,
                     $merchant,
@@ -466,7 +466,7 @@ class Core extends Base\Core
                     return $response;
                 });
 
-                $this->repo->transactionOnLiveAndTest(function() use(
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use(
                     $result,
                     $merchantDetails,
                     $activationFormMilestone,
@@ -546,7 +546,7 @@ class Core extends Base\Core
             // blacklisted merchant should not be allowed to submit l2 form
             $merchantDetails->getValidator()->validateFullActivationForm($merchant);
 
-            $response = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input, $originProduct)
+            $response = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input, $originProduct)
             {
                 return Tracer::inspan(['name' => HyperTrace::SUBMIT_ACTIVATION_FORM],
                     function() use ($merchant, $input, $originProduct)
@@ -2181,7 +2181,7 @@ class Core extends Base\Core
             $merchant->getId(),
             function() use ($input, $merchantDetails, $merchant, $batchFlow, $sendActivationMail) {
 
-                return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant, $batchFlow, $sendActivationMail) {
+                return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $merchantDetails, $merchant, $batchFlow, $sendActivationMail) {
                     // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
                     $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
@@ -3905,7 +3905,7 @@ class Core extends Base\Core
 
         $partnerActivationCore = (new Activation\Core());
 
-        $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $merchant) {
             switch ($input[Entity::ACTIVATION_STATUS])
             {
                 case Status::ACTIVATED:
@@ -3933,7 +3933,7 @@ class Core extends Base\Core
             }
         });
 
-        $this->repo->transactionOnLiveAndTest(function() use (
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use (
             $rejectionOption,
             $merchantDetails,
             $oldMerchantDetails,
@@ -4360,7 +4360,7 @@ class Core extends Base\Core
                 unset($input[Entity::REJECTION_REASONS]);
             }
 
-            $this->repo->transactionOnLiveAndTest(function() use (
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use (
                 $merchantDetails,
                 $oldMerchantDetails,
                 $newMerchantDetails,
@@ -5207,7 +5207,7 @@ class Core extends Base\Core
                 ->handle($originalMerchantDetails, $dirtyMerchantDetails);
         }
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input) {
             $this->repo->saveOrFail($merchantDetails);
 
             $merchant = $merchantDetails->merchant;
@@ -7221,7 +7221,7 @@ class Core extends Base\Core
 
         $merchantCore->addDomainInWhitelistedDomain($merchant, $domain);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $merchant) {
+        return $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetails, $input, $merchant) {
 
             $this->repo->saveOrFail($merchantDetails);
 
@@ -7460,7 +7460,7 @@ class Core extends Base\Core
                 Constants::PENNY_TESTING_COUNT => $pennyTesting->getPennyTestingAttempts($merchantDetail),
             ]);
 
-            $this->repo->transactionOnLiveAndTest(function() use ($merchantDetail, $pennyTesting, $isPennyTestingAttemptLessThenMaxAttempt) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantDetail, $pennyTesting, $isPennyTestingAttemptLessThenMaxAttempt) {
 
                 $merchant = $merchantDetail->merchant;
 
@@ -9796,7 +9796,7 @@ class Core extends Base\Core
 
     public function updateBusinessWebsite(Merchant\Entity $merchant, string $newUrl)
     {
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $newUrl) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $newUrl) {
             $this->merchant->merchantDetail->setWebsite($newUrl);
 
             $this->repo->merchant_detail->saveOrFail($this->merchant->merchantDetail);

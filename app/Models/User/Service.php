@@ -702,7 +702,7 @@ class Service extends Base\Service
 
         unset($input[Entity::SKIP_SMS_REQUEST]);
 
-        list($merchant, $countryCode, $user) = $this->repo->transactionOnLiveAndTest(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode, $sourceAppId, $isOauthReferral) {
+        list($merchant, $countryCode, $user) = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode, $sourceAppId, $isOauthReferral) {
 
             if ($verifySuccess === true)
             {

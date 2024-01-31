@@ -33,7 +33,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvFind;
 class Repository extends Base\Repository
 {
     use AsvFind;
-    use Base\RepositoryUpdateTestAndLive
+    use Base\RepositoryUpdateTestAndLiveAndAsv
     {
         saveOrFail as saveOrFailTestAndLive;
         validateEntitiesMatch as parentValidateEntitiesMatch;
@@ -104,7 +104,7 @@ class Repository extends Base\Repository
      * @throws \Throwable
      */
     public function __saveOrFail(Entity $merchantDetail, $testAndLive, array $options = []) {
-        $this->repo->transactionOnLiveAndTest(function () use ($merchantDetail, $testAndLive, $options) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchantDetail, $testAndLive, $options) {
             if ($testAndLive === true) {
                 $this->saveOrFail($merchantDetail, $options);
             } else {

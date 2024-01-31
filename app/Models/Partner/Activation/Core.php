@@ -603,7 +603,7 @@ class Core extends Base\Core
 
         $merchantCore->createBalanceConfig($merchantBalance, 'live');
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerActivation, $merchantCore) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $partnerActivation, $merchantCore) {
             $this->repo->saveOrFail($merchant);
 
             $partnerActivation->setLocked(true);

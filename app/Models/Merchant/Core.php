@@ -1875,7 +1875,7 @@ class Core extends Base\Core
     {
         $isExpEnabled = $this->isExpEnabledForProductConfigIssue($aggregatorMerchant);
 
-        $this->repo->transactionOnLiveAndTest(function() use($merchant, $aggregatorMerchant, $isExpEnabled) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use($merchant, $aggregatorMerchant, $isExpEnabled) {
 
             $merchantBalance = $this->createBalance($merchant, Mode::TEST);
 
@@ -2230,7 +2230,7 @@ class Core extends Base\Core
      */
     public function editMerchantBillingLabelAndDba($merchant, $input)
     {
-        $this->repo->transactionOnLiveAndTest(function () use($merchant, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use($merchant, $input)
         {
             $merchant->edit($input, 'edit_billing_label');
 
@@ -2444,7 +2444,7 @@ class Core extends Base\Core
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $input)
         {
             if (isset($input[Merchant\Entity::CATEGORY]) === true)
             {
@@ -2920,7 +2920,7 @@ class Core extends Base\Core
 
         $function = camel_case($action);
 
-        $this->repo->transactionOnLiveAndTest(function() use (
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use (
             $merchant,
             $function,
             $useWorkflows,
@@ -3407,7 +3407,7 @@ class Core extends Base\Core
 
     public function createNewUserAndTransferOwnerShip($input, $merchant, $currentOwnerUser)
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($input, $merchant, $currentOwnerUser)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $merchant, $currentOwnerUser)
         {
             (new User\Validator())->validatePasswordResetToken($currentOwnerUser, $input['token']);
 
@@ -3445,7 +3445,7 @@ class Core extends Base\Core
 
     public function editMerchantEmailAndTransferOwnershipToUser($user, $currentOwner, $merchant, $input)
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($user, $merchant, $input, $currentOwner)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($user, $merchant, $input, $currentOwner)
         {
             $updateContactEmail   = (bool) ($input[Constants::SET_CONTACT_EMAIL] ?? false);
 
@@ -3956,7 +3956,7 @@ class Core extends Base\Core
 
                 $validator->validateIsNotLinkedAccount($merchant);
 
-                $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType) {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $partnerType) {
                     $merchant->setPartnerType($partnerType);
 
                     $this->repo->saveOrFail($merchant);
@@ -3984,7 +3984,7 @@ class Core extends Base\Core
 
         $validator->validatePartnerType($partnerType);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $partnerType)
         {
             $merchant->setPartnerType($partnerType);
 
@@ -4163,7 +4163,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateIsPartner($merchant);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant)
         {
             $this->deleteSupportingEntities($merchant);
 
@@ -4238,7 +4238,7 @@ class Core extends Base\Core
         $partner = Tracer::inspan(['name'       => HyperTrace::MARK_AS_PARTNER,
                                    'attributes' => array('partnerType' => $partnerType, 'merchantId' => $merchant->getId())],
             function() use ($merchant, $partnerType) {
-                $partner = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType) {
+                $partner = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant, $partnerType) {
                     return $this->processMarkAsCaOnboardingPartner($merchant, $partnerType);
                 });
 
@@ -4398,7 +4398,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $appType, $role) {
+        $accessMap = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partner, $submerchant, $appType, $role) {
 
             $this->removeFromAggSettlementIfApplicable($partner, $submerchant);
 
@@ -4557,7 +4557,7 @@ class Core extends Base\Core
      */
     public function deletePartnerAccessMap(Entity $partner, Entity $submerchant)
     {
-        $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partner, $submerchant) {
 
             $isExpEnabled = $this->isExpEnableForSendingUnlinkingRequestToNSS($partner);
 
@@ -4658,7 +4658,7 @@ class Core extends Base\Core
                 'submerchant_id' => $submerchant->getId(),
             ]);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partner, $submerchant)
         {
             $appIds = $this->getPartnerApplicationIds($partner);
 
@@ -4702,7 +4702,7 @@ class Core extends Base\Core
         if (($partner->isFullyManagedPartner() === true) or
             ($partner->isAggregatorPartner() === true))
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($partnerUserId, $submerchant) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partnerUserId, $submerchant) {
 
                 $this->detachSubMerchantUser($partnerUserId, $submerchant);
 
@@ -4742,7 +4742,7 @@ class Core extends Base\Core
                 'to_app_type'       => $toAppType,
             ]);
 
-        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $fromAppType, $toAppType) {
+        $accessMap = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partner, $submerchant, $fromAppType, $toAppType) {
 
             (new PartnerValidator())->validateIfAggregatorOrFullyManagedPartner($partner);
 
@@ -6259,7 +6259,7 @@ class Core extends Base\Core
         $merchant->setCategory2($category2);
         $merchant->setCategory($category);
 
-        $this->repo->transaction(function () use ($merchant, $category){
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchant, $category){
             $input = [
                 Entity::CATEGORY => $category,
             ];
@@ -6348,7 +6348,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::MERCHANT_LIVE_DISABLE_REQUEST);
 
-        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        $merchant = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant)
         {
             $merchant->liveDisable();
 
@@ -6377,7 +6377,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::MERCHANT_LIVE_ENABLE_REQUEST);
 
-        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        $merchant = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant)
         {
             $merchant->liveEnable();
 
@@ -6551,7 +6551,7 @@ class Core extends Base\Core
 
         $merchant->edit($merchantInput);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchant)
         {
             $this->saveAndNotify($merchant);
         });
@@ -8799,7 +8799,7 @@ class Core extends Base\Core
 
     public function postMerchantWorkflowClarification(WorkflowAction\Entity $action, array $input)
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($action, $input) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($action, $input) {
             $clarificationDocumentIds =  $input[Constants::WORKFLOW_CLARIFICATION_DOCUMENTS_IDS] ?? [];
 
             $this->addMerchantWorkflowClarificationComments($action, $input[Constants::MERCHANT_WORKFLOW_CLARIFICATION], $clarificationDocumentIds);
@@ -8914,7 +8914,7 @@ class Core extends Base\Core
         // LA funds need to be put on hold before initiating penny testing so that no new
         // settlements are created after the merchant has requested for a bank account change.
         //
-        $this->transaction(function () use ($linkedAccount, $bankAccountCore, $data)
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($linkedAccount, $bankAccountCore, $data)
         {
             $linkedAccount->setHoldFundsReason(Constants::LINKED_ACCOUNT_PENNY_TESTING);
 
@@ -9327,7 +9327,7 @@ class Core extends Base\Core
         $app = $this->createPartnerApp($partner);
         try
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($partner, $app, $existingAppIds, $accessMaps, $subMerchants, $managedAppId)
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partner, $app, $existingAppIds, $accessMaps, $subMerchants, $managedAppId)
             {
                 $this->createMerchantApplication(
                     $partner, $app[OAuthApp\Entity::ID], MerchantApplicationsEntity::REFERRED
@@ -10554,7 +10554,7 @@ class Core extends Base\Core
 
         $partnerAccess = $this->isMerchantManagedByPartner($subMerchant->getId(), $partnerId);
 
-        $accessMap = $this->transaction(function() use ($subMerchant, $partner, $partnerAccess)
+        $accessMap = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($subMerchant, $partner, $partnerAccess)
         {
             $this->updateMerchantConsentForPartner($subMerchant, $partner);
 
@@ -10638,7 +10638,7 @@ class Core extends Base\Core
                 ]
             );
 
-            $this->repo->transactionOnLiveAndTest(function () use ($linkedAccountMids) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function () use ($linkedAccountMids) {
                 $this->repo->merchant->updateLinkedAccountsAsSuspendedOrUnsuspendedInBulk($linkedAccountMids, true);
             });
 
@@ -10676,7 +10676,7 @@ class Core extends Base\Core
                 ]
             );
 
-            $this->repo->transactionOnLiveAndTest(function() use ($linkedAccountMids) {
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($linkedAccountMids) {
                 $this->repo->merchant->updateLinkedAccountsAsSuspendedOrUnsuspendedInBulk($linkedAccountMids, false);
             });
 

@@ -6,7 +6,7 @@ namespace RZP\Models\Merchant\Website;
 use Razorpay\Asv\RequestMetadata;
 use RZP\Models\Base;
 use RZP\Base\ConnectionType;
-use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\Base\RepositoryUpdateTestAndLiveAndAsv;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
@@ -20,7 +20,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvFetch;
 
 class Repository extends Base\Repository
 {
-    use RepositoryUpdateTestAndLive;
+    use RepositoryUpdateTestAndLiveAndAsv;
     use AsvFetch;
 
     protected $entity ='merchant_website';

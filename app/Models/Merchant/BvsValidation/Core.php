@@ -367,7 +367,7 @@ class Core extends Base\Core
             function() use ($validation, $merchantId) {
                 $shouldFireAccountUpdatedWebhook = $this->shouldFireAccountUpdatedWebhook($merchantId);
 
-                $this->repo->transactionOnLiveAndTest(
+                $this->repo->transactionOnLiveAndTestAndAsv(
                     function() use ($validation, $merchantId) {
 
                         $callbackHandlerFn = $this->getCallbackHandlerFunction($validation);
