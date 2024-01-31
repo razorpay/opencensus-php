@@ -67,6 +67,7 @@ const routes = {
   WALLET_REPORTS: '/app/wallet/reports',
   GCMS_PROGRAMS: '/app/gcms/programs',
   GCMS_ORDERS: '/app/gcms/orders',
+  GCMS_RESELLERS: '/app/gcms/resellers',
 };
 
 const EmailCredentials = [

@@ -45,6 +45,7 @@ import { magicCouponEngineHandler } from 'merchant/views/MagicCheckout/CouponEng
 import { magicShippingEngineHandlers } from 'merchant/views/MagicCheckout/ShippingSettings/__tests__/mocks/handlers';
 import gcmsProgramsHandler from 'merchant/views/GCMS/Programs/__tests__/mocks';
 import gcmsOrdersHandler from 'merchant/views/GCMS/Orders/__tests__/mocks';
+import gcmsResellersHandler from 'merchant/views/GCMS/Resellers/__tests__/mocks';
 
 export const handlers = [
   ...batchHandler,
@@ -881,4 +882,5 @@ export const handlers = [
   ...magicShippingEngineHandlers,
   ...gcmsProgramsHandler,
   ...gcmsOrdersHandler,
+  ...gcmsResellersHandler,
 ];

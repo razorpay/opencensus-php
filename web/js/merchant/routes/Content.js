@@ -469,6 +469,9 @@ const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'mercha
 const GCMSPrograms = lazy(() =>
   import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Programs'),
 );
+const GCMSResellers = lazy(() =>
+  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Resellers'),
+);
 
 const GCMSProgramDetails = lazy(() =>
   import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Programs/ProgramDetails'),
@@ -476,6 +479,10 @@ const GCMSProgramDetails = lazy(() =>
 
 const GCMSOrders = lazy(() =>
   import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Orders'),
+);
+
+const GCMSResellerDetails = lazy(() =>
+  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Resellers/ResellerDetails'),
 );
 
 // const POS = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
@@ -2013,6 +2020,33 @@ class Content extends Component {
             }
           />
           <Route path="gcms/*">
+            <Route path="resellers/*">
+              <Route
+                index
+                element={
+                  <RouteGuard
+                    additionalCondition={(user) =>
+                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                    }
+                  >
+                    <GCMSResellers />
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path=":resellerId/*"
+                element={
+                  <RouteGuard
+                    additionalCondition={(user) =>
+                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                    }
+                  >
+                    <GCMSResellerDetails />
+                  </RouteGuard>
+                }
+              />
+            </Route>
+
             <Route path="programs/*">
               <Route
                 index
