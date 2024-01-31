@@ -4,6 +4,7 @@ namespace Unit\Models\Merchant\Acs\AsvRouter;
 
 
 use Illuminate\Http\Request;
+use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\RequestContext;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
@@ -72,6 +73,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => false,
                 "is_write_flow" => true,
                 "expected_result" => true,
+                "test_id" => "test_id"
             ],
             [
                 "is_partnership_route" => true,
@@ -83,6 +85,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => false,
                 "is_write_flow" => true,
                 "expected_result" => false,
+                "test_id" => "test_id"
             ],
             [
                 "is_partnership_route" => false,
@@ -94,6 +97,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => false,
                 "is_write_flow" => true,
                 "expected_result" => true,
+                "test_id" => "test_id"
             ],
             [
                 "is_partnership_route" => true,
@@ -105,6 +109,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => false,
                 "is_write_flow" => true,
                 "expected_result" => false,
+                "test_id" => "test_id"
             ],
             [
                 "is_partnership_route" => true,
@@ -116,6 +121,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => false,
                 "is_write_flow" => true,
                 "expected_result" => false,
+                "test_id" => "test_id"
             ],
             [
                 "is_partnership_route" => false,
@@ -127,6 +133,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => false,
                 "is_write_flow" => true,
                 "expected_result" => true,
+                "test_id" => "test_id"
             ],
             [
                 "is_partnership_route" => true,
@@ -138,6 +145,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => false,
                 "is_write_flow" => true,
                 "expected_result" => false,
+                "test_id" => "test_id"
             ],
             [
                 "is_partnership_route" => true,
@@ -149,6 +157,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => true,
                 "is_write_flow" => true,
                 "expected_result" => true,
+                "test_id" => "test_id"
             ],
             [
                 "is_partnership_route" => true,
@@ -160,6 +169,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => true,
                 "is_write_flow" => true,
                 "expected_result" => false,
+                "test_id" => "test_id"
             ],
             [
                 "is_partnership_route" => false,
@@ -171,6 +181,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => true,
                 "is_write_flow" => true,
                 "expected_result" => true,
+                "test_id" => "test_id"
             ],
             [
                 "is_partnership_route" => false,
@@ -182,6 +193,7 @@ class AsvRouterTest extends TestCase
                 "partner_id_get_exception" => true,
                 "is_write_flow" => false,
                 "expected_result" => false,
+                "test_id" => "test_id"
             ]
         ];
 
@@ -202,6 +214,261 @@ class AsvRouterTest extends TestCase
                 FunctionConstant::SAVE_OR_FAIL,
                 "test_id",
             ));
+        }
+
+    }
+
+    public function testShouldCreateTransactionWithAsvAlso() {
+
+        Config::set('applications.asv_v2.splitz_send_partner_write_to_asv', 'K1ZaAHZ7Lnumc1');
+        Config::set('applications.asv_v2.splitz_send_write_to_asv', 'K1ZaAHZ7Lnumc62');
+        Config::set('applications.asv_v2.splitz_experiment_send_write_route_or_worker_to_asv', 'K1ZaAHZ7Lnumc3');
+
+        $tests = [
+            [
+                "is_partnership_route" => true,
+                "splitz_call_count" => 1,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "is_write_flow" => true,
+                "expected_result" => true,
+                "test_id" => "repository_manager",
+            ],
+            [
+                "is_partnership_route" => true,
+                "splitz_call_count" => 1,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => false,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "is_write_flow" => true,
+                "expected_result" => false,
+                "test_id" => "repository_manager",
+            ],
+            [
+                "is_partnership_route" => false,
+                "splitz_call_count" => 1,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => false,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "is_write_flow" => true,
+                "expected_result" => true,
+                "test_id" => "repository_manager",
+            ],
+            [
+                "is_partnership_route" => true,
+                "splitz_call_count" => 1,
+                "is_enabled_write_on_entity" => false,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "is_write_flow" => true,
+                "expected_result" => false,
+                "test_id" => "repository_manager",
+            ],
+            [
+                "is_partnership_route" => true,
+                "splitz_call_count" => 1,
+                "is_enabled_write_on_entity" => false,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "is_write_flow" => true,
+                "expected_result" => false,
+                "test_id" => "repository_manager",
+            ],
+            [
+                "is_partnership_route" => false,
+                "splitz_call_count" => 1,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => false,
+                "is_write_flow" => true,
+                "expected_result" => true,
+                "test_id" => "repository_manager",
+            ],
+            [
+                "is_partnership_route" => true,
+                "splitz_call_count" => 1,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => true,
+                "partner_id_get_exception" => false,
+                "is_write_flow" => true,
+                "expected_result" => false,
+                "test_id" => "repository_manager",
+            ],
+            [
+                "is_partnership_route" => true,
+                "splitz_call_count" => 1,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => true,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => true,
+                "is_write_flow" => true,
+                "expected_result" => true,
+                "test_id" => "repository_manager",
+            ],
+            [
+                "is_partnership_route" => true,
+                "splitz_call_count" => 1,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => false,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => true,
+                "is_write_flow" => true,
+                "expected_result" => false,
+                "test_id" => "repository_manager",
+            ],
+            [
+                "is_partnership_route" => false,
+                "splitz_call_count" => 1,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => false,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => false,
+                "partner_id_get_exception" => true,
+                "is_write_flow" => true,
+                "expected_result" => true,
+                "test_id" => "repository_manager",
+            ],
+            [
+                "is_partnership_route" => false,
+                "splitz_call_count" => 0,
+                "is_enabled_write_on_entity" => true,
+                "is_enabled_write_on_partner" => false,
+                "is_enabled_write_on_route" => true,
+                "splitz_exception" => true,
+                "partner_id_get_exception" => true,
+                "is_write_flow" => false,
+                "expected_result" => false,
+                "test_id" => "repository_manager",
+            ]
+        ];
+
+        for($i = 0; $i < count($tests); $i++) {
+            $test = $tests[$i];
+            list($request, $response) = $this->getSplitzRequestAndResponse($test);
+            $this->setSplitzWithOutputForBulk($response, $request, $test["splitz_call_count"], $test["splitz_exception"]);
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)
+                ->enableOriginalConstructor()
+                ->onlyMethods(["isWriteFlowOrFailure"])
+                ->getMock();
+
+            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn($test['is_write_flow']);
+            $actualResult = $asvRouterMock->shouldCreateTransactionWithAsvAlso();
+            $this->assertEquals($test["expected_result"], $actualResult);
+        }
+
+    }
+
+
+    public function testShouldRouteImplicitJoinToAccountService() {
+        $tests = [
+            [
+                "is_write_flow" => true,
+                "expected_result" => true,
+                "is_transaction_active" => false,
+                "shouldRouteWriteRequestToAccountService" => true,
+            ],
+            [
+                "is_write_flow" => true,
+                "expected_result" => false,
+                "is_transaction_active" => true,
+            ],
+            [
+                "is_write_flow" => true,
+                "expected_result" => false,
+                "is_transaction_active" => false,
+                "shouldRouteWriteRequestToAccountService" => false,
+            ],
+        ];
+
+        for($i = 0; $i < count($tests); $i++) {
+            $test = $tests[$i];
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)
+                ->enableOriginalConstructor()
+                ->onlyMethods(["isWriteFlowOrFailure", 'isTransactionActive', 'shouldRouteWriteRequestToAccountService'])
+                ->getMock();
+
+            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn($test['is_write_flow']);
+            if($test['is_write_flow'] === true) {
+                $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->with(Repository::class)->willReturn($test['is_transaction_active']);
+                if ($test['is_transaction_active'] === false) {
+                    $asvRouterMock->expects($this->exactly(1))->method('shouldRouteWriteRequestToAccountService')->willReturn($test['shouldRouteWriteRequestToAccountService']);
+                }
+            }
+
+            $actualResult = $asvRouterMock->shouldRouteImplicitJoinToAccountService(
+                "test_id",
+                "merchant",
+                Repository::class,
+                FunctionConstant::FIND_FOR_IMPLICIT_JOIN,
+            );
+
+            $this->assertEquals($test["expected_result"], $actualResult);
+        }
+
+    }
+
+    public function testShouldRouteToAccountService() {
+
+        $tests = [
+            [
+                "is_write_flow" => true,
+                "expected_result" => true,
+                "is_transaction_active" => false,
+                "shouldRouteWriteRequestToAccountService" => true,
+            ],
+            [
+                "is_write_flow" => true,
+                "expected_result" => false,
+                "is_transaction_active" => true,
+            ],
+            [
+                "is_write_flow" => true,
+                "expected_result" => false,
+                "is_transaction_active" => false,
+                "shouldRouteWriteRequestToAccountService" => false,
+            ],
+        ];
+
+        for($i = 0; $i < count($tests); $i++) {
+            $test = $tests[$i];
+            $asvRouterMock = $this->getMockBuilder(AsvRouter::class)
+                ->enableOriginalConstructor()
+                ->onlyMethods(["isWriteFlowOrFailure", 'isTransactionActive', 'shouldRouteWriteRequestToAccountService'])
+                ->getMock();
+
+            $asvRouterMock->expects($this->exactly(1))->method('isWriteFlowOrFailure')->willReturn($test['is_write_flow']);
+            if($test['is_write_flow'] === true) {
+                $asvRouterMock->expects($this->exactly(1))->method('isTransactionActive')->with(Repository::class)->willReturn($test['is_transaction_active']);
+
+                if ($test['is_transaction_active'] === false) {
+                    $asvRouterMock->expects($this->exactly(1))->method('shouldRouteWriteRequestToAccountService')->willReturn($test['shouldRouteWriteRequestToAccountService']);
+                }
+            }
+
+            $actualResult = $asvRouterMock->shouldRouteToAccountService(
+                "test_id",
+                Repository::class,
+                FunctionConstant::FIND_OR_FAIL,
+            );
+
+            $this->assertEquals($test["expected_result"], $actualResult);
         }
 
     }
@@ -288,7 +555,7 @@ class AsvRouterTest extends TestCase
         $request = [
             [
                 "experiment_id" => "K1ZaAHZ7Lnumc62",
-                "id" => "test_id"
+                "id" => $test["test_id"]
             ]
         ];
         $response = [

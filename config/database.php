@@ -566,6 +566,21 @@ return array(
             'wait_timeout'             => env('DB_WAIT_TIMEOUT'),
             'transaction_wait_timeout' => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
+        'account_service_writer' => [
+            'host' => env('ACCOUNT_SERVICE_HOST'),
+            'port' => '3306',
+            'username' => env('ACCOUNT_SERVICE_USERNAME'),
+            'password' => env('ACCOUNT_SERVICE_PASSWORD'),
+            'sticky' => true,
+            'database' => env('ACCOUNT_SERVICE_DATABASE'),
+            'driver' => 'mysql',
+            'charset' => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix' => '',
+            'strict' => true,
+            'wait_timeout' => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout' => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+        ],
 
         'rx_whatsapp_live' => [
             'write'  => [

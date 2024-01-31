@@ -52,7 +52,7 @@ class Repository extends Base\Repository
 {
     use CacheQueries;
 
-    use Base\RepositoryUpdateTestAndLive;
+    use Base\RepositoryUpdateTestAndLiveAndAsv;
 
     use AsvFind;
     function __construct()

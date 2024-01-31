@@ -30,7 +30,7 @@ class AsvRouter
 
     const PARTNER_NOT_FOUND = "partner_not_found";
 
-    const CHANGE_ISOLATION_LEVEL = "change_isolation_level";
+    const CREATE_TRANSACTION_WITH_ASV_ALSO = "create_transaction_with_asv_also";
 
     const REPOSITORY_MANAGER_ID  = "repository_manager";
 
@@ -236,6 +236,10 @@ class AsvRouter
     {
         try {
             if ($this->isWriteFlowOrFailure() === true) {
+                if ($this->isTransactionActive($repoClass) === true) {
+                    return false;
+                }
+
                 return $this->shouldRouteWriteRequestToAccountService($repoClass, $functionName, $id);
             }
 
@@ -256,15 +260,6 @@ class AsvRouter
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             return false;
         }
-    }
-
-    public function shouldChangeIsolationLevelForCurrentRouteFromRepositoryManager(): bool
-    {
-        return $this->shouldRouteWriteRequestToAccountService(
-            repoClass: RepositoryManager::class,
-            functionName: self::CHANGE_ISOLATION_LEVEL,
-            id: self::REPOSITORY_MANAGER_ID
-        );
     }
 
     public function shouldRouteWriteRequestToAccountService($repoClass, $functionName, $id): bool
@@ -314,6 +309,11 @@ class AsvRouter
         try {
 
             if ($this->isWriteFlowOrFailure() === true) {
+
+                if ($this->isTransactionActive($repoClass) === true) {
+                    return false;
+                }
+
                 return $this->shouldRouteWriteRequestToAccountService($repoClass, $functionName, $id);
             }
 
@@ -447,6 +447,30 @@ class AsvRouter
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             return false;
         }
+    }
+
+    public function shouldCreateTransactionWithAsvAlso(): bool
+    {
+        return $this->shouldRouteWriteRequestToAccountService(
+            RepositoryManager::class,
+             self::CREATE_TRANSACTION_WITH_ASV_ALSO,
+            self::REPOSITORY_MANAGER_ID
+        );
+    }
+
+    public function isTransactionActive($repoClass): bool {
+
+        $repoClass = (new $repoClass());
+        if (property_exists($repoClass, 'repo') === false) {
+            $this->trace->info(TraceCode::ASV_ROUTER_REPO_NOT_FOUND);
+            return true;
+        }
+
+        if ($repoClass->repo->isTransactionActive() === true) {
+            return true;
+        }
+
+        return false;
     }
 
     public function shouldRouteBeMigratedToTiDB(string $functionName) : bool {

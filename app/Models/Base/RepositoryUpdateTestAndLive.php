@@ -33,15 +33,6 @@ trait RepositoryUpdateTestAndLive
 
         $this->validateIdGenerated($entity);
 
-        /*
-         *  We are migrating save for Merchant Entities to Account Service, and request won't be routed to DB.
-         */
-        if ($this->shouldRouteRequestToAccountService($entity, $options, FunctionConstant::SAVE_OR_FAIL))
-        {
-            $this->saveOnAccountService($entity);
-            return;
-        }
-
         $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
 
         $dirty  = $entity->getDirty();
@@ -190,13 +181,6 @@ trait RepositoryUpdateTestAndLive
         if ($this->entityShouldSync($entity) === false)
         {
             return parent::delete($entity);
-        }
-
-        if ($this->shouldRouteRequestToAccountService($entity, [], FunctionConstant::DELETE_OR_FAIL))
-        {
-            $this->deleteOnAccountService($entity);
-
-            return;
         }
 
         $res = $this->repo->transactionOnLiveAndTest(function () use ($entity)
@@ -395,13 +379,6 @@ trait RepositoryUpdateTestAndLive
     protected function shouldRouteRequestToAccountService($entity, $options, $function): bool
     {
         try {
-            if($options !== []){
-                // We do not except options to be passed, adding this log and adding alert to find flows that use this.
-                $this->trace->warning(TraceCode::ASV_OPTIONS_NOT_SUPPORTED_FOR_WRITE,[
-                    "options" => $options
-                ]);
-                return false;
-            }
 
             if ((new AsvMaps\WriteEnabledOnAsv)->checkIfWriteEnabled($this::class, $function) === false) {
                 return false;

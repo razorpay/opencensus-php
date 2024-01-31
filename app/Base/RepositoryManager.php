@@ -580,6 +580,70 @@ class RepositoryManager extends Illuminate\Support\Manager
         return $result;
     }
 
+    /**
+     * @throws \Throwable
+     */
+    public function transactionOnLiveAndTestAndAsv(callable $callback)
+    {
+        // if this is merchant related write flow then only call this method
+        // else calls transactionOnLiveAndTest which saves data in test and live only
+        if ((new AsvRouter())->shouldCreateTransactionWithAsvAlso() === false) {
+            return $this->transactionOnLiveAndTest($callback);
+        }
+
+        //
+        // We need to grab and assign the default connection here
+        // because in the callback code, the functions try to change
+        // the default connection. This is again required because of
+        // lack of eloquent's support for taking specific connection
+        // instance on relationship based queries.
+        //
+        $currentConnection = $this->getDefaultDbConn();
+
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Mode::LIVE);
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Mode::TEST);
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Connection::ASV_WRITER);
+
+        //$this->changeTransactionIsolationLevelForAccountServiceRoutes();
+
+        $this->db->connection(Mode::TEST)->beginTransaction();
+        $this->db->connection(Mode::LIVE)->beginTransaction();
+        $this->db->connection(Connection::ASV_WRITER)->beginTransaction();
+
+        // We'll simply execute the given callback within a try / catch block
+        // and if we catch any exception we can rollback the transaction
+        // so that none of the changes are persisted to the database.
+        try
+        {
+            $result = $callback($this);
+
+            $this->db->connection(Mode::LIVE)->commit();
+            $this->db->connection(Mode::TEST)->commit();
+            $this->db->connection(Connection::ASV_WRITER)->commit();
+        }
+
+            // If we catch an exception, we will roll back so nothing gets messed
+            // up in the database. Then we'll re-throw the exception so it can
+            // be handled how the developer sees fit for their applications.
+        catch (\Throwable $e)
+        {
+            $this->db->connection(Mode::LIVE)->rollBack();
+            $this->db->connection(Mode::TEST)->rollBack();
+            $this->db->connection(Connection::ASV_WRITER)->rollBack();
+
+            throw $e;
+        }
+        finally
+        {
+            $this->setDefaultDbConn($currentConnection);
+            $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT, Mode::LIVE);
+            $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT, Mode::TEST);
+            $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT, Connection::ASV_WRITER);
+        }
+
+        return $result;
+    }
+
     public function useSlave(callable $callback)
     {
         $this->db->connection()->forceReadPdo = true;
@@ -650,42 +714,4 @@ class RepositoryManager extends Illuminate\Support\Manager
             ->select('SELECT /* comment: ' . $comment . ' */ 1;' );
     }
 
-    /*
-     *
-     * We are migrating writes to account service, the default isolation level for transaction is REPEATABLE READS,
-     * that means, we cannot read any data that is saved in account service(Which Uses API DB only) within
-     * the transaction (The snapshot is saved at the first read, and is reused in any ongoing transaction).
-     *
-     * To solve this issue, for ASV routes, we are changing the isolation level to READ COMMITTED. This only affects
-     * the transaction started after the execution of this function. The nested transaction inherit the property of
-     * parent transaction, hence we do not need to override isolation level for nested transaction.
-     *
-     * The following is only applicable for specific list of routes which is maintained in ASV router class, the routes
-     * are also further controlled by Splitz Experiment.
-     *
-     */
-    private function changeTransactionIsolationLevelForAccountServiceRoutes(): void
-    {
-        try {
-
-            if ($this->isTransactionActive() === true
-                or
-                (new AsvRouter())->shouldChangeIsolationLevelForCurrentRouteFromRepositoryManager() === false) {
-                return;
-            }
-
-            $SET_TRANSACTION_READ_COMMITTED = "SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
-
-            $pdo = $this->db->connection(Mode::TEST)->getPdo();
-            $pdo->exec($SET_TRANSACTION_READ_COMMITTED);
-
-            $pdo = $this->db->connection(Mode::LIVE)->getPdo();
-            $pdo->exec($SET_TRANSACTION_READ_COMMITTED);
-
-            return;
-        } catch (\Throwable $ex) {
-            $this->app['trace']->traceException($ex, Trace::ERROR, TraceCode::ASV_CHANGE_ISOLATION_LEVEL_EXCEPTION);
-            $this->app['trace']->count(Metric::ASV_CHANGE_ISOLATION_LEVEL_EXCEPTION_TOTAL);
-        }
-    }
 }

@@ -10,6 +10,7 @@ class Connection
     const SLAVE_LIVE            = 'slave-live';
     const DATA_WAREHOUSE_LIVE   = 'data-warehouse-live'; // goes to admin cluster
     const DATA_WAREHOUSE_TEST   = 'data-warehouse-test';
+    const ASV_WRITER = 'account_service_writer';
 
     const ARCHIVED_DATA_REPLICA_LIVE = 'archived-data-replica-live';
     const ARCHIVED_DATA_REPLICA_TEST = 'archived-data-replica-test';

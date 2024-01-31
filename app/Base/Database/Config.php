@@ -60,6 +60,7 @@ class Config
             'test',
             'slave-test',
             'slave-live',
+            'account_service_writer',
         ];
     }
 

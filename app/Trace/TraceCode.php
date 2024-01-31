@@ -9163,6 +9163,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_COULD_NOT_FIND_ACCOUNT                            = 'ASV_COULD_NOT_FIND_ACCOUNT';
     const ASV_FIND_ACCOUNT_IN_DB                                = 'ASV_FIND_ACCOUNT_IN_DB';
     const ASV_ROLLBACK_ENTITY                                   = 'ASV_ROLLBACK_ENTITY';
+
+    const ASV_ROUTER_REPO_NOT_FOUND                             = 'ASV_ROUTER_REPO_NOT_FOUND';
     const ASV_ROLLBACK_EVENT_PUBLISHED                          = 'ASV_ROLLBACK_EVENT_PUBLISHED';
     const ASV_ROLLBACK_EVENT_PUBLISH_FAILED                     = 'ASV_ROLLBACK_EVENT_PUBLISH_FAILED';
     const ASV_ROLLBACK_EVENT_LISTENER_EXCEPTION                 = 'ASV_ROLLBACK_EVENT_LISTENER_EXCEPTION';
