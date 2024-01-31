@@ -188,7 +188,8 @@ class Constants
         Status::ACTIVATED               => Status::ACTIVATED,
         Status::REJECTED                => Status::REJECTED,
         Status::ACTIVATED_KYC_PENDING   => Status::ACTIVATED_KYC_PENDING,
-        Status::ACTIVATED_MCC_PENDING   => Status::ACTIVATED
+        Status::ACTIVATED_MCC_PENDING   => Status::ACTIVATED,
+        Status::INSTANTLY_ACTIVATED     => Status::ACTIVATED
     ];
 
     const V2_ONBOARDING_APIS_LIST = [

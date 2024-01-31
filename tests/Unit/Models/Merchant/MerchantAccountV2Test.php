@@ -76,6 +76,33 @@ class MerchantAccountV2Test extends TestCase
         $this->assertArrayHasKey('activated_at', $result);
     }
 
+    public function testAccountV2ResponseWhenActivationStatusIsInstantlyActivated()
+    {
+        $accountResponse = new Response();
+
+        $this->merchantEntityMock->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($this->merchantDetailEntityMock);
+
+        $this->merchantEntityMock->shouldReceive('isSuspended')->andReturn(false);
+
+        $this->merchantEntityMock->shouldReceive('getCreatedAt')->andReturn('1678107805');
+
+        $this->merchantEntityMock->shouldReceive('isFundsOnHold')->andReturn(false);
+
+        $this->merchantEntityMock->shouldReceive('getBillingLabel')->andReturn('billing_name');
+
+        $this->merchantEntityMock->shouldReceive('getActivatedAt')->andReturn('1678107805');
+
+        $this->merchantDetailEntityMock->shouldReceive('getActivationStatus')->andReturn('instantly_activated');
+
+        $this->partnerEntityMock->shouldReceive('getId')->andReturn('10000000000000');
+
+        $result = $accountResponse->getAccountResponse($this->partnerEntityMock, $this->merchantEntityMock);
+
+        $this->assertEquals('activated', $result['status']);
+        $this->assertEquals(false, $result['hold_funds']);
+        $this->assertArrayHasKey('activated_at', $result);
+    }
+
     public function testAccountV2ResponseWhenActivationStatusIsNeedsClarification()
     {
         $accountResponse = new Response();
