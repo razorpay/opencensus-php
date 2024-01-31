@@ -260,7 +260,7 @@ class RateLimiterController extends EdgeThrottleController
 
         $arrayResponse = json_decode($response->getBody()->getContents(), true);
 
-        return $this->extractKeys($arrayResponse, [
+        return $this->extractKeys($arrayResponse["data"][0], [
             'id',
             'rule_type_id',
             'rule',
@@ -282,7 +282,7 @@ class RateLimiterController extends EdgeThrottleController
 
         $arrayResponse = json_decode($response->getBody()->getContents(), true);
 
-        return $this->extractKeys($arrayResponse, [
+        return $this->extractKeys($arrayResponse["data"][0], [
             'id',
             'rule_id',
             'key',
