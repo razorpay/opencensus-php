@@ -1729,7 +1729,8 @@ return [
             "cpv_report"                        => "CPV report",
             "bar_council_certificate"           => "Bar Council Certificate",
             "board_resolution_letter"           => "Board Resolution Letter",
-            "website_screenshots_additional"   => "Website Screenshots Additional"
+            "website_screenshots_additional"    => "Website Screenshots Additional",
+            "pgi_certificate"                   => "PGI Certificate",
         ]
     ],
 ],
@@ -5103,7 +5104,7 @@ return [
             'status_code' => 200,
         ],
     ],
-  
+
     'testBusinessWebsiteSaveForOCRSuccessfulValidation' => [
         'request'  => [
             'content' => [

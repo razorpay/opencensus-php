@@ -155,6 +155,7 @@ class Type
     const CANCELLED_CHEQUE_VIDEO            = 'cancelled_cheque_video';
     const BAR_COUNCIL_CERTIFICATE           = 'bar_council_certificate';
     const BOARD_RESOLUTION_LETTER           = 'board_resolution_letter';
+    const PGI_CERTIFICATE                   = "pgi_certificate";
 
     const WEBSITE_SCREENSHOTS_ADDITIONAL     = 'website_screenshots_additional';
 
@@ -225,6 +226,7 @@ class Type
         self::WEBSITE_SCREENSHOTS_ADDITIONAL,
         self::SHOP_FRONT_IMAGE,
         self::SHOP_INTERIOR_IMAGE,
+        self::PGI_CERTIFICATE,
     ];
 
     const DOCUMENT_DESCRIPTION_MAP = [
@@ -287,8 +289,9 @@ class Type
         self::CPV_REPORT                        => "CPV report",
         self::BAR_COUNCIL_CERTIFICATE           => "Bar Council Certificate",
         self::BOARD_RESOLUTION_LETTER           => "Board Resolution Letter",
-        self::WEBSITE_SCREENSHOTS_ADDITIONAL    => "Website Screenshots Additional"
-    ];
+        self::WEBSITE_SCREENSHOTS_ADDITIONAL    => "Website Screenshots Additional",
+        self::PGI_CERTIFICATE                   => "PGI Certificate"
+,    ];
 
     const PROOF_TYPES = [
         self::INDIVIDUAL_PROOF_OF_ADDRESS,
@@ -444,6 +447,7 @@ class Type
         self::WEBSITE_SCREENSHOTS_ADDITIONAL,
         self::SHOP_FRONT_IMAGE,
         self::SHOP_INTERIOR_IMAGE,
+        self::PGI_CERTIFICATE,
     ];
 
     const VALID_POS_DOCUMENTS = [
@@ -527,6 +531,7 @@ class Type
         self::NBFC_REGISTRATION_CERTIFICATE     => self::ADDITIONAL_DOCUMENTS,
         self::AMFI_CERTIFICATE                  => self::ADDITIONAL_DOCUMENTS,
         self::BOARD_RESOLUTION_LETTER           => self::ADDITIONAL_DOCUMENTS,
+        self::PGI_CERTIFICATE                   => self::ADDITIONAL_DOCUMENTS,
 
         self::SLA_SEBI_REGISTRATION_CERTIFICATE  => self::ADDITIONAL_DOCUMENTS,
         self::SLA_IRDAI_REGISTRATION_CERTIFICATE => self::ADDITIONAL_DOCUMENTS,
