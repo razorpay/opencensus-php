@@ -710,6 +710,8 @@ class ApiRequestAny
 
             $response = json_decode($clientBody, true);
             app('edgeResponseForwarder')->setHeaders($path, $method, $client->getheaders());
+            app('edgeMismatchRecorder')->setEdgeData($path, $method, $client->getheaders());
+
             return [null, $response, $httpCode];
         }
         catch(\GuzzleHttp\Exception\ClientException $e)

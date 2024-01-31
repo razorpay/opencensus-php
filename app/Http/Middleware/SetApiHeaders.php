@@ -63,11 +63,9 @@ class SetApiHeaders {
 
         $response = $next($request);
 
-        $responseHeaders = array_merge($csrfTokenHeader, app('edgeResponseForwarder')->getHeaders());
-
         if($response instanceof StreamedResponse)
         {
-            foreach ($responseHeaders as $key => $value)
+            foreach ($csrfTokenHeader as $key => $value)
             {
                 $response->headers->set($key, $value);
             }
@@ -75,7 +73,7 @@ class SetApiHeaders {
             return $response;
         }
 
-        $response->withHeaders($responseHeaders);
+        $response->withHeaders($csrfTokenHeader);
 
         return $response;
 	}

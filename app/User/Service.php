@@ -2409,6 +2409,7 @@ class Service extends Base\Service
         }
 
 
+        app('edgeMismatchRecorder')->setLegacyData($route, $httpVerb, $genericUser);
         return [$error, $genericUser, $httpCode];
     }
 
