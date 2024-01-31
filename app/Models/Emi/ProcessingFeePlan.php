@@ -69,8 +69,8 @@ class ProcessingFeePlan
         CreditEmiProvider::YESB => [
             Type::CREDIT => [
                 self:: DEFAULT => [
-                    self::TYPE => self::PERCENTAGE,
-                    self::PERCENTAGE => 1
+                    self::TYPE => self::FIXED,
+                    self::AMOUNT => 19900
                 ]
             ]
         ],

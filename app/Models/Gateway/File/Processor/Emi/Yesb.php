@@ -55,7 +55,7 @@ class Yesb extends Base
             {
                 continue;
             }
-            
+
             $emiPlan = $emiPayment->emiPlan;
 
             $emiTenure = $emiPlan['duration'];
@@ -109,7 +109,7 @@ class Yesb extends Base
                 'Tx Time'                      => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
                 'Settlement Time'              => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
                 'Customer Processing Fee'      => '0.00%',
-                'Customer Processing Amt'      => '0.00',
+                'Customer Processing Amount (Rs.)'      => '199',
                 'Subvention payable to Issuer' => '0.0%',
                 'Subvention Amount (Rs.)'      => $subventionAmount,
                 'Interest Rate'                => $emiPercent.'%',
