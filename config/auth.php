@@ -40,5 +40,9 @@ return [
             'signing_secret' => env('OPFIN_JWT_SIGNING_KEY'),
             'redirect_url'   => env('OPFIN_REDIRECT_URL'),
         ],
+        'billme'      => [
+            'signing_secret' => env('BILLME_JWT_SIGNING_KEY'),
+            'redirect_url'   => env('BILLME_REDIRECT_URL'),
+        ],
     ],
 ];

@@ -26,6 +26,7 @@ class Identity {
     const VALID_SERVICE_PROVIDERS = [
         'opfin',
         'thirdwatch',
+        'billme',
     ];
 
     const USER_EMAIL          = 'user_email';
