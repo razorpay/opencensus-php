@@ -83,7 +83,7 @@ class Service extends Base\Service
             {
                 if ($transferTypeFilter === Constant::PLATFORM )
                 {
-                    $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId(), true);
+                    $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId());
 
                     $input[Constant::EXCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
                 }
@@ -93,7 +93,7 @@ class Service extends Base\Service
 
                     if( $result[Constant::FEATURE_ENABLED] === true)
                     {
-                        $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId(), true);
+                        $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId());
 
                         $input[Constant::INCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
                     }
@@ -1506,7 +1506,7 @@ class Service extends Base\Service
     {
         try
         {
-            $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId(), true);
+            $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId());
 
             foreach ($transfers as $transfer)
             {

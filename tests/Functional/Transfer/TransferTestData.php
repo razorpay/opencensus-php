@@ -1253,7 +1253,7 @@ return [
                 'items'         => [
                     [
                         "id"                        => 'trf_LhV9fg1fXklNUG',
-                        "recipient"                 => 'acc_10000000000004',
+                        "recipient"                 => 'acc_10000000000005',
                         "currency"                  => "INR",
                         "amount"                    => 1000,
                         'status'                    => 'processed',
@@ -1298,7 +1298,7 @@ return [
                 'items'         => [
                     [
                         "id"                        => 'trf_LhV9fg1fXklNUG',
-                        "recipient"                 => 'acc_10000000000001',
+                        "recipient"                 => 'acc_10000000000004',
                         "currency"                  => "INR",
                         "amount"                    => 1000,
                         'status'                    => 'processed',

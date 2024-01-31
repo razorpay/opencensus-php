@@ -2495,13 +2495,25 @@ class TransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000003');
 
+        // sub-merchant linked acc 1
         $this->fixtures->create('merchant', [
             'id'            => '10000000000004',
             'email'         => 'testmail1@mail.info',
-            'name'          => 'linked_account',
+            'name'          => 'linked_account_1',
             'parent_id'     => '10000000000000',
             'activated'     => 1,
         ]);
+
+        // sub-merchant linked acc 2
+        $this->fixtures->create('merchant', [
+            'id'            => '10000000000005',
+            'email'         => 'testmail2@mail.info',
+            'name'          => 'linked_account_2',
+            'parent_id'     => '10000000000000',
+            'activated'     => 0,
+        ]);
+
+        // regular transfer
         $this->fixtures->create('transfer', [
             'id'            => 'LhV9fg1fXagWCN',
             'status'        => 'processed',
@@ -2512,13 +2524,25 @@ class TransferTest extends TestCase
             'amount'        => 1000,
         ]);
 
+        // regular transfer
         $this->fixtures->create('transfer', [
             'id'            => 'LhV9fg1fXklNUG',
             'status'        => 'processed',
             'merchant_id'   => '10000000000000',
             'source_id'     => 'LpodrylYxBEsvd',
             'source_type'   => 'payment',
-            'to_id'         => '10000000000004',
+            'to_id'         => '10000000000005',
+            'amount'        => 1000,
+        ]);
+
+        // platform transfer
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXklAPP',
+            'status'        => 'processed',
+            'merchant_id'   => '10000000000000',
+            'source_id'     => 'LpodrylYxBEsvd',
+            'source_type'   => 'payment',
+            'to_id'         => '10000000000001',
             'amount'        => 1000,
         ]);
 
@@ -2549,6 +2573,34 @@ class TransferTest extends TestCase
     {
         $this->createPartnerAndApplication(['id' => '10000000000003', 'email' => 'testmail@mail.info', 'name' => 'partner_test',], ['id' => 'A0m8HLZLyVIDQ9']);
 
+        // partner linked acc
+        $this->fixtures->create('merchant', [
+            'id'            => '10000000000004',
+            'email'         => 'testmail1@mail.info',
+            'name'          => 'linked_account_1',
+            'parent_id'     => '10000000000003',
+            'activated'     => 1,
+        ]);
+
+        // sub-merchant linked acc
+        $this->fixtures->create('merchant', [
+            'id'            => '10000000000005',
+            'email'         => 'testmail2@mail.info',
+            'name'          => 'linked_account_2',
+            'parent_id'     => '10000000000000',
+            'activated'     => 1,
+        ]);
+
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => 'A0m8HLZLyVIDQ9',
+            'merchant_id'     => '10000000000000',
+            'entity_owner_id' => '10000000000003'
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        // platform transfer
         $this->fixtures->create('transfer', [
             'id'            => 'LhV9fg1fXagWCN',
             'status'        => 'processed',
@@ -2559,13 +2611,25 @@ class TransferTest extends TestCase
             'amount'        => 1000,
         ]);
 
+        // platform transfer
         $this->fixtures->create('transfer', [
             'id'            => 'LhV9fg1fXklNUG',
             'status'        => 'processed',
             'merchant_id'   => '10000000000000',
             'source_id'     => 'LpodrylYxBEsvd',
             'source_type'   => 'payment',
-            'to_id'         => '10000000000001',
+            'to_id'         => '10000000000004',
+            'amount'        => 1000,
+        ]);
+
+        // regular transfer
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXklNUP',
+            'status'        => 'processed',
+            'merchant_id'   => '10000000000000',
+            'source_id'     => 'LpodrylYxBEsvd',
+            'source_type'   => 'payment',
+            'to_id'         => '10000000000005',
             'amount'        => 1000,
         ]);
 
@@ -2576,7 +2640,7 @@ class TransferTest extends TestCase
             'application_id'    => 'A0m8HLZLyVIDQ9',
         ]);
 
-        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => '10000000000003',]);
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => '10000000000003', 'activated' => 0]);
 
         $this->ba->proxyAuth();
 
