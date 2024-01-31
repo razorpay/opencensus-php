@@ -803,45 +803,20 @@ class PGRouter
                 }
             }
 
-            $entityOffers = (new EntityOfferRepository())->findByEntityIdAndType($order->getId(), 'offer');
             $offersFromPGRouter = $response['body']['offers'] ?? [];
 
             unset($response['body']['offers']);
 
-            if (isset($entityOffers) && count($entityOffers) > 0) {
-                $offersFromAPI = [];
-                foreach ($entityOffers as $entityOffer) {
-                    $offersFromAPI[] = "offer_" . $entityOffer->offer_id;
-                }
-
-                $differenceFromAPIToPGRouter = array_diff($offersFromAPI, $offersFromPGRouter);
-                $differenceFromPGRouterToAPI = array_diff($offersFromPGRouter, $offersFromAPI);
-
-                $this->trace->info(TraceCode::OFFER_RESPONSE_PARITY, [
-                    "entityOffersFromAPI" => $entityOffers,
-                    "offersDataFromPGRouter" => $offersFromPGRouter,
-                    "offersFromAPI" => $offersFromAPI,
-                    "differenceFromAPIToPGRouter" => $differenceFromAPIToPGRouter,
-                    "differenceFromPGRouterToAPI" => $differenceFromPGRouterToAPI,
-                ]);
-            }
-
-            if (isset($entityOffers) and
-                (count($entityOffers) > 0)) {
+            if (empty($offersFromPGRouter) === false)
+            {
                 $order->offers = new PublicCollection();
-                $offers = [];
 
-                // get offer_ids
-                $offerIDs = [];
-                foreach ($entityOffers as $entityOffer)
-                {
-                    $offerIDs[] = $entityOffer->offer_id;
-                }
-
-                $offersEngineRepo = new Offer\Repository();
+                $offerIDs = array_map(function($offerId) {
+                    return str_replace('offer_', '', $offerId);
+                }, $offersFromPGRouter);
 
                 // fetches normal offers from OE and limited offers from API db
-                $offers = $offersEngineRepo->findManyFromOE($offerIDs, $order->getMerchantId());
+                $offers = (new Offer\Repository())->findManyFromOE($offerIDs, $order->getMerchantId());
 
                 // append each offer to order
                 foreach ($offers as $offer)
