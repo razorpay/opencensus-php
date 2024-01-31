@@ -230,5 +230,30 @@ class SplitzHelper
             return false;
         }
     }
+
+    function checkSplitzVariantForAsvTiDBMigration(string $functionName) : bool {
+        try
+        {
+            $request = ['id' => $functionName,
+                        'experiment_id' => $this->app->config->get(ASVV2Constant::ASV_CONFIG)[SplitzConstant::ASV_SPLITZ_EXPERIMENT_TIDB_MIGRATION]];
+
+            $response = $this->splitzService->evaluateRequest($request);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_SPLITZ_ERROR);
+
+            return false;
+        }
+
+        return false;
+    }
 }
 

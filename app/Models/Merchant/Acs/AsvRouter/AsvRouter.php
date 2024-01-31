@@ -14,6 +14,7 @@ use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Constants\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\AsvFlows;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as AsvSdkIntegrationConstant;
 
 
 /*
@@ -446,6 +447,20 @@ class AsvRouter
             $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_ROUTER_EXCEPTION);
             return false;
         }
+    }
+
+    public function shouldRouteBeMigratedToTiDB(string $functionName) : bool {
+        $result = $this->spitzHelper->checkSplitzVariantForAsvTiDBMigration($functionName);
+
+        $this->trace->info(TraceCode::ASV_TIDB_MIGRATION_DEBUG, [
+            'shouldRouteBeMigratedToTiDB' => $result,
+        ]);
+
+        return $result;
+    }
+
+    public function shouldShadowCompareTiDBResults() : bool {
+        return $this->app->config->get(AsvSdkIntegrationConstant::ASV_CONFIG)[AsvSdkIntegrationConstant::ASV_ENABLE_TIDB_SHADOW];
     }
 
 }

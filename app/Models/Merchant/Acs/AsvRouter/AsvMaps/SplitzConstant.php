@@ -3,6 +3,10 @@
 namespace RZP\Models\Merchant\Acs\AsvRouter\AsvMaps;
 final class SplitzConstant
 {
+
+    const SHADOW_MODE   = 'shadow';
+    const LIVE_MODE     = 'live';
+
     const SPLITZ_WEBSITE_READ_FIND = "splitz_experiment_website_read_find";
     const SPLITZ_EMAIL_GET_BY_MERCHANT_ID = 'splitz_experiment_merchant_email_read_by_merchant_id';
 
@@ -63,4 +67,6 @@ final class SplitzConstant
     const SPLITZ_SEND_WRITE_TO_ASV = 'splitz_send_write_to_asv';
 
     const SPLITZ_SEND_FILTER_TO_ASV = 'splitz_send_filter_to_asv';
+
+    const ASV_SPLITZ_EXPERIMENT_TIDB_MIGRATION = 'asv_splitz_experiment_tidb_migration';
 }

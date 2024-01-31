@@ -9194,6 +9194,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_MIGRATION_SPLITZ_RESPONSE                         = 'ASV_MIGRATION_SPLITZ_RESPONSE';
     const ASV_MIGRATION_SPLITZ_ERROR                            = 'ASV_MIGRATION_SPLITZ_ERROR';
 
+    const ASV_TIDB_MIGRATION_DEBUG                              = 'ASV_TIDB_MIGRATION_DEBUG';
+    const ASV_TIDB_MIGRATION_ERROR                              = 'ASV_TIDB_MIGRATION_ERROR';
+    const ASV_TIDB_MIGRATION_SHADOW_MODE_MISMATCH               = 'ASV_TIDB_MIGRATION_SHADOW_MODE_MISMATCH';
 
     # Onboarding APIs
     const MERCHANT_PRODUCT_CONFIG_REQUEST                       = 'MERCHANT_PRODUCT_CONFIG_REQUEST';

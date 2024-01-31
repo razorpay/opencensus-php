@@ -20,10 +20,12 @@ use RZP\Services\WDAService;
 use RZP\Models\Merchant\Detail;
 use Rzp\Wda_php\WDAQueryBuilder;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Modules\Acs\QueryShadowModeEvent;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\SplitzConstant;
 use RZP\Modules\Acs\Wrapper\MerchantDetail as MerchantDetailWrapper;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\Traits\AsvFind;
@@ -395,13 +397,21 @@ class Repository extends Base\Repository
 
     public function fetchMerchantIdsByActivationStatus(array $activationStatusList, array $orgIdList = [Org\Entity::RAZORPAY_ORG_ID], int $createdAt = null): array
     {
+        $callingViaTidb = false;
+
         $detailMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantIdColumn       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantOrgIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
         $merchantParentIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
 
-        $query = $this->newQuery()
-                      ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $callingViaTidb = true;
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
+
+        $query = $query->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
                       ->whereIn($merchantOrgIdColumn, $orgIdList)
                       ->where($merchantParentIdColumn, '=', null)
                       ->select(Entity::MERCHANT_ID)
@@ -410,6 +420,10 @@ class Repository extends Base\Repository
         if (empty($createdAt) === false)
         {
             $query->where($this->dbColumn(Entity::CREATED_AT), '>=', $createdAt);
+        }
+
+        if (!$callingViaTidb and $this->asvRouter->shouldShadowCompareTiDBResults()) {
+            event(new QueryShadowModeEvent(__FUNCTION__, $query->toSql(), $query->getBindings()));
         }
 
         return $query->get()
@@ -910,24 +924,35 @@ class Repository extends Base\Repository
                                                                              int $updatedAt = null,
                                                                              string $activationMilestone = "L2"): array
     {
+        $callingViaTidb = false;
+
         $detailMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantIdColumn       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantOrgIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
         $merchantParentIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
 
-        $query = $this->newQuery()
-            ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
-            ->whereIn($merchantOrgIdColumn, $orgIdList)
-            ->where($merchantParentIdColumn, '=', null)
-            ->select(Entity::MERCHANT_ID)
-            ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList)
-            ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', $activationMilestone)
-            ->Where($this->dbColumn(Entity::UPDATED_AT), '>=', $updatedAt);
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $callingViaTidb = true;
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
 
+        $query = $query->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
+                       ->whereIn($merchantOrgIdColumn, $orgIdList)
+                       ->where($merchantParentIdColumn, '=', null)
+                       ->select(Entity::MERCHANT_ID)
+                       ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList)
+                       ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', $activationMilestone)
+                       ->Where($this->dbColumn(Entity::UPDATED_AT), '>=', $updatedAt);
+
+        if (!$callingViaTidb and $this->asvRouter->shouldShadowCompareTiDBResults()) {
+            event(new QueryShadowModeEvent(__FUNCTION__, $query->toSql(), $query->getBindings()));
+        }
 
         return $query->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
+                     ->pluck(Entity::MERCHANT_ID)
+                     ->toArray();
     }
     // Merchants in needs clarification state in the merchant details table
     public function  filterMerchantsInNeedsClarification() : array

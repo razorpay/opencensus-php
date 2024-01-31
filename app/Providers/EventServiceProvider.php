@@ -149,6 +149,9 @@ class EventServiceProvider extends ServiceProvider
         Acs\TriggerSyncEvent::class => [
             Acs\TriggerSyncListener::class,
         ],
+        Acs\QueryShadowModeEvent::class => [
+            Acs\QueryShadowModeListener::class,
+        ],
         Merchant\EventSaved::class => [
             Listeners\MerchantEventListener::class . '@onSaved',
         ],

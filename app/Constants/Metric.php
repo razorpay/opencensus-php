@@ -56,6 +56,7 @@ class Metric
     const ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_RESULT = 'account_service_check_exclusion_flow_result';
 
     const ASV_CHANGE_ISOLATION_LEVEL_EXCEPTION_TOTAL = 'asv_change_isolation_level_exception_total';
+    const ASV_TIDB_MIGRATION_SHADOW_MODE_DIFF_TOTAL = 'asv_tidb_migration_shadow_mode_diff_total';
 
     const ACCOUNT_SERVICE_CHECK_WRITE_FLOW_RESULT = 'account_service_check_write_flow_result';
     const DUAL_WRITES_TOTAL                     = 'dual_writes_total';

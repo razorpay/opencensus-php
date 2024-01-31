@@ -1325,7 +1325,7 @@ class Repository extends \Razorpay\Spine\Repository
     // All lower envs are pointed to RDS instance
     // Important Note : Use this only when _record_source filter needs to be applied.
     // As of now, using this connection applies the _record_source = 'api' filter on payments table only
-    protected function getDataWarehouseSourceAPIConnection(string $cluster = ConnectionType::DATA_WAREHOUSE_ADMIN, $useHarvester = false): string
+    public function getDataWarehouseSourceAPIConnection(string $cluster = ConnectionType::DATA_WAREHOUSE_ADMIN, $useHarvester = false): string
     {
         if ((in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === true) or
             (Environment::isEnvironmentQA($this->app['env']) === true) or
