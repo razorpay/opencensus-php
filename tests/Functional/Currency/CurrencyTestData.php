@@ -34,6 +34,23 @@ return [
         ],
     ],
 
+    'testPostCurrencyRatesUpdatesFromPGRouter' => [
+        'request' => [
+            'content' => [
+                'USD' => 1,
+                'INR' => 10
+            ],
+            'method' => 'POST',
+            'url' => '/internal/currency/USD/rates',
+        ],
+        'response' => [
+            'content' => [
+                'INR' => '10',
+                'USD' => '1'
+            ]
+        ],
+    ],
+
     'testGetPaymentCurrencies' => [
         'request' => [
             'content' => [

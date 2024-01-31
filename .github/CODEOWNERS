@@ -308,3 +308,13 @@ app/Jobs/ProductConfig                                     @razorpay/partnership
 app/Http/Controllers/FeeRecoveryController.php             @razorpay/x-acquisition-be
 resources/views/emails/banking_account/                    @razorpay/x-acquisition-be
 resources/views/merchant/invoice/invoice.blade.php         @razorpay/x-acquisition-be
+
+#
+# Cross Border
+#
+app/Models/Currency                                        @razorpay/TechCrossBorder
+app/Http/Controllers/CurrencyController.php                @razorpay/TechCrossBorder
+app/Models/Merchant/Detail/InternationalCore.php           @razorpay/TechCrossBorder
+app/Models/Merchant/InternationalIntegration               @razorpay/TechCrossBorder
+app/Models/Merchant/InternationalEnablement                @razorpay/TechCrossBorder
+app/Models/Payment/PaymentMeta                             @razorpay/TechCrossBorder

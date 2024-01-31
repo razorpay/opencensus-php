@@ -4441,6 +4441,73 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
+    public function getPaymentMetaAttribute()
+    {
+        $app = \App::getFacadeRoot();
+
+        if ($this->relationLoaded('paymentMeta') === true)
+        {
+            return $this->getRelation('paymentMeta');
+        }
+
+        // TODO: Check for Google when 2 diff payment meta's available
+        $apiPaymentMeta = $this->paymentMeta()->first();
+
+        if (isset($apiPaymentMeta) === true)
+        {
+            return $apiPaymentMeta;
+        }
+
+        $app['trace']->info(TraceCode::PAYMENT_API_PAYMENT_META_EMPTY);
+
+        try
+        {
+            $pgRouterPaymentMetaArray = $this->getAttribute('payment_meta_data');
+            
+            if (isset($pgRouterPaymentMetaArray) === true)
+            {
+                $paymentMetaInput = [
+                    'gateway_amount'            => $pgRouterPaymentMetaArray['gateway_amount'],
+                    'gateway_currency'          => $pgRouterPaymentMetaArray['gateway_currency'],
+                    'forex_rate'                => $pgRouterPaymentMetaArray['forex_rate'],
+                    'dcc_offered'               => true,
+                    'payment_id'                => $this->getId(),
+                    'dcc_mark_up_percent'       => $pgRouterPaymentMetaArray['dcc_mark_up_percent']
+                ];
+    
+                $paymentMetaEntity = (new Payment\PaymentMeta\Entity)->forcefill($paymentMetaInput);
+
+                $paymentMetaEntity->payment()->associate($this);
+
+                $this->setRelation('paymentMeta', $paymentMetaEntity);
+
+                $app['trace']->info(TraceCode::PG_ROUTER_PAYMENT_META_FORCE_FILLED, [
+                    "payment_meta" => $paymentMetaEntity
+                ]);
+
+                return $paymentMetaEntity;
+            }
+            else
+            {
+                $app['trace']->info(TraceCode::PG_ROUTER_PAYMENT_META_EMPTY);
+
+                return null;
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $app['trace']->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PG_ROUTER_PAYMENT_META_FORCE_FILL_FAILED,
+                [
+                    'data' => $ex->getMessage()
+                ]);
+        }
+
+        return null;
+    }
+
     public function setPublicMCCAttribute(array & $array)
     {
         $app = \App::getFacadeRoot();

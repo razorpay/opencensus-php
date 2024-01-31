@@ -32,6 +32,15 @@ class CurrencyController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postUpdateCurrencyRatesRearch($currency)
+    {
+        $input = Request::all();
+
+        $data = (new Currency\Core)->updateRatesFromRearch($currency,$input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getCurrencyRates($currency)
     {
         $data = (new Currency\Core)->getRates($currency);

@@ -34,6 +34,13 @@ class CurrencyTest extends TestCase
         $this->startTest();
     }
 
+    public function testPostCurrencyRatesUpdatesFromPGRouter()
+    {
+        $this->ba->pgRouterAuth();
+
+        $this->startTest();
+    }
+
     public function testGetPaymentCurrencies()
     {
         $this->ba->publicAuth();

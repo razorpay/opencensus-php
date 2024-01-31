@@ -14,12 +14,15 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Tests\Traits\MocksSplitz;
+use Mockery;
 
 class PaymentCreateDCCTest extends TestCase
 {
     use OAuthTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use MocksSplitz;
 
     protected function setUp(): void
     {
@@ -313,7 +316,8 @@ class PaymentCreateDCCTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($output);
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('LRNVDmZYE8bmsC'))->andReturn($output);
 
         $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
 
@@ -1622,15 +1626,16 @@ class PaymentCreateDCCTest extends TestCase
 
     public function testPaymentCreateRecurringAutoOnDirectWithDCC()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'variant_on',
-                ]
-            ]
-        ];
+         $output = [
+             "response" => [
+                 "variant" => [
+                     "name" => 'variant_on',
+                 ]
+             ]
+         ];
 
-        $this->mockSplitzTreatment($output);
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('K36Aw5ZnYn8wSh'))->andReturn($output);
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
         $payment['card']['number'] = '4012010000000007';
@@ -1694,7 +1699,8 @@ class PaymentCreateDCCTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($output);
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('K36Aw5ZnYn8wSh'))->andReturn($output);
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
         $payment['card']['number'] = '4012010000000007';
@@ -1764,7 +1770,8 @@ class PaymentCreateDCCTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($output);
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('K36Aw5ZnYn8wSh'))->andReturn($output);
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
         $payment['card']['number'] = '4012010000000007';
@@ -1811,7 +1818,9 @@ class PaymentCreateDCCTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($output);
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('K36Aw5ZnYn8wSh'))->andReturn($output);
+
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
         $payment['card']['number'] = '4012001038443335';
@@ -1858,7 +1867,9 @@ class PaymentCreateDCCTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($output);
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('K36Aw5ZnYn8wSh'))->andReturn($output);
+
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
 
@@ -2387,6 +2398,66 @@ class PaymentCreateDCCTest extends TestCase
         $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
 
         $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+    }
+
+    public function testPaymentFlowsRearchWithNewDccResponseParams()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->enablePgRouterConfig();
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('fetchCurrencyRates')
+            ->with(Mockery::type('array'))
+            ->andReturnUsing(function (array $data) {
+                return [
+                    'body' => [
+                        'rates' => [
+                            "AED" => 10,
+                            "USD" => 10,
+                            "GBP" => 10
+                        ],
+                        'currency_request_id' => 'LL9LZMdLtIijjP',
+                        'timestamp' => "1677430800"
+                    ]
+
+                ];
+            });
+
+        $flowsData = $this->getDefaultPaymentFlowsRequestData();
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $cardCurrencyObject = $responseContent['all_currencies'][$cardCurrency];
+
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === true);
+        $this->assertNotNull($cardCurrencyObject);
+
+        $forexRate = number_format($cardCurrencyObject['forex_rate'], 6, '.', '');
+        $fee = $cardCurrencyObject['fee'];
+        $amount = $cardCurrencyObject['amount'];
+        $baseAmount = $flowsData['content']['amount'];
+        $markup = 0.08;
+        $feeExpected = $forexRate * $markup * $baseAmount;
+        $feeExpected = number_format($feeExpected, 2, '.', '');
+
+        $amountExpected = ceil($forexRate * $markup * $baseAmount + $forexRate * $baseAmount);
+
+        $this->assertEquals(10, $forexRate);
+        $this->assertEquals($feeExpected, $fee);
+        $this->assertEquals($amountExpected, $amount);
     }
 
     public function testPaymentCreateWithCurrencyLevelMarkupForDCC()

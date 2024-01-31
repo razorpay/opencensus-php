@@ -2711,6 +2711,11 @@ class Service extends Base\Service
             {
                 $dccInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, $merchant->getDccMarkupPercentage(), Payment\Method::CARD);
 
+                if(isset($dccInfo) === false)
+                {
+                    return;
+                }
+
                 $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? Currency\Currency::USD;
 
                 $dccInfo['show_markup'] = $merchant->isDCCMarkupVisible();
@@ -2762,6 +2767,11 @@ class Service extends Base\Service
                 // markup of 5 is hardcoded at org-level
                 $currencyInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, Merchant\Entity::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL, Payment\Method::WALLET);
 
+                if(isset($currencyInfo) === false)
+                {
+                    return;
+                }
+
                 $currencyInfo['wallet_currency'] = Currency\Currency::USD;
 
                 $currencyInfo['all_currencies'] = array_intersect_key(
@@ -2794,8 +2804,15 @@ class Service extends Base\Service
             $amount   = $input['amount'];
             $currency = $input['currency'];
 
+            $this->merchant = $merchant;
+
             // For Method APP Default DCC Markup is set as 6
             $currencyInfo = $this->getDCCInfo($merchant->getId(), $amount, $currency, $merchant->getDccMarkupPercentageForApps(), Payment\Method::APP);
+
+            if(isset($currencyInfo) === false)
+            {
+                return;
+            }
 
             // First Currency in Currency Map is set as default currency for an app.
             $currencyInfo['app_currency'] = $enabledCurrencyList[0];
@@ -2899,11 +2916,18 @@ class Service extends Base\Service
     {
         $dccInfo = [];
 
-        $currencyRequestId = UniqueIdEntity::generateUniqueId();
+        if($this->canFetchRatesThroughRearch() === true)
+        {
+            (new Currency\DCC\Service)->getConvertedCurrenciesFromRearch($merchantID,$baseCurrency, $baseAmount, $markupPercent,$method, $dccInfo);
+        }
+        else
+        {
+            $currencyRequestId = UniqueIdEntity::generateUniqueId();
 
-        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method);
+            $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($merchantID, $baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $method);
 
-        $dccInfo['currency_request_id'] = $currencyRequestId;
+            $dccInfo['currency_request_id'] = $currencyRequestId;
+        }
 
         return $dccInfo;
     }
@@ -7758,6 +7782,41 @@ class Service extends Base\Service
             [Payment\Status::CAPTURED, Payment\Status::AUTHORIZED],
             true
         );
+    }
+
+    private function canFetchRatesThroughRearch() : bool {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.fetch_flows_api_forex_rates_from_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
     }
 
     /**

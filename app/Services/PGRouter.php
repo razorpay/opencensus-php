@@ -597,6 +597,19 @@ class PGRouter
                 unset($response['body']['data']['payment']['emi_plan']);
             }
 
+            if(isset($response['body']['data']['payment']['dcc_offered']) === true)
+            {
+                $pgRouterPaymentMetaData = [
+                    'gateway_amount'            =>  $response['body']['data']['payment']['gateway_amount'],
+                    'gateway_currency'          =>  $response['body']['data']['payment']['gateway_currency'],
+                    'forex_rate'                =>  $response['body']['data']['payment']['forex_rate'],
+                    'dcc_offered'               =>  $response['body']['data']['payment']['dcc_offered'],
+                    'dcc_mark_up_percent'       =>  $response['body']['data']['payment']['dcc_mark_up_percent']
+                ];
+
+                $response['body']['data']['payment']['payment_meta_data'] = $pgRouterPaymentMetaData;
+            }
+
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
 
 
@@ -738,6 +751,14 @@ class PGRouter
 
         return $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure, self::DEFAULT_REQUEST_TIMEOUT, true);
     }
+
+    public function fetchCurrencyRates(array $input, bool $throwExceptionOnFailure = false)
+    {
+        $endpoint = sprintf('v1/currency/%s/rates?persist=true',$input['currency']);
+
+        return $this->sendRequest($endpoint, Requests::GET, $input, $throwExceptionOnFailure, self::DEFAULT_REQUEST_TIMEOUT, true);
+    }
+
 
     public function getOrderEntityFromOrderAttributes(array $orderAttributes): ?Order\Entity
     {

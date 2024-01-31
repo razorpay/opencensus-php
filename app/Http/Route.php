@@ -1266,6 +1266,7 @@ class Route
         'set_config_keys'                          => ['put',      'config/keys',                                    'AdminController@setConfigKeys'                                     ],
         'update_config_key'                        => ['patch',    'config/key',                                     'AdminController@updateConfigKey'                                   ],
         'get_config_key'                           => ['get',      'config/key',                                     'AdminController@getConfigKey'                                      ],
+        'internal_get_config_key'                  => ['get',      'internal/config/key',                            'AdminController@getConfigKey'                                     ],
         'delete_config_key'                        => ['delete',   'config/key',                                     'AdminController@deleteConfigKey'                                   ],
         'get_config_keys'                          => ['get',      'config/keys',                                    'AdminController@getConfigKeys'                                     ],
         'get_cache_counts'                         => ['get',      'cache/counts',                                   'AdminController@getQueryCacheCounts'                               ],
@@ -4447,6 +4448,7 @@ class Route
         'internal_token_create'                      => ['post',       'internal/tokens',                                      'TokenController@internalTokenCreateForRearch'                      ],
         'internal_sign_payload'                      => ['post',       'internal/payments/signer',                             'PaymentController@signPayloadInternal'                      ],
         'internal_generate_coproto'                  => ['post',       'internal/payments/coproto',                           'PaymentCreateController@generateCoprotoForRearch'            ],
+        'internal_currency_rates_update'            => ['post',        'internal/currency/{currency}/rates',                  'CurrencyController@postUpdateCurrencyRatesRearch'            ],
 
         // Onboarding APIs
         'complete_submerchant_onboarding'         => ['post',       'submerchants/{id}/onboard',                             'MerchantController@completeSubmerchantOnboarding'],
@@ -5960,6 +5962,7 @@ class Route
         'internal_buy_pricing_get_plan',
         'internal_fetch_config_by_id',
         'internal_fetch_configs',
+        'internal_get_config_key',
         'internal_merchant_checkout_preferences',
         'internal_merchant_auto_disabled_methods',
         'terminal_edit_internal',
@@ -6243,8 +6246,8 @@ class Route
         'internal_sign_payload',
         'internal_generate_coproto',
         'update_token_on_authorized',
+        'internal_currency_rates_update',
         'order_transfer_process_rearch',
-
 
 
         // cron to send emails about pending payouts
@@ -16897,10 +16900,12 @@ class Route
         ],
 
         'pg_router' => [
+            'internal_currency_rates_update',
             'api_entity_fetch',
             'internal_payment_authorize_refund',
             'internal_fetch_config_by_id',
             'internal_fetch_configs',
+            'internal_get_config_key',
             'api_entity_fetch',
             'internal_order_update',
             'internal_transactions',

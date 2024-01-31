@@ -651,6 +651,10 @@ return array(
 
     'magic_apply_coupon_experiment_id' => env('MAGIC_APPLY_COUPON_EXPERIMENT_ID'),
 
+    'cross_border_dcc_rearch_experiment_id' => env('CROSS_BORDER_DCC_REARCH_EXPERIMENT_ID'),
+
+    'fetch_flows_api_forex_rates_from_rearch_experiment_id' => env('FETCH_FLOWS_API_FOREX_RATES_FROM_REARCH_EXPERIMENT_ID'),
+    
     'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),
 
     'pos_partnership_experiment_id' => env('POS_PARTNERSHIP_EXPERIMENT_ID'),

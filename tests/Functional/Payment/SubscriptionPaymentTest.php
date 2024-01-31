@@ -25,11 +25,13 @@ use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
+use RZP\Tests\Traits\MocksSplitz;
 
 class SubscriptionPaymentTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use MocksSplitz;
 
     protected $subscriptionMock;
 
@@ -529,7 +531,9 @@ class SubscriptionPaymentTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($output);
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('LEU2nScS4aXZsY'))->andReturn($output);
+
 
         $this->ba->privateAuth();
 
@@ -688,7 +692,9 @@ class SubscriptionPaymentTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($output);
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('LEU2nScS4aXZsY'))->andReturn($output);
+
 
         $this->ba->privateAuth();
 

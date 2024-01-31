@@ -7,11 +7,17 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Currency;
 use RZP\Models\Payment\Entity;
+use RZP\Trace\TraceCode;
 use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
+
 
 class Service extends Base\Service
 {
     const REQUEST_VS_TIME_KEY = 'req_vs_time_';
+
+    const REQUEST_VS_TIME_REARCH_KEY = 'req_vs_time_rearch_';
+
+    const EXCHANGE_RATE_REARCH_KEY = 'exchange_rates_rearch_';
 
     const DCC_MARK_UP_PERCENTAGE_KEY = 'dcc_mark_up_percent';
 
@@ -43,16 +49,17 @@ class Service extends Base\Service
         //Capturing markup percentage in redis as this constant can be changed later for A/B Testing.
         $rates[self::DCC_MARK_UP_PERCENTAGE_KEY] = self::DCC_MARK_UP_PERCENTAGE;
 
-        $key = $this->getRedisKey($currency, $time);
+        $key = $this->getRedisKey($currency, $time, false);
 
         $this->redis->set($key, $rates, self::HISTORICAL_EXCHANGE_RATE_TTL);
 
         return $rates;
     }
 
-    private function getRates($currency, $time)
+    private function getRates($currency, $time, $isCurrencyRequestIdFromRearch = false)
     {
-        $key = $this->getRedisKey($currency, $time);
+        // Fetch Rates based on Rearch
+        $key = $this->getRedisKey($currency, $time, $isCurrencyRequestIdFromRearch);
 
         $rates = $this->redis->get($key);
 
@@ -71,9 +78,14 @@ class Service extends Base\Service
         return $rates;
     }
 
-    private function getRedisKey($currency, $time)
+    private function getRedisKey($currency, $time, $isCurrencyRequestIdFromRearch)
     {
-        $key = 'currency:' . $this->core::EXCHANGE_RATE_KEY . strtoupper($currency) . '_' . $time;
+        if ($isCurrencyRequestIdFromRearch == false) {
+            $key = 'currency:' . $this->core::EXCHANGE_RATE_KEY . strtoupper($currency) . '_' . $time;
+        }
+        else {
+            $key = 'currency:' . self::EXCHANGE_RATE_REARCH_KEY . strtoupper($currency) . '_' . $time;
+        }
 
         return $key;
     }
@@ -85,7 +97,14 @@ class Service extends Base\Service
         return $key;
     }
 
-    private function getDCCMarkUpPercentage($rates, $requestedCurrency, $baseCurrency, $merchantMarkupPercent, $currencyLevelMarkupPercent, $method, $dccMarkupMap)
+    private function getCurrencyRequestDataRedisKeyForRearch($currencyRequestId)
+    {
+        $key = 'currency:' . self::REQUEST_VS_TIME_REARCH_KEY . $currencyRequestId;
+
+        return $key;
+    }
+
+    private function getDCCMarkUpPercentage($requestedCurrency, $baseCurrency, $merchantMarkupPercent, $currencyLevelMarkupPercent, $method, $dccMarkupMap)
     {
         if ($requestedCurrency === $baseCurrency)
         {
@@ -183,7 +202,7 @@ class Service extends Base\Service
 
             if(isset($rates[$currency]) === true)
             {
-                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency, $baseCurrency, $merchantMarkupPercent, $currencyLevelMarkups, $method, $currencyLevelDCCMarkupMap);
+                $markUpPercent = $this->getDCCMarkUpPercentage($currency, $baseCurrency, $merchantMarkupPercent, $currencyLevelMarkups, $method, $currencyLevelDCCMarkupMap);
 
                 $forexRateConverted =  number_format($rates[$currency], 6, '.', '');
 
@@ -202,6 +221,66 @@ class Service extends Base\Service
 
         return $supportedCurrencies;
     }
+
+    public function getConvertedCurrenciesFromRearch($merchantID,$baseCurrency, $baseAmount, $merchantMarkupPercent, $method, &$dccInfo)
+    {
+        $reqInput = [
+            'currency' => $baseCurrency
+        ];
+
+        $response = $this->app['pg_router']->fetchCurrencyRates($reqInput);
+
+        if(isset($response) === false || isset($response['body']['rates']) === false){
+            return;
+        }
+
+        $rates = $response['body']['rates'];
+        $currencyRequestId = $response['body']['currency_request_id'];
+        $roundedTime = $response['body']['timestamp'];
+
+        $rates = $this->dualWriteTimeBasedRatesOnPgRouterResponse($baseCurrency, $rates, $currencyRequestId, $roundedTime);
+
+        $supportedCurrencies = $this->core->getSupportedCurrenciesDetails();
+
+        $denominationFactorInputCurr = Currency\Currency::DENOMINATION_FACTOR[$baseCurrency];
+
+        $currencyLevelMarkups = $this->getCurrencyLevelDCCMarkups();
+
+        $mode = $this->mode ?? Mode::LIVE;
+        $dcsConfigService = app('dcs_config_service');
+        $dccResponse = $dcsConfigService->fetchConfiguration(DcsConfigConst::DCCCurrencyLevelMarkup,
+            $merchantID, [DcsConfigConst::CurrencyLevelMarkups], $mode);
+        $currencyLevelDCCMarkupMap = $this->formatCurrencyLevelDCCMarkupResponse($dccResponse);
+
+        foreach (array_keys($supportedCurrencies) as $currency)
+        {
+            $denominationFactorMerchantCurrency = Currency\Currency::DENOMINATION_FACTOR[$currency];
+            $denominationFactor = $denominationFactorMerchantCurrency / $denominationFactorInputCurr;
+
+            if(isset($rates[$currency]) === true)
+            {
+                $markUpPercent = $this->getDCCMarkUpPercentage($currency, $baseCurrency, $merchantMarkupPercent, $currencyLevelMarkups, $method,$currencyLevelDCCMarkupMap);
+
+                $forexRateConverted =  number_format($rates[$currency], 6, '.', '');
+
+                $gatewayAmount = $this->getConvertedAmount($baseAmount, $forexRateConverted, $markUpPercent, $denominationFactor);
+
+                $supportedCurrencies[$currency]['amount'] = $this->roundOffGatewayAmountIfApplicable($gatewayAmount, $currency);
+                $supportedCurrencies[$currency]['forex_rate'] = (float) $forexRateConverted;
+                $supportedCurrencies[$currency]['fee'] =
+                    (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
+                $supportedCurrencies[$currency]['conversion_percentage'] = $markUpPercent;
+            }
+            else
+            {
+                unset($supportedCurrencies[$currency]);
+            }
+        }
+
+        $dccInfo['all_currencies'] = $supportedCurrencies;
+        $dccInfo['currency_request_id'] = $currencyRequestId;
+    }
+
 
     private function formatCurrencyLevelDCCMarkupResponse($dccResponse)
     {
@@ -224,8 +303,19 @@ class Service extends Base\Service
     public function getRequestedCurrencyDetails($baseCurrency, $baseAmount, $requestedCurrency, $currencyRequestId, $merchantMarkUpPercent, $method, $merchantID)
     {
         $requestedCurrencyData = [];
+        $isCurrencyRequestIdFromRearch = false;
 
         $ratesTimestamp = $this->redis->get($this->getCurrencyRequestDataRedisKey($currencyRequestId));
+
+        if(empty($ratesTimestamp) === true)
+        {
+            $ratesTimestamp = $this->redis->get($this->getCurrencyRequestDataRedisKeyForRearch($currencyRequestId));
+
+            if(empty($ratesTimestamp) === false)
+            {
+                $isCurrencyRequestIdFromRearch = true;
+            }
+        }
 
         $currencyLevelMarkups = $this->getCurrencyLevelDCCMarkups();
 
@@ -237,13 +327,13 @@ class Service extends Base\Service
 
         if (empty($ratesTimestamp) === false)
         {
-            $rates = $this->getRates($baseCurrency, $ratesTimestamp);
+            $rates = $this->getRates($baseCurrency, $ratesTimestamp, $isCurrencyRequestIdFromRearch);
 
             if((empty($rates) === false) and (isset($rates[$requestedCurrency]) === true))
             {
                 $forexRate = number_format($rates[$requestedCurrency], 6, '.','');
 
-                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency, $baseCurrency, $merchantMarkUpPercent, $currencyLevelMarkups, $method, $currencyLevelDCCMarkupMap);
+                $markUpPercent = $this->getDCCMarkUpPercentage($requestedCurrency, $baseCurrency, $merchantMarkUpPercent, $currencyLevelMarkups, $method, $currencyLevelDCCMarkupMap);
 
                 $denominationFactorMerchantCurrency = Currency\Currency::DENOMINATION_FACTOR[$requestedCurrency];
 
@@ -284,4 +374,24 @@ class Service extends Base\Service
     }
 
 
+    private function dualWriteTimeBasedRatesOnPgRouterResponse($baseCurrency, $rates, $currencyRequestId, $roundedTime)
+    {
+        $this->redis->set($this->getCurrencyRequestDataRedisKeyForRearch($currencyRequestId),
+        $roundedTime, self::REQUEST_VS_TIME_TTL);
+
+        $key = $this->getRedisKey($baseCurrency, $roundedTime, true);
+
+        $cachedRates = $this->redis->get($key);
+
+        if (empty($cachedRates) === true)
+        {
+            $key = $this->getRedisKey($baseCurrency, $roundedTime, true);
+
+            $this->redis->set($key, $rates, self::HISTORICAL_EXCHANGE_RATE_TTL);
+
+            return $rates;
+        }
+
+        return $cachedRates;
+    }
 }

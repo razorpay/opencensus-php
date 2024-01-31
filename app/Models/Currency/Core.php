@@ -65,6 +65,45 @@ class Core extends Base\Core
         return $rates;
     }
 
+    public function updateRatesFromRearch($currency, &$exchangeRates)
+    {
+        $currency = strtoupper($currency);
+
+        $rates = $exchangeRates;
+
+        if (in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === false)
+        {
+            $reqInput = [
+                $currency => $rates,
+            ];
+
+            $this->app['pg_router']->updateCurrencyCache($reqInput, false);
+        }
+
+        $latKey = $this->getCurrencyRedisKey($currency);
+        $cReqIdOld = $this->redis->get($latKey);
+        if(empty($cReqIdOld) === false)
+        {
+            $pref = $this->redis->getPrefix();
+            $oldKey = $pref . $this->getCurrencyReqRedisKey($cReqIdOld);
+            $this->redis->connection()->command('expire', [$oldKey, self::MCC_REQUEST_EXPIRE]);
+        }
+
+        $cReqIdNew = UniqueIdEntity::generateUniqueId();
+        $this->redis->forever($this->getCurrencyReqRedisKey($cReqIdNew), $rates);
+        $this->redis->forever($latKey, $cReqIdNew);
+        if(isset($input))
+        {
+            $input['mcc_request_id'] = $cReqIdNew;
+        }
+
+        $key = $this->getRedisKey($currency);
+
+        $this->redis->forever($key, $rates);
+
+        return $rates;
+    }
+
     public function getRates($currency, &$input = null)
     {
         $key = $this->getRedisKey($currency);

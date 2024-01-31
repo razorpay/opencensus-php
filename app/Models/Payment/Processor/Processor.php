@@ -786,6 +786,73 @@ class Processor
         return true;
     }
 
+    private function canRouteInternationalPaymentsViaRearchFlow($input, $merchant)
+    {
+        if($input['currency'] !== Currency\Currency::INR){
+            return false;
+        }
+
+        if($merchant->isAddressRequiredEnabled() && !empty($input['billing_address'])){
+            return false;
+        }
+
+        $internationalSupportedLibraries = [
+            Payment\Analytics\Metadata::CHECKOUTJS,
+            Payment\Analytics\Metadata::HOSTED
+        ];
+
+        $library = $input['_']['library'];
+
+        if(in_array($library,$internationalSupportedLibraries,true) === false){
+            return false;
+        }
+
+        if($merchant->isFeeBearerCustomerOrDynamic() === true){
+            return false;
+        }
+
+        $result = $this->evaluateSplitzExperimentforCrossBorderRearch($merchant);
+
+        return ($result == true);
+
+    }
+
+    private function evaluateSplitzExperimentforCrossBorderRearch($merchant)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_dcc_rearch_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
     private function isOpgspImportMerchant(): bool
     {
         return $this->merchant->isOpgspImportEnabled();
@@ -1324,9 +1391,21 @@ class Processor
             ];
 
             if ((($iin->isAmex() === false) and
-                    IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true) or
-                (in_array($iin->getNetworkCode(), $supportedNetworks, true) === false))
+                    IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true))
             {
+                $result = $this->canRouteInternationalPaymentsViaRearchFlow($input,$merchant);
+
+                $this->trace->info(TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_RESULT, [
+                    'canRouteThroughCrossBorderRearchFlow'      =>  $result,
+                ]);
+
+                if($result == false)
+                {
+                    return false;
+                }
+            }
+
+            if((in_array($iin->getNetworkCode(), $supportedNetworks, true) === false)){
                 return false;
             }
 
