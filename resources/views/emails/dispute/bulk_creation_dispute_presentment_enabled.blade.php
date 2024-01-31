@@ -130,7 +130,8 @@
                                 <li>No response / insufficient response may lead to the corresponding amounts being debited from your account permanently.</li>
                                 <li>As per guidelines, the temporary debits, if any, will be reversed once the aforementioned chargebacks are concluded in your favor.</li>
                                 <li>Please refer to the <a href="https://razorpay.com/chargeback/"> Chargeback Guide</a> as mentioned on our website for best practices.</li>
-                                <li>To provide you a seamless experience of sharing the required information, we have moved all dispute management correspondence to the Razorpay dashboard. Henceforth, responses received via email will not be considered. <a href="https://razorpay.com/docs/payments/disputes/dashboard/"> Click here</a> to know how to respond to chargebacks on the Razorpay Dashboard.</li>
+                                <li>To provide you a seamless experience of sharing the required information, we have moved all dispute management correspondence to the Razorpay dashboard. </li>
+                                <li>From 1st March 2024 onward responses received via email will not be considered. <a href="https://razorpay.com/docs/payments/disputes/dashboard/"> Click here</a> to know how to respond to chargebacks on the Razorpay Dashboard.</li>
                                 <li>Please note the following fees and penalties levied by the networks that are applicable to your stage of dispute</li>
                             </ol>
                             <br/>
@@ -231,7 +232,8 @@
                             </li>
                             <li>We request you to update us mandatorily within the deadline mentioned above. The temporary debits, if any, will be reversed once the aforementioned chargebacks are concluded in your favor.</li>
                             <li>Given this is a pre-arbitration, please be aware that an acceptance at this stage for Mastercard chargebacks will result in a penalty of $15 [aside the transaction amount] to your Razorpay account.</li>
-                            <li>To provide you a seamless experience of sharing the required information, we have moved all dispute management correspondence to the Razorpay dashboard. Henceforth, responses received via email will not be considered. <a href="https://razorpay.com/docs/payments/disputes/dashboard/"> Click here</a> to know how to respond to chargebacks on the Razorpay Dashboard.</li>
+                            <li>To provide you a seamless experience of sharing the required information, we have moved all dispute management correspondence to the Razorpay dashboard. </li>
+                            <li>From 1st March 2024 onward responses received via email will not be considered. <a href="https://razorpay.com/docs/payments/disputes/dashboard/"> Click here</a> to know how to respond to chargebacks on the Razorpay Dashboard.</li>
                             <li>Please refer to the <a href="https://razorpay.com/chargeback/"> Chargeback Guide</a> as mentioned on our website for best practices.</li>
                             <li>Please note the fees and penalties levied by the network that are applicable to your stage of dispute.</li>
                         </ol>
