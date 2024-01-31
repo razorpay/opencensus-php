@@ -466,6 +466,10 @@ const PaymentHandle = lazy(() =>
 );
 const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'merchant/views/Wallet'));
 
+const GCMSFunds = lazy(() =>
+  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Funds'),
+);
+
 const GCMSPrograms = lazy(() =>
   import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Programs'),
 );
@@ -2082,6 +2086,18 @@ class Content extends Component {
                   }
                 >
                   <GCMSOrders />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="funds/*"
+              element={
+                <RouteGuard
+                  additionalCondition={(user) =>
+                    user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                  }
+                >
+                  <GCMSFunds />
                 </RouteGuard>
               }
             />

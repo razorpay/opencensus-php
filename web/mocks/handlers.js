@@ -43,6 +43,8 @@ import { partnerActivationHandler } from 'merchant/views/PartnerDashboard/Activa
 import { magicShopifyOrderEditingHandler } from 'merchant/views/MagicCheckout/ShopifyOrderEditing/__test__/mocks/handlers';
 import { magicCouponEngineHandler } from 'merchant/views/MagicCheckout/CouponEngine/__test__/mocks/handlers';
 import { magicShippingEngineHandlers } from 'merchant/views/MagicCheckout/ShippingSettings/__tests__/mocks/handlers';
+import gcmsBrandAccountHandler from 'merchant/views/GCMS/Funds/BrandAccount/__tests__/mocks';
+import gcmsResellerAccountsHandler from 'merchant/views/GCMS/Funds/ResellerAccounts/__tests__/mocks';
 import gcmsProgramsHandler from 'merchant/views/GCMS/Programs/__tests__/mocks';
 import gcmsOrdersHandler from 'merchant/views/GCMS/Orders/__tests__/mocks';
 import gcmsResellersHandler from 'merchant/views/GCMS/Resellers/__tests__/mocks';
@@ -880,6 +882,8 @@ export const handlers = [
   ...magicShopifyOrderEditingHandler,
   ...magicCouponEngineHandler,
   ...magicShippingEngineHandlers,
+  ...gcmsBrandAccountHandler,
+  ...gcmsResellerAccountsHandler,
   ...gcmsProgramsHandler,
   ...gcmsOrdersHandler,
   ...gcmsResellersHandler,

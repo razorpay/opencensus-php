@@ -9,6 +9,16 @@ export default [
     return res(ctx.status(200), ctx.json(fundsSummaryResponse), ctx.delay(1));
   }),
   rest.get(`*/wallet/proxy/issuing/transactions`, (req, res, ctx) => {
+    if (req.url.searchParams.get('reference_id') === 'abc') {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          ...listFundTransactionsResponse,
+          data: { ...listFundTransactionsResponse.data, items: [] },
+        }),
+        ctx.delay(100),
+      );
+    }
     return res(ctx.status(200), ctx.json(listFundTransactionsResponse), ctx.delay(1));
   }),
 ];

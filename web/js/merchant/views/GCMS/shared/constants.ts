@@ -1,6 +1,8 @@
 export const WALLET_BASE_PATH = 'wallet/proxy/issuing';
 export const RESELLER_PROGRAMS_PATH = 'programs';
 
+export const GCOMS_BASE_PATH = 'gcoms';
+
 export const PROGRAM_TYPES = {
   VOUCHER: {
     id: 'voucher',
