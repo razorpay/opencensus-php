@@ -13,7 +13,6 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Transaction\Entity;
-use RZP\Models\Pricing\SourceChannel;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 
@@ -59,11 +58,6 @@ class Core extends Base\Core
         $transactorId = $payment->getPublicId();
 
         $transactorEvent = Constants::MERCHANT_CAPTURED;
-
-        if ($payment->getSourceChannel() === SourceChannel::IN_PERSON)
-        {
-            $transactorEvent =  Constants::MERCHANT_CAPTURED_IN_PERSON;
-        }
 
         $merchantCaptureData = array(
             Constants::TRANSACTOR_ID                 => $transactorId,
@@ -414,11 +408,6 @@ class Core extends Base\Core
         $transactorId = $payment->getPublicId();
 
         $transactorEvent =  Constants::GATEWAY_CAPTURED;
-
-        if ($payment->getSourceChannel() === SourceChannel::IN_PERSON)
-        {
-            $transactorEvent =  Constants::GATEWAY_CAPTURED_IN_PERSON;
-        }
 
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 

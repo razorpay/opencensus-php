@@ -5,7 +5,6 @@ namespace Functional\Payment;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Admin\Org;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Services\RazorXClient;
@@ -2783,79 +2782,6 @@ class PaymentLedgerTest extends TestCase
         return $payment;
     }
 
-    private function createPaymentInReverseShadowInPerson(){
-        $this->app['config']->set('applications.ledger.enabled', true);
-
-        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
-        $this->app->instance('ledger', $mockLedger);
-
-        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
-                   ->times(1)
-                   ->andReturn([
-                                   "body" => [
-                                       "accounts"  => [
-                                           [
-                                               "id"                => "sampleAccountID",
-                                               "name"              => "test name",
-                                               "status"            => "ACTIVATED",
-                                               "balance"           => "10000.000000",
-                                               "min_balance"       => "0.000000",
-                                               "merchant_id"       => "sampleMerchant",
-                                               "created_at"        => "1634027277",
-                                               "updated_at"        => "1634027277",
-                                               "entities"          => [
-                                                   "account_type"      => ["payable"],
-                                                   "fund_account_type" => ["merchant_balance"]
-                                               ]
-                                           ],
-                                           [
-                                               "id"                => "sampleAccountID",
-                                               "name"              => "test name",
-                                               "status"            => "ACTIVATED",
-                                               "balance"           => "1000.000000",
-                                               "min_balance"       => "0.000000",
-                                               "merchant_id"       => "sampleMerchant",
-                                               "created_at"        => "1634027277",
-                                               "updated_at"        => "1634027277",
-                                               "entities"          => [
-                                                   "account_type"      => ["payable"],
-                                                   "fund_account_type" => ["merchant_fee_credits"]
-                                               ]
-
-                                           ],
-                                           [
-                                               "id"                => "sampleAccountID",
-                                               "name"              => "test name",
-                                               "status"            => "ACTIVATED",
-                                               "balance"           => "1000.000000",
-                                               "min_balance"       => "0.000000",
-                                               "merchant_id"       => "sampleMerchant",
-                                               "created_at"        => "1634027277",
-                                               "updated_at"        => "1634027277",
-                                               "entities"          => [
-                                                   "account_type"      => ["payable"],
-                                                   "fund_account_type" => ["reward"]
-                                               ]
-                                           ]
-                                       ]
-                                   ]
-                               ]
-                   );
-
-        $paymentArray = $this->getDefaultPaymentArray();
-
-        $paymentArray['amount'] = '2000';
-
-        $billingAddressArray = $this->getDefaultBillingAddressArray();
-
-        $paymentArray['billing_address'] = $billingAddressArray;
-        $paymentArray['reference13'] = 'in_person';
-
-        $payment = $this->doAuthAndCapturePayment($paymentArray);
-
-        return $payment;
-    }
-
     private function createAuthorisedPaymentInReverseShadow(){
         $this->app['config']->set('applications.ledger.enabled', true);
 
@@ -3776,81 +3702,6 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
         $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
 
-    }
-
-    public function testKafkaSuccessForPaymentMerchantCaptureEventInPerson()
-    {
-        // add pos pricing plan
-        $posPricingPlan = [
-            'plan_id'             => '1hDYlICobzOCYt',
-            'plan_name'           => 'TestMerchantPosPricingPlan1',
-            'payment_method'      => 'card',
-            'channel'             => 'in_person',
-            'org_id'              => '100000razorpay',
-            'type'                => 'pricing',
-            'feature'             => 'payment',
-            'fee_bearer'          => 'platform',
-            'percent_rate'        => 200,
-            'fixed_rate'          => 0,
-        ];
-
-        $this->fixtures->create('pricing', $posPricingPlan);
-
-        $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt', Account::TEST_ACCOUNT);
-
-        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow', 'omni_enabled']);
-
-        $payment = $this->createPaymentInReverseShadowInPerson();
-
-        $paymentId = $payment['id'];
-
-        $ledgerOutboxEntities = $this->getDbEntities('ledger_outbox');
-
-        $this->assertCount(2, $ledgerOutboxEntities);
-
-        $this->assertEquals($paymentId.'-'.'payment_gateway_captured_in_person', $ledgerOutboxEntities[0]['payload_name']);
-        $this->assertEquals($paymentId.'-'.'payment_merchant_captured_in_person', $ledgerOutboxEntities[1]['payload_name']);
-
-        $entry = $ledgerOutboxEntities[1];
-
-        $payload = base64_decode($entry['payload_serialized']);
-        $actualOutboxEntry = json_decode($payload, true);
-        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
-        $this->assertNotNull( $apiTxnId);
-
-        $journal = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
-
-        $journal['transactor_event'] = 'payment_merchant_captured_in_person';
-
-        $journalId = $journal['id'];
-
-        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
-
-        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
-
-        $txn = $this->getDbLastEntity('transaction');
-
-        $this->assertNotNull($txn);
-
-        $this->assertNotNull($txn['fee']);
-        $this->assertNotNull($txn['tax']);
-        $this->assertNotNull($txn['credit']);
-
-        $payment = $this->getDbEntity('payment', ['id' => str_replace("pay_", "", $paymentId)]);
-
-        $this->assertNotNull($payment);
-
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals('in_person', $payment['reference13']);
-        $this->assertEquals($payment['fee'], $txn['fee']);
-        $this->assertEquals($payment['tax'], $txn['tax']);
-
-        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId . '-' . 'payment_merchant_captured_in_person']);
-
-        $this->assertEquals($paymentId, 'pay_' . $txn['entity_id']);
-        $this->assertEquals($journalId, $txn['id']);
-        $this->assertEquals(1, $ledgerOutboxEntity['is_deleted']);
-        $this->assertNotNull($ledgerOutboxEntity['deleted_at']);
     }
 
     public function testKafkaSuccessForPaymentMerchantCaptureEventWithAsyncBalanceUpdateEnabled()
