@@ -895,6 +895,10 @@ return [
                             'activation_status' => 'activated',
                         ],
                         'dashboard_access' => false,
+                        'pos' => [
+                            'activation_status' => "NA",
+                            'success'           => false,
+                        ]
                     ]
                 ],
             ],

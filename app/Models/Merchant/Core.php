@@ -412,8 +412,7 @@ class Core extends Base\Core
         bool $accountEntity = false,
         bool $v2CreateFlow = false,
         bool $optimise = false,
-        bool $onboardOnReverseShadow = true,
-    )
+        bool $onboardOnReverseShadow = true)
     {
         $this->validateCodeIfPresent($input, $aggregatorMerchant, $linkedAccount);
 
@@ -563,7 +562,7 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($subMerchant);
 
-            Tracer::inspan(['name' => HyperTrace::ADD_MERCHANT_SUPPORTING_ENTITIES], function() use ($subMerchant, $aggregatorMerchant, $subMerchantDetailInput, $v2CreateFlow) {
+            Tracer::inspan(['name' => HyperTrace::ADD_MERCHANT_SUPPORTING_ENTITIES], function() use ($subMerchant, $aggregatorMerchant, $subMerchantDetailInput, $v2CreateFlow, $onboardOnReverseShadow) {
 
                 $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $v2CreateFlow, $subMerchantDetailInput, $onboardOnReverseShadow);
 
@@ -5428,7 +5427,7 @@ class Core extends Base\Core
     public function listSubmerchantsV2(Entity $partner, array $params) : array
     {
         $merchantAppIds = $this->getMerchantAppIdsForPartner($partner, $params);
-
+        $requestedProduct = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
         $params                  = $this->preProcessInput($params, $partner);
         $product                 = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
         $params[ENTITY::PRODUCT] = $product;
@@ -5450,7 +5449,7 @@ class Core extends Base\Core
         $partnerUser = $partner->primaryOwner();
 
         $reqStartAt                    = millitime();
-        $merchantsData                 = $this->getPartnerSubMerchantDataV2($subMerchants, $partner, $partnerUser, $product);
+        $merchantsData                 = $this->getPartnerSubMerchantDataV2($subMerchants, $partner, $partnerUser, $product, $requestedProduct);
         $fetchSubMerchantsDataLatency  = millitime() - $reqStartAt;
 
         $this->trace->info(
@@ -5810,7 +5809,8 @@ class Core extends Base\Core
 
     private function getPartnerSubMerchantDataV2(
         PublicCollection $submerchants, Entity $partner, User\Entity $partnerUser = null,
-        string $product = null
+        string $product = null,
+        string $requestedProduct = Product::PRIMARY
     ): PublicCollection
     {
         $accessRequests = null;
@@ -5827,17 +5827,20 @@ class Core extends Base\Core
             $dashboardAccesses = $this->fetchSubmerchantDashboardAccesses($submerchants->getIds());
         }
 
-        return Tracer::inspan( ['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function() use (
-            $submerchants, $partnerUser, $accessRequests, $dashboardAccesses, $product, $partner
+        return Tracer::inspan(['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function() use (
+            $submerchants, $partnerUser, $accessRequests, $dashboardAccesses, $product, $partner, $requestedProduct
         ) {
+            $subMIdList = [];
             foreach ($submerchants as $submerchant)
             {
+                $subMIdList[] = $submerchant[Detail\Entity::ID];
+
                 $submerchant[Entity::DETAILS] = [
                     Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
                 ];
                 unset($submerchant[Detail\Entity::ACTIVATION_STATUS]);
 
-                $subMerchantOwner = ( empty($partnerUser) === false) ? $this->getNonPartnerOwnerV2($submerchant, $partnerUser, $product) : null;
+                $subMerchantOwner = (empty($partnerUser) === false) ? $this->getNonPartnerOwnerV2($submerchant, $partnerUser, $product) : null;
                 if (empty($subMerchantOwner) === true)
                 {
                     $submerchant[Entity::USER] = null;
@@ -5846,7 +5849,7 @@ class Core extends Base\Core
                 {
                     $submerchant[Entity::USER] = Tracer::inspan(
                         ['name' => HyperTrace::GET_REDUCED_SUBMERCHANT_OWNER_DATA],
-                        function () use ($subMerchantOwner
+                        function() use ($subMerchantOwner
                         ) {
                             return [
                                 User\Entity::ID             => $subMerchantOwner->id,
@@ -5865,7 +5868,7 @@ class Core extends Base\Core
                 $submerchant[Entity::APPLICATION] = [OAuthApp\Entity::ID => $submerchant->getAttribute(Constants::APPLICATION_ID)];
 
                 $submerchant[Entity::KYC_ACCESS] = null;
-                $accessRequest = $accessRequests[$submerchant->getId()];
+                $accessRequest                   = $accessRequests[$submerchant->getId()];
                 if (empty($accessRequest) === false)
                 {
                     $submerchant[Entity::KYC_ACCESS] = $accessRequest->first()->toArrayPublic();
@@ -5873,16 +5876,55 @@ class Core extends Base\Core
 
                 if ($product === Product::BANKING)
                 {
-                    $caStatus = Tracer::inspan(['name' => HyperTrace::GET_BANKING_ACCOUNT_STATUS], function () use ($submerchant) {
+                    $caStatus                             = Tracer::inspan(['name' => HyperTrace::GET_BANKING_ACCOUNT_STATUS], function() use ($submerchant) {
                         return $this->getBankingAccountStatus($submerchant);
                     });
                     $submerchant[Entity::BANKING_ACCOUNT] = [ENTITY::CA_STATUS => $caStatus];
                 }
             }
 
+            if ($requestedProduct === Product::POS)
+            {
+                $submerchants = $this->appendPOSDetails($submerchants);
+            }
+
             return $submerchants;
         });
     }
+
+    private function appendPOSDetails(PublicCollection $submerchants): PublicCollection
+    {
+        $detailCore = (new Detail\Core());
+
+        $subMIdList = $submerchants->getIds();
+
+        $subMPOSDetails = $detailCore->bulkFetchMerchantPosActivationStatus($subMIdList);
+
+        $subMPOSActivationMap = [];
+
+        if ($subMPOSDetails['success'] && empty($subMPOSDetails['pos_activation_status']) === false)
+        {
+            $subMPOSActivationMap = $subMPOSDetails['pos_activation_status'];
+        }
+
+        foreach ($submerchants as $submerchant)
+        {
+            /**  Incase of PGOS errors, we would need to gracefully handle the failure and let subM listView NOT fail because of exception.
+             * success here would depict error in integration or not while fetching pos details for the subM.
+             * Graceful handling of this should be taken care by FE.
+             * "NA" - would mean that the subM is onboarded to POS but he is not eligible for POS as of now due to POS experiment ramp based on cities
+             */
+            $success = $subMPOSDetails['success'];
+            $status  = $subMPOSActivationMap[$submerchant['id']] ?? "NA";
+            $submerchant->setAttribute('pos', [
+                'success'           => $success,
+                'activation_status' => $status
+            ]);
+        }
+
+        return $submerchants;
+    }
+
 
     /**
      * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.

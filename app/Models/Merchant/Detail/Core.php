@@ -12029,6 +12029,33 @@ class Core extends Base\Core
         return $isPhysicalStore;
     }
 
+    public function bulkFetchMerchantPosActivationStatus(array $merchantIds)
+    {
+        $response = [];
+
+        try
+        {
+            $payload = ['merchant_ids' => $merchantIds];
+
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pgos_bulk_fetch_activation_status', $payload, true);
+
+            $response['success'] = true;
+        }
+        catch (\Throwable $exception)
+        {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_ids'  => $merchantIds,
+                'error_message' => $exception->getMessage(),
+                'route'         => 'merchant_pgos_bulk_fetch_activation_status',
+            ]);
+            $response['success'] = false;
+        }
+
+        return $response;
+
+    }
+
     public function fetchMerchantPosActivationStatus(Entity $merchantDetails)
     {
 

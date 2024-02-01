@@ -89,13 +89,14 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const MERCHANT_POS_PAYMENT_CALLBACK      = 'merchant_pos_payment_callback';
     const MERCHANT_POS_FETCH_LATEST_ORDER    = 'merchant_pos_fetch_latest_order';
 
-    const MERCHANT_FETCH_POS_ACTIVATION_FLOW = 'merchant_fetch_pos_activation_flow';
-    const PGOS_FETCH_PGOS_ACTIVATION_STATUS  = 'merchant_pgos_fetch_activation_status';
-    const PGOS_UPDATE_PGOS_ACTIVATION_STATUS = 'merchant_pgos_update_activation_status';
-    const UPDATE_ACTION_STATE                = 'update_action_state';
-    const FETCH_ACTION_STATE_COUNT           = 'fetch_action_state_count';
-    const MERCHANT_POS_STATE_LOGS            = 'merchant_pos_state_logs';
-    const POST_MERCHANT_CONFIG               = 'pos_merchant_config';
+    const MERCHANT_FETCH_POS_ACTIVATION_FLOW     = 'merchant_fetch_pos_activation_flow';
+    const PGOS_FETCH_PGOS_ACTIVATION_STATUS      = 'merchant_pgos_fetch_activation_status';
+    const PGOS_BULK_FETCH_PGOS_ACTIVATION_STATUS = 'merchant_pgos_bulk_fetch_activation_status';
+    const PGOS_UPDATE_PGOS_ACTIVATION_STATUS     = 'merchant_pgos_update_activation_status';
+    const UPDATE_ACTION_STATE                    = 'update_action_state';
+    const FETCH_ACTION_STATE_COUNT               = 'fetch_action_state_count';
+    const MERCHANT_POS_STATE_LOGS                = 'merchant_pos_state_logs';
+    const POST_MERCHANT_CONFIG                   = 'pos_merchant_config';
 
     const PGOS_OWNED_FIELDS = [
         'activation_form_milestone',
@@ -234,12 +235,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_POS_PAYMENT_CALLBACK                 => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/MerchantDevicePaymentCallback',
         self::MERCHANT_POS_FETCH_LATEST_ORDER               => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/FetchLatestOrder',
         self::MERCHANT_FETCH_POS_ACTIVATION_FLOW            => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/FetchPosActivationFlow',
-        self::PGOS_FETCH_PGOS_ACTIVATION_STATUS  =>  'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetPosActivationStatus',
-        self::PGOS_UPDATE_PGOS_ACTIVATION_STATUS => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdatePosActivationStatus',
-        self::UPDATE_ACTION_STATE                => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateState',
-        self::FETCH_ACTION_STATE_COUNT           => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateCount',
-        self::MERCHANT_POS_STATE_LOGS            => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateLogs',
-        self::POST_MERCHANT_CONFIG               => '/twirp/rzp.pg_onboarding.external.pos.v1.TerminalProcurementConsumerService/Onboard',
+        self::PGOS_FETCH_PGOS_ACTIVATION_STATUS      => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetPosActivationStatus',
+        self::PGOS_BULK_FETCH_PGOS_ACTIVATION_STATUS => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetBulkPosActivationStatus',
+        self::PGOS_UPDATE_PGOS_ACTIVATION_STATUS     => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdatePosActivationStatus',
+        self::UPDATE_ACTION_STATE                    => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/UpdateState',
+        self::FETCH_ACTION_STATE_COUNT               => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateCount',
+        self::MERCHANT_POS_STATE_LOGS                => 'twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/GetActionStateLogs',
+        self::POST_MERCHANT_CONFIG                   => '/twirp/rzp.pg_onboarding.external.pos.v1.TerminalProcurementConsumerService/Onboard',
     ];
 
     // timeout in seconds
