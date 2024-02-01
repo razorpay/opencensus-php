@@ -37,20 +37,26 @@ class LOSController extends Controller
      */
     protected function handleProxyRequests($path = null)
     {
-        $request = Request::instance();
-        $url     = $path;
-        $body    = $request->all();
+        $request        = Request::instance();
+        $url            = $path;
+        $body           = $request->all();
+        $requestHeaders = Request::header();
+        $userAgent      = $requestHeaders['x-user-agent'][0] ?? $requestHeaders['user-agent'][0] ?? null;
+        // this is the ip of the merchant.
+        $ipAddress      = $requestHeaders['x-dashboard-ip'][0] ?? null;
 
         $this->trace->info(TraceCode::LOAN_ORIGINATION_SYSTEM_PROXY_REQUEST, [
             'request' => $url,
         ]);
 
         $headers = [
-            'X-Merchant-Id'    => $this->ba->getMerchant()->getId() ?? '',
-            'X-Merchant-Email' => $this->ba->getMerchant()->getEmail() ?? '',
-            'X-User-Id'        => $this->ba->getUser()->getId() ?? '',
-            'X-User-Role'      => $this->ba->getUserRole() ?? '',
-            'X-Auth-Type'      => 'proxy',
+            'X-Merchant-Id'             => $this->ba->getMerchant()->getId() ?? '',
+            'X-Merchant-Email'          => $this->ba->getMerchant()->getEmail() ?? '',
+            'X-User-Id'                 => $this->ba->getUser()->getId() ?? '',
+            'X-User-Role'               => $this->ba->getUserRole() ?? '',
+            'X-Auth-Type'               => 'proxy',
+            RequestHeader::USER_AGENT   => $userAgent,
+            'X-IP-Address'              => $ipAddress,
         ];
 
         $response = $this->service->sendRequest($url, $body, $headers);

@@ -6,6 +6,7 @@ use View;
 use Config;
 use Request;
 use ApiResponse;
+use RZP\Http\RequestHeader;
 use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
@@ -92,6 +93,11 @@ class CapitalLenderController extends Controller
         $headers['Content-Type'] = 'application/json';
         $headers['X-Task-Id'] = $this->app['request']->getTaskId();
         $headers['Authorization'] = 'Basic ' . base64_encode($username . ':' . $password);
+
+        if (empty(Request::header(RequestHeader::DEV_SERVE_USER)) === false)
+        {
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
 
         return $this->sendRequest($headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }
