@@ -93,6 +93,13 @@ class TerminalsService
     const FETCH_TOKENISATION_TERMINALS         = 'fetch_tokenisation_terminals';
     const INSTRUMENT_RULES_EVENT               = 'instrument_rules_event';
 
+    //v3 Terminal Write API's
+    const EDIT_TERMINAL_V3            = 'edit_terminal_v3'; //v3/terminals/".$terminalId."/v3
+    const VALIDATE_EDIT_TERMINAL_V3   = 'validate_edit_terminal_v3';
+    const CREATE_TERMINAL_V3          = 'create_terminal_v3';
+    const VALIDATE_CREATE_TERMINAL_V3 = 'validate_create_terminal_v3';
+
+
     // terminals service error descriptions
     const MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING         = 'Merchant has already completed PayPal onboarding';
     const PAYPAL_ONBOARDING_NOT_ALLOWED_FOR_YOUR_ACCOUNT           = 'PayPal Onboarding is not allowed for your account.';
@@ -177,7 +184,23 @@ class TerminalsService
         self::INSTRUMENT_RULES_EVENT => [
             self::PATH      => 'v2/instrument_rules/event',
             self::METHOD    => Requests::POST,
-        ]
+        ],
+        self::VALIDATE_CREATE_TERMINAL_V3 => [
+            self::PATH   => 'v3/merchants/%s/terminals/validatev3',
+            self::METHOD => Requests::POST
+        ],
+        self::CREATE_TERMINAL_V3 => [
+            self::PATH   => 'v3/merchants/%s/terminals/v3',
+            self::METHOD => Requests::POST
+        ],
+        self::VALIDATE_EDIT_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/validate_edit_v3',
+            self::METHOD => Requests::POST
+        ],
+        self::EDIT_TERMINAL_V3 => [
+            self::PATH   => 'v3/terminals/%s/v3',
+            self::METHOD => Requests::PATCH
+        ],
     ];
 
     protected array $terminal_admin_dashboard_routes = [
@@ -1261,5 +1284,47 @@ class TerminalsService
         $response = $this->handleRequestAndResponse($params[self::PATH], $content, $params[self::METHOD], $options);
 
         return $this->parseAndReturnResponse($response)['data'] ?? [];
+    }
+
+    public function validateCreateTerminalV3($mid,$input)
+    {
+        $params = self::PARAMS[self::VALIDATE_CREATE_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH],$mid);
+
+        return $this->proxyTerminalService($input, $params[self::METHOD], $path);
+    }
+
+    public function createTerminalV3($mid,$input)
+    {
+        $params = self::PARAMS[self::CREATE_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH],$mid);
+
+        return $this->proxyTerminalService($input, $params[self::METHOD], $path);
+    }
+
+    public function validateTerminalEditV3(string $terminalId, array $input)
+    {
+        $params = self::PARAMS[self::VALIDATE_EDIT_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH],$terminalId);
+
+        return $this->proxyTerminalService($input, $params[self::METHOD], $path);
+    }
+
+    public function editTerminalV3($terminalId,$input)
+    {
+        $this->app['workflow']
+            ->setEntityAndId($terminalId, 'terminal')
+            ->handle(["terminal_edit"=> []], [
+                "terminal_edit" => $this->redactSecretsOnWorkflow($input),
+            ]);
+
+        $params = self::PARAMS[self::EDIT_TERMINAL_V3];
+
+        $path = sprintf($params[self::PATH],$terminalId);
+
+        return $this->proxyTerminalService($input, $params[self::METHOD], $path);
     }
 }

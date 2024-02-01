@@ -462,24 +462,20 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postValidateCreateTerminalV3()
+    public function postValidateCreateTerminalV3(string $id)
     {
         $input = Request::all();
 
-        $path = Request::path();
-
-        $data = $this->service(E::TERMINAL)->validateCreateTerminalV3( $input, $path);
+        $data = $this->service(E::TERMINAL)->validateCreateTerminalV3($id,$input);
 
         return ApiResponse::json($data);
     }
 
-    public function postCreateTerminalV3()
+    public function postCreateTerminalV3(string $id)
     {
         $input = Request::all();
 
-        $path = Request::path();
-
-        $data = $this->service(E::TERMINAL)->createTerminalV3( $input, $path);
+        $data = $this->service(E::TERMINAL)->createTerminalV3($id,$input);
 
         return ApiResponse::json($data);
     }

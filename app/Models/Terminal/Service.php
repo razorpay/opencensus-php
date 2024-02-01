@@ -57,26 +57,18 @@ class Service extends Base\Service
         return $terminal;
     }
 
-    public function validateCreateTerminalV3( $input, $path)
+    public function validateCreateTerminalV3($mid, $input )
     {
 
-        $terminal = (new Terminal\Core)->validateCreateV3($input, $path);
-
-        $this->trace->info(TraceCode::TERMINAL_VALIDATE_CREATE_REQUEST, [
-            'terminal' => $terminal
-        ]);
+        $terminal = $this->app['terminals_service']->validateCreateTerminalV3($mid,$input);
 
         return $terminal;
     }
 
-    public function createTerminalV3($input, $path)
+    public function createTerminalV3($mid,$input)
     {
 
-        $terminal = (new Terminal\Core)->createV3($input, $path);
-
-        $this->trace->info(TraceCode::TERMINAL_CREATE_REQUEST, [
-            'terminal' => $terminal
-        ]);
+        $terminal = $this->app['terminals_service']->createTerminalV3($mid,$input);
 
         return $terminal;
     }
@@ -277,17 +269,10 @@ class Service extends Base\Service
 
     public function validateDeleteTerminalv3($mid, $tid)
     {
-        $this->trace->info(
-            TraceCode::TERMINAL_DELETE,
-            [
-                'merchant_id'       => $mid,
-                'terminal_id'       => $tid,
-            ]);
-
 
         $path = "v3/terminals/".$tid."/validate_delete";
-        $this->app['terminals_service']->proxyTerminalService('', "POST", $path);
 
+        return $this->app['terminals_service']->proxyTerminalService('', "POST", $path);
     }
 
     public function deleteTerminalv3($mid, $tid)
@@ -298,7 +283,7 @@ class Service extends Base\Service
 
         $path = "v3/terminals/".$tid;
 
-        $this->app['terminals_service']->proxyTerminalService('', "DELETE", $path);
+        return $this->app['terminals_service']->proxyTerminalService('', "DELETE", $path);
     }
 
     public function deleteTerminal2($id,$input)
@@ -365,18 +350,16 @@ class Service extends Base\Service
         return $terminal->toArrayAdmin();
     }
 
-    public function editTerminalValidateV3($path, $input)
+    public function validateTerminalEditV3($id, $input)
     {
-        $terminal = (new Terminal\Core)->editValidateV3($path, $input);
+        $terminal = $this->app['terminals_service']->validateTerminalEditV3($id, $input);
 
         return $terminal->toArrayAdmin();
     }
 
-    public function editTerminalV3($terminalId, $path, $input)
+    public function editTerminalV3($terminalId, $input)
     {
-        $terminal = (new Terminal\Core)->editV3($terminalId, $path, $input);
-
-        return $terminal->toArrayAdmin();
+        return $this->app['terminals_service']->editTerminalV3($terminalId, $input);
     }
 
     public function getEditableFields()

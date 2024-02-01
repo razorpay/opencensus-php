@@ -25,13 +25,11 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateTerminalValidatev3()
+    public function updateTerminalValidatev3(string $id)
     {
         $input = Request::all();
 
-        $path = Request::path();
-
-        $data = $this->service()->editTerminalValidateV3($path, $input);
+        $data = $this->service()->validateTerminalEditV3($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -40,9 +38,7 @@ class TerminalController extends Controller
     {
         $input = Request::all();
 
-        $path = Request::path();
-
-        $data = $this->service()->editTerminalV3($id, $path, $input);
+        $data = $this->service()->editTerminalV3($id, $input);
 
         return ApiResponse::json($data);
     }

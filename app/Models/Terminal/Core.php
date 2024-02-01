@@ -81,30 +81,6 @@ class Core extends Base\Core
         return $terminal;
     }
 
-    public function validateCreateV3($input, $path)
-    {
-        $path = str_replace("v1","v3", $path);
-
-        $this->trace->info(TraceCode::TERMINAL_VALIDATE_CREATE_REQUEST, [
-            '$path' => $path,
-        ]);
-
-        return $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
-    }
-
-    public function createV3($input, $path)
-    {
-        $this->generatePlanID($input);
-
-        $path = str_replace("v1","v3", $path);
-
-        $this->trace->info(TraceCode::TERMINAL_CREATE_REQUEST, [
-            '$path' => $path,
-        ]);
-
-        return $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
-    }
-
     public function generatePlanID($input)
     {
         $planName = $input[Entity::PLAN_NAME] ?? null;
@@ -484,24 +460,6 @@ class Core extends Base\Core
         }
 
         return $terminal;
-    }
-
-    public function editValidateV3(Entity $path, array $input)
-    {
-        $path = str_replace("v1","v3", $path);
-
-        return $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
-    }
-
-    public function editV3($terminalId, $path,$input)
-    {
-        $this->app['workflow']
-            ->setEntityAndId($terminalId, 'terminal')
-            ->handle(["terminal_edit"=> []], ["terminal_edit" => $this->redactSecretsOnWorkflow($input)]);
-
-        $path = str_replace("v1","v3", $path);
-
-        return $this->app['terminals_service']->proxyTerminalService($input, "PATCH", $path);
     }
 
     public function getSyncInstrumentsFlagFromWorkflow($terminal, $permission)
