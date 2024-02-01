@@ -269,26 +269,13 @@ class AsvRouter
                 return false;
             }
 
-            $experimentName = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForWriteMigration();
-            $routeOrWorkerName = $this->getRouteOrJobName();
-            $isRequestRoutedToAsv = false;
-
-            if((new AsvMaps\PartnershipFlows())->checkIfPartnerShipFlow($routeOrWorkerName) === true) {
-                $partnerId = $this->getPartnerId();
-                $isRequestRoutedToAsv = $this->spitzHelper->isSplitzOnForPartnershipWriteByExperimentName(
-                    $experimentName,
-                    $id,
-                    $this->getRouteOrJobName(),
-                    $partnerId,
-                );
-            }
-            else {
-                $isRequestRoutedToAsv = $this->spitzHelper->isSplitzOnForWriteByExperimentName(
-                    $experimentName,
-                    $id,
-                    $this->getRouteOrJobName()
-                );
-            }
+            $experimentName       = AsvMaps\RepoAndFunctionToSplitzMap::getExperimentNameForWriteMigration();
+            $routeOrWorkerName    = $this->getRouteOrJobName();
+            $isRequestRoutedToAsv = $this->spitzHelper->isSplitzOnForWriteByExperimentName(
+                $experimentName,
+                $id,
+                $routeOrWorkerName,
+            );
 
 
             $this->logAndReportMetrics($repoClass, $routeOrWorkerName, $isRequestRoutedToAsv, $functionName);
@@ -406,30 +393,7 @@ class AsvRouter
         ]);
     }
 
-    /*
-     *  Get partner id or default: PARTNER_NOT_FOUND if not present.
-     */
-    private function getPartnerId(): string
-    {
-        $partnerId = "";
-        try {
-           $partnerId = $this->app['basicauth']->getMerchantId();
-        } catch (\Throwable $e) {
-            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_ERROR_FINDING_PARTNER_ID);
-        }
-
-        if ($partnerId === "" or $partnerId===null) {
-            $partnerId = self::PARTNER_NOT_FOUND;
-        }
-
-        $this->trace->info(TraceCode::ASV_PARTNER_ID_FIND_RESULT, [
-            'partner_id' => $partnerId,
-        ]);
-
-        return $partnerId;
-    }
-
-    public function shouldRouteFilterToAsv(string $callingIdentifier) : bool
+    public function shouldRouteFilterToAsv(string $callingIdentifier): bool
     {
         try {
 
@@ -452,7 +416,7 @@ class AsvRouter
     {
         return $this->shouldRouteWriteRequestToAccountService(
             RepositoryManager::class,
-             self::CREATE_TRANSACTION_WITH_ASV_ALSO,
+            self::CREATE_TRANSACTION_WITH_ASV_ALSO,
             self::REPOSITORY_MANAGER_ID
         );
     }
