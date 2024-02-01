@@ -196,7 +196,7 @@ class Core extends Base\Core
             $payment->terminal()->associate($terminal);
         }
 
-        if ($payment->getStatus() == "captured")
+        if ($payment->hasBeenCaptured() === true)
         {
             $paymentTxn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
 
@@ -240,7 +240,7 @@ class Core extends Base\Core
                 $this->handleAsyncUpdateBalanceIfApplicable($payment, $txn);
             }
         }
-        else if ($payment->getStatus() == "authorized")
+        else if ($payment->hasBeenAuthorized() === true)
         {
             $txn =  $this->createTransactionForAuthorizedPayment($payment, $txnId);
         }
