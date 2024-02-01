@@ -161,6 +161,15 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanRuleForReward()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testAddPricingPlanRuleForOfflineMethod()
     {
         $content = $this->createPricingPlan();

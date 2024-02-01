@@ -21,6 +21,7 @@ class Feature
     const AFFORDABILITY_WIDGET    = 'affordability_widget';
     const TOKEN_HQ                = 'token_hq';
     const UPI_INAPP               = 'upi_inapp';
+    const REWARD                  = 'reward';
 
     // vas specific pricing features
     const SMS                     = 'sms';
@@ -41,6 +42,7 @@ class Feature
         self::ESAUTOMATIC_RESTRICTED,
         self::TOKEN_HQ,
         self::AFFORDABILITY_WIDGET,
+        self::REWARD,
     ];
 
     const VAS_FEATURE_LIST = [

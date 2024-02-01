@@ -1578,6 +1578,39 @@ return [
         ],
     ],
 
+    'testAddPricingPlanRuleForReward' => [
+         'request' => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'reward',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'reward',
+            ],
+        ],
+    ],
+
     'testAddPricingPlanRuleForOfflineMethod' => [
         'request' => [
             'content' => [
