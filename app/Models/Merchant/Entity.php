@@ -1213,6 +1213,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::LRSTravelFlow) === true);
     }
 
+    public function isLRSNonStandardCheckoutEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::LRSNonStandardCheckout) === true);
+    }
+
     public function isLRSFlowEnabled(): bool
     {
         return $this->isLRSEducationFlowEnabled() || $this->isLRSTravelFlowEnabled();

@@ -1981,6 +1981,11 @@ class Constants
      */
     const LRSTravelFlow = 'lrs_travel_flow';
 
+    /**
+     * Feature flag to enable merchants for LRS non standard checkout transactions
+     */
+    const LRSNonStandardCheckout = 'lrs_non_standard_checkout';
+
 
     // Feature flag business website validation bvs and mcc automation
     const WEBSITE_AUTOMATED_CHECKS_FEATURE = 'website_automated_checks';
@@ -2092,6 +2097,7 @@ class Constants
         DcsConstants::ShowSingleDCCCurrency,
         DcsConstants::LRSEducationFlow,
         self::LRSTravelFlow,
+        self::LRSNonStandardCheckout,
         DcsConstants::LRSImportFeeBreakup,
         self::CustomMessageForCFB,
     ];
@@ -2675,6 +2681,7 @@ class Constants
         DcsConstants::ImportSettlement                     => true,
         DcsConstants::LRSEducationFlow                     => true,
         self::LRSTravelFlow                                => true,
+        self::LRSNonStandardCheckout                       => true,
         DcsConstants::LRSImportFeeBreakup                  => true,
         self::ONE_CLICK_OVERRIDE_THEME                     => true,
         self::PP_CUSTOM_DOMAIN                             => true,
@@ -3885,6 +3892,11 @@ class Constants
         self::LRSTravelFlow => [
             'feature'       => self::LRSTravelFlow,
             'display_name'  => 'Feature to enable LRS for Travel flow',
+            'documentation' => '',
+        ],
+        self::LRSNonStandardCheckout => [
+            'feature'       => self::LRSTravelFlow,
+            'display_name'  => 'Feature to enable LRS for Non Standard Checkout Merchants',
             'documentation' => '',
         ],
         DcsConstants::LRSImportFeeBreakup => [

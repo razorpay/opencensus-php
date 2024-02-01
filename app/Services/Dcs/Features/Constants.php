@@ -54,6 +54,7 @@ class Constants
     const ImportSettlement                           = 'import_settlement';
     const LRSEducationFlow                           = 'lrs_education_flow';
     const LRSImportFeeBreakup                        = 'lrs_import_fee_breakup';
+    const LRSNonStandardCheckout                     = 'lrs_non_standard_checkout';
     const SavedCardsDisabled                         = 'saved_cards_disabled';
     const CvvLessFlowDisabled                        = 'cvv_less_flow_disabled';
     const PaymentRetryDisabled                       = 'payment_retry_disabled';
@@ -788,6 +789,7 @@ class Constants
         self::ImportSettlement                        => 'direct',
         self::LRSEducationFlow                        => 'direct',
         self::LRSImportFeeBreakup                     => 'direct',
+        self::LRSNonStandardCheckout                  => 'direct',
         self::AdminLeadPartnerInviteEnabled           => 'direct',
         self::PgLedgerReverseShadowEnabled            => 'direct',
         self::CvvLessFlowDisabled                     => 'direct',
