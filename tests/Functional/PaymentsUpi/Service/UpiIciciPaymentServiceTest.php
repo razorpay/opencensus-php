@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\PaymentsUpi\Service;
 
+use Mockery;
 use Carbon\Carbon;
+
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Status;
@@ -91,6 +93,96 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
             Entity::CPS_ROUTE       => 4,
         ], $payment);
     }
+
+
+    public function testPaymentCallbackReArch()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->payment->createStatusCreated(
+            [
+                'cps_route' => 7,
+                'method'    => 'upi',
+                'gateway'   => 'upi_icici'
+            ]
+        );
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(7, $payment->getCpsRoute());
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+        });
+
+        $payment = $payment->toArray();
+
+        $payment['payment_id'] = $payment['id'];
+
+        $upiEntity = [];
+        $upiEntity['created_at'] = $payment['created_at'];
+        $upiEntity['gateway_payment_id'] = '882087011';
+        $upiEntity['gateway_merchant_id'] = '123456';
+        $upiEntity['vpa'] =  'vishnu@icici';
+        $upiEntity['payment_id'] = $payment['id'];
+
+        $this->app->instance('pg_router', Mockery::mock('RZP\Services\Mock\PGRouter', [$this->app])->makePartial());
+
+        $content = $this->mockServer('upi_icici')->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+
+        $this->assertEquals([
+            'success'   => true
+        ], $response);
+    }
+
+    public function testPaymentCallbackReArchFailure()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->payment->createStatusCreated(
+            [
+                'cps_route' => 7,
+                'method'    => 'upi',
+                'gateway'   => 'upi_icici'
+            ]
+        );
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(7, $payment->getCpsRoute());
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+        });
+
+        $payment = $payment->toArray();
+
+        $payment['payment_id'] = $payment['id'];
+
+        $upiEntity = [];
+        $upiEntity['created_at'] = $payment['created_at'];
+        $upiEntity['gateway_payment_id'] = '882087011';
+        $upiEntity['gateway_merchant_id'] = '123456';
+        $upiEntity['vpa'] =  'vishnu@icici';
+        $upiEntity['payment_id'] = $payment['id'];
+
+        $content = $this->mockServer('upi_icici')->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+
+        $this->assertEquals([
+            'success'   => false
+        ], $response);
+    }
+
 
     /**
      * @param string $variant

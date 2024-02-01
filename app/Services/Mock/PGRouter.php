@@ -24,4 +24,18 @@ class PGRouter extends BasePGRouter
                 "http_status" => 200
             ];
     }
+
+    /**
+     * mocks the callback function
+     *
+     * @param string $paymentId
+     * @param [type] $input
+     * @return array
+     */
+    public function sendStaticCallbackRequestToPgRouter(string $paymentId, $input): array
+    {
+        return [
+            'success' => true,
+        ];
+    }
 }

@@ -173,6 +173,34 @@ class GatewayController extends Controller
 
             return $data;
         }
+        elseif ($payment->isRoutedThroughPaymentsUpiPaymentService() === true)
+        {
+            if ($this->shouldSkipUpiICICICallback($payment, Mode::LIVE, $input) === true)
+                {
+                    $this->trace->info(TraceCode::SKIP_UPI_ICICI_CALLBACK_PROCESSING,
+                        [
+                            'payment_id' => $payment->getId(),
+                            'merchant_id' => $payment->getMerchantId(),
+                        ]);
+
+                    return [
+                        'success' => true,
+                    ];
+                }
+
+                $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PAYMENTS_CALLBACK_DATA, [
+                    'payment_id'    => $payment->getId(),
+                    'merchant_id'   => $payment->getMerchantId(),
+                    'terminal_id'   => $payment->getTerminalId(),
+                    'callback_data' => $input,
+                ]);
+
+                $data = $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
+
+                $this->logCallbackResponseTime($startTime, $gatewayDriver, true);
+
+                return $data;
+        }
         else
         {
             $this->app['basicauth']->setModeAndDbConnection($mode);
@@ -461,6 +489,32 @@ class GatewayController extends Controller
 
                     $this->logCallbackResponseTime($startTime, $gatewayDriver, false, true);
                 }
+            }
+            elseif ($payment->isRoutedThroughPaymentsUpiPaymentService() === true)
+            {
+                if ($this->shouldSkipUpiICICICallback($payment, Mode::LIVE, $input) === true)
+                {
+                    $this->trace->info(TraceCode::SKIP_UPI_ICICI_CALLBACK_PROCESSING,
+                        [
+                            'payment_id' => $payment->getId(),
+                            'merchant_id' => $payment->getMerchantId(),
+                        ]);
+
+                    return [
+                        'success' => true,
+                    ];
+                }
+
+                $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PAYMENTS_CALLBACK_DATA, [
+                    'payment_id'    => $payment->getId(),
+                    'merchant_id'   => $payment->getMerchantId(),
+                    'terminal_id'   => $payment->getTerminalId(),
+                    'callback_data' => $input,
+                ]);
+
+                $data = $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
+
+                $this->logCallbackResponseTime($startTime, $gatewayDriver, true);
             }
             else
             {
