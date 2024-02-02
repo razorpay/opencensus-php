@@ -166,21 +166,21 @@ class Core extends Base\Core
                                   Entity::APPLICATION
                               );
 
-        if ($accessMapping !== null)
-        {
-            return $accessMapping;
-        }
-
         $data = [
             Entity::ENTITY_TYPE => Entity::APPLICATION,
             Entity::ENTITY_ID   => $input[Entity::APPLICATION_ID],
         ];
+
+        if ($accessMapping == null)
+        {
+            $accessMapping =  $this->create($entityOwner, $merchant, $data);
+        }
+
         $dashboardAccess = $input[Entity::DASHBOARD_ACCESS] ?? false;
 
-        return Tracer::inspan(['name' => HyperTrace::CREATE_ACCESS_MAP_CORE], function () use(
+        Tracer::inspan(['name' => HyperTrace::CREATE_ACCESS_MAP_CORE], function () use(
             $entityOwner, $merchant, $data, $dashboardAccess
         ) {
-            $merchantMapping =  $this->create($entityOwner, $merchant, $data);
             if ($dashboardAccess)
             {
                 $subMSignUpSource = $this->app->partnerships->getSubmSignupSource($merchant->getId());
@@ -190,9 +190,9 @@ class Core extends Base\Core
                     $this->assignDashboardAccessForSubmerchants($entityOwner, $merchant);
                 }
             }
-
-            return $merchantMapping;
         });
+
+        return $accessMapping;
     }
 
     /**

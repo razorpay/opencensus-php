@@ -131,7 +131,7 @@ class AccessMapListener extends BaseListener
                 'entity_name'   => $entity->getEntityName(),
                 'meta_data'     => [
                     'auth_type'  => $this->ba->getAuthType(),
-                    'route_name' => $this->request->route()->getName(),
+                    'route_name' => $routeName,
                 ],
             ],
             $this->getActor(),
