@@ -408,7 +408,7 @@ class Core extends Base\Core
         // Upload the file and get the file id
         $this->fillAddressProofUrl($input, $merchant, $newBankAccountArray, $oldBankAccountArray);
 
-        return $this->repo->transaction(
+        return $this->repo->transactionOnLiveAndTestAndAsv(
             function() use ($merchant,
                 $oldBankAccountArray,
                 $newBankAccountArray,

@@ -34,7 +34,7 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_CREATE_BANKING_REQUEST, $input);
 
-        list($balance, $createdNow, $basDetailEntity) = $this->repo->transaction(function () use ($merchantId, $input)
+        list($balance, $createdNow, $basDetailEntity) = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($merchantId, $input)
         {
             // Note: This is only sent when transferring CA from 1 MID to another
             $basBusinessId = array_pull($input,Constants::BAS_BUSINESS_ID);

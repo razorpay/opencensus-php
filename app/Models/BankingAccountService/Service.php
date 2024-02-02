@@ -877,7 +877,7 @@ class Service extends Base\Service
             $encodedAccountNumber = $this->encodeAccountNumberForCaTransfer($balance->getAccountNumber());
         }
 
-        $this->repo->transaction(function()
+        $this->repo->transactionOnLiveAndTestAndAsv(function()
             use ($merchantId, $encodedAccountNumber, $balance)
         {
             if (!empty($encodedAccountNumber))
@@ -2304,7 +2304,7 @@ class Service extends Base\Service
 
                 $merchantId = $bankingAccount->getMerchantId();
 
-                $this->repo->transaction(function() use ($basRequest, $merchantId, $bankingAccount)
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($basRequest, $merchantId, $bankingAccount)
                 {
                     $response = $this->bankingAccountService->rblMigrationBas($basRequest);
 
