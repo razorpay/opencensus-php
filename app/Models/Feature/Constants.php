@@ -2031,9 +2031,12 @@ class Constants
      */
     const ENABLE_INTL_PRICING_AMEX = 'enable_intl_pricing_amex';
 
+    /**
+     * Enable payment via reward_points for merchant.
+     */
+    const RewardPoints = 'reward_points';
+
     const SHOW_INTL_RISK_ANALYTICS_DASHBOARD = 'show_intl_risk_dashboard';
-
-
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -2823,6 +2826,7 @@ class Constants
         self::RZPX_FEE_CREDIT                        => true,
         self::ENABLE_INTL_PRICING_AMEX               => true,
         self::CREDIT_RISK_BAND_ENABLED               => true,
+        self::RewardPoints                           => true,
         self::SHOW_INTL_RISK_ANALYTICS_DASHBOARD          => true,
     ];
 
