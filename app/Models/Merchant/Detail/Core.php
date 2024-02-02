@@ -4445,8 +4445,12 @@ class Core extends Base\Core
                 $stateData = [
                     "pos_state"       => $input[DEConstants::POS_ACTIVATION_STATUS],
                     "merchant_id"     => $merchantDetails->getMerchantId(),
-                    "onboarding_type" => "pos"
+                    "onboarding_type" => DetailConstants::ONBOARDING_TYPE_POS,
+                    "metadata" => [
+                        "actor_details" => remove_prefix_from_keys($this->getActorDetails(), 'actor_')
+                    ]
                 ];
+
                 $this->pgosProxyController->handlePGOSProxyRequests('update_action_state', $stateData, $merchant, true);
 
                 $newPosActivationStatus = $this->fetchMerchantPosActivationStatus($merchantDetails);
@@ -11641,9 +11645,12 @@ class Core extends Base\Core
 
         if ($pgosMock === true)
         {
-            $this->trace->info(TraceCode::RETURNING_PGOS_MOCKED_RESPONSE, [
-                'merchant_id'                   => $merchantId,
-            ]);
+            $this->trace->info(
+                TraceCode::RETURNING_PGOS_MOCKED_RESPONSE,
+                [
+                    'merchant_id' => $merchant->getId()
+                ]
+            );
 
             $phantomOnboarding = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
 
@@ -11719,9 +11726,12 @@ class Core extends Base\Core
 
         if ($pgosMock === true)
         {
-            $this->trace->info(TraceCode::RETURNING_PGOS_MOCKED_RESPONSE, [
-                'merchant_id'                   => $merchantId,
-            ]);
+            $this->trace->info(
+                TraceCode::RETURNING_PGOS_MOCKED_RESPONSE,
+                [
+                    'merchant_id' => $merchant->getId()
+                ]
+            );
 
             $phantomOnboarding = $merchant->isSignupCampaign(DDConstants::PHANTOM_ONBOARDING);
 
@@ -12327,20 +12337,20 @@ class Core extends Base\Core
 
     public function updateEDDStatus($input)
     {
-        $this->trace->info(TraceCode::UPDATE_EDD_STATUS_REQUEST,
-        [
-            'input'   => $input,
-        ]);
+        $this->trace->info(
+            TraceCode::UPDATE_EDD_STATUS_REQUEST,
+            [
+                'input' => $input
+            ]
+        );
 
         $accountDetailsInput['edd_verification_status'] = $input['status'];
 
         $accountDetails = (new AccountDetailsSDKWrapper())->setAccountDetails($accountDetailsInput);
 
-        $fieldList = [
-            "account.account_detail.edd_verification_status"
-        ];
+        $fieldList = ["account.account_detail.edd_verification_status"];
 
-        $accountId = (new AccountSDKWrapper())->saveAccount($input['merchant_id'], $accountDetails,$fieldList);
+        $accountId = (new AccountSDKWrapper())->saveAccount($input['merchant_id'], $accountDetails, $fieldList);
 
         return [
             "status"        => $input['status'],

@@ -1319,3 +1319,30 @@ if(! function_exists('assign_array_by_flattened_path'))
         $arr = $value;
     }
 }
+
+if (! function_exists('remove_prefix_from_keys'))
+{
+    function remove_prefix_from_keys($array, $prefix): array
+    {
+        $newArray = [];
+        $prefixLength = strlen($prefix);
+
+        foreach ($array as $key => $value)
+        {
+            // Check if the key starts with the prefix
+            if (substr($key, 0, $prefixLength) === $prefix)
+            {
+                $newKey = substr($key, $prefixLength);
+            }
+            else
+            {
+                $newKey = $key;
+            }
+
+            $newArray[$newKey] = $value;
+        }
+
+        return $newArray;
+    }
+}
+

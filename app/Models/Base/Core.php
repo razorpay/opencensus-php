@@ -8,6 +8,7 @@ use Illuminate\Foundation\Application;
 
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 use RZP\Base\RepositoryManager;
 
@@ -216,36 +217,59 @@ class Core
 
     }
 
-    protected function getActorDetails()
+    protected function getActorDetails(): array
     {
-        $userId = null;
-        $userEmail = null;
-        $userType = 'user';
-        $userName = 'Razorpay';
+        $userId    = '100000Razorpay';
+        $userEmail = 'default@razorpay.in';
+        $userType  = 'system';
+        $userName  = 'Razorpay';
+        $userRole  = '';
+
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
-            $userId = $this->app['basicauth']->getAdmin()->getId();
-            $userEmail = $this->app['basicauth']->getAdmin()->getEmail();
-            $userName = $this->app['basicauth']->getAdmin()->getName();
-            $userType = 'admin';
+            $admin      = $this->app['basicauth']->getAdmin();
+            $userId     = $admin->getId();
+            $userEmail  = $admin->getEmail();
+            $userName   = $admin->getName();
+            $userType   = 'admin';
         }
-        elseif (empty($this->app['basicauth']->getUser()) === false)
+        elseif ($this->app['basicauth']->isProxyAuth() === true &&
+                empty($this->app['basicauth']->getUser()) === false)
         {
-            $userId = $this->app['basicauth']->getUser()->getId();
-            $userEmail = $this->app['basicauth']->getUser()->getEmail();
+            $user       = $this->app['basicauth']->getUser();
+            $userId     = $user->getId();
+            $userEmail  = $user->getEmail();
+            $userName   = $user->getName();
+            $userType   = 'user';
+            $userRole   = $this->app['basicauth']->getUserRole();
         }
-        elseif (empty($this->app['basicauth']->getMerchant()) === false)
+        elseif ($this->app['basicauth']->isPartnerAuth() === true &&
+                empty($this->app['basicauth']->getPartnerMerchant()) === false)
         {
-            $userId = $this->app['basicauth']->getMerchant()->getId();
-            $userEmail = $this->app['basicauth']->getMerchant()->getEmail();
-            $userType = 'merchant';
+            $partnerMerchant    = $this->app['basicauth']->getPartnerMerchant();
+            $userId             = $partnerMerchant->getId();
+            $userEmail          = $partnerMerchant->getEmail();
+            $userName           = $partnerMerchant->getName();
+            $userType           = 'partner';
+            $userRole           = 'owner';
+        }
+        elseif ($this->app['basicauth']->isPrivateAuth() === true &&
+                empty($this->app['basicauth']->getMerchant()) === false)
+        {
+            $merchant   = $this->app['basicauth']->getMerchant();
+            $userId     = $merchant->getId();
+            $userEmail  = $merchant->getEmail();
+            $userName   = $merchant->getName();
+            $userType   = 'merchant';
+            $userRole   = 'owner';
         }
 
         return [
-            'actor_id'      => $userId ?? '100000Razorpay',
-            'actor_email'   => $userEmail ?? 'default@razorpay.in',
+            'actor_id'      => $userId,
+            'actor_email'   => $userEmail,
             'actor_type'    => $userType,
-            'actor_name' => $userName ?? 'Razorpay'
+            'actor_name'    => $userName,
+            'actor_role'    => $userRole,
         ];
     }
 
