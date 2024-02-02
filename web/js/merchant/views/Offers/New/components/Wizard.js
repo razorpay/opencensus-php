@@ -95,19 +95,24 @@ export default class CreateOfferWizard extends React.Component {
 
     const disabled = validTabs.some((tab) => tab === false) || props.disabled || props.isLoading;
     const layout = !isLastTab && 'tabular';
+    const { offersData, isLowCostExperimentEnabled } = this.props;
 
-    const isDisabled = () => {
-      const { offersData, isLowCostExperimentEnabled } = this.props;
+    const isApplicableOnStepValid = () => {
       const { currentTab } = this.state;
-      // Validate Low cost offer form if the experiment is enabled
-      if (
+      return (
         currentTab === 2 &&
         isLowCostExperimentEnabled &&
         offersData &&
         (!Object.keys(offersData).length ||
           isOfferTypeAbsent(offersData) ||
           isLowCostAmountMissing(offersData))
-      ) {
+      );
+    };
+
+    const isDisabled = () => {
+      const { currentTab } = this.state;
+      // Validate Low cost offer form if the experiment is enabled
+      if (isApplicableOnStepValid()) {
         return true;
       }
       return !validTabs[currentTab];
@@ -124,6 +129,10 @@ export default class CreateOfferWizard extends React.Component {
           tabClickHandler={this.handleTabChange}
           disableTabCondition={(tabIndex) => {
             let isDisabled = tabIndex !== 0 && !validTabs[tabIndex - 1];
+            // If low cost tenure selected but form is invalid disable next step in sidebar
+            if (tabIndex === 3 && isApplicableOnStepValid()) {
+              return true;
+            }
             if (tabIndex === 4) {
               validTabs.forEach((isValidTab, idx) => {
                 if (!isValidTab && idx !== 4 && !isDisabled) {
