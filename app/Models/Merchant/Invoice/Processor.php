@@ -372,8 +372,8 @@ class Processor extends Base\Core
                                 Entity::YEAR => $this->year,
                                 Entity::TYPE => $type,
                                 Entity::GSTIN => $this->gstin,
-                                Entity::AMOUNT => $feeDetail[Entity::AMOUNT],
-                                Entity::TAX => $feeDetail[Entity::TAX],
+                                Entity::AMOUNT => $feeDetail[Entity::AMOUNT] ?? 0,
+                                Entity::TAX => $feeDetail[Entity::TAX] ?? 0,
                                 Entity::DESCRIPTION => $feeDetail[Entity::DESCRIPTION],
                             ];
 
