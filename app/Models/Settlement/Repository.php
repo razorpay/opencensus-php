@@ -7,8 +7,11 @@ use RZP\Models\Base;
 use RZP\Models\Merchant as M;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Base\ConnectionType;
 use RZP\Models\Transfer\SettlementStatus;
+use RZP\Modules\Acs\QueryShadowModeEvent;
 use RZP\Models\Transfer\Entity as TransferEntity;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class Repository extends Base\Repository
 {
@@ -28,6 +31,13 @@ class Repository extends Base\Repository
         Entity::UTR                    => 'sometimes|alpha_num',
     ];
 
+    function __construct()
+    {
+        parent::__construct();
+
+        $this->asvRouter = new AsvRouter();
+    }
+
     /**
      * As a part of RSR-3104; now this settlement retry will be possible only
      * for the settlements created via API & won't work for settlement created via NSS.
@@ -37,6 +47,8 @@ class Repository extends Base\Repository
      */
     public function getFailedSettlementsForRetry(array $setlIds)
     {
+        $callingViaTidb = false;
+
         $merchantId = $this->repo->merchant->dbColumn(M\Entity::ID);
 
         $settlementId = $this->dbColumn(Entity::ID);
@@ -44,17 +56,26 @@ class Repository extends Base\Repository
 
         $cols = $this->dbColumn('*');
 
-        $setls = $this->newQuery()
-                      ->select($cols)
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $callingViaTidb = true;
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
+            $query = $this->newQuery();
+        }
+
+        $setls = $query->select($cols)
                       ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
                       ->where(Entity::STATUS, '=', Status::FAILED)
                       ->whereIn($settlementId, $setlIds)
                       ->where(M\Entity::HOLD_FUNDS, '=', 0)
                       ->where(Entity::IS_NEW_SERVICE, '=', 0)
-                      ->with('merchant', 'merchant.bankAccount')
-                      ->get();
+                      ->with('merchant', 'merchant.bankAccount');
 
-        return $setls;
+        if (!$callingViaTidb and $this->asvRouter->shouldShadowCompareTiDBResults()) {
+            event(new QueryShadowModeEvent(__FUNCTION__, $setls->toSql(), $query->getBindings()));
+        }
+
+        return $setls->get();
     }
 
     public function getSettlementWithFeesAsNullOrZero()
