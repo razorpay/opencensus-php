@@ -1,18 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
+import { Box } from '@razorpay/blade/components';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import { ModeT } from 'common/services/mode';
+import Spinner from 'common/ui/Spinner';
+import EmptyList from 'merchant/components/EmptyList';
+import ProgramsListItem from 'merchant/views/GCMS/Programs/ProgramsListItem';
 import {
   LIST_FETCH_BATCH_SIZE,
   fetchProgramsForReseller,
 } from 'merchant/views/GCMS/Resellers/queries';
-import { Box } from '@razorpay/blade/components';
-import ProgramsListItem from 'merchant/views/GCMS/Programs/ProgramsListItem';
-import EmptyList from 'merchant/components/EmptyList';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
-import { useParams } from 'react-router-dom';
-import Spinner from 'common/ui/Spinner';
-import { ModeT } from 'common/services/mode';
 
 const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
+  const navigate = useNavigate();
   const { resellerId } = useParams<{ resellerId: string }>();
   const [skip, setSkip] = useState(0);
 
@@ -54,7 +56,11 @@ const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
             {/* @ts-expect-error array-undefined-check */}
             {Array.isArray(programs?.items) && programs?.items?.length > 0 ? (
               programs?.items?.map((program) => (
-                <ProgramsListItem key={program.id} program={program} />
+                <ProgramsListItem
+                  key={program.id}
+                  program={program}
+                  onClick={() => navigate(`/gcms/programs/${program.id}`)}
+                />
               ))
             ) : (
               <Box width="100%" height="100%">

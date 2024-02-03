@@ -2,7 +2,7 @@ import 'react-dates/initialize';
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 
-import { GcmsTestWrapper } from 'merchant/views/GCMS/shared/test-utils';
+import { GCMSTestPageRenderer } from 'merchant/views/GCMS/shared/test-utils';
 import { render, userEvent } from 'test-utils';
 
 import { resellersListResponse } from './mocks/fixtures';
@@ -19,9 +19,9 @@ jest.mock('common/splitz', () => ({
 
 const renderResellers = () => {
   render(
-    <GcmsTestWrapper>
+    <GCMSTestPageRenderer>
       <Resellers />
-    </GcmsTestWrapper>,
+    </GCMSTestPageRenderer>,
   );
 };
 

@@ -9,9 +9,9 @@ import EmptyList from 'merchant/components/EmptyList';
 import {
   getProgramContentSections,
   getProgramDenominationSections,
-  getProgramHeaderSections,
 } from 'merchant/views/GCMS/Programs/constants';
 import { fetchProgramById } from 'merchant/views/GCMS/Programs/queries';
+import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
 
 const ProgramDetails: React.FC = () => {
@@ -34,7 +34,6 @@ const ProgramDetails: React.FC = () => {
     navigate('/gcms/programs');
   };
 
-  const headerSections = program ? getProgramHeaderSections(program) : [];
   const contentSections = program ? getProgramContentSections(program) : [];
   const denominationSections = program ? getProgramDenominationSections(program) : [];
 
@@ -55,51 +54,11 @@ const ProgramDetails: React.FC = () => {
               s: '100%',
             }}
           >
-            <Box
-              height="116px"
-              display="flex"
-              flexDirection="row"
-              alignItems="center"
-              padding="spacing.6"
-              borderRadius="medium"
-            >
-              <Box width="94px" height="60px">
-                <img
-                  src={program.policies?.image_link}
-                  width="100%"
-                  height="100%"
-                  alt={program.name}
-                />
-              </Box>
-              <Box paddingLeft="spacing.8">
-                <Box>
-                  <Heading size="large" weight="bold">
-                    {program.name}
-                  </Heading>
-                </Box>
-                <Box
-                  display="flex"
-                  flexDirection="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  {headerSections.map((section) => (
-                    <Box
-                      key={section.name}
-                      padding={['spacing.4', 'spacing.8', 'spacing.4', 'spacing.0']}
-                      display="flex"
-                      flexDirection="row"
-                      alignItems="center"
-                    >
-                      <Text color="surface.text.muted.lowContrast">
-                        {section.name}:&nbsp;&nbsp;
-                      </Text>
-                      <Text weight="bold">{capitalize(section.value)}</Text>
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            </Box>
+            <ProgramHeaderSection
+              program={program}
+              containerProps={{ height: '116px' }}
+              imageProps={{ height: '60px', width: '94px' }}
+            />
           </Box>
         )}
 
@@ -107,7 +66,7 @@ const ProgramDetails: React.FC = () => {
           <div className="content">
             {isLoading ? (
               <div className="page-spinner-container">
-                <Spinner center />
+                <Spinner center={undefined} />
               </div>
             ) : program ? (
               <Box

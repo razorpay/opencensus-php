@@ -4,10 +4,10 @@ import { Provider } from 'react-redux';
 
 import { storeWithInitialState } from 'merchant/store';
 import ResellerAccounts from 'merchant/views/GCMS/Funds/ResellerAccounts';
+import { GCMSTestPageRenderer } from 'merchant/views/GCMS/shared/test-utils';
 import { render } from 'test-utils';
 
 import { gcmsFundsResellerAccountsResponse } from './mocks/fixtures';
-import { GcmsTestWrapper } from 'merchant/views/GCMS/shared/test-utils';
 
 const variantOn = { razorpay_gcms: { variables: { result: 'on' } } };
 
@@ -29,11 +29,11 @@ jest.mock('common/splitz', () => ({
 
 const renderResellerAccounts = () => {
   render(
-    <GcmsTestWrapper>
+    <GCMSTestPageRenderer>
       <Provider store={storeWithInitialState(storeState)}>
         <ResellerAccounts />
       </Provider>
-    </GcmsTestWrapper>,
+    </GCMSTestPageRenderer>,
   );
 };
 

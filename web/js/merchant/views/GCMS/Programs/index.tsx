@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Box, Title } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 import Spinner from 'common/ui/Spinner';
 import EmptyList from 'merchant/components/EmptyList';
@@ -13,6 +14,7 @@ import { ListApiResponse } from 'merchant/views/Wallet/types';
 
 const Programs: React.FC = () => {
   const mode = 'test';
+  const navigate = useNavigate();
   const [paginationState, setPaginationState] = useState({
     skip: 0,
     count: 12,
@@ -47,7 +49,7 @@ const Programs: React.FC = () => {
         <div className="content">
           {isLoading ? (
             <div className="page-spinner-container">
-              <Spinner center />
+              <Spinner center={undefined} />
             </div>
           ) : (
             <Box
@@ -68,7 +70,11 @@ const Programs: React.FC = () => {
                 {/* @ts-expect-error array-undefined-check */}
                 {Array.isArray(programs?.items) && programs.items.length > 0 ? (
                   programs?.items.map((program) => (
-                    <ProgramsListItem key={program.id} program={program} />
+                    <ProgramsListItem
+                      key={program.id}
+                      program={program}
+                      onClick={() => navigate(`/gcms/programs/${program.id}`)}
+                    />
                   ))
                 ) : (
                   <Box width="100%" height="100%">

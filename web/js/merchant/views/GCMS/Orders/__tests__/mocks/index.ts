@@ -1,9 +1,47 @@
 import { rest } from 'msw';
 
-import { ordersListResponse } from './fixtures';
+import { programsListResponse } from 'merchant/views/GCMS/Resellers/__tests__/mocks/fixtures';
+import { GCMS_BASE_PATH } from 'merchant/views/GCMS/shared/constants';
+
+import {
+  merchantResellersResponse,
+  merchantDetailsResponse,
+  orderResponse,
+  merchantId,
+  resellerId,
+  orderId,
+  orderItemsResponse,
+  resellerDetailId,
+  itemId,
+  ordersListResponse,
+} from './fixtures';
 
 export default [
-  rest.get(`*/gcoms/orders`, (req, res, ctx) => {
+  rest.get(
+    `*${GCMS_BASE_PATH}/merchants/${merchantId}/resellers/${resellerId}`,
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(merchantResellersResponse), ctx.delay(100));
+    },
+  ),
+  rest.get(`*${GCMS_BASE_PATH}/orders/${orderId}`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(orderResponse), ctx.delay(100));
+  }),
+  rest.patch(`*${GCMS_BASE_PATH}/orders/${orderId}`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(orderResponse), ctx.delay(100));
+  }),
+  rest.get(`*${GCMS_BASE_PATH}/merchant_details/${resellerDetailId}`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(merchantDetailsResponse), ctx.delay(100));
+  }),
+  rest.get(`*${GCMS_BASE_PATH}/orders/${orderId}/items`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(orderItemsResponse), ctx.delay(100));
+  }),
+  rest.patch(`*${GCMS_BASE_PATH}/orders/${orderId}/items/${itemId}`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(orderItemsResponse), ctx.delay(100));
+  }),
+  rest.get(`*${GCMS_BASE_PATH}/skus`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(programsListResponse), ctx.delay(100));
+  }),
+  rest.get(`*${GCMS_BASE_PATH}/orders`, (req, res, ctx) => {
     if (req.url.searchParams.get('reseller_name') === 'abc') {
       return res(
         ctx.status(200),

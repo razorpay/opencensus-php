@@ -1,11 +1,13 @@
 import errorService from '@razorpay/universe-utils/errorService';
+
 import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { ModeT } from 'common/services/mode';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { stringifyQueryParams } from 'common/utils/rzp-utils';
-import { ListApiResponse, Program } from 'merchant/views/GCMS/Programs/types';
+import { Program } from 'merchant/views/GCMS/Programs/types';
 import { Reseller, ResellerBalance } from 'merchant/views/GCMS/Resellers/types';
 import { RESELLERS_STATUS } from 'merchant/views/GCMS/shared/constants';
+import { ListApiResponse } from 'merchant/views/GCMS/shared/types';
 
 export const LIST_FETCH_BATCH_SIZE = 5;
 

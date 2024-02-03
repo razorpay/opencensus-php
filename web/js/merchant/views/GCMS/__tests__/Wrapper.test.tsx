@@ -1,10 +1,9 @@
 import React from 'react';
 import { render as rootRender, screen } from '@testing-library/react';
 import { createMemoryHistory } from 'history';
-import { Router } from 'react-router-dom';
 
 import { SpiltzContextState } from 'common/splitz/types';
-import GCMSWrapper from 'merchant/views/GCMS/shared/Wrapper';
+import { GCMSTestWrapperRenderer } from 'merchant/views/GCMS/shared/test-utils';
 
 const variantOn = { razorpay_gcms: { variables: { result: 'on' } } };
 const variantOff = { razorpay_gcms: { variables: { result: 'off' } } };
@@ -27,11 +26,9 @@ describe('GCMS: Wrapper', () => {
     });
     history.push = jest.fn();
     rootRender(
-      <Router location={history.location} navigator={history}>
-        <GCMSWrapper>
-          <TestComponent />
-        </GCMSWrapper>
-      </Router>,
+      <GCMSTestWrapperRenderer history={history}>
+        <TestComponent />
+      </GCMSTestWrapperRenderer>,
     );
     expect(screen.getByText('Test')).toBeInTheDocument();
   });
@@ -44,11 +41,9 @@ describe('GCMS: Wrapper', () => {
     });
     history.push = jest.fn();
     rootRender(
-      <Router location={history.location} navigator={history}>
-        <GCMSWrapper>
-          <TestComponent />
-        </GCMSWrapper>
-      </Router>,
+      <GCMSTestWrapperRenderer history={history}>
+        <TestComponent />
+      </GCMSTestWrapperRenderer>,
     );
     expect(history.location.pathname).toBe('/dashboard');
   });

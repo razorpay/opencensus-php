@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Box, Text, Amount, Heading, Divider } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
-import moment from 'moment';
 
 import Shimmer from 'common/components/Shimmer';
 import TableBody from 'common/ui/TableBody';
+import { convertUnixToDate } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import store from 'merchant/store';
@@ -25,7 +25,7 @@ const brandTrasactionColumns = [
   },
   {
     label: 'Date and Time',
-    value: (transaction) => <Text>{moment(transaction.created_at).format('Do MMM, YYYY')}</Text>,
+    value: (transaction) => <Text>{convertUnixToDate(transaction.created_at)}</Text>,
   },
   {
     label: 'Reference Id',

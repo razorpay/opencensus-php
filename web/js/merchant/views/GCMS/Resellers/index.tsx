@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Title, Box, Text, Amount, Badge } from '@razorpay/blade/components';
+import { Title, Box, Text, Badge } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { NavLink } from 'react-router-dom';
 import { ModeT } from 'common/services/mode';
 import Spinner from 'common/ui/Spinner';
 import TableBody from 'common/ui/TableBody';
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
@@ -38,14 +39,7 @@ const order_count = {
 };
 const aggregate_order_value = {
   title: 'Aggregate Order Value',
-  value: (item) => (
-    <Amount
-      value={parseInt(
-        item.aggregate_order_value ? item.aggregate_order_value : parseInt('0', 10),
-        10,
-      )}
-    />
-  ),
+  value: (item) => <Text>{getFormattedAmountNew(item.aggregate_order_value || 0, 10)}</Text>,
 };
 
 const status = {

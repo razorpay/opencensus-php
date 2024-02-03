@@ -9,16 +9,17 @@ import { daysToMonths, getProgramDenomination } from 'merchant/views/GCMS/shared
 
 type Props = {
   program: Program;
+  onClick: () => void;
 };
 
-const ProgramsListItem: React.FC<Props> = ({ program }) => {
+const ProgramsListItem: React.FC<Props> = ({ program, onClick }) => {
   const programType =
     Object.keys(PROGRAM_TYPES).find((key) => PROGRAM_TYPES[key].id === program.type) || 'VOUCHER';
 
   return (
     <Box padding="spacing.4" flexBasis="33.33%">
       <Card
-        href={`programs/${program.id}/`}
+        onClick={onClick}
         accessibilityLabel="GCMS Programs Card"
         elevation="midRaised"
         onHover={function noRefCheck() {}}

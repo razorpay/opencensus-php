@@ -69,6 +69,7 @@ const routes = {
   GCMS_FUNDS_RESELLER_ACCOUNTS: '/app/gcms/funds/reseller-account',
   GCMS_BRAND_TRANSACTIONS: '/app/gcms/funds/brand-account',
   GCMS_ORDERS: '/app/gcms/orders',
+  GCMS_ORDERS_CREATE: '/app/gcms/orders/create',
   GCMS_RESELLERS: '/app/gcms/resellers',
 };
 

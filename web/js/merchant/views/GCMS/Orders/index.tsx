@@ -1,32 +1,34 @@
 import React, { useState } from 'react';
-import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
-import { Amount, Badge, Box, Text, Title } from '@razorpay/blade/components';
+import { Badge, Box, Text, Title } from '@razorpay/blade/components';
+import { useQuery } from '@tanstack/react-query';
+import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+
+import { ModeT } from 'common/services/mode';
+import Spinner from 'common/ui/Spinner';
 import TableBody from 'common/ui/TableBody';
+import { convertUnixToDate, getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
-import { NavLink } from 'react-router-dom';
-import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
-import { useQuery } from '@tanstack/react-query';
-import { LIST_FETCH_BATCH_SIZE, fetchOrders } from './queries';
-import Spinner from 'common/ui/Spinner';
-import OrdersFilter from './OrdersFilters';
+import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
 import { ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
-import moment from 'moment';
-import { connect } from 'react-redux';
-import { ModeT } from 'common/services/mode';
+import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
+
+import OrdersFilter from './OrdersFilters';
+import { LIST_FETCH_BATCH_SIZE, fetchOrders } from './queries';
 
 const ORDER_LIST_COLUMNS = [
   {
     label: 'Order ID',
     value: (order) => (
-      <NavLink key={order.orderId} to={`#`}>
+      <NavLink key={order.orderId} to="#">
         {order.id}
       </NavLink>
     ), //TODO: replace with actual order details link
   },
   {
     label: 'Order Date',
-    value: (order) => <Text>{moment(order.created_at).format('Do MMM, YYYY')}</Text>,
+    value: (order) => <Text>{convertUnixToDate(order.created_at)}</Text>,
   },
   // {
   //   label: 'Order created by',
@@ -36,6 +38,7 @@ const ORDER_LIST_COLUMNS = [
     label: 'Reseller',
     value: (order) => <Text>{order.reseller_name}</Text>,
   },
+
   // {
   //   label: 'Program Type',
   //   value: (order) => <Text>{order.programType}</Text>, //TODO: not present in order response
@@ -46,7 +49,7 @@ const ORDER_LIST_COLUMNS = [
   },
   {
     label: 'Total Value',
-    value: (order) => <Amount value={parseInt(order.total_amount, 10)} />,
+    value: (order) => <Text>{getFormattedAmountNew(order.total_amount, 10)}</Text>,
   },
   {
     label: 'Status',
@@ -129,7 +132,7 @@ const Orders = ({ mode }: { mode: ModeT }) => {
           <OrdersFilter onSearch={handleSearch} />
           {isLoading ? (
             <div className="page-spinner-container">
-              <Spinner center />
+              <Spinner center={undefined} />
             </div>
           ) : (
             <>

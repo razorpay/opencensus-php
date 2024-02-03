@@ -6,7 +6,7 @@ import { screen, waitFor } from '@testing-library/react';
 import BrandAccount from 'merchant/views/GCMS/Funds/BrandAccount/index';
 import { listFundTransactionsResponse } from 'merchant/views/Wallet/Funds/Transactions/__tests__/mocks/fixtures';
 import { render } from 'test-utils';
-import { GcmsTestWrapper } from 'merchant/views/GCMS/shared/test-utils';
+import { GCMSTestPageRenderer } from 'merchant/views/GCMS/shared/test-utils';
 
 const variantOn = { razorpay_gcms: { variables: { result: 'on' } } };
 
@@ -18,9 +18,9 @@ jest.mock('common/splitz', () => ({
 
 const renderbrandAccounts = () => {
   render(
-    <GcmsTestWrapper>
+    <GCMSTestPageRenderer>
       <BrandAccount />
-    </GcmsTestWrapper>,
+    </GCMSTestPageRenderer>,
   );
 };
 
@@ -31,7 +31,7 @@ describe('GCMS: Brand Transactions', () => {
     await waitFor(() => {
       expect(screen.getByText('Total Available Fund')).toBeInTheDocument();
       expect(screen.getByText('Transaction Id')).toBeInTheDocument();
-      expect(screen.getAllByText('20th Jan, 1970').length).toBe(
+      expect(screen.getAllByText('I9eCvXfHx7nzZf').length).toBe(
         listFundTransactionsResponse.data.items.length,
       );
     });
@@ -68,7 +68,7 @@ describe('GCMS: Brand Transactions', () => {
     userEvent.click(screen.getByText('Clear'));
 
     await waitFor(() => {
-      expect(screen.getAllByText('20th Jan, 1970').length).toBe(
+      expect(screen.getAllByText('I9eCvXfHx7nzZf').length).toBe(
         listFundTransactionsResponse.data.items.length,
       );
     });

@@ -1,8 +1,6 @@
 export const WALLET_BASE_PATH = 'wallet/proxy/issuing';
+export const GCMS_BASE_PATH = `gcoms`;
 export const RESELLER_PROGRAMS_PATH = 'programs';
-
-export const GCOMS_BASE_PATH = 'gcoms';
-
 export const PROGRAM_TYPES = {
   VOUCHER: {
     id: 'voucher',
@@ -56,7 +54,6 @@ export const DATE_RANGE_PRESETS: [string, number, string][] = [
   ['Past 30 Days', -30, 'days'],
   ['Past 90 Days', -90, 'days'],
 ];
-
 export const RESELLERS_STATUS = {
   active: {
     label: 'Active',

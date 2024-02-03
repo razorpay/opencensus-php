@@ -1,8 +1,9 @@
 import 'react-dates/initialize';
 import React from 'react';
 import { render as rootRender, screen, waitFor } from '@testing-library/react';
+
 import ResellerPrograms from 'merchant/views/GCMS/Resellers/ResellerPrograms';
-import { GcmsTestWrapper } from 'merchant/views/GCMS/shared/test-utils';
+import { GCMSTestPageRenderer } from 'merchant/views/GCMS/shared/test-utils';
 
 const variantOn = { razorpay_gcms: { variables: { result: 'on' } } };
 
@@ -13,14 +14,15 @@ jest.mock('common/splitz', () => ({
 }));
 jest.mock('react-router-dom', () => ({
   useParams: () => ({ resellerId: 'N91osUDdN9WdO9' }),
+  useNavigate: () => jest.fn(),
 }));
 
 describe("GCMS: Reseller's programs", () => {
   it("should render reseller's program list", async () => {
     rootRender(
-      <GcmsTestWrapper>
+      <GCMSTestPageRenderer>
         <ResellerPrograms mode="test" />
-      </GcmsTestWrapper>,
+      </GCMSTestPageRenderer>,
     );
 
     await waitFor(() => {

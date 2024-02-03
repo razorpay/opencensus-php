@@ -1,22 +1,8 @@
-import { ModeT } from 'common/services/mode';
+import { ListApiParams } from 'merchant/views/GCMS/shared/types';
 
 export enum ProgramPriceType {
   RANGE = 'range',
   FIXED = 'fixed',
-}
-
-export interface ListApiParams {
-  skip?: number;
-  count?: number;
-  mode: ModeT;
-  account_id?: string;
-}
-
-export interface ListApiResponse<T> {
-  entity: string;
-  count: number;
-  has_more: boolean;
-  items: T[];
 }
 
 export type ProgramApiParams = { programId?: string } & ListApiParams;
@@ -49,3 +35,7 @@ export type Program = {
   type: string;
   policies: ProgramPolicy;
 };
+
+export interface SKU extends Program {
+  program_id: string;
+}
