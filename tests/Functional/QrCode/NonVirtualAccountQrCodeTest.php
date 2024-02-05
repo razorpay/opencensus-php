@@ -2082,11 +2082,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $expectedResponse = $this->testData['testFetchPaymentsForQrCode'];
 
-        $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value'] = $qrCodeId;
-        $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id']                                                          = $qrPayment['id'];
-
-        $this->createEsMockAndSetExpectations('testFetchPaymentsForQrCode');
-
         $this->assertArraySelectiveEquals($expectedResponse, $this->fetchQrPayment('qr_' . $qrCodeId));
     }
 
@@ -2271,8 +2266,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testFetchPaymentsForQrCodeFromDB()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::QR_FETCH_PAYMENT_FROM_DB => RazorxTreatment::RAZORX_VARIANT_ON]);
-
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
         $this->createQrCode(

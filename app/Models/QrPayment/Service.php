@@ -69,8 +69,7 @@ class Service extends Base\Service
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
         if (($routeName === 'qr_payment_fetch_for_qr_code') and
-            ($this->merchant->getId() !== null) and
-            ($this->checkIfExperimentEnabledtoFetchPaymentFromDB($this->merchant->getId()) === true))
+            ($this->merchant->getId() !== null))
         {
             $this->trace->info(TraceCode::QR_CODE_FETCH_PAYMENT_FROM_DB_REQUEST,
                                [
@@ -317,16 +316,5 @@ class Service extends Base\Service
         }
     }
 
-    public function checkIfExperimentEnabledtoFetchPaymentFromDB($mid)
-    {
-        $mode = $this->app['rzp.mode'];
-
-        $variant = $this->app['razorx']->getTreatment($mid,
-                                                      RazorxTreatment::QR_FETCH_PAYMENT_FROM_DB,
-                                                      $mode
-        );
-
-        return strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON;
-    }
 
 }

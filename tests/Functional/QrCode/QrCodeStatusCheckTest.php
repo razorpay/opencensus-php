@@ -1156,13 +1156,6 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::fake();
 
-        $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCode['id'], 'qr_');
-
-        $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
-
-        $this->createEsMockAndSetExpectations(__FUNCTION__);
-
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
 
@@ -1217,13 +1210,6 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::fake();
 
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCode['id'], 'qr_');
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
-
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
-
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
 
@@ -1274,13 +1260,6 @@ class QrCodeStatusCheckTest extends TestCase
         $this->assertEquals(1, $remindersCallCount);
 
         Queue::fake();
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCode['id'], 'qr_');
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
-
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
 
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
@@ -1360,13 +1339,6 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::fake();
 
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCodeId, 'qr_');
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = $qrPayment->getId();
-
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
-
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
 
@@ -1422,13 +1394,6 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::fake();
 
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCode['id'], 'qr_');
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
-
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
-
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
 
@@ -1437,7 +1402,6 @@ class QrCodeStatusCheckTest extends TestCase
         Carbon::setTestNow($currentTime->addSeconds(190));
 
         $this->startTest();
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
         Carbon::setTestNow($currentTime->addSeconds(30));
         $this->startTest();
 
@@ -1448,7 +1412,7 @@ class QrCodeStatusCheckTest extends TestCase
     public function testStatusCheckApiVerifySuccessResponseForUpiMindgate()
     {
         $this->config['gateway.mock_upi_mozart'] = true;
-        $days =1;
+
         $this->setMockRazorxTreatment(
             [
                 RazorxTreatment::HDFC_QR_EXPIRY => RazorxTreatment::RAZORX_VARIANT_ON,
@@ -1490,20 +1454,12 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::fake();
 
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCode['id'], 'qr_');
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
-
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
-
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
 
         $this->ba->privateAuth('rzp_live_LiveAccountMer');
         $this->startTest();
         Queue::assertPushed(QrStatusCheck::class, 1);
-
     }
 
     public function testStatusCheckApiVerifyWhenPaymentIsAlreadyExistsForUpiMindgate()
@@ -1558,14 +1514,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::fake();
 
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCodeId, 'qr_');
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($qrPayment['id'], 'qp_');
-
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCodeId, $this->testData[__FUNCTION__]['request']['url']);
-        $this->createEsMockAndSetExpectations("testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments");
 
         $this->ba->privateAuth('rzp_live_LiveAccountMer');
 
@@ -1575,6 +1525,7 @@ class QrCodeStatusCheckTest extends TestCase
         Queue::assertPushed(QrStatusCheck::class, 0);
 
     }
+
     public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsAndBefore3MinutesOfCreationForUpiMindgateWithEzetapSource()
     {
         $this->setMockRazorxTreatment(
@@ -1619,13 +1570,6 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::fake();
 
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCode['id'], 'qr_');
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
-
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
-
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
 
@@ -1668,13 +1612,6 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::fake();
 
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCode['id'], 'qr_');
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
-
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
-
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
 
@@ -1685,7 +1622,6 @@ class QrCodeStatusCheckTest extends TestCase
 
     public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiMindgate()
     {
-
         $terminal = $this->fixtures->create(
             'terminal:dedicated_upi_mindgate_terminal',
             [
@@ -1724,13 +1660,6 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::fake();
 
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCode['id'], 'qr_');
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
-
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
-
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
 
@@ -1739,13 +1668,13 @@ class QrCodeStatusCheckTest extends TestCase
         Carbon::setTestNow($currentTime->addSeconds(190));
 
         $this->startTest();
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
         Carbon::setTestNow($currentTime->addSeconds(30));
         $this->startTest();
 
         // Assert that only one job was pushed.
         Queue::assertPushed(QrStatusCheck::class, 1);
     }
+
     public function testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsWhenLockAlreadyAcquiredForUpiMindgateWithEzetapRequestSource()
     {
 
@@ -1790,13 +1719,6 @@ class QrCodeStatusCheckTest extends TestCase
 
         Queue::fake();
 
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['qr_code_id']['value']
-            = str_after($qrCode['id'], 'qr_');
-
-        $this->testData['testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPaymentsExpectedSearchResponse']['hits']['hits'][0]['_id'] = '';
-
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
-
         $this->testData[__FUNCTION__]['request']['url'] =
             str_replace('RandomQrCodeId', $qrCode['id'], $this->testData[__FUNCTION__]['request']['url']);
 
@@ -1805,7 +1727,6 @@ class QrCodeStatusCheckTest extends TestCase
         Carbon::setTestNow($currentTime->addSeconds(190));
 
         $this->startTest();
-        $this->createEsMockAndSetExpectations('testQrStatusCheckDispatchViaFetchPaymentsApiWithoutAnyQrPayments');
         Carbon::setTestNow($currentTime->addSeconds(30));
         $this->startTest();
 
