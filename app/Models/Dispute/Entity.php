@@ -324,7 +324,6 @@ class Entity extends Base\PublicEntity
         }
 
         if (($isRefundedChargeback === false) and
-            ($this->payment->getCurrency() === Currency\Currency::INR) and
             ($baseAmount > $this->payment->getBaseAmountUnrefunded()))
         {
             $baseAmount = $this->payment->getBaseAmountUnrefunded();
