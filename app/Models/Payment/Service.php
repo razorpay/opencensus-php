@@ -6767,12 +6767,20 @@ class Service extends Base\Service
                 $this->verifyPaymentTransaction($payment->getId());
             }
 
+            $updatedPayment = $payment;
+            // reload the payment for cps_route=7, as the payment is authorized and updated in UPS DB
+            if (($payment->isExternal() === true) and
+                ($payment->getCpsRoute() === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE))
+            {
+                $updatedPayment = $this->repo->payment->findOrFail($payment->getId());
+            }
+
             return [
-                'success'        => (($payment->getStatus() === Payment\Status::AUTHORIZED) or ($payment->getStatus() === Payment\Status::CAPTURED)),
-                'payment_id'     => $payment->getId(),
-                'amount'         => $payment->getAmount(),
-                'status'         => $payment->getStatus(),
-                'rrn'            => $payment->getReference16(),
+                'success'        => (($updatedPayment->getStatus() === Payment\Status::AUTHORIZED) or ($updatedPayment->getStatus() === Payment\Status::CAPTURED)),
+                'payment_id'     => $updatedPayment->getId(),
+                'amount'         => $updatedPayment->getAmount(),
+                'status'         => $updatedPayment->getStatus(),
+                'rrn'            => $updatedPayment->getReference16(),
                 'art_request_id' => $input['meta']['art_request_id'],
             ];
         }
