@@ -43,6 +43,70 @@ return [
         ],
     ],
 
+    'testInternalTruecallerCallbackWithIdMigratedValidData' => [
+        'request' => [
+            'successContent' => [
+                'is_request_id_migrated' => true,
+                'true_caller_entity' => [
+                    'request_id' => 'KlUikwkY8BSH6v-01'
+                ],
+                'requestId' => 'KlUikwkY8BSH6v-01',
+                'accessToken' => 'a1asX--8_yw-OF--E6Gj_DPyKelJIGUUeYB9U9MJhyeu4hOCbrl',
+                'endpoint' => 'https://profile4-noneu.truecaller.com/v1/default',
+            ],
+            'userRejectedContent' => [
+                'is_request_id_migrated' => true,
+                'true_caller_entity' => [
+                    'request_id' => 'KlUikwkY8BSH6w-01'
+                ],
+                'requestId' => 'KlUikwkY8BSH6w-01',
+                'status' => 'user_rejected',
+            ],
+            'usedAnotherNumberContent' => [
+                'is_request_id_migrated' => true,
+                'true_caller_entity' => [
+                    'request_id' => 'KlUikwkY8BSH6x-01'
+                ],
+                'requestId' => 'KlUikwkY8BSH6x-01',
+                'status' => 'use_another_number',
+            ],
+            'userProfile' => [
+                'contact' => 916300335800,
+                'email' => 'komanduri.srikar7@gmail.com',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testInternalTruecallerCallbackWithIdNotMigratedValidData' => [
+        'request' => [
+            'successContent' => [
+                'is_request_id_migrated' => false,
+                'requestId' => 'KlUikwkY8BSH6v-01',
+                'accessToken' => 'a1asX--8_yw-OF--E6Gj_DPyKelJIGUUeYB9U9MJhyeu4hOCbrl',
+                'endpoint' => 'https://profile4-noneu.truecaller.com/v1/default',
+            ],
+            'userRejectedContent' => [
+                'is_request_id_migrated' => false,
+                'requestId' => 'KlUikwkY8BSH6w-01',
+                'status' => 'user_rejected',
+            ],
+            'usedAnotherNumberContent' => [
+                'is_request_id_migrated' => false,
+                'requestId' => 'KlUikwkY8BSH6x-01',
+                'status' => 'use_another_number',
+            ],
+            'userProfile' => [
+                'contact' => 916300335800,
+                'email' => 'komanduri.srikar7@gmail.com',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testVerifyTruecallerRequestWithInvalidData' => [
         'request' => [
             'contentWithoutRequestId' => [],

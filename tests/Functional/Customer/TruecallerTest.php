@@ -84,6 +84,47 @@ class TruecallerTest extends TestCase
         $this->sendCallback($contentWithoutEndpoint);
     }
 
+    public function testInternalTruecallerCallbackWithIdMigratedValidData(): void
+    {
+
+        $successContent = $this->testData[__FUNCTION__]['request']['successContent'];
+        $userProfile = $this->testData[__FUNCTION__]['request']['userProfile'];
+        $this->mockTruecallerResponse($userProfile);
+        $response = $this->sendCallback($successContent);
+        $this->assertEquals([],$response);
+
+        $userRejectedContent = $this->testData[__FUNCTION__]['request']['userRejectedContent'];
+        $response = $this->sendCallback($userRejectedContent);
+        $this->assertEquals([],$response);
+
+        $usedAnotherNumberContent = $this->testData[__FUNCTION__]['request']['usedAnotherNumberContent'];
+        $response = $this->sendCallback($usedAnotherNumberContent);
+        $this->assertEquals([],$response);
+    }
+
+    public function testInternalTruecallerCallbackWithIdNotMigratedValidData(): void
+    {
+        $truecallerAuthRequest = (new Service())->create();
+        $id = $truecallerAuthRequest->getId();
+
+        $successContent = $this->testData[__FUNCTION__]['request']['successContent'];
+        $userProfile = $this->testData[__FUNCTION__]['request']['userProfile'];
+        $this->setTruecallerRequestId($id, $successContent);
+        $this->mockTruecallerResponse($userProfile);
+        $response = $this->sendCallback($successContent);
+        $this->assertEquals([],$response);
+
+        $userRejectedContent = $this->testData[__FUNCTION__]['request']['userRejectedContent'];
+        $this->setTruecallerRequestId($id, $userRejectedContent);
+        $response = $this->sendCallback($userRejectedContent);
+        $this->assertEquals([],$response);
+
+        $usedAnotherNumberContent = $this->testData[__FUNCTION__]['request']['usedAnotherNumberContent'];
+        $this->setTruecallerRequestId($id, $usedAnotherNumberContent);
+        $response = $this->sendCallback($usedAnotherNumberContent);
+        $this->assertEquals([],$response);
+    }
+
     public function testVerifyTruecallerRequestWithInvalidData(): void
     {
         $this->ba->publicAuth();

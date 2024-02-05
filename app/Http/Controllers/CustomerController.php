@@ -568,6 +568,15 @@ class CustomerController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function handleTruecallerCallbackInternal()
+    {
+        $input = Request::all();
+
+        $this->service(E::TRUECALLER_AUTH_REQUEST)->handleTruecallerCallbackInternal($input);
+
+        return ApiResponse::json([]);
+    }
+
     public function verifyTruecallerAuthRequest()
     {
         $input = Request::all();

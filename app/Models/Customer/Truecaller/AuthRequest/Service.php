@@ -66,4 +66,15 @@ class Service extends BaseService
     {
         $this->core()->handleTruecallerCallback($input);
     }
+
+    /**
+     * Handles the internal callback which truecaller->checkout-service posts to our endpoint
+     *
+     * @param $input
+     * @return void
+     */
+    public function handleTruecallerCallbackInternal($input): void
+    {
+        $this->core()->handleTruecallerCallbackInternal($input);
+    }
 }

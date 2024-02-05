@@ -108,6 +108,28 @@ class Core extends BaseCore
         return $response;
     }
 
+
+
+    public function handleTruecallerCallbackInternal(array $input): void
+    {
+        $requestIdPrefix = $this->getRequestIdPrefix($input['requestId']);
+        $isRequestIdMigrated = $input['is_request_id_migrated'];
+
+        if ($isRequestIdMigrated === true)
+        {
+            $truecallerEntityJsonString = $this->getTruecallerEntityFromRedisForRequestId($requestIdPrefix);
+
+            if(empty($truecallerEntityJsonString) === true)
+            {
+                $truecallerEntity = $input['true_caller_entity'];
+                $redisKeyForPrefix = $this->getRedisKey($requestIdPrefix);
+                $this->cache->put($redisKeyForPrefix, json_encode($truecallerEntity), Constants::TRUECALLER_REQUEST_ID_TTL);
+            }
+        }
+
+        $this->handleTruecallerCallback($input);
+    }
+
     /**
      * Validates and sets the response received from truecaller into redis for corresponding request_id
      *
