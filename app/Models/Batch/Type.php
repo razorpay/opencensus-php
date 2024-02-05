@@ -24,7 +24,7 @@ class Type
     const CREATE_BULK_GIFT_CARDS            = 'create_bulk_gift_cards';
 
     // GCOMS batch types
-    CONST UPLOAD_BULK_EMAILS = 'upload_bulk_emails';
+    CONST UPLOAD_BULK_EMAILS = 'gcms_upload_bulk_emails';
 
 
     //Cod eligibility attribute batch
