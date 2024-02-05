@@ -24,7 +24,7 @@ class MtuTransactedDataCollector extends TimeBoundDbDataCollector
 
         // Filter out all merchants that have transacted since last time cron ran
         $transactedMerchants = $this->getRepository("transaction")->fetchTransactedMerchants(
-            'payment', $startTime, $endTime, false, false);
+            'payment', $startTime, $endTime, false);
 
         $merchantIdChunks = array_chunk($transactedMerchants, 100);
         $merchantIdList   = [];

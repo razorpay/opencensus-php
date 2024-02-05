@@ -15,13 +15,15 @@ class QueryShadowModeListener implements ShouldQueue
     var array $COMPARE_PROPERTIES_MAP = [
         'fetchMerchantIdsByActivationStatus' => ['merchant_id'],
         'findMerchantByActivationStatusAndActivationFormMileStone' => ['merchant_id'],
-        'getFailedSettlementsForRetry' => ['merchant_id','id']
+        'getFailedSettlementsForRetry' => ['merchant_id','id'],
+        'fetchTransactedMerchants' => ['merchant_id']
     ];
 
     var array $COMPARE_LENGTH_MAP = [
         'fetchMerchantIdsByActivationStatus',
         'findMerchantByActivationStatusAndActivationFormMileStone',
-        'getFailedSettlementsForRetry'
+        'getFailedSettlementsForRetry',
+        'fetchTransactedMerchants'
     ];
 
     public $app;

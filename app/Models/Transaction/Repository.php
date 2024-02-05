@@ -28,7 +28,9 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Transfer\Constant;
+use RZP\Modules\Acs\QueryShadowModeEvent;
 use RZP\Constants\Entity as ConstantEntity;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class Repository extends Base\Repository
 {
@@ -47,6 +49,13 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::RECONCILED      => 'sometimes|in:0,1',
     );
+
+    function __construct()
+    {
+        parent::__construct();
+
+        $this->asvRouter = new AsvRouter();
+    }
 
     public function fetchByEntityAndAssociateMerchant($entity)
     {
@@ -540,19 +549,19 @@ class Repository extends Base\Repository
     }
 
     public function fetchTransactedMerchants(
-        string $type, int $from, int $to = null, bool $regularMerchantsOnly = true, bool $withConnection = true)
+        string $type, int $from, int $to = null, bool $regularMerchantsOnly = true)
     {
+        $callingViaTidb = false;
+
         $transactionsMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantIdColumn              = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantOrgIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
         $merchantParentIdColumn        = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
 
-        if($withConnection === true)
-        {
-            $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection());
-        }
-        else
-        {
+        if ($this->asvRouter->shouldRouteBeMigratedToTiDB(__FUNCTION__)) {
+            $callingViaTidb = true;
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+        } else {
             $query = $this->newQuery();
         }
 
@@ -570,6 +579,10 @@ class Repository extends Base\Repository
         {
             $query->where($merchantOrgIdColumn, '=',  Org\Entity::RAZORPAY_ORG_ID)
                 ->where($merchantParentIdColumn, '=', null);
+        }
+
+        if (!$callingViaTidb and $this->asvRouter->shouldShadowCompareTiDBResults()) {
+            event(new QueryShadowModeEvent(__FUNCTION__, $query->distinct()->toSql(), $query->getBindings()));
         }
 
         return $query->distinct()
