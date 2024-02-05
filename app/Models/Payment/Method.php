@@ -125,6 +125,7 @@ class Method
     const JPMC_IMPORT_FLOW_SUPPORTED_RECURRING_METHODS = [
         self::CARD,
         self::EMANDATE,
+        self::UPI
     ];
 
     const LRS_SUPPORTED_METHODS = [
