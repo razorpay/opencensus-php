@@ -414,6 +414,11 @@ class Processor
     const ALLOW_NON_RZP_ORG_MERCHANTS_ON_REARCH_UPS = 'allow_non_rzp_org_merchants_on_rearch_ups';
 
     /**
+     * Razorx flag to allow upi mode intent
+     */
+    const ALLOW_UPI_MODE_ON_REARCH_UPS = 'allow_upi_mode_on_rearch_ups';
+
+    /**
      * Razorx flag to allow Apps merchants on re-arch flow
      */
     const ALLOW_APPS_MERCHANTS_ON_REARCH_UPS = 'allow_apps_merchants_on_rearch_ups';
@@ -2262,10 +2267,13 @@ class Processor
             $dimensions[14] = 1;
         }
 
-        if (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::MODE]) === true)
+        if (empty($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::MODE]) === false)
         {
-            $routeViaReArch = false;
-            $dimensions[15] = 1;
+            if ($this->shouldRouteUpsReArchUpiMode($input) === false)
+            {
+                $routeViaReArch = false;
+                $dimensions[15] = 1;
+            }
         }
 
         if (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::PROVIDER]) === true)
@@ -11344,6 +11352,31 @@ class Processor
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_NON_RZP_ORG_RAZORX_VARIANT, [
             'merchant_id' => $this->merchant->getMerchantId(),
             'org_id'      => $orgId,
+            'variant'     => $variant,
+            'mode'        => $this->mode,
+            'feature'     => $feature,
+        ]);
+
+        return str_starts_with($variant, 'on') === true;
+    }
+
+    /**
+     * shouldRouteUpsReArchUpiMode checks if upi mode can be enabled
+     * @return bool
+     */
+    public function shouldRouteUpsReArchUpiMode($input): bool
+    {
+        if ($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::MODE] !== Payment\UpiMetadata\Mode::UPI_QR)
+        {
+            return false;
+        }
+
+        $feature = self::ALLOW_UPI_MODE_ON_REARCH_UPS ;
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $feature, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_UPI_MODE_RAZORX_VARIANT, [
+            'merchant_id' => $this->merchant->getMerchantId(),
             'variant'     => $variant,
             'mode'        => $this->mode,
             'feature'     => $feature,
