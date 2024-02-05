@@ -77,11 +77,9 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function fetchMultiple(): array
+    public function fetchMultiple(array $input): array
     {
-        $input = [
-            Entity::MASTER_MERCHANT_ID => $this->merchant->getId(),
-        ];
+        $input[Entity::MASTER_MERCHANT_ID] = $this->merchant->getId();
 
         $subVirtualAccounts = $this->core->fetchMultiple($input);
 

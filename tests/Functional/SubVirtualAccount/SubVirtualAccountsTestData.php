@@ -182,6 +182,27 @@ return [
         ],
     ],
 
+    'testFetchSubVirtualAccountsForProxy' => [
+        'request' => [
+            'url'    => '/sub_virtual_accounts?count=1',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'                => 'sub_virtual_account',
+                        'active'                => true,
+                        'master_account_number' => '2323230041626907',
+                        'sub_account_number'    => '2323230041626906',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testDisableSubVirtualAccount' => [
         'request'       => [
             'content'   => [
