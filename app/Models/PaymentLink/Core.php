@@ -1723,7 +1723,14 @@ class Core extends Base\Core
         // Multiple payment process attempts to update attributes of link entity.
         $this->repo->assertTransactionActive();
 
-        $paymentLink->incrementTotalAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
+        if($payment->isInternational() && $payment->isFeeBearerCustomer())
+        {
+            $paymentLink->incrementTotalAmountPaidBy($payment->getAmount() - $payment->getFeeInMcc());
+        }
+        else
+        {
+            $paymentLink->incrementTotalAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
+        }
 
         $order = $payment->order;
 
