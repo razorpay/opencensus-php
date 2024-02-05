@@ -873,7 +873,7 @@ class Core extends Base\Core
             {
                 (new GiftCards)->refundGiftCard($promotion, $rzpOrder, $rzpPayment, $this->merchant->getId());
             }
-            else if(isset($promotions['type']) && $promotion['type'] === 'nector_coins')
+            else if(isset($promotions['type']) && $promotion['type'] === 'nector_coins' && $promotion['description'] === 'burnt')
             {
                 $nectorCoinsToBeRefunded = true;
             }
@@ -887,7 +887,7 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::REFUND_NECTOR_COINS_REQUEST,['order_id' => $orderId]);
             $response = (new Nector)->refundNectorPayment($body['customer']['phone']??$rzpOrder['customer_details']['contact'],$rzpOrderAmount,$orderId);
-            if($response != null && $response['data'] != null && $response['data']['points_balance']>0)
+            if($response != null && $response['data'] != null && $response['data']['points_balance']>=0)
             {
                 $this->trace->info(TraceCode::REFUND_NECTOR_COINS_REQUEST,['order_id' => $orderId, 'response' => $response]);
             }
@@ -1530,7 +1530,7 @@ class Core extends Base\Core
 
         $noteAttributes = $body['note_attributes'];
 
-        if($nectorCoinsResponse['applied'] === true)
+        if($nectorCoinsResponse['burnt'] === true)
         {
             array_push($noteAttributes,
                 [
@@ -1811,11 +1811,6 @@ class Core extends Base\Core
             $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
         }
 
-        if($nectorCoinsResponse['applied'] === false)
-        {
-            $discountAmountPaise = $discountAmountPaise - $nectorCoinsResponse['amount'];
-        }
-
         $nectorCoinsApplicable = $nectorCoinsResponse['amount'] ?? 0;
 
         if($promotionCouponAmount > 0)
@@ -1881,7 +1876,7 @@ class Core extends Base\Core
             }
             else
             {
-                if($nectorCoinsResponse['applied'] === true)
+                if($nectorCoinsResponse['burnt'] === true)
                 {
                     $body['discount_codes'][] = [
                         'code'   => 'coins discount',

@@ -962,7 +962,7 @@ class Service extends Base\Service
 
         $this->checkForGiftCardPayment($order, $payment, $this->merchant, $fromShopifyApi);
 
-        $nectorCoinsResponse = $this->deductNectorCoinsIfApplicable($order, $fromShopifyApi);
+        $nectorCoinsResponse = $this->deductNectorCoinsIfApplicable($order);
 
         $orderArray = $order->toArrayPublic();
 
@@ -1864,7 +1864,7 @@ class Service extends Base\Service
         }
     }
 
-    public function deductNectorCoinsIfApplicable($rzpOrder, $fromShopifyApi) : array{
+    public function deductNectorCoinsIfApplicable($rzpOrder) : array{
 
         if (!$this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_ENABLE_NECTOR_COINS)){
             return [];
@@ -1876,22 +1876,24 @@ class Service extends Base\Service
 
         $nectorCouponValue = $nectorCoinsResponse['amount'];
 
+        $nectorCoinsAlreadyBurnt = $nectorCoinsResponse['burnt'];
+
         $promotionsAll = $nectorCoinsResponse['promotions'];
 
-        if($fromShopifyApi === false)
+        if($nectorCoinsAlreadyBurnt === true)
         {
-            return[
+            return [
                 'amount'=>$nectorCouponValue,
-                'applied'=>false,
-                'required'=>$isNectorPaymentUsed,
+                'burnt'=>true,
+                'required'=>true,
             ];
         }
 
         if($isNectorPaymentUsed === false)
         {
-            return[
+            return [
                 'amount'=>$nectorCouponValue,
-                'applied'=>false,
+                'burnt'=>false,
                 'required'=>false,
             ];
         }
@@ -1912,20 +1914,30 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::DEDUCT_NECTOR_COINS_RESPONSE, ['nector_deduction_response' => $nectorDeductedResponse, 'order_id' => $rzpOrderId]);
 
             if ($nectorDeductedResponse['meta']['code'] === 200) {
-
+                foreach ($promotionsAll as &$promotions)
+                {
+                    if(isset($promotions['type']) && $promotions['type'] === 'nector_coins')
+                    {
+                        $promotions['description'] = 'burnt';
+                    }
+                }
+                (new OneClickCheckoutCore)->update1CcOrder(
+                    $rzpOrderId,
+                    [
+                        Order1cc\Fields::PROMOTIONS => $promotionsAll,
+                    ]);
                 return [
                     'amount'=>$nectorCouponValue,
-                    'applied'=>true,
+                    'burnt'=>true,
                     'required'=>true
                 ];
-
             }
             else
             {
                 $this->trace->error(TraceCode::DEDUCT_NECTOR_COINS_ERROR, ['order_id' => $rzpOrderId]);
                 return [
                     'amount'=>$nectorCouponValue,
-                    'applied'=>false,
+                    'burnt'=>false,
                     'required'=>true
                 ];
             }
@@ -1934,7 +1946,7 @@ class Service extends Base\Service
             $this->trace->error(TraceCode::DEDUCT_NECTOR_COINS_ERROR, ['order_id' => $rzpOrderId, 'error'=> $e->getMessage()]);
             return [
                 'amount'=>$nectorCouponValue,
-                'applied'=>false,
+                'burnt'=>false,
                 'required'=>true
             ];
         }
@@ -1953,21 +1965,18 @@ class Service extends Base\Service
 
         $nectorCouponValue = 0;
 
-        $promotionsAll = [];
+        $isNectorCoinsAlreadyBurnt = false;
 
         if(!empty($promotions)) {
 
             foreach ($promotions as $promotion) {
-
                 if (isset($promotion['type']) && $promotion['type'] === 'nector_coins')
                 {
+                    $isNectorCoinsAlreadyBurnt = $promotion['description'] == 'burnt';
+
                     $isNectorPaymentUsed = true;
 
                     $nectorCouponValue = $promotion['value'];
-                }
-                else
-                {
-                    array_push($promotionsAll, $promotion);
                 }
             }
         }
@@ -1975,7 +1984,8 @@ class Service extends Base\Service
         return [
             'amount'=> $nectorCouponValue,
             'used'=> $isNectorPaymentUsed,
-            'promotions' => $promotionsAll,
+            'burnt' => $isNectorCoinsAlreadyBurnt,
+            'promotions' => $promotions,
             'order_meta' => $orderMeta
         ];
     }
