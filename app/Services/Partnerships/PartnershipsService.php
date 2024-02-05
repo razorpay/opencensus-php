@@ -275,7 +275,7 @@ class PartnershipsService extends Base\Service
 
     public function updateInvoiceStatus($parameters)
     {
-        return $this->sendRequest($parameters, self::UPDATE_INVOICE_STATUS, Requests::POST);
+        return $this->sendRequestWithRetry($parameters, self::UPDATE_INVOICE_STATUS, Requests::POST);
     }
     public function updateInvoiceStatusAsync($parameters, $partnerId)
     {
@@ -805,24 +805,54 @@ class PartnershipsService extends Base\Service
      */
     public function sendRequestWithRetry($parameters, $path, $method, $mode = null)
     {
-        $attempts = 0;
-        $response = null;
-        do {
+        $requestParams = $this->getRequestParams($parameters, $path, $method, $mode);
+        $attempts = self::MAX_RETRY_COUNT;
+        $res = null;
+        $exception = null;
+
+        while($attempts--)
+        {
             try
             {
-                $response = $this->sendRequest($parameters, $path, $method, $mode);
-                break;
-            } catch (Throwable $e) {
-                $responseData =  $e->getData();
-                if(empty($responseData['status_code']) === false && $responseData['status_code'] < 500)
-                {
-                    break;
-                }
-                $attempts++;
+                $this->trace->info(TraceCode::PARTNERSHIPS_REQUEST, ['$attempts' => $attempts]);
+                $res = Requests::request(
+                    $requestParams['url'],
+                    $requestParams['headers'],
+                    $requestParams['data'],
+                    $requestParams['method'],
+                    $requestParams['options']);
             }
-        } while($attempts < self::MAX_RETRY_COUNT);
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PARTNERSHIPS_REQUEST_ERROR,
+                    [
+                        'data' => $e->getMessage()
+                    ]);
 
-        return $response;
+                $exception = $e;
+
+                continue;
+            }
+            if ($res !== null and $res->status_code > 499)
+            {
+                continue;
+            }
+
+            // In case it succeeds in another attempt.
+            $exception = null;
+            break;
+        }
+
+        // An exception is thrown by lib in cases of network errors e.g. timeout etc.
+        if ($exception !== null)
+        {
+            throw $exception;
+        }
+
+        return $this->parseAndReturnResponse($res);
     }
 
     public function getRequestParams($parameters, $path, $method, $mode = null)

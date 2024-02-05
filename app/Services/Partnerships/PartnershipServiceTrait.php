@@ -17,6 +17,7 @@ trait PartnershipServiceTrait
         'commissions_get_multiple'            => PartnershipsService::LIST_COMMISSION_URL,
         'commissions_get'                     => PartnershipsService::GET_COMMISSION_URL,
     );
+
     public function proxyToPartnershipService(array $parameters, string $partnerId)
     {
         $currentRoute = app('request.ctx')->getRoute();

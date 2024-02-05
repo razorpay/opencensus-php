@@ -32,7 +32,7 @@ class OAuthApplicationTest extends TestCase
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
-        $this->partnershipsServiceMock = $this->createPRTSServiceMock(['pushRawJob', 'sendRequest']);
+        $this->partnershipsServiceMock = $this->createPRTSServiceMock(['pushRawJob', 'sendRequest', 'sendRequestWithRetry']);
 
         $this->ba->proxyAuth();
     }
@@ -222,7 +222,7 @@ class OAuthApplicationTest extends TestCase
         $this->mockAllSplitzTreatment();
         $this->partnershipsServiceMock
             ->expects($this->exactly(1))
-            ->method('sendRequest')
+            ->method('sendRequestWithRetry')
             ->willReturn(['status_code' => 200]);
         $testData = $this->testData['testUpdateApplicationForPPInvite'];
         $this->runRequestResponseFlow($testData);
