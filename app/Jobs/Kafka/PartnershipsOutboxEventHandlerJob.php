@@ -4,6 +4,7 @@ namespace RZP\Jobs\Kafka;
 
 use App;
 use RZP\Trace\TraceCode;
+use RZP\Services\Workflow;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Commission\Invoice;
 
@@ -17,6 +18,8 @@ class PartnershipsOutboxEventHandlerJob extends Job
         $this->setTaskId($taskId);
 
         parent::handle();
+
+        $this->resetWorkflowSingleton();
 
         $tracePayload = [
             Constants::JOB_ATTEMPTS => $this->attempts(),
@@ -90,5 +93,11 @@ class PartnershipsOutboxEventHandlerJob extends Job
             $app = App::getFacadeRoot();
             $app->partnerships->dispatchAckToPRTS($response, $action);
         }
+    }
+
+    private function resetWorkflowSingleton()
+    {
+        $app = App::getFacadeRoot();
+        $app['workflow'] =  new Workflow\Service($app);
     }
 }
