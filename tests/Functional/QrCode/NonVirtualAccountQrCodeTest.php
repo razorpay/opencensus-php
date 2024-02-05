@@ -1109,11 +1109,11 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $requestInternal['content']['merchantId'] = '1234567';
 
-        $this->expectException(ServerErrorException::class);
+        $this->expectException(BadRequestException::class);
 
         $this->expectExceptionCode(ErrorCode::SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED);
 
-        $this->expectExceptionMessage('Terminal should not be null here');
+        $this->expectExceptionMessage('Qr payment processing failed');
 
         $this->makeUpiIciciPaymentInternal($requestInternal);
     }

@@ -658,11 +658,11 @@ class UpiMindgateQRCodeTest extends TestCase
 
         $requestInternal['content']['data']['terminal']['gateway_merchant_id'] = '1234567';
 
-        $this->expectException(ServerErrorException::class);
+        $this->expectException(BadRequestException::class);
 
         $this->expectExceptionCode(ErrorCode::SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED);
 
-        $this->expectExceptionMessage('Terminal should not be null here');
+        $this->expectExceptionMessage('Qr payment processing failed');
 
         $this->makeUpiPaymentInternal($requestInternal);
 

@@ -1677,9 +1677,9 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $request['content']['BankRRN'] = $rrn;
         $request['content']['merchantTranId'] = 'RZP' . $qrCodeId . 'qrv2';
 
-        $this->expectException(ServerErrorException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('The provider reference id format is invalid.');
+        $this->expectExceptionMessage('Qr payment processing failed');
 
         $this->makeUpiIciciPaymentInternal($request);
     }

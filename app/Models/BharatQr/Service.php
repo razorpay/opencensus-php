@@ -273,10 +273,10 @@ class Service extends Base\Service
             return $this->getQrPaymentResponseInternal(null, $ex->getMessage());
         }
 
-        return $this->getQrPaymentResponseInternal(null, $qrPaymentRequest->getFailureReason());
+        return $this->getQrPaymentResponseInternal(null, $qrPaymentRequest->getFailureReason(), $gatewayResponse['qr_data']);
     }
 
-    private function getQrPaymentResponseInternal($qrPayment = null, $errorMessage = null)
+    private function getQrPaymentResponseInternal($qrPayment = null, $errorMessage = null, $gatewayQrData = null)
     {
         if ($qrPayment !== null)
         {
@@ -289,7 +289,17 @@ class Service extends Base\Service
             return $response;
         }
 
-        throw new Exception\ServerErrorException($errorMessage, ErrorCode::SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED);
+        if ($errorMessage !== null)
+        {
+            $qrPaymentRequest = $this->findQrPaymentRequest($gatewayQrData['qr_data']);
+
+            if ($qrPaymentRequest !== null)
+            {
+                $errorMessage = $qrPaymentRequest->getFailureReason();
+            }
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED, $errorMessage);
     }
 
     private function findQrPayment($gatewayQrData, $isQrCodeV2)
@@ -530,5 +540,10 @@ class Service extends Base\Service
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
 
         return $terminal;
+    }
+
+    private function findQrPaymentRequest($gatewayQrData)
+    {
+        return $this->repo->qr_payment_request->fetchPaymentReference($gatewayQrData[GatewayResponseParams::PROVIDER_REFERENCE_ID]);
     }
 }
