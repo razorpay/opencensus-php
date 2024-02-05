@@ -11042,6 +11042,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BVS_VIDEO_KYC_EVENTS_JOB_PROCESSING_FAILED           = 'BVS_VIDEO_KYC_EVENTS_JOB_PROCESSING_FAILED';
 
     const PGOS_POS_SUBMIT                                      = "PGOS_POS_SUBMIT";
+  
+    const RIZE_SERVICE_PROXY_REQUEST                           = 'RIZE_SERVICE_PROXY_REQUEST';
 
     const HEADER_LOGGER_FOR_PARITY                             = "HEADER_LOGGER_FOR_PARITY";
 

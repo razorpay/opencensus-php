@@ -1449,6 +1449,8 @@ class Route
         'merchant_get_l2_dynamic_configs'          => ['get',     'pg/onboarding/merchant_get_l2_dynamic_configs',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'merchant_policy_section_publish_v2'       => ['post',    'pg/onboarding/merchant_policy_section_publish_v2', 'MerchantOnboardingProxyController@handleDashboardProxyRequests'   ],
 
+        'rize_marketplace_dashboard'               => ['post',       'rize/dashboard/{path?}', 'RizeMarketplaceProxyController@handleDashboardProxyRequest' ],
+
 
         // pending status code and success true return from pgos to api
         'merchant_website_section_page_load_v2'    => ['get',      'pg/onboarding/merchant_policy_preview',          'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
@@ -6621,6 +6623,7 @@ class Route
         'onboarding_order_create',
         'onboarding_order_verify',
         'merchant_consents_save',
+        'rize_marketplace_dashboard',
         'payment_links_custom_field_config_get',
         'payment_links_custom_field_config_upsert',
         'merchant_identity_verification',
@@ -11700,6 +11703,7 @@ class Route
             'merchant_edd_details_fetch',
             'pgos_send_sms_otp',
             'pgos_verify_otp',
+            'rize_marketplace_dashboard',
             'merchant_activation_business_categories_v3',
             'merchant_policy_section_publish_v2',
             'merchant_get_l2_dynamic_configs',

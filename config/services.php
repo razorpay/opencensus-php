@@ -259,4 +259,10 @@ return [
         'admin_user'    => env('CDS_ADMIN_USER'),
         'admin_secret'  => env('CDS_ADMIN_SECRET'),
     ],
+
+    'rize_service' => [
+        'host'      => env('RIZE_SERVICE_HOST'),
+        'username'  => env('RIZE_SERVICE_USERNAME'),
+        'password'  => env('RIZE_SERVICE_PASSWORD'),
+    ]
 ];
