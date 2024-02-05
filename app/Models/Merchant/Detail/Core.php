@@ -6325,10 +6325,10 @@ class Core extends Base\Core
 
         $currentActivationStatus = $merchantDetails->getActivationStatus();
 
-        $currentActivationFlow = $merchantDetails->getActivationFlow();
+        //For scenarios where we don't have category/sub-cat of a merchant, setting activation flow as blacklist by default.
+        $currentActivationFlow = ActivationFlow::BLACKLIST;
 
-        if (empty($currentActivationFlow) === true and
-            $merchantDetails->canDetermineActivationFlow())
+        if ($merchantDetails->canDetermineActivationFlow())
         {
             $currentActivationFlow = $this->getActivationFlow(
                 $merchantDetails->merchant, $merchantDetails, null, false);
@@ -6391,7 +6391,7 @@ class Core extends Base\Core
 
             $splitzVariant = $this->getSplitzResponse($merchantId, $experimentName);
 
-            $activationStatusAutomation = $this->getAutomationActivationStatus($merchantDetails, $websitePolicy, $negativeKeyword);
+            $activationStatusAutomation = $this->getAutomationActivationStatus($merchantDetails, $websitePolicy, $negativeKeyword, $currentActivationFlow);
 
             if (($activationStatusAutomation === Status::ACTIVATED) and
                 ($splitzVariant === Constants::SPLITZ_KQU))
@@ -6425,7 +6425,7 @@ class Core extends Base\Core
 
             if ($this->blockMerchantActivations($merchantDetails->merchant) === false)
             {
-                return Status::ACTIVATED_MCC_PENDING;
+                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
             }
 
             return Status::UNDER_REVIEW;
@@ -6434,7 +6434,7 @@ class Core extends Base\Core
         return Status::UNDER_REVIEW;
     }
 
-    private function getAutomationActivationStatus(Entity $merchantDetails, $websitePolicy, $negativeKeyword): string
+    private function getAutomationActivationStatus(Entity $merchantDetails, $websitePolicy, $negativeKeyword, $currentActivationFlow): string
     {
         $merchantId = $merchantDetails->getMerchantId();
 
@@ -6447,18 +6447,18 @@ class Core extends Base\Core
             $merchant->isSignupCampaignAnyOf(DetailConstants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false
         )
         {
-            return Status::ACTIVATED_MCC_PENDING;
+            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
         }
 
         if ($this->isAdditionalDocRequired($merchantDetails->getBusinessCategory(), $merchantDetails->getBusinessSubcategory()) === true)
         {
-            return Status::ACTIVATED_MCC_PENDING;
+            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
         }
 
         //This checks automation activation exclusion logic in PGOS
         if ($this->isEligibleForAutomationActivation() === false)
         {
-            return Status::ACTIVATED_MCC_PENDING;
+            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
         }
 
         $signatory = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
@@ -6471,7 +6471,7 @@ class Core extends Base\Core
         {
             if ($this->hasAppUrls($merchantDetails) === true)
             {
-                return Status::ACTIVATED_MCC_PENDING;
+                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
             }
             else
             {
@@ -6494,7 +6494,7 @@ class Core extends Base\Core
 
                     if (empty($mccResult[MVD\Constants::CATEGORY]) === true)
                     {
-                        return Status::ACTIVATED_MCC_PENDING;
+                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
                     }
 
                     $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($mccResult[MVD\Constants::CATEGORY], $mccResult[MVD\Constants::SUBCATEGORY]);
@@ -6507,12 +6507,12 @@ class Core extends Base\Core
                     }
 
                     if ($this->isActivationFlowEligible($merchantDetails, $activationFlow) === false) {
-                        return Status::ACTIVATED_MCC_PENDING;
+                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
                     }
 
                     if ($this->isSubCategoryExcluded($merchant, $mccResult[MVD\Constants::SUBCATEGORY], $businessType) === true)
                     {
-                        return Status::ACTIVATED_MCC_PENDING;
+                        return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
                     }
 
                 }
@@ -6527,7 +6527,7 @@ class Core extends Base\Core
                 }
                 else
                 {
-                    return Status::ACTIVATED_MCC_PENDING;
+                    return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
                 }
             }
         }
@@ -6546,7 +6546,7 @@ class Core extends Base\Core
                 }
             }
 
-            return Status::ACTIVATED_MCC_PENDING;
+            return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
         }
     }
 
@@ -8555,7 +8555,6 @@ class Core extends Base\Core
      * @param bool            $batchFlow
      *
      * @return string
-     * @throws Exception\BadRequestException
      */
     public function getActivationFlow(Merchant\Entity $merchant, Entity $merchantDetails, $partner, bool $batchFlow)
     {
@@ -12398,14 +12397,6 @@ class Core extends Base\Core
      */
     private function isGreyListedMerchantIncludedForAutomation(Merchant\Entity $merchant): bool
     {
-        $isExpEnabledForBMCPhase2 = (new Merchant\Core)->isSplitzExperimentEnable(
-            [
-                'id' => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.show_bmc_phase_2_questions'),
-            ],
-            'variables'
-        );
-
         $isExpEnabledForGreylistedInclusion = (new Merchant\Core)->isSplitzExperimentEnable(
             [
                 'id' => $merchant->getId(),
@@ -12414,7 +12405,7 @@ class Core extends Base\Core
             'variables'
         );
 
-        return ($isExpEnabledForBMCPhase2 === true and $isExpEnabledForGreylistedInclusion === true);
+        return ($isExpEnabledForGreylistedInclusion === true);
 
     }
 }

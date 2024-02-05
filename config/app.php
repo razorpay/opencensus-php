@@ -654,7 +654,7 @@ return array(
     'cross_border_dcc_rearch_experiment_id' => env('CROSS_BORDER_DCC_REARCH_EXPERIMENT_ID'),
 
     'fetch_flows_api_forex_rates_from_rearch_experiment_id' => env('FETCH_FLOWS_API_FOREX_RATES_FROM_REARCH_EXPERIMENT_ID'),
-    
+
     'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),
 
     'pos_partnership_experiment_id' => env('POS_PARTNERSHIP_EXPERIMENT_ID'),
@@ -819,8 +819,6 @@ return array(
     'magic_shopify_remove_coupon_decomp_experiment_id' => env('MAGIC_SHOPIFY_REMOVE_COUPON_DECOMP_EXP_ID'),
 
     'magic_merchant_remove_coupon_decomp_experiment_id' => env('MAGIC_MERCHANT_REMOVE_COUPON_DECOMP_EXP_ID'),
-
-    'show_bmc_phase_2_questions' => env('SHOW_BMC_PHASE_2_QUESTIONS'),
 
     'greylisted_inclusion_for_automation' => env('GREYLISTED_INCLUSION_FOR_AUTOMATION'),
 
