@@ -14,7 +14,9 @@ use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZp\Models\Merchant\MerchantApplications as MerchantApp;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
 class Repository extends Base\Repository
 {
@@ -97,6 +99,7 @@ class Repository extends Base\Repository
 
     /**
      * Returns the access map that links the submerchantId with a non pure-platform partner.
+     * joins merchant application and fetches the first mapping without oauth application
      *
      * @param string $subMerchantId
      *
@@ -104,28 +107,69 @@ class Repository extends Base\Repository
      */
     public function getNonPurePlatformPartnerMapping(string $subMerchantId)
     {
+        $newflow = (new AsvRouter())->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $subMerchantId);
+        if ($newflow == true)
+        {
+            $accessMapsEntityId = $this->dbColumn(Entity::ENTITY_ID);
+            $applicationId      = $this->repo->merchant_application->dbColumn(Merchant\MerchantApplications\Entity::APPLICATION_ID);
+            $applicationType    = Table::MERCHANT_APPLICATION . '.' .Merchant\MerchantApplications\Entity::TYPE;
+
+            return $this->newQueryWithConnection($this->getSlaveConnection())
+                ->select($this->getTableName() . '.*')
+                ->merchantId($subMerchantId)
+                ->join(Table::MERCHANT_APPLICATION, $accessMapsEntityId, $applicationId)
+                ->where($applicationType, '!=', Merchant\MerchantApplications\Entity::OAUTH)
+                ->first();
+
+        }
         $accessMapsEntityOwnerId = $this->dbColumn(Entity::ENTITY_OWNER_ID);
         $merchantsId             = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantsPartnerType    = Table::MERCHANT . '.' . Merchant\Entity::PARTNER_TYPE;
 
         return $this->newQuery()
-                    ->select($this->getTableName() . '.*')
-                    ->merchantId($subMerchantId)
-                    ->join(Table::MERCHANT, $accessMapsEntityOwnerId, $merchantsId)
-                    ->where($merchantsPartnerType, '!=', Merchant\Constants::PURE_PLATFORM)
-                    ->first();
+                ->select($this->getTableName() . '.*')
+                ->merchantId($subMerchantId)
+                ->join(Table::MERCHANT, $accessMapsEntityOwnerId, $merchantsId)
+                ->where($merchantsPartnerType, '!=', Merchant\Constants::PURE_PLATFORM)
+                ->first();
     }
 
     public function fetchAffiliatedPartnersForSubmerchant(string $subMerchantId)
     {
+        $newflow = (new AsvRouter())->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $subMerchantId);
+        if ($newflow == true)
+        {
+            // fetch entity owner ids
+            $accessMaps = $this->newQueryWithConnection($this->getSlaveConnection())
+                ->where(Entity::MERCHANT_ID, $subMerchantId)
+                ->get();
+            $entityOwnerIds = $accessMaps->pluck(Entity::ENTITY_OWNER_ID)->unique()->toArray();
+            // fetch merchants for entity owner ids
+            // check if transaction is active
+            if ($this->isTransactionActive() === true)
+            {
+                // update this to use asv db integration
+                $merchants = $this->repo->merchant->findMany($entityOwnerIds);
+            }
+            else
+            {
+                $merchants = (new AsvSdkIntegration\Merchant())->fetchMerchantsByIds($entityOwnerIds);
+            }
+            // set entity owner relation
+            foreach ($accessMaps as $accessMap)
+            {
+                $merchant = $merchants->where(Merchant\Entity::ID, $accessMap->getEntityOwnerId())->first();
+                $accessMap->setRelation('entityOwner', $merchant);
+            }
+            return $accessMaps;
+        }
         $accessMapsEntityOwnerId = $this->dbColumn(Entity::ENTITY_OWNER_ID);
         $merchantsId             = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
-
         return $this->newQuery()
-                    ->merchantId($subMerchantId)
-                    ->join(Table::MERCHANT, $accessMapsEntityOwnerId, $merchantsId)
-                    ->with('entityOwner')
-                    ->get();
+                ->merchantId($subMerchantId)
+                ->join(Table::MERCHANT, $accessMapsEntityOwnerId, $merchantsId)
+                ->with('entityOwner')
+                ->get();
     }
 
     public function fetchEntityOwnerIdsForSubmerchant(string $submerchantId, bool $useSlave = false)
