@@ -222,7 +222,18 @@ class SalesForceClient
     {
         $url = $this->generateUrlForMerchantUpsert();
 
+        // Set contact mobile in Salesforce Lead creation payload
+        $isContactMobileSet = isset($input['contact_mobile']);
+        if ($isContactMobileSet === false)
+        {
+            $input['contact_mobile'] = $merchant->merchantDetail->getContactMobile() ?? '';
+        }
         $data = $this->payloadGenerationForPreSignupDetails($input, $merchant);
+
+        // Remove contact mobile from input, if it was added for lead creation on pre_signup case
+        if($isContactMobileSet === false){
+            unset($input['contact_mobile']);
+        }
 
         $this->trace->info(TraceCode::SALESFORCE_PRE_SIGNUP_REQUEST, $data);
 

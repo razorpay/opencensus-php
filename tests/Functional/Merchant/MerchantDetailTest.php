@@ -475,6 +475,45 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testPutPreSignupDetailsViaMobileSignup($dataToReplace = [])
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            Entity::CONTACT_MOBILE => '1234567890',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            Entity::CONTACT_EMAIL => null
+        ]);
+        
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+        
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => self::DEFAULT_MERCHANT_ID,
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+        
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->mockHubSpotClient('trackPreSignupEvent');
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldReceive('trackOnboardingEvent')
+                 ->times(1)
+                 ->andReturnNull();
+
+        $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
+                                     ->setConstructorArgs([$this->app])
+                                     ->setMethods(["sendPreSignupDetails"])
+                                     ->getMock();
+
+        $this->app->instance('salesforce', $salesforceClientMock);
+
+        $salesforceClientMock->expects($this->exactly(1))
+                             ->method("sendPreSignupDetails");
+
+        $this->startTest($dataToReplace);
+
+    }
     public function testLockMerchant()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');

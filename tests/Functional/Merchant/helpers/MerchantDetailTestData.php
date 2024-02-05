@@ -2843,6 +2843,25 @@ return [
         ],
     ],
 
+    'testPutPreSignupDetailsViaMobileSignup' => [
+        'request' => [
+            'content' => [
+                'contact_name' => 'test name',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'contact_name'      => 'test name',
+                'transaction_volume' => null,
+                'contact_mobile'     => '+911234567890',
+                'role'               => null,
+                'contact_email'     => null,
+            ],
+        ],
+    ],
+
     'testEasyKycSubMerchantConsents' => [
         'request' => [
             'content' => [
