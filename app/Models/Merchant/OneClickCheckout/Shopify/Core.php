@@ -1595,6 +1595,13 @@ class Core extends Base\Core
         $shippingAddress = $customerDetails['shipping_address'];
         $billingAddress = $customerDetails['billing_address'];
 
+        // In rare cases the billing_address is not present due to failure by the FE.
+        // In these cases we default it to shipping_address.
+        if (empty($billingAddress) === true)
+        {
+            $billingAddress = $shippingAddress;
+        }
+
         $splitNames = $this->splitName($shippingAddress['name']);
 
         $body['shipping_address'] = [
