@@ -128,6 +128,8 @@ class CareProxyController extends Controller
     const FRESHDESK_MERCHANT_ADD_NOTE_TO_TICKET_INTERNAL= 'twirp/rzp.care.freshdesk.v1.FreshdeskService/AddNoteToTicket';
     const FRESHDESK_MERCHANT_OTP_SENT= 'twirp/rzp.care.freshdesk.v1.FreshdeskService/PostOtp';
     const FRESHDESK_MERCHANT_UPDATE_TICKET_INTERNAL= 'twirp/rzp.care.freshdesk.v1.FreshdeskService/PatchTicketInternal';
+    const DASHBOARD_HOME_PAGE_MERCHANT_KEY_UPDATE = 'twirp/rzp.care.dashboard.home.v1.HomeService/GetMerchantKeyUpdate';
+    const DASHBOARD_HOME_PAGE_MERCHANT_SETTLEMENT_OVERVIEW = 'twirp/rzp.care.dashboard.home.v1.HomeService/GetMerchantSettlementOverview';
 
     // Single Agent View
     const SAV_FETCH_MERCHANT_WORKFLOWS = 'twirp/rzp.care.sav.v1.SavService/FetchWorkflows';
@@ -278,6 +280,8 @@ class CareProxyController extends Controller
         self::FRESHDESK_MERCHANT_ADD_NOTE_TO_TICKET_INTERNAL,
         self::FRESHDESK_MERCHANT_OTP_SENT,
         self::FRESHDESK_MERCHANT_UPDATE_TICKET_INTERNAL,
+        self::DASHBOARD_HOME_PAGE_MERCHANT_KEY_UPDATE,
+        self::DASHBOARD_HOME_PAGE_MERCHANT_SETTLEMENT_OVERVIEW,
     ];
 
     const MERCHANT_GET_ROUTES = [

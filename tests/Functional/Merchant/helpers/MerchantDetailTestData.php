@@ -2739,6 +2739,43 @@ return [
         ],
     ],
 
+    'testGetInternalMerchantIsTransactedDetailTrue' => [
+        'request' => [
+            'url'       => '/internal/merchants/10011110025000',
+            'method'    => 'GET',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => [
+                    'id' => '10011110025000',
+                    'entity' => 'merchant',
+                    'email' => 'razorpay@razorpay.com',
+                    'website' => 'razorpay.com',
+                    'is_transacted' => true,
+                ],
+            ],
+        ],
+    ],
+  
+    'testGetInternalMerchantIsTransactedDetailFalse' => [
+        'request' => [
+            'url'       => '/internal/merchants/10011210025000',
+            'method'    => 'GET',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => [
+                    'id' => '10011210025000',
+                    'entity' => 'merchant',
+                    'email' => 'razorpay@razorpay.com',
+                    'website' => 'razorpay.com',
+                    'is_transacted' => false,
+                ],
+            ],
+        ],
+    ],
 
     'testGetInternalMerchantMerchantDetailsFetch' => [
         'request' => [

@@ -3939,6 +3939,40 @@ We look forward to transacting with you!
         ], $response[MerchantConstants::ADDITIONAL_DETAILS][1]);
     }
 
+    public function testGetInternalMerchantIsTransactedDetailTrue()
+    {
+        $merchantId = '10011110025000';
+        
+        $merchant = $this->fixtures->create('merchant', [
+            'id'        => $merchantId,
+            'email'     => 'razorpay@razorpay.com',
+            'website'   => 'razorpay.com',
+        ]);
+        
+        $payment = $this->fixtures->on('test')->create('payment', [
+            'base_amount'   => 10000,
+            'merchant_id'   => $merchantId,
+            'status'        => 'captured',
+        ]);
+        
+        $this->ba->terminalsAuth();
+        $this->startTest();
+    }
+    
+    public function testGetInternalMerchantIsTransactedDetailFalse()
+    {
+        $merchantId = '10011210025000';
+        
+        $merchant = $this->fixtures->create('merchant', [
+          'id'        => $merchantId,
+          'email'     => 'razorpay@razorpay.com',
+          'website'   => 'razorpay.com',
+        ]);
+        
+        $this->ba->terminalsAuth();
+        $this->startTest();
+    }
+    
     public function testGetInternalMerchantMerchantDetailsFetch()
     {
         $merchantId = '10000000000155';

@@ -17032,6 +17032,9 @@ class Route
             'website_section_fetch_internal',
             'internal_enterprise_dashboard_login_otp_email',
             'terminal_fetch_by_id_internal',
+            'internal_merchant_workflow_details_fetch',
+            'setl_amount',
+            'setl_merchant_dashboard_config_get'
         ],
 
         'cmma' => [
