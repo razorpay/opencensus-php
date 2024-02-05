@@ -836,6 +836,21 @@ return [
         ]
     ],
 
+    'testReverseShadowCronRetryTransferFailsDueToInsufficientBalanceAfterMaxRetry' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'successful entries count' => 0,
+                'failed entries count' =>  1,
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testReverseShadowCronRetryNonRetryableFailureForPaymentTransferProcessedEvent' => [
         'request' => [
             'url' => '/ledger_outbox/retry',

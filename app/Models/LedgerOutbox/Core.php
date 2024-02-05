@@ -11,7 +11,6 @@ use RZP\Constants\Metric;
 use RZP\Diag\EventCode;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Transfer\Constant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;
@@ -21,6 +20,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant;
 use RZP\Trace\Tracer;
+use RZP\Error\PublicErrorDescription;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Ledger\ReverseShadow;
@@ -996,11 +996,11 @@ class Core extends Base\Core
                             return null;
                         });
                     },
-                    $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_LOCK_TIMEOUT_SEC_KEY],
+                    $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_LOCK_TIMEOUT_SEC_KEY],
                     ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_PROCESS_IN_PROGRESS,
-                    $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_NUM_RETRIES_KEY],
-                    $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_MIN_RETRY_DELAY_MS_KEY],
-                    $mutexConfig[Constant::TRANSFER_PROCESS_MUTEX_MAX_RETRY_DELAY_MS_KEY], true);
+                    $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_NUM_RETRIES_KEY],
+                    $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_MIN_RETRY_DELAY_MS_KEY],
+                    $mutexConfig[Transfer\Constant::TRANSFER_PROCESS_MUTEX_MAX_RETRY_DELAY_MS_KEY], true);
             }
             catch (\Exception $ex)
             {
@@ -1369,6 +1369,11 @@ class Core extends Base\Core
                         {
                             $this->handleOndemandSettlementEventsOnFailure($transactorEvent, $transactorId);
                         }
+                        else if ($transactorEvent === LedgerConstants::TRANSFER)
+                        {
+                            $this->failTransferWithErrorCodeAndMessage($entry);
+                        }
+
                         $this->updateRetryCountAndSoftDelete($entry, $retries);
                     }
                     else if ($retries === LedgerReverseShadowConstants::MAX_RETRY_COUNT_CRON)
@@ -1381,6 +1386,14 @@ class Core extends Base\Core
                         {
                             $this->handleOndemandSettlementEventsOnFailure($transactorEvent, $transactorId);
                         }
+                        else if (($transactorEvent === LedgerConstants::TRANSFER) and
+                                 (str_contains($e->getMessage(), Constants::INSUFFICIENT_BALANCE_FAILURE)))
+                        {
+                            $this->failTransferWithErrorCodeAndMessage(
+                                $entry, ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
+                                PublicErrorDescription::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE);
+                        }
+
                         $this->updateRetryCountAndSoftDelete($entry, $retries);
                     }
                     else
@@ -1531,5 +1544,44 @@ class Core extends Base\Core
         }
 
         return ['success' => true];
+    }
+
+    private function failTransferWithErrorCodeAndMessage($entry, $errorCode=ErrorCode::BAD_REQUEST_ERROR,
+                                                         $errorMessage=PublicErrorDescription::BAD_REQUEST_ERROR)
+    {
+        $payloadName = $entry['payload_name'];
+
+        $transferIdPublic = str_replace('-' . LedgerConstants::TRANSFER, "", $payloadName);
+
+        $transferId = Transfer\Entity::verifyIdAndSilentlyStripSign($transferIdPublic);
+
+        $transfer = $this->repo->transfer->findOrFail($transferId);
+
+        $transfer->setFailed();
+
+        $transfer->setErrorCode($errorCode);
+
+        $transfer->setMessage($errorMessage);
+
+        $source = $transfer->getSourceType();
+
+        if ($source === Transfer\Constant::PAYMENT)
+        {
+            $transfer->setAttempts(Transfer\Constant::MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS);
+        }
+        else if ($source === Transfer\Constant::ORDER)
+        {
+            $transfer->setAttempts(Transfer\Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS);
+        }
+
+        $this->repo->saveOrFail($transfer);
+
+        $this->trace->info(
+            TraceCode::TRANSFER_FAILED_DUE_TO_INSUFFICIENT_BALANCE,
+            [
+                'transfer_id'         => $transfer->getId(),
+            ]);
+
+        (new Transfer\Core())->eventTransferFailed($transfer);
     }
 }

@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Jobs\TransferProcess;
+use RZP\Models\Ledger\ReverseShadow;
 use RZP\Models\Payment;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Tests\Traits\MocksSplitz;
@@ -2529,6 +2530,93 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $newDestnMarketBalance = $this->getAccountBalance($destnMID);
         $this->assertEquals($oldDestnMarketBalance, $newDestnMarketBalance, 'destn balance not deeducted');
 
+    }
+
+    public function testReverseShadowCronRetryTransferFailsDueToInsufficientBalanceAfterMaxRetry()
+    {
+        $this->assertNotNull($this->payment);
+
+        $sourceMID = '10000000000000';
+        $destnMID = '10000000000001';
+
+        $this->assertNotNull($this->payment);
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], $destnMID);
+
+        $oldDestnMarketBalance = $this->getAccountBalance($destnMID);
+        $this->assertEquals(0, $oldDestnMarketBalance);
+
+        $oldSourceMarketBalance = $this->getAccountBalance($sourceMID);
+        $this->assertGreaterThanOrEqual($this->payment['amount'],$oldSourceMarketBalance);
+
+        $mockLedger = $this->initialiseLedger(1000000, 0, 0);
+
+        // create transfer
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 10000,
+            'currency'=> 'INR',
+        ];
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+
+        $publicTransferId = $content['items'][0]['id'];
+
+        $transferId =  str_replace('trf_', '', $publicTransferId);
+
+        $ledgerOutboxEntry = $this->getDbEntity('ledger_outbox',  ['payload_name' => $publicTransferId.'-transfer_processed']);
+        $this->assertNotNull( $ledgerOutboxEntry);
+
+        // setting outbox entry's:
+        //      - created_at to an earlier timestamp so that cron fetches it
+        //      - retry_count to max retry count - 1
+        $createdAtTimestamp = (int)((millitime()-3600000)/1000);
+        $this->fixtures->edit('ledger_outbox', $ledgerOutboxEntry['id'], [
+            'created_at' => $createdAtTimestamp,
+            'retry_count' => ReverseShadow\Constants::MAX_RETRY_COUNT_CRON - 1
+        ]);
+
+        $debitJID = 'LsqR14zUg9dbDB' ;
+        $creditJID = 'LsqR157oYgCrCR';
+
+        $mockLedger->shouldReceive('createBulkJournal')
+            ->once()
+            ->andThrow(new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                [],
+                "insufficient_balance_failure: BAD_REQUEST_INSUFFICIENT_BALANCE"
+            ));
+
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/ledger_outbox/retry';
+        $this->ba->cronAuth();
+        $this->runRequestResponseFlow($testData);
+
+        // fetch transfer again to validate status as failed
+        $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+        $this->assertNotNull($transfer, 'transfer not found');
+        $this->assertEquals('failed', $transfer['status'], 'transfer status not marked failed');
+
+        // fetch transfer payment to check if txn id associated
+        $transferPayment = $this->getDbEntity('payment', ['transfer_id' => $transferId]);
+        $this->assertNotNull($transferPayment, 'transfer_payment not found');
+        $this->assertNull($transferPayment['transaction_id'], 'transfer_payment txn_id is not null');
+
+        // fetch  outbox entry
+        $ledgerOutboxEntities = $this->getDbEntities('ledger_outbox', ['payload_name' => $publicTransferId.'-'.'transfer_processed']);
+        $this->assertCount(0 ,$ledgerOutboxEntities, ' ledger_outbox entry for transfer_processed event found');
+
+        // check new source balance
+        $newSourceMarketBalance = $this->getAccountBalance($sourceMID);
+        $this->assertEquals($oldSourceMarketBalance, $newSourceMarketBalance, 'source balance not deducted');
+
+        // check new destn balance
+        $newDestnMarketBalance = $this->getAccountBalance($destnMID);
+        $this->assertEquals($oldDestnMarketBalance, $newDestnMarketBalance, 'destn balance not deducted');
     }
 
     public function testReverseShadowCronRetryNonRetryableFailureForPaymentTransferProcessedEvent()
