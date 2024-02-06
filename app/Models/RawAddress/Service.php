@@ -99,6 +99,10 @@ class Service extends Base\Service
                     {
                         $input['batch_id'] = $source;
                     }
+                    else if( $source === Constants::ADDRESS_SOURCE_TYPE_SHIPROCKET)
+                    {
+                        $input['batch_id'] = $source;
+                    }
                     $state = IndianStates::getStateName($input[Entity::STATE]);
                     if (!is_null($state))
                     {

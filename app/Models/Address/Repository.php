@@ -146,7 +146,7 @@ class Repository extends Base\Repository
             ->where(Entity::ENTITY_ID, '=', $entity->getId())
             ->where(function ($query)
             {
-                $query->whereIn(Entity::SOURCE_TYPE, ['bulk_upload', 'shopify', 'woocommerce', 'unicommerce', 'sopc'])
+                $query->whereIn(Entity::SOURCE_TYPE, ['bulk_upload', 'shopify', 'woocommerce', 'unicommerce','shiprocket', 'sopc'])
                     ->orWhereNull(Entity::SOURCE_TYPE);
             });
         return $addresses->get();
@@ -167,7 +167,7 @@ class Repository extends Base\Repository
         return $query->where(Entity::ENTITY_ID, '=', $entity->getId())
             ->where(function ($query)
             {
-                $query->whereIn(Entity::SOURCE_TYPE, ['bulk_upload', 'shopify', 'woocommerce', 'unicommerce', 'sopc'])
+                $query->whereIn(Entity::SOURCE_TYPE, ['bulk_upload', 'shopify', 'woocommerce', 'unicommerce', 'shiprocket', 'sopc'])
                     ->orWhereNull(Entity::SOURCE_TYPE);
             })
             ->count();
