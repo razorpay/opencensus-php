@@ -1007,6 +1007,10 @@ return [
             'payment_process'   => 'payments/%s/process',
         ]
     ],
+    'ucs' => [
+        'username'      => 'rzp_ucs',
+        'secret'        => env('UCS_SECRET'),
+    ],
     'smart_collect' => [
         'mock'          => env('SMART_COLLECT_MOCK', false),
         'url'           => env('SMART_COLLECT_URL'),

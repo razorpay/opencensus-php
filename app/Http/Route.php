@@ -16380,6 +16380,13 @@ class Route
             'user_fetch_internal',
         ],
 
+        'ucs' => [
+            'merchant_fetch_config_internal',
+            'internal_merchant_fetch',
+            'user_fetch_internal',
+            'merchant_analytics',
+        ],
+
         'mandate_hq' => [
             'get_issuer_from_iin',
         ],
