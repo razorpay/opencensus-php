@@ -1398,6 +1398,13 @@ class UserController extends Controller
 
         list($error, $data, $httpCode) = (new User\Service)->postSendEmailOtp($input);
 
+        if(isset($error["internal_error_code"]) and
+            in_array($error['internal_error_code'], Admin\ApiRequestAny::INTERNAL_ERROR_CODES)
+        )
+        {
+            $error = [$error];
+        }
+
         return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
@@ -1406,6 +1413,13 @@ class UserController extends Controller
         $input = Input::all();
 
         list($error, $data, $httpCode) = (new User\Service)->postVerifyEmailOtp($input);
+
+        if(isset($error["internal_error_code"]) and
+            in_array($error['internal_error_code'], Admin\ApiRequestAny::INTERNAL_ERROR_CODES)
+        )
+        {
+            $error = [$error];
+        }
 
         return AppResponse::jsonResponse($error, $data, $httpCode);
     }
