@@ -1366,6 +1366,12 @@ class Processor
                 return true;
             }
 
+            // route all point payments requests via cps
+            if (isset($input['card']['reward']) === true)
+            {
+                return true;
+            }
+
             //transaction from cryptogram value
             $input[Payment\Entity::CARD][Card\Entity::NUMBER] = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
             $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
