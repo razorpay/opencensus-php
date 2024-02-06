@@ -176,6 +176,7 @@ class Entity
     const TOKEN_CARD                 = 'token_card';
     const LEDGER_OUTBOX              = 'ledger_outbox';
     const ORDER_OUTBOX               = 'order_outbox';
+    const REWARD_POINT               = 'reward_point';
 
     const RAW_ADDRESS                = 'raw_address';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
@@ -1626,6 +1627,7 @@ class Entity
         self::ORDER   => 'pg_router',
         self::REFUND  => 'scrooge',
         self::OFFER   => 'offers_engine',
+        self::REWARD_POINT  => 'card.payments',
     ];
 
     protected static $externalRepoConfigKey = [

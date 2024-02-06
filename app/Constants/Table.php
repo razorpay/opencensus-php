@@ -479,6 +479,8 @@ class Table
 
     const TRANSFER_PAYMENT              = 'transfer_payment';
 
+    const REWARD_POINTS                 = 'reward_points';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,
@@ -502,6 +504,7 @@ class Table
         Entity::MERCHANT_1CC_CONFIGS               => self::MERCHANT_1CC_CONFIGS,
         Entity::DIRECT_ACCOUNT_STATEMENT           => self::BANKING_ACCOUNT_STATEMENT,
         Entity::ROLES                              => self::ACCESS_CONTROL_ROLES,
+        Entity::REWARD_POINT                       => self::REWARD_POINTS
     ];
 
     public static function getTableNameForEntity(string $entity)

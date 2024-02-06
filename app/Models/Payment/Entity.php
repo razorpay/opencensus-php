@@ -48,6 +48,7 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\UpiTransfer;
 use RZP\Models\BankTransfer;
+use RZP\Models\RewardPoint;
 use RZP\Constants\Entity as E;
 use RZP\Models\OfflinePayment;
 use RZP\Models\Customer\Token;
@@ -366,6 +367,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const feeCurrencyAmount                      = "fee_currency_amount";
 
+    const REWARD_ID                               = "reward_id";
+    const REWARD                                  = "reward";
+
     const FEE_MODEL_OVERRIDE_MERCHANT_IDS = [Pricing\BuyPricing::BPCL_TEST_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID2, Pricing\BuyPricing::BPCL_MERCHANT_ID3 ];
 
     protected static $sign      = 'pay';
@@ -420,6 +424,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::RECURRING_TYPE,
         self::AUTHENTICATION_GATEWAY,
         self::FEE_BEARER,
+        self::REWARD_ID,
+        self::REWARD,
         self::SOURCE_CHANNEL,
     ];
 
@@ -519,6 +525,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPI_METADATA,
         self::REFUND_AUTHORIZED_PAYMENT,
         self::CAPTURE_REFUNDED_PAYMENT,
+        self::REWARD,
+        self::REWARD_ID
     ];
 
     protected $public = [
@@ -577,6 +585,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::TOKEN,
         self::UPI,
         self::UPI_METADATA,
+        self::REWARD,
+        self::REWARD_ID
     ];
 
     protected $webhook = [
@@ -631,7 +641,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::SETTLED_BY,
         self::OPTIMIZER_PROVIDER,
         self::TOKEN,
-        self::UPI
+        self::UPI,
+        self::REWARD_ID,
+        self::REWARD
     ];
 
     protected $reconAppInternal = [
@@ -740,6 +752,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::FEE,
         self::TAX,
         self::UPI_METADATA,
+        self::REWARD_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -4463,7 +4476,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         try
         {
             $pgRouterPaymentMetaArray = $this->getAttribute('payment_meta_data');
-            
+
             if (isset($pgRouterPaymentMetaArray) === true)
             {
                 $paymentMetaInput = [
@@ -4474,7 +4487,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                     'payment_id'                => $this->getId(),
                     'dcc_mark_up_percent'       => $pgRouterPaymentMetaArray['dcc_mark_up_percent']
                 ];
-    
+
                 $paymentMetaEntity = (new Payment\PaymentMeta\Entity)->forcefill($paymentMetaInput);
 
                 $paymentMetaEntity->payment()->associate($this);
@@ -4769,6 +4782,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         else
         {
             unset($array[self::SUBSCRIPTION_ID]);
+        }
+    }
+
+    public function setPublicRewardIdAttribute(array & $array)
+    {
+        if (isset($array[self::REWARD_ID]) and $array[self::REWARD_ID] != "")
+        {
+            $array[self::REWARD_ID] = RewardPoint\Entity::getSignedId($array[self::REWARD_ID]);
+        }
+        else
+        {
+            unset($array[self::REWARD_ID]);
         }
     }
 
@@ -5455,6 +5480,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return $this->hasOne('RZP\Models\Discount\Entity')->whereNotNull(\RZP\Models\Discount\Entity::OFFER_ID);
         }
         return $this->hasOne('RZP\Models\Discount\Entity');
+    }
+
+    public function reward()
+    {
+        return $this->belongsTo(RewardPoint\Entity::class);
     }
 
     /**
@@ -7465,5 +7495,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return parent::maskField($key, $value);
+    }
+
+    public function hasReward()
+    {
+        if (isset($this->reward) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -18,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Error\ErrorClass;
+use RZP\Models\RewardPoint;
 use RZP\Models\Order\Metric;
 use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
@@ -597,6 +598,15 @@ class PGRouter
                 unset($response['body']['data']['payment']['emi_plan']);
             }
 
+            if (isset($response['body']['data']['payment']['reward']) === true)
+            {
+                $rewardPoint = (new RewardPoint\Entity)->forceFill($response['body']['data']['payment']['reward']);
+
+                $rewardPoint->setExternal(true);
+
+                unset($payment['data']['payment']['reward']);
+            }
+
             if(isset($response['body']['data']['payment']['dcc_offered']) === true)
             {
                 $pgRouterPaymentMetaData = [
@@ -630,6 +640,11 @@ class PGRouter
             if ($emiPlan !== null)
             {
                 $payment->emiPlan()->associate($emiPlan);
+            }
+
+            if ($rewardPoint !== null)
+            {
+                $payment->reward()->associate($rewardPoint);
             }
 
             if ($payment->isFailed() === false)
