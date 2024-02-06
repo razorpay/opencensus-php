@@ -39,7 +39,13 @@ class GraphRequestAuthCheckV2
         'resendTwoFactorLoginOtp',
         'loginTwoFactorPassword',
         'accountVerificationOtp',
-        'refreshAccessToken'
+        'refreshAccessToken',
+        'sendEmailVerificationOtp',
+        'setNewPassword',
+        'verifyEmailOtp',
+        'setEmailPassword',
+        'optInForWhatsapp',
+        'userExistsByEmailOrPhone'
     ];
 
     public function handle($request, Closure $next)
