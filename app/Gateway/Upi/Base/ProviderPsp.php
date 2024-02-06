@@ -53,6 +53,9 @@ class ProviderPsp
     Const FREECHARGE        = 'freecharge';
     Const YONO_SBI          = 'yono_sbi';
     Const ADITYA_BIRLA_CAPITAL_DIGITAL = 'aditya_birla_capital_digital';
+    Const FI                = 'fi';
+    Const CITRUS            = 'citrus';
+    Const TIMEPAY            = 'timepay';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

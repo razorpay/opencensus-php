@@ -204,7 +204,8 @@ class ProviderCode
     const DRHDFCBANK         = 'drhdfcbank';
     const DIGIKHATA          = 'digikhata';
     const BPAYWALLET         = 'bpaywallet';
-
+    const PAYU               = 'payu';
+    const FIFEDERAL          = 'fifederal';
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
 
@@ -399,6 +400,7 @@ class ProviderCode
         self::DRHDFCBANK         => 'NPCI',
         self::DIGIKHATA          => 'NPCI',
         self::BPAYWALLET         => 'NPCI',
+        self::PAYU               => 'NPCI',
     ];
 
     /**
@@ -515,6 +517,9 @@ class ProviderCode
         ProviderPsp::YONO_SBI,
         ProviderPsp::FREECHARGE,
         ProviderPsp::ADITYA_BIRLA_CAPITAL_DIGITAL,
+        ProviderPsp::CITRUS,
+        ProviderPsp::FI,
+        ProviderPsp::TIMEPAY,
     ];
 
     /**
@@ -581,7 +586,9 @@ class ProviderCode
         self::FREECHARGE   => ProviderPsp::FREECHARGE,
         self::SBIPA        => ProviderPsp::YONO_SBI,
         self::ABCDICICI    => ProviderPsp::ADITYA_BIRLA_CAPITAL_DIGITAL,
-
+        self::FIFEDERAL    => ProviderPsp::FI,
+        self::PAYU         => ProviderPsp::CITRUS,
+        self::TIMECOSMOS   => ProviderPsp::TIMEPAY,
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
     ];
