@@ -4856,6 +4856,11 @@
   resolved "https://npm.pkg.github.com/download/@razorpay/frontend-care/0.7.1/a1470f3c809b4e15d0ee182b1d7b6f25114ceb0a#a1470f3c809b4e15d0ee182b1d7b6f25114ceb0a"
   integrity sha512-6HXzJJT/s97sBJo0Jv1at0vjPuSPeRsGKmPv9sNbjdcwDEVmH6/h6RRXCFq+RagKT9obeG6SvKD1S46G8O9TxA==
 
+"@razorpay/i18nify-js@1.2.0":
+  version "1.2.0"
+  resolved "https://npm.pkg.github.com/download/@razorpay/i18nify-js/1.2.0/a4f396f18a5cb2ce8bde6344a1af78b41217fd82#a4f396f18a5cb2ce8bde6344a1af78b41217fd82"
+  integrity sha512-mfbKpECSmf1Cg+SPMX+o0NIHNR/ICAJNzDKCHTzwf3Q8ocu3Nnl6NQDYnyfVrBnppwx0Sbu23KGhRa0HN3D6AA==
+
 "@razorpay/universe-cli@15.3.0":
   version "15.3.0"
   resolved "https://npm.pkg.github.com/download/@razorpay/universe-cli/15.3.0/3b34560022348b50522c903714cbb57849d974fd#3b34560022348b50522c903714cbb57849d974fd"

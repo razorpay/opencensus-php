@@ -32,6 +32,7 @@ import {
 import { IPaymentDetails, ApplicationDetails } from './types';
 import { onCopy } from './utils';
 import PaymentTransfers from './PaymentTransfers';
+import { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 
 interface IPaymentDetailsSection extends RouteComponentProps<{ id: string }> {
   paymentDetails: IPaymentDetails;
@@ -212,7 +213,7 @@ function PaymentDetailsSection({
                           weight="regular"
                           contrast="low"
                         >
-                          {contact}
+                          {getI18FormattedPhoneNumber(contact)}
                         </Text>
                       </Box>
                     )}

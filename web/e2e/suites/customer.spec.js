@@ -1,4 +1,8 @@
-import { expectSuccessNotification, getRandomCustomerData } from '../utils';
+import {
+  expectSuccessNotification,
+  getRandomCustomerData,
+  getI18FormattedPhoneNumber,
+} from '../utils';
 import { routes, StorageStatePath } from '../utils/constants';
 
 const { test, expect } = require('@playwright/test');
@@ -41,7 +45,9 @@ test.describe
 
     // expect newly created customer's data to be visible
     await expect(await page.getByText(name)).toBeVisible();
-    await expect(await page.getByRole('cell', { name: phone })).toBeVisible();
+    await expect(
+      await page.getByRole('cell', { name: getI18FormattedPhoneNumber(phone) }),
+    ).toBeVisible();
     await expect(await page.getByRole('cell', { name: email })).toBeVisible();
   });
 
@@ -72,6 +78,8 @@ test.describe
 
     // expect newly updated customer's data to be visible
     await expect(await page.getByText(name)).toBeVisible();
-    await expect(await page.getByRole('cell', { name: phone })).toBeVisible();
+    await expect(
+      await page.getByRole('cell', { name: getI18FormattedPhoneNumber(phone) }),
+    ).toBeVisible();
   });
 });

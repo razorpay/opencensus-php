@@ -73,7 +73,7 @@ describe('Recurring Payments List', () => {
       'pay_l5g0sxs5jhbwnt',
       'order_l5fyvzvsogmg6w',
       'satanick.dutta@razorpay.com',
-      '918407983457',
+      '[+]91 8407 983457',
       '18 jan 2023, 02:40:53 pm',
       'captured',
       'showing 1 - 1',

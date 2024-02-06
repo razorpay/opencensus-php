@@ -1,8 +1,18 @@
 const { expect } = require('@playwright/test');
 const moment = require('moment');
+const { formatPhoneNumber } = require('@razorpay/i18nify-js');
 
 const { routes } = require('./constants');
 const { COMMON_SELECTORS } = require('./selectors');
+
+export function getI18FormattedPhoneNumber(contact) {
+  try {
+    const formattedContact = formatPhoneNumber(contact);
+    return formattedContact ? formattedContact : contact;
+  } catch (e) {
+    return contact;
+  }
+}
 
 const DEFAULT_DATE_RANGE_IN_DAYS = 30;
 
@@ -35,7 +45,7 @@ const getDemoGSTIN = () => {
   return DEMO_GSTINS[Math.floor(Math.random() * DEMO_GSTINS.length)];
 };
 
-const getRandomCustomerData = () => {
+export const getRandomCustomerData = () => {
   const phone = generateRandomPhoneNumber();
   const name = generateRandomName();
   const email = generateRandomEmail();
@@ -190,6 +200,7 @@ export const fillExpiry = async ({ page, expire_by }) => {
 module.exports = {
   generateRandomText,
   generateRandomPhoneNumber,
+  getI18FormattedPhoneNumber,
   generateRandomName,
   generateRandomEmail,
   getRandomCustomerData,

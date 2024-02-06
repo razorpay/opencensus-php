@@ -10,6 +10,7 @@ import {
   assertIssueRefundButton,
 } from './utils';
 import { StorageStatePath, routes } from '../../utils/constants';
+import { getI18FormattedPhoneNumber } from '../../utils';
 
 test.describe
   .parallel('Payments transactions (Test Mode) @flow=transactions @project=payments', () => {
@@ -50,7 +51,9 @@ test.describe
       await searchTransactionById({ page: paymentsList, id });
       await expect(page.getByRole('cell', { name: new RegExp(id) })).toBeVisible();
       await expect(page.getByRole('cell', { name: '-- Netbanking' })).toBeVisible();
-      await expect(page.getByRole('cell', { name: '+918888888888' })).toBeVisible();
+      await expect(
+        page.getByRole('cell', { name: getI18FormattedPhoneNumber('+918888888888') }),
+      ).toBeVisible();
       await expect(page.getByTestId(`entity-item-row-${id}`).getByText('Authorized')).toBeVisible();
       await expect(
         page.getByRole('cell', {

@@ -4,7 +4,7 @@ import { getAmount, getTime } from 'common/ui/item';
 import { makeIdLink } from 'common/ui/item/id';
 import { getIntervalCycle, subString, titleCase } from 'common/utils/rzp-utils';
 import GatewayDataInfo from 'merchant/components/GatewayDataInfo';
-import MaskedContact from 'merchant/components/Mask/Contact';
+import MaskedContact, { getI18FormattedPhoneNumber } from 'merchant/components/Mask/Contact';
 import MaskedEmail from 'merchant/components/Mask/Email';
 import { RefundStatusLabel, OfferStatusLabel } from 'merchant/components/StatusLabel';
 import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
@@ -51,7 +51,7 @@ export const customer = {
   title: 'Customer',
   value: (item) => (
     <div>
-      <span class="contact">{item.contact}</span>
+      <span class="contact">{getI18FormattedPhoneNumber(item.contact)}</span>
       <br />
       <span class="email">{item.email}</span>
     </div>

@@ -31,6 +31,10 @@ module.exports = {
       __dirname,
       'node_modules/@razorpay/blade/build/tokens/index.development.web.js',
     ),
+    '@razorpay/i18nify-js/phoneNumber': path.resolve(
+      __dirname,
+      'node_modules/@razorpay/i18nify-js/lib/esm/phoneNumber/index.js',
+    ),
   },
 
   // A map from regular expressions to paths to transformers

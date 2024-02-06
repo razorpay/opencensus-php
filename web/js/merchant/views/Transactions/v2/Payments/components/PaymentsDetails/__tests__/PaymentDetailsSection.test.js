@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatPhoneNumber } from '@razorpay/i18nify-js';
 
 import '@testing-library/jest-dom/extend-expect';
 import { useMobile } from 'common/hooks/useMobile';
@@ -82,7 +83,9 @@ describe('Payment Details Section component', () => {
 
       expect(screen.getByText('Customer details')).toBeInTheDocument();
       expect(screen.getByText(`${happyFlowProps.paymentDetails.email}`)).toBeInTheDocument();
-      expect(screen.getByText(`${happyFlowProps.paymentDetails.contact}`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`${formatPhoneNumber(happyFlowProps.paymentDetails.contact)}`),
+      ).toBeInTheDocument();
     });
 
     test('should render Customer details', () => {
@@ -90,7 +93,9 @@ describe('Payment Details Section component', () => {
 
       expect(screen.getByText('Customer details')).toBeInTheDocument();
       expect(screen.getByText(`${happyFlowProps.paymentDetails.email}`)).toBeInTheDocument();
-      expect(screen.getByText(`${happyFlowProps.paymentDetails.contact}`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`${formatPhoneNumber(happyFlowProps.paymentDetails.contact)}`),
+      ).toBeInTheDocument();
     });
 
     test('should render Description', () => {
