@@ -11,4 +11,6 @@ return [
 
     'admin_google_oauth_client_mock' => env('ADMIN_GOOGLE_OAUTH_CLIENT_MOCK', false),
     'admin_google_oauth_client_id'   => env('ADMIN_GOOGLE_OAUTH_CLIENT_ID'),
+
+    'accounts_oauth_client_id'      => env('ACCOUNTS_OAUTH_CLIENT_ID'),
 ];

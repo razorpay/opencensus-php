@@ -69,6 +69,9 @@ class GoogleOauthVerify
 
         switch ($oauthSource)
         {
+            case Constants::ACCOUNTS:
+                return $this->getAccountsOauthClientId();
+
             case Constants::IOS:
                 return $this->getMerchantOauthClientIdIos();
 
@@ -110,6 +113,11 @@ class GoogleOauthVerify
     protected function getMerchantOauthClientIdIos()
     {
         return config(Constants::OAUTH_MERCHANT_OAUTH_CLIENT_ID_IOS);
+    }
+
+    protected function getAccountsOauthClientId()
+    {
+        return config(Constants::OAUTH_ACCOUNTS_OAUTH_CLIENT_ID);
     }
 
     protected function getMerchantOauthClientIdXAndroid()

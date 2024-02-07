@@ -71,6 +71,7 @@ class Constants
     const PAYLOAD      = 'payload';
 
     const IOS           = 'ios';
+    const ACCOUNTS      = 'accounts';
     const EPOS          = 'epos';
     const ANDROID       = 'android';
     const DASHBOARD     = 'dashboard';
@@ -90,6 +91,7 @@ class Constants
     const OAUTH_MERCHANT_OAUTH_CLIENT_ID_X_IOS      = 'oauth.merchant_oauth_client_id_x_ios';
     const OAUTH_MERCHANT_OAUTH_MOCK                 = 'oauth.merchant_oauth_mock';
 
+    const OAUTH_ACCOUNTS_OAUTH_CLIENT_ID            = 'oauth.accounts_oauth_client_id';
     const BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT = 'bulk_payout_approve_to_bulk_approve_payout';
 
     // payout links constants
