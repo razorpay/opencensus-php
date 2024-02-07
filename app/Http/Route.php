@@ -17289,6 +17289,8 @@ class Route
             'third_party_authenticate'
         ],
         'razorassist' => [
+            'fetch_merchant_sr',
+            'setl_merchant_dashboard_config_get',
             'merchant_fetch_internal',
             'merchant_ids_fetch_for_user_contact',
             'payment_fetch_multiple',
