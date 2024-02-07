@@ -86,7 +86,8 @@ class Service extends Base\Service
     public function clearOnHoldForInvoiceBulk(array $input)
     {
         // if reverse shadow is enabled invoice status update should be done at prts
-        $variant = (new Core)->getCommissionInvoiceExperimentMode($this->merchant->getId());
+        // using testPartnerID1 as merchant can't be fetched in this flow and invoices are 100% ramped
+        $variant = (new Core)->getCommissionInvoiceExperimentMode('testPartnerID1');
         if($variant == 'reverse-shadow' or $variant == 'cutoff')
         {
             unset($input[Constants::UPDATE_INVOICE_STATUS]);

@@ -18,6 +18,12 @@ trait PartnershipServiceTrait
         'commissions_get'                     => PartnershipsService::GET_COMMISSION_URL,
     );
 
+    static array $ignoreKeyForParity =[
+        'created_at',
+        'updated_at',
+        'pdf'
+    ];
+
     public function proxyToPartnershipService(array $parameters, string $partnerId)
     {
         $currentRoute = app('request.ctx')->getRoute();
@@ -107,6 +113,11 @@ trait PartnershipServiceTrait
         // some keys might be present in api which are not there in api we can ignore those values
         foreach ($prtsResult as $key => $value)
         {
+            // ignore some keys from parity
+            if (array_key_exists($key, static::$ignoreKeyForParity) ==  true)
+            {
+                continue;
+            }
             // if key is not present in api result then return false
             if (array_key_exists($key, $apiResult) == false)
             {
