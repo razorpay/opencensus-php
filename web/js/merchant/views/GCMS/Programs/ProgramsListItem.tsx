@@ -49,7 +49,7 @@ const ProgramsListItem: React.FC<Props> = ({ program, onClick }) => {
               <StyledProgramTypeContainer
                 backgroundColor={PROGRAM_TYPES[programType as keyof typeof PROGRAM_TYPES].color}
               >
-                <Text color="surface.text.subtle.lowContrast" weight="bold" size="small">
+                <Text color="white.action.text.secondary.active" weight="bold" size="small">
                   {capitalize(PROGRAM_TYPES[programType as keyof typeof PROGRAM_TYPES].name)}
                 </Text>
               </StyledProgramTypeContainer>

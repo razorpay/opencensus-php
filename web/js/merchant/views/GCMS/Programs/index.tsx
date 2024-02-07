@@ -1,23 +1,24 @@
 import React, { useState, useCallback } from 'react';
-import { Box, Title } from '@razorpay/blade/components';
+import { Box, Text, Title } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
+import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
+import { ModeT } from 'common/services/mode';
 import Spinner from 'common/ui/Spinner';
 import EmptyList from 'merchant/components/EmptyList';
 import ProgramsListItem from 'merchant/views/GCMS/Programs/ProgramsListItem';
-import { fetchPrograms } from 'merchant/views/GCMS/Programs/queries';
+import { fetchPrograms, LIST_FETCH_BATCH_SIZE } from 'merchant/views/GCMS/Programs/queries';
 import { Program as ProgramType } from 'merchant/views/GCMS/Programs/types';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
+import { ListApiResponse } from 'merchant/views/GCMS/shared/types';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
-import { ListApiResponse } from 'merchant/views/Wallet/types';
 
-const Programs: React.FC = () => {
-  const mode = 'test';
+const Programs = ({ mode }: { mode: ModeT }) => {
   const navigate = useNavigate();
   const [paginationState, setPaginationState] = useState({
     skip: 0,
-    count: 12,
+    count: LIST_FETCH_BATCH_SIZE,
   });
   const { isLoading, data: programs } = useQuery<ListApiResponse<ProgramType>, Error>({
     queryKey: ['wallet:programs', mode, paginationState],
@@ -89,13 +90,20 @@ const Programs: React.FC = () => {
                   </Box>
                 )}
               </Box>
-              <Pagination
-                next={next}
-                prev={prev}
-                listData={programs?.items}
-                skip={paginationState.skip}
-                count={paginationState.count}
-              />
+              <Box>
+                <Box position="absolute" paddingLeft="spacing.6" paddingTop="spacing.1">
+                  <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+                    programs?.total_count || 0
+                  } records`}</Text>
+                </Box>
+                <Pagination
+                  next={next}
+                  prev={prev}
+                  listData={programs?.items || []}
+                  skip={paginationState.skip}
+                  count={paginationState.count}
+                />
+              </Box>
             </Box>
           )}
         </div>
@@ -104,4 +112,7 @@ const Programs: React.FC = () => {
   );
 };
 
-export default Programs;
+export default connect((state) => ({
+  mode: state.session?.mode,
+  merchantId: state.session?.user?.current,
+}))(Programs);

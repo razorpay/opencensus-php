@@ -41,6 +41,6 @@ export interface TransactionListApiParams {
   from?: number;
   to?: number;
   mode?: ModeT;
-  account_id?: string;
+  issuing_account_id?: string;
   reference_id?: string;
 }

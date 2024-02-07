@@ -2034,7 +2034,9 @@ class Content extends Component {
                 element={
                   <RouteGuard
                     additionalCondition={(user) =>
-                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                      user.isIssuingDashboardEnabled &&
+                      isGCMSExperimentEnabled(splitz) &&
+                      user.isIssuingGcmsEnabled
                     }
                   >
                     <GCMSResellers />
@@ -2046,7 +2048,9 @@ class Content extends Component {
                 element={
                   <RouteGuard
                     additionalCondition={(user) =>
-                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                      user.isIssuingDashboardEnabled &&
+                      isGCMSExperimentEnabled(splitz) &&
+                      user.isIssuingGcmsEnabled
                     }
                   >
                     <GCMSResellerDetails />
@@ -2061,7 +2065,9 @@ class Content extends Component {
                 element={
                   <RouteGuard
                     additionalCondition={(user) =>
-                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                      user.isIssuingDashboardEnabled &&
+                      isGCMSExperimentEnabled(splitz) &&
+                      user.isIssuingGcmsEnabled
                     }
                   >
                     <GCMSPrograms />
@@ -2073,7 +2079,9 @@ class Content extends Component {
                 element={
                   <RouteGuard
                     additionalCondition={(user) =>
-                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                      user.isIssuingDashboardEnabled &&
+                      isGCMSExperimentEnabled(splitz) &&
+                      user.isIssuingGcmsEnabled
                     }
                   >
                     <GCMSProgramDetails />
@@ -2086,7 +2094,9 @@ class Content extends Component {
               element={
                 <RouteGuard
                   additionalCondition={(user) =>
-                    user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                    user.isIssuingDashboardEnabled &&
+                    isGCMSExperimentEnabled(splitz) &&
+                    user.isIssuingGcmsEnabled
                   }
                 >
                   <GCMSOrders />
@@ -2098,7 +2108,9 @@ class Content extends Component {
               element={
                 <RouteGuard
                   additionalCondition={(user) =>
-                    user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                    user.isIssuingDashboardEnabled &&
+                    isGCMSExperimentEnabled(splitz) &&
+                    user.isIssuingGcmsEnabled
                   }
                 >
                   <GCMSOrderCreate />
@@ -2110,7 +2122,9 @@ class Content extends Component {
               element={
                 <RouteGuard
                   additionalCondition={(user) =>
-                    user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                    user.isIssuingDashboardEnabled &&
+                    isGCMSExperimentEnabled(splitz) &&
+                    user.isIssuingGcmsEnabled
                   }
                 >
                   <GCMSFunds />

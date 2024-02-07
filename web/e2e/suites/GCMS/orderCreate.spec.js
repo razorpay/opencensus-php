@@ -26,9 +26,21 @@ test.describe('GCMS orders create @flow=ordersCreate @project=payments', () => {
     await expect(page).toHaveURL(`${routes.GCMS_ORDERS_CREATE}/programs`); // Programs page
     await expect(await page.getByText('Create Order')).toBeVisible();
 
-    const firstCard = await page.locator('div').filter({ hasText: 'Thank You Gift Card' }).first();
+    const firstCard = await page
+      .locator('div[data-blade-component="card"]')
+      .filter({ hasText: 'Thank You Gift Card' })
+      .first();
     await expect(firstCard).toBeVisible();
     await firstCard.click();
+
+    await page
+      .locator('input[data-blade-component="styled-base-input"][placeholder="Enter custom amount"]')
+      .first()
+      .fill('1');
+    await page
+      .locator('input[data-blade-component="styled-base-input"][placeholder="0"]')
+      .first()
+      .fill('1');
 
     await page.getByRole('button', { name: 'Add to cart' }).first().click();
 

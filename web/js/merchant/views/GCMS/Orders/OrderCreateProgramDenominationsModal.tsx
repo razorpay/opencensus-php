@@ -66,40 +66,43 @@ const OrderCreateProgramDenominationsModal = ({
     mutationFn: orderItemsPatch,
   });
 
+  const isProgramDenominationArrayAvailable =
+    Array.isArray(sku?.policies?.gift_card_price_denominations) &&
+    sku?.policies?.gift_card_price_denominations.length > 0;
+
   useEffect(() => {
     reset();
     resetOrderItemsPatch();
     const orderItemDenominationsIndexArray: string[] = [];
-    const isProgramDenominationArrayAvailable =
-      Array.isArray(sku?.policies?.gift_card_price_denominations) &&
-      sku?.policies?.gift_card_price_denominations.length > 0;
 
-    const formattedOrderItemsDenominations = isProgramDenominationArrayAvailable
-      ? sku?.policies?.gift_card_price_denominations.map((denomination) => {
-          const filteredOrderItemDenomination = orderItemsProps.find((item) => {
-            if (item.denomination === denomination) {
-              orderItemDenominationsIndexArray.push(item.id || '');
-              return true;
-            } else {
-              return false;
-            }
-          });
-          return {
-            denomination,
-            ...filteredOrderItemDenomination,
-          };
-        })
-      : [];
-
-    const customOrderItem = orderItemsProps.find((item) =>
-      orderItemDenominationsIndexArray.every((value) => value !== item.id),
-    );
-    setCustomOrderItem(
-      customOrderItem
-        ? { ...customOrderItem, type: 'custom' }
-        : { type: 'custom', quantity: 0, denomination: 0 },
-    );
-    setOrderItems(formattedOrderItemsDenominations);
+    if (isProgramDenominationArrayAvailable) {
+      const formattedOrderItemsDenominations = isProgramDenominationArrayAvailable
+        ? sku?.policies?.gift_card_price_denominations.map((denomination) => {
+            const filteredOrderItemDenomination = orderItemsProps.find((item) => {
+              if (item.denomination === denomination) {
+                orderItemDenominationsIndexArray.push(item.id || '');
+                return true;
+              } else {
+                return false;
+              }
+            });
+            return {
+              denomination,
+              ...filteredOrderItemDenomination,
+            };
+          })
+        : [];
+      setOrderItems(formattedOrderItemsDenominations);
+    } else {
+      const customOrderItem = orderItemsProps.find((item) =>
+        orderItemDenominationsIndexArray.every((value) => value !== item.id),
+      );
+      setCustomOrderItem(
+        customOrderItem
+          ? { ...customOrderItem, type: 'custom' }
+          : { type: 'custom', quantity: 0, denomination: 0 },
+      );
+    }
   }, [isOpen, orderItemsProps, sku?.policies?.gift_card_price_denominations]);
 
   const clear = () => {
@@ -180,8 +183,8 @@ const OrderCreateProgramDenominationsModal = ({
           <ProgramHeaderSection
             program={sku}
             containerProps={{
-              height: '116px',
-              padding: 'spacing.0',
+              height: '80px',
+              padding: ['spacing.0', 'spacing.0', 'spacing.5', 'spacing.0'],
               borderBottomWidth: 'thick',
               borderBottomColor: 'surface.border.subtle.lowContrast',
             }}
@@ -194,107 +197,98 @@ const OrderCreateProgramDenominationsModal = ({
           alignItems="center"
           padding={['spacing.4', 'spacing.0', 'spacing.0', 'spacing.0']}
         >
-          <Box width="250px">
-            <Text>SKU</Text>
+          <Box width="200px">
+            <Text color="surface.text.muted.lowContrast">Denomination</Text>
           </Box>
           <Box width="200px">
-            <Text>Denomination</Text>
-          </Box>
-          <Box width="200px">
-            <Text>Quantity</Text>
+            <Text color="surface.text.muted.lowContrast">Quantity</Text>
           </Box>
         </Box>
-        {orderItems.map(({ id, denomination, quantity }, index) => {
-          return (
-            <Box
-              key={id ? id + index : index}
-              borderBottomWidth="thick"
-              borderBottomColor="surface.border.subtle.lowContrast"
-              display="flex"
-              flexDirection="row"
-              alignItems="center"
-              padding={['spacing.4', 'spacing.0', 'spacing.4', 'spacing.0']}
-            >
-              <Box width="250px">
-                <Heading size="small" color="surface.text.subdued.lowContrast">
-                  {sku.id}
-                </Heading>
-              </Box>
-              <Box width="200px">
-                <Heading size="small" color="surface.text.subdued.lowContrast">
-                  {denomination ? getFormattedAmountNew(denomination, true) : 0}
-                </Heading>
-              </Box>
-              <Box width="200px">
-                <Box width="175px">
-                  <TextInput
-                    label=""
-                    type="number"
-                    placeholder="0"
-                    /* @ts-expect-error undefined-object-check */
-                    defaultValue={quantity}
-                    onChange={({ value }) => updateOrderItem({ quantity: value, denomination })}
-                  />
+        {isProgramDenominationArrayAvailable ? (
+          orderItems.map(({ id, denomination, quantity }, index) => {
+            return (
+              <Box
+                key={id ? id + index : index}
+                borderBottomWidth="thick"
+                borderBottomColor="surface.border.subtle.lowContrast"
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                padding={['spacing.3', 'spacing.0', 'spacing.4', 'spacing.0']}
+              >
+                <Box width="200px">
+                  <Heading size="small" color="surface.text.subdued.lowContrast">
+                    {denomination ? getFormattedAmountNew(denomination, true) : 0}
+                  </Heading>
+                </Box>
+                <Box width="200px">
+                  <Box width="175px">
+                    <TextInput
+                      label=""
+                      type="number"
+                      placeholder="0"
+                      /* @ts-expect-error undefined-object-check */
+                      defaultValue={quantity}
+                      onChange={({ value }) => updateOrderItem({ quantity: value, denomination })}
+                    />
+                  </Box>
                 </Box>
               </Box>
-            </Box>
-          );
-        })}
-        <Box
-          display="flex"
-          flexDirection="row"
-          alignItems="center"
-          padding={['spacing.4', 'spacing.0', 'spacing.4', 'spacing.0']}
-        >
-          <Box width="250px">
-            <Heading size="small" color="surface.text.subdued.lowContrast">
-              {sku.id}
-            </Heading>
-          </Box>
-          <Box width="200px">
-            <Box width="175px">
-              <TextInput
-                label=""
-                placeholder="Enter custom amount"
-                type="number"
-                defaultValue={
-                  customOrderItem?.denomination
-                    ? getFixedINRAmount(customOrderItem?.denomination)
-                    : 0
-                }
-                /* @ts-expect-error undefined-object-check */
-                onChange={({ value }) => updateOrderItem({ type: 'custom', denomination: value })}
-              />
-            </Box>
-          </Box>
-          <Box width="200px">
-            <Box width="175px">
-              <TextInput
-                label=""
-                placeholder="0"
-                type="number"
-                /* @ts-expect-error undefined-object-check */
-                defaultValue={customOrderItem?.quantity}
-                /* @ts-expect-error undefined-object-check */
-                onChange={({ value }) => updateOrderItem({ type: 'custom', quantity: value })}
-              />
-            </Box>
-          </Box>
-          {isError ||
-            (isErrorOrderItemPatchMutation && (
-              <Box>
-                <Error
-                  text={
-                    /* @ts-expect-error error-message-check */
-                    error?.message || errorOrderItemPatchMutation?.message || 'Something Went Wrong'
+            );
+          })
+        ) : (
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            padding={['spacing.3', 'spacing.0', 'spacing.0', 'spacing.0']}
+          >
+            <Box width="200px">
+              <Box width="175px">
+                <TextInput
+                  label=""
+                  placeholder="Enter custom amount"
+                  type="number"
+                  defaultValue={
+                    customOrderItem?.denomination
+                      ? getFixedINRAmount(customOrderItem?.denomination)
+                      : 0
                   }
+                  /* @ts-expect-error undefined-object-check */
+                  onChange={({ value }) => updateOrderItem({ type: 'custom', denomination: value })}
                 />
               </Box>
-            ))}
-        </Box>
+            </Box>
+            <Box width="200px">
+              <Box width="175px">
+                <TextInput
+                  label=""
+                  placeholder="0"
+                  type="number"
+                  /* @ts-expect-error undefined-object-check */
+                  defaultValue={customOrderItem?.quantity}
+                  /* @ts-expect-error undefined-object-check */
+                  onChange={({ value }) => updateOrderItem({ type: 'custom', quantity: value })}
+                />
+              </Box>
+            </Box>
+          </Box>
+        )}
+
+        {isError ||
+          (isErrorOrderItemPatchMutation && (
+            <Box>
+              <Error
+                text={
+                  /* @ts-expect-error error-message-check */
+                  error?.message || errorOrderItemPatchMutation?.message || 'Something Went Wrong'
+                }
+              />
+            </Box>
+          ))}
       </ModalBody>
       <ModalFooter>
-        <Box padding="spacing.2" display="flex" flexDirection="row">
+        <Box paddingX="spacing.2" display="flex" flexDirection="row">
           <Box paddingRight="spacing.4">
             <Button
               isLoading={isLoading || isLoadingOrderItemPatchMutation}
@@ -314,7 +308,7 @@ const OrderCreateProgramDenominationsModal = ({
           </Box>
         </Box>
         {(isError || isErrorOrderItemPatchMutation) && (
-          <Box padding="spacing.2">
+          <Box paddingX="spacing.2">
             {/* @ts-expect-error error-message-check */}
             <ErrorText>{error?.message || errorOrderItemPatchMutation?.message}</ErrorText>
           </Box>

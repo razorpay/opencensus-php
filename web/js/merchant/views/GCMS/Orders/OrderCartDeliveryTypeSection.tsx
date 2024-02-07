@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Box, Radio, RadioGroup, Text } from '@razorpay/blade/components';
+import { Box, Heading, Radio, RadioGroup, Text } from '@razorpay/blade/components';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 
@@ -80,7 +80,12 @@ const OrderCartDeliveryTypeSection = ({ showNotification }: Props) => {
   };
 
   return (
-    <Box padding={['spacing.2', 'spacing.4', 'spacing.0', 'spacing.0']}>
+    <Box padding={['spacing.2', 'spacing.0', 'spacing.4', 'spacing.0']}>
+      <Box paddingBottom="spacing.4">
+        <Heading size="small" color="surface.text.subtle.lowContrast">
+          Delivery Type
+        </Heading>
+      </Box>
       <div className="content">
         {isLoadingMerchantDetails || isLoading ? (
           <div className="page-spinner-container">

@@ -62,13 +62,15 @@ const ORDER_LIST_COLUMNS = [
 const Orders = ({ mode }: { mode: ModeT }) => {
   const [skip, setSkip] = useState(0);
   const [resellerName, setResellerName] = useState('');
+  const [orderId, setOrderId] = useState('');
   const [orderStatus, setOrderStatus] = useState('');
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
 
   const { isLoading, data: orders } = useQuery({
-    queryKey: ['wallet:orders', skip, resellerName, orderStatus, fromDate, toDate],
-    queryFn: () => fetchOrders({ skip, resellerName, orderStatus, fromDate, toDate, mode }),
+    queryKey: ['wallet:orders', skip, resellerName, orderStatus, fromDate, toDate, orderId],
+    queryFn: () =>
+      fetchOrders({ skip, resellerName, orderStatus, fromDate, toDate, mode, orderId }),
   });
 
   const handleNext = () => {
@@ -79,17 +81,18 @@ const Orders = ({ mode }: { mode: ModeT }) => {
     setSkip(skip - LIST_FETCH_BATCH_SIZE);
   };
 
-  const handleSearch = ({ resellerName, status, date }) => {
+  const handleSearch = ({ resellerName, status, date, orderId }) => {
     setResellerName(resellerName);
     setOrderStatus(status);
     setFromDate(date.from);
     setToDate(date.to);
+    setOrderId(orderId);
   };
 
   return (
     <Wrapper>
       <div className="tabbed-container">
-        <Box>
+        <Box marginBottom="spacing.5">
           <Title color="surface.text.subtle.lowContrast">Orders</Title>
         </Box>
         {/**
@@ -141,7 +144,9 @@ const Orders = ({ mode }: { mode: ModeT }) => {
                   <thead>
                     <tr>
                       {ORDER_LIST_COLUMNS.map(({ label }) => (
-                        <th key={label}>{label}</th>
+                        <th key={label} style={{ paddingLeft: 16 }}>
+                          {label}
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -165,7 +170,12 @@ const Orders = ({ mode }: { mode: ModeT }) => {
                       <EntityItemRow key={order.id} id={order.id}>
                         {ORDER_LIST_COLUMNS.map(({ label, value }) => (
                           <td
-                            style={{ paddingTop: 16, paddingBottom: 16 }}
+                            style={{
+                              paddingTop: 16,
+                              paddingBottom: 16,
+                              paddingLeft: 16,
+                              paddingRight: 16,
+                            }}
                             key={`${order.id} + ${label}`}
                           >
                             {value(order)}
@@ -176,13 +186,20 @@ const Orders = ({ mode }: { mode: ModeT }) => {
                   </TableBody>
                 </table>
               </div>
-              <Pagination
-                next={handleNext}
-                prev={handlePrev}
-                listData={orders?.items || []}
-                skip={skip}
-                count={LIST_FETCH_BATCH_SIZE}
-              />
+              <Box>
+                <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
+                  <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+                    orders?.total_count || 0
+                  } records`}</Text>
+                </Box>
+                <Pagination
+                  next={handleNext}
+                  prev={handlePrev}
+                  listData={orders?.items || []}
+                  skip={skip}
+                  count={LIST_FETCH_BATCH_SIZE}
+                />
+              </Box>
             </>
           )}
         </div>

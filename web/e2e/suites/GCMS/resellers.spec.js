@@ -15,14 +15,15 @@ test.describe('GCMS resellers @flow=resellers @project=payments', () => {
   test('should be able to view resellers page', async ({ page }) => {
     await expect(await page.getByText('Reseller').first()).toBeVisible();
     await expect(await page.getByText('Ibaco').first()).toBeVisible();
-    await expect(await page.getByText('Showing 1 - 5').first()).toBeVisible();
+    await expect(await page.getByText('Showing 1 - 25').first()).toBeVisible();
   });
 
-  test('should be able to fetch next batch of resellers', async ({ page }) => {
-    await page.getByRole('button', { name: 'next' }).click();
-    await expect(await page.getByText('Ibaco').first()).toBeVisible();
-    await expect(await page.getByText('Showing 6 - 10').first()).toBeVisible();
-  });
+  // TODO: Add this test after more than 25 entries are seeded from the backend
+  // test('should be able to fetch next batch of resellers', async ({ page }) => {
+  //   await page.getByRole('button', { name: 'next' }).click();
+  //   await expect(await page.getByText('Ibaco').first()).toBeVisible();
+  //   await expect(await page.getByText('Showing 26 - 50').first()).toBeVisible();
+  // });
 
   test('should show empty message when no reseller is there for a specific status', async ({
     page,

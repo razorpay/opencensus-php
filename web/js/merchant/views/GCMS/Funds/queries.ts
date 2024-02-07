@@ -17,6 +17,7 @@ export const fetchBrandTransactions = async ({
   mode = 'test',
   skip = 0,
   count = 25,
+  issuing_account_id,
   ...filters
 }: TransactionListApiParams): Promise<types.ListApiResponse<Transaction>> => {
   try {
@@ -24,6 +25,7 @@ export const fetchBrandTransactions = async ({
       ...filters,
       skip,
       count,
+      issuing_account_id,
     })}`;
     const res = await fetch<types.ListApiResponse<Transaction>>({
       url,
@@ -71,7 +73,7 @@ export const fetchBrandBalance = async ({
   }
 };
 
-export const fetchResellersBalance = async ({
+export const fetchResellersBalances = async ({
   mode = 'test',
   merchantId,
   skip = 0,

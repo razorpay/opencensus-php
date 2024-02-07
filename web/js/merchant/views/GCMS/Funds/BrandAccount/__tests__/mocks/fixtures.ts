@@ -80,8 +80,12 @@ export const brandTransactionsResponse = {
 };
 
 export const brandBalanceResponse = {
-  id: '10000000000000',
-  account_id: 'sampleAcc00001',
-  balance: 10000,
-  created_at: 1704632235,
+  status_code: 200,
+  success: true,
+  data: {
+    id: '10000000000000',
+    account_id: 'sampleAcc00001',
+    balance: 10000,
+    created_at: 1704632235,
+  },
 };

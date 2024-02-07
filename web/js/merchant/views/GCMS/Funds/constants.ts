@@ -23,3 +23,5 @@ export const DATE_RANGE_PRESETS: [string, number, string][] = [
   ['Past 30 Days', -30, 'days'],
   ['Past 90 Days', -90, 'days'],
 ];
+
+export const ACCOUNT_ID_SUFFIX = 'iacc_';

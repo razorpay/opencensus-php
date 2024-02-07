@@ -49,6 +49,13 @@ export default [
         ctx.delay(100),
       );
     }
+    if (req.url.searchParams.get('id') === 'abc') {
+      return res(
+        ctx.status(200),
+        ctx.json({ ...ordersListResponse, data: { ...ordersListResponse.data, items: [] } }),
+        ctx.delay(100),
+      );
+    }
     if (req.url.searchParams.get('status') === 'cancelled') {
       return res(
         ctx.status(200),

@@ -16,7 +16,7 @@ import {
 import { GCMS_BASE_PATH, ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import { ListApiParams, ListApiResponse, MerchantReseller } from 'merchant/views/GCMS/shared/types';
 
-export const LIST_FETCH_BATCH_SIZE = 5;
+export const LIST_FETCH_BATCH_SIZE = 25;
 
 export const fetchOrders = async ({
   mode = 'test',
@@ -25,6 +25,7 @@ export const fetchOrders = async ({
   orderStatus,
   fromDate,
   toDate,
+  orderId,
 }: {
   mode?: ModeT;
   skip?: number;
@@ -32,6 +33,7 @@ export const fetchOrders = async ({
   orderStatus?: string;
   fromDate?: number;
   toDate?: number;
+  orderId?: string;
 }) => {
   try {
     const res = await fetch<ListApiResponse<Order>>({
@@ -39,6 +41,7 @@ export const fetchOrders = async ({
         skip,
         count: LIST_FETCH_BATCH_SIZE,
         reseller_name: resellerName ?? '',
+        id: orderId ?? '',
         status: !orderStatus || orderStatus === ORDERS_STATUS.all.value ? '' : orderStatus,
         from: !fromDate ? '' : fromDate,
         to: !toDate ? '' : toDate,

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Box } from '@razorpay/blade/components';
 
 import { StyledFilterDiv } from 'merchant/views/GCMS/shared/StyledDiv';
 import { RESELLERS_STATUS } from 'merchant/views/GCMS/shared/constants';
@@ -33,7 +34,7 @@ const ResellersFilter = ({ onSearch }: ResellersFilterProps) => {
   return (
     <StyledFilterDiv>
       <div className={`gcms-orders-filter-group ${'all-time-filter-selected'}`}>
-        <div className="list-filter-container ">
+        <Box paddingY="spacing.4" display="flex">
           <div className="form-group list-filter-item">
             <label>Reseller Name</label>
             <input
@@ -75,7 +76,7 @@ const ResellersFilter = ({ onSearch }: ResellersFilterProps) => {
               Clear
             </button>
           </div>
-        </div>
+        </Box>
       </div>
     </StyledFilterDiv>
   );

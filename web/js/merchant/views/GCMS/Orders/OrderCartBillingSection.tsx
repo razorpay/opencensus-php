@@ -25,7 +25,12 @@ const OrderCartBillingSection = () => {
   });
 
   return (
-    <Box padding={['spacing.2', 'spacing.4', 'spacing.0', 'spacing.0']}>
+    <Box padding={['spacing.2', 'spacing.0', 'spacing.4', 'spacing.0']}>
+      <Box paddingBottom="spacing.4">
+        <Heading size="small" color="surface.text.subtle.lowContrast">
+          Billing Details
+        </Heading>
+      </Box>
       <div className="content">
         {isLoadingMerchantResellerRelationshipDetails ? (
           <div className="page-spinner-container">
@@ -34,9 +39,6 @@ const OrderCartBillingSection = () => {
         ) : (
           <Box>
             <Box padding={['spacing.6']}>
-              <Heading size="small" color="surface.text.subdued.lowContrast">
-                Billing Details
-              </Heading>
               <Text color="surface.text.subdued.lowContrast">
                 {merchantResellerRelationshipDetails?.billing_detail?.business_name}
               </Text>

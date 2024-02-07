@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextInput, SearchIcon, Button } from '@razorpay/blade/components';
+import { Box } from '@razorpay/blade/components';
 import qs from 'query-string';
 import { useSearchParams } from 'react-router-dom';
+
+import { StyledFilterDiv } from './StyledFilterDiv';
 
 interface ResellerAccountsFilterProps {
   onSearch: ({ merchantName }: { merchantName: string }) => void;
 }
 
-const ResellerAccountsFilter = ({ onSearch }: ResellerAccountsFilterProps) => {
+const ResellerAccountsFilter = ({ onSearch }: ResellerAccountsFilterProps): JSX.Element => {
   const [resellerNameQuery, setResellerNameQuery] = useState('');
 
   const [, setSearchParams] = useSearchParams();
 
   const handleResellerNameSearchInputOnChange = (e) => {
-    setResellerNameQuery(e.value);
+    setResellerNameQuery(e.target.value);
   };
 
   useEffect(() => {
@@ -29,28 +31,43 @@ const ResellerAccountsFilter = ({ onSearch }: ResellerAccountsFilterProps) => {
     setSearchParams({ name: resellerNameQuery });
   };
 
+  const handleClearOnClick = () => {
+    onSearch({ merchantName: '' });
+    setSearchParams({ name: '' });
+    setResellerNameQuery('');
+  };
+
   return (
-    <Box
-      paddingX="spacing.5"
-      paddingY="spacing.4"
-      backgroundColor="surface.background.level2.lowContrast"
-      display="flex"
-      flexDirection="row"
-      gap="spacing.5"
-    >
-      <TextInput
-        label=""
-        placeholder="Search reseller name"
-        icon={SearchIcon}
-        name="resellerName"
-        type="search"
-        keyboardReturnKeyType="search"
-        value={resellerNameQuery}
-        onChange={handleResellerNameSearchInputOnChange}
-        testID="reseller_name_search_input"
-      />
-      <Button onClick={handleSearchOnClick}>Search</Button>
-    </Box>
+    <StyledFilterDiv>
+      <div className="gcms-resellers-filter-group">
+        <Box
+          paddingY="spacing.4"
+          display="flex"
+          backgroundColor="surface.background.level2.lowContrast"
+        >
+          <div className="form-group list-filter-item">
+            <label>Reseller Name</label>
+            <input
+              name="resellerName"
+              placeholder="Search reseller name"
+              className="form-control input-sm"
+              data-testid="reseller_name_search_input"
+              value={resellerNameQuery}
+              onChange={handleResellerNameSearchInputOnChange}
+            />
+          </div>
+
+          <div className="list-filter-item btn-toolbar">
+            <button className="btn btn-primary btn-sm" onClick={handleSearchOnClick}>
+              Search
+            </button>
+            <button className="btn btn-sm btn-text" onClick={handleClearOnClick}>
+              Clear
+            </button>
+          </div>
+        </Box>
+      </div>
+    </StyledFilterDiv>
   );
 };
 

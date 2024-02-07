@@ -37,7 +37,7 @@ describe('GCMS: Orders:Create:Cart', () => {
   it('should render orders cart page', () => {
     orderCartRenderer();
     expect(screen.getByText('Cart')).toBeInTheDocument();
-    expect(screen.getByText('Program Details')).toBeInTheDocument();
+    expect(screen.getByText('Programs')).toBeInTheDocument();
   });
 
   it('should be able to click on add programs and navigate', async () => {

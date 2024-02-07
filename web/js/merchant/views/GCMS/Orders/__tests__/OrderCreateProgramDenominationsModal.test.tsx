@@ -42,7 +42,6 @@ describe('GCMS: Orders:Create:Programs:DenominationModal', () => {
     );
 
     expect(screen.getByText('Thank You Gift Card')).toBeInTheDocument();
-    expect(screen.getAllByText('NMmsZbvXKsxmBh')[0]).toBeInTheDocument();
   });
 
   it('should be able to click add to cart button', async () => {

@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { Box, Text, Amount, Heading, Divider } from '@razorpay/blade/components';
+import React, { useState, useEffect } from 'react';
+import { Box, Text, Heading, Divider } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 
 import Shimmer from 'common/components/Shimmer';
 import TableBody from 'common/ui/TableBody';
-import { convertUnixToDate } from 'common/utils/rzp-utils';
+import { getFormattedAmountNew, convertUnixToDate } from 'common/utils/rzp-utils';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
+import { ACCOUNT_ID_SUFFIX } from 'merchant/views/GCMS/Funds/constants';
 import store from 'merchant/store';
 import {
   fetchBrandBalance,
@@ -33,7 +34,11 @@ const brandTrasactionColumns = [
   },
   {
     label: 'Amount',
-    value: (transaction) => <Amount value={parseInt(transaction.amount, 10)} />,
+    value: (transaction) => (
+      <Text color="surface.text.subtle.lowContrast">
+        {getFormattedAmountNew(parseInt(transaction.amount, 10), true)}
+      </Text>
+    ),
   },
   {
     label: 'Type',
@@ -41,23 +46,37 @@ const brandTrasactionColumns = [
   },
 ];
 
-const BrandAccount = () => {
+const BrandAccount = (): JSX.Element => {
   const [skip, setSkip] = useState(0);
   const [referenceId, setReferenceId] = useState('');
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
+  const [brandAccountId, setBrandAccountId] = useState('');
   const merchantId = store.getState()?.session?.user?.current;
 
   const { isLoading: isFetchTransactionsLoading, data: transactions } = useQuery({
     queryKey: ['wallet:brandAccount', skip, referenceId, fromDate, toDate],
     queryFn: () =>
-      fetchBrandTransactions({ skip, reference_id: referenceId, from: fromDate, to: toDate }),
+      fetchBrandTransactions({
+        skip,
+        reference_id: referenceId,
+        from: fromDate,
+        to: toDate,
+        issuing_account_id: `${ACCOUNT_ID_SUFFIX}${brandAccountId}`,
+      }),
+    enabled: Boolean(brandAccountId),
   });
 
   const { isLoading: isFetchBrandBalanceLoading, data: brandBalanceData } = useQuery({
     queryKey: ['wallet:brandBalance'],
     queryFn: () => fetchBrandBalance({ merchantId, mode: 'test' }),
   });
+
+  useEffect(() => {
+    if (brandBalanceData?.account_id) {
+      setBrandAccountId(brandBalanceData.account_id);
+    }
+  }, [brandBalanceData?.account_id]);
 
   const handleNext = () => {
     setSkip(skip + LIST_FETCH_BATCH_SIZE);
@@ -93,11 +112,14 @@ const BrandAccount = () => {
                   <Shimmer height="30px" width="140px" />
                 </Box>
               ) : (
-                <Amount
-                  size="heading-large-bold"
+                <Text
+                  color="surface.text.subtle.lowContrast"
                   marginTop="spacing.2"
-                  value={brandBalanceData?.balance ? brandBalanceData.balance : 0}
-                />
+                  size="large"
+                  weight="bold"
+                >
+                  {getFormattedAmountNew(brandBalanceData?.balance ?? 0, true)}
+                </Text>
               )}
             </Box>
             <Divider marginTop="spacing.4" />
@@ -124,7 +146,7 @@ const BrandAccount = () => {
                 </tr>
               </thead>
               <TableBody
-                isLoading={isFetchTransactionsLoading}
+                isLoading={isFetchTransactionsLoading || isFetchBrandBalanceLoading}
                 colSpan={8}
                 rows={transactions?.items || []}
                 emptyTableRow={() => (
@@ -154,13 +176,20 @@ const BrandAccount = () => {
               </TableBody>
             </table>
           </div>
-          <Pagination
-            next={handleNext}
-            prev={handlePrev}
-            listData={transactions?.items || []}
-            skip={skip}
-            count={LIST_FETCH_BATCH_SIZE}
-          />
+          <Box>
+            <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
+              <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+                transactions?.count || 0
+              } records`}</Text>
+            </Box>
+            <Pagination
+              next={handleNext}
+              prev={handlePrev}
+              listData={transactions?.items || []}
+              skip={skip}
+              count={LIST_FETCH_BATCH_SIZE}
+            />
+          </Box>
         </div>
       </div>
     </Wrapper>

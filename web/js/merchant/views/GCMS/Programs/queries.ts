@@ -6,6 +6,9 @@ import { stringifyQueryParams } from 'common/utils/rzp-utils';
 import { Program, ProgramApiParams, SKU } from 'merchant/views/GCMS/Programs/types';
 import { GCMS_BASE_PATH, WALLET_BASE_PATH } from 'merchant/views/GCMS/shared/constants';
 import * as types from 'merchant/views/GCMS/shared/types';
+
+export const LIST_FETCH_BATCH_SIZE = 9;
+
 export const fetchPrograms = async ({
   mode = 'test',
   skip = 0,

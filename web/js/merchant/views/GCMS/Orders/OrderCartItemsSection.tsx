@@ -140,10 +140,14 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
                         <ProgramHeaderSection
                           program={program}
                           containerProps={{
-                            height: '110px',
+                            height: '80px',
                             padding: 'spacing.4',
                           }}
                           imageProps={{ height: '60px', width: '92px' }}
+                          headingProps={{ size: 'small' }}
+                          sectionItemProps={{
+                            padding: ['spacing.2', 'spacing.8', 'spacing.2', 'spacing.0'],
+                          }}
                         />
                       )}
                       <Box>
@@ -154,18 +158,15 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
                                 display="flex"
                                 flexDirection="row"
                                 alignItems="center"
-                                padding="spacing.4"
+                                padding={['spacing.0', 'spacing.4']}
                               >
-                                <Box width="250px">
-                                  <Text color="surface.text.subdued.lowContrast">SKU</Text>
-                                </Box>
                                 <Box width="200px">
                                   <Text color="surface.text.subdued.lowContrast">Denomination</Text>
                                 </Box>
                                 <Box width="200px">
                                   <Text color="surface.text.subdued.lowContrast">Quantity</Text>
                                 </Box>
-                                <Box display="flex" justifyContent="flex-end">
+                                <Box flex={1} display="flex" justifyContent="flex-end">
                                   <IconButton
                                     isDisabled={isLoadingOrderItemDeleteMutation}
                                     size="large"
@@ -180,13 +181,8 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
                                 display="flex"
                                 flexDirection="row"
                                 alignItems="center"
-                                padding="spacing.4"
+                                padding={['spacing.1', 'spacing.4']}
                               >
-                                <Box width="250px">
-                                  <Heading size="small" color="surface.text.subdued.lowContrast">
-                                    {item.sku_id}
-                                  </Heading>
-                                </Box>
                                 <Box width="200px">
                                   <Heading size="small" color="surface.text.subdued.lowContrast">
                                     {getFormattedAmountNew(item.denomination, true)}

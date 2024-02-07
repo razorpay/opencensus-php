@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 export const StyledFilterDiv = styled.div(
   ({ theme }: { theme: Theme }) => `
-  .gcms-funds-filter-group.all-time-filter-selected {
+  .gcms-resellers-filter-group.all-time-filter-selected {
     .daterange-container {
       display: none;
     }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box } from '@razorpay/blade/components';
+import { Box, Text } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -7,10 +7,8 @@ import { ModeT } from 'common/services/mode';
 import Spinner from 'common/ui/Spinner';
 import EmptyList from 'merchant/components/EmptyList';
 import ProgramsListItem from 'merchant/views/GCMS/Programs/ProgramsListItem';
-import {
-  LIST_FETCH_BATCH_SIZE,
-  fetchProgramsForReseller,
-} from 'merchant/views/GCMS/Resellers/queries';
+import { LIST_FETCH_BATCH_SIZE } from 'merchant/views/GCMS/Programs/queries';
+import { fetchProgramsForReseller } from 'merchant/views/GCMS/Resellers/queries';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
 
 const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
@@ -75,13 +73,21 @@ const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
               </Box>
             )}
           </Box>
-          <Pagination
-            next={handleNext}
-            prev={handlePrev}
-            listData={programs?.items || []}
-            skip={skip}
-            count={LIST_FETCH_BATCH_SIZE}
-          />
+          <Box>
+            <Box position="absolute" paddingLeft="spacing.6" paddingTop="spacing.1">
+              <Text
+                size="small"
+                color="surface.text.subdued.lowContrast"
+              >{`Total ${programs?.total_count} records`}</Text>
+            </Box>
+            <Pagination
+              next={handleNext}
+              prev={handlePrev}
+              listData={programs?.items || []}
+              skip={skip}
+              count={LIST_FETCH_BATCH_SIZE}
+            />
+          </Box>
         </Box>
       )}
     </div>

@@ -9,7 +9,7 @@ import BrandAccount from './BrandAccount';
 import ResellerAccounts from './ResellerAccounts';
 import { fundsPaths } from './constants';
 
-const Funds = () => {
+const Funds = (): JSX.Element => {
   return (
     <Wrapper>
       <div className="tabbed-container">
@@ -17,10 +17,18 @@ const Funds = () => {
           <Title color="surface.text.subtle.lowContrast">Funds</Title>
         </Box>
         <header>
-          <ShowWhen additionalCondition={(user) => user.isIssuingBulkUploadEnabled}>
+          <ShowWhen
+            additionalCondition={(user) =>
+              user.isIssuingGcmsEnabled && user.isIssuingDashboardEnabled
+            }
+          >
             <NavLink to={fundsPaths.brandAccount}>Brand Account</NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={(user) => user.isIssuingDashboardEnabled}>
+          <ShowWhen
+            additionalCondition={(user) =>
+              user.isIssuingGcmsEnabled && user.isIssuingDashboardEnabled
+            }
+          >
             <NavLink to={fundsPaths.resellerAccounts}>Reseller Accounts</NavLink>
           </ShowWhen>
         </header>

@@ -32,14 +32,13 @@ const OrderFooterSection = ({ items, onClickViewCart }: Props) => {
               <ShoppingCartIcon size="xlarge" color="surface.action.icon.active.lowContrast" />
             </Box>
             <Box paddingLeft="spacing.4">
-              <Text
-                weight="bold"
-                color="surface.text.subdued.lowContrast"
-              >{`${items} Gift Card Program selected`}</Text>
+              <Text weight="bold" color="surface.text.subdued.lowContrast">{`${
+                items || 0
+              } Gift Card Program selected`}</Text>
             </Box>
           </Box>
           <Box>
-            <Button variant="primary" onClick={() => onClickViewCart()}>
+            <Button isDisabled={!items} variant="primary" onClick={() => onClickViewCart()}>
               View Cart
             </Button>
           </Box>

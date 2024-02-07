@@ -6,7 +6,7 @@ import { DATE_RANGE_PRESETS, ORDERS_STATUS } from 'merchant/views/GCMS/shared/co
 import { StyledFilterDiv } from './StyledDiv';
 
 interface OrdersFilterProps {
-  onSearch: ({ date, status, resellerName }) => void;
+  onSearch: ({ date, status, resellerName, orderId }) => void;
 }
 
 export const presetsForCalendar = generatePresets(DATE_RANGE_PRESETS);
@@ -21,6 +21,7 @@ const OrdersFilter = ({ onSearch }: OrdersFilterProps) => {
   const [date, setDate] = useState(getEmptyDate());
   const [status, setStatus] = useState('all');
   const [resellerName, setResellerName] = useState('');
+  const [orderId, setOrderId] = useState('');
 
   const isAllTimeFilter = selectedPreset.name === allTimePresetName;
 
@@ -59,7 +60,8 @@ const OrdersFilter = ({ onSearch }: OrdersFilterProps) => {
     setSelectedPreset(presetsForCalendar[0]);
     setStatus('all');
     setResellerName('');
-    onSearch({ date: { from: '', to: '' }, status: 'all', resellerName: '' });
+    setOrderId('');
+    onSearch({ date: { from: '', to: '' }, status: 'all', resellerName: '', orderId: '' });
   };
 
   const handleStatusChange = (value) => {
@@ -70,8 +72,12 @@ const OrdersFilter = ({ onSearch }: OrdersFilterProps) => {
     setResellerName(value);
   };
 
+  const handleOrderIdChange = (value) => {
+    setOrderId(value);
+  };
+
   const handleSearch = () => {
-    onSearch({ date, status, resellerName });
+    onSearch({ date, status, resellerName, orderId });
   };
 
   return (
@@ -79,11 +85,24 @@ const OrdersFilter = ({ onSearch }: OrdersFilterProps) => {
       <div className={`gcms-orders-filter-group ${isAllTimeFilter && 'all-time-filter-selected'}`}>
         <Box paddingY={'spacing.4'} display={'flex'}>
           <div className="form-group list-filter-item">
+            <label>Order Id</label>
+            <input
+              name="order_id"
+              className="form-control input-sm"
+              data-testid="order_id"
+              value={orderId}
+              onChange={(e) => {
+                handleOrderIdChange(e.target.value);
+              }}
+            />
+          </div>
+          <div className="form-group list-filter-item">
             <label>Reseller Name</label>
             <input
               name="reseller_name"
               className="form-control input-sm"
               data-testid="reseller_name"
+              value={resellerName}
               onChange={(e) => {
                 handleResellerNameChange(e.target.value);
               }}

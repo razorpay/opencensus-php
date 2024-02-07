@@ -39,4 +39,10 @@ test.describe('GCMS Funds Reseller Accounts @flow=funds @project=payments', () =
     await page.getByRole('button', { name: /search/i }).click();
     await expect(await page.getByText('No Reseller Accounts Found!').first()).toBeVisible();
   });
+
+  test('should clear filters on clear button click', async ({ page }) => {
+    await page.getByPlaceholder(/search reseller name/i).fill('Ibaco');
+    await page.getByRole('button', { name: /clear/i }).click();
+    await expect(await page.getByPlaceholder(/search reseller name/i)).toHaveValue('');
+  });
 });

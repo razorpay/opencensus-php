@@ -83,11 +83,11 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
   return (
     <Wrapper>
       <div className="tabbed-container">
-        <Box>
+        <Box marginBottom="spacing.5">
           <Title color="surface.text.subtle.lowContrast">Reseller</Title>
         </Box>
 
-        <div className="content content-wrapper">
+        <div className="content">
           <ResellersFilter onSearch={handleSearch} />
           {isLoading ? (
             <div className="page-spinner-container">
@@ -100,7 +100,9 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
                   <thead>
                     <tr>
                       {resellerListColumns.map(({ title }) => (
-                        <th key={title}>{title}</th>
+                        <th key={title} style={{ paddingLeft: 16 }}>
+                          {title}
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -124,7 +126,12 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
                       <EntityItemRow key={reseller.merchant_id} id={reseller.merchant_id}>
                         {resellerListColumns.map(({ title, value }) => (
                           <td
-                            style={{ paddingTop: 16, paddingBottom: 16 }}
+                            style={{
+                              paddingTop: 16,
+                              paddingBottom: 16,
+                              paddingLeft: 16,
+                              paddingRight: 16,
+                            }}
                             key={`${reseller.merchant_id} + ${title}`}
                           >
                             {value(reseller)}
@@ -135,13 +142,20 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
                   </TableBody>
                 </table>
               </div>
-              <Pagination
-                next={handleNext}
-                prev={handlePrev}
-                listData={resellers?.items || []}
-                skip={skip}
-                count={LIST_FETCH_BATCH_SIZE}
-              />
+              <Box>
+                <Box position="absolute" paddingTop="spacing.1">
+                  <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
+                    resellers?.total_count || 0
+                  } records`}</Text>
+                </Box>
+                <Pagination
+                  next={handleNext}
+                  prev={handlePrev}
+                  listData={resellers?.items || []}
+                  skip={skip}
+                  count={LIST_FETCH_BATCH_SIZE}
+                />
+              </Box>
             </>
           )}
         </div>

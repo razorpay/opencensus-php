@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 
 import { storeWithInitialState } from 'merchant/store';
@@ -47,7 +48,6 @@ describe('GCMS: Funds: ResellerAccounts', () => {
       expect(screen.getByText('Reseller Name', { selector: 'th' })).toBeInTheDocument();
       expect(screen.getByText('Reseller ID', { selector: 'th' })).toBeInTheDocument();
       expect(screen.getByText('Total Available Fund', { selector: 'th' })).toBeInTheDocument();
-      expect(screen.getByText(`Showing 1 - ${numberOfItems}`)).toBeInTheDocument();
       expect(screen.getAllByTestId('fund-amount').length).toBe(numberOfItems);
     });
   });
@@ -60,6 +60,20 @@ describe('GCMS: Funds: ResellerAccounts', () => {
       expect(screen.getByText('Reseller ID', { selector: 'th' })).toBeInTheDocument();
       expect(screen.getByText('Total Available Fund', { selector: 'th' })).toBeInTheDocument();
       expect(screen.getByText('Ibacoo')).toBeInTheDocument();
+    });
+  });
+
+  test('should clear filters on clear button click', async () => {
+    renderResellerAccounts();
+
+    const searchInput = screen.getByPlaceholderText(/search reseller name/i);
+    const clearButton = screen.getByRole('button', { name: 'Clear' });
+
+    await userEvent.type(searchInput, 'abc');
+    userEvent.click(clearButton);
+
+    await waitFor(() => {
+      expect(searchInput).toHaveValue('');
     });
   });
 });

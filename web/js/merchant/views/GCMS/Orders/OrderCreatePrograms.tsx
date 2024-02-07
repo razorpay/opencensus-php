@@ -1,5 +1,5 @@
 import React, { Suspense, useContext, useState } from 'react';
-import { Box, ChevronLeftIcon, Link, Title } from '@razorpay/blade/components';
+import { Box, ChevronLeftIcon, Divider, Heading, Link, Title } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -12,6 +12,7 @@ import { OrderItem, OrderItemDenomination } from 'merchant/views/GCMS/Orders/typ
 import ProgramsListItem from 'merchant/views/GCMS/Programs/ProgramsListItem';
 import { fetchProgramsByResellerId } from 'merchant/views/GCMS/Programs/queries';
 import { Program as ProgramType, SKU } from 'merchant/views/GCMS/Programs/types';
+import ResellerDetailsHeader from 'merchant/views/GCMS/Resellers/ResellerDetailsHeader';
 import { GCMSSession, SessionContext } from 'merchant/views/GCMS/shared/context';
 import { ListApiResponse } from 'merchant/views/Wallet/types';
 
@@ -83,68 +84,77 @@ const OrderCreatePrograms = () => {
             Go back
           </Link>
         </Box>
-        <Box>
+        <Box paddingBottom="spacing.6">
           <Title color="surface.text.subtle.lowContrast">Create Order</Title>
         </Box>
-        <div className="content">
-          {isLoading ? (
-            <Box display="flex" flex={1} alignItems="center" justifyContent="center">
-              <Spinner center={undefined} />
-            </Box>
-          ) : (
-            <Box
-              maxWidth={{
-                l: '1200px',
-                m: '100%',
-                s: '100%',
-              }}
-            >
+        <ResellerDetailsHeader merchantId={merchantId} resellerId={resellerId || ''} />
+        <Box paddingTop="spacing.6">
+          <Heading color="surface.text.subtle.lowContrast">Select Program</Heading>
+        </Box>
+        <Box padding={['spacing.6', 'spacing.0', 'spacing.2', 'spacing.0']}>
+          <Divider />
+        </Box>
+        <Box padding={['spacing.4', 'spacing.0']}>
+          <div className="content">
+            {isLoading ? (
+              <Box width="100%" height="100%">
+                <div className="page-spinner-container">
+                  <Spinner center={undefined} />
+                </div>
+              </Box>
+            ) : (
               <Box
-                marginTop="spacing.4"
-                padding="spacing.4"
-                display="flex"
-                flex={1}
-                flexDirection="row"
-                flexWrap="wrap"
+                maxWidth={{
+                  l: '1200px',
+                  m: '100%',
+                  s: '100%',
+                }}
               >
-                {/* @ts-expect-error array-undefined-check */}
-                {Array.isArray(skus?.items) && skus.items.length > 0 ? (
-                  skus?.items.map((sku) => (
-                    <ProgramsListItem
-                      key={sku.id}
-                      program={sku}
-                      onClick={() => handleProgramDenominationsModalOpen(sku)}
+                <Box
+                  padding="spacing.4"
+                  display="flex"
+                  flex={1}
+                  flexDirection="row"
+                  flexWrap="wrap"
+                >
+                  {/* @ts-expect-error array-undefined-check */}
+                  {Array.isArray(skus?.items) && skus.items.length > 0 ? (
+                    skus?.items.map((sku) => (
+                      <ProgramsListItem
+                        key={sku.id}
+                        program={sku}
+                        onClick={() => handleProgramDenominationsModalOpen(sku)}
+                      />
+                    ))
+                  ) : (
+                    <Box width="100%" height="100%">
+                      <EmptyList
+                        description={
+                          <React.Fragment>
+                            <div>There are no programs yet!!</div>
+                            <div>Start creating new programs now.</div>
+                          </React.Fragment>
+                        }
+                      />
+                    </Box>
+                  )}
+                </Box>
+                {selectedSku && (
+                  <Suspense fallback={<Loader />}>
+                    <OrderCreateProgramDenominationsModal
+                      isOpen={isProgramDenominationModalOpen}
+                      setIsOpen={setIsProgramDenominationModalOpen}
+                      sku={selectedSku}
+                      orderItems={selectedOrderItems}
                     />
-                  ))
-                ) : (
-                  <Box width="100%" height="100%">
-                    <EmptyList
-                      description={
-                        <React.Fragment>
-                          <div>There are no programs yet!!</div>
-                          <div>Start creating new programs now.</div>
-                        </React.Fragment>
-                      }
-                    />
-                  </Box>
+                  </Suspense>
                 )}
               </Box>
-              {selectedSku && (
-                <Suspense fallback={<Loader />}>
-                  <OrderCreateProgramDenominationsModal
-                    isOpen={isProgramDenominationModalOpen}
-                    setIsOpen={setIsProgramDenominationModalOpen}
-                    sku={selectedSku}
-                    orderItems={selectedOrderItems}
-                  />
-                </Suspense>
-              )}
-            </Box>
-          )}
-          {!!orderItemsByProgram && (
+            )}
+
             <OrderFooterSection items={orderItemsByProgram} onClickViewCart={onClickViewCart} />
-          )}
-        </div>
+          </div>
+        </Box>
       </div>
     </Box>
   );

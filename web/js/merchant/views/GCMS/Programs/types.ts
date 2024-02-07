@@ -19,8 +19,8 @@ export type ProgramPolicy = {
   gift_card_tnc_link: string;
   gift_card_validity_in_days: number;
   image_link: string;
-  max_discount_percent: string;
-  min_discount_percent: string;
+  max_discount_percent: number;
+  min_discount_percent: number;
   ppi_type: string;
   program_category: string;
   program_desc: string;

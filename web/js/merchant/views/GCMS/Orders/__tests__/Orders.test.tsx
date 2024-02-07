@@ -47,6 +47,17 @@ describe('GCMS: Orders', () => {
     });
   });
 
+  it('should show empty screen when no orders are present for a Order Id', async () => {
+    renderOrders();
+
+    await userEvent.type(screen.getByTestId('order_id'), 'abc');
+    await userEvent.click(screen.getByText('Search'));
+
+    await waitFor(() => {
+      expect(screen.getByText('There are no orders yet!!')).toBeInTheDocument();
+    });
+  });
+
   it('should show empty screen when no orders are present for a status', async () => {
     renderOrders();
     await userEvent.selectOptions(screen.getByTestId('status'), 'cancelled');

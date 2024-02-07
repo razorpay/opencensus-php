@@ -24,5 +24,5 @@ export const OrderCardItemContainer = styled.div`
   background-color: #f5f8fe;
   border-radius: 5px;
   padding: 8px 8px 8px 8px;
-  margin: 12px 12px 12px 12px;
+  margin: 8px 12px 8px 12px;
 `;

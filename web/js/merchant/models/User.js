@@ -870,6 +870,10 @@ export default class User {
     return this.isFeatureEnabled('razorpay_wallet') && allowedRoles.indexOf(this.userRole) > -1;
   }
 
+  get isIssuingGcmsEnabled() {
+    return this.isFeatureEnabled('razorpay_gcms');
+  }
+
   get isRegistrationLinkTokenAndPaymentsEnabled() {
     return (
       this.userRole !== rolesList.REGISTRATION_LINK_AGENT &&

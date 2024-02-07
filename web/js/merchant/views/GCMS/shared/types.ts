@@ -15,6 +15,7 @@ export interface ListApiResponse<T> {
   entity: string;
   count: number;
   has_more: boolean;
+  total_count: number;
   items: T[];
   order_items: T[];
   data: T[];

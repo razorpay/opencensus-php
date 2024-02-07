@@ -72,17 +72,15 @@ const OrderCart = ({ showNotification }: Props) => {
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" flexDirection="column" flex={1}>
             <Box
-              paddingTop="spacing.4"
               display="flex"
               flexDirection="row"
               flexWrap="wrap"
               maxWidth={{
-                l: '1200px',
                 m: '100%',
                 s: '100%',
               }}
             >
-              <Box paddingRight="spacing.4">
+              <Box paddingRight="spacing.4" display="flex" flexDirection="column" flex={1}>
                 <Box padding={['spacing.4', 'spacing.0']}>
                   <ResellerDetailsHeader merchantId={merchantId} resellerId={resellerId} />
                 </Box>
@@ -90,10 +88,10 @@ const OrderCart = ({ showNotification }: Props) => {
                   display="flex"
                   justifyContent="space-between"
                   alignItems="center"
-                  padding={['spacing.4', 'spacing.0']}
+                  paddingBottom="spacing.4"
                 >
                   <Heading size="small" color="surface.text.subtle.lowContrast">
-                    Program Details
+                    Programs
                   </Heading>
                   <Button
                     variant="secondary"
@@ -109,7 +107,7 @@ const OrderCart = ({ showNotification }: Props) => {
                 <OrderCartDeliveryTypeSection />
                 <OrderCartBillingSection />
               </Box>
-              <Box>
+              <Box paddingTop="spacing.4">
                 <OrderCartStatusSection />
                 <OrderCartSummarySection />
                 <Box paddingTop="spacing.4">

@@ -80,6 +80,7 @@ const BrandAccountFilters = ({ onSearch }: BrandAccountFiltersProps) => {
               name="reference_id"
               className="form-control input-sm"
               data-testid="reference_id"
+              value={referenceId}
               onChange={(e) => {
                 handleReferenceIdChange(e.target.value);
               }}

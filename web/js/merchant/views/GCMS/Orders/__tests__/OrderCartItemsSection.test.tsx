@@ -35,9 +35,6 @@ describe('GCMS: Orders:Create:Cart:Items', () => {
     await waitForLoadingToFinish();
 
     expect(screen.getByText('Special New Year Gift Card')).toBeInTheDocument();
-    expect(screen.getAllByText('NMmsCnT6uB4eaU')[0]).toBeInTheDocument();
-
     expect(screen.getByText('Thank You Gift Card')).toBeInTheDocument();
-    expect(screen.getAllByText('NMmsZbvXKsxmBh')[0]).toBeInTheDocument();
   });
 });

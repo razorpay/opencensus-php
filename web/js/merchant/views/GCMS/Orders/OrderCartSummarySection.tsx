@@ -60,7 +60,7 @@ const OrderCartSummarySection = () => {
                   <Heading weight="bold" size="small">
                     Order Details:
                   </Heading>
-                  <Box padding={['spacing.2', 'spacing.0']}>
+                  <Box padding={['spacing.4', 'spacing.0', 'spacing.6', 'spacing.0']}>
                     <Divider />
                   </Box>
                   <Box>
@@ -108,7 +108,7 @@ const OrderCartSummarySection = () => {
                                         </Text>
                                       </Box>
                                       <Box width="100px" paddingTop="spacing.2">
-                                        <Text weight="bold">
+                                        <Text>
                                           {getFormattedAmountNew(item.denomination, true)}
                                         </Text>
                                       </Box>
@@ -120,12 +120,12 @@ const OrderCartSummarySection = () => {
                                         </Text>
                                       </Box>
                                       <Box width="100px" paddingTop="spacing.2">
-                                        <Text weight="bold">{item.quantity}</Text>
+                                        <Text>{item.quantity}</Text>
                                       </Box>
                                     </Box>
                                   </Box>
                                   <Box padding={['spacing.2', 'spacing.0']}>
-                                    <Text weight="bold">
+                                    <Text>
                                       {getFormattedAmountNew(
                                         item.denomination * item.quantity,
                                         true,

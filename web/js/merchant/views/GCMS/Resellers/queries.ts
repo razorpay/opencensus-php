@@ -9,7 +9,7 @@ import { Reseller, ResellerBalance } from 'merchant/views/GCMS/Resellers/types';
 import { RESELLERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import { ListApiResponse } from 'merchant/views/GCMS/shared/types';
 
-export const LIST_FETCH_BATCH_SIZE = 5;
+export const LIST_FETCH_BATCH_SIZE = 25;
 
 export const fetchProgramsForReseller = async ({
   skip = 0,

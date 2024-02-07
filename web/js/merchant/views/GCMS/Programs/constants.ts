@@ -23,6 +23,8 @@ export const getProgramHeaderSections = (program: Program) => {
 };
 
 export const getProgramContentSections = (program: Program) => {
+  const minDiscount = program.policies?.min_discount_percent || 0;
+  const maxDiscount = program.policies?.max_discount_percent || 0;
   return [
     {
       name: 'Program Name',
@@ -50,9 +52,7 @@ export const getProgramContentSections = (program: Program) => {
     // },
     {
       name: 'Discount Range (%)',
-      value: `${program.policies?.min_discount_percent || '-'}% to ${
-        program.policies?.max_discount_percent || '-'
-      }%`,
+      value: `${minDiscount / 100 || '-'}% to ${maxDiscount / 100 || '-'}%`,
     },
     {
       name: 'Program Distribution',
