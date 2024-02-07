@@ -120,6 +120,7 @@ class Constants
     const RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE          = 'refund_fetch_multiple_from_scrooge';
     const RAZORX_KEY_TERMINAL_REFUNDS_ROUTE_VIA_FTA_SUFFIX       = 'terminal_refunds_route_via_fta';
     const RAZORX_KEY_SKIP_PAYMENT_ENTITY_UPDATE_FOR_REVERSAL     = 'skip_payment_entity_update_for_reversal';
+    const RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE_NOTES    = 'refund_fetch_multiple_from_scrooge_notes';
 
     // Experiment to set up FTA status update flow
     const REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP = 'refunds_0_loc_fta_status_update_flow_ramp_up';

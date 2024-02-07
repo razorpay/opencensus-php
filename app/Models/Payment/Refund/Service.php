@@ -1305,6 +1305,18 @@ class Service extends Base\Service
             ]);
         }
 
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+        // shadow mode experiment
+        $variant = $this->app->razorx->getTreatment($experimentVariable,
+            RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE_NOTES,
+            $this->mode
+        );
+
+        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            return $scroogeRefundsArray;
+        }
+
         try
         {
             // We are masking status for merchants
