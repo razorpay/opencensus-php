@@ -283,7 +283,7 @@ class Gateway
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
-        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369, CardlessEmi::SEZZLE, CardlessEmi::LIQUILOANS],
+        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369, CardlessEmi::SEZZLE, CardlessEmi::LIQUILOANS, CardlessEmi::FLASHCREDIT],
         self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY, Paylater::LAZYPAY, Paylater::AMAZONPAY, PayLater::RZPXPOSTPAID],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC, self::ACQUIRER_OCBC],
@@ -311,6 +311,7 @@ class Gateway
             CardlessEmi::WALNUT369,
             CardlessEmi::SEZZLE,
             CardlessEmi::LIQUILOANS,
+            CardlessEmi::FLASHCREDIT,
             PayLater::EPAYLATER,
             PayLater::GETSIMPL,
             PayLater::ICICI,
@@ -3752,6 +3753,7 @@ class Gateway
         CardlessEmi::SEZZLE,
         CardlessEmi::LIQUILOANS,
         PayLater::RZPXPOSTPAID,
+        CardlessEmi::FLASHCREDIT,
     ];
 
     public static $checkAccountSkipProvider = [
@@ -3759,6 +3761,7 @@ class Gateway
         CardlessEmi::SEZZLE,
         CardlessEmi::LIQUILOANS,
         PayLater::AMAZONPAY,
+        CardlessEmi::FLASHCREDIT,
     ];
 
     public static $verifyClientOnS2s = [
@@ -4842,6 +4845,7 @@ class Gateway
                 CardlessEmi::SEZZLE,
                 CardlessEmi::ZESTMONEY,
                 CardlessEmi::LIQUILOANS,
+                CardlessEmi::FLASHCREDIT,
             ],
             self::PAYLATER     => [
                 Paylater::LAZYPAY,
@@ -4984,6 +4988,7 @@ class Gateway
                 CardlessEmi::SEZZLE,
                 CardlessEmi::ZESTMONEY,
                 CardlessEmi::LIQUILOANS,
+                CardlessEmi::FLASHCREDIT,
             ],
             self::PAYLATER     => [
                 Paylater::LAZYPAY,

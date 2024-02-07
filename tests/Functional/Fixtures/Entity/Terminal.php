@@ -128,6 +128,7 @@ class Terminal extends Base
         $this->createSharedCardlessEmiTerminal();
         $this->createSharedCardlessEmiWalnut369Terminal();
         $this->createSharedCardlessEmiSezzleTerminal();
+        $this->createSharedCardlessEmiFlashCreditTerminal();
         $this->createSharedNetbankingKvbTerminal();
         $this->createSharedNetbankingKvbTpvTerminal();
         $this->createSharedNetbankingSvcTerminal();
@@ -1459,6 +1460,25 @@ class Terminal extends Base
             'netbanking'                => 0,
             'cardless_emi'              => 1,
             'gateway_acquirer'          => 'liquiloans',
+            'gateway_merchant_id'       => 'cardless_emi_merchant',
+            'mode'                      => 3,
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCardlessEmiFlashCreditTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CARDLESS_EMI_FLASHCREDIT_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'cardless_emi',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'cardless_emi'              => 1,
+            'gateway_acquirer'          => 'flashcredit',
             'gateway_merchant_id'       => 'cardless_emi_merchant',
             'mode'                      => 3,
         ];

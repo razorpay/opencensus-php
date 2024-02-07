@@ -114,6 +114,7 @@ class Core extends Base\Core
             CardlessEmiProvider::CSHE => '0',
             CardlessEmiProvider::TVSC => '0',
             CardlessEmiProvider::LIQUILOANS=>'0',
+            CardlessEmiProvider::FLASHCREDIT => '0',
         ]
     ];
     const defaultPaylaterProvidersWhitelisted =[

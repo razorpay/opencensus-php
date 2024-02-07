@@ -21,6 +21,7 @@ class CardlessEmi
     const SEZZLE       = 'sezzle';
     const AXIO         = 'Axio';
     const LIQUILOANS   = 'liquiloans';
+    const FLASHCREDIT  = 'flashcredit';
 
     const HDFC = 'hdfc';
     const KKBK = 'kkbk';
@@ -65,6 +66,7 @@ class CardlessEmi
         self::WALNUT369    => 'Walnut369',
         self::SEZZLE       => 'Sezzle',
         self::LIQUILOANS   => 'Liquiloans',
+        self::FLASHCREDIT  => 'FlashCredit',
     ];
 
     // Add dashboard display names for providers which and are not banks and are not present in IFSC repo

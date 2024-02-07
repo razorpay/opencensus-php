@@ -132,6 +132,7 @@ class BuyPricing
     const NACH_CITI             = 'nach_citi';
     const HITACHI               = 'hitachi';
     const LIQUILOANS            = 'liquiloans';
+    const FLASHCREDIT           = 'flashcredit';
 
     const NETBANKING_CORPORATION        = 'netbanking_corporation';
     const ENACH_NPCI_NETBANKING         = 'enach_npci_netbanking';
@@ -246,6 +247,7 @@ class BuyPricing
         self::LIQUILOANS,
         self::CARDLESS_EMI,
         self::SHARP,
+        self::FLASHCREDIT,
     ];
 
     protected static $paylaterGateways = [
