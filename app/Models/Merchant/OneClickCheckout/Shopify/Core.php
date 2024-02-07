@@ -550,41 +550,50 @@ class Core extends Base\Core
         }
         else
         {
-            //COD implementation for product tags - choosing the highest rate
-            $checkout = (new Checkout)->getCheckoutbyStorefrontId($checkoutId);
-
-            $products = $checkout['data']['node']['lineItems']['edges'];
-
-            $codTags = [];
-
-            $maxCod = 0;
-
-            $validTag = false;
-
-            if(!empty($products))
+            // COD implementation for product tags - choosing the highest rate.
+            try
             {
-                foreach ($products as $product)
+                $checkout = (new Checkout)->getCheckoutbyStorefrontId($checkoutId);
+                $products = $checkout['data']['node']['lineItems']['edges'];
+                $codTags = [];
+                $maxCod = 0;
+                $validTag = false;
+
+                if(!empty($products))
                 {
-                    $tags = $product['node']['variant']['product']['tags'];
-
-                    if(!empty($tags))
+                    foreach ($products as $product)
                     {
-                        foreach ($tags as $tag)
+                        $tags = $product['node']['variant']['product']['tags'];
+
+                        if(!empty($tags))
                         {
-                            if(strpos($tag, ' ') === false)
+                            foreach ($tags as $tag)
                             {
-                                if(substr($tag, 0, 3) === "COD")
+                                if(strpos($tag, ' ') === false)
                                 {
-                                    $taglength = strlen($tag);
-
-                                    if($taglength < self::MAX_LENGTH)
+                                    if(substr($tag, 0, 3) === "COD")
                                     {
-                                        $cod = substr($tag, 3, $taglength);
+                                        $taglength = strlen($tag);
 
-                                        if(is_numeric($cod))
+                                        if($taglength < self::MAX_LENGTH)
                                         {
-                                            if ($cod >= 0)
+                                            $cod = substr($tag, 3, $taglength);
+
+                                            if(is_numeric($cod))
                                             {
+                                                if ($cod >= 0)
+                                                {
+                                                    if($maxCod < $cod)
+                                                    {
+                                                        $maxCod = $cod;
+                                                    }
+                                                    $validTag = true;
+                                                }
+                                            }
+                                            elseif(empty($cod))
+                                            {
+                                                $cod = 0;
+
                                                 if($maxCod < $cod)
                                                 {
                                                     $maxCod = $cod;
@@ -592,56 +601,57 @@ class Core extends Base\Core
                                                 $validTag = true;
                                             }
                                         }
-                                        elseif(empty($cod))
-                                        {
-                                            $cod = 0;
-
-                                            if($maxCod < $cod)
-                                            {
-                                                $maxCod = $cod;
-                                            }
-                                            $validTag = true;
-                                        }
                                     }
                                 }
                             }
                         }
+
+                        if($validTag === true)
+                        {
+                            array_push($codTags, $maxCod);
+
+                            $validTag = false;
+                        }
+                        else
+                        {
+                            //If COD tags are not available in any of the products, COD should not be enabled.
+                            $codTags = [];
+
+                            break;
+                        }
                     }
 
-                    if($validTag === true)
+                    if(!empty($codTags))
                     {
-                        array_push($codTags, $maxCod);
-
-                        $validTag = false;
+                        $bestCod = max($codTags);
                     }
-                    else
+
+                    if(isset($bestCod))
                     {
-                        //If COD tags are not available in any of the products, COD should not be enabled.
-                        $codTags = [];
+                        $hasCod = true;
+                        $codFee = $bestCod;
 
-                        break;
-                    }
-                }
-
-                if(!empty($codTags))
-                {
-                    $bestCod = max($codTags);
-                }
-
-                if(isset($bestCod))
-                {
-                    $hasCod = true;
-                    $codFee = $bestCod;
-
-                    //COD details for multiple shipping options - Product tags
-                    foreach ($shippingDetails as $shippingDetail)
-                    {
-                        $shippingDetail['cod'] = $hasCod;
-                        $shippingDetail['cod_fee'] = $codFee === null ? $codFee : intval($codFee)*100;
-                        array_push($shippingMethods, $shippingDetail);
+                        //COD details for multiple shipping options - Product tags
+                        foreach ($shippingDetails as $shippingDetail)
+                        {
+                            $shippingDetail['cod'] = $hasCod;
+                            $shippingDetail['cod_fee'] = $codFee === null ? $codFee : intval($codFee)*100;
+                            array_push($shippingMethods, $shippingDetail);
+                        }
                     }
                 }
             }
+            catch(\Throwable $e)
+            {
+                $this->trace->error(
+                    TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
+                    [
+                        'type'  => 'error_fetching_product_tags',
+                        'error' => $e->getMessage(),
+                    ]
+               );
+            }
+
         }
 
         if(isset($codRate) === false && isset($bestCod) === false)
