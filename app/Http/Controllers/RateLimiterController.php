@@ -106,7 +106,7 @@ class RateLimiterController extends EdgeThrottleController
         unset($input['context']);
 
 
-        $response = $this->fetchResponse($method, $path, $input);
+        $response = $this->fetchResponse('PATCH', $path, $input);
 
         return $this->finalizeResponse($response, [
             'id',
@@ -135,7 +135,7 @@ class RateLimiterController extends EdgeThrottleController
 
         $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_DELETE, $id, $this->getRateLimit($id));
 
-        $response = $this->fetchResponse($method, $path);
+        $response = $this->fetchResponse('DELETE', $path);
 
         return $this->finalizeResponse($response, []);
     }
@@ -211,7 +211,7 @@ class RateLimiterController extends EdgeThrottleController
 
         $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_UPDATE, $id, $this->getRateLimitRule($id));
 
-        $response = $this->fetchResponse($method, $path, $input);
+        $response = $this->fetchResponse('PATCH', $path, $input);
 
 
         return $this->finalizeResponse($response, [
@@ -241,7 +241,7 @@ class RateLimiterController extends EdgeThrottleController
         $path = '/rule/' . $id;
         $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_DELETE, $id, $this->getRateLimitRule($id));
 
-        $response = $this->fetchResponse($method, $path);
+        $response = $this->fetchResponse('DELETE', $path);
 
         return $this->finalizeResponse($response, []);
     }
