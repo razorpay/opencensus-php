@@ -77,6 +77,32 @@ class PartnerActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchPartnerActivationForNonRegisteredBusinessActivatedMCC()
+    {
+        $this->createMerchant(self::MERCHANT_ID, false, 'activated_mcc_pending');
+
+        $this->fillAllRequirements(self::MERCHANT_ID, false);
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        $testData = $this->testData['testFetchPartnerActivationForNonRegisteredBusiness'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchPartnerActivationForNonRegisteredBusinessKQU()
+    {
+        $this->createMerchant(self::MERCHANT_ID, false, 'kyc_qualified_unactivated');
+
+        $this->fillAllRequirements(self::MERCHANT_ID, false);
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        $testData = $this->testData['testFetchPartnerActivationForNonRegisteredBusiness'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testFetchPartnerActivationFromEs()
     {
         Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'partner_activation', '--primary_key' => 'merchant_id']);
@@ -652,7 +678,7 @@ class PartnerActivationTest extends OAuthTestCase
             'activation_status' => $activationStatus
         ]);
 
-        if ($activationStatus === 'activated' or $activationStatus === 'under_review')
+        if (in_array($activationStatus,  ['activated', 'under_review', 'kyc_qualified_unactivated', 'activated_mcc_pending']))
         {
             $this->fixtures->edit('merchant_detail', $merchantId, ['locked' => true]);
         }

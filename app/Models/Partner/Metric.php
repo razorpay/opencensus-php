@@ -38,7 +38,7 @@ final class Metric
     const SUBMERCHANT_ONBOARDING_DAILY_LIMIT_EXCEEDED = 'submerchant_onboarding_daily_limit_exceeded';
 
     const PARTNER_ACTIVATION_AUTO_ACTIVATE_SUCCESS_TOTAL     = 'partner_activation_auto_activate_success_total';
-    const PARTNER_ACTIVATION_AUTO_ACTIVATE_FAILURE_TOTAL     = 'partner_activation_auto_activate_failure_total';
+    const PARTNER_ACTIVATION_AUTO_UPDATE_FAILURE_TOTAL       = 'partner_activation_auto_update_failure_total';
     const COMMISSION_CAPTURE_JOB_PROCESSING_IN_MS            = 'commission_capture_job_processing_in_ms';
     const COMMISSION_REFUND_CREATE_JOB_PROCESSING_IN_MS      = 'commission_refund_create_job_processing_in_ms';
     const COMMISSION_INVOICE_GENERATION_JOB_PROCESSING_IN_MS = 'commission_invoice_generation_job_processing_in_ms';

@@ -475,7 +475,7 @@ class Core extends Base\Core
                 {
                     if ($this->canSubmit($input, $result, $activationFormMilestone) === true)
                     {
-                        $this->submitPartnerActivationFormIfApplicable($merchant, $input);
+                        (new PartnerCore())->submitPartnerActivationFormIfApplicable($merchant, $input);
                     }
                 });
 
@@ -4299,7 +4299,7 @@ class Core extends Base\Core
 
         (new MerchantProduct\Core())->syncMerchantStatusToMerchantProducts($merchantDetails);
 
-        $partnerActivationCore->autoActivatePartnerIfApplicable($merchant, $merchantDetails, $maker);
+        $partnerActivationCore->autoUpdatePartnerActivationStatus($merchant, $merchantDetails, $maker, $input);
 
         $partnerActivationCore->markPartnerFormAsNCIfApplicable($merchant, $merchantDetails, $maker);
 
@@ -9828,59 +9828,6 @@ class Core extends Base\Core
         throw new BadRequestException(ErrorCode::BAD_REQUEST_ENCRYPTED_COMMENT_NOT_FOUND);
     }
 
-    /**
-     * Submit partner activation form while submitting merchant activation form if applicable
-     * Case 1: Partner activation status is -> [under review, activated, rejected] or merchant is not partner
-     *       - Do not submit partner activation form
-     * Case 2: Partner activation is under needs clarification
-     *       - Get KYC clarification reasons for common fields and update partner KYC clarification reasons and then
-     *         submit the partner activation form
-     * Case 3: Partner activation form is not submitted (null)
-     *       - Only submit the partner activation form
-     *
-     * @param Merchant\Entity $merchant
-     * @param array|null      $input
-     *
-     * @throws \Throwable
-     */
-    public function submitPartnerActivationFormIfApplicable(Merchant\Entity $merchant, ?array $input)
-    {
-        $partnerCore = (new PartnerCore());
-
-        $partnerActivation = $partnerCore->getPartnerActivation($merchant);
-
-        $partnerActivationStatus = empty($partnerActivation) ? null : $partnerActivation->getActivationStatus();
-
-        $excludedActivationStatus = [Status::ACTIVATED, Status::UNDER_REVIEW, Status::REJECTED];
-
-        if (empty($partnerActivation) or (in_array($partnerActivationStatus, $excludedActivationStatus, true) === true))
-        {
-            return;
-        }
-
-        if ($partnerActivationStatus === Status::NEEDS_CLARIFICATION)
-        {
-            $merchantDetails = $merchant->merchantDetail;
-
-            $merchantDetails->getValidator()->validatePartnerActivationStatus($merchant);
-
-            $input[DetailEntity::KYC_CLARIFICATION_REASONS] = $partnerCore->fetchCommonFieldsFromMerchantKycClarificationReasons(
-                $input, $merchant);
-        }
-        else
-        {
-            unset($input[DetailEntity::KYC_CLARIFICATION_REASONS]);
-        }
-
-        $kycClarificationReasons = $partnerCore->getUpdatedPartnerKycClarificationReasons($input, $merchant->getId());
-
-        if (empty($kycClarificationReasons) === false)
-        {
-            $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
-        }
-
-        $partnerCore->submitPartnerActivationForm($merchant, $merchant->merchantDetail, $partnerActivation, $input, Constants::MERCHANT);
-    }
 
     public function postAddAdditionalWebsiteSelfServe(Entity $merchantDetails, string $urlType, array $input)
     {

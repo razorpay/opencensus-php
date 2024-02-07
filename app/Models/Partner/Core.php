@@ -3,24 +3,24 @@
 namespace RZP\Models\Partner;
 
 use App;
-use Razorpay\OAuth;
-
+use Throwable;
 use Carbon\Carbon;
+use RZP\Exception;
+use Razorpay\OAuth;
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
-use RZP\Exception;
-use RZP\Trace\Tracer;
 use Illuminate\Support\Str;
 use RZP\Constants\Environment;
 use RZP\Models\Pricing\DefaultPlan;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Jobs\PartnerMigrationAuditJob;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Merchant\Core as MerchantCore;
-use RZP\Jobs\MigratePurePlatformToResellerPartnerJob;
 use RZP\Jobs\BulkMigrateResellerToAggregatorJob;
-use RZP\Models\Base\PublicCollection;
+use RZP\Jobs\MigratePurePlatformToResellerPartnerJob;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
-use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\User\Role;
 use RZP\Trace\TraceCode;
@@ -58,7 +58,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
 use RZP\Models\Merchant\MerchantApplications\Repository as ApplicationRepo;
-use Throwable;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
+
 
 class Core extends Detail\Core
 {
@@ -410,6 +411,83 @@ class Core extends Detail\Core
 
     }
 
+
+    /**
+     * Submit partner activation form while submitting merchant activation form if applicable
+     * Case 1: Partner activation status is -> [under review, activated, rejected] or merchant is not partner
+     *       - Do not submit partner activation form
+     * Case 2: Partner activation is under needs clarification
+     *       - Get KYC clarification reasons for common fields and update partner KYC clarification reasons and then
+     *         submit the partner activation form
+     * Case 3: Partner activation form is not submitted (null)
+     *       - Only submit the partner activation form
+     *
+     * @param Merchant\Entity $merchant
+     * @param array|null      $input
+     *
+     * @throws \Throwable
+     */
+    public function submitPartnerActivationFormIfApplicable(Merchant\Entity $merchant, ?array $input)
+    {
+        try
+        {
+            $partnerActivation = $this->getPartnerActivation($merchant);
+
+            $partnerActivationStatus = empty($partnerActivation) ? null : $partnerActivation->getActivationStatus();
+
+            $excludedActivationStatus = [Status::ACTIVATED, Status::UNDER_REVIEW, Status::REJECTED];
+
+            if (empty($partnerActivation) or (in_array($partnerActivationStatus, $excludedActivationStatus, true) === true))
+            {
+                $this->trace->info(TraceCode::PARTNER_ACTIVATION_AUTO_FORM_SUBMIT, [
+                    'merchant_id'                => $merchant->getId(),
+                    'message'                    => 'Auto submitted partner form skipped',
+                    'partner_activation_status'  => $partnerActivationStatus ?? "",
+                ]);
+
+                return;
+            }
+
+            if ($partnerActivationStatus === Status::NEEDS_CLARIFICATION)
+            {
+                $merchantDetails = $merchant->merchantDetail;
+
+                $merchantDetails->getValidator()->validatePartnerActivationStatus($merchant);
+
+                $input[DetailEntity::KYC_CLARIFICATION_REASONS] = $this->fetchCommonFieldsFromMerchantKycClarificationReasons(
+                    $input, $merchant);
+            }
+            else
+            {
+                unset($input[DetailEntity::KYC_CLARIFICATION_REASONS]);
+            }
+
+            $kycClarificationReasons = $this->getUpdatedPartnerKycClarificationReasons($input, $merchant->getId());
+
+            if (empty($kycClarificationReasons) === false)
+            {
+                $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
+            }
+
+            $this->submitPartnerActivationForm($merchant, $merchant->merchantDetail, $partnerActivation, $input, Constants::MERCHANT);
+
+            $this->trace->info(TraceCode::PARTNER_ACTIVATION_AUTO_FORM_SUBMIT, [
+                'merchant_id'                => $merchant->getId(),
+                'message'                    => 'Auto submitted partner form success'
+            ]);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::PARTNER_ACTIVATION_AUTO_FORM_SUBMIT_FAILURE, [
+                'merchant_id'                => $merchant->getId(),
+                'message'                    => 'Auto submitted partner form failed'
+            ]);
+        }
+
+    }
+
     /**
      * This function is used to lock and submit the partner activation form and update the partner with relevant activation status
      *
@@ -430,6 +508,12 @@ class Core extends Detail\Core
         $activationStatus = $this->getApplicablePartnerActivationStatus($merchantDetails, $partnerActivation);
 
         $this->markPartnerKycSubmittedAndLock($partnerActivation);
+
+        $this->trace->info(TraceCode::PARTNER_ACTIVATION_FORM_SUBMIT, [
+            'merchant_id'                => $merchant->getId(),
+            'old_activation_status'      => $partnerActivation->getActivationStatus() ?? "",
+            'new_activation_status'      => $activationStatus,
+        ]);
 
         if ($source === Constants::PARTNER)
         {
@@ -561,9 +645,8 @@ class Core extends Detail\Core
 
         $response[Constants::MERCHANT]   = $merchant->toArrayPublic();
         $response[E::STAKEHOLDER]        = $stakeholder;
-        $response['isAutoKycDone']       = $this->isPartnerKycDone($merchantDetails);
+        $response[E::PARTNER_ACTIVATION]['isAutoKycDone'] = $this->isPartnerKycDone($merchantDetails);
         $response[E::PARTNER_ACTIVATION] = $this->getPartnerDetails($verification, $partnerActivation, $partnerRejectionReasons);
-
         return $response;
     }
 
@@ -718,14 +801,21 @@ class Core extends Detail\Core
     {
         $isAutoKycDone = $this->isPartnerKycDone($merchantDetails);
 
-        $partnerActivationStatus = $partnerActivation->getActivationStatus();
+        $applicableStatus = Activation\Constants::UNDER_REVIEW;
 
-        if (($isAutoKycDone === true) and (empty($partnerActivationStatus) or ($partnerActivationStatus === Detail\Status::UNDER_REVIEW)))
+        $currentPartnerActivationStatus = $partnerActivation->getActivationStatus();
+
+        if (($isAutoKycDone === true) and (empty($currentPartnerActivationStatus) or ($currentPartnerActivationStatus === Detail\Status::UNDER_REVIEW)))
         {
-            return Activation\Constants::ACTIVATED;
+            $applicableStatus = Activation\Constants::ACTIVATED;
         }
 
-        return Activation\Constants::UNDER_REVIEW;
+        $this->trace->info(TraceCode::PARTNER_ACTIVATION_APPLICABLE_STATUS,
+                           ['applicable_status' => $applicableStatus,
+                            'auto_kyc_done'     => $isAutoKycDone,
+                            'current_status'    => $currentPartnerActivationStatus ?? ""]);
+
+        return $applicableStatus;
     }
 
     /**
@@ -751,7 +841,7 @@ class Core extends Detail\Core
             $conditions = AutoKyc\Constants::PARTNER_KYC_VERIFICATION_CONDITIONS[$businessType];
         }
 
-        return (new Parser)->parse($conditions, function ($key, $condition) use ($merchantDetails)
+        $isAutoKycDone =  (new Parser)->parse($conditions, function ($key, $condition) use ($merchantDetails)
         {
             $entity = $condition[AutoKyc\Constants::ENTITY];
             $in = $condition[AutoKyc\Constants::IN];
@@ -773,6 +863,15 @@ class Core extends Detail\Core
                     return $this->verifyBusinessVerificationCondition($merchantDetails, $key, $in);
             }
         });
+
+        $this->trace->info(TraceCode::PARTNER_ACTIVATION_AUTO_KYC,
+                           [
+                               'is_auto_kyc_done' => $isAutoKycDone,
+                               'merchant_id'      => $merchantDetails->getMerchantId(),
+                           ]);
+
+        return $isAutoKycDone;
+
     }
 
     private function triggerActivationWorkflowForNCResponded(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Activation\Entity $partnerActivation)
@@ -809,6 +908,10 @@ class Core extends Detail\Core
         }
         catch (Exception\EarlyWorkflowResponse $e)
         {
+            $this->trace->info(TraceCode::PARTNER_NC_RESPONDED_WORKFLOW_ERROR,
+                               [
+                                   'merchant_id' => $merchant->getId(),
+                               ]);
             // Catching exception because we do not want to abort the code flow
             $workflowActionData = json_decode($e->getMessage(), true);
             $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);

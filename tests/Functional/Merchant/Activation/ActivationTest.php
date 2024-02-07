@@ -21,6 +21,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Models\Partner;
 use RZP\Models\Merchant\Detail;
 use RZP\Services\Mock\Raven;
 use RZP\Services\RazorXClient;
@@ -2683,6 +2684,12 @@ class ActivationTest extends OAuthTestCase
         $this->kycSubmissionWithSuccessCases('verified', 'verified');
     }
 
+    public function testKycSubmissionWhenPoaIsOcrVerifiedPartner()
+    {
+        $this->kycSubmissionWithSuccessCasesPartner('verified', 'verified');
+    }
+
+
     public function testPOASubmissionForUnRegisteredMerchantWithAadhaar()
     {
         $merchantId = '1cXSLlUU8V9sXl';
@@ -2866,6 +2873,61 @@ class ActivationTest extends OAuthTestCase
         $merchantDetail = $this->getDbEntityById('merchant_detail', '1cXSLlUU8V9sXl', 'test');
 
         $this->assertEquals('whitelist', $merchantDetail->getActivationFlow());
+    }
+
+    public function kycSubmissionWithSuccessCasesPartner($poaVerificationStatus, $bankDetailsVerificationStatus = null)
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->createMerchantDocumentEntries($merchantId, 'aadhar_front');
+
+        $this->createMerchantDocumentEntries($merchantId, 'aadhar_back');
+
+        $this->createWebsitePolicyAndNegativeKeywordFixtures($merchantId);
+
+        $this->getKycVerificationForPoaVerificationSetup($poaVerificationStatus, $bankDetailsVerificationStatus);
+
+        $this->fixtures->edit('merchant', $merchantId, ['partner_type' => 'reseller']);
+
+        $testSuits = [
+            'testKycSubmissionWhenPoaIsVerified',
+            'submitKycActivated'
+        ];
+
+        $plan = $this->createZeroFundAccountValidationPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant',
+                                              '100000Razorpay',
+                                              [
+                                                  'pricing_plan_id' => $plan->getPlanId()
+                                              ]);
+        $data = [
+            StoreConstants::NAMESPACE                          => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1
+        ];
+
+        $data = (new StoreCore())->updateMerchantStore("1cXSLlUU8V9sXl",
+                                                       $data,
+                                                       StoreConstants::INTERNAL);
+        $partner = $this->getDbEntityById('merchant', $merchantId);
+
+        $partnerActivation = (new Partner\Activation\Core())->createOrFetchPartnerActivationForMerchant($partner, false);
+
+        foreach ($testSuits as $index => $testSuit)
+        {
+            $testData = $this->testData[$testSuit];
+
+            $this->startTest($testData);
+        }
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', '1cXSLlUU8V9sXl', 'test');
+
+        $this->assertEquals('whitelist', $merchantDetail->getActivationFlow());
+
+        $updatedPartnerActivation = $this->getDbEntity('partner_activation', ['merchant_id' => '1cXSLlUU8V9sXl' ], 'test');
+
+        $this->assertEquals('under_review', $updatedPartnerActivation->getActivationStatus());
+
     }
 
     public function testKycSubmissionWithFailedPoaStatus()

@@ -48,7 +48,6 @@ class Constants
     ];
 
     const COMMON_ACTIVATION_FIELDS_MERCHANT_DETAILS = [
-        Entity::ACTIVATION_STATUS => Detail\Entity::ACTIVATION_STATUS,
         Entity::LOCKED            => Detail\Entity::LOCKED,
         Entity::SUBMITTED         => Detail\Entity::SUBMITTED
     ];
@@ -56,6 +55,15 @@ class Constants
     const COMMON_ACTIVATION_FIELDS_MERCHANT = [
         Entity::HOLD_FUNDS        => Merchant\Entity::HOLD_FUNDS,
     ];
+
+    const MERCHANT_PARTNER_STATUS_MAPPING = [
+        Detail\Status::ACTIVATED_MCC_PENDING     => Constants::UNDER_REVIEW,
+        Detail\Status::KYC_QUALIFIED_UNACTIVATED => Constants::ACTIVATED,
+        Detail\Status::ACTIVATED                 => Constants::ACTIVATED,
+        Detail\Status::ACTIVATED_KYC_PENDING     => Constants::UNDER_REVIEW,
+    ];
+
+    const AUTO_ACTIVATION_STATUS = [self::ACTIVATED, Detail\Status::KYC_QUALIFIED_UNACTIVATED];
 
     const ACTIVATION_ROUTE_NAME     = 'partner_activation_status';
     const PARTNER_CONTROLLER     = 'RZP\Http\Controllers\PartnerController@updatePartnerActivationStatus';
