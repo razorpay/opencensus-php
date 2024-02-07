@@ -192,13 +192,15 @@ const EntityStatusTimeline = ({
         )}
         {journeyPoint.status === 'failed' ? (
           <>
-            <StyledGradientBox>
-              <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
-                {ERROR_DESCRIPTION_CONTENT_MAP[journeyPoint.metadata?.failureReason]
-                  ? ERROR_DESCRIPTION_CONTENT_MAP[journeyPoint.metadata?.failureReason]
-                  : 'A technical issue occurred. Kindly ask the customer to retry the payment'}
-              </Text>
-            </StyledGradientBox>
+            {journeyPoint.metadata?.failureReason ? (
+              <StyledGradientBox>
+                <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
+                  {ERROR_DESCRIPTION_CONTENT_MAP[journeyPoint.metadata.failureReason]
+                    ? ERROR_DESCRIPTION_CONTENT_MAP[journeyPoint.metadata.failureReason]
+                    : journeyPoint.metadata.failureReason}
+                </Text>
+              </StyledGradientBox>
+            ) : null}
             <Box paddingTop="spacing.2" paddingBottom="spacing.2">
               <Text size="small" color="surface.text.subtle.lowContrast" weight="regular">
                 If the amount was deducted from the customer’s bank account, it will be credited to

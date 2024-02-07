@@ -174,7 +174,7 @@ function PaymentDetailsOverview({
               <Text type="normal" variant="body" size="small" weight="bold" contrast="low">
                 {ERROR_DESCRIPTION_CONTENT_MAP[paymentDetails?.error_description]
                   ? ERROR_DESCRIPTION_CONTENT_MAP[paymentDetails?.error_description]
-                  : 'A technical issue occurred. Kindly ask the customer to retry the payment'}
+                  : paymentDetails?.error_description}
               </Text>
             </Box>
           )}
