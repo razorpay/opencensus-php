@@ -46,7 +46,7 @@ class Sns
         // the bvt settings added for settlement service with parameter USE_LOCALSTACK
         if (env('APP_MODE') === 'devserve' || env('USE_LOCALSTACK') === true)
         {
-            $args['endpoint'] = 'https://localstack-services.dev.razorpay.in';
+            $args['endpoint'] = 'http://localstack.localstack.svc.cluster.local:4566';
         }
 
         $this->client = $sdk->createClient('sns', $args);
