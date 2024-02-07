@@ -29,8 +29,8 @@ class Decomp extends Base\Service
     }
 
     // Logic to determine whether we use MCS for completing the checkout or stick to API.
-    // 1. Merchants using Nector coins are not supported.
-    // 2. Orders using Gift cards are not supported.
+    // 1. Merchants using Nector coins are in migration.
+    // 2. Orders using Gift cards are in migration.
     // 3. Orders using coupon engine are not supported.
     // 4. Merchants using customer account creation are not supported.
     // 5. Merchants using custom fullfilment centres are not supported.
@@ -42,20 +42,28 @@ class Decomp extends Base\Service
     public function useMCSForCompleteCheckout(): bool
     {
         $merchantId = $this->merchant->getId();
+        // These are the feature flags which are yet not supported.
         if (
             $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_ACC_CREATE) || 
             $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_DRAFT_ORDER) ||
-            $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_ENABLE_NECTOR_COINS) ||
             $this->merchant->isFeatureEnabled('one_cc_opt_shipping_tax') ||
             $this->merchant->isFeatureEnabled('one_cc_tax_inclusion') ||
             $merchantId === 'LsgXO1I1dfZNeI' || // wingreens for fullfilment centres
             $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_COUPON_ENGINE) ||
-            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_GIFT_CARD) ||
             $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_ENABLE_GUPSHUP)
         )
         {
             return false;
         }
+        // These are the feature flags currently being migrated.
+        if (
+            $this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_ENABLE_NECTOR_COINS) ||
+            $this->merchant->get1ccConfigFlagStatus(OneClickCheckout\Constants::ONE_CC_GIFT_CARD)
+        )
+        {
+            return (new SplitzExperimentEvaluator())->useMCSForShopifyCompleteCheckoutForFeatureFlags();
+        }
+        // This experiment controls ramp up for merchants without customizations (as above).
         return (new SplitzExperimentEvaluator())->useMCSForShopifyCompleteCheckout();
     }
 

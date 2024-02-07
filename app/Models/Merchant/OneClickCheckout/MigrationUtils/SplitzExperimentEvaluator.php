@@ -117,6 +117,13 @@ class SplitzExperimentEvaluator extends Base\Core
         return $result['variant'] === 'enable';
     }
 
+    public function useMCSForShopifyCompleteCheckoutForFeatureFlags(): bool
+    {
+        $input = $this->merchantIdBasedPayload('app.magic_complete_checkout_decomp_feature_flags_experiment_id');
+        $result = $this->evaluateExperiment($input);
+        return $result['variant'] === 'enable';
+    }
+
     public function useMCSForShopifyApplyCouponDecomposition(): bool
     {
         $input = $this->merchantIdBasedPayload('app.magic_shopify_apply_coupon_decomp_experiment_id');
