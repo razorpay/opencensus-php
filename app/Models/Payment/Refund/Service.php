@@ -612,11 +612,7 @@ class Service extends Base\Service
 
             if (in_array($key, $timestampFields))
             {
-                $diff = $scroogeRefundArray[$key] - $value ;
-                if (abs($diff) <= 120)
-                {
-                    continue;
-                }
+                continue;
             }
 
             if ((isset($scroogeRefundArray[$key]) === true) and ($scroogeRefundArray[$key] !== $value))
