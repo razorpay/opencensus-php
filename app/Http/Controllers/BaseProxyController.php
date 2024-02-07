@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
+use RZP\Models\Base;
+use Razorpay\Trace\Logger as Trace;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
@@ -133,7 +135,7 @@ abstract class BaseProxyController extends Controller
 
     protected function getHeadersForDashboardRequest(array $body = [], string $id = '')
     {
-        return [
+        $headers = [
             'x-merchant-id'    => optional($this->ba->getMerchant())->getId() ?? $id,
             'X-Merchant-Email' => optional($this->ba->getMerchant())->getEmail() ?? '',
             'x-user-id'        => optional($this->ba->getUser())->getId() ?? '',
@@ -148,6 +150,35 @@ abstract class BaseProxyController extends Controller
             'X-Request-ID'     => Request::getTaskId(),
             'X-IP-Address'     => $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip()
         ];
+
+        $actorDetailsHeaders = $this->getActorDetailHeaders();
+
+        return array_merge($headers, $actorDetailsHeaders);
+    }
+
+    protected function getActorDetailHeaders(): array
+    {
+        $actorDetailHeaders = [];
+
+        try
+        {
+            $actorDetails = (new Base\Core())->getActorDetails();
+
+            foreach ($actorDetails as $actorDetail)
+            {
+                $headerKey = convert_to_header_format($actorDetail);
+
+                $actorDetailHeaders[] = $headerKey;
+            }
+
+            $this->trace->info(TraceCode::PGOS_APPEND_ACTOR_DETAIL_HEADERS, $actorDetails);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::PGOS_APPEND_ACTOR_DETAIL_HEADERS_FAILURE, []);
+        }
+
+        return $actorDetailHeaders;
     }
 
     protected function getRoute($path = null): string

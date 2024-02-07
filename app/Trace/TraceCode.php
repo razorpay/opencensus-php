@@ -10984,6 +10984,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PGOS_UPDATE_POS_ACTIVATION_STATUS_REQUEST            = "PGOS_UPDATE_POS_ACTIVATION_STATUS_REQUEST";
     const PGOS_UPDATE_POS_ACTIVATION_STATUS_RESPONSE           = "PGOS_UPDATE_POS_ACTIVATION_STATUS_RESPONSE";
 
+    const PGOS_APPEND_ACTOR_DETAIL_HEADERS_FAILURE = 'PGOS_APPEND_ACTOR_DETAIL_HEADERS_FAILURE';
+    const PGOS_APPEND_ACTOR_DETAIL_HEADERS = 'PGOS_APPEND_ACTOR_DETAIL_HEADERS';
+
     const POS_SUBMIT_REQUEST                                   = "POS_SUBMIT_REQUEST";
     const NC_INITIATED_POS                                     = 'NC_INITIATED_POS';
     const POS_NC_EMAIL_SENT                                    = 'POS_NC_EMAIL_SENT';
@@ -11044,7 +11047,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BVS_VIDEO_KYC_EVENTS_JOB_PROCESSING_FAILED           = 'BVS_VIDEO_KYC_EVENTS_JOB_PROCESSING_FAILED';
 
     const PGOS_POS_SUBMIT                                      = "PGOS_POS_SUBMIT";
-  
+
     const RIZE_SERVICE_PROXY_REQUEST                           = 'RIZE_SERVICE_PROXY_REQUEST';
 
     const HEADER_LOGGER_FOR_PARITY                             = "HEADER_LOGGER_FOR_PARITY";

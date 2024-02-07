@@ -380,6 +380,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
             $headers = $this->getHeadersForDashboardRequest($payload, $merchantId);
 
+            $headers['X-Route-Name'] = $routeKey;
+
             $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
                 'route'     => $route,
                 'twirpPath' => $twirpPath,

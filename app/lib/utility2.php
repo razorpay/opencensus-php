@@ -189,3 +189,21 @@ if (! function_exists('sanitizeFilename'))
         return str_replace($replace, $replaceWith, $filename);
     }
 }
+
+if (! function_exists('convert_to_header_format'))
+{
+    /** Given a key, convert that to header format used in RZP
+     * @param $key
+     * @return string
+     */
+    function convert_to_header_format($key) {
+        // Split the key by underscores and capitalize each word
+        $words = explode('_', $key);
+        $capitalizedWords = array_map('ucfirst', $words);
+
+        // Join the words back together and add the 'X-' prefix
+        $header = 'X-' . implode('-', $capitalizedWords);
+
+        return $header;
+    }
+}

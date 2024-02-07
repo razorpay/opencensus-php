@@ -4514,6 +4514,34 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals($submOwnerUser[0]->user_id, 'RazorpayUser12');
     }
 
+    public function testActorDetailHeaders()
+    {
+        $actorDetails = [
+            'actor_id'    => '100000Razorpay',
+            'actor_email' => 'default@razorpay.in',
+            'actor_type'  => 'system',
+            'actor_name'  => 'Razorpay',
+            'actor_role'  => 'owner'
+        ];
+
+        $expectedHeaders = [
+            'X-Actor-Id'    => '100000Razorpay',
+            'X-Actor-Email' => 'default@razorpay.in',
+            'X-Actor-Type'  => 'system',
+            'X-Actor-Name'  => 'Razorpay',
+            'X-Actor-Role'  => 'owner',
+        ];
+
+        $actualHeaders = [];
+
+        foreach ($actorDetails as $actorDetail)
+        {
+            $headerKey = convert_to_header_format($actorDetail);
+            $actualHeaders[] = $headerKey;
+        }
+
+        $this->assertArraySelectiveEquals($expectedHeaders, $actualHeaders);
+    }
 
     private function createPurePlatformPartnerWithDefaultConfig()
     {

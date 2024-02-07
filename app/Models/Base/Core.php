@@ -217,7 +217,7 @@ class Core
 
     }
 
-    protected function getActorDetails(): array
+    public function getActorDetails(): array
     {
         $userId    = '100000Razorpay';
         $userEmail = 'default@razorpay.in';
