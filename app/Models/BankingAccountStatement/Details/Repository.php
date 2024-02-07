@@ -42,6 +42,27 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function fetchActiveAccountsByAccountNumberAndMerchantId(string $merchantId, string $accountNumber, array $statuses = [])
+    {
+        $accountNumberColumn = $this->dbColumn(Entity::ACCOUNT_NUMBER);
+
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $BASDetailsDbColumns = $this->dbColumn('*');
+
+        $statusList = Status::getStatusesForActiveCaFlows();
+
+        $query = $this->newQuery()
+                      ->select($BASDetailsDbColumns)
+                      ->where($accountNumberColumn, '=', $accountNumber)
+                      ->where($merchantIdColumn, '=', $merchantId)
+                      ->whereIn($statusColumn, $statusList);
+
+        return $query->get();
+    }
+
     public function fetchAccountNumbersByChannelOrderByLastStatementAttemptAt(string $channel, string $accountType = AccountType::DIRECT)
     {
         $channelColumn = $this->dbColumn(Entity::CHANNEL);

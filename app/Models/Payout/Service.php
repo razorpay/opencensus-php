@@ -467,21 +467,25 @@ class Service extends Base\Service
         // Don't Allow FMPs for account numbers not belonging to the merchant due to security concerns
         if (isset($bankAccount) === false)
         {
-            $this->trace->error(TraceCode::FMP_CREATION_INVALID_BANK_ACCOUNT_DETAILS_ERROR, [
-                'bank_account'   => is_null($bankAccount),
-                'merchant_id'    => $this->merchant->getId(),
-                'account_number' => $accountNumber,
-                'ifsc'           => $ifsc,
-                'name'           => $name
-            ]);
+            $destinationBasDetails = $this->repo->banking_account_statement_details->fetchActiveAccountsByAccountNumberAndMerchantId(
+                $this->merchant->getId(), $accountNumber);
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN, null, [
-                'bank_account'   => is_null($bankAccount),
-                'merchant_id'    => $this->merchant->getId(),
-                'account_number' => $accountNumber,
-                'ifsc'           => $ifsc,
-                'name'           => $name,
-            ]);
+            if (count($destinationBasDetails) === 0)
+            {
+                $this->trace->error(TraceCode::FMP_CREATION_INVALID_BANK_ACCOUNT_DETAILS_ERROR, [
+                    'merchant_id'    => $this->merchant->getId(),
+                    'account_number' => $accountNumber,
+                    'ifsc'           => $ifsc,
+                    'name'           => $name
+                ]);
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN, null, [
+                    'merchant_id'    => $this->merchant->getId(),
+                    'account_number' => $accountNumber,
+                    'ifsc'           => $ifsc,
+                    'name'           => $name,
+                ]);
+            }
         }
     }
 

@@ -37,6 +37,7 @@ use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\PayoutsDetails\Entity as PayoutDetailsEntity;
+use RZP\Models\BankingAccountStatement\Details\AccountType;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 use RZP\Models\PayoutsDetails\Validator as PayoutDetailsValidator;
 use RZP\Models\Payout\Configurations\DirectAccounts\PayoutModeConfig;
@@ -652,7 +653,28 @@ class Validator extends Base\Validator
         'lite_deficit_allowed'        => 'required|integer',
         'fmp_consideration_threshold' => 'required|integer',
         'total_amount_threshold'      => 'required|integer|min:100',
+        'destination_type'            => 'sometimes|string|in:rx_wallet,direct,lite',
+        'destination_channel'         => 'sometimes|string',
     ];
+
+    protected static $updateBalanceManagementConfigValidators = [
+        'source_and_destination',
+    ];
+
+    protected function validateSourceAndDestination($input)
+    {
+        if ((isset($input[PayoutConstants::DESTINATION_CHANNEL])) and
+            ($input[PayoutConstants::DESTINATION_CHANNEL] === $input[PayoutConstants::CHANNEL]))
+        {
+            throw new BadRequestValidationFailureException('Destination and source channel cannot be equal.');
+        }
+
+        if ((isset($input[PayoutConstants::DESTINATION_CHANNEL])) and
+            (in_array($input[PayoutConstants::DESTINATION_TYPE], [AccountType::DIRECT, AccountType::RX_WALLET]) === false))
+        {
+            throw new BadRequestValidationFailureException('Destination channel is required only if destination type is direct/ rx_wallet.');
+        }
+    }
 
     protected function validateFtsAccountType($attribute, $ftsAccountType)
     {

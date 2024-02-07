@@ -3,6 +3,8 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Models\Bank\BankCodes;
+use RZP\Models\Settlement\Channel;
 
 class Constants
 {
@@ -72,6 +74,16 @@ class Constants
     const FUND_MANAGEMENT_PAYOUT          = 'fund_management_payout';
     const PAYOUT_CREATE_INPUT             = 'payout_create_input';
     const FMP_UNIQUE_IDENTIFIER           = 'fmp_unique_identifier';
+    const DESTINATION_CHANNEL             = 'destination_channel';
+    const DESTINATION_TYPE                = 'destination_type';
+
+    public const FMP_DESTINATION_CHANNEL_TO_IFSC_MAP = [
+        Channel::YESBANK => "YESB0000022",
+        Channel::AXIS    => "UTIB0001506",
+        Channel::RBL     => "RATN0000091",
+        Channel::ICICI   => BankCodes::IFSC_ICIC,
+    ];
+
     const FUND_MANAGEMENT_PAYOUT_INITIATE = 'worker:fund_management_payout_initiate';
 
     // Fund Management Payout Error Descriptions

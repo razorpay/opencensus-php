@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
 return [
     'testFundManagementPayoutCheckQueueDispatch_SingleMerchants_Dedupe' => [
         'request'  => [
@@ -135,6 +138,66 @@ return [
                 'message' => 'Config for 10000000000000 updated successfully'
             ],
             'status_code' => 200
+        ],
+    ],
+
+    'testFundManagementPayoutConfig_SetConfigForFundLoadingForDirectAccount_DestinationAndSourceChannelValidationError' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/fund-management-payout/balance-config/merchants/10000000000000',
+            'content' => [
+                'channel'                     => 'rbl',
+                'neft_threshold'              => 60000,
+                'lite_balance_threshold'      => 4000000,
+                'lite_deficit_allowed'        => 6,
+                'fmp_consideration_threshold' => 24400,
+                'total_amount_threshold'      => 400000,
+                'destination_type'            => 'direct',
+                'destination_channel'         => 'rbl',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Destination and source channel cannot be equal.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFundManagementPayoutConfig_SetConfigForFundLoadingForDirectAccount_LiteValidationError' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/fund-management-payout/balance-config/merchants/10000000000000',
+            'content' => [
+                'channel'                     => 'rbl',
+                'neft_threshold'              => 60000,
+                'lite_balance_threshold'      => 4000000,
+                'lite_deficit_allowed'        => 6,
+                'fmp_consideration_threshold' => 24400,
+                'total_amount_threshold'      => 400000,
+                'destination_type'            => 'lite',
+                'destination_channel'         => 'yesbank',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Destination channel is required only if destination type is direct/ rx_wallet.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

@@ -1567,7 +1567,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function getLatestDirectAccountBalanceForFundManagementPayout($fundManagementPayouts, $basDetails)
+    public function getLatestGatewayBalanceForFundManagementPayout($fundManagementPayouts, $basDetails)
     {
         $basDetails->reload();
 
@@ -9464,48 +9464,70 @@ class Core extends Base\Core
     {
         $channel = $input[Entity::CHANNEL];
 
+        $destinationType = $input[PayoutConstants::DESTINATION_TYPE] ?? null;
+
+        $destinationChannel = $input[PayoutConstants::DESTINATION_CHANNEL] ?? null;
+
         $merchantId = $input[Entity::MERCHANT_ID];
 
         $thresholds = $input[PayoutConstants::THRESHOLDS];
 
         $this->mutex->acquireAndReleaseStrict(
             'fund_management_payout_check_' . $merchantId . '_' . $channel,
-            function() use ($merchantId, $channel, $thresholds) {
+            function() use ($merchantId, $channel, $thresholds, $destinationChannel, $destinationType) {
                 /**
-                 * @var Balance\Entity                         $liteBalanceEntity
-                 * @var BankingAccountStatement\Details\Entity $basDetails
+                 * @var Balance\Entity| BankingAccountStatement\Details\Entity $destinationDetails
+                 * @var BankingAccountStatement\Details\Entity                 $sourceBasDetails
                  *
-                 * Fetch & Validate Lite account details and Current Account details
+                 * Fetch & Validate destination account details and source Current Account details
+                 *
+                 * Kept $destinationDetails as polymorphic, since for POBO integration basDetails entity would be
+                 * fetched from Payout Service.
                  */
-                [$liteBalanceEntity, $fundLoadingBankAccountDetails, $basDetails] =
-                    $this->fetchMerchantAccountDetailsAndValidate($merchantId, $channel);
+                [$destinationDetails, $fundLoadingBankAccountDetails, $sourceBasDetails] =
+                    $this->fetchMerchantAccountDetailsAndValidate($merchantId, $channel, $destinationChannel, $destinationType);
 
-                $this->trace->info(TraceCode::FMP_LITE_AND_CA_DETAILS_FETCHED, [
+                $this->trace->info(TraceCode::FMP_DESTINATION_AND_CA_DETAILS_FETCHED, [
                     'merchant_id'                       => $merchantId,
                     'channel'                           => $channel,
-                    'lite_balance_entity'               => $liteBalanceEntity->getId(),
+                    'destination'                       => $destinationDetails->getEntityName(),
+                    'destination_id'                    => $destinationDetails->getId(),
+                    'destination_type'                  => $destinationDetails->getAccountType(),
                     'fund_loading_bank_account_details' => $fundLoadingBankAccountDetails,
-                    'bas_details'                       => $basDetails->getId(),
+                    'bas_details'                       => $sourceBasDetails->getId(),
                 ]);
 
-                // Get Lite Balance from Ledger (In Paisa)
-                $liteBalance = $liteBalanceEntity->getSharedBankingBalanceFromLedgerWithoutFallbackOnApi();
+                if ($destinationDetails->getAccountType() === AccountType::SHARED)
+                {
+                    // Get Lite Balance from Ledger (In Paisa)
+                    $destinationBalance = $destinationDetails->getSharedBankingBalanceFromLedgerWithoutFallbackOnApi();
+                }
+                else
+                {
+                    $destinationBalance = $this->getLatestGatewayBalanceForFundManagementPayout(collect(), $destinationDetails);
+                }
 
-                $liteBalanceThreshold = $thresholds[PayoutConstants::LITE_BALANCE_THRESHOLD];
+                $destinationBalanceThreshold = $thresholds[PayoutConstants::LITE_BALANCE_THRESHOLD];
 
-                $liteBalanceThresholdWithAllowance = (int) round($liteBalanceThreshold - ($thresholds[PayoutConstants::LITE_DEFICIT_ALLOWED] / 10000) * $liteBalanceThreshold);
+                $destinationBalanceThresholdWithAllowance = (int)
+                round($destinationBalanceThreshold -
+                      ($thresholds[PayoutConstants::LITE_DEFICIT_ALLOWED] / 10000) * $destinationBalanceThreshold);
 
-                $liteBalanceThresholdWithFiftyPercentAllowance = (int) round($liteBalanceThreshold - 0.5 * $liteBalanceThreshold);
+                $destinationBalanceThresholdWithFiftyPercentAllowance = (int) round($destinationBalanceThreshold
+                                                                                    - 0.5 * $destinationBalanceThreshold);
 
                 // Add metric counter if Lite balance is less than fifty percent of Lite balance threshold
-                if ($liteBalance <= $liteBalanceThresholdWithFiftyPercentAllowance)
+                if ($destinationBalance <= $destinationBalanceThresholdWithFiftyPercentAllowance)
                 {
-                    $this->trace->info(TraceCode::LITE_BALANCE_LESS_THAN_FIFTY_PERCENT_OF_LITE_THRESHOLD, [
-                        'merchant_id'                            => $merchantId,
-                        'channel'                                => $channel,
-                        'lite_balance'                           => $liteBalance,
-                        'lite_balance_threshold'                 => $liteBalanceThreshold,
-                        'lite_threshold_fifty_percent_allowance' => $liteBalanceThresholdWithFiftyPercentAllowance,
+                    $this->trace->info(TraceCode::DESTINATION_BALANCE_LESS_THAN_FIFTY_PERCENT_OF_LITE_THRESHOLD, [
+                        'merchant_id'                                   => $merchantId,
+                        'channel'                                       => $channel,
+                        'destination'                                   => $destinationDetails->getEntityName(),
+                        'destination_id'                                => $destinationDetails->getId(),
+                        'destination_type'                              => $destinationDetails->getAccountType(),
+                        'destination_balance'                           => $destinationBalance,
+                        'destination_balance_threshold'                 => $destinationBalanceThreshold,
+                        'destination_threshold_fifty_percent_allowance' => $destinationBalanceThresholdWithFiftyPercentAllowance,
                     ]);
 
                     $this->trace->count(Metric::FMP_LESS_THAN_FIFTY_PERCENT_LITE_BALANCE_COUNT, [
@@ -9513,35 +9535,41 @@ class Core extends Base\Core
                     ]);
                 }
 
-                $this->trace->info(TraceCode::LITE_BALANCE_FETCHED_FOR_FMP, [
-                    'merchant_id'                           => $merchantId,
-                    'channel'                               => $channel,
-                    'lite_balance'                          => $liteBalance,
-                    'lite_balance_threshold'                => $liteBalanceThreshold,
-                    'lite_balance_threshold_with_allowance' => $liteBalanceThresholdWithAllowance,
+                $this->trace->info(TraceCode::DESTINATION_BALANCE_FETCHED_FOR_FMP, [
+                    'merchant_id'                                  => $merchantId,
+                    'channel'                                      => $channel,
+                    'destination'                                  => $destinationDetails->getEntityName(),
+                    'destination_id'                               => $destinationDetails->getId(),
+                    'destination_type'                             => $destinationDetails->getAccountType(),
+                    'destination_balance'                          => $destinationBalance,
+                    'destination_balance_threshold'                => $destinationBalanceThreshold,
+                    'destination_balance_threshold_with_allowance' => $destinationBalanceThresholdWithAllowance,
                 ]);
 
-                if ($liteBalance >= $liteBalanceThresholdWithAllowance)
+                if ($destinationBalance >= $destinationBalanceThresholdWithAllowance)
                 {
                     throw new Exception\LogicException(PayoutConstants::LITE_BALANCE_IS_ABOVE_THRESHOLD, null, [
-                        'merchant_id'                           => $merchantId,
-                        'channel'                               => $channel,
-                        'lite_balance'                          => $liteBalance,
-                        'lite_balance_threshold'                => $liteBalanceThreshold,
-                        'lite_balance_threshold_with_allowance' => $liteBalanceThresholdWithAllowance,
+                        'merchant_id'                                  => $merchantId,
+                        'channel'                                      => $channel,
+                        'destination'                                  => $destinationDetails->getEntityName(),
+                        'destination_id'                               => $destinationDetails->getId(),
+                        'destination_type'                             => $destinationDetails->getAccountType(),
+                        'destination_balance'                          => $destinationBalance,
+                        'destination_balance_threshold'                => $destinationBalanceThreshold,
+                        'destination_balance_threshold_with_allowance' => $destinationBalanceThresholdWithAllowance,
                     ]);
                 }
 
                 // Get FMPs within retrieval period
-                $retrivalThreshold = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD]);
+                $retrievalThreshold = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD]);
 
                 if (empty($retrivalThreshold) === true)
                 {
-                    $retrivalThreshold = self::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD; // In secs
+                    $retrievalThreshold = self::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD; // In secs
                 }
 
                 $fundManagementPayouts = $this->repo->payout->fetchFundManagementPayoutsWithinRange(
-                    $merchantId, $retrivalThreshold);
+                    $merchantId, $retrievalThreshold);
 
                 $fundManagementPayoutDetails = [];
 
@@ -9557,12 +9585,12 @@ class Core extends Base\Core
                     'channel'                         => $channel,
                     'fund_management_payouts_details' => $fundManagementPayoutDetails,
                     'fund_management_payouts_count'   => count($fundManagementPayoutDetails),
-                    'fmp_retrieval_threshold'         => $retrivalThreshold,
+                    'fmp_retrieval_threshold'         => $retrievalThreshold,
                 ]);
 
                 // Calculate Offset Amount for initiating FMPs
                 $offsetAmount = $this->calculateOffsetAmountForFundManagementPayout(
-                    $fundManagementPayouts, $liteBalance, $thresholds, $merchantId, $channel);
+                    $fundManagementPayouts, $destinationBalance, $thresholds, $merchantId, $channel);
 
                 if ($offsetAmount < 100)  // offset should be greater than 1 rupee because it is the min payout amount.
                 {
@@ -9572,8 +9600,8 @@ class Core extends Base\Core
                     ]);
                 }
 
-                // Fetch Latest direct account balance
-                $gatewayBalance = $this->getLatestDirectAccountBalanceForFundManagementPayout($fundManagementPayouts, $basDetails);
+                // Fetch Latest source direct account balance
+                $gatewayBalance = $this->getLatestGatewayBalanceForFundManagementPayout($fundManagementPayouts, $sourceBasDetails);
 
                 /**
                  * Get minimum amount to be maintained at Current Account
@@ -9615,7 +9643,7 @@ class Core extends Base\Core
                 }
 
                 //Create Input for FMPs
-                $fmpInput = $this->createInputForFundManagementPayouts($fundLoadingBankAccountDetails, $merchantId, $basDetails, $offsetAmount);
+                $fmpInput = $this->createInputForFundManagementPayouts($fundLoadingBankAccountDetails, $merchantId, $sourceBasDetails, $offsetAmount);
 
                 $preferredMode = $fmpInput[Entity::MODE];
 
@@ -9643,51 +9671,134 @@ class Core extends Base\Core
         );
     }
 
-    public function fetchMerchantAccountDetailsAndValidate($merchantId, $channel)
+    public function fetchMerchantAccountDetailsAndValidate(
+        $merchantId, $channel, $destinationChannel, $destinationType)
     {
-        /* @var Merchant\Entity $merchant*/
-        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+        $isDestinationLite = (is_null($destinationType) or
+                              ($destinationType === AccountType::SHARED));
 
-        $isLive = (($merchant->isLive() === true) or
-                   ((new Merchant\Core())->isXVaActivated($merchant) === true));
-
-        if ($isLive === false)
+        // Fetch Destination balance details
+        if ($isDestinationLite === true)
         {
-            throw new BadRequestValidationFailureException('X is not live for merchant_id ' . $merchantId);
-        }
+            /* @var Merchant\Entity $merchant*/
+            $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        // Fetch Lite Accounts For Fund Loading
-        $virtualAccounts = $this->repo->virtual_account->fetchActiveBankingVirtualAccountsFromMerchantId($merchantId);
+            $isLive = (($merchant->isLive() === true) or
+                       ((new Merchant\Core())->isXVaActivated($merchant) === true));
 
-        $liteBalanceEntity = null;
-        $virtualAccountIds = [];
-        $fundLoadingBankAccountDetails = [];
-
-        /* @var VirtualAccount\Entity $virtualAccount*/
-        foreach ($virtualAccounts as $virtualAccount)
-        {
-            $virtualAccountIds[] = $virtualAccount->getId();
-
-            /* @var BankAccount\Entity $bankAccount*/
-            $bankAccount = $virtualAccount->bankAccount;
-
-            if (isset($bankAccount) === false)
+            if ($isLive === false)
             {
-                continue;
+                throw new BadRequestValidationFailureException('X is not live for merchant_id ' . $merchantId);
             }
 
-            $fundLoadingBankAccountDetails = [
-                BankAccount\Entity::ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
-                BankAccount\Entity::IFSC           => $bankAccount->getIfscCode(),
-                BankAccount\Entity::NAME           => $bankAccount->getName()
-            ];
+            // Fetch Lite Accounts For Fund Loading
+            $virtualAccounts = $this->repo->virtual_account->fetchActiveBankingVirtualAccountsFromMerchantId($merchantId);
 
-            $trimmedBankAccountDetails = $this->trimSpaces($fundLoadingBankAccountDetails);
+            $liteBalanceEntity = null;
+            $virtualAccountIds = [];
+            $fundLoadingBankAccountDetails = [];
+
+            /* @var VirtualAccount\Entity $virtualAccount*/
+            foreach ($virtualAccounts as $virtualAccount)
+            {
+                $virtualAccountIds[] = $virtualAccount->getId();
+
+                /* @var BankAccount\Entity $bankAccount*/
+                $bankAccount = $virtualAccount->bankAccount;
+
+                if (isset($bankAccount) === false)
+                {
+                    continue;
+                }
+
+                $fundLoadingBankAccountDetails = [
+                    BankAccount\Entity::ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
+                    BankAccount\Entity::IFSC           => $bankAccount->getIfscCode(),
+                    BankAccount\Entity::NAME           => $bankAccount->getName()
+                ];
+
+                $trimmedBankAccountDetails = $this->trimSpaces($fundLoadingBankAccountDetails);
+
+                try
+                {
+                    // Validate Bank Account before initiating Fund Management Payouts
+                    (new BankAccount\Validator())->validateInput('addFundAccountBankAccount', $trimmedBankAccountDetails);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        null,
+                        TraceCode::BANK_ACCOUNT_DETAILS_NOT_SUITABLE_FOR_FUND_MANAGEMENT,
+                        [
+                            'account_details'     => $trimmedBankAccountDetails,
+                            'merchant_id'         => $merchantId,
+                            'channel'             => $channel,
+                            'destination_type'    => $destinationType,
+                            'destination_channel' => $destinationChannel,
+                        ]);
+
+                    $fundLoadingBankAccountDetails = [];
+
+                    continue;
+                }
+
+                $liteBalanceEntity = $virtualAccount->balance;
+
+                break;
+            }
+
+            if ((empty($fundLoadingBankAccountDetails) === true) or
+                (isset($liteBalanceEntity) === false))
+            {
+                throw new BadRequestValidationFailureException('No Suitable Bank Account found for Fund Loading for ' . $merchantId, null, [
+                    'channel'                  => $channel,
+                    'lite_account_ids_scanned' => $virtualAccountIds,
+                    'lite_balance_Entity'      => optional($liteBalanceEntity)->getId(),
+                    'count_of_lite_account'    => count($virtualAccountIds),
+                    'destination_type'         => $destinationType,
+                    'destination_channel'      => $destinationChannel,
+                ]);
+            }
+        }
+        else
+        {
+            // Fetch destination direct/rx_wallet banking_account_statement_details for merchantId and channel
+            // This call needs to go to PS in case of rx_wallet bas_details
+            $destinationBasDetails = $this->repo->banking_account_statement_details->getDirectBasDetailEntityByMerchantIdAndChannel($merchantId, $destinationChannel);
+
+            if (isset($destinationBasDetails) === false)
+            {
+                $this->trace->error(TraceCode::BAS_DETAILS_NOT_FOUND, [
+                    'merchant_id' => $merchantId,
+                    'channel'     => $channel,
+                    'type'        => 'destination',
+                ]);
+
+                throw new BadRequestValidationFailureException('Bas Details not found for ' . $merchantId, null, [
+                    'merchant_id' => $merchantId,
+                    'channel'     => $channel,
+                    'type'        => 'destination',
+                ]);
+            }
+
+            // Get Destination Bank Account Name from Merchant Billing Label
+            $merchantBillingLabel = $destinationBasDetails->merchant->getBillingLabel();
+
+            // Remove all characters other than a-z, A-Z, 0-9 and space
+            $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+            $fundLoadingBankAccountDetails = [
+                BankAccount\Entity::ACCOUNT_NUMBER => $destinationBasDetails->getAccountNumber(),
+                BankAccount\Entity::IFSC           => PayoutConstants::FMP_DESTINATION_CHANNEL_TO_IFSC_MAP[strtolower($destinationChannel)],
+                BankAccount\Entity::NAME           => str_limit($formattedLabel, 120, ''),
+            ];
 
             try
             {
                 // Validate Bank Account before initiating Fund Management Payouts
-                (new BankAccount\Validator())->validateInput('addFundAccountBankAccount', $trimmedBankAccountDetails);
+                (new BankAccount\Validator())->validateInput('addFundAccountBankAccount',
+                                                             $this->trimSpaces($fundLoadingBankAccountDetails));
             }
             catch (\Exception $ex)
             {
@@ -9696,51 +9807,47 @@ class Core extends Base\Core
                     null,
                     TraceCode::BANK_ACCOUNT_DETAILS_NOT_SUITABLE_FOR_FUND_MANAGEMENT,
                     [
-                        'account_details' => $trimmedBankAccountDetails,
-                        'merchant_id'     => $merchantId,
-                        'channel'         => $channel,
+                        'account_details'     => $this->trimSpaces($fundLoadingBankAccountDetails),
+                        'merchant_id'         => $merchantId,
+                        'channel'             => $channel,
+                        'destination_type'    => $destinationType,
+                        'destination_channel' => $destinationChannel,
                     ]);
 
-                $fundLoadingBankAccountDetails = [];
-
-                continue;
+                throw new BadRequestValidationFailureException('No Suitable basDetails found for Fund Loading for ' . $merchantId, null, [
+                    'channel'                  => $channel,
+                    'destination_type'         => $destinationType,
+                    'destination_channel'      => $destinationChannel,
+                ]);
             }
-
-            $liteBalanceEntity = $virtualAccount->balance;
-
-            break;
         }
 
-        if ((empty($fundLoadingBankAccountDetails) === true) or
-            (isset($liteBalanceEntity) === false))
-        {
-            throw new BadRequestValidationFailureException('No Suitable Bank Account found for Fund Loading for ' . $merchantId, null, [
-                'channel'                  => $channel,
-                'lite_account_ids_scanned' => $virtualAccountIds,
-                'lite_balance_Entity'      => optional($liteBalanceEntity)->getId(),
-                'count_of_lite_account'    => count($virtualAccountIds),
-            ]);
-        }
+        // Fetch source direct banking_account_statement_details for merchantId and channel
+        $sourceBasDetails = $this->repo->banking_account_statement_details->getDirectBasDetailEntityByMerchantIdAndChannel($merchantId, $channel);
 
-        // Fetch CA banking_account_statement_details for merchantId and channel
-        $basDetails = $this->repo->banking_account_statement_details->getDirectBasDetailEntityByMerchantIdAndChannel($merchantId, $channel);
-
-        if (isset($basDetails) === false)
+        if (isset($sourceBasDetails) === false)
         {
             $this->trace->error(TraceCode::BAS_DETAILS_NOT_FOUND, [
                 'merchant_id' => $merchantId,
-                'channel'     => $channel
+                'channel'     => $channel,
+                'type'        => 'source',
             ]);
 
             throw new BadRequestValidationFailureException('Bas Details not found for ' . $merchantId, null, [
                 'merchant_id' => $merchantId,
-                'channel'     => $channel
+                'channel'     => $channel,
+                'type'        => 'source',
             ]);
         }
 
-        $this->validateBankingAccountTpv($basDetails, $liteBalanceEntity);
+        if ($isDestinationLite === true)
+        {
+            $this->validateBankingAccountTpv($sourceBasDetails, $liteBalanceEntity);
 
-        return [$liteBalanceEntity, $fundLoadingBankAccountDetails, $basDetails];
+            return [$liteBalanceEntity, $fundLoadingBankAccountDetails, $sourceBasDetails];
+        }
+
+        return [$destinationBasDetails, $fundLoadingBankAccountDetails, $sourceBasDetails];
     }
 
     public function validateBankingAccountTpv($basDetails, $liteBalanceEntity)
@@ -10103,9 +10210,11 @@ class Core extends Base\Core
                 (new Validator())->validateInput(Validator::UPDATE_BALANCE_MANAGEMENT_CONFIG, $keyValue);
 
                 $jobRequest = [
-                    Entity::CHANNEL             => $keyValue[PayoutConstants::CHANNEL],
-                    Entity::MERCHANT_ID         => $merchantId,
-                    PayoutConstants::THRESHOLDS => [
+                    Entity::CHANNEL                      => $keyValue[PayoutConstants::CHANNEL],
+                    Entity::MERCHANT_ID                  => $merchantId,
+                    PayoutConstants::DESTINATION_CHANNEL => $keyValue[PayoutConstants::DESTINATION_CHANNEL] ?? null,
+                    PayoutConstants::DESTINATION_TYPE    => $keyValue[PayoutConstants::DESTINATION_TYPE] ?? null,
+                    PayoutConstants::THRESHOLDS          => [
                         PayoutConstants::NEFT_THRESHOLD              => $keyValue[PayoutConstants::NEFT_THRESHOLD],
                         PayoutConstants::LITE_BALANCE_THRESHOLD      => $keyValue[PayoutConstants::LITE_BALANCE_THRESHOLD],
                         PayoutConstants::LITE_DEFICIT_ALLOWED        => $keyValue[PayoutConstants::LITE_DEFICIT_ALLOWED],

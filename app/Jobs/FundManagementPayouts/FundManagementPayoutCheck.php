@@ -27,6 +27,8 @@ class FundManagementPayoutCheck extends Job
      * {
      *     "channel": "rbl",
      *     "merchant_id": "1cXSLlUU8V9sXl",
+     *     "destination_type": "direct",
+     *     "destination_channel": "icici",
      *     "thresholds" : [
      *          "neft_threshold": 50000000,           // In paisa
      *          "lite_balance_threshold": 30000000,   // In paisa

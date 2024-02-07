@@ -147,9 +147,11 @@ class FundManagementPayoutTest extends TestCase
     protected function getFundManagementPayoutCheckQueueParams($input = null)
     {
         return [
-            "channel"     => $input[PayoutEntity::CHANNEL] ?? "rbl",
-            "merchant_id" => $input[PayoutEntity::MERCHANT_ID] ?? "10000000000000",
-            "thresholds"  => [
+            "channel"             => $input[PayoutEntity::CHANNEL] ?? "rbl",
+            "merchant_id"         => $input[PayoutEntity::MERCHANT_ID] ?? "10000000000000",
+            "destination_type"    => $input[PayoutConstants::DESTINATION_TYPE] ?? null,
+            "destination_channel" => $input[PayoutConstants::DESTINATION_CHANNEL] ?? null,
+            "thresholds"          => [
                 "neft_threshold"              => $input[PayoutConstants::NEFT_THRESHOLD] ?? 50000000,
                 "lite_balance_threshold"      => $input[PayoutConstants::LITE_BALANCE_THRESHOLD] ?? 30000000,
                 "lite_deficit_allowed"        => $input[PayoutConstants::LITE_DEFICIT_ALLOWED] ?? 500,     // Percentage
@@ -593,6 +595,88 @@ class FundManagementPayoutTest extends TestCase
             ]);
 
         $queueParams = $this->getFundManagementPayoutCheckQueueParams();
+
+        $initialPayoutCount = count($this->getDbEntities('payout'));
+
+        (new FundManagementPayoutCheck(Mode::TEST, $queueParams))->handle();
+
+        $finalPayoutCount = count($this->getDbEntities('payout'));
+
+        // Asserting that no FMP got created
+        $this->assertEquals(0, $finalPayoutCount - $initialPayoutCount);
+
+        $this->assertTrue((bool) $boolJobFailureMetricCaptured);
+    }
+
+    /**
+     * CA to CA Fund Loading
+     * FMP Check failing due to destination bas Details being not present.
+     */
+    public function testFundManagementPayoutCheck_FundLoadingToDirect_DestinationBasDetailsNotFound()
+    {
+        $boolJobFailureMetricCaptured = false;
+
+        $this->mockCountMetric(
+            PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT,
+            $boolJobFailureMetricCaptured, [
+                PayoutEntity::CHANNEL => Channel::RBL,
+                'error_message'       => 'BAD_REQUEST_VALIDATION_FAILURE',
+            ]);
+
+        $queueParams = $this->getFundManagementPayoutCheckQueueParams(
+            [
+                PayoutConstants::DESTINATION_TYPE    => AccountType::DIRECT,
+                PayoutConstants::DESTINATION_CHANNEL => Channel::YESBANK,
+            ]);
+
+        $initialPayoutCount = count($this->getDbEntities('payout'));
+
+        (new FundManagementPayoutCheck(Mode::TEST, $queueParams))->handle();
+
+        $finalPayoutCount = count($this->getDbEntities('payout'));
+
+        // Asserting that no FMP got created
+        $this->assertEquals(0, $finalPayoutCount - $initialPayoutCount);
+
+        $this->assertTrue((bool) $boolJobFailureMetricCaptured);
+    }
+
+    /**
+     * CA to CA Fund Loading
+     * FMP Check failing due to incorrect bank account details from destination bas Details.
+     */
+    public function testFundManagementPayoutCheck_FundLoadingToDirect_IncorrectBankAccountDetails()
+    {
+        $boolJobFailureMetricCaptured = false;
+
+        $this->mockCountMetric(
+            PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT,
+            $boolJobFailureMetricCaptured, [
+                PayoutEntity::CHANNEL => Channel::RBL,
+                'error_message'       => 'BAD_REQUEST_VALIDATION_FAILURE',
+            ]);
+
+        $queueParams = $this->getFundManagementPayoutCheckQueueParams(
+            [
+                PayoutConstants::DESTINATION_TYPE    => AccountType::DIRECT,
+                PayoutConstants::DESTINATION_CHANNEL => Channel::YESBANK,
+            ]);
+
+        $destinationDirectBalance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'account_number' => '909001996618##',
+        ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID             => 'xbas0000000003',
+            Details\Entity::MERCHANT_ID    => $destinationDirectBalance->getMerchantId(),
+            Details\Entity::BALANCE_ID     => $destinationDirectBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => $destinationDirectBalance->getAccountNumber(),
+            Details\Entity::CHANNEL        => Details\Channel::YESBANK,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $initialPayoutCount = count($this->getDbEntities('payout'));
 
@@ -1871,6 +1955,170 @@ class FundManagementPayoutTest extends TestCase
     }
 
     /**
+     * CA to CA Fund Loading
+     * Dispatch 2 FMPs since, offset amount is greater than NEFT Threshold
+     */
+    public function testFundManagementPayoutCheck_FundLoadingToDirect_DispatchFmpsSuccess()
+    {
+        $oldDateTime = Carbon::create(2023, 6, 15, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Features::LEDGER_REVERSE_SHADOW]);
+
+        $this->mockLedgerFetchLiteBalance("15000000.00", false, 0);
+
+        $boolJobFailureMetricCaptured = false;
+
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
+            PayoutEntity::CHANNEL => Channel::RBL,
+            'error_message'       => "",
+        ]);
+
+        $mozartSuccess = false;
+
+        $this->mockMozartFetchGatewayBalance(150000, $mozartSuccess);
+
+        $ftsSuccess = false;
+
+        $this->mockFTSFetchMode(PayoutMode::NEFT, $ftsSuccess);
+
+        $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
+            Details\Entity::GATEWAY_BALANCE           => 200000,
+            Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            Details\Entity::BALANCE_LAST_FETCHED_AT   => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $destinationDirectBalance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'account_number' => '909001996618',
+        ]);
+
+        $destinationBasDetails = $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                        => 'xbas0000000003',
+            Details\Entity::MERCHANT_ID               => $destinationDirectBalance->getMerchantId(),
+            Details\Entity::BALANCE_ID                => $destinationDirectBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER            => $destinationDirectBalance->getAccountNumber(),
+            Details\Entity::CHANNEL                   => Details\Channel::YESBANK,
+            Details\Entity::STATUS                    => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE           => 15000000,
+            Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            Details\Entity::BALANCE_LAST_FETCHED_AT   => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $queueParams = $this->getFundManagementPayoutCheckQueueParams(
+            [
+                PayoutConstants::DESTINATION_TYPE       => AccountType::DIRECT,
+                PayoutConstants::DESTINATION_CHANNEL    => Channel::YESBANK,
+                PayoutConstants::TOTAL_AMOUNT_THRESHOLD => 19000000,
+                PayoutConstants::NEFT_THRESHOLD         => 5000000
+            ]);
+
+        $fmpInputs = [
+            [
+                PayoutEntity::AMOUNT       => 4500000,
+                PayoutEntity::STATUS       => PayoutStatus::PROCESSED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->clone()->subMinutes(10)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(9)->getTimestamp(),
+                PayoutEntity::PROCESSED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(4)->getTimestamp(),
+            ],
+            // Even though considered, it's not included in the calculation of the offset amount
+            [
+                PayoutEntity::AMOUNT       => 2000000,
+                PayoutEntity::STATUS       => PayoutStatus::REVERSED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(120)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->subMinutes(119)->getTimestamp(),
+                PayoutEntity::PROCESSED_AT => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
+                PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
+            ],
+            [
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+            ],
+            [
+                PayoutEntity::AMOUNT       => 1000000,
+                PayoutEntity::STATUS       => PayoutStatus::INITIATED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+            ],
+        ];
+
+        $this->createFundManagementPayouts($fmpInputs);
+
+        $this->fixtures->edit('merchant', $this->basDetails->getMerchantId(), [
+            'name'          => 'test_merchant',
+            'billing_label' => 'test_merchant $additional_%characters_/#*greater_than_fifty',
+        ]);
+
+        $initialPayoutCount = count($this->getDbEntities('payout'));
+
+        (new FundManagementPayoutCheck(Mode::TEST, $queueParams))->handle();
+
+        $finalPayoutCount = count($this->getDbEntities('payout'));
+
+        $basDetails = $this->basDetails->reload();
+
+        // Gateway balance was fetched from bank and bas_details was updated
+        $this->assertEquals(15000000, $basDetails->getGatewayBalance());
+        $this->assertNotEquals($basDetails->getGatewayBalanceChangeAt(), Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp());
+
+        // Asserting that no FMP got created
+        $this->assertEquals(0, $finalPayoutCount - $initialPayoutCount);
+
+        $this->assertFalse((bool) $boolJobFailureMetricCaptured);
+        $this->assertTrue((bool) $mozartSuccess);
+        $this->assertTrue((bool) $ftsSuccess);
+
+        $expectedParams = [
+            "payout_create_input" => [
+                "balance_id"   => $this->directBalance->getId(),
+                "currency"     => "INR",
+                "mode"         => "NEFT",
+                "purpose"      => "RZP Fund Management",
+                "fund_account" => [
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "name"           => 'testmerchant additionalcharactersgreaterthanfifty',
+                        "ifsc"           => PayoutConstants::FMP_DESTINATION_CHANNEL_TO_IFSC_MAP[$destinationBasDetails->getChannel()],
+                        "account_number" => $destinationBasDetails->getAccountNumber(),
+                    ],
+                    "contact"      => [
+                        "name" => 'testmerchant additionalcharactersgreaterthanfifty',
+                        "type" => Contact\Type::SELF,
+                    ]
+                ],
+            ],
+            "merchant_id"         => "10000000000000",
+            "channel"             => Channel::RBL,
+        ];
+
+        $totalAmountOfFmps  = 0;
+        $uniqueIdsGenerated = [];
+
+        Queue::assertPushed(FundManagementPayoutInitiate::class, function($job) use ($expectedParams, &$totalAmountOfFmps, &$uniqueIdsGenerated) {
+            $this->assertArraySubset($expectedParams, $job->getParams());
+            $this->assertArrayHasKey(PayoutConstants::FMP_UNIQUE_IDENTIFIER, $job->getParams());
+            $uniqueIdsGenerated[] = $job->getParams()[PayoutConstants::FMP_UNIQUE_IDENTIFIER];
+
+            $totalAmountOfFmps = $totalAmountOfFmps + $job->getParams()[PayoutConstants::PAYOUT_CREATE_INPUT][PayoutEntity::AMOUNT];
+
+            return true;
+        });
+
+        $this->assertEquals(2, Queue::Pushed(FundManagementPayoutInitiate::class)->count());
+        $this->assertEquals(9500000, $totalAmountOfFmps);
+        $this->assertEquals(2, count(array_unique($uniqueIdsGenerated)));
+
+        Carbon::setTestNow();
+    }
+
+    /**
      * Create a fund management payout
      */
     public function testFundManagementPayoutCheck_FundManagementPayoutCreationSuccess()
@@ -2034,6 +2282,197 @@ class FundManagementPayoutTest extends TestCase
         Carbon::setTestNow();
     }
 
+    /**
+     * CA to CA Fund Loading
+     * Create a fund management payout
+     */
+    public function testFundManagementPayoutCheck_FundLoadingToDirect_FundManagementPayoutCreationSuccess()
+    {
+        Queue::fake();
+
+        $oldDateTime = Carbon::create(2023, 6, 15, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->fixtures->merchant->addFeatures([Features::LEDGER_REVERSE_SHADOW]);
+
+        $this->mockLedgerFetchLiteBalance("15000000.00", false, 0);
+
+        $boolJobFailureMetricCaptured = false;
+
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
+            PayoutEntity::CHANNEL => Channel::RBL,
+            'error_message'       => "",
+        ]);
+
+        $mozartSuccess = false;
+
+        $this->mockMozartFetchGatewayBalance(150000, $mozartSuccess);
+
+        $ftsSuccess = false;
+
+        $ftsMock = $this->mockFTSFetchMode(PayoutMode::IMPS, $ftsSuccess);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $ftsTransferSuccess = false;
+
+        $ftsMock->shouldReceive('createAndSendRequest')
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
+
+                    self::assertEquals('/transfer', $endpoint);
+                    self::assertEquals('POST', $method);
+
+                    self::assertEquals('payout', $input[FTSConstants::PRODUCT]);
+                    self::assertEquals('rbl', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_CHANNEL]);
+                    self::assertEquals('IMPS', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_MODE]);
+                    self::assertEquals($this->directBankingAccount->getFtsFundAccountId(),
+                                       $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_SOURCE_ACCOUNT_ID]);
+
+                    $ftsTransferSuccess = true;
+
+                    return [
+                        FTSConstants::BODY => [
+                            FTSConstants::STATUS           => FTSConstants::STATUS_CREATED,
+                            FTSConstants::MESSAGE          => 'fund transfer sent to fts.',
+                            FTSConstants::FUND_TRANSFER_ID => random_integer(2),
+                            FTSConstants::FUND_ACCOUNT_ID  => random_integer(2),
+                        ]
+                    ];
+                })->once();
+
+        $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
+            Details\Entity::GATEWAY_BALANCE           => 200000,
+            Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            Details\Entity::BALANCE_LAST_FETCHED_AT   => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $destinationDirectBalance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'account_number' => '909001996618',
+        ]);
+
+        $destinationBasDetails = $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                        => 'xbas0000000003',
+            Details\Entity::MERCHANT_ID               => $destinationDirectBalance->getMerchantId(),
+            Details\Entity::BALANCE_ID                => $destinationDirectBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER            => $destinationDirectBalance->getAccountNumber(),
+            Details\Entity::CHANNEL                   => Details\Channel::YESBANK,
+            Details\Entity::STATUS                    => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE           => 15000000,
+            Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            Details\Entity::BALANCE_LAST_FETCHED_AT   => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $queueParams = $this->getFundManagementPayoutCheckQueueParams(
+            [
+                PayoutConstants::DESTINATION_TYPE       => AccountType::DIRECT,
+                PayoutConstants::DESTINATION_CHANNEL    => Channel::YESBANK,
+                PayoutConstants::TOTAL_AMOUNT_THRESHOLD => 19000000
+            ]);
+
+        $fmpInputs = [
+            [
+                PayoutEntity::AMOUNT       => 4500000,
+                PayoutEntity::STATUS       => PayoutStatus::PROCESSED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->clone()->subMinutes(10)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(9)->getTimestamp(),
+                PayoutEntity::PROCESSED_AT => Carbon::now(Timezone::IST)->clone()->subMinutes(4)->getTimestamp(),
+            ],
+            // Even though considered, it's not included in the calculation of the offset amount
+            [
+                PayoutEntity::AMOUNT       => 2000000,
+                PayoutEntity::STATUS       => PayoutStatus::REVERSED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(120)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->subMinutes(119)->getTimestamp(),
+                PayoutEntity::PROCESSED_AT => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
+                PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
+            ],
+            [
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+            ],
+            [
+                PayoutEntity::AMOUNT       => 1000000,
+                PayoutEntity::STATUS       => PayoutStatus::INITIATED,
+                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+            ],
+        ];
+
+        $this->createFundManagementPayouts($fmpInputs);
+
+        $this->mockWebhookPayoutEvent('payout.initiated', [PayoutEntity::AMOUNT => 9500000]);
+
+        $this->fixtures->edit('merchant', $this->basDetails->getMerchantId(), [
+            'name'          => 'test_merchant$%%sample@@',
+            'billing_label' => null,
+        ]);
+
+        $initialFeeRecoveryCount = count($this->getDbEntities('fee_recovery'));
+
+        $initialPayoutCount = count($this->getDbEntities('payout'));
+
+        Queue::except(FundManagementPayoutInitiate::class);
+
+        (new FundManagementPayoutCheck(Mode::TEST, $queueParams))->handle();
+
+        $finalPayoutCount = count($this->getDbEntities('payout'));
+
+        $finalFeeRecoveryCount = count($this->getDbEntities('fee_recovery'));
+
+        $basDetails = $this->basDetails->reload();
+
+        // Gateway balance was fetched from bank and bas_details was updated
+        $this->assertEquals(15000000, $basDetails->getGatewayBalance());
+        $this->assertNotEquals($basDetails->getGatewayBalanceChangeAt(), Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp());
+
+        // Asserting that 1 FMP got created
+        $this->assertEquals(1, $finalPayoutCount - $initialPayoutCount);
+
+        // Asserting that Fee Recovery Entity got created
+        $this->assertEquals(1, $finalFeeRecoveryCount - $initialFeeRecoveryCount);
+
+        $this->assertFalse((bool) $boolJobFailureMetricCaptured);
+        $this->assertTrue((bool) $ftsTransferSuccess);
+        $this->assertTrue((bool) $mozartSuccess);
+        $this->assertTrue((bool) $ftsSuccess);
+
+        // Assert that free payout has been consumed when payout is in initiated state
+        $this->directCounter->reload();
+        $this->assertEquals(1, $this->directCounter->getFreePayoutsConsumed());
+
+        $fundManagementPayout = $this->getDBLastEntity('payout');
+
+        $expectedPayoutAttributes = [
+            PayoutEntity::AMOUNT          => 9500000,
+            PayoutEntity::STATUS          => PayoutStatus::INITIATED,
+            PayoutEntity::PURPOSE         => Purpose::RZP_FUND_MANAGEMENT,
+            PayoutEntity::PURPOSE_TYPE    => Attempt\Purpose::RZP_FUND_MANAGEMENT,
+            PayoutEntity::MERCHANT_ID     => $this->basDetails->getMerchantId(),
+            PayoutEntity::CHANNEL         => Channel::RBL,
+            PayoutEntity::MODE            => PayoutMode::IMPS,
+            PayoutEntity::NARRATION       => Purpose::RZP_FUND_MANAGEMENT,
+            PayoutEntity::FEES            => 0,
+            PayoutEntity::TAX             => 0,
+            PayoutEntity::FEE_TYPE        => PayoutEntity::FREE_PAYOUT,
+            PayoutEntity::PRICING_RULE_ID => 'Bbg7cl6t6I3XB0',
+        ];
+
+        $this->assertEquals('testmerchantsample', $fundManagementPayout->fundAccount->source->getName());
+        $this->assertEquals($destinationBasDetails->getAccountNumber(),
+                            $fundManagementPayout->fundAccount->account->getAccountNumber());
+
+        $this->assertArraySubset($expectedPayoutAttributes, $fundManagementPayout->toArray());
+
+        Carbon::setTestNow();
+    }
+
     // Tests for FundManagementPayoutInitiate Queue
 
     /**
@@ -2091,6 +2530,95 @@ class FundManagementPayoutTest extends TestCase
         ]);
 
         $queueParams = $this->getFundManagementPayoutInitiateQueueParams(['bank_account_name' => 'razorpay']);
+
+        $initialPayoutCount = count($this->getDbEntities('payout'));
+
+        (new FundManagementPayoutInitiate(Mode::TEST, $queueParams))->handle();
+
+        $finalPayoutCount = count($this->getDbEntities('payout'));
+
+        // Asserting that no FMP got created
+        $this->assertEquals(0, $finalPayoutCount - $initialPayoutCount);
+
+        $this->assertTrue((bool) $boolJobFailureMetricCaptured);
+        $this->assertFalse((bool) $ftsTransferSuccess);
+    }
+
+    /**
+     * CA to CA Fund Loading
+     * fund management payout creation fail due to wrong bank account details (No Destination Bas Detail found)
+     */
+    public function testFundManagementPayoutInitiate_FundLoadingToDirect_FmpCreationFailureDueToWrongBankAccountDetails()
+    {
+        Queue::fake();
+
+        $boolJobFailureMetricCaptured = false;
+
+        $this->mockCountMetric(
+            PayoutMetric::FUND_MANAGEMENT_PAYOUT_INITIATE_JOB_FAILURES_COUNT,
+            $boolJobFailureMetricCaptured, [
+                PayoutEntity::CHANNEL => Channel::RBL,
+            ]);
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $ftsTransferSuccess = false;
+
+        $ftsMock->shouldReceive('createAndSendRequest')
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
+
+                    self::assertEquals('/transfer', $endpoint);
+                    self::assertEquals('POST', $method);
+
+                    self::assertEquals('payout', $input[FTSConstants::PRODUCT]);
+                    self::assertEquals('rbl', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_CHANNEL]);
+                    self::assertEquals('IMPS', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_MODE]);
+                    self::assertEquals($this->directBankingAccount->getFtsFundAccountId(),
+                                       $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_SOURCE_ACCOUNT_ID]);
+
+                    $ftsTransferSuccess = true;
+
+                    return [
+                        FTSConstants::BODY => [
+                            FTSConstants::STATUS           => FTSConstants::STATUS_CREATED,
+                            FTSConstants::MESSAGE          => 'fund transfer sent to fts.',
+                            FTSConstants::FUND_TRANSFER_ID => random_integer(2),
+                            FTSConstants::FUND_ACCOUNT_ID  => random_integer(2),
+                        ]
+                    ];
+                })->times(0);
+
+        $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
+            Details\Entity::GATEWAY_BALANCE           => 200000,
+            Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            Details\Entity::BALANCE_LAST_FETCHED_AT   => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $destinationDirectBalance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'account_number' => '909001996618',
+        ]);
+
+        $destinationBasDetails = $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                        => 'xbas0000000003',
+            Details\Entity::MERCHANT_ID               => $destinationDirectBalance->getMerchantId(),
+            Details\Entity::BALANCE_ID                => $destinationDirectBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER            => $destinationDirectBalance->getAccountNumber(),
+            Details\Entity::CHANNEL                   => Details\Channel::YESBANK,
+            Details\Entity::STATUS                    => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE           => 15000000,
+            Details\Entity::GATEWAY_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            Details\Entity::BALANCE_LAST_FETCHED_AT   => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $queueParams = $this->getFundManagementPayoutInitiateQueueParams(['bank_account_number' => '909001996519']);
 
         $initialPayoutCount = count($this->getDbEntities('payout'));
 
@@ -3016,6 +3544,161 @@ class FundManagementPayoutTest extends TestCase
 
         $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
     }
+
+    public function testFundManagementPayoutConfig_SetConfig_UpdateExistingWithDestinationType()
+    {
+        $token = $this->getAdminToken();
+
+        $this->ba->adminAuth('live', $token);
+
+        $redis = $this->app['redis'];
+
+        $testBalanceConfigOld = [
+            'payload' => [
+                'channel'                     => 'rbl',
+                'neft_threshold'              => 500000,
+                'lite_balance_threshold'      => 3000000,
+                'lite_deficit_allowed'        => 5,
+                'fmp_consideration_threshold' => 14400,
+                'total_amount_threshold'      => 200000,
+                'destination_type'            => 'direct',
+                'destination_channel'         => 'yesbank',
+            ],
+        ];
+
+        $testBalanceConfigNew = $this->testData['testFundManagementPayoutConfig_SetConfig_UpdateExisting']['request']['content'];
+
+        $merchantId = '10000000000000';
+
+        $this->setFundManagementPayoutBalanceConfig($merchantId, $testBalanceConfigOld);
+
+        $this->startTest($this->testData['testFundManagementPayoutConfig_SetConfig_UpdateExisting']);
+
+        $actualConfig = $this->getFundManagementPayoutBalanceConfig($merchantId);
+        $this->assertNotNull($actualConfig, 'The returned redis config is null');
+
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::CHANNEL], $actualConfig[PayoutConstants::CHANNEL]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::NEFT_THRESHOLD], $actualConfig[PayoutConstants::NEFT_THRESHOLD]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::LITE_BALANCE_THRESHOLD], $actualConfig[PayoutConstants::LITE_BALANCE_THRESHOLD]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::FMP_CONSIDERATION_THRESHOLD], $actualConfig[PayoutConstants::FMP_CONSIDERATION_THRESHOLD]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::TOTAL_AMOUNT_THRESHOLD], $actualConfig[PayoutConstants::TOTAL_AMOUNT_THRESHOLD]);
+
+        $this->assertArrayNotHasKey(PayoutConstants::DESTINATION_TYPE, $actualConfig);
+        $this->assertArrayNotHasKey(PayoutConstants::DESTINATION_CHANNEL, $actualConfig);
+
+        $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+    }
+
+    public function testFundManagementPayoutConfig_SetConfigForFundLoadingForDirectAccount_UpdateExisting()
+    {
+        $token = $this->getAdminToken();
+
+        $this->ba->adminAuth('live', $token);
+
+        $redis = $this->app['redis'];
+
+        $testBalanceConfigOld = [
+            'payload' => [
+                'channel'                     => 'rbl',
+                'neft_threshold'              => 500000,
+                'lite_balance_threshold'      => 3000000,
+                'lite_deficit_allowed'        => 5,
+                'fmp_consideration_threshold' => 14400,
+                'total_amount_threshold'      => 200000,
+            ],
+        ];
+
+        $testData = $this->testData['testFundManagementPayoutConfig_SetConfig_UpdateExisting'];
+
+        $testData['request']['content'] += [
+            'destination_type'    => 'direct',
+            'destination_channel' => 'yesbank',
+        ];
+
+        $testBalanceConfigNew = $testData['request']['content'];
+
+        $merchantId = '10000000000000';
+
+        $this->setFundManagementPayoutBalanceConfig($merchantId, $testBalanceConfigOld);
+
+        $this->startTest($testData);
+
+        $actualConfig = $this->getFundManagementPayoutBalanceConfig($merchantId);
+        $this->assertNotNull($actualConfig, 'The returned redis config is null');
+
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::CHANNEL], $actualConfig[PayoutConstants::CHANNEL]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::NEFT_THRESHOLD], $actualConfig[PayoutConstants::NEFT_THRESHOLD]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::LITE_BALANCE_THRESHOLD], $actualConfig[PayoutConstants::LITE_BALANCE_THRESHOLD]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::FMP_CONSIDERATION_THRESHOLD], $actualConfig[PayoutConstants::FMP_CONSIDERATION_THRESHOLD]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::TOTAL_AMOUNT_THRESHOLD], $actualConfig[PayoutConstants::TOTAL_AMOUNT_THRESHOLD]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::DESTINATION_CHANNEL], $actualConfig[PayoutConstants::DESTINATION_CHANNEL]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::DESTINATION_TYPE], $actualConfig[PayoutConstants::DESTINATION_TYPE]);
+
+        $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+    }
+
+    public function testFundManagementPayoutConfig_SetConfigForFundLoadingForDirectAccount_DestinationAndSourceChannelValidationError()
+    {
+        $token = $this->getAdminToken();
+
+        $this->ba->adminAuth('live', $token);
+
+        $redis = $this->app['redis'];
+
+        $testBalanceConfigOld = [
+            'payload' => [
+                'channel'                     => 'rbl',
+                'neft_threshold'              => 500000,
+                'lite_balance_threshold'      => 3000000,
+                'lite_deficit_allowed'        => 5,
+                'fmp_consideration_threshold' => 14400,
+                'total_amount_threshold'      => 200000,
+            ],
+        ];
+
+        $merchantId = '10000000000000';
+
+        $this->setFundManagementPayoutBalanceConfig($merchantId, $testBalanceConfigOld);
+
+        $this->startTest();
+
+        $actualConfig = $this->getFundManagementPayoutBalanceConfig($merchantId);
+        $this->assertNotNull($actualConfig, 'The returned redis config is null');
+
+        $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+    }
+
+    public function testFundManagementPayoutConfig_SetConfigForFundLoadingForDirectAccount_LiteValidationError()
+    {
+        $token = $this->getAdminToken();
+
+        $this->ba->adminAuth('live', $token);
+
+        $redis = $this->app['redis'];
+
+        $testBalanceConfigOld = [
+            'payload' => [
+                'channel'                     => 'rbl',
+                'neft_threshold'              => 500000,
+                'lite_balance_threshold'      => 3000000,
+                'lite_deficit_allowed'        => 5,
+                'fmp_consideration_threshold' => 14400,
+                'total_amount_threshold'      => 200000,
+            ],
+        ];
+
+        $merchantId = '10000000000000';
+
+        $this->setFundManagementPayoutBalanceConfig($merchantId, $testBalanceConfigOld);
+
+        $this->startTest();
+
+        $actualConfig = $this->getFundManagementPayoutBalanceConfig($merchantId);
+        $this->assertNotNull($actualConfig, 'The returned redis config is null');
+
+        $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+    }
+
 
     public function testFundManagementPayoutConfig_GetConfig()
     {
