@@ -164,11 +164,11 @@ abstract class BaseProxyController extends Controller
         {
             $actorDetails = (new Base\Core())->getActorDetails();
 
-            foreach ($actorDetails as $actorDetail)
+            foreach ($actorDetails as $key => $actorDetail)
             {
-                $headerKey = convert_to_header_format($actorDetail);
+                $headerKey = convert_to_header_format($key);
 
-                $actorDetailHeaders[] = $headerKey;
+                $actorDetailHeaders[$headerKey] = $actorDetail;
             }
 
             $this->trace->info(TraceCode::PGOS_APPEND_ACTOR_DETAIL_HEADERS, $actorDetails);

@@ -898,6 +898,12 @@ return [
                         'pos' => [
                             'activation_status' => "NA",
                             'success'           => false,
+                            'last_kyc_performed_by' => [
+                                'contact_email' => 'kmk@rzp.com',
+                                'name'          => 'name',
+                                'id'            => '10000000000010',
+                                'type'          => 'owner',
+                            ]
                         ]
                     ]
                 ],

@@ -103,6 +103,8 @@ class PartnershipsService extends Base\Service
 
     const GET_MASKED_DATA = '/twirp/rzp.partnerships.masking.v1.MaskingAPI/MaskSensitiveData';
 
+    const GET_LAST_EVENT_AUDITS = "/twirp/rzp.partnerships.eventauditlogs.v1.EventAuditLogsAPI/FetchLastEventAudits";
+
     const ACTIVATED = 'ACTIVATED';
 
     const LOCALSTACK_ENVIRONMENTS = [Environment::BETA];
@@ -266,6 +268,11 @@ class PartnershipsService extends Base\Service
     public function createPartnerMigrationAudit($parameters)
     {
         return $this->sendRequest($parameters, self::CREATE_PARNTER_MIGRATION_AUDIT, Requests::POST);
+    }
+
+    public function getLastEventAudits($parameters)
+    {
+        return $this->sendRequestWithRetry($parameters, self::GET_LAST_EVENT_AUDITS, Requests::POST);
     }
 
     public function getLastPartnerMigration($parameters)

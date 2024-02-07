@@ -5900,6 +5900,16 @@ class Core extends Base\Core
 
         $subMPOSDetails = $detailCore->bulkFetchMerchantPosActivationStatus($subMIdList);
 
+        $kycFormUpdateAuditResponse = $this->app->partnerships->getLastEventAudits([
+            'entity_ids'  => $subMIdList,
+            'entity_type' => 'merchant',
+            'event_type'  => 'kyc_form_save',
+        ]);
+
+        $kycFormUpdateAudits = $kycFormUpdateAuditResponse['audits'];
+
+        $kycFormUpdaters = collect($kycFormUpdateAudits)->groupBy('entity_id')->toArray();
+
         $subMPOSActivationMap = [];
 
         if ($subMPOSDetails['success'] && empty($subMPOSDetails['pos_activation_status']) === false)
@@ -5914,15 +5924,49 @@ class Core extends Base\Core
              * Graceful handling of this should be taken care by FE.
              * "NA" - would mean that the subM is onboarded to POS but he is not eligible for POS as of now due to POS experiment ramp based on cities
              */
-            $success = $subMPOSDetails['success'];
-            $status  = $subMPOSActivationMap[$submerchant['id']] ?? "NA";
+
+            $lastKycPerformedBy = $this->getLastKycPerformedBy($kycFormUpdaters, $submerchant['id']);
+
+            $status  = 'NA';
+
+            if(array_key_exists($submerchant['id'], $subMPOSActivationMap) === true)
+            {
+                $status = $subMPOSActivationMap[$submerchant['id']];
+            }
+
             $submerchant->setAttribute('pos', [
-                'success'           => $success,
-                'activation_status' => $status
+                'success'               => $subMPOSDetails['success'] ?? false,
+                'activation_status'     => $status,
+                'last_kyc_performed_by' => $lastKycPerformedBy,
             ]);
         }
 
         return $submerchants;
+    }
+
+    private function getLastKycPerformedBy(array $kycPerformedByDetails, string $merchantId): array
+    {
+        $lastKycPerformedBy = [
+            'contact_email' => '',
+            'name'          => '',
+            'id'            => '',
+            'type'          => '',
+        ];
+
+        if(isset($kycPerformedByDetails[$merchantId][0]['metadata']))
+        {
+            $metadata = $kycPerformedByDetails[$merchantId][0]['metadata'];
+
+            $lastKycPerformedBy['contact_email']= $metadata['actor_email'] ?? '';
+
+            $lastKycPerformedBy['name']= $metadata['actor_name'] ?? '';
+
+            $lastKycPerformedBy['id']= $metadata['actor_id'] ?? '';
+
+            $lastKycPerformedBy['type']= $metadata['actor_type'] ?? '';
+        }
+
+        return $lastKycPerformedBy;
     }
 
 

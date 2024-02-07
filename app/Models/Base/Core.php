@@ -265,11 +265,11 @@ class Core
         }
 
         return [
-            'actor_id'      => $userId,
-            'actor_email'   => $userEmail,
-            'actor_type'    => $userType,
-            'actor_name'    => $userName,
-            'actor_role'    => $userRole,
+            'actor_id'          => $userId,
+            'actor_email'       => $userEmail,
+            'actor_type'        => $userType,
+            'actor_name'        => $userName,
+            'actor_role'        => $userRole,
         ];
     }
 
