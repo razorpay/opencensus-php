@@ -11,13 +11,6 @@ class Events
 {
     const NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     = 'NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE';
     const NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE = 'NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE';
-
-    const PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE = 'PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE';
-
-    const PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE = 'PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE';
-
-    const PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE  = 'PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE';
-
     const NC_COUNT_1_PAYMENTS_NOT_LIVE                  = 'NC_COUNT_1_PAYMENTS_NOT_LIVE';
     const NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     = 'NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE';
     const NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE = 'NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE';
@@ -33,6 +26,13 @@ class Events
     const NC_COUNT_1_ONBOARDING_PAUSE_REMINDER = 'NC_COUNT_1_ONBOARDING_PAUSE_REMINDER';
     const NC_COUNT_2_ONBOARDING_PAUSE_REMINDER = 'NC_COUNT_2_ONBOARDING_PAUSE_REMINDER';
 
+    const PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE = 'PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE';
+    const PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE = 'PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE';
+    const PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE  = 'PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE';
+    const PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE = 'PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE';
+    const PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE = 'PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE';
+    const PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE = 'PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE';
+    const PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE  = 'PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE';
 
     const PARTNER_EVENTS_PREFIX             = 'PARTNER_';
     const PARTNER_SUBMERCHANT_EVENTS_PREFIX = 'PARTNER_SUBMERCHANT_';
@@ -157,6 +157,11 @@ class Events
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'sms.onboarding.partner_submerchant_registered_settlements',
         self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'sms.onboarding.partner_submerchant_registered_settlements',
 
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'Sms.Partner.Submerchant.Pos.Needs_clarification',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'Sms.Partner.Submerchant.Pos.Needs_clarification',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE                  => 'Sms.Partner.Submerchant.Pos.Needs_clarification',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE                   => 'Sms.Partner.Submerchant.Pos.Needs_clarification',
+
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'sms.onboarding.in_person_under_review_with_device',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'sms.onboarding.in_person_under_review',
         self::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE          => 'sms.onboarding.in_person_activated',
@@ -193,6 +198,11 @@ class Events
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
+
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'send_partner_submerchant_needs_clarification_communications',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'send_partner_submerchant_needs_clarification_communications',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE                  => 'send_partner_submerchant_needs_clarification_communications',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE                   => 'send_partner_submerchant_needs_clarification_communications',
     ];
 
     const SMS_TEMPLATES_RAZORX_EXPERIMENTS = [
@@ -502,6 +512,11 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => 'partner.submerchant.onboarding.nc_count_payments_live_settlements_live',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => 'partner.submerchant.onboarding.nc_count_payments_not_live',
 
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'partner.submerchant.onboarding.pos.nc_count_1_payments_live_settlements_live',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'partner.submerchant.onboarding.pos.nc_count_1_payments_live_settlements_not_live',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE                  => 'partner.submerchant.onboarding.pos.nc_count_1_payments_not_live',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE                   => 'partner.submerchant.onboarding.pos.nc_count_1_onboarding_pause',
+
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'emails.merchant.onboarding.in_person_under_review_with_device',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'emails.merchant.onboarding.in_person_under_review_without_device',
         self::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE          => 'emails.merchant.onboarding.in_person_activated',
@@ -575,6 +590,11 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => '[Action required] Few more details required to complete your client {id} verification.',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => '[Action required] Few more details required to complete your client {id} verification.',
 
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => '[IMP] Complete KYC verification for your Client {merchantName} with MID {id}',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => '[IMP] Complete KYC verification for your Client {merchantName} with MID {id}',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE                  => '[IMP] Complete KYC verification for your Client {merchantName} with MID {id}',
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE                   => '[IMP] Complete KYC verification for your Client {merchantName} with MID {id}',
+
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'Your POS device order has been confirmed | Razorpay POS',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'Important KYC Update for Your Razorpay POS Application',
         self::IN_PERSON_MERCHANT_ACTIVATED_WITH_DEVICE          => 'Good News! : Your Razorpay POS Order has been approved! Delivery in few days',
@@ -627,6 +647,10 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE,
         self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE,
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE,
-        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION,
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE,
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE,
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE,
+        self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE,
     ];
 }

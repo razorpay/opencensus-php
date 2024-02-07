@@ -91,6 +91,11 @@ class Handler extends BaseHandler
         Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE => [Channel::EMAIL, Channel::WHATSAPP],
         Events::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE              => [Channel::EMAIL, Channel::WHATSAPP],
 
+        Events::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE       => [Channel::EMAIL, Channel::SMS],
+        Events::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE   => [Channel::EMAIL, Channel::SMS],
+        Events::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE                    => [Channel::EMAIL, Channel::SMS],
+        Events::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE                     => [Channel::EMAIL, Channel::SMS],
+
         // in person events
         Events::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE     => [Channel::EMAIL],
         Events::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE  => [Channel::EMAIL],
@@ -284,6 +289,40 @@ class Handler extends BaseHandler
         return $events;
     }
 
+    private function getNCCommunicationEventForPOSPartner(Entity $merchant): array
+    {
+        $events = [];
+
+        if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === false)
+        {
+            $events[] = Events::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE;
+        }
+        else
+        {
+            if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === true)
+            {
+                $events[] = Events::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE;
+            }
+            else
+            {
+                if ($merchant->isActivated() === false)
+                {
+                    if ((new DetailCore())->blockMerchantActivations($merchant) === false)
+                    {
+                        $events[] = Events::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_PAYMENTS_NOT_LIVE;
+                    }
+                    else
+                    {
+                        // merchant new communications while onboarding is paused
+                        $events[] = Events::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE;
+                    }
+                }
+            }
+        }
+
+        return $events;
+    }
+
     private function getInPersonNCCommunicationEvent(Entity $merchant, Bool $isDeviceOrdered): array
     {
         $events = [];
@@ -308,6 +347,9 @@ class Handler extends BaseHandler
             {
                 $events[] = ($ncCount <= 1) ? Events::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE : Events::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE;
             }
+
+            $posPartnerEvents = $this->getNCCommunicationEventForPOSPartner($merchant);
+            $events = array_merge($events, $posPartnerEvents);
         }
         else
         {
