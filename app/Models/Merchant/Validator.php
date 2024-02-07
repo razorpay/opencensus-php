@@ -159,7 +159,7 @@ class Validator extends Base\Validator
         Entity::HOLD_FUNDS                            => 'sometimes|in:0,1',
         Entity::WEBSITE                               => 'sometimes|url|max:255|nullable',
         Entity::CATEGORY                              => 'sometimes|string|digits:4',
-        Entity::CATEGORY2                             => 'sometimes|string|max:30|custom',
+        Entity::CATEGORY2                             => 'sometimes|string|max:255|custom',
         Entity::BILLING_LABEL                         => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL              => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED                 => 'sometimes|boolean',
