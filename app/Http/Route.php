@@ -19301,8 +19301,8 @@ class Route
             TraceCode::HEADER_LOGGER_FOR_PARITY,
             [
                 'host' => $request->header('Host'),
-                'x_forwarded_host' => $request->header('X-Forwarded-Host'),
-                'headers_match' => $request->header('Host') === $request->header('X-Forwarded-Host'),
+                'new_host' => $request->getHost(),
+                'headers_match' => $request->header('Host') === $request->getHost(),
             ]
         );
 
