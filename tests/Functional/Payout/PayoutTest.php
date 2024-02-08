@@ -9,6 +9,7 @@ use Queue;
 use Redis;
 use Config;
 use Mockery;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Jobs\EsSync;
 use RZP\Services\Mock\Stork;
 use \WpOrg\Requests\Response;
@@ -63,7 +64,6 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Services\FTS\FundTransfer;
 use RZP\Models\Settlement\Channel;
-use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\OnHoldPayoutsProcess;
 use RZP\Tests\Traits\TestsMetrics;
@@ -23463,6 +23463,65 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('payout reversed at bank', $updatePayout1['failure_reason']);
 
         $this->assertEquals('payout reversed at bank', $updatePayout2['failure_reason']);
+    }
+
+
+    public function testUpdatePayoutStatusToReversedManuallyInBatchFTANotUpdatedNoError()
+    {
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $repoMock = Mockery::mock('\RZP\Models\FundTransfer\Attempt\Repository', [$this->app])->makePartial();
+
+        $this->app->instance('repo', $repoMock);
+
+        $this->testCreatePayout();
+
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+            [
+                'source_id'   => $payout1->getId(),
+                'source_type' => 'payout',
+                'is_fts'      => true,
+            ])->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $request = [
+            'url'     => '/payouts/manual/status_update/batch',
+            'method'  => 'PATCH',
+            'content' => [
+                'payout_ids'          => [$payout1['id']],
+                'status'              => 'reversed',
+                'failure_reason'      => 'payout reversed at bank',
+                'fts_fund_account_id' => '12345',
+                'fts_account_type'    => 'CURRENT',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $repoMock
+            ->shouldReceive('saveOrFail')
+            ->andThrow(
+                new \RZP\Exception\DbQueryException([ErrorCode::SERVER_ERROR_DB_QUERY_FAILED])
+            );
+
+        $updatePayout1 = $this->getDbEntityById('payout', $payout1['id']);
+
+        $this->assertEquals('reversed', $updatePayout1['status']);
+
+        $this->assertEquals('payout reversed at bank', $updatePayout1['failure_reason']);
     }
 
     public function testCreatePayoutToCardsNotAllowed()

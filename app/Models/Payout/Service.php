@@ -4307,16 +4307,10 @@ class Service extends Base\Service
     {
         $oldStatus = $payout->getStatus();
 
-        $payout = $this->repo->transaction(
-            function() use ($payout, $input)
-            {
-                /** @var Entity $payout */
-                $payout = $this->core->updatePayoutStatusManually($payout, $input);
+        /** @var Entity $payout */
+        $payout = $this->core->updatePayoutStatusManually($payout, $input);
 
-                $this->core->updateFTAOfPayoutManually($payout, $input);
-
-                return $payout;
-            });
+        $this->core->updateFTAOfPayoutManually($payout, $input);
 
         $this->core->processTdsForPayout($payout, $oldStatus);
 
