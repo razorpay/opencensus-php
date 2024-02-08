@@ -1420,8 +1420,9 @@ class UserRolesScope
 
             'merchant_vkyc_submit'                                 =>   [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'merchant_edd_details_fetch'                           =>   Role::ALL_ROLES,
-
             'rize_marketplace_dashboard'                           => [Role::OWNER, Role::ADMIN],
+            'merchant_fetch_customer_eligibility'                  =>   Role::ALL_ROLES,
+
         ];
 
         /*

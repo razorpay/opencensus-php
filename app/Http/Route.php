@@ -1964,6 +1964,7 @@ class Route
         'workflow_observer_data_update'            => ['put',      'workflows/{id}/observer_data',                   'WorkflowController@updateWorkflowObserverData'                     ],
         'workflow_observer_data_fetch'             => ['get',      'workflows/{id}/observer_data',                   'WorkflowController@getWorkflowObserverData'                        ],
         'workflow_needs_merchant_clarification'    => ['put',      'merchant/{workflowId}/need_clarification',       'WorkflowController@postNeedClarificationOnWorkflow'                ],
+        'merchant_fetch_customer_eligibility'      => ['post',     'merchant/customers/eligibility',                 'EligibilityController@fetchPublicCustomerEligibility'              ],
 
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -6610,6 +6611,7 @@ class Route
     //
 
     public static $proxy = [
+        'merchant_fetch_customer_eligibility',
         'merchant_vkyc_submit',
         'merchant_edd_details_fetch',
         'pgos_send_sms_otp',
@@ -11701,6 +11703,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_fetch_customer_eligibility',
             'merchant_vkyc_submit',
             'merchant_edd_details_fetch',
             'pgos_send_sms_otp',
