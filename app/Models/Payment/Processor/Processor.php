@@ -1133,8 +1133,9 @@ class Processor
                         'reason' => "payment_link_v2",
                         'merchant_id' => $merchant->getId(),
                     ]);
-
-                    return ($result === 'on');
+                    if ($result != 'on') {
+                        return false;
+                    }
                 }
 
                 if (empty($order) === false and ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or
