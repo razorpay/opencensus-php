@@ -51,6 +51,8 @@ class Core extends Base\Core
         '7E6oragoxHFlvV',  //Go Noise
     ];
 
+    const borosilPropertyOrder = ['placement', 'name', 'font', 'customise-charge', 'image'];
+
     const MAX_LENGTH = 8;
 
     const SHOPIFY_ORDER_PLACED_CACHE_KEY = '1cc:shopify_order_placed';
@@ -1594,6 +1596,16 @@ class Core extends Base\Core
                 ]);
         }
 
+        if($this->merchant->getId() === 'FKy5dLolXQNAn8')
+        {
+            array_push($noteAttributes,
+            [
+                'name'  => 'alternate_phone',
+                'value' => trim($rzpOrder['customer_details']['contact'], '+91')
+            ]);
+
+        }
+
         $body['note_attributes'] = $noteAttributes;
 
         // We override the subtotal price to account for the Re 1 payment in case of 100% discount coupons
@@ -2289,6 +2301,18 @@ class Core extends Base\Core
 
             foreach ($items as $item)
             {
+                // Borosil customisation for adding notes
+                if($this->merchant->getId() === 'FKy5dLolXQNAn8')
+                {
+                    if(str_contains(strtolower($item['node']['title']), 'personalise'))
+                    {
+                        array_push($order['note_attributes'],
+                        [
+                            'name'  => 'order_type',
+                            'value' => 'personalise'
+                        ]);
+                    }
+                }
 
                 $attributes = $item['node']['customAttributes'];
 
@@ -2298,12 +2322,16 @@ class Core extends Base\Core
                 {
                     foreach ($attributes as $attribute)
                     {
-                        $properties[] = [
+                        $property = [
                             'name'  => $attribute['key'],
                             'value' => $attribute['value']
                         ];
+                        $properties[] = $property;
+                        $propertyMap[strtolower($attribute['key'])] = $property;
                     }
                 }
+
+                $properties = $this->sortPropertyIfApplicable($properties, $propertyMap);
 
                 $lineItems[] = [
                     'variant_id' => str_replace(Constants::GID_PRODUCT_VARIANT, '', $item['node']['variant']['id']),
@@ -2316,6 +2344,37 @@ class Core extends Base\Core
         }
 
         return $order;
+    }
+
+    protected function sortPropertyIfApplicable($properties, $propertyMap)
+    {
+        if($this->merchant->getId() !== 'FKy5dLolXQNAn8')
+        {
+            return $properties;
+        }
+
+        $sortedProperty = [];
+
+        foreach(self::borosilPropertyOrder as $index => $propertyName)
+        {
+            if(isset($propertyMap[$propertyName]))
+            {
+                $sortedProperty[] = $propertyMap[$propertyName];
+            }
+        }
+
+        $intersect = array_udiff($properties, $sortedProperty, 'arr_udiffFunction');
+
+        return array_merge($sortedProperty, $intersect);
+    }
+
+    protected function arr_udiffFunction($properties, $sortedProperty)
+    {
+        if ($properties === $sortedProperty)
+        {
+            return 0;
+        }
+        return ($properties > $sortedProperty) ? 1 : -1;
     }
 
     public function getOrderFromCache(string $cartToken, string $browserUuid)
