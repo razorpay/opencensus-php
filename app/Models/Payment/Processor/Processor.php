@@ -1752,9 +1752,18 @@ class Processor
 
         if (empty($tokenisedTerminal) === false)
         {
-            switch ($cardInput[E::NETWORK_CODE])
+            $network = '';
+
+            if(isset($cardInput[E::NETWORK_CODE]) === true){
+                $network = strtoupper($cardInput[E::NETWORK_CODE]);
+            } else if(isset($tokenisedTerminal['provider_name']) === true){
+                $network = strtoupper($tokenisedTerminal['provider_name']);
+            }
+
+            switch ($network)
             {
                 case Card\Network::MC:
+                case Card\Network::MASTERCARD:
                     $trid = $tokenisedTerminal[E::GATEWAY_MERCHANT_ID];
                     break;
 

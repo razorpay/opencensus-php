@@ -19,6 +19,7 @@ class Network
     const UNP    = 'UNP';
     const VISA   = 'VISA';
     const BAJAJ  = 'BAJAJ';
+    const MASTERCARD = 'MASTERCARD';
 
     // Unidentified
     const UNKNOWN = 'UNKNOWN';
