@@ -2122,7 +2122,7 @@ class Repository extends Base\Repository
 
         $txnFetchStartTime      = microtime(true);
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                       ->where(Entity::MERCHANT_ID, $partner->getId())
                       ->where(Entity::BALANCE_ID, $commissionBalance->getId())
                       ->where(Entity::SETTLED_AT, '<=', $toTimestamp)
