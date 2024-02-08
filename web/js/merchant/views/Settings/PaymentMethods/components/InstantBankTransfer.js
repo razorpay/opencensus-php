@@ -1,13 +1,13 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
-import { useSplitzService } from 'common/splitz';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { setFormData, setFormError, setFormFetching } from 'merchant/reducers/apmForm/actions';
+import { videoKycBannerActions } from 'merchant/reducers/videoKYCBanner';
 import { DISABLE_REQUEST_TOOLTIP } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 import { REQUESTABLE, GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
 import { openModal } from 'merchant_common/reducers/modals';
@@ -48,15 +48,13 @@ const InstantBankTransfer = ({
   setFormFetching,
   setFormError,
   showNotification,
+  setInstantBankAccountsActivated,
+  showMorePaymentMethodsSection,
 }) => {
-  const isSubmitted = formData?.submitted === '1' || formData?.submitted === true;
+  const { submitted } = formData ?? {};
+  const isSubmitted = submitted === '1' || submitted === true;
 
-  const {
-    abExperiments: { disableInternationalPaymentMethods },
-  } = useSplitzService();
-
-  const isDisableInternationalPaymentMethods =
-    disableInternationalPaymentMethods.variables.result === 'on';
+  const isDisableInternationalPaymentMethods = showMorePaymentMethodsSection;
 
   const trackActivateClicked = (formSubmitted, containerButtonClicked, listButtonClicked) => {
     track({
@@ -129,7 +127,7 @@ const InstantBankTransfer = ({
     }
   };
 
-  const showRequestButton = () => {
+  const showRequestButton = useCallback(() => {
     let showButton = false;
     let someRequestable = false;
     if (isSubmitted && !isDisableInternationalPaymentMethods) {
@@ -143,7 +141,7 @@ const InstantBankTransfer = ({
       showButton = someRequestable;
     }
     return !isDisableInternationalPaymentMethods ? showButton : true;
-  };
+  }, [isSubmitted, leafList, isDisableInternationalPaymentMethods]);
 
   const showListAction = () => {
     let showAction = false;
@@ -163,6 +161,10 @@ const InstantBankTransfer = ({
     !formData.instruments && fetchApmForm();
   }, [formData]);
 
+  useEffect(() => {
+    setInstantBankAccountsActivated(!showRequestButton());
+  }, [setInstantBankAccountsActivated, showRequestButton]);
+
   return (
     <ErrorBoundary rank={Ranks.P1} team={Teams.CROSS_BORDER} resetOnProps>
       <div className="instant-bank-transfer">
@@ -181,14 +183,22 @@ const InstantBankTransfer = ({
   );
 };
 
-const mapStateToProps = (state) => ({
-  formData: state.apmForm.data,
-  isLoading: state.apmForm.isLoading,
+const mapStateToProps = ({ apmForm, unlockIntlPaymentMethods }) => ({
+  formData: apmForm.data,
+  isLoading: apmForm.isLoading,
+  showMorePaymentMethodsSection: unlockIntlPaymentMethods.showMorePaymentMethodsSection,
 });
 
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
-    { setFormFetching, setFormData, setFormError, openModal, showNotification },
+    {
+      setFormFetching,
+      setFormData,
+      setFormError,
+      openModal,
+      showNotification,
+      setInstantBankAccountsActivated: videoKycBannerActions.setInstantBankAccountsActivated,
+    },
     dispatch,
   );
 

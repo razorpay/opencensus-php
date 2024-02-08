@@ -1,5 +1,11 @@
 import { isInternationalLeafItemDisabled } from 'merchant/views/AccountAndSettings/PaymentMethods/utils';
 
+const moreinternationalmethodsTests = [
+  ['moreinternationalmethods', false, { international: true }, true],
+  ['moreinternationalmethods', true, { international: false }, true],
+  ['moreinternationalmethods', true, { international: true }, false],
+];
+
 describe('isInternationalLeafItemDisabled', () => {
   const USER = { international: true, isInternationalMethodsHidden: false };
 
@@ -42,7 +48,7 @@ describe('isInternationalLeafItemDisabled', () => {
     expect(result).toBe(false);
   });
 
-  test('should return false true if isInternationalMethodsHidden org feature flag is enabled', () => {
+  test('should return true if isInternationalMethodsHidden org feature flag is enabled', () => {
     const leafList = { slug: 'moneysaverexportaccount' };
     const user = { ...USER, isInternationalMethodsHidden: true };
 
@@ -50,4 +56,20 @@ describe('isInternationalLeafItemDisabled', () => {
 
     expect(result).toBe(true);
   });
+
+  test.each(moreinternationalmethodsTests)(
+    'should return %p when slug is %p, showMoreInternationalMethods is %p, and user is %p',
+    (slug, showMoreIntlMethods, user, expected) => {
+      const leafList = { slug };
+      const showMoreInternationalMethods = showMoreIntlMethods;
+
+      const result = isInternationalLeafItemDisabled({
+        leafList,
+        user,
+        showMoreInternationalMethods,
+      });
+
+      expect(result).toBe(expected);
+    },
+  );
 });

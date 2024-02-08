@@ -20,6 +20,7 @@ export const WORKFLOW_TYPES = {
   ADD_BUSINESS_WEBSITE: 'additional_website',
   UPDATE_GSTIN: 'gstin_update_self_serve',
   ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI: 'toggle_international_revamped',
+  INTERNATIONAL_PRODUCTS_PA_CB_ENABLEMENT: 'international_products_pa_cb_enablement',
 };
 
 /**

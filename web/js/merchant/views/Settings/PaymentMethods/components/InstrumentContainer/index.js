@@ -1,4 +1,4 @@
-import { Button, Tooltip } from '@razorpay/blade/components';
+import { Button, Tooltip, TooltipInteractiveWrapper } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
@@ -53,16 +53,18 @@ const InstrumentContainer = (props) => {
               <div className="request-cta">
                 {requestTooltipText ? (
                   <Tooltip content={requestTooltipText} position="top">
-                    <Button
-                      variant="primary"
-                      isLoading={isActivating}
-                      size="small"
-                      isFullWidth
-                      onClick={onRequest}
-                      isDisabled={isRequestButtonDisabled}
-                    >
-                      {buttonText}
-                    </Button>
+                    <TooltipInteractiveWrapper width="100%">
+                      <Button
+                        variant="primary"
+                        isLoading={isActivating}
+                        size="small"
+                        isFullWidth
+                        onClick={onRequest}
+                        isDisabled={isRequestButtonDisabled}
+                      >
+                        {buttonText}
+                      </Button>
+                    </TooltipInteractiveWrapper>
                   </Tooltip>
                 ) : (
                   <Button

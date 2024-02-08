@@ -6,6 +6,7 @@ import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { fetchB2bAccounts } from 'merchant/reducers/b2bExports/actions';
 import { fetchPurposeCode } from 'merchant/reducers/profile';
+import { videoKycBannerActions } from 'merchant/reducers/videoKYCBanner';
 import lazy from 'merchant/routes/LazyLoader';
 import InstrumentContainer from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer';
 import withBankTransferConfig from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/BankTransferConfig';
@@ -46,6 +47,7 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
   fetchPurposeCode,
   showNotification,
   openModal,
+  onMoneySaverAccountsActivated,
   ...data
 }) => {
   const {
@@ -86,6 +88,13 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
     });
   }, [openModal, purposeCode]);
 
+  const memoizedOnMoneySaverAccountsActivated = useCallback(
+    (hasAccounts) => {
+      onMoneySaverAccountsActivated(hasAccounts);
+    },
+    [onMoneySaverAccountsActivated],
+  );
+
   /**
    * We are calling the fetch purpose code api to check if purpose code is
    * attached with the merchant or not, depending upon which we'll ask merchant
@@ -111,6 +120,12 @@ const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
       onOpenPurposeCodeIneligiblePopup();
     }
   }, [isIneligiblePurposeCodeModalOpen, onOpenPurposeCodeIneligiblePopup, purposeCode]);
+
+  useEffect(() => {
+    if (!config?.isFetching) {
+      memoizedOnMoneySaverAccountsActivated(accounts?.length > 0);
+    }
+  }, [config.isFetching, accounts, memoizedOnMoneySaverAccountsActivated]);
 
   return (
     <ErrorBoundary rank={Ranks.P1} team={Teams.CROSS_BORDER} resetOnProps>
@@ -145,6 +160,7 @@ const mapDispatchToProps = (dispatch) =>
       fetchPurposeCode,
       showNotification,
       openModal,
+      onMoneySaverAccountsActivated: videoKycBannerActions.setMoneySaverAccountsActivated,
     },
     dispatch,
   );

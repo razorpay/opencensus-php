@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { Button as AsyncButton, Tooltip } from '@razorpay/blade/components';
+import {
+  Button as AsyncButton,
+  Tooltip,
+  TooltipInteractiveWrapper,
+} from '@razorpay/blade/components';
 
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import { getIcon } from 'merchant/views/Settings/PaymentMethods/components/InstrumentIcons';
@@ -45,16 +49,18 @@ const Instrument = ({
           <div className="request-cta">
             {requestTooltipText ? (
               <Tooltip content={requestTooltipText} position="top">
-                <AsyncButton
-                  variant="primary"
-                  isLoading={isLoading}
-                  size="small"
-                  isFullWidth
-                  onClick={onButtonClick}
-                  isDisabled={isRequestButtonDisabled}
-                >
-                  Request
-                </AsyncButton>
+                <TooltipInteractiveWrapper width="100%">
+                  <AsyncButton
+                    variant="primary"
+                    isLoading={isLoading}
+                    size="small"
+                    isFullWidth
+                    onClick={onButtonClick}
+                    isDisabled={isRequestButtonDisabled}
+                  >
+                    Request
+                  </AsyncButton>
+                </TooltipInteractiveWrapper>
               </Tooltip>
             ) : (
               <AsyncButton

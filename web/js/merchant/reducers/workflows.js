@@ -1,5 +1,6 @@
-import { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'common/utils/immutable';
+// eslint-disable-next-line import/no-cycle
+import { merchantFetch } from 'merchant/utils/ajax';
 
 //reducer constant
 const FETCH_WORKFLOW_STATUS = 'FETCH_WORKFLOW_STATUS';
@@ -33,6 +34,11 @@ const initialState = {
   },
   toggle_international_revamped: {
     loading: true,
+    error: null,
+  },
+  international_products_pa_cb_enablement: {
+    loading: true,
+    data: {},
     error: null,
   },
 };

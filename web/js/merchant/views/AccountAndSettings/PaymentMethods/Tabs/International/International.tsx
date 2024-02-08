@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { useSplitzService } from 'common/splitz';
 import {
   CommonApiResponse,
   ShowNotificationType,
@@ -12,6 +13,7 @@ import {
   LeafListItem as LeafListItemType,
 } from 'common/typings';
 import IntoViewUsingQueryParams from 'common/ui/IntoViewUsingQueryParams';
+import { isExperimentActive } from 'common/utils/rzp-utils';
 import { fetchUser as fetchUserFn } from 'merchant/reducers/session';
 import { fetchWorkflowStatus as fetchWorkflowStatusAction } from 'merchant/reducers/workflows';
 import lazy from 'merchant/routes/LazyLoader';
@@ -59,9 +61,17 @@ const SwiftBankTransfer = lazy(
     ),
 );
 
+const UnlockMoreMethods = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "UnlockMoreMethods" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/UnlockMoreMethods'
+    ),
+);
+
 type NewType = {
   user: User;
   instrument?: InstrumentListItem;
+  showMoreInternationalMethods: boolean;
   fetchWorkflowStatus: () => void;
   showNotification: ShowNotificationType;
   fetchUser: () => void;
@@ -72,6 +82,7 @@ export type Props = NewType;
 const International = ({
   user,
   instrument,
+  showMoreInternationalMethods,
   fetchWorkflowStatus,
   showNotification,
   fetchUser,
@@ -79,6 +90,9 @@ const International = ({
   const [productStatus, setProductStatus] = useState<MerchantICProductStatus | null>(null);
   const [isLoading, setLoading] = useState(true);
   const listItemRef = useRef<HTMLDivElement>(null);
+  const { abExperiments: { showIntlMethodEnablement } = {} } = useSplitzService();
+
+  const isIntlMethodExpEnabled = isExperimentActive(showIntlMethodEnablement);
 
   const getProductStatus = () =>
     merchantFetch({
@@ -122,6 +136,17 @@ const International = ({
       return (
         <SuspenseWithLoader>
           <InstantBankTransfer leafList={leafList} />
+        </SuspenseWithLoader>
+      );
+    }
+
+    if (leafList.slug === 'moreinternationalmethods') {
+      return (
+        <SuspenseWithLoader key={leafList.slug}>
+          <UnlockMoreMethods
+            instrument={leafList}
+            productPaCbStatus={productStatus?.products_pa_cb}
+          />
         </SuspenseWithLoader>
       );
     }
@@ -172,6 +197,8 @@ const International = ({
               isInternationalLeafItemDisabled({
                 leafList: leafListItem,
                 user,
+                showMoreInternationalMethods:
+                  showMoreInternationalMethods && isIntlMethodExpEnabled,
               })
             ) {
               return null;
@@ -188,7 +215,7 @@ const International = ({
                     <Box key={leafListItem.header} marginBottom="spacing.5">
                       <LeafListItemDiv
                         data-testid="leaf-list-item"
-                        className="level-3"
+                        className="level-3 leve-4"
                         ref={listItemRef}
                       >
                         {renderLeafListItem(leafListItem)}
@@ -216,9 +243,10 @@ const International = ({
   );
 };
 
-const mapStateToProps = (state) => ({
-  user: state.session.user,
-  instrument: state.instrumentRequests.leafInstrument,
+const mapStateToProps = ({ session, instrumentRequests, unlockIntlPaymentMethods }) => ({
+  user: session.user,
+  instrument: instrumentRequests.leafInstrument,
+  showMoreInternationalMethods: unlockIntlPaymentMethods.showMorePaymentMethodsSection,
 });
 
 const mapDispatchToProps = (dispatch) => {

@@ -6,7 +6,11 @@ import {
   getAccounts,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/__tests__/mocks/fixtures';
 import * as services from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/services';
-import { GREYED, ACTION_REQUIRED } from 'merchant/views/Settings/PaymentMethods/constants';
+import {
+  GREYED,
+  ACTION_REQUIRED,
+  ACTIVATED,
+} from 'merchant/views/Settings/PaymentMethods/constants';
 import * as modalActions from 'merchant_common/reducers/modals';
 import { render, screen, userEvent } from 'test-utils';
 
@@ -44,7 +48,12 @@ jest.mock('common/splitz', () => ({
 }));
 
 const renderComponent = (props = {}, initialState = {}) => {
-  return render(<SwiftBankTransfer {...props} />, { initialState });
+  return render(<SwiftBankTransfer {...props} />, {
+    initialState: {
+      unlockIntlPaymentMethods: { showMorePaymentMethodsSection: false },
+      ...initialState,
+    },
+  });
 };
 
 describe('When SwiftBankTransfer is shown for the first time', () => {
@@ -214,5 +223,52 @@ describe('When all required info is available for SWIFT account creation', () =>
     await userEvent.click(requestButton);
 
     expect(openModal).toHaveBeenCalled();
+  });
+});
+
+describe('Tests for showMorePaymentMethodsSection', () => {
+  test('Should show request button in disabled state if showMorePaymentMethodsSection is true and account is not created', () => {
+    const leafList = getLeafListData(GREYED, 'SWIFT');
+    renderComponent(
+      { leafList },
+      {
+        unlockIntlPaymentMethods: {
+          showMorePaymentMethodsSection: true,
+        },
+      },
+    );
+
+    expect(screen.getByRole('button', { name: 'Request' })).toBeDisabled();
+  });
+
+  test('Should show request button in enabled state if showMorePaymentMethodsSection is false and account is not created', () => {
+    const leafList = getLeafListData(GREYED, 'SWIFT');
+    renderComponent(
+      { leafList },
+      {
+        unlockIntlPaymentMethods: {
+          showMorePaymentMethodsSection: false,
+        },
+        profile: { fircDetails: { data: { purpose_code: '12121' } } },
+        session: { user: { promoter_pan_name: 'sanchit' } },
+      },
+    );
+
+    expect(screen.getByRole('button', { name: 'Request' })).not.toBeDisabled();
+  });
+
+  test('should show activated if is accounts are activated and showMorePaymentMethods is true', () => {
+    renderComponent(
+      { leafList: getLeafListData(ACTIVATED, 'SWIFT') },
+      {
+        profile: { fircDetails: { data: { purpose_code: '12121' } } },
+        session: { user: { promoter_pan_name: 'sanchit' } },
+        unlockIntlPaymentMethods: {
+          showMorePaymentMethodsSection: true,
+        },
+      },
+    );
+
+    expect(screen.getByText('Activated')).toBeInTheDocument();
   });
 });

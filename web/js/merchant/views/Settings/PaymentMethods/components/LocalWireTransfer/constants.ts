@@ -51,4 +51,4 @@ export const ACTIVATION_POPUP_CONTENT = {
 export const MCC_CODE_NOT_ELIGIBLE_ERROR = 'we do not support ach and swift account for the mcc';
 
 export const DISABLE_REQUEST_TOOLTIP =
-  "Currently, we're not accepting requests for this payment method. Please check back in a few days.";
+  "Please go to the 'More Intl Payment methods' section and submit your KYC details to initiate this request";

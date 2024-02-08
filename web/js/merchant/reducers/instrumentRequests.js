@@ -912,6 +912,14 @@ export const initialState = {
           ],
         },
         {
+          header: 'More international payment methods',
+          slug: 'moreinternationalmethods',
+          listDescription:
+            'Includes international bank transfer, local currency bank transfer and instant bank transfer',
+          additionalCondition: (user) => user.international,
+          list: [],
+        },
+        {
           header: 'MoneySaver Export Account',
           listHeader: '',
           listDescription: '',

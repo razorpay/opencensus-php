@@ -155,6 +155,7 @@ export const defaultProps: Pick<
     invoices: ProductWorkflowStatesInBackend.APPROVED,
     payment_links: ProductWorkflowStatesInBackend.APPROVED,
     payment_pages: ProductWorkflowStatesInBackend.APPROVED,
+    products_pa_cb: ProductWorkflowStatesInBackend.APPROVED,
   },
 };
 

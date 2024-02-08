@@ -40,7 +40,12 @@ jest.mock('common/splitz', () => ({
 }));
 
 const renderComponent = (props = {}, initialState = {}) => {
-  return render(<LocalWireTransfer {...props} />, { initialState });
+  return render(<LocalWireTransfer {...props} />, {
+    initialState: {
+      unlockIntlPaymentMethods: { showMorePaymentMethodsSection: false },
+      ...initialState,
+    },
+  });
 };
 
 describe('When LocalWireTransfer is shown for the first time', () => {
@@ -239,5 +244,52 @@ describe('When purpose code provided is not valid for ACH', () => {
       size: 'medium',
       component: expect.any(Object),
     });
+  });
+});
+
+describe('Tests for showMorePaymentMethodsSection', () => {
+  test('Should show request button in disabled state if showMorePaymentMethodsSection is true and account is not created', () => {
+    const leafList = getLeafListData(GREYED);
+    renderComponent(
+      { leafList },
+      {
+        unlockIntlPaymentMethods: {
+          showMorePaymentMethodsSection: true,
+        },
+      },
+    );
+
+    expect(screen.getByRole('button', { name: 'Request' })).toBeDisabled();
+  });
+
+  test('Should show request button in enabled state if showMorePaymentMethodsSection is false and account is not created', () => {
+    const leafList = getLeafListData(GREYED);
+    renderComponent(
+      { leafList },
+      {
+        unlockIntlPaymentMethods: {
+          showMorePaymentMethodsSection: false,
+        },
+        profile: { fircDetails: { data: { purpose_code: '12121' } } },
+        session: { user: { promoter_pan_name: 'sanchit' } },
+      },
+    );
+
+    expect(screen.getByRole('button', { name: 'Request' })).not.toBeDisabled();
+  });
+
+  test('should show activated if is accounts are activated and showMorePaymentMethods is true', () => {
+    renderComponent(
+      { leafList: getLeafListData(ACTIVATED) },
+      {
+        profile: { fircDetails: { data: { purpose_code: '12121' } } },
+        session: { user: { promoter_pan_name: 'sanchit' } },
+        unlockIntlPaymentMethods: {
+          showMorePaymentMethodsSection: true,
+        },
+      },
+    );
+
+    expect(screen.getByText('Activated')).toBeInTheDocument();
   });
 });

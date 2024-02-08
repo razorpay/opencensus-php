@@ -49,6 +49,7 @@ export type DetailFieldType = {
 
 export type BankTransferConfigType = {
   accounts: Array<AccountType>;
+  isFetching: boolean;
   shouldShowAction: boolean;
   shouldShowListAction: boolean;
   containerStatus: string;
@@ -66,6 +67,7 @@ export interface LocalWireTransferPropsInterface {
   fetchB2bAccounts: () => void;
   showNotification: (payload: { type: string; message: unknown }) => void;
   openModal: (payload: { size: string; component: JSX.Element }) => void;
+  onMoneySaverAccountsActivated: (status: boolean) => void;
   data: unknown;
 }
 
@@ -104,6 +106,7 @@ export interface BankTransferConfigInterface {
   props: unknown;
   accountsDeactivated: boolean;
   reason: string;
+  showMorePaymentMethodsSection: boolean;
 }
 
 export interface AccountBalancePropsInterface {

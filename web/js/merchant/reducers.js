@@ -155,6 +155,8 @@ import { magicCODSettingsReducer } from 'merchant/reducers/magicCheckout/codEngi
 import { shippingEngineReducer } from 'merchant/reducers/magicCheckout/shippingEngine/reducer';
 import paymentMetricsReducer from 'merchant/reducers/paymentMetrics';
 import genericFeatureReducer from 'merchant/reducers/genericFeature';
+import videoKYCBannerReducer from 'merchant/reducers/videoKYCBanner';
+import { unlockIntlPaymentMethodsReducer } from 'merchant/reducers/unlockIntlPaymentMethods/reducer';
 
 export default combineReducers({
   modal: modalReducer,
@@ -305,4 +307,6 @@ export default combineReducers({
   partnerDashboard: partnerReducer,
   paymentMetrics: paymentMetricsReducer,
   genericFeature: genericFeatureReducer,
+  videoKYCBanner: videoKYCBannerReducer,
+  unlockIntlPaymentMethods: unlockIntlPaymentMethodsReducer,
 });

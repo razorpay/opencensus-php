@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useSplitzService } from 'common/splitz';
 import { initialState as instrumentRequestInitialState } from 'merchant/reducers/instrumentRequests';
 import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import International from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International';
@@ -83,6 +84,18 @@ jest.mock('merchant/views/AccountAndSettings/PaymentMethods/components/Section',
     ),
 }));
 
+jest.mock('common/splitz', () => ({
+  useSplitzService: jest.fn(() => ({
+    abExperiments: {
+      showIntlMethodEnablement: {
+        variables: {
+          result: 'off',
+        },
+      },
+    },
+  })),
+}));
+
 jest.mock('merchant/views/AccountAndSettings/PaymentMethods/utils', () => ({
   isInternationalLeafItemDisabled: jest.fn(),
 }));
@@ -98,6 +111,9 @@ const renderApp = () =>
           international: true,
           id: 'test',
         },
+      },
+      unlockIntlPaymentMethods: {
+        showMorePaymentMethodsSection: true,
       },
     },
   });
@@ -161,5 +177,41 @@ describe('International', () => {
       expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
     });
     expect(screen.getByText('Failed to retrieve International Cards Info')).toBeInTheDocument();
+  });
+
+  test('Should call isInternationalLeafItemDisabled with correct params when exp is disabled', async () => {
+    renderApp();
+    await waitFor(() => {
+      expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
+    });
+    expect(isInternationalLeafItemDisabled).toHaveBeenCalledWith(
+      expect.objectContaining({
+        showMoreInternationalMethods: false,
+      }),
+    );
+  });
+
+  test('Should call isInternationalLeafItemDisabled with correct params when exp is enabled', async () => {
+    // eslint-disable-next-line
+    // @ts-ignore
+    useSplitzService.mockImplementation(() => ({
+      abExperiments: {
+        showIntlMethodEnablement: {
+          variables: {
+            result: 'on',
+          },
+        },
+      },
+    }));
+
+    renderApp();
+    await waitFor(() => {
+      expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
+    });
+    expect(isInternationalLeafItemDisabled).toHaveBeenCalledWith(
+      expect.objectContaining({
+        showMoreInternationalMethods: true,
+      }),
+    );
   });
 });

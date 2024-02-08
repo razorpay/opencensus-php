@@ -17,6 +17,7 @@ export type MerchantICProductStatus = {
   payment_links: ProductWorkflowStatesInBackend;
   payment_pages: ProductWorkflowStatesInBackend;
   invoices: ProductWorkflowStatesInBackend;
+  products_pa_cb: ProductWorkflowStatesInBackend;
 };
 
 export type CommonICProductsState = {

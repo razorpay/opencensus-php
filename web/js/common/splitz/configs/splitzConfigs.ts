@@ -823,6 +823,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['/payment-methods/international-payments'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'showIntlMethodEnablement',
+          experimentId: {
+            beta: 'NV4AhqZxTQt7ok',
+            production: 'NRwqtLtFfSg0hA',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       matchByDashboard: ['product'],
       routesToMatch: [UPLOAD_INVOICES],
       abExperiments: [
