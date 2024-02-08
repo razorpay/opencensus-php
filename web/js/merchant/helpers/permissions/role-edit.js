@@ -79,7 +79,7 @@ export default {
   add_funds: [OWNER, ADMIN, MANAGER, OPERATIONS],
   profile_gst: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, AGENT],
   credits: [OWNER, ADMIN, MANAGER],
-  activation: [OWNER, ADMIN, MANAGER],
+  activation: [OWNER, ADMIN, MANAGER, PARTNER],
   early_settlement: [OWNER, ADMIN],
   referrals: [OWNER, ADMIN, MANAGER],
   team: [OWNER, RBL_SUPERVISOR],
