@@ -661,7 +661,7 @@ export const splitzConfig: SplitzInitConfig = {
             variables: [
               {
                 key: 'result',
-                value: 'off',
+                value: 'on',
               },
             ],
           },
@@ -677,7 +677,7 @@ export const splitzConfig: SplitzInitConfig = {
             variables: [
               {
                 key: 'result',
-                value: 'off',
+                value: 'on',
               },
             ],
           },
