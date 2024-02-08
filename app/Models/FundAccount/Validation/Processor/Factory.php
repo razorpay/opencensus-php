@@ -30,6 +30,20 @@ class Factory
         return new $processor($fundAccountValidation);
     }
 
+    public static function getVpaProcessor(FundAccountValidation\Entity $fundAccountValidation): Base
+    {
+        // Set the processor specifically for VPA
+        $processor = __NAMESPACE__ . '\\' . studly_case(Entity::VPA);
+        return new $processor($fundAccountValidation);
+    }
+
+    public static function getBankAccountProcessor(FundAccountValidation\Entity $fundAccountValidation): Base
+    {
+        // Set the processor specifically for BankAccount
+        $processor = __NAMESPACE__ . '\\' . studly_case(Entity::BANK_ACCOUNT);
+        return new $processor($fundAccountValidation);
+    }
+
     /**
      * @param string $type
      *

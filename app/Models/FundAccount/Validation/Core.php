@@ -90,7 +90,27 @@ class Core extends Base\Core
             // This will be picked up from async job when ledger status is checked
             if ($fundAccountValidation->getLedgerResponseAwaitedFlag() === false)
             {
-                $processor = Processor\Factory::get($fundAccountValidation);
+                $isPenniless = $fundAccountValidation->merchant->isFeatureEnabled(Feature\Constants::PENNILESS_VALIDATION);
+
+                $isUtrExposed = $fundAccountValidation->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_FA_VALIDATION_UTR);
+
+                if (($isPenniless === true) && ($isUtrExposed === false)
+                    && ($fundAccountValidation->getFundAccountType() === FundAccount\Type::BANK_ACCOUNT))
+                {
+                    $this->trace->info(TraceCode::SWITCHED_TO_VPA_VALIDATION,
+                        [
+                            'fav_id'      => $fundAccountValidation->getId(),
+                            'merchant_id' => $merchant->getId(),
+                            'isPenniless' => $isPenniless
+                        ]);
+
+                    $processor = Processor\Factory::getVPAProcessor($fundAccountValidation);
+                }
+                else
+                {
+                    $processor = Processor\Factory::get($fundAccountValidation);
+                }
+
                 $processor->preProcessValidation();
             }
         }
@@ -183,7 +203,7 @@ class Core extends Base\Core
 
             $validation->setAttempts(1);
 
-            // We are saving here because when when creating transaction,
+            // We are saving here because when creating transaction,
             // it is assumed that source already exist.
             $this->repo->saveOrFail($validation);
 

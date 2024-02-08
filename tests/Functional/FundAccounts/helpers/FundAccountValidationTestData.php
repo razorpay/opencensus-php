@@ -90,6 +90,171 @@ return [
         ],
     ],
 
+    'testPennilessVpaValidationSuccess' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::AMOUNT       => 100,
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'ifsc'           => 'SBIN0007105',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
+
+    'testPennilessVpaValidationWithInvalidAccountStatus' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::AMOUNT       => 100,
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'ifsc'           => 'SBIN0007106',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
+
+    'testPennilessVpaValidationWithNameNull' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::AMOUNT       => 100,
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'ifsc'           => 'SBIN0007107',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
+
+    'testPennilessVpaValidationFailed' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::AMOUNT       => 100,
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'ifsc'           => 'SBIN0007108',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
+
+
     'testCreateValidationWithExposeUTRNotSetInResponse' => [
         'request' => [
             'url'     => '/fund_accounts/validations',

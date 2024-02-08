@@ -2013,6 +2013,11 @@ class Constants
     const STMT_RBL_FTP_ENABLED = 'stmt_rbl_ftp_enabled';
 
     /**
+     * Feature flag for Penniless Validation
+     */
+    const PENNILESS_VALIDATION = 'penniless_validation';
+
+    /**
      * These 3 feature flags are used for sending low-balance alerts on X & blocking payouts for current-accounts
      */
     const EXCLUDE_FROM_CA_BILLING = 'exclude_from_ca_billing';
@@ -2819,6 +2824,7 @@ class Constants
         self::STMT_RBL_DISABLED                      => true,
         self::STMT_ICICI_FTP_ENABLED                 => true,
         self::STMT_RBL_FTP_ENABLED                   => true,
+        self::PENNILESS_VALIDATION                   => true,
         self::EXCLUDE_FROM_CA_BILLING                => true,
         self::AUTO_DISABLE_PAYOUTS                   => true,
         self::PAYOUT_LOW_BALANCE                     => true,
@@ -4007,6 +4013,11 @@ class Constants
             'feature'       => self::STMT_RBL_FTP_ENABLED,
             'display_name'  => 'ACCOUNT STATEMENT BANK RBL FTP FETCH ENABLED',
             'documentation' => 'To enable RBL account statements pull through FTP from banks'
+        ],
+        self::PENNILESS_VALIDATION =>  [
+            'feature'       => self::PENNILESS_VALIDATION,
+            'display_name'  => 'PENNILESS VALIDATION',
+            'documentation' => 'To validate Bank Account using penniless method'
         ],
         self::RZPX_FEE_CREDIT => [
             'feature'       => self::RZPX_FEE_CREDIT,

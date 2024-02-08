@@ -676,6 +676,28 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
         }
 
+        if ($vpa === '111000111@SBIN0007105.ifsc.npci')
+        {
+            return "Razorpay Customer";
+        }
+
+        if ($vpa === '111000111@SBIN0007106.ifsc.npci')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
+        }
+
+        if ($vpa === '111000111@SBIN0007107.ifsc.npci')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
+        }
+
+        if ($vpa === '111000111@SBIN0007108.ifsc.npci')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+        }
     }
 
     public function preDebit(array $input): array
