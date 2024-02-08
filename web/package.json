@@ -15,7 +15,7 @@
     "@razorpay/commander-services": "1.0.38",
     "@razorpay/commander-shield": "0.0.1512",
     "@razorpay/i18nify-js": "1.2.0",
-    "@razorpay/frontend-care": "0.7.1",
+    "@razorpay/frontend-care": "0.7.2",
     "@razorpay/universe-cli": "15.3.0",
     "@razorpay/universe-doctor": "4.4.16",
     "@razorpay/universe-test": "2.2.20",
