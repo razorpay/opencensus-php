@@ -911,6 +911,150 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantProductPOS' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009?product=pos',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_10000000000009',
+                'entity'           => 'merchant',
+                'user'             => [],
+                'details'          => [
+                    'activation_status' => 'activated',
+                    'kyc_clarification_reasons' => []
+                ],
+                'dashboard_access' => false,
+                'pos' => [
+                    'activation_status' => "under_review",
+                    'success' => true,
+                    'action_states' => [
+                        [
+                            'id' => 'MuiZWKXnd61h78',
+                            'name' => 'under_review',
+                            'admin_id' => 'MuiZWKXnd61h00',
+                            'merchant_id' => '10000000000009',
+                            'onboarding_type' => 'pos',
+                            'metadata' => [
+                                'actor_details' => [
+                                    'id'    => '10000000000000',
+                                    'type'  => 'user',
+                                    'name'  => 'test',
+                                    'email' => 'test@gmail.com',
+                                    'role'  => 'partner_agent'
+                                ]
+                            ]
+                        ]
+                    ],
+                    'last_kyc_performed_by' => [
+                        'id' => '10000000000010',
+                        'type' => 'owner',
+                        'name' => 'test',
+                        'contact_email' => 'kmk@rzp.com'
+                    ],
+                    'kyc_save_audits' => [
+                        [
+                            'entity_id' => '10000000000009',
+                            'metadata' => [
+                                'actor_email' => 'kmk@rzp.com',
+                                'actor_name'  => 'test',
+                                'actor_id' => '10000000000010',
+                                'actor_type' => 'owner',
+                                'field_details' => [
+                                    'field_names'=> [
+                                        'business_type',
+                                        'business_type_personal_pan'
+                                    ],
+                                    'step_name' => 'aadhaar'
+                                ],
+                                'route_name' =>  'MerchantActivationSave',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantProductPOSWithNoActionStateLogs' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009?product=pos',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_10000000000009',
+                'entity'           => 'merchant',
+                'user'             => [],
+                'details'          => [
+                    'activation_status' => 'activated',
+                    'kyc_clarification_reasons' => []
+                ],
+                'dashboard_access' => false,
+                'pos' => [
+                    'activation_status' => null,
+                    'success' => true,
+                    'action_states' => [],
+                    'last_kyc_performed_by' => [
+                        'id' => '10000000000010',
+                        'type' => 'owner',
+                        'name' => 'test',
+                        'contact_email' => 'kmk@rzp.com'
+                    ],
+                    'kyc_save_audits' => [
+                        [
+                            'entity_id' => '10000000000009',
+                            'metadata' => [
+                                'actor_email' => 'kmk@rzp.com',
+                                'actor_name'  => 'test',
+                                'actor_id' => '10000000000010',
+                                'actor_type' => 'owner',
+                                'field_details' => [
+                                    'field_names'=> [
+                                        'business_type',
+                                        'business_type_personal_pan'
+                                    ],
+                                    'step_name' => 'aadhaar'
+                                ],
+                                'route_name' =>  'MerchantActivationSave',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantProductPOSWithNoEventAuditLog' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009?product=pos',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_10000000000009',
+                'entity'           => 'merchant',
+                'user'             => [],
+                'details'          => [
+                    'activation_status' => 'activated',
+                    'kyc_clarification_reasons' => []
+                ],
+                'dashboard_access' => false,
+                'pos' => [
+                    'activation_status' => null,
+                    'success' => true,
+                    'action_states' => [],
+                    'last_kyc_performed_by' => [],
+                    'kyc_save_audits' => []
+                ]
+            ],
+        ],
+    ],
+
     'testFetchPartnerPOSSubmerchantsProductPrimary' => [
         'request'  => [
             'url'     => '/submerchants?product=primary',

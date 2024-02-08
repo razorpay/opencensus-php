@@ -283,6 +283,7 @@ class Entity extends Base\PublicEntity
     const DASHBOARD_ACCESS          = 'dashboard_access';
     const APPLICATION               = 'application';
     const KYC_ACCESS                = 'kyc_access';
+    const POS                       = 'pos';
 
     const APPLICATION_ID            = 'application_id';
     const REFERRED_APPLICATION      = 'Referred application';
@@ -664,6 +665,7 @@ class Entity extends Base\PublicEntity
         self::PRODUCT,
         self::BANKING_ACCOUNT,
         self::KYC_ACCESS,
+        self::POS
     ];
 
     protected $adminRestrictedWithFeature     = [

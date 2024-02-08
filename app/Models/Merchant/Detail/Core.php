@@ -5606,6 +5606,8 @@ class Core extends Base\Core
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::GSTIN_SELF_SERVE_BVS_CALLBACK_RECEIVED);
             }
 
+            $posStatusChangeLogs = $this->getPOSStatusChangeLogs($merchant);
+
             $response[Merchant\Entity::ACTIVATED]                     = (int) $merchant->isActivated();
             $response[Merchant\Entity::LIVE]                          = $merchant->isLive();
             $response[Merchant\Entity::INTERNATIONAL]                 = $merchant->isInternational();
@@ -5620,7 +5622,7 @@ class Core extends Base\Core
             $response['isAutoKycDone']                                = $this->isAutoKycDone($merchantDetails);
             $response['isHardLimitReached']                           = empty($hardEscalationLevel4) ? false : true;
             $response['activationStatusChangeLogs']                   = $this->getStatusChangeLogs($merchant);
-            $response['posActivationStatusChangeLogs']                = $this->getPOSStatusChangeLogs($merchant);
+            $response['posActivationStatusChangeLogs']                = $posStatusChangeLogs['states'];
             $response[Entity::MERCHANT_BUSINESS_DETAIL]               = $merchantBusinessDetails;
             $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = isset($merchantBusinessDetails) === true ? $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] : "";
             $response[Entity::PROMOTER_PAN_NAME_SUGGESTED]            = $merchantDetails->getPromoterPanNameSuggested();
@@ -12099,26 +12101,28 @@ class Core extends Base\Core
         return null;
     }
 
-    private function getPOSStatusChangeLogs(Merchant\Entity $merchant)
+    public function getPOSStatusChangeLogs(Merchant\Entity $merchant)
     {
-        $states = [];
+        $response = [];
 
-        try {
+        try
+        {
             $input["merchant_id"] = $merchant->getId();
 
             $input["onboarding_type"] = DEConstants::ONBOARDING_TYPE_POS;
 
-            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_state_logs',$input, $merchant );
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pos_state_logs', $input, $merchant);
 
-            $states = $response["states"];
-
+            $response['success'] = true;
         }
         catch (\Exception $ex)
         {
             $this->trace->error(TraceCode::ERROR_PARSING_RESPONSE, ["error" => $ex]);
+
+            $response['success'] = false;
         }
 
-        return $states;
+        return $response;
     }
 
     public function fetchPosActivationFlow(Merchant\Entity $merchant)

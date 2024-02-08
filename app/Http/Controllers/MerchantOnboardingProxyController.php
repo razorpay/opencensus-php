@@ -339,6 +339,27 @@ class MerchantOnboardingProxyController extends BaseProxyController
             self::MERCHANT_CATEGORIES_V3_ELIGIBILITY_SAVE, self::MERCHANT_DOCUMENT_VALIDITY_CHECK => [
                 "success" => true
             ],
+            self::MERCHANT_POS_STATE_LOGS => [
+              "data" => [
+                  [
+                      "id" => "MuiZWKXnd61h78",
+                      "name" => "under_review",
+                      "admin_id" => "MuiZWKXnd61h00",
+                      "merchant_id" => "10000000000009",
+                      "onboarding_type" => "pos",
+                      "metadata" => [
+                          "actor_details" => [
+                              "id" => "10000000000000",
+                              "type" => "user",
+                              "name" => "test",
+                              "email" => "test@gmail.com",
+                              "role" => "partner_agent"
+                          ]
+                      ]
+                  ]
+              ],
+              "success" => true
+            ],
             default => null,
         };
     }

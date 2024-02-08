@@ -884,6 +884,98 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->startTest();
     }
 
+    // use case: the sub-merchant KYC form is submitted
+    public function testFetchPartnerSubmerchantProductPOS()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
+
+        $this->mockPartnershipsServiceTreatment([], [
+            'audits' => [
+                [
+                    'entity_id' => '10000000000009',
+                    'metadata' => [
+                        'actor_email' => 'kmk@rzp.com',
+                        'actor_name'  => 'test',
+                        'actor_id' => '10000000000010',
+                        'actor_type' => 'owner',
+                        'field_details' => [
+                            'field_names'=> [
+                                'business_type',
+                                'business_type_personal_pan'
+                            ],
+                            'step_name' => 'aadhaar'
+                        ],
+                        'route_name' =>  'MerchantActivationSave',
+                    ]
+                ]
+            ]
+        ], 'getEventAudits');
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    // use case: the sub-merchant KYC form is saved but not submitted
+    public function testFetchPartnerSubmerchantProductPOSWithNoActionStateLogs()
+    {
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
+
+        $merchantDetailCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core');
+
+        $merchantDetailCore->shouldReceive('getPOSStatusChangeLogs')->andReturn(['success' => true]);
+
+        $this->mockPartnershipsServiceTreatment([], [
+            'audits' => [
+                [
+                    'entity_id' => '10000000000009',
+                    'metadata' => [
+                        'actor_email' => 'kmk@rzp.com',
+                        'actor_name'  => 'test',
+                        'actor_id' => '10000000000010',
+                        'actor_type' => 'owner',
+                        'field_details' => [
+                            'field_names'=> [
+                                'business_type',
+                                'business_type_personal_pan'
+                            ],
+                            'step_name' => 'aadhaar'
+                        ],
+                        'route_name' =>  'MerchantActivationSave',
+                    ]
+                ]
+            ]
+        ], 'getEventAudits');
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    // use case: the sub-merchant KYC form is not saved at all
+    public function testFetchPartnerSubmerchantProductPOSWithNoEventAuditLog()
+    {
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
+
+        $merchantDetailCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core');
+
+        $merchantDetailCore->shouldReceive('getPOSStatusChangeLogs')->andReturn(['success' => true]);
+
+        $this->mockPartnershipsServiceTreatment([], null, 'getEventAudits');
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerPOSSubmerchantsProductPrimary()
     {
         $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);

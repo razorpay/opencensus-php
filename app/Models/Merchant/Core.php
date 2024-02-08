@@ -5136,23 +5136,12 @@ class Core extends Base\Core
 
         $params = array();
 
-        if ($this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId()) === true)
-        {
-            if ($product === Product::CAPITAL)
-            {
-                $product                 = Product::BANKING;
-                $params[ENTITY::PRODUCT] = Product::BANKING;
-                $params[Constants::TAGS] = [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
-            }
-            else
-            {
-                $params[ENTITY::PRODUCT] = $product;
-                $params[Constants::WITHOUT_TAGS] = [
-                    Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
-                    Constants::CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
-                ];
-            }
-        }
+        $params[Entity::PRODUCT] = $product;
+
+        // update the product if it's capital or POS
+        $params = $this->preProcessForProducts($params, $partner);
+
+        $product = $params[Entity::PRODUCT];
 
         $this->trace->info(
             TraceCode::PARTNER_FETCH_SUBMERCHANT_BY_ID_REQUEST,
@@ -5168,7 +5157,7 @@ class Core extends Base\Core
 
         $partnerUser = $partner->primaryOwner();
 
-        $merchant = $this->getPartnerSubmerchantData($merchant, $partner, $partnerUser, $product);
+        $merchant = $this->getPartnerSubmerchantData($merchant, $partner, $partnerUser, $product, $actualProduct);
 
         $products = $this->fetchProductForMerchants([$merchant->getId()]);
 
@@ -5525,7 +5514,7 @@ class Core extends Base\Core
      *              3. Primary product          - exclude all capital and POS tags
      *
      */
-    private function preProcessForProducts(array $params, $partner)
+    private function preProcessForProducts(array $params, $partner): array
     {
         $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
 
@@ -5541,7 +5530,7 @@ class Core extends Base\Core
                 $params[ENTITY::PRODUCT] = Product::BANKING;
                 $params[Constants::TAGS] = [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
             }
-            else if($product === Product::POS)
+            else if ($product === Product::POS)
             {
                 $params[ENTITY::PRODUCT] = Product::PRIMARY;
                 $params[Constants::TAGS] = [Constants::POS_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
@@ -5691,7 +5680,7 @@ class Core extends Base\Core
 
             $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product, $partner, $isExpEnabled) {
                 return Tracer::inspan(['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function() use ($submerchant, $partner, $partnerUser, $product, $isExpEnabled) {
-                    return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product, $isExpEnabled);
+                    return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product, null, $isExpEnabled);
                 });
             });
 
@@ -5981,8 +5970,14 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    protected function getPartnerSubmerchantData(Entity $submerchant, Entity $partner, User\Entity $partnerUser = null,
-                                                 string $product = null, bool $isExpEnabled = false): Entity
+    protected function getPartnerSubmerchantData(
+        Entity $submerchant,
+        Entity $partner,
+        User\Entity $partnerUser = null,
+        string $product = null,
+        string $actualProduct = null,
+        bool $isExpEnabled = false
+    ): Entity
     {
         $submerchant[Entity::DETAILS] = [
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
@@ -6036,7 +6031,74 @@ class Core extends Base\Core
             $submerchant[Entity::BANKING_ACCOUNT] = [ENTITY::CA_STATUS => $caStatus];
         }
 
+        if ($actualProduct === Product::POS)
+        {
+            $this->appendPOSInfoInMerchantDetail($submerchant);
+        }
+
         return $submerchant;
+    }
+
+    // add POS specific details to the merchant
+    private function appendPOSInfoInMerchantDetail(Entity & $merchant)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $merchant[Entity::DETAILS] = array_merge(
+            $merchant[Entity::DETAILS],
+            [Detail\Entity::KYC_CLARIFICATION_REASONS => $merchantDetail->getKycClarificationReasons() ?? []]
+        );
+
+        $posStatusChangeLogs = (new Detail\Core())->getPOSStatusChangeLogs($merchant);
+
+        $posStatusChangeLogsData = $posStatusChangeLogs['data'] ?? [];
+
+        if (isset($posStatusChangeLogsData[0]['name']))
+        {
+            $posActivationStatus = $posStatusChangeLogsData[0]['name'];
+        }
+
+        $kycUpdateAuditsInfo = $this->getEventAuditsForSubMerchant($merchant->getId(), 'kyc_form_save');
+
+        $merchant[Entity::POS] = [
+            'activation_status'     => $posActivationStatus ?? null,
+            'success'               => $posStatusChangeLogs['success'] ?? false,
+            'action_states'         => $posStatusChangeLogsData,
+            'last_kyc_performed_by' => $kycUpdateAuditsInfo['recent_event_actor_info'] ?? [],
+            'kyc_save_audits'       => $kycUpdateAuditsInfo['event_audits']
+        ];
+    }
+
+    private function getEventAuditsForSubMerchant(string $subMerchantId, string $event): ?array
+    {
+        $eventAuditResponse = $this->app->partnerships->getEventAudits([
+            'entity_id'     => $subMerchantId,
+            'entity_type'   => Entity::MERCHANT,
+            'event_type'    => $event
+        ]);
+
+        $eventAudits = $eventAuditResponse['audits'] ?? [];
+
+        $response = [];
+
+        $response['event_audits'] = $eventAudits;
+
+        // the first record is the most recent one
+        if (isset($eventAudits[0]['metadata']) === false)
+        {
+            return $response;
+        }
+
+        $recentEventMetadata = $eventAudits[0]['metadata'];
+
+        $response['recent_event_actor_info'] = [
+            'id'            => $recentEventMetadata['actor_id']      ?? '',
+            'type'          => $recentEventMetadata['actor_type']    ?? '',
+            'name'          => $recentEventMetadata['actor_name']    ?? '',
+            'contact_email' => $recentEventMetadata['actor_email']   ?? '',
+        ];
+
+        return $response;
     }
 
     /**

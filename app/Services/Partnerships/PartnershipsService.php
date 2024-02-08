@@ -103,6 +103,8 @@ class PartnershipsService extends Base\Service
 
     const GET_MASKED_DATA = '/twirp/rzp.partnerships.masking.v1.MaskingAPI/MaskSensitiveData';
 
+    const FETCH_EVENT_AUDITS = "/twirp/rzp.partnerships.eventauditlogs.v1.EventAuditLogsAPI/Fetch";
+
     const GET_LAST_EVENT_AUDITS = "/twirp/rzp.partnerships.eventauditlogs.v1.EventAuditLogsAPI/FetchLastEventAudits";
 
     const ACTIVATED = 'ACTIVATED';
@@ -388,6 +390,11 @@ class PartnershipsService extends Base\Service
     public function bulkCaptureByPartner($parameters)
     {
         return $this->sendRequestWithRetry($parameters, self::BULK_CAPTURE_BY_PARTNER_URL, Requests::POST);
+    }
+
+    public function getEventAudits($parameters): ?array
+    {
+        return $this->sendRequestWithRetry($parameters, self::FETCH_EVENT_AUDITS, Requests::POST);
     }
 
     /**
