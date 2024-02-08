@@ -533,6 +533,13 @@ class Service extends Base\Service
 
                     $payment->setExternal(true);
 
+                    if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                    {
+                       array_push($failureIds, [ $currentPaymentId => "Transaction creation blocked for reverse shadow mode" ]);
+
+                       continue;
+                    }
+
                     $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment);
 
                     array_push($successIds, $currentPaymentId);

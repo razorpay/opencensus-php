@@ -4534,4 +4534,53 @@ class PaymentLedgerTest extends TestCase
 
     }
 
+    public function testInternalTxnCronInReverseShadowBlocked()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $payment = $this->createPaymentInReverseShadow();
+        $txn = $this->getDbEntity('transaction', ['entity_id' => str_replace("pay_",'',$payment['id'])]);
+        $this->assertNotNull($txn);
+        $this->assertNull($txn['balance_updated']);
+
+        $request = [
+            'url' => '/internal/transactions/cron',
+            'method' => 'POST',
+            'content' =>  ['payments_arr' => $payment['id'],]
+        ];
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->ba->cronAuth();
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response);
+        $this->assertCount(0,$response["success"]);
+        $this->assertCount(1,$response["failures"]);
+    }
+
+    public function testInternalTxnCronInShadowSuccess()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+        $payment = $this->createPaymentInReverseShadow();
+
+        $paymentId = $payment['id'];
+
+        $request = [
+            'url' => '/internal/transactions/cron',
+            'method' => 'POST',
+            'content' =>  ['payments_arr' => $payment['id'],]
+
+        ];
+        $this->fixtures->merchant->removeFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response);
+        $this->assertCount(0,$response["failures"]);
+        $this->assertCount(1,$response["success"]);
+        $txn = $this->getDbLastEntity('transaction');
+        $this->assertNotNull($txn);
+    }
+
 }

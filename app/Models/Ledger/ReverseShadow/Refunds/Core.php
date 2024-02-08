@@ -96,7 +96,7 @@ class Core extends Base\Core
         $txnType = Transaction\Type::REFUND;
         $commission = $refund->getFee() - $refund->getTax();
 
-        $tax = $refund->getTax();
+        $tax = $refund->getTax() ?? 0;
 
         $merchant = $payment->merchant;
 

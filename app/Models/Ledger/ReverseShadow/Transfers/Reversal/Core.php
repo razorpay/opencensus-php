@@ -35,7 +35,7 @@ class Core extends Base\Core
     {
         $moneyParams = self::generateMoneyParamsForReversalDebit($refund);
 
-        $transactionMessage = $this->generateBaseForJournalEntry($refund);
+        $transactionMessage = $this->generateBaseForJournalEntry($refund, $refund->getCreatedAt());
 
         $transactionMessage[LedgerConstants::MONEY_PARAMS] = $moneyParams;
 

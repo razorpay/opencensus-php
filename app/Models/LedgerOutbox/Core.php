@@ -973,26 +973,35 @@ class Core extends Base\Core
                                 $transferProcessor->fireTransferProcessedWebhookIfApplicable($transfer);
 
                                 // in txn creation - check if transfer has txn created, duplicate txn check
+
+                                $input = [
+                                    LedgerConstants::DEBIT_TRANSACTION_ID  => $debitJournalId,
+                                    LedgerConstants::CREDIT_TRANSACTION_ID => $creditJournalId,
+                                    LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
+                                    LedgerConstants::SOURCE                => $source,
+                                ];
+
+                                // dispatch to queue again for txn creation
+                                $transferCore->dispatchForTransferProcessing($transfer->getSourceType(), $sourcePayment, 30, true, $input);
+
+                                $this->trace->info(
+                                    TraceCode::TRANSFER_PROCCESSED_SUCCESSFULLY_IN_REVERSE_SHADOW,
+                                    [
+                                        LedgerConstants::TRANSFER_ID  => $transfer->getPublicId(),
+                                        'transfer_input_to_queue'     => $input
+                                    ]);
+    
+                            // transfer transactions created via queue in async
+                            }
+                            else
+                            {
+                                $this->trace->info(
+                                    TraceCode::TRANSFER_ALREADY_PROCCESSED,
+                                    [
+                                       "transfer" => $transfer->toArray(),
+                                    ]);
                             }
 
-                            $input = [
-                                LedgerConstants::DEBIT_TRANSACTION_ID  => $debitJournalId,
-                                LedgerConstants::CREDIT_TRANSACTION_ID => $creditJournalId,
-                                LedgerConstants::TRANSFER_ID           => $transfer->getPublicId(),
-                                LedgerConstants::SOURCE                => $source,
-                            ];
-
-                            // dispatch to queue again for txn creation
-                            $transferCore->dispatchForTransferProcessing($transfer->getSourceType(), $sourcePayment, 30, true, $input);
-
-                            $this->trace->info(
-                                TraceCode::TRANSFER_PROCCESSED_SUCCESSFULLY_IN_REVERSE_SHADOW,
-                                [
-                                    LedgerConstants::TRANSFER_ID  => $transfer->getPublicId(),
-                                    'transfer_input_to_queue'     => $input
-                                ]);
-
-                            // transfer transactions created via queue in async
                             return null;
                         });
                     },

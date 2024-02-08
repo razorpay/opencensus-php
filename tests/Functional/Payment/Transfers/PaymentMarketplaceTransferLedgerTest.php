@@ -2857,5 +2857,102 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
     }
 
+    // public function testReverseShadowCronRetrySuccessForPaymentTransferAlreadyProcessedByPendingCron()
+    // {
+    //     $this->assertNotNull($this->payment);
+
+    //     $sourceMID = '10000000000000';
+    //     $destnMID = '10000000000001';
+
+    //     $this->assertNotNull($this->payment);
+
+    //     $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+    //     $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], $destnMID);
+
+    //     $oldDestnMarketBalance = $this->getAccountBalance($destnMID);
+    //     $this->assertEquals(0, $oldDestnMarketBalance);
+
+    //     $oldSourceMarketBalance = $this->getAccountBalance($sourceMID);
+    //     $this->assertGreaterThanOrEqual($this->payment['amount'],$oldSourceMarketBalance);
+
+    //     $mockLedger = $this->initialiseLedger(1000000, 0, 0);
+
+    //     // 1. create transfer in reverse shadow
+    //     $transfers[0] = [
+    //         'account' => 'acc_10000000000001',
+    //         'amount'  => 10000,
+    //         'currency'=> 'INR',
+    //     ];
+
+    //     $content = $this->transferPayment($this->payment['id'], $transfers);
+
+    //     $publicTransferId = $content['items'][0]['id'];
+
+    //     $transferId =  str_replace('trf_', '', $publicTransferId);
+
+    //     $transferPaymentRS = $this->getDbEntity('payment',['transfer_id'=>$transferId]);
+    //     $this->assertNotNull( $transferPaymentRS);
+
+    //     $ledgerOutboxEntry = $this->getDbEntity('ledger_outbox',  ['payload_name' => $publicTransferId.'-transfer_processed']);
+    //     $this->assertNotNull( $ledgerOutboxEntry);
+
+    //     // setting outbox entry's created_at to an earlier timestamp so that cron fetches it
+    //     $createdAtTimestamp = (int)((millitime()-3600000)/1000);
+    //     $this->fixtures->edit('ledger_outbox', $ledgerOutboxEntry['id'], ['created_at' => $createdAtTimestamp]);
+
+    //     $debitJID = 'LsqR14zUg9dbDB' ;
+    //     $creditJID = 'LsqR157oYgCrCR';
+
+    //     $journal = $this->getPaymentTransferJournalResponsePayload($publicTransferId, $debitJID, $creditJID, $sourceMID, $destnMID, $transfers[0]['amount']);
+
+    //     $mockLedger->shouldReceive('createBulkJournal')
+    //         ->times(1)
+    //         ->andReturnValues([
+    //             [
+    //                 'code' => 200,
+    //                 'body' => $journal,
+    //             ],
+    //         ]);
+
+    //     // 2. offboard merchant from reverse shadow
+    //     $this->fixtures->merchant->removeFeatures(['pg_ledger_reverse_shadow']);
+
+    //     $this->ba->cronAuth();
+    //     // 3. pending cron picks pending tarnsfer
+    //     $request  = [
+    //         'method'    => 'POST',
+    //         'url'       => '/payment_transfers/process_pending?minutes=0',
+    //         'content'   => [
+
+    //         ],
+    //     ];
+
+    //     $response = $this->makeRequestAndGetContent($request);
+    //     $this->assertNotNull($response);
+
+    //     // fetch transfer to check if txn id associated
+    //     $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+    //     $this->assertNotNull($transfer, 'transfer not found');
+
+    //     $processedAt = $transfer["processed_at"];
+
+    //     $transferTxn = $this->getDbEntityById('transaction', $transfer['transaction_id']);
+    //     $this->assertNotNull($transferTxn);
+
+    //     // 4. pg ledger cron picks the transfer as outbox entry present
+    //     $testData = $this->testData[__FUNCTION__];
+
+    //     $testData['request']['url'] = '/ledger_outbox/retry';
+
+    //     $this->runRequestResponseFlow($testData);
+
+    //     // fetch transfer again to check if txn id associated
+    //     $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+    //     $this->assertNotNull($transfer, 'transfer not found');
+    //     $this->assertEquals($processedAt, $transfer["processed_at"]);
+
+    //     $transferPayments = $this->getDbEntities('payment',['transfer_id'=>$transferId]);
+    //     $this->assertNotNull($transferPayments);
+    // }
 
 }

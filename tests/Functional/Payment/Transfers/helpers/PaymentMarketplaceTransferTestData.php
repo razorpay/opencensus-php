@@ -945,5 +945,21 @@ return [
         'response' => [
             'content' => [],
         ],
-    ]
+    ],
+
+    'testReverseShadowCronRetrySuccessForPaymentTransferAlreadyProcessedByPendingCron' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'successful entries count' => 1,
+                'failed entries count' =>  0,
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
 ];
