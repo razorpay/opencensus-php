@@ -1514,6 +1514,17 @@ class Core extends Base\Core
                     array_push($enabledBanks, $providerName);
                 }
             }
+
+            foreach ($enabledBanks as $index => $instrument) {
+
+                $isDisabledInstrument = in_array(strtolower($instrument), CardlessEmiProvider::$disabledInstruments, true);
+
+                if ($isDisabledInstrument === true)
+                {
+                    unset($enabledBanks[$index]);
+                }
+
+            }
         }
 
         if ($method === Payment\Method::PAYLATER)

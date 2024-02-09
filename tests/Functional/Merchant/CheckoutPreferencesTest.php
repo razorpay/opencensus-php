@@ -588,19 +588,19 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->assertEquals($response['methods']['cardless_emi']['earlysalary'],true);
 
-        $this->assertEquals($response['methods']['cardless_emi']['zestmoney'],true);
+//        $this->assertEquals($response['methods']['cardless_emi']['zestmoney'],true);
 
         $this->assertEquals($response['methods']['cardless_emi']['hdfc'],true);
 
         $this->assertEquals($response['methods']['cardless_emi']['kkbk'],true);
 
-        $this->assertEquals($response['methods']['cardless_emi']['fdrl'],true);
+//        $this->assertEquals($response['methods']['cardless_emi']['fdrl'],true);
 
         $this->assertEquals($response['methods']['cardless_emi']['idfb'],true);
 
         $this->assertEquals($response['methods']['cardless_emi']['icic'],true);
 
-        $this->assertEquals($response['methods']['cardless_emi']['hcin'],true);
+//        $this->assertEquals($response['methods']['cardless_emi']['hcin'],true);
 
         $this->assertEquals($response['methods']['cardless_emi']['krbe'],true);
 
