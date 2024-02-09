@@ -16,9 +16,11 @@ use RZP\Models\Payment;
 class CardPayments{
 
     const FDRL = 'FDRL';
+    const ICIC = 'ICIC';
 
     protected static $supportedTPVBanks = [
-        self::FDRL
+        self::FDRL,
+        self::ICIC
     ];
 
     public static function getCardTPVSupportedBanks()

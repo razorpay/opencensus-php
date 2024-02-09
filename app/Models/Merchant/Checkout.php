@@ -1098,7 +1098,7 @@ class Checkout
                 }
             }
             // add card as preffered method for debit card tpv merchants
-            if ($merchant->isDebitCardValidationEnabled() === true)
+            if ($merchant->isDebitCardValidationEnabled() === true && in_array($bankCode,  Payment\Processor\CardPayments::getCardTPVSupportedBanks(), true) === true )
             {
                 $methods += [
                     Payment\Method::CARD      => $data['methods'][Payment\Method::CARD],
