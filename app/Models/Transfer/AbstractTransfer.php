@@ -28,10 +28,10 @@ abstract class AbstractTransfer
 {
     protected $payment;
 
-    const MUTEX_LOCK_TIMEOUT = 600;
-    const MUTEX_NUM_RETRIES = 0;
+    const MUTEX_LOCK_TIMEOUT = 1200;
+    const MUTEX_NUM_RETRIES = 3;
     const MUTEX_MIN_RETRY_DELAY_MS = 100;
-    const MUTEX_MAX_RETRY_DELAY_MS = 200;
+    const MUTEX_MAX_RETRY_DELAY_MS = 250;
 
     protected $mutex;
 
@@ -286,10 +286,13 @@ abstract class AbstractTransfer
 
                 if ($processViaReverseShadow === false)
                 {
-                    $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function () use ($oldTransfer, $core)
+                    if ($oldTransfer->hasTransaction() === false)
                     {
-                        return $core->createTransactionForTransfer($oldTransfer);
-                    });
+                        $transfer = Tracer::inSpan(['name' => 'transfer.process.create_transfer_transaction'], function () use ($oldTransfer, $core)
+                        {
+                            return $core->createTransactionForTransfer($oldTransfer);
+                        });
+                    }
                 }
 
                 if ($processViaReverseShadow === true)
@@ -300,33 +303,7 @@ abstract class AbstractTransfer
 
                     if (count($outboxEntries) === 0)
                     {
-                        try
-                        {
-                            $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
-
-                            $this->trace->info(
-                                TraceCode::TRANSFER_PAYMENT_EXISTS,
-                                [
-                                    'payment_id'    => $transferPayment->getId(),
-                                ]
-                            );
-                        }
-                        catch (BadRequestException $e)
-                        {
-                            if ($e->getCode() === ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
-                            {
-                                $transferPayment = null;
-                            }
-                            else
-                            {
-                                throw $e;
-                            }
-                        }
-
-                        if ($transferPayment === null)
-                        {
-                            $transferPayment = $this->createTransferredEntity($transfer, $payment);
-                        }
+                        $transferPayment = $this->createTransferredEntity($transfer, $payment);
 
                         $transfer = $core->createReverseShadowLedgerEntriesForOrderAndPaymentTransfer($transfer, $transferPayment);
                     }
@@ -457,6 +434,31 @@ abstract class AbstractTransfer
      */
     protected function createTransferredPayment($transfer, $payment): Payment\Entity
     {
+        try
+        {
+            $transferPayment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+
+            $this->trace->info(
+                TraceCode::TRANSFER_PAYMENT_EXISTS,
+                [
+                    'payment_id'    => $transferPayment->getId(),
+                ]
+            );
+
+            return $transferPayment;
+        }
+        catch (BadRequestException $e)
+        {
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
+            {
+                $transferPayment = null;
+            }
+            else
+            {
+                throw $e;
+            }
+        }
+
         $parentMerchant = (new Core())->fetchAccountParentMerchant($this->merchant, $payment->getPublicKey() ?? null, $payment);
 
         $to = $this->repo->account->findByIdAndMerchant($transfer->getToId(), $parentMerchant);
@@ -689,13 +691,13 @@ abstract class AbstractTransfer
     {
         $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::TRANSFER_PROCESSING_MUTEX_CONFIG]);
 
-        $config['num_retries'] = (int) ($mutexConfig['num_retries'] ?? self::MUTEX_NUM_RETRIES);
+        $config['num_retries'] = (int) ($config['num_retries'] ?? self::MUTEX_NUM_RETRIES);
 
-        $config['min_delay_ms'] = (int) ($mutexConfig['min_delay_ms'] ?? self::MUTEX_MIN_RETRY_DELAY_MS);
+        $config['min_delay_ms'] = (int) ($config['min_delay_ms'] ?? self::MUTEX_MIN_RETRY_DELAY_MS);
 
-        $config['max_delay_ms'] = (int) ($mutexConfig['max_delay_ms'] ?? self::MUTEX_MAX_RETRY_DELAY_MS);
+        $config['max_delay_ms'] = (int) ($config['max_delay_ms'] ?? self::MUTEX_MAX_RETRY_DELAY_MS);
 
-        $config['lock_timeout_sec'] = (int) ($mutexConfig['lock_timeout_sec'] ?? self::MUTEX_LOCK_TIMEOUT);
+        $config['lock_timeout_sec'] = (int) ($config['lock_timeout_sec'] ?? self::MUTEX_LOCK_TIMEOUT);
 
         return $config;
     }

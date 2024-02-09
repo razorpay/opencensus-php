@@ -915,7 +915,12 @@ class Core extends Base\Core
 
                     if ($sourcePayment === null)
                     {
-                        return null;
+                        $this->trace->error(TraceCode::CAPTURED_SOURCE_PAYMENT_NOT_FOUND_FOR_TRANSFER, [
+                            'transfer_id'    => $transfer->getId(),
+                            'order_id'       => $sourceOrderId,
+                        ]);
+
+                        throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
                     }
 
                     // fetching payment again to get from sources configured for archived entity
@@ -1333,7 +1338,17 @@ class Core extends Base\Core
                             LedgerReverseShadowConstants::RETRY_COUNT => $retries
                         ]);
 
-                        $this->updateRetryCount($entry, $retries, $transactorEvent);
+                        if ($transactorEvent === LedgerConstants::TRANSFER)
+                        {
+                            // For transfer transactor IDs, skip update of retry count. This will allow
+                            // retry of transfer processing infinitely (status update and dispatch to queue
+                            // for txn creation) in case of failures.
+                            (new Transfer\Metric())->pushLedgerOutboxRetryCronFailureMetrics($e);
+                        }
+                        else
+                        {
+                            $this->updateRetryCount($entry, $retries, $transactorEvent);
+                        }
 
                         $failed++;
                         array_push($failedIds, $transactorId);
@@ -1586,10 +1601,14 @@ class Core extends Base\Core
         $this->repo->saveOrFail($transfer);
 
         $this->trace->info(
-            TraceCode::TRANSFER_FAILED_DUE_TO_INSUFFICIENT_BALANCE,
+            TraceCode::TRANSFER_FAILED_IN_REVERSE_SHADOW_MODE,
             [
-                'transfer_id'         => $transfer->getId(),
+                'transfer_id'        => $transfer->getId(),
+                'error_code'         => $errorCode,
+                'error_message'      => $errorMessage,
             ]);
+
+        (new Transfer\Metric())->pushTransferProcessFailedMetrics((new BadRequestException($errorCode)));
 
         (new Transfer\Core())->eventTransferFailed($transfer);
     }

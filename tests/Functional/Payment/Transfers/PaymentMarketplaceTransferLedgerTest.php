@@ -2619,6 +2619,78 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         $this->assertEquals($oldDestnMarketBalance, $newDestnMarketBalance, 'destn balance not deducted');
     }
 
+    public function testPendingTransferCronProcessingAfterReverseShadowProcessingIsInitiatedAndMerchantOffboarded()
+    {
+        $this->assertNotNull($this->payment);
+
+        $sourceMID = '10000000000000';
+        $destnMID = '10000000000001';
+
+        $this->assertNotNull($this->payment);
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], $destnMID);
+
+        $oldDestnMarketBalance = $this->getAccountBalance($destnMID);
+        $this->assertEquals(0, $oldDestnMarketBalance);
+
+        $oldSourceMarketBalance = $this->getAccountBalance($sourceMID);
+        $this->assertGreaterThanOrEqual($this->payment['amount'],$oldSourceMarketBalance);
+
+        $mockLedger = $this->initialiseLedger(1000000, 0, 0);
+
+        // create transfer
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 10000,
+            'currency'=> 'INR',
+        ];
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+
+        $publicTransferId = $content['items'][0]['id'];
+
+        $transferId =  str_replace('trf_', '', $publicTransferId);
+
+        $ledgerOutboxEntry = $this->getDbEntity('ledger_outbox',  ['payload_name' => $publicTransferId.'-transfer_processed']);
+        $this->assertNotNull( $ledgerOutboxEntry);
+
+        $transferPayments = $this->getDbEntities('payment', ['transfer_id' => $transferId]);
+        $this->assertCount(1, $transferPayments);
+        $transferPayment = $transferPayments[0];
+
+        $debitJID = 'LsqR14zUg9dbDB' ;
+        $creditJID = 'LsqR157oYgCrCR';
+
+        // offboard merchant from reverse shadow
+        $this->fixtures->merchant->removeFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->fixtures->edit('transfer', $transferId, [
+            'created_at' => Carbon::now()->subMinutes(10)->getTimestamp(),
+            'updated_at' => Carbon::now()->subMinutes(10)->getTimestamp(),
+        ]);
+
+        // process transfer via pending transfer cron
+        $this->ba->cronAuth();
+        $request  = [
+            'method'    => 'POST',
+            'url'       => '/payment_transfers/process_pending?minutes=1',
+            'content'   => [
+
+            ],
+        ];
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response);
+
+        $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
+        $this->assertNotNull($transfer, 'transfer not found');
+        $this->assertEquals('processed', $transfer['status'], 'transfer status not marked processed');
+
+        $transferPayments = $this->getDbEntities('payment', ['transfer_id' => $transferId]);
+        $this->assertCount(1, $transferPayments);
+        $this->assertEquals($transferPayment['id'], $transferPayments[0]['id']);
+    }
+
     public function testReverseShadowCronRetryNonRetryableFailureForPaymentTransferProcessedEvent()
     {
         $this->assertNotNull($this->payment);
