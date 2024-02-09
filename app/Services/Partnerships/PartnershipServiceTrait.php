@@ -114,7 +114,7 @@ trait PartnershipServiceTrait
         foreach ($prtsResult as $key => $value)
         {
             // ignore some keys from parity
-            if (array_key_exists($key, static::$ignoreKeyForParity) ==  true)
+            if (in_array($key, static::$ignoreKeyForParity) ==  true)
             {
                 continue;
             }
