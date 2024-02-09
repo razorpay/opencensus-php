@@ -2216,11 +2216,12 @@ class Processor
             $dimensions[4] = 1;
         }
 
-        if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false)
-        {
-            $routeViaReArch = false;
-            $dimensions[5] = 1;
-        }
+//        Commenting since this is covered in $order->getProductId() check. Refer Condition 25
+//        if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false)
+//        {
+//            $routeViaReArch = false;
+//            $dimensions[5] = 1;
+//        }
 
         if (empty($input[Payment\Entity::TOKEN_ID]) === false)
         {
@@ -2373,12 +2374,13 @@ class Processor
                     $dimensions[26] = 1;
                 }
 
+//        Commenting since this is covered in $order->getProductId() check. Refer Condition 25
                 // Check if invoice exists in the order
-                if ($order->invoice !== null)
-                {
-                    $routeViaReArch = false;
-                    $dimensions[27] = 1;
-                }
+//                if ($order->invoice !== null)
+//                {
+//                    $routeViaReArch = false;
+//                    $dimensions[27] = 1;
+//                }
 
                 // Check if tax invoice meta exists in the order meta
                 if (isset($orderMeta[Order\OrderMeta\Type::TAX_INVOICE]) === true)
