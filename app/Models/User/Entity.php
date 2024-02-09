@@ -19,6 +19,7 @@ use RZP\Models\Merchant\MerchantUser;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
 use RZP\Services\Dcs\Features\Service as DCSService;
 use RZP\Services\Dcs\Features\Type;
@@ -552,10 +553,19 @@ class Entity extends Base\PublicEntity
     protected function getSecondFactorAuthEnforcedAttribute(): bool
     {
         return ($this->getOrgEnforcedSecondFactorAuthAttribute() === true) or
-            ($this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
-                ->where(Merchant\Entity::SECOND_FACTOR_AUTH, '=', true)
-                ->limit(1)
-                ->count() > 0);
+            ($this->isSecondFactorAuthEnabledForUserMerchants());
+    }
+
+    protected function isSecondFactorAuthEnabledForUserMerchants()
+    {
+        $newAsvFlow = (new AsvRouter())->shouldRouteWriteRequestToAccountService(get_class($this), __FUNCTION__, $this->getAttribute(self::ID));
+        if ($newAsvFlow === true) {
+            return (new MerchantUser\Repository)->secondFactorAuthEnabledForUserMerchants($this->getAttribute(self::ID));
+        }
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+            ->where(Merchant\Entity::SECOND_FACTOR_AUTH, '=', true)
+            ->limit(1)
+            ->count() > 0;
     }
 
     protected function getSecondFactorAuthSetupAttribute(): bool

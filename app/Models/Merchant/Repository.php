@@ -1978,6 +1978,15 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function fetchMidsCountWithSecondFactorAuth( array $mids)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(Connection::ASV_WRITER))
+                    ->whereIn(Entity::ID, $mids)
+                    ->where(Entity::SECOND_FACTOR_AUTH, 1)
+                    ->limit(1)
+                    ->count();
+
+    }
     public function fetchAllMids($offsetID,$limit)
     {
         $query=$this->newQuery()

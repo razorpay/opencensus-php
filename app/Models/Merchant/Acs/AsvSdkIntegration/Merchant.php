@@ -17,6 +17,8 @@ class Merchant extends Base
     const MERCHANT_FIND_BY_IDS = 'merchant_find_by_ids';
     const GET_NON_SUSPENDED_MERCHANTS_FROM_IDS = 'get_non_suspended_merchants_from_ids';
 
+    const GET_SECOND_FACTOR_AUTH_ENABLED_MERCHANTS_FROM_IDS = 'get_second_factor_auth_enabled_merchants_from_ids';
+
     public function __construct()
     {
         parent::__construct();
@@ -90,6 +92,21 @@ class Merchant extends Base
         );
 
         $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+        return $this->getMerchantCollectionFromResponse($response);
+    }
+
+    public function getMerchantsWithSecondFactorAuthPresentInIds(array $ids): PublicCollection|\Illuminate\Database\Eloquent\Collection
+    {
+        $filterRequest =  new FilterRequest();
+
+        $filterRequest->setQueryIdentifier(self::GET_SECOND_FACTOR_AUTH_ENABLED_MERCHANTS_FROM_IDS);
+
+        $filterRequest->setBindings(
+            json_encode([$ids])
+        );
+
+        $response = $this->getFilterResponseFromAsv($filterRequest, self::FILTER_TIMEOUT_IN_MICRO_SECONDS);
+
         return $this->getMerchantCollectionFromResponse($response);
     }
 }

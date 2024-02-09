@@ -15,6 +15,7 @@ use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration;
 
 class Repository extends Base\Repository
 {
@@ -42,6 +43,35 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
+    }
+
+    public function secondFactorAuthEnabledForUserMerchants(string $userId): bool
+    {
+        $merchantIds = $this->newQuery()
+                    ->select(Entity::MERCHANT_ID)
+                    ->where(Entity::USER_ID, $userId)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+
+        // check if transaction is active
+        if ($this->isTransactionActive() === true)
+        {
+            $midCount = $this->repo->merchant->fetchMidsCountWithSecondFactorAuth($merchantIds);
+            return $midCount > 0;
+        }
+        // dividing in chunks to handle huge array cases
+        $mIdChunks = array_chunk($merchantIds, 1000);
+        foreach ($mIdChunks as $mIdChunk)
+        {
+            $filteredMerchants = (new AsvSdkIntegration\Merchant())->getMerchantsWithSecondFactorAuthPresentInIds($mIdChunk);
+            if (count($filteredMerchants) > 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function returnMerchantUsersForUserIdOrderByRole(string $userId, int $limit = 100)
