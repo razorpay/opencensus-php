@@ -1,14 +1,18 @@
 import React from 'react';
 import Button from '@razorpay/blade-old/src/atoms/Button';
-import ProductShimmer from './shimmer';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+
+import posRefer from 'assets/partner-dashboard/posRefer.svg';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import {
   AddMerchantSource,
   ProductListItemT,
 } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
-import ProductListItem from './ProductListItem';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
-import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
+
+import ProductListItem from './ProductListItem';
+import ProductShimmer from './shimmer';
 
 interface ReferralGuideT {
   partnerName: string;
@@ -40,6 +44,7 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
     : 'Start Referring';
   const orgName = org?.business_name || 'Razorpay';
   const orgCode = org?.custom_code || 'rzp';
+  const { isPartnershipsForPosEnabled } = usePartnerDashboardExperiments();
 
   const PRODUCT_LIST: ProductListItemT[] = [
     {
@@ -50,20 +55,33 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
       onClickCTA: () => handleReferClient('referral-guide-pg', PRODUCT_TYPE.PG),
       disabled: PAYMENT_PRODUCT_DISABLED_STATUS[orgCode],
     },
-    {
-      icon: bankingIcon,
-      title: 'For Banking Products',
-      subTitle: (
-        <>
-          Refer your clients to next generation <span className="no-break">neo-banking</span>{' '}
-          enabling faster payouts
-        </>
-      ),
-      ctaText: '+ Add New Client',
-      onClickCTA: () => handleReferClient('referral-guide-x', PRODUCT_TYPE.X),
-      disabled: false,
-    },
   ];
+  const bankingProduct = {
+    icon: bankingIcon,
+    title: 'For Banking Products',
+    subTitle: (
+      <>
+        Refer your clients to next generation <span className="no-break">neo-banking</span> enabling
+        faster payouts
+      </>
+    ),
+    ctaText: '+ Add New Client',
+    onClickCTA: () => handleReferClient('referral-guide-x', PRODUCT_TYPE.X),
+    disabled: false,
+  };
+  const posProduct = {
+    icon: posRefer,
+    title: 'For POS Product',
+    subTitle: `Refer your clients to leading ${orgName}'s POS payments products`,
+    ctaText: '+ Add New Client',
+    onClickCTA: () => handleReferClient('referral-guide-pos', PRODUCT_TYPE.POS),
+    disabled: false,
+  };
+  if (isPartnershipsForPosEnabled) {
+    PRODUCT_LIST.push(posProduct);
+  } else {
+    PRODUCT_LIST.push(bankingProduct);
+  }
   const orgPrdList = {
     rzp: [...PRODUCT_LIST],
     curlec: [PRODUCT_LIST[0]],

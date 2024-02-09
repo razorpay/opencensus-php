@@ -1,7 +1,12 @@
 const KEY = 'partnerships-kyc-access-opt-in';
 
-export const getHasSelectedKycAccess = (): boolean | null => {
-  const hasSelectedKycAccess = localStorage.getItem(KEY);
+const getProductKey = (productType: string): string => {
+  return `${KEY}-${productType}`;
+};
+
+export const getHasSelectedKycAccess = (productType: string): boolean | null => {
+  const key = getProductKey(productType);
+  const hasSelectedKycAccess = localStorage.getItem(key);
   if (!hasSelectedKycAccess) {
     return null;
   }
@@ -10,9 +15,10 @@ export const getHasSelectedKycAccess = (): boolean | null => {
   return request_kyc_access;
 };
 
-export const setHasSelectedKycAccess = (request_kyc_access: boolean): void => {
+export const setHasSelectedKycAccess = (request_kyc_access: boolean, productType: string): void => {
+  const key = getProductKey(productType);
   localStorage.setItem(
-    KEY,
+    key,
     JSON.stringify({
       request_kyc_access,
     }),

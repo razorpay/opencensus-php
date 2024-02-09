@@ -105,6 +105,13 @@ export const RegistrationLinkRoles = {
   },
 };
 
+export const posPartnerRoles = {
+  [rolesList.PARTNER_AGENT]: {
+    label: 'POS Partner Agent',
+    desc: 'Can only view POS section under Affiliated Accounts',
+  },
+};
+
 /* Used for showing product onboarding */
 export const PossibleStatuses = {
   loading: 'loading',

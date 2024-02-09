@@ -9,7 +9,7 @@ import { User } from 'common/typings';
 import lazy from 'merchant/routes/LazyLoader';
 import { Org } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_TYPE, ORG_NAME } from 'merchant/views/PartnerDashboard/constants';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 
 import ChooseOAuthApp from './components/ChooseOAuthApp';
@@ -31,11 +31,16 @@ const getModalHeaderText = (
   {
     isPGInviteFlow,
     isPlatformPartnerInviteFlowEnabled,
-  }: { isPGInviteFlow: boolean; isPlatformPartnerInviteFlowEnabled: boolean },
+    isPosInviteFlow,
+  }: {
+    isPGInviteFlow: boolean;
+    isPlatformPartnerInviteFlowEnabled: boolean;
+    isPosInviteFlow: boolean;
+  },
 ): string => {
   switch (currentStep) {
     case SELECT_PRODUCT:
-      return isPGInviteFlow || isPlatformPartnerInviteFlowEnabled
+      return isPGInviteFlow || isPlatformPartnerInviteFlowEnabled || isPosInviteFlow
         ? 'Add New Clients'
         : 'Add New Merchants';
     case CHOOSE_OAUTH_APP:
@@ -47,6 +52,8 @@ const getModalHeaderText = (
           return 'Add New Merchants - RazorpayX';
         case PRODUCT_TYPE.CAPITAL:
           return 'Add New Merchants - Line Of Credit';
+        case PRODUCT_TYPE.POS:
+          return 'Add new clients - Razorpay POS';
         case PRODUCT_TYPE.PG:
         default:
           if (isPGInviteFlow || isPlatformPartnerInviteFlowEnabled)
@@ -90,11 +97,13 @@ const InviteMerchantModal = ({
 
   // experiment conditions
   const isPGInviteFlow = user.isPartnershipsInviteFlowEnabled && productType == PRODUCT_TYPE.PG;
+  const isPosInviteFlow = productType == PRODUCT_TYPE.POS;
 
-  const orgName = org?.business_name || 'Razorpay';
+  const orgName = org?.business_name || ORG_NAME.RZP;
   const modalTitle = getModalHeaderText(productType, currentStep, orgName, {
     isPGInviteFlow,
     isPlatformPartnerInviteFlowEnabled,
+    isPosInviteFlow,
   });
 
   // cta handlers
@@ -112,16 +121,21 @@ const InviteMerchantModal = ({
     if (user.isPartner('pure_platform')) setCurrentStep(CHOOSE_OAUTH_APP);
     else setCurrentStep(SELECT_PRODUCT);
   };
+  const onDismissModal = () => {
+    setCurrentStep(null);
+    setProductType(null);
+    onDismiss();
+  };
 
   return (
     <ErrorBoundary team={Teams?.PARTNERSHIP} rank={Ranks.P0} resetOnProps>
       {/* // Note: zIndex for sidenav in the dashboard is 1111 */}
-      <Modal zIndex={1112} isOpen={isOpen} onDismiss={onDismiss} size="small">
+      <Modal zIndex={1112} isOpen={isOpen} onDismiss={onDismissModal} size="small">
         <ModalBody>
           {/* Note: Current ModalHeader from blade doesn't support hiding the divider */}
           <ModalHeader
             modalTitle={shouldShowHeaderAndTabs ? modalTitle : ''}
-            onDismiss={onDismiss}
+            onDismiss={onDismissModal}
             showDivider={[SELECT_PRODUCT, CHOOSE_OAUTH_APP].includes(currentStep)}
           />
           {currentStep === SELECT_PRODUCT ? (

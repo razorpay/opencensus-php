@@ -5,6 +5,7 @@ import { compose, bindActionCreators } from 'redux';
 
 import { useI18Service } from 'common/i18';
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
+import { OAuthAppDetailsType } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import BulkInviteTab from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab';
 import BulkAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkAddMerchant';
 import BulkOAuthInvite from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkOAuthInvite';
@@ -13,7 +14,6 @@ import PublicOAuthLinks from 'merchant/views/PartnerDashboard/SubMerchant/compon
 import SingleInviteTab from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab';
 import SingleAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SingleAddMerchant';
 import SingleOAuthInvite from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SingleOAuthInvite';
-
 import { trackInviteFlowModalLoaded } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
@@ -21,7 +21,6 @@ import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hook
 
 import { INVITE_TAB_TYPES } from './constants';
 import { StyledMerchantTabs } from './styled';
-import { OAuthAppDetailsType } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 
 const { SINGLE_INVITE, BULK_UPLOAD, PUBLIC_LINK } = INVITE_TAB_TYPES;
 
@@ -52,6 +51,9 @@ const InviteMerchantTabs = ({
     usePartnerDashboardExperiments();
   const { isConfigTagEnabled } = useI18Service();
 
+  const shouldShowTabWithFtux =
+    isEasierAccessToSubmerchantKycEnabled &&
+    (productType === PRODUCT_TYPE.PG || productType === PRODUCT_TYPE.POS);
   useEffect(() => {
     setShowHeaderAndTabs(true);
     setShouldShowFooter(activeTabId !== PUBLIC_LINK);
@@ -77,7 +79,7 @@ const InviteMerchantTabs = ({
             />
           ) : null}
           {!isPlatformPartnerInviteFlowEnabled ? (
-            isEasierAccessToSubmerchantKycEnabled && productType === PRODUCT_TYPE.PG ? (
+            shouldShowTabWithFtux ? (
               // TODO v2: consider lazy loading with suspense here.
               <SingleInviteTab
                 productType={productType}
@@ -115,7 +117,7 @@ const InviteMerchantTabs = ({
             />
           ) : null}
           {!isPlatformPartnerInviteFlowEnabled ? (
-            isEasierAccessToSubmerchantKycEnabled && productType === PRODUCT_TYPE.PG ? (
+            shouldShowTabWithFtux ? (
               <BulkInviteTab
                 productType={productType}
                 onDismiss={onDismiss}

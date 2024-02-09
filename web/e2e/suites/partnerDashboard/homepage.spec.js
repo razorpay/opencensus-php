@@ -17,9 +17,18 @@ test.describe
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.PARTNER_DASHBOARD);
   });
+
   test('should load the Reseller Partner Dashboard @priority=critical', async ({ page }) => {
     await waitForSelectorToBeVisible(
       { page, selector: RESELLER_WELCOME_TEXT },
+      { timeout: TIMEOUT },
+    );
+    // POS Banner
+    const addPosAgentButton = await page.getByRole('button', { name: 'Add POS Agent' });
+    await addPosAgentButton.click();
+
+    await waitForSelectorToBeVisible(
+      { page, selector: 'text=Invite New Member' },
       { timeout: TIMEOUT },
     );
   });

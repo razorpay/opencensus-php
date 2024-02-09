@@ -38,6 +38,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'partnerships_for_pos',
+        experimentId: {
+          beta: 'N3FXsNXuhB2qSf',
+          production: 'N3FbGRify7Htzx',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'firs_request',
         experimentId: {
           beta: 'MkokP4l9jGy625',

@@ -94,7 +94,7 @@ const SingleInviteTab = ({
   // Tracking arg
   const inviteFlow = INVITE_TAB_TYPES.SINGLE_INVITE;
   // FTUX logic
-  const hasSelectedKycAccess = getHasSelectedKycAccess();
+  const hasSelectedKycAccess = getHasSelectedKycAccess(productType);
 
   // Steps logic
   const [currentStep, setCurrentStep] = useState(SINGLE_INVITE_FORM);
@@ -156,7 +156,7 @@ const SingleInviteTab = ({
           onDismiss();
         }
         // update kyc access value *after* showing appropriate success screen
-        setHasSelectedKycAccess(request_kyc_access);
+        setHasSelectedKycAccess(request_kyc_access, productType);
       })
       .catch(handleErrorResponse);
   };

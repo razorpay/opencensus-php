@@ -1,36 +1,39 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { connect } from 'react-redux';
-import { compose } from 'redux';
 import rTracking from 'react-tracking';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
+import { useI18Service } from 'common/i18';
+import DashboardBanner from 'common/ui/DashboardBanner';
+import Loader from 'common/ui/Loader';
+import { trackShorterKYCEvents } from 'common/utils/analytics';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import ActivationGuide from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide';
+import POSReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/POS/POSReferralGuide';
+import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/CapitalReferralCard';
+import ReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/index';
+import {
+  showActivationConfetti,
+  getExperimentsForTracking,
+} from 'merchant/views/PartnerDashboard/Home/Components/utils';
 import {
   AddMerchantSource,
   FUXStatusStateT,
   FUXStatusT,
   PartnerHomeT,
 } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
-import ShowWhen from 'merchant/components/ShowWhen';
 import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
-import ActivationGuide from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide';
-import ReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/index';
-import {
-  showActivationConfetti,
-  getExperimentsForTracking,
-} from 'merchant/views/PartnerDashboard/Home/Components/utils';
-import 'merchant/views/PartnerDashboard/Home/home.styl';
-import Loader from 'common/ui/Loader';
-import DashboardBanner from 'common/ui/DashboardBanner';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/CapitalReferralCard';
-import PageHeading from './Components/PageHeading';
 import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
-import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import { INVITE_MERCHANT_STEPS } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/constants';
-import { useI18Service } from 'common/i18';
-import { trackShorterKYCEvents } from 'common/utils/analytics';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import 'merchant/views/PartnerDashboard/Home/home.styl';
+
+import PageHeading from './Components/PageHeading';
 
 const PurePlatformSwitchGuideLazy = React.lazy(
   () => import('merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch'),
@@ -45,7 +48,8 @@ const Home = ({
   org,
   partnerSwitchFlag,
 }: PartnerHomeT): JSX.Element => {
-  const { isEasierAccessToSubmerchantKycEnabled } = usePartnerDashboardExperiments();
+  const { isEasierAccessToSubmerchantKycEnabled, isPartnershipsForPosEnabled } =
+    usePartnerDashboardExperiments();
   const [FUXStatus, setFUXStatus] = useState<FUXStatusStateT>({
     value: null,
     isFetching: true,
@@ -86,6 +90,7 @@ const Home = ({
       objectName: 'Partner Dashboard',
       actionName: 'Loaded',
       screen: 'Partner Dashboard',
+      properties: {},
     });
   }, []);
 
@@ -168,6 +173,9 @@ const Home = ({
           currentUser.isPartner() && !currentUser.isPartner('pure_platform')
         }
       >
+        <ShowWhen additionalCondition={() => isPartnershipsForPosEnabled}>
+          <POSReferralGuide handleReferClient={handleReferClient} />
+        </ShowWhen>
         <ReferralGuide
           partnerName={partnerName}
           isFirstReferralDone={isFirstReferralDone}
@@ -197,7 +205,11 @@ const Home = ({
         <InviteMerchantModal
           isOpen={isInviteMerchantModalOpen}
           onAddSuccess={onAddMerchantSuccess}
-          initialStep={INVITE_MERCHANT_STEPS.SELECT_PRODUCT}
+          initialStep={
+            inviteMerchantModalProductType === ''
+              ? INVITE_MERCHANT_STEPS.SELECT_PRODUCT
+              : INVITE_MERCHANT_STEPS.INVITE_TABS
+          }
           initialProductType={inviteMerchantModalProductType}
           onDismiss={() => setIsInviteMerchantModalOpen(false)}
         />

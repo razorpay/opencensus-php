@@ -45,7 +45,8 @@ export type AddMerchantSource =
   | 'referral-guide-pg'
   | 'referral-guide-x'
   | 'referral-guide-capital'
-  | 'daily-earning';
+  | 'daily-earning'
+  | 'referral-guide-pos';
 
 export interface ProductListItemT {
   icon: string;

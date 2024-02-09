@@ -69,4 +69,22 @@ describe('usePartnerDashboardExperiments', () => {
     experiments = usePartnerDashboardExperiments();
     expect(experiments.isPartnershipCapitalBureauLinkEnabled).toBe(false);
   });
+
+  test('should return correct output for isPartnershipsForPosEnabled', () => {
+    userSpy.mockImplementation(() => ({
+      ...defaultMockUser,
+      isPartner: (partner_type) => partner_type === 'reseller',
+    }));
+    mockAbExperiments = {
+      partnerships_for_pos: variantOn,
+    };
+    let experiments = usePartnerDashboardExperiments();
+    expect(experiments.isPartnershipsForPosEnabled).toBe(true);
+
+    mockAbExperiments = {
+      partnership_for_pos: variantOff,
+    };
+    experiments = usePartnerDashboardExperiments();
+    expect(experiments.isPartnershipsForPosEnabled).toBe(false);
+  });
 });

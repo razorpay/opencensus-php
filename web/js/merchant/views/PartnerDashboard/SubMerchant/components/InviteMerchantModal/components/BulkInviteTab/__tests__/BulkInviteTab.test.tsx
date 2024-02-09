@@ -7,13 +7,14 @@ import * as kycAccessFtux from 'merchant/views/PartnerDashboard/SubMerchant/comp
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { render, screen, userEvent, waitFor } from 'test-utils';
+
+import { MockBatchValidate } from './mocks/fixtures';
 import {
   useCreateBatchSuccessHandler,
   useCreateBatchErrorHandler,
   useValidateBatchSuccessHandler,
   useValidateBatchErrorHandler,
 } from './mocks/once-handlers';
-import { MockBatchValidate } from './mocks/fixtures';
 
 const getHasSelectedKycAccessSpy = jest.spyOn(kycAccessFtux, 'getHasSelectedKycAccess');
 const setHasSelectedKycAccessSpy = jest.spyOn(kycAccessFtux, 'setHasSelectedKycAccess');
@@ -138,7 +139,7 @@ describe('BulkInviteTab', () => {
     });
 
     expect(showNotificationSpy).not.toHaveBeenCalled();
-    expect(setHasSelectedKycAccessSpy).toHaveBeenCalledWith(true);
+    expect(setHasSelectedKycAccessSpy).toHaveBeenCalledWith(true, PRODUCT_TYPE.PG);
     expect(defaultProps.setShowHeaderAndTabs).toHaveBeenCalledWith(false);
 
     expect(screen.getByText('Invite successfully sent')).toBeInTheDocument();
@@ -164,7 +165,7 @@ describe('BulkInviteTab', () => {
     });
 
     expect(showNotificationSpy).not.toHaveBeenCalled();
-    expect(setHasSelectedKycAccessSpy).toHaveBeenCalledWith(false);
+    expect(setHasSelectedKycAccessSpy).toHaveBeenCalledWith(false, PRODUCT_TYPE.PG);
     expect(defaultProps.setShowHeaderAndTabs).toHaveBeenCalledWith(false);
 
     expect(screen.getByText('Before you finish, we have something to ask')).toBeInTheDocument();

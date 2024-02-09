@@ -7,7 +7,8 @@ import { useI18Service } from 'common/i18';
 import { User } from 'common/typings';
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_TYPE, PRODUCT_NAME } from 'merchant/views/PartnerDashboard/constants';
+import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 
 // TODO v2: maintainence status props and payments disable note
 // const PAYMENTS_MAINTENANCE_STATUS = {
@@ -37,6 +38,8 @@ const SelectProduct = ({
     setProductType(value);
   };
   const { isConfigTagEnabled } = useI18Service();
+  const { isPartnershipsForPosEnabled } = usePartnerDashboardExperiments();
+  const xProductName = PRODUCT_NAME[PRODUCT_TYPE.X];
   return (
     <Box display="flex" flexDirection="column" gap="spacing.6" flex="1" minHeight="425px">
       <RadioGroup onChange={handleSelectProduct} value={productType} size="small" label="">
@@ -73,7 +76,42 @@ const SelectProduct = ({
               </Box>
             </Box>
           </div>
-          {!isConfigTagEnabled('partnership.add_new_razorpay_x_merchant') ? (
+          {isPartnershipsForPosEnabled ? (
+            <div onClick={() => setProductType(PRODUCT_TYPE.POS)}>
+              <Box
+                display="flex"
+                flexDirection="column"
+                gap="spacing.5"
+                justifyContent="center"
+                padding="spacing.6"
+                backgroundColor="surface.background.level2.lowContrast"
+                borderColor="surface.border.normal.lowContrast"
+                borderWidth="thin"
+              >
+                <Box display="flex" gap="spacing.5" alignItems="center" flex="1">
+                  <Box
+                    display="flex"
+                    flexDirection="column"
+                    gap="spacing.2"
+                    justifyContent="center"
+                  >
+                    <Box display="flex" flexDirection="column" gap="spacing.2">
+                      <Box display="flex" flexDirection="column" gap="spacing.2">
+                        <Text weight="bold">{orgName} POS</Text>
+                        <Text size="small">
+                          Refer merchants to {orgName} Payment gateway and other products to receive
+                          payments
+                        </Text>
+                      </Box>
+                    </Box>
+                  </Box>
+                  <Radio value={PRODUCT_TYPE.POS}>{''}</Radio>
+                </Box>
+              </Box>
+            </div>
+          ) : null}
+          {!isPartnershipsForPosEnabled &&
+          !isConfigTagEnabled('partnership.add_new_razorpay_x_merchant') ? (
             <div onClick={() => setProductType(PRODUCT_TYPE.X)}>
               <Box
                 display="flex"
@@ -94,9 +132,9 @@ const SelectProduct = ({
                   >
                     <Box display="flex" flexDirection="column" gap="spacing.2">
                       <Box display="flex" flexDirection="column" gap="spacing.2">
-                        <Text weight="bold">RazorpayX</Text>
+                        <Text weight="bold">{xProductName}</Text>
                         <Text size="small">
-                          Refer merchants to RazorpayX products like Current account to process
+                          Refer merchants to {xProductName} products like Current account to process
                           payouts
                         </Text>
                       </Box>
@@ -131,7 +169,7 @@ const SelectProduct = ({
                       <Box display="flex" flexDirection="column" gap="spacing.2">
                         <Text weight="bold">Line of credit</Text>
                         <Text size="small">
-                          Refer merchants to Razorpay Payment gateway and other products to receive
+                          Refer merchants to {orgName} Payment gateway and other products to receive
                           payments
                         </Text>
                       </Box>

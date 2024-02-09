@@ -1,19 +1,29 @@
 import { Component } from 'react';
-import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+import { Field, reduxForm, formValueSelector } from 'redux-form';
 
 import InputField from 'common/ui/Forms/InputField';
-
-import { required, email, phone } from 'common/utils/validators';
-import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
-import { without, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { closeModal } from 'merchant_common/reducers/modals';
-import rolesList from 'merchant/helpers/permissions/roles-list';
 import { analyticsTrack } from 'common/utils/analytics';
+import { without, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { required, email, phone } from 'common/utils/validators';
+import {
+  roles,
+  agentRole,
+  RBLRoles,
+  RegistrationLinkRoles,
+  posPartnerRoles,
+} from 'merchant/helpers/data';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import {
+  trackInviteNewMemberModalLoaded,
+  trackInviteNewMemberModalClicked,
+} from 'merchant/views/PartnerDashboard/Home/Components/POS/analytics';
+import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const selector = formValueSelector('newInvitation');
 @reduxForm({
@@ -50,6 +60,12 @@ class NewInvitation extends Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    if (this.props.experiments?.isPartnershipsForPosEnabled) {
+      trackInviteNewMemberModalClicked({
+        ctaClicked: this.props.ctaText,
+        screen: this.props.screen,
+      });
+    }
     const { successMsg } = this.props;
     return this.props
       .onFormSubmit(body)
@@ -98,6 +114,12 @@ class NewInvitation extends Component {
       });
   };
 
+  componentDidMount() {
+    if (this.props.experiments?.isPartnershipsForPosEnabled) {
+      trackInviteNewMemberModalLoaded({ screen: this.props.screen });
+    }
+  }
+
   filterRoles = () => {
     const rolesToRemove = [];
 
@@ -112,7 +134,7 @@ class NewInvitation extends Component {
   };
 
   render() {
-    const { handleSubmit, selectedRole, user, visibleFields, ...props } = this.props;
+    const { handleSubmit, selectedRole, user, visibleFields, experiments, ...props } = this.props;
 
     let ROLES = this.filterRoles();
 
@@ -126,6 +148,10 @@ class NewInvitation extends Component {
 
     if (user.isRegistrationLinkRoleEnabled) {
       ROLES = { ...ROLES, ...RegistrationLinkRoles };
+    }
+
+    if (experiments?.isPartnershipsForPosEnabled) {
+      ROLES = { ...ROLES, ...posPartnerRoles };
     }
 
     return (
@@ -220,7 +246,10 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, {
-  showNotification,
-  closeModal,
-})(NewInvitation);
+export default compose(
+  withPartnerDashboardExperiments,
+  connect(mapStateToProps, {
+    showNotification,
+    closeModal,
+  }),
+)(NewInvitation);

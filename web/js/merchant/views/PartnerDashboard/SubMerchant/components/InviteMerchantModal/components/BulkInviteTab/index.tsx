@@ -64,7 +64,7 @@ const BulkInviteTab = ({
 }: BulkInviteTabProps): JSX.Element => {
   const inviteFlow = INVITE_TAB_TYPES.BULK_UPLOAD;
   // FTUX logic
-  const hasSelectedKycAccess = getHasSelectedKycAccess();
+  const hasSelectedKycAccess = getHasSelectedKycAccess(productType);
 
   // Steps logic
   const [currentStep, setCurrentStep] = useState(BULK_INVITE_FORM);
@@ -114,7 +114,7 @@ const BulkInviteTab = ({
           onDismiss();
         }
         // update kyc access value *after* showing appropriate success screen
-        setHasSelectedKycAccess(params.request_kyc_access);
+        setHasSelectedKycAccess(params.request_kyc_access, productType);
 
         onAddSuccess();
         // trackBulkSuccess();

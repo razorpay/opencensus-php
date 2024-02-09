@@ -16,6 +16,16 @@ const defaultUserExtra = {
   isPartnershipForCapitalEnabled: true,
 };
 const defaultOrgExtra = {};
+
+const defaultPartnerDashboardExperiments = {
+  isPartnershipsForPosEnabled: false,
+};
+let mockPartnerDashboardExperiments = { ...defaultPartnerDashboardExperiments };
+jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments', () => ({
+  __esModule: true,
+  default: () => mockPartnerDashboardExperiments,
+}));
+
 describe('SelectProduct', () => {
   const renderApp = (props = {}, { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {}) => {
     const session = getInitialUserOrgState({
@@ -29,6 +39,7 @@ describe('SelectProduct', () => {
   };
   afterEach(() => {
     jest.clearAllMocks();
+    mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
   test('should fire callbacks on click events', async () => {
     // Enable all options
@@ -61,13 +72,28 @@ describe('SelectProduct', () => {
 
     expect(screen.getByText('Line of credit')).toBeInTheDocument();
   });
-  test('hide Banking when the hidden features tag AddNewRazorpayXMerchant is present', () => {
+  test('hide Banking when the hidden features tag AddNewRazorpayXMerchant is present or if the product type is POS', () => {
     const findTag = jest.fn();
     findTag.mockImplementation((value) => {
       if (value === HIDDEN_INTERNATIONAL_FEATURES_TAGS.AddNewRazorpayXMerchant) return true;
       return false;
     });
+    mockPartnerDashboardExperiments = {
+      ...defaultPartnerDashboardExperiments,
+      isPartnershipsForPosEnabled: true,
+    };
 
     expect(screen.queryByText('RazorpayX')).not.toBeInTheDocument();
+  });
+  test('show POS option if experiment is enabled and product type is POS should fire callback with POS when clicked', async () => {
+    mockPartnerDashboardExperiments = {
+      ...defaultPartnerDashboardExperiments,
+      isPartnershipsForPosEnabled: true,
+    };
+    renderApp({ productType: PRODUCT_TYPE.POS });
+    const mainText = screen.getByText('Razorpay POS');
+    expect(mainText).toBeInTheDocument();
+    await userEvent.click(mainText);
+    expect(defaultProps.setProductType).toHaveBeenCalledWith(PRODUCT_TYPE.POS);
   });
 });

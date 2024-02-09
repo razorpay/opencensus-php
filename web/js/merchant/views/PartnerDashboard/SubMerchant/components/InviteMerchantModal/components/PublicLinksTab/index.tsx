@@ -23,13 +23,17 @@ const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps):
 
   // Formik hooks and Validation
   const { data: referralData, isLoading } = useReferralLinks({ showNotification });
-  const hasSelectedKycAccess = getHasSelectedKycAccess();
+  const hasSelectedKycAccess = getHasSelectedKycAccess(productType);
   const referralUrl = referralData?.[productType]?.url;
   const easyAccessUrl = referralData?.[productType]?.easy_kyc_access_url;
 
   let initialSelectedValue = hasSelectedKycAccess === null ? '' : 'yes';
   if (hasSelectedKycAccess === false) initialSelectedValue = 'no';
 
+  const shouldShowFtuxContent =
+    hasSelectedKycAccess === null &&
+    easyAccessUrl &&
+    (productType === PRODUCT_TYPE.PG || productType === PRODUCT_TYPE.POS);
   if (isLoading)
     return (
       <Box display="flex" alignItems="center" justifyContent="center" marginTop="spacing.5">
@@ -44,7 +48,7 @@ const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps):
         </Text>
         <Divider />
       </Box>
-      {hasSelectedKycAccess === null && easyAccessUrl && productType === PRODUCT_TYPE.PG ? (
+      {shouldShowFtuxContent ? (
         <>
           <Box display="flex" gap="spacing.3" alignItems="center" marginTop="spacing.9">
             <Badge contrast="high" variant="information" size="large">
@@ -94,7 +98,7 @@ const PublicLinksTab = ({ productType, showNotification }: PublicLinksTabProps):
           </Box>
         )}
       </Box>
-      {hasSelectedKycAccess === null && easyAccessUrl && productType === PRODUCT_TYPE.PG ? (
+      {shouldShowFtuxContent ? (
         <FAQContent inviteFlow={inviteFlow} productType={productType} />
       ) : null}
       {shouldShowAlert ? (

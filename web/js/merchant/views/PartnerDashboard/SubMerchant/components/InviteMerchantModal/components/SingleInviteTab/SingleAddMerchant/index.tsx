@@ -93,12 +93,20 @@ const SingleAddMerchant = ({
     trackSubmerchantReferViaEmail(params);
     setIsSendingInvite(true);
 
+    // TODO v2: need to remove this whole getIsInsertTable logic
+    // because we're moving away from reducer based table updates. We will simply reload the list
     const getIsInsertTable = () => {
       const isAddXIntent = productType === PRODUCT_TYPE.X;
       const isAddPGIntent = productType === PRODUCT_TYPE.PG;
+      const isAddPOSIntent = productType === PRODUCT_TYPE.POS;
       const isCurrentPageX = location?.pathname === '/partners/submerchants/x';
+      const isCurrentPagePOS = location?.pathname === '/partners/submerchants/pos';
       const isCurrentPagePG = location?.pathname === '/partners/submerchants';
-      if ((isAddXIntent && isCurrentPageX) || (isAddPGIntent && isCurrentPagePG)) {
+      if (
+        (isAddXIntent && isCurrentPageX) ||
+        (isAddPGIntent && isCurrentPagePG) ||
+        (isAddPOSIntent && isCurrentPagePOS)
+      ) {
         return true;
       }
       return false;

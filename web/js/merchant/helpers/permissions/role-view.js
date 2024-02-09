@@ -15,6 +15,7 @@ const {
   REGISTRATION_LINK_SUPERVISOR,
   REGISTRATION_LINK_AGENT,
   PARTNER,
+  PARTNER_AGENT,
 } = rolesList;
 
 /*
@@ -164,7 +165,7 @@ export default {
   developers_console: [OWNER, ADMIN],
 
   // partner dashboard permissions
-  submerchants: [OWNER, ADMIN, MANAGER],
+  submerchants: [OWNER, ADMIN, MANAGER, PARTNER_AGENT],
   partner_settings: [OWNER, ADMIN, MANAGER],
   earnings: [OWNER, ADMIN, MANAGER],
   partner_applications: [OWNER, MANAGER, ADMIN],

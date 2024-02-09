@@ -1,7 +1,19 @@
 export const PRODUCT_TYPE = {
   X: 'banking',
   PG: 'primary',
+  POS: 'pos',
   CAPITAL: 'capital',
+};
+
+export const ORG_NAME = {
+  CURLEC: 'Curlec',
+  RZP: 'Razorpay',
+};
+export const PRODUCT_NAME = {
+  [PRODUCT_TYPE.X]: 'RazorpayX',
+  [PRODUCT_TYPE.PG]: 'Payments',
+  [PRODUCT_TYPE.CAPITAL]: 'Capital',
+  [PRODUCT_TYPE.POS]: 'POS',
 };
 
 export const ADD_MODE = {
