@@ -2265,6 +2265,44 @@ return [
         ]
     ],
 
+    'testResellerToAggregatorBulkUpdate' => [
+        'request' => [
+            'content' => [
+                "data" => [
+                    [
+                        "merchant_id" => 'DefaultPartner',
+                        "new_auth_create" => true
+                    ]
+                ],
+                'batch_size' => 1
+            ],
+            'url'     => '/partner/migrate_reseller_to_aggregator/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testResellerToAggregatorOldAuthBulkUpdate' => [
+        'request' => [
+            'content' => [
+                "data" => [
+                    [
+                        "merchant_id" => 'DefaultPartner',
+                        "new_auth_create" => false
+                    ]
+                ],
+                'batch_size' => 1
+            ],
+            'url'     => '/partner/migrate_reseller_to_aggregator/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testMigrateResellerToPurePlatform' => [
         'request' => [
             'content' => [

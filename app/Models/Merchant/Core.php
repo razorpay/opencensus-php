@@ -9353,7 +9353,6 @@ class Core extends Base\Core
             ['merchant_id' => $merchantId]);
 
         $merchant = $this->repo->merchant->find($merchantId);
-        $oldPartnerType = $merchant->getPartnerType();
 
         if ($merchant === null || $merchant->isAggregatorPartner() === false)
         {
@@ -9368,6 +9367,8 @@ class Core extends Base\Core
 
             return false;
         }
+
+        $oldPartnerType = $merchant->getPartnerType();
 
         $result = $this->validateAndUpdateAggregatorToResellerEntities($merchant);
 
@@ -9440,7 +9441,7 @@ class Core extends Base\Core
                 $partner, $managedAppId, $existingAppIds, $accessMaps, $subMerchants
             );
         }
-        catch (Exception\LogicException $e)
+        catch (Throwable $e)
         {
             $this->trace->error(TraceCode::AGGREGATOR_TO_RESELLER_DATA_MISMATCH);
             $this->trace->count(

@@ -38,6 +38,9 @@ class MigrateResellerToPurePlatformPartner extends Core
         );
     }
 
+    /**
+     * @throws LogicException
+     */
     public function updateResellerToPurePlatform(string $merchantId, array $actorDetails): bool
     {
         $partner = $this->fetchResellerPartner(
@@ -84,13 +87,13 @@ class MigrateResellerToPurePlatformPartner extends Core
             $this->repo->transactionOnLiveAndTestAndAsv(function () use (
                 $partner, $existingAppId, $configs, $accessMaps, $subMs, $kyc_states
             ) {
-                $isDefautConfigExpEnabled = (new MerchantCore)->isCreateDefaultPartnerConfigExpEnabled($partner->getId());
-                $this->deleteOldRelations($partner, $existingAppId, $configs, $accessMaps, $kyc_states, $isDefautConfigExpEnabled);
+                $isDefaultConfigExpEnabled = (new MerchantCore)->isCreateDefaultPartnerConfigExpEnabled($partner->getId());
+                $this->deleteOldRelations($partner, $existingAppId, $configs, $accessMaps, $kyc_states, $isDefaultConfigExpEnabled);
                 $this->removeRefTagsForSubMerchant($partner, $subMs);
 
                 $partner->setPartnerType(MerchantConstants::PURE_PLATFORM);
                 $this->repo->merchant->saveOrFail($partner);
-                if($isDefautConfigExpEnabled)
+                if($isDefaultConfigExpEnabled)
                 {
                     $this->createPartnerConfig($partner, $configs);
                 }

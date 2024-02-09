@@ -4,6 +4,7 @@ namespace RZP\Models\Partner;
 
 use Event;
 use Throwable;
+use Exception;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -112,11 +113,11 @@ class MigratePurePlatformToResellerPartner extends Core
                 $this->createEntitiesForReseller($partner, $configs , $accessMaps, $subMs);
 
                 $this->notifyPartnerAboutSwitch($partner);
-            });
 
-            $this->deleteEntitiesForPurePlatformPartner($existingAppIds, $partner->getId());
+                $this->deleteEntitiesForPurePlatformPartner($existingAppIds, $partner->getId());
+            });
         }
-        catch (\Exception $exception)
+        catch (Exception $exception)
         {
             $this->trace->error(TraceCode::PURE_PLATFORM_TO_RESELLER_MIGRATE_ERROR);
             $this->trace->count(
@@ -350,6 +351,9 @@ class MigratePurePlatformToResellerPartner extends Core
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     private function fetchPurePlatformPartner(string $merchantId): ?Entity
     {
         $merchant = $this->repo->merchant->find($merchantId);

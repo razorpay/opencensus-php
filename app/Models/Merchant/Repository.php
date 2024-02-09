@@ -1512,7 +1512,37 @@ class Repository extends Base\Repository
     {
         $accessMapRepo = $this->repo->merchant_access_map;
 
-        $accessMapMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+        if (
+            $this->asvRouter->shouldRouteWriteRequestToAccountService(
+                get_class($this),
+                __FUNCTION__,
+                $partnerId
+            )
+        )
+        {
+            try
+            {
+                $accessMaps = $accessMapRepo->fetchAllMappingsByEntityIdAndEntityOwnerId([$appId], $partnerId, $mode);
+                $merchantIds = $accessMaps->pluck(Base\PublicEntity::MERCHANT_ID)->toArray();
+
+                if ($this->isTransactionActive())
+                {
+                    return $this->findMany($merchantIds);
+                }
+                else
+                {
+                    return (new Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($merchantIds);
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FILTER_QUERY_EXCEPTION, [
+                    "identifier" => __FUNCTION__
+                ]);
+            }
+        }
+
+        $accessMapMerchantId = $accessMapRepo->dbColumn(Base\PublicEntity::MERCHANT_ID);
         $accessMapOwnerId    = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
         $accessMapEntityId   = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
 

@@ -1224,6 +1224,9 @@ class Core extends Detail\Core
         return $result;
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function fetchResellerPartner($merchantId, $traceCode, $metricCode): ?Merchant\Entity
     {
         $merchant = $this->repo->merchant->find($merchantId);

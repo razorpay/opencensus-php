@@ -136,7 +136,7 @@ class Validator extends Base\Validator
             empty($deletedAppTypeDiff) === false
         )
         {
-            $this->trace->info(
+            $this->getTrace()->info(
                 TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_INVALID_APPLICATIONS,
                 [
                     'existingApplications' => $existingApplications,

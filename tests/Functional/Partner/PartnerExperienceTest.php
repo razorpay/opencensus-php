@@ -2567,6 +2567,132 @@ class PartnerExperienceTest extends OAuthTestCase
         ]);
     }
 
+    /**
+     * @param Merchant\Entity $partner
+     * @param string          $resellerAppId
+     * @param string          $aggregatorAppId
+     *
+     * @return void
+     */
+    protected function mockAuthServiceForResellerToAggregatorOldAuth(
+        Merchant\Entity $partner,
+        string $resellerAppId,
+        string $aggregatorAppId,
+    ): void
+    {
+        $this->authServiceMock
+            ->expects($this->exactly(1))
+            ->method('sendRequest')
+            ->with(
+                'applications/restore',
+                'PUT',
+                [
+                    'merchant_id'           => $partner->getId(),
+                    'app_ids_to_restore'    => [
+                        $aggregatorAppId,
+                        $aggregatorAppId
+                    ],
+                    'app_ids_to_delete'    => [
+                        $resellerAppId
+                    ]
+                ],
+            )
+            ->willReturn(['id' => $aggregatorAppId]);
+    }
+
+    /**
+     * @param Merchant\Entity $partner
+     * @param string          $resellerAppId
+     * @param string          $aggregatorAppId
+     *
+     * @return void
+     */
+    protected function mockAuthServiceForResellerToAggregator(
+        Merchant\Entity $partner,
+        string $resellerAppId,
+        string $aggregatorAppId,
+    ): void
+    {
+        $this->authServiceMock
+            ->expects($this->exactly(3))
+            ->method('sendRequest')
+            ->withConsecutive(
+                [
+                    'applications',
+                    'POST',
+                    [
+                        'merchant_id'   => $partner->getId(),
+                        'name'          => $partner->getName(),
+                        'website'       => $partner->getWebsite() ?: 'https://www.razorpay.com',
+                        'type'          => self::PARTNER,
+                    ],
+                ],
+                [
+                    'applications',
+                    'POST',
+                    [
+                        'merchant_id'   => $partner->getId(),
+                        'name'          => 'Referred application',
+                        'website'       => $partner->getWebsite() ?: 'https://www.razorpay.com',
+                        'type'          => self::PARTNER,
+                    ],
+                ],
+                [
+                    'applications/' . $resellerAppId,
+                    'PUT',
+                    [
+                        'merchant_id'   => $partner->getId(),
+                    ]
+                ])
+            ->willReturnOnConsecutiveCalls(
+                ['id' => $aggregatorAppId],
+                ['id' => $aggregatorAppId],
+                [],
+            );
+    }
+
+    /**
+     * @param Merchant\Entity $partner
+     * @param array           $aggregatorAppIds
+     * @param string          $resellerAppId
+     *
+     * @return void
+     */
+    protected function mockAuthServiceForAggregatorToReseller(
+        Merchant\Entity $partner,
+        array $aggregatorAppIds,
+        string $resellerAppId,
+    ): void
+    {
+        $this->authServiceMock
+            ->expects($this->exactly(3))
+            ->method('sendRequest')
+            ->withConsecutive(
+                [
+                    'applications',
+                    'POST',
+                    array_merge(
+                        $this->getDefaultParamsForAuthServiceRequest(),
+                        [
+                            'name'     => $partner->getName(),
+                            'website'  => $partner->getWebsite() ?: 'https://www.razorpay.com',
+                            'type'     => self::PARTNER,
+                        ]
+                    )
+                ],
+                [
+                    'applications/' . $aggregatorAppIds[0],
+                    'PUT',
+                    $this->getDefaultParamsForAuthServiceRequest()
+                ],
+                [
+                    'applications/' . $aggregatorAppIds[1],
+                    'PUT',
+                    $this->getDefaultParamsForAuthServiceRequest()
+                ])
+            ->willReturnOnConsecutiveCalls(['id' => $resellerAppId], [], []);
+    }
+
     protected function mockAuthServiceCreateApplication(Merchant\Entity $merchant, array $response = [], $times = 1)
     {
         // Mock create application call to auth service
@@ -2600,7 +2726,9 @@ class PartnerExperienceTest extends OAuthTestCase
             'role'        => $role,
         ];
 
-        return $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+        $this->fixtures->on('live')->create('user:user_merchant_mapping', $mappingData);
+
+        return $this->fixtures->on('test')->create('user:user_merchant_mapping', $mappingData);
     }
 
     protected function createPartnerAndAddMultipleSubmerchants(string $mode = Mode::TEST)
@@ -3841,11 +3969,11 @@ class PartnerExperienceTest extends OAuthTestCase
         );
     }
 
-    private function mockStorkWebhooksCall()
+    private function mockStorkWebhooksCall(int $times = 2)
     {
         $this->storkMock
             ->shouldReceive('request')
-            ->times(2)
+            ->times($times)
             ->andReturnUsing(
                 function() {
                     $resp              = new Response();
@@ -3947,17 +4075,186 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testAggregatorToResellerBulkUpdate()
     {
-        $merchantId = '10000000000000';
+        $partnerId = '10000000000000';
+        $submerchantId = '100submerchant';
 
-        $this->setUpNonPurePlatformPartner();
+        $this->setUpNonPurePlatformPartnerAndSubmerchant($partnerId, $submerchantId);
 
-        $this->fixtures->merchant->edit($merchantId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
+        $this->createOAuthApplication(['merchant_id' => $partnerId, 'partner_type' => 'reseller']);
+
+        $partner = $this->fixtures->merchant->edit($partnerId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
+
+        $aggregatorAppIds = $this->getDbEntities('merchant_application', ['merchant_id' => '10000000000000'])->pluck('application_id')->toArray();
+
+        $this->mockAuthServiceForAggregatorToReseller(
+            $partner,
+            $aggregatorAppIds,
+            self::DUMMY_APP_ID_1,
+        );
+
+        $this->ba->privateAuth();
+
+        $this->mockAllSplitzTreatment();
+        $this->mockStorkWebhooksCall(4);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $partner                    = $this->getDbEntities(
+            'merchant',
+            ['id' => '10000000000000'],
+        )->toArray();
+        $merchantAccessMaps         = $this->getDbEntities(
+            'merchant_access_map',
+            ['merchant_id' => $submerchantId, 'entity_owner_id' => $partnerId]
+        )->toArray();
+        $merchantApplicationOld1    = $this->getDbEntities(
+            'merchant_application',
+            ['merchant_id' => $partnerId, 'application_id' => $aggregatorAppIds[0], 'type' => 'managed']
+        )->toArray();
+        $merchantApplicationOld2    = $this->getDbEntities(
+            'merchant_application',
+            ['merchant_id' => $partnerId, 'application_id' => $aggregatorAppIds[1], 'type' => 'referred']
+        )->toArray();
+        $merchantApplicationNew     = $this->getDbEntities(
+            'merchant_application',
+            ['merchant_id' => $partnerId, 'application_id' => self::DUMMY_APP_ID_1]
+        )->toArray();
+
+        $this->assertEquals(MerchantConstants::RESELLER, $partner[0]['partner_type']);
+        $this->assertNotEmpty($merchantAccessMaps);
+        $this->assertEquals(self::DUMMY_APP_ID_1, $merchantAccessMaps[0]['entity_id']);
+        $this->assertEmpty($merchantApplicationOld1);
+        $this->assertEmpty($merchantApplicationOld2);
+        $this->assertNotEmpty($merchantApplicationNew);
+    }
+
+    public function testResellerToAggregatorBulkUpdate()
+    {
+        [$partnerId, $app, $submerchant] = $this->createResellerPartnerAndSubmerchant();
+
+        $partner = $this->fixtures->merchant->edit($partnerId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
+
+        Application\Entity::factory()->create(
+            [
+                'id'            => self::DUMMY_APP_ID_1,
+                'merchant_id'   => $partnerId,
+                'name'          => $partner->getName(),
+                'website'       => $partner->getWebsite() ?: 'https://www.razorpay.com',
+            ]
+        );
+
+        $this->mockAuthServiceForResellerToAggregator(
+            $partner,
+            $app->getId(),
+            self::DUMMY_APP_ID_1,
+        );
 
         $this->ba->privateAuth();
 
         $this->mockAllSplitzTreatment();
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $partner                    = $this->getDbEntities(
+            'merchant',
+            ['id' => $partnerId],
+        )->toArray();
+        $merchantAccessMaps         = $this->getDbEntities(
+            'merchant_access_map',
+            ['merchant_id' => $submerchant->getId(), 'entity_owner_id' => $partnerId]
+        )->toArray();
+        $merchantApplicationOld    = $this->getDbEntities(
+            'merchant_application',
+            ['merchant_id' => $partnerId, 'application_id' => $app->getId()]
+        )->toArray();
+        $merchantApplicationNew1    = $this->getDbEntities(
+            'merchant_application',
+            ['merchant_id' => $partnerId, 'application_id' => self::DUMMY_APP_ID_1, 'type' => 'referred']
+        )->toArray();
+        $merchantApplicationNew2     = $this->getDbEntities(
+            'merchant_application',
+            ['merchant_id' => $partnerId, 'application_id' => self::DUMMY_APP_ID_1, 'type' => 'managed']
+        )->toArray();
+
+        $this->assertEquals(MerchantConstants::AGGREGATOR, $partner[0]['partner_type']);
+        $this->assertNotEmpty($merchantAccessMaps);
+        $this->assertEquals(self::DUMMY_APP_ID_1, $merchantAccessMaps[0]['entity_id']);
+        $this->assertEmpty($merchantApplicationOld);
+        $this->assertNotEmpty($merchantApplicationNew1);
+        $this->assertNotEmpty($merchantApplicationNew2);
+    }
+
+    public function testResellerToAggregatorOldAuthBulkUpdate()
+    {
+        [$partnerId, $app, $submerchant] = $this->createResellerPartnerAndSubmerchant();
+
+        $this->fixtures->create(
+            'merchant_application',
+            [
+                'merchant_id'       => $partnerId,
+                'application_id'    => self::DUMMY_APP_ID_1,
+                'type'              => 'referred',
+                'deleted_at'        => time(),
+            ]
+        );
+
+        $this->fixtures->create(
+            'merchant_application',
+            [
+                'merchant_id'       => $partnerId,
+                'application_id'    => self::DUMMY_APP_ID_1,
+                'type'              => 'managed',
+                'deleted_at'        => time(),
+            ]
+        );
+
+        $partner = $this->fixtures->merchant->edit(
+            $partnerId,
+            [
+                'name' => 'et',
+                 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod',
+            ]
+        );
+
+        $this->mockAuthServiceForResellerToAggregatorOldAuth(
+            $partner,
+            $app->getId(),
+            self::DUMMY_APP_ID_1
+        );
+
+        $this->ba->privateAuth();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $partner                    = $this->getDbEntities(
+            'merchant',
+            ['id' => $partnerId],
+        )->toArray();
+        $merchantAccessMaps         = $this->getDbEntities(
+            'merchant_access_map',
+            ['merchant_id' => $submerchant->getId(), 'entity_owner_id' => $partnerId]
+        )->toArray();
+        $merchantApplicationOld    = $this->getDbEntities(
+            'merchant_application',
+            ['merchant_id' => $partnerId, 'application_id' => $app->getId()]
+        )->toArray();
+        $merchantApplicationNew1    = $this->getDbEntities(
+            'merchant_application',
+            ['merchant_id' => $partnerId, 'application_id' => self::DUMMY_APP_ID_1, 'type' => 'referred']
+        )->toArray();
+        $merchantApplicationNew2     = $this->getDbEntities(
+            'merchant_application',
+            ['merchant_id' => $partnerId, 'application_id' => self::DUMMY_APP_ID_1, 'type' => 'managed']
+        )->toArray();
+
+        $this->assertEquals(MerchantConstants::AGGREGATOR, $partner[0]['partner_type']);
+        $this->assertNotEmpty($merchantAccessMaps);
+        $this->assertEquals(self::DUMMY_APP_ID_1, $merchantAccessMaps[0]['entity_id']);
+        $this->assertEmpty($merchantApplicationOld);
+        $this->assertNotEmpty($merchantApplicationNew1);
+        $this->assertNotEmpty($merchantApplicationNew2);
     }
 
     private function createResellerPartnerAndSubmerchant(string $submerchantId = '101submerchant', string $appId = 'reseller84ifke')

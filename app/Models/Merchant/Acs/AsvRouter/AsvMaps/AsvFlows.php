@@ -195,13 +195,16 @@ final class AsvFlows
         'worker:mcc_categorisation_consumer' => true,
         'worker:merchant_firs_documents' => true,
         'worker:merchant_hold_funds_sync' => true,
-        'worker:migrate_reseller_to_pure_platform_partner_job' => true,
         'worker:negative_keywords_consumer' => true,
         'worker:pgos_cdc_events_job' => true,
         'worker:sub_merchant_support_entities_create_job' => true,
         'worker:update_merchant_context' => true,
         'worker:website_policy_consumer' => true,
         'worker:website_update_processor' => true,
+        'worker:bulk_migrate_aggregator_to_reseller_job' => true,
+        'worker:bulk_migrate_reseller_to_aggregator_job' => true,
+        'worker:migrate_pure_platform_to_reseller_partner_job' => true,
+        'worker:migrate_reseller_to_pure_platform_partner_job' => true,
     );
 
     public const MAP = array(
