@@ -154,6 +154,10 @@ class Service extends Base\Service
         $isOneCC = (bool) ($input['is_one_cc'] ?? false);
         unset($input['is_one_cc']);
 
+        // This will be used to decide whether FE has to show the addresses sorted by latest usage
+        $shouldSortAddresses = (bool) ($input['1cc_sort_addresses'] ?? false);
+        unset($input['1cc_sort_addresses']);
+
         (new Validator())->validateInput('global_customer_create', $input);
 
         // Parse contact
@@ -212,7 +216,7 @@ class Service extends Base\Service
                 (new Address\Core)->recordAddressConsent1cc($addressConsentInput, $customer);
             }
 
-            $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer);
+            $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer,$shouldSortAddresses);
             $thirdPartyAddresses = $this->core->fetchThirdPartyAddressesFor1cc($customer);
             $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
 
@@ -327,7 +331,9 @@ class Service extends Base\Service
         }
 
         if ($this->merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT)) {
-            $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer);
+            $shouldSortAddresses = (bool) ($input['1cc_sort_addresses'] ?? false);
+            unset($input['1cc_sort_addresses']);
+            $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer, $shouldSortAddresses);
 
             $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
 

@@ -808,7 +808,7 @@ class Core extends Base\Core
      * @throws IntegrationException
      * @throws BadRequestException
      */
-    public function fetchRzpAddressesFor1CC($customer)
+    public function fetchRzpAddressesFor1CC($customer, $shouldSortAddresses = false)
     {
         if($this->merchant === null or $this->merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === false)
         {
@@ -816,7 +816,7 @@ class Core extends Base\Core
         }
         $addresses = $this->repo->address->fetchRzpAddressesFor1cc($customer);
         $addresses = $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
-        if ((new OneCcUtils())->canRouteToCheckoutServiceForAddressSorting() === false) {
+        if ($shouldSortAddresses === false) {
             return $addresses;
         }
         return $this->sortRZPAddressesFor1CC($addresses, $customer);
