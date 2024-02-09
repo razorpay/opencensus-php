@@ -5895,7 +5895,7 @@ class Core extends Base\Core
             'event_type'  => 'kyc_form_save',
         ]);
 
-        $kycFormUpdateAudits = $kycFormUpdateAuditResponse['audits'];
+        $kycFormUpdateAudits = $kycFormUpdateAuditResponse['response']['audits'];
 
         $kycFormUpdaters = collect($kycFormUpdateAudits)->groupBy('entity_id')->toArray();
 
@@ -5905,6 +5905,9 @@ class Core extends Base\Core
         {
             $subMPOSActivationMap = $subMPOSDetails['pos_activation_status'];
         }
+
+        $this->trace->info(TraceCode::POS_SUBMERCHANT_STATUS_DETAILS_MAP, $subMPOSActivationMap);
+
 
         foreach ($submerchants as $submerchant)
         {
@@ -5952,7 +5955,7 @@ class Core extends Base\Core
 
             $lastKycPerformedBy['id']= $metadata['actor_id'] ?? '';
 
-            $lastKycPerformedBy['type']= $metadata['actor_type'] ?? '';
+            $lastKycPerformedBy['type']= $kycPerformedByDetails[$merchantId][0]['actor_type'] ?? '';
         }
 
         return $lastKycPerformedBy;
@@ -6053,6 +6056,8 @@ class Core extends Base\Core
 
         $posStatusChangeLogsData = $posStatusChangeLogs['data'] ?? [];
 
+        $this->trace->info(TraceCode::POS_SUBMERCHANT_ACTION_STATE_RECORDS, $posStatusChangeLogsData);
+
         if (isset($posStatusChangeLogsData[0]['name']))
         {
             $posActivationStatus = $posStatusChangeLogsData[0]['name'];
@@ -6067,17 +6072,22 @@ class Core extends Base\Core
             'last_kyc_performed_by' => $kycUpdateAuditsInfo['recent_event_actor_info'] ?? [],
             'kyc_save_audits'       => $kycUpdateAuditsInfo['event_audits']
         ];
+
+        $this->trace->info(TraceCode::POS_SUBMERCHANT_DETAIL_INFO, $merchant[Entity::POS]);
     }
 
     private function getEventAuditsForSubMerchant(string $subMerchantId, string $event): ?array
     {
+        // currently fetching only latest 5 audits.
+        // This will be passed as a param from FE when feature of showing audits in detail view is built
         $eventAuditResponse = $this->app->partnerships->getEventAudits([
             'entity_id'     => $subMerchantId,
             'entity_type'   => Entity::MERCHANT,
-            'event_type'    => $event
+            'event_type'    => $event,
+            'limit'         => 5,
         ]);
 
-        $eventAudits = $eventAuditResponse['audits'] ?? [];
+        $eventAudits = $eventAuditResponse['response']['audits'] ?? [];
 
         $response = [];
 
@@ -6093,7 +6103,7 @@ class Core extends Base\Core
 
         $response['recent_event_actor_info'] = [
             'id'            => $recentEventMetadata['actor_id']      ?? '',
-            'type'          => $recentEventMetadata['actor_type']    ?? '',
+            'type'          => $eventAudits[0]['actor_type'] ?? '',
             'name'          => $recentEventMetadata['actor_name']    ?? '',
             'contact_email' => $recentEventMetadata['actor_email']   ?? '',
         ];

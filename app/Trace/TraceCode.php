@@ -4887,6 +4887,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_REFERRAL_VERIFY_OTP_REQUEST                   = 'PARTNER_REFERRAL_VERIFY_OTP_REQUEST';
     const PROCESS_REFERRAL_CODE                                 = 'PROCESS_REFERRAL_CODE';
     const POS_SUBMERCHANT_TAG                                   = 'POS_SUBMERCHANT_TAG';
+    const POS_SUBMERCHANT_DETAIL_INFO                           = 'POS_SUBMERCHANT_DETAIL_INFO';
+    const POS_SUBMERCHANT_ACTION_STATE_RECORDS                  = 'POS_SUBMERCHANT_ACTION_STATE_RECORDS';
+    const POS_SUBMERCHANT_STATUS_DETAILS_MAP                    = 'POS_SUBMERCHANT_STATUS_DETAILS_MAP';
+
 
     const CAPITAL_SUBMERCHANT_POST_PROCESS                      = 'CAPITAL_SUBMERCHANT_POST_PROCESS';
     const CAPITAL_SUBMERCHANT_TAG                               = 'CAPITAL_SUBMERCHANT_TAG';

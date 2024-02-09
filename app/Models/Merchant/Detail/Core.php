@@ -11995,7 +11995,7 @@ class Core extends Base\Core
         {
             $payload = ['merchant_ids' => $merchantIds];
 
-            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pgos_bulk_fetch_activation_status', $payload, true);
+            $response = $this->pgosProxyController->handlePGOSProxyRequests('merchant_pgos_bulk_fetch_activation_status', $payload, $this->merchant,true);
 
             $response['success'] = true;
         }

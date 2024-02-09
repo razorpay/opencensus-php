@@ -476,7 +476,7 @@ abstract class BaseProxyController extends Controller
 
     protected function getHeadersForAdminRequest($body)
     {
-        return [
+        $headers = [
             'X-Admin-id'       => optional($this->ba->getAdmin())->getId() ?? '',
             'X-Task-Id'        => $this->app['request']->getTaskId(),
             'Content-Type'     => 'application/json',
@@ -485,6 +485,10 @@ abstract class BaseProxyController extends Controller
             'X-Request-ID'     => Request::getTaskId(),
             'X-Client-ID'      => $this->serviceConfig['client_id'] ?? ''
         ];
+
+        $actorDetailsHeaders = $this->getActorDetailHeaders();
+
+        return array_merge($headers, $actorDetailsHeaders);
     }
 
     protected function getHeadersForCronRequest($body)

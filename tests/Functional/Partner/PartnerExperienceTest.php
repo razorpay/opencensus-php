@@ -857,24 +857,26 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
 
         $this->mockPartnershipsServiceTreatment([], [
-            'audits' => [
-                [
-                    'entity_id' => '10000000000009',
-                    'metadata' => [
-                        'actor_email' => 'kmk@rzp.com',
-                        'actor_name'  => 'name',
-                        'actor_id' => '10000000000010',
-                        'actor_type' => 'owner',
-                        'field_details' => [
-                            'field_names'=> [
-                                'business_type',
-                                'business_type_personal_pan'
+            'response' => [
+                'audits' => [
+                    [
+                        'entity_id' => '10000000000009',
+                        'metadata' => [
+                            'actor_email' => 'kmk@rzp.com',
+                            'actor_name'  => 'name',
+                            'actor_id'    => '10000000000010',
+                            'actor_type'  => 'owner',
+                            'field_details' => [
+                                'field_names' => [
+                                    'business_type',
+                                    'business_type_personal_pan'
+                                ],
                             ],
-                        ],
-                        'route_name' =>  'MerchantActivationSave',
+                            'route_name' => 'MerchantActivationSave',
+                        ]
                     ]
-                ]
-            ]
+                ],
+            ],
         ], 'getLastEventAudits');
 
         $this->mockAllSplitzTreatment();
@@ -892,24 +894,26 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
 
         $this->mockPartnershipsServiceTreatment([], [
-            'audits' => [
-                [
-                    'entity_id' => '10000000000009',
-                    'metadata' => [
-                        'actor_email' => 'kmk@rzp.com',
-                        'actor_name'  => 'test',
-                        'actor_id' => '10000000000010',
-                        'actor_type' => 'owner',
-                        'field_details' => [
-                            'field_names'=> [
-                                'business_type',
-                                'business_type_personal_pan'
+            'response' => [
+                'audits' => [
+                    [
+                        'entity_id' => '10000000000009',
+                        'metadata' => [
+                            'actor_email' => 'kmk@rzp.com',
+                            'actor_name' => 'test',
+                            'actor_id' => '10000000000010',
+                            'actor_type' => 'owner',
+                            'field_details' => [
+                                'field_names' => [
+                                    'business_type',
+                                    'business_type_personal_pan'
+                                ],
+                                'step_name' => 'aadhaar'
                             ],
-                            'step_name' => 'aadhaar'
-                        ],
-                        'route_name' =>  'MerchantActivationSave',
+                            'route_name' => 'MerchantActivationSave',
+                        ]
                     ]
-                ]
+                ],
             ]
         ], 'getEventAudits');
 
@@ -930,24 +934,26 @@ class PartnerExperienceTest extends OAuthTestCase
         $merchantDetailCore->shouldReceive('getPOSStatusChangeLogs')->andReturn(['success' => true]);
 
         $this->mockPartnershipsServiceTreatment([], [
-            'audits' => [
-                [
-                    'entity_id' => '10000000000009',
-                    'metadata' => [
-                        'actor_email' => 'kmk@rzp.com',
-                        'actor_name'  => 'test',
-                        'actor_id' => '10000000000010',
-                        'actor_type' => 'owner',
-                        'field_details' => [
-                            'field_names'=> [
-                                'business_type',
-                                'business_type_personal_pan'
+            'response' => [
+                'audits' => [
+                    [
+                        'entity_id' => '10000000000009',
+                        'metadata' => [
+                            'actor_email' => 'kmk@rzp.com',
+                            'actor_name' => 'test',
+                            'actor_id' => '10000000000010',
+                            'actor_type' => 'owner',
+                            'field_details' => [
+                                'field_names' => [
+                                    'business_type',
+                                    'business_type_personal_pan'
+                                ],
+                                'step_name' => 'aadhaar'
                             ],
-                            'step_name' => 'aadhaar'
-                        ],
-                        'route_name' =>  'MerchantActivationSave',
+                            'route_name' => 'MerchantActivationSave',
+                        ]
                     ]
-                ]
+                ],
             ]
         ], 'getEventAudits');
 
