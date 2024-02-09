@@ -45,6 +45,7 @@ use RZP\lib\ConditionParser\Parser;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Feature\Core as FeatureCore;
+use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\EntityOrigin\Constants as EOConstants;
 use RZP\Models\Pricing\Calculator\Tax\IN\Utils as TaxUtils;
 use RZP\Exception\BadRequestException;
@@ -982,11 +983,12 @@ class Core extends Detail\Core
         return $resp;
     }
 
-    public function getPayloadForPartnerWeeklyActivationSummaryEmail(Merchant\Entity $partnerMerchant, array $filteredMerchantIds) : array
+    public function getPayloadForPartnerWeeklyActivationSummaryEmail(Merchant\Entity $partnerMerchant, array $filteredMerchantIds, string $variant = null) : array
     {
         $merchantCountCap    = PartnerConstants::WEEKLY_ACTIVATION_SUMMARY_MERCHANT_COUNT_CAP;
 
-        $countKYCNotInitiatedInTwoMonths = $this->repo->merchant_detail->countSubmerchantsWithKYCNotInitiatedInPastDays($partnerMerchant->getId(), 60);
+        $countKYCNotInitiatedInTwoMonths = $this->repo->merchant_detail
+            ->countSubmerchantsWithKYCNotInitiatedInPastDays($partnerMerchant->getId(), 60, $variant);
 
         $isMerchantCountCapped = count($filteredMerchantIds) >= $merchantCountCap;
         if ($isMerchantCountCapped)
@@ -1000,8 +1002,9 @@ class Core extends Detail\Core
         $activationStatusRows = [];
         foreach ($submerchants as $submerchant)
         {
-            $activationStatus = $submerchant->merchantDetail->getActivationStatus();
-            $activationStatusLabel = PartnerConstants::$subMActivationStatusLabels[$activationStatus];
+            $merchantDetail         = $submerchant->merchantDetail;
+            $activationStatus       = $merchantDetail->getActivationStatus();
+            $activationStatusLabel  = PartnerConstants::$subMActivationStatusLabels[$activationStatus];
 
             if (is_null($activationStatus))
             {
@@ -1009,7 +1012,7 @@ class Core extends Detail\Core
             }
 
             $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
-                $submerchant->merchantDetail->getKycClarificationReasons()
+                $merchantDetail->getKycClarificationReasons()
             );
 
             $activationStatusRows[$submerchant->getId()] = [
@@ -1021,25 +1024,36 @@ class Core extends Detail\Core
             ];
         };
 
-        $data = [
+        return [
             'partner_email'                   => $partnerMerchant->getEmail(),
             'activationStatusRows'            => $activationStatusRows,
             'countKYCNotInitiatedInTwoMonths' => $countKYCNotInitiatedInTwoMonths,
             'isMerchantCountCapped'           => $isMerchantCountCapped
         ];
-
-        return $data;
     }
 
-    public function getSubmerchantIdsForWeeklyActivationSummaryEmail(string $partnerMerchantId): array
+    public function getSubmerchantIdsForWeeklyActivationSummaryEmail(string $partnerMerchantId, string $variant = null): array
     {
         $merchantCountCap    = PartnerConstants::WEEKLY_ACTIVATION_SUMMARY_MERCHANT_COUNT_CAP;
 
-        $merchantIdsInTerminalStateInSevenDays = $this->repo->merchant->getSubmerchantIdsInTerminalStateInPastDays($partnerMerchantId, 7, $merchantCountCap);
-
-        $merchantIdsInstantlyActivatedOrNC     = $this->repo->merchant_detail->getSubmerchantIdsByActivationStatus($partnerMerchantId, [Detail\Status::INSTANTLY_ACTIVATED, Detail\Status::NEEDS_CLARIFICATION], $merchantCountCap);
-
-        $merchantIdsUnderReviewInSevenDays     = $this->repo->merchant_detail->getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDays($partnerMerchantId, 7, $merchantCountCap);
+        $merchantIdsInTerminalStateInSevenDays = $this->repo->merchant->getSubmerchantIdsInTerminalStateInPastDays(
+            $partnerMerchantId,
+            7,
+            $merchantCountCap,
+            $variant,
+        );
+        $merchantIdsInstantlyActivatedOrNC     = $this->repo->merchant_detail->getSubmerchantIdsByActivationStatus(
+            $partnerMerchantId,
+            [Detail\Status::INSTANTLY_ACTIVATED, Detail\Status::NEEDS_CLARIFICATION],
+            $merchantCountCap,
+            $variant,
+        );
+        $merchantIdsUnderReviewInSevenDays     = $this->repo->merchant_detail->getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDays(
+            $partnerMerchantId,
+            7,
+            $merchantCountCap,
+            $variant,
+        );
 
         $merchantIds = array_merge($merchantIdsInTerminalStateInSevenDays, $merchantIdsInstantlyActivatedOrNC, $merchantIdsUnderReviewInSevenDays);
 
@@ -1067,13 +1081,20 @@ class Core extends Detail\Core
             return;
         }
 
-        $filteredMerchantIds = $this->getSubmerchantIdsForWeeklyActivationSummaryEmail($partnerMerchantId);
+        $properties     = [
+            'id'            => $partnerMerchantId,
+            'experiment_id' => $this->app['config']->get('app.partner_weekly_activation_summary_datalake_exp_id'),
+        ];
+        $response       = $this->app['splitzService']->evaluateRequest($properties);
+        $variant        = $response['response']['variant']['name'] ?? null;
+
+        $filteredMerchantIds = $this->getSubmerchantIdsForWeeklyActivationSummaryEmail($partnerMerchantId, $variant);
 
         if(count($filteredMerchantIds) === 0){
             return;
         }
 
-        $data = $this->getPayloadForPartnerWeeklyActivationSummaryEmail($partnerMerchant, $filteredMerchantIds);
+        $data = $this->getPayloadForPartnerWeeklyActivationSummaryEmail($partnerMerchant, $filteredMerchantIds, $variant);
 
         $org = $partnerMerchant->org ?: $this->repo->org->getRazorpayOrg();
 

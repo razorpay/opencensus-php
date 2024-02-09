@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Database\Connection;
 use DB;
 use Closure;
+use Throwable;
 use Carbon\Carbon;
 
 use Illuminate\Database\Query\JoinClause;
@@ -70,6 +71,10 @@ class Repository extends Base\Repository
     //
     const SUB_ACCOUNTS_ONLY_VALUE     = '1';
     const SUB_ACCOUNTS_EXCLUDED_VALUE = '0';
+
+    const ACTIVATED_SUBM_LAST_N_DAYS_DL_QUERY   = "SELECT m.id FROM hive.realtime_hudi_api.merchants AS m INNER JOIN hive.realtime_hudi_api.merchant_access_map AS mam ON m.id = mam.merchant_id LEFT JOIN hive.realtime_hudi_api.merchant_details AS md ON m.id = md.merchant_id WHERE mam.entity_owner_id = '%s' AND m.activated_at > %d AND md.activation_status IN ( '%s') LIMIT %d";
+    const REJECTED_SUBM_LAST_N_DAYS_DL_QUERY    = "select a.entity_id from hive.realtime_hudi_api.action_state as a inner join hive.realtime_hudi_api.merchant_access_map as mam on a.entity_id = mam.merchant_id where mam.entity_owner_id = '%s' and a.name = '%s' and a.created_at > %d limit %d";
+    const AGGREGATOR_PARTNERS_DL_QUERY          = "SELECT id FROM hive.realtime_hudi_api.merchants WHERE partner_type = 'aggregator'";
 
     protected $entity = 'merchant';
 
@@ -2062,6 +2067,15 @@ class Repository extends Base\Repository
 
     public function fetchAggregatorPartners($limit = null, $afterId = null)
     {
+        try
+        {
+            return $this->fetchAggregatorPartnersFromDataLake($limit, $afterId);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException($e);
+        }
+
         $query = $this->newQuery()
                       ->select(Entity::ID)
                       ->where(Entity::PARTNER_TYPE, Constants::AGGREGATOR)
@@ -2078,6 +2092,31 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    private function fetchAggregatorPartnersFromDataLake($limit = null, $afterId = null): PublicCollection
+    {
+        $dataLakeQuery = self::AGGREGATOR_PARTNERS_DL_QUERY;
+
+        if (empty($afterId) === false)
+        {
+            $dataLakeQuery .= sprintf(" AND id > '%s'", $afterId);
+        }
+
+        $dataLakeQuery .= " ORDER BY id ASC";
+
+        if (empty($limit) === false)
+        {
+            $dataLakeQuery .= sprintf(" LIMIT %d", $limit);
+        }
+
+        $results = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        return (new PublicCollection(
+            array_map(
+                function ($row) {return (new Entity())->fill($row);}, $results
+            )
+        ));
     }
 
     public function findPartnersWithoutPartnerActivation($limit, $afterId = null)
@@ -2174,9 +2213,78 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function getActivatedSubMInPastDays(string $partnerMerchantId, int $pastDays, int $limit){
-        $pastDaysTimestamp        = Carbon::now()->subDays($pastDays)->getTimestamp();
+    public function getActivatedSubMInPastDays(string $partnerMerchantId, int $pastDays, int $limit, string $variant = null): array
+    {
+        $pastDaysTimestamp = Carbon::now()->subDays($pastDays)->getTimestamp();
+        $activatedStatuses = [
+            Detail\Status::ACTIVATED, Detail\Status::ACTIVATED_KYC_PENDING, Detail\Status::ACTIVATED_MCC_PENDING,
+        ];
 
+        if ($variant != null)
+        {
+            try
+            {
+                $dataLakeQuery      = $this->getActivatedSubMInPastDaysFromDataLakeQuery(
+                    $partnerMerchantId, $pastDaysTimestamp, $activatedStatuses, $limit,
+                );
+                $results            = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+                $dataLakeResults    = collect($results)->pluck(Entity::ID)->toArray();
+
+                switch ($variant)
+                {
+                    case 'enable':
+                        return $dataLakeResults;
+
+                    case 'shadow':
+
+                        $dbQuery    = $this->getActivatedSubMInPastDaysFromDBQuery(
+                            $partnerMerchantId, $pastDaysTimestamp, $activatedStatuses, $limit,
+                        );
+                        $dbResults  = $dbQuery->get()->pluck(Entity::ID)->toArray();
+
+                        $this->trace->info(
+                            TraceCode::DATALAKE_DB_RESULT_COMPARISON,
+                            [
+                                "datalake_query"            => $dataLakeQuery,
+                                "datalake_results"          => $dataLakeResults,
+                                "db_query"                  => $dbQuery->toSql(),
+                                "db_bindings"               => $dbQuery->getBindings(),
+                                "db_results"                => $dbResults,
+                                "db_datalake_result_match"  => array_sort($dbResults) === array_sort($dataLakeResults)
+                            ]
+                        );
+
+                        return $dbResults;
+
+                    default:
+                        break;
+                }
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+
+        $dbQuery = $this->getActivatedSubMInPastDaysFromDBQuery(
+            $partnerMerchantId, $pastDaysTimestamp, $activatedStatuses, $limit,
+        );
+
+        return $dbQuery->get()->pluck(Entity::ID)->toArray();
+    }
+
+    /**
+     * @param string $partnerMerchantId
+     * @param int    $pastDaysTimestamp
+     * @param array  $activatedStatuses
+     * @param int    $limit
+     *
+     * @return mixed
+     */
+    private function getActivatedSubMInPastDaysFromDBQuery(
+        string $partnerMerchantId, int $pastDaysTimestamp, array $activatedStatuses, int $limit,
+    ): mixed
+    {
         $merchantId               = $this->dbColumn(Entity::ID);
         $activatedAt              = $this->dbColumn(Entity::ACTIVATED_AT);
         $merchantDetailRepo       = $this->repo->merchant_detail;
@@ -2188,25 +2296,107 @@ class Repository extends Base\Repository
         $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
-                             ->join(Table::MERCHANT_ACCESS_MAP, $merchantId, $accessMapsMerchantId)
-                             ->leftJoin(Table::MERCHANT_DETAIL, $merchantId, $merchantDetailMerchantId)
-                             ->select($merchantId)
-                             ->where($accessMapsEntityOwnerId, $partnerMerchantId)
-                             ->where($activatedAt, '>', $pastDaysTimestamp)
-                             ->whereIn($activationStatus, [
-                                 Detail\Status::ACTIVATED,
-                                 Detail\Status::ACTIVATED_KYC_PENDING,
-                                 Detail\Status::ACTIVATED_MCC_PENDING
-                             ])
-                             ->take($limit)
-                             ->get()
-                             ->pluck(Entity::ID)
-                             ->toArray();
+                    ->join(Table::MERCHANT_ACCESS_MAP, $merchantId, $accessMapsMerchantId)
+                    ->leftJoin(Table::MERCHANT_DETAIL, $merchantId, $merchantDetailMerchantId)
+                    ->select($merchantId)
+                    ->where($accessMapsEntityOwnerId, $partnerMerchantId)
+                    ->where($activatedAt, '>', $pastDaysTimestamp)
+                    ->whereIn($activationStatus, $activatedStatuses)
+                    ->take($limit);
     }
 
-    public function getRejectedSubMInPastDays(string $partnerMerchantId, int $pastDays, int $limit){
-        $pastDaysTimestamp        = Carbon::now()->subDays($pastDays)->getTimestamp();
+    /**
+     * @param string $partnerMerchantId
+     * @param int    $pastDaysTimestamp
+     * @param array  $activatedStatuses
+     * @param int    $limit
+     *
+     * @return string
+     */
+    private function getActivatedSubMInPastDaysFromDataLakeQuery(
+        string $partnerMerchantId,
+        int $pastDaysTimestamp,
+        array $activatedStatuses,
+        int $limit,
+    ): string
+    {
+        return sprintf(
+            self::ACTIVATED_SUBM_LAST_N_DAYS_DL_QUERY,
+            $partnerMerchantId,
+            $pastDaysTimestamp,
+            implode("', '", $activatedStatuses),
+            $limit
+        );
+    }
 
+    /**
+     * @param string $partnerMerchantId
+     * @param int    $pastDays
+     * @param int    $limit
+     * @param string $variant
+     *
+     * @return array
+     */
+    public function getRejectedSubMInPastDays(string $partnerMerchantId, int $pastDays, int $limit, string $variant): array
+    {
+        $pastDaysTimestamp = Carbon::now()->subDays($pastDays)->getTimestamp();
+
+        if ($variant != null)
+        {
+            try
+            {
+                $dataLakeQuery      = $this->getRejectedSubMInPastDaysFromDataLakeQuery(
+                    $partnerMerchantId, $pastDaysTimestamp, $limit,
+                );
+                $results            = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+                $dataLakeResults    = collect($results)->pluck(ActionState::ENTITY_ID)->toArray();
+
+                switch ($variant)
+                {
+                    case 'enable':
+                        return $dataLakeResults;
+
+                    case 'shadow':
+                        $dbQuery    = $this->getRejectedSubMInPastDaysFromDBQuery(
+                            $partnerMerchantId, $pastDaysTimestamp, $limit,
+                        );
+                        $dbResults  = $dbQuery->get()->pluck(ActionState::ENTITY_ID)->toArray();
+
+                        $this->trace->info(
+                            TraceCode::DATALAKE_DB_RESULT_COMPARISON,
+                            [
+                                "datalake_query"            => $dataLakeQuery,
+                                "datalake_results"          => $dataLakeResults,
+                                "db_query"                  => $dbQuery->toSql(),
+                                "db_bindings"               => $dbQuery->getBindings(),
+                                "db_results"                => $dbResults,
+                                "db_datalake_result_match"  => array_sort($dbResults) === array_sort($dataLakeResults)
+                            ]
+                        );
+
+                        return $dbResults;
+
+                    default:
+                        break;
+                }
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+
+        $dbQuery = $this->getRejectedSubMInPastDaysFromDBQuery(
+            $partnerMerchantId, $pastDaysTimestamp, $limit,
+        );
+
+        return $dbQuery->get()->pluck(ActionState::ENTITY_ID)->toArray();
+    }
+
+    private function getRejectedSubMInPastDaysFromDBQuery(
+        string $partnerMerchantId, int $pastDaysTimestamp, int $limit,
+    ): mixed
+    {
         $actionStateRepo      = $this->repo->action_state;
         $actionStateEntityId  = $actionStateRepo->dbColumn(ActionState::ENTITY_ID);
         $actionStateName      = $actionStateRepo->dbColumn(ActionState::NAME);
@@ -2217,22 +2407,41 @@ class Repository extends Base\Repository
         $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
 
         return $actionStateRepo->newQueryWithConnection($this->getSlaveConnection())
-                                       ->join(Table::MERCHANT_ACCESS_MAP, $actionStateEntityId, $accessMapsMerchantId)
-                                       ->select($actionStateEntityId)
-                                       ->where($accessMapsEntityOwnerId, $partnerMerchantId)
-                                       ->where($actionStateName, Detail\Status::REJECTED)
-                                       ->where($actionStateCreatedAt, '>', $pastDaysTimestamp)
-                                       ->take($limit)
-                                       ->get()
-                                       ->pluck(ActionState::ENTITY_ID)
-                                       ->toArray();
+                               ->join(Table::MERCHANT_ACCESS_MAP, $actionStateEntityId, $accessMapsMerchantId)
+                               ->select($actionStateEntityId)
+                               ->where($accessMapsEntityOwnerId, $partnerMerchantId)
+                               ->where($actionStateName, Detail\Status::REJECTED)
+                               ->where($actionStateCreatedAt, '>', $pastDaysTimestamp)
+                               ->take($limit);
     }
 
-    public function getSubmerchantIdsInTerminalStateInPastDays(string $partnerMerchantId, int $pastDays, int $limit)
+    /**
+     * @param string $partnerMerchantId
+     * @param int    $pastDaysTimestamp
+     * @param int    $limit
+     *
+     * @return string
+     */
+    private function getRejectedSubMInPastDaysFromDataLakeQuery(
+        string $partnerMerchantId, int $pastDaysTimestamp, int $limit,
+    ): string
     {
-        $activatedIds = $this->getActivatedSubMInPastDays($partnerMerchantId, $pastDays, $limit);
+        return sprintf(
+            self::REJECTED_SUBM_LAST_N_DAYS_DL_QUERY,
+            $partnerMerchantId,
+            Detail\Status::REJECTED,
+            $pastDaysTimestamp,
+            $limit
+        );
+    }
 
-        $rejectedIds = $this->getRejectedSubMInPastDays($partnerMerchantId, $pastDays, $limit);
+    public function getSubmerchantIdsInTerminalStateInPastDays(
+        string $partnerMerchantId, int $pastDays, int $limit, string $variant = null,
+    )
+    {
+        $activatedIds = $this->getActivatedSubMInPastDays($partnerMerchantId, $pastDays, $limit, $variant);
+
+        $rejectedIds = $this->getRejectedSubMInPastDays($partnerMerchantId, $pastDays, $limit, $variant);
 
         return array_merge($activatedIds, $rejectedIds);
     }
@@ -2359,7 +2568,8 @@ class Repository extends Base\Repository
     }
 
     /**
-     * __saveOrFail -  Keeping the method name not same with base repository method, this to be renamed  and used in merchant core while ramp-up
+     * __saveOrFail -  Keeping the method name not same with base repository method, this to be renamed  and used in
+     * merchant core while ramp-up
      *Once stakeholder saveOrFail is migrated to Account service only this method should be used while saving the merchant entity any save on merchant entity has to be called at any new place
      * @param MerchantEntity $entity
      * @param bool $testAndLive - If true saveEntity on both test and live db else only live db

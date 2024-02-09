@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Database\Connection;
 use DB;
 
+use Throwable;
 use Exception;
 use RZP\Base\ConnectionType;
 use RZP\Models\Base;
@@ -40,6 +41,10 @@ class Repository extends Base\Repository
     }
 
     protected $entity = 'merchant_detail';
+
+    const GET_SUBM_IDS_BY_ACTIVATION_STATUS_DL_QUERY                            = "SELECT md.merchant_id FROM hive.realtime_hudi_api.merchant_details AS md INNER JOIN hive.realtime_hudi_api.merchant_access_map AS mam ON md.merchant_id = mam.merchant_id WHERE mam.entity_owner_id = '%s' AND md.activation_status IN ('%s')";
+    const GET_SUBM_IDS_WITH_KYC_SUBMITTED_UNDER_REVIEW_IN_PAST_DAYS_DL_QUERY    = "SELECT md.merchant_id FROM hive.realtime_hudi_api.merchant_details AS md INNER JOIN hive.realtime_hudi_api.merchant_access_map AS mam ON md.merchant_id = mam.merchant_id WHERE mam.entity_owner_id = '%s' AND md.submitted_at >= %d AND md.submitted = 1 AND md.activation_status = 'under_review' LIMIT %d";
+    const COUNT_SUBM_WITH_KYC_NOT_INITIATED_IN_PAST_DAYS_DL_QUERY               = "SELECT COUNT(*) AS subm_count FROM hive.realtime_hudi_api.merchant_details AS md INNER JOIN hive.realtime_hudi_api.merchant_access_map AS mam ON md.merchant_id = mam.merchant_id WHERE mam.entity_owner_id = '%s' AND md.created_at >= %d AND md.activation_status IS NULL;";
 
     function __construct()
     {
@@ -814,7 +819,74 @@ class Repository extends Base\Repository
     /*
      * $limit is optional here. Used for
     */
-    public function getSubmerchantIdsByActivationStatus(string $partnerMerchantId, array $activationStatusList, int $limit = null): array
+    public function getSubmerchantIdsByActivationStatus(
+        string $partnerMerchantId, array $activationStatusList, int $limit = null, string $variant = null,
+    ): array
+    {
+        if ($variant != null)
+        {
+            try
+            {
+                $dataLakeQuery      = $this->getSubmerchantIdsByActivationStatusFromDataLakeQuery(
+                    $partnerMerchantId, $activationStatusList, $limit,
+                );
+                $results            = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+                $dataLakeResults    = collect($results)->pluck(Entity::MERCHANT_ID)->toArray();
+
+                switch ($variant)
+                {
+                    case "enable":
+                        return $dataLakeResults;
+
+                    case "shadow":
+                        $dbQuery    = $this->getSubmerchantIdsByActivationStatusFromDBQuery(
+                            $partnerMerchantId, $activationStatusList, $limit,
+                        );
+                        $dbResults  = $dbQuery->get()->pluck(Entity::MERCHANT_ID)->toArray();
+
+                        $this->trace->info(
+                            TraceCode::DATALAKE_DB_RESULT_COMPARISON,
+                            [
+                                "datalake_query"            => $dataLakeQuery,
+                                "datalake_results"          => $dataLakeResults,
+                                "db_query"                  => $dbQuery->toSql(),
+                                "db_bindings"               => $dbQuery->getBindings(),
+                                "db_results"                => $dbResults,
+                                "db_datalake_result_match"  => array_sort($dbResults) === array_sort($dataLakeResults)
+                            ]
+                        );
+
+                        return $dbResults;
+
+                    default:
+                        break;
+                }
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+
+        $dbQuery = $this->getSubmerchantIdsByActivationStatusFromDBQuery(
+            $partnerMerchantId, $activationStatusList, $limit,
+        );
+
+        return $dbQuery->get()->pluck(Entity::MERCHANT_ID)->toArray();
+    }
+
+    /**
+     * @param string   $partnerMerchantId
+     * @param array    $activationStatusList
+     * @param int|null $limit
+     *
+     * @return mixed
+     */
+    private function getSubmerchantIdsByActivationStatusFromDBQuery(
+        string $partnerMerchantId,
+        array $activationStatusList,
+        int $limit = null,
+    ): mixed
     {
         $merchantDetailMerchantId       = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantDetailActivationStatus = $this->dbColumn(Entity::ACTIVATION_STATUS);
@@ -823,25 +895,118 @@ class Repository extends Base\Repository
         $accessMapsMerchantId    = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
         $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->join(Table::MERCHANT_ACCESS_MAP, $merchantDetailMerchantId, $accessMapsMerchantId)
-                      ->select($merchantDetailMerchantId)
-                      ->where($accessMapsEntityOwnerId, $partnerMerchantId)
-                      ->whereIn($merchantDetailActivationStatus, $activationStatusList);
+        $dbQuery = $this->newQueryWithConnection($this->getSlaveConnection())
+                        ->join(Table::MERCHANT_ACCESS_MAP, $merchantDetailMerchantId, $accessMapsMerchantId)
+                        ->select($merchantDetailMerchantId)
+                        ->where($accessMapsEntityOwnerId, $partnerMerchantId)
+                        ->whereIn($merchantDetailActivationStatus, $activationStatusList);
 
         if (empty($limit) === false)
         {
-            $query = $query->take($limit);
+            $dbQuery = $dbQuery->take($limit);
         }
 
-        return $query->get()
-                     ->pluck(Entity::MERCHANT_ID)
-                     ->toArray();
+        return $dbQuery;
+
     }
 
-    public function getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDays(string $partnerMerchantId, int $pastDays, int $limit): array
+    /**
+     * @param string   $partnerMerchantId
+     * @param array    $activationStatusList
+     * @param int|null $limit
+     *
+     * @return string
+     */
+    private function getSubmerchantIdsByActivationStatusFromDataLakeQuery(
+        string $partnerMerchantId,
+        array $activationStatusList,
+        int $limit = null,
+    ): string
     {
-        $fromEpoch                      = Carbon::now()->subDays($pastDays)->getTimestamp();
+        $dataLakeQuery = sprintf(
+            self::GET_SUBM_IDS_BY_ACTIVATION_STATUS_DL_QUERY,
+            $partnerMerchantId,
+            implode("', '", $activationStatusList),
+        );
+
+        if (empty($limit) === false)
+        {
+            $dataLakeQuery .= sprintf(" LIMIT %d", $limit);
+        }
+
+        return $dataLakeQuery;
+
+    }
+
+    public function getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDays(
+        string $partnerMerchantId, int $pastDays, int $limit, string $variant = null,
+    ): array
+    {
+        $fromEpoch = Carbon::now()->subDays($pastDays)->getTimestamp();
+
+        if ($variant != null)
+        {
+            try
+            {
+                $dataLakeQuery      = $this->getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDaysFromDataLakeQuery(
+                    $partnerMerchantId, $fromEpoch, $limit,
+                );
+                $results            = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+                $dataLakeResults    = collect($results)->pluck(Entity::MERCHANT_ID)->toArray();
+
+                switch ($variant)
+                {
+                    case "enable":
+                        return $dataLakeResults;
+
+                    case "shadow":
+                        $dbQuery    = $this->getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDaysFromDBQuery(
+                            $partnerMerchantId, $fromEpoch, $limit,
+                        );
+                        $dbResults  = $dbQuery->get()->pluck(Entity::MERCHANT_ID)->toArray();
+
+                        $this->trace->info(
+                            TraceCode::DATALAKE_DB_RESULT_COMPARISON,
+                            [
+                                "datalake_query"            => $dataLakeQuery,
+                                "datalake_results"          => $dataLakeResults,
+                                "db_query"                  => $dbQuery->toSql(),
+                                "db_bindings"               => $dbQuery->getBindings(),
+                                "db_results"                => $dbResults,
+                                "db_datalake_result_match"  => array_sort($dbResults) === array_sort($dataLakeResults)
+                            ]
+                        );
+
+                        return $dbResults;
+
+                    default:
+                        break;
+                }
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+
+        $dbQuery = $this->getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDaysFromDBQuery(
+            $partnerMerchantId, $fromEpoch, $limit
+        );
+
+        return $dbQuery->get()->pluck(Entity::MERCHANT_ID)->toArray();
+    }
+
+    /**
+     * @param string $partnerMerchantId
+     * @param int    $fromEpoch
+     * @param int    $limit
+     *
+     * @return mixed
+     */
+    private function getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDaysFromDBQuery(
+        string $partnerMerchantId, int $fromEpoch, int $limit,
+    ): mixed
+    {
         $merchantDetailMerchantId       = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantDetailActivationStatus = $this->dbColumn(Entity::ACTIVATION_STATUS);
 
@@ -856,15 +1021,103 @@ class Repository extends Base\Repository
                     ->where($this->dbColumn(Entity::SUBMITTED_AT), '>=', $fromEpoch)
                     ->where($this->dbColumn(Entity::SUBMITTED), 1)
                     ->where($merchantDetailActivationStatus, Status::UNDER_REVIEW)
-                    ->take($limit)
-                    ->get()
-                    ->pluck(Entity::MERCHANT_ID)
-                    ->toArray();
+                    ->take($limit);
     }
 
-    public function countSubmerchantsWithKYCNotInitiatedInPastDays(string $partnerMerchantId, int $pastDays): int
+    /**
+     * @param string $partnerMerchantId
+     * @param int    $fromEpoch
+     * @param int    $limit
+     *
+     * @return string
+     */
+    private function getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDaysFromDataLakeQuery(
+        string $partnerMerchantId, int $fromEpoch, int $limit,
+    ): string
     {
-        $fromEpoch                = Carbon::now()->subDays($pastDays)->getTimestamp();
+        return sprintf(
+            self::GET_SUBM_IDS_WITH_KYC_SUBMITTED_UNDER_REVIEW_IN_PAST_DAYS_DL_QUERY,
+            $partnerMerchantId,
+            $fromEpoch,
+            $limit,
+        );
+    }
+
+    /**
+     * @param string      $partnerMerchantId
+     * @param int         $pastDays
+     * @param string|null $variant
+     *
+     * @return int
+     */
+    public function countSubmerchantsWithKYCNotInitiatedInPastDays(string $partnerMerchantId, int $pastDays, string $variant = null): int
+    {
+        $fromEpoch = Carbon::now()->subDays($pastDays)->getTimestamp();
+
+        if ($variant != null)
+        {
+            try
+            {
+                $dataLakeQuery      = $this->countSubmerchantsWithKYCNotInitiatedInPastDaysFromDataLakeQuery(
+                    $partnerMerchantId, $fromEpoch
+                );
+
+                $results            = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+                $dataLakeResults    = $results[0]["subm_count"];
+
+                switch ($variant)
+                {
+                    case "enable":
+                        return $dataLakeResults;
+
+                    case "shadow":
+                        $dbQuery    = $this->countSubmerchantsWithKYCNotInitiatedInPastDaysFromDBQuery(
+                            $partnerMerchantId, $fromEpoch
+                        );
+                        $dbResults  = $dbQuery->count();
+
+                        $this->trace->info(
+                            TraceCode::DATALAKE_DB_RESULT_COMPARISON,
+                            [
+                                "datalake_query"            => $dataLakeQuery,
+                                "datalake_results"          => $dataLakeResults,
+                                "db_query"                  => $dbQuery->toSql(),
+                                "db_bindings"               => $dbQuery->getBindings(),
+                                "db_results"                => $dbResults,
+                                "db_datalake_result_match"  => $dbResults === $dataLakeResults
+                            ]
+                        );
+
+                        return $dbResults;
+
+                    default:
+                        break;
+                }
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
+
+        }
+
+        $dbQuery = $this->countSubmerchantsWithKYCNotInitiatedInPastDaysFromDBQuery(
+            $partnerMerchantId, $fromEpoch
+        );
+
+        return $dbQuery->count();
+    }
+
+    /**
+     * @param string $partnerMerchantId
+     * @param int    $fromEpoch
+     *
+     * @return string
+     */
+    private function countSubmerchantsWithKYCNotInitiatedInPastDaysFromDBQuery(
+        string $partnerMerchantId, int $fromEpoch
+    ): mixed
+    {
         $merchantDetailMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantDetailCreatedAt  = $this->dbColumn(Entity::CREATED_AT);
 
@@ -877,8 +1130,24 @@ class Repository extends Base\Repository
                     ->select($merchantDetailMerchantId)
                     ->where($accessMapsEntityOwnerId, $partnerMerchantId)
                     ->where($merchantDetailCreatedAt, '>=', $fromEpoch)
-                    ->whereNull(Entity::ACTIVATION_STATUS)
-                    ->count();
+                    ->whereNull(Entity::ACTIVATION_STATUS);
+    }
+
+    /**
+     * @param string $partnerMerchantId
+     * @param int    $fromEpoch
+     *
+     * @return string
+     */
+    private function countSubmerchantsWithKYCNotInitiatedInPastDaysFromDataLakeQuery(
+        string $partnerMerchantId, int $fromEpoch
+    ): string
+    {
+        return sprintf(
+            self::COUNT_SUBM_WITH_KYC_NOT_INITIATED_IN_PAST_DAYS_DL_QUERY,
+            $partnerMerchantId,
+            $fromEpoch,
+        );
     }
 
     public function findMerchantWithContactNumbersExcludingMerchant(string $merchantIdToBeExcluded, array $numbers)
