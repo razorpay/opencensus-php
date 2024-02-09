@@ -1784,7 +1784,6 @@ Secondary reference id should be unique, duplicate value for test123";
             ]
         ];
 
-
         $this->ba->directAuth();
 
         $res = $this->makeRequestAndGetContent($orderCreateRequest);
@@ -1792,6 +1791,91 @@ Secondary reference id should be unique, duplicate value for test123";
         $this->assertEquals($res['order']['amount'], 100);
     }
 
+    public function testFormBuilderSendMultipleNotifications()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'item1' => 100,
+            'sms_notify' => "1",
+            'email_notify' => "1"
+        ]);
+
+        $request = [
+            'url' => '/payment_pages/'.$id.'/fetch_notify_details',
+            'method' => 'post',
+            'content' => [
+                'notify_on' => [
+                    'email'
+                ],
+                'batch_id' => 'batch_KoGILWQCoVkO2k',
+            ],
+        ];
+
+        $this->ba->proxyAuth();
+
+        try
+        {
+            $res = $this->makeRequestAndGetContent($request);
+
+            $this->assertTrue(false, 'should throw an exception for amount not mismatch');
+        }
+        catch(\Exception $e)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, $e->getCode());
+
+            $this->assertEquals("Notifications for this batch are already sent, if you wish to re-send the notifications, you will be able to do so after 24 hours of the previous attempt.", $e->getMessage());
+        }
+
+    }
+
+    public function testFormBuilderSendMultipleNotifications2()
+    {
+        $id = $this->testCreatePaymentPageWithLateFeeConfig();
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'item1' => 100,
+            'sms_notify' => "0",
+            'email_notify' => "0"
+        ]);
+
+        $request = [
+            'url' => '/payment_pages/'.$id.'/fetch_notify_details',
+            'method' => 'post',
+            'content' => [
+                'notify_on' => [
+                    'email'
+                ],
+                'batch_id' => 'batch_KoGILWQCoVkO2k',
+            ],
+        ];
+
+        $this->ba->proxyAuth();
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        try
+        {
+            $res = $this->makeRequestAndGetContent($request);
+
+            $this->assertTrue(false, 'should throw an exception for amount not mismatch');
+        }
+        catch(\Exception $e)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, $e->getCode());
+
+            $this->assertEquals("Notifications for this batch are already sent, if you wish to re-send the notifications, you will be able to do so after 24 hours of the previous attempt.", $e->getMessage());
+        }
+
+    }
 
     public function testAmountLessThanOneNormalPP()
     {
@@ -2753,47 +2837,6 @@ Secondary reference id should be unique, duplicate value for test123";
 
         $this->startTest();
     }
-
-
-    public function testPaymentLinkSendNotificationForAllRecordsEmail()
-    {
-        $this->createPaymentLinkWithMultipleItem();
-
-        $res = $this->createPaymentPageRecords();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/pl_'. $res . '/fetch_notify_details';
-
-        $this->ba->proxyAuth();
-
-        $this->startTest($this->testData[__FUNCTION__]);
-    }
-
-    public function testPaymentLinkSendNotificationForAllRecords()
-    {
-        $this->createPaymentLinkWithMultipleItem();
-
-        $res = $this->createPaymentPageRecords();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/pl_'. $res . '/fetch_notify_details';
-
-        $this->ba->proxyAuth();
-
-        $this->startTest($this->testData[__FUNCTION__]);
-    }
-
-    public function testPaymentLinkSendNotificationForAllRecordsSms()
-    {
-        $this->createPaymentLinkWithMultipleItem();
-
-        $res = $this->createPaymentPageRecords();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/pl_'. $res . '/fetch_notify_details';
-
-        $this->ba->proxyAuth();
-
-        $this->startTest($this->testData[__FUNCTION__]);
-    }
-
     public function testPaymentLinkSendNotificationForAllRecordsFailure()
     {
         $res = $this->createPaymentLinkWithMultipleItem();

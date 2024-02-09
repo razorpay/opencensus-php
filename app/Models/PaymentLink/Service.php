@@ -163,6 +163,7 @@ class Service extends Base\Service
 
     public function sendNotification(string $id, array $input, $merchant = null)
     {
+
         $merchant = $this->merchant ?? $merchant;
         $paymentLink = Tracer::inSpan(['name' => 'payment_page.send_notification.find_payment_link'], function() use($id, $merchant)
         {
@@ -173,6 +174,7 @@ class Service extends Base\Service
         {
             $this->core->sendNotification($paymentLink, $input);
         });
+
     }
 
     /**
@@ -180,28 +182,20 @@ class Service extends Base\Service
      */
     public function sendNotificationToAllRecords(string $id, array $input)
     {
+        $redis = $this->app['redis'];
 
         (new Validator)->validateInput('validateSendNotificationToAllRecords', $input);
 
         $batchId = $input[PaymentPageRecord\Entity::BATCH_ID];
 
-        $records = $this->repo->payment_page_record->findByPaymentPageIdAndBatchIdorFail($id, $batchId);
+        $redisKey = "notification_sent:$batchId";
 
-        $batchResponse = $this->app->batchService->getMultipleBatchesFromBatchService($this->merchant, [substr($batchId,-14)]);
-
-        $batchSettings = $batchResponse[0]['settings'];
-
-        if((isset($batchSettings['sms_notify']) === true and $batchSettings['sms_notify'] === 1) or
-            (isset($batchSettings['email_notify']) === true and $batchSettings['email_notify'] === 1))
+        if ($redis->exists($redisKey))
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY,
-                PaymentPageRecord\Entity::BATCH_ID,
-                [
-                    PaymentPageRecord\Entity::BATCH_ID      => $batchId,
-                    'input'                                 => $input,
-                ]);
+            throw new BadRequestValidationFailureException("Notifications for this batch are already sent, if you wish to re-send the notifications, you will be able to do so after 24 hours of the previous attempt.");
         }
+
+        $records = $this->repo->payment_page_record->findByPaymentPageIdAndBatchIdorFail($id, $batchId);
 
         if(in_array('sms',$input['notify_on']) === true)
         {
@@ -231,6 +225,9 @@ class Service extends Base\Service
         }
 
         $this->app->batchService->forwardNotify($batchId, $batchSettings, $this->merchant);
+
+        $redis->setex($redisKey, 86400, time());
+
     }
 
     public function expirePaymentLinks(): array

@@ -92,6 +92,12 @@ class Core extends Base\Core
             $notify[Entity::EMAILS] = [$paymentPageRecord[Entity::EMAIL]] ;
         }
 
+        if ((boolval($smsNotify) === true) or (boolval($emailNotify) === true))
+        {
+            $redis = $this->app['redis'];
+            $redisKey = "notification_sent:$batchId";
+            $redis->setex($redisKey, 86400, time());
+        }
 
         $merchant = $paymentPage->merchant;
 
@@ -344,7 +350,7 @@ class Core extends Base\Core
             $item = $paymentPageItem->item;
 
             if (($paymentPageItem[Entity::MANDATORY] === true) and
-                ((!in_array($item[PaymentLink::NAME],$keys)) or 
+                ((!in_array($item[PaymentLink::NAME],$keys)) or
                 (strlen($input[$item[PaymentLink::NAME]]) == 0)))
             {
                 array_push($errors,
@@ -375,7 +381,7 @@ class Core extends Base\Core
                (strlen($input[$item[PaymentLink::NAME]]) > 0))
             {
                 $resp[Entity::AMOUNT] = $resp[Entity::AMOUNT] + $input[$item[PaymentLink::NAME]];
-                
+
                 $other_details[$item[PaymentLink::NAME]] = $input[$item[PaymentLink::NAME]];
             }
         }

@@ -1198,55 +1198,6 @@ return [
             'content' => [],
         ],
     ],
-
-    'testPaymentLinkSendNotificationForAllRecords' => [
-        'request' => [
-            'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
-            'method' => 'post',
-            'content' => [
-                'notify_on' => [
-                    'email'
-                ],
-                'batch_id' => 'batch_KoGILWQCoVkOz5',
-            ],
-        ],
-        'response' => [
-            'content' => []
-        ]
-    ],
-
-    'testPaymentLinkSendNotificationForAllRecordsEmail' => [
-        'request' => [
-            'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
-            'method' => 'post',
-            'content' => [
-                'notify_on' => [
-                    'email'
-                ],
-                'batch_id' => 'batch_KoGILWQCoVkOz5',
-            ],
-        ],
-        'response' => [
-            'content' => []
-        ]
-    ],
-
-    'testPaymentLinkSendNotificationForAllRecordsSms' => [
-        'request' => [
-            'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
-            'method' => 'post',
-            'content' => [
-                'notify_on' => [
-                    'sms'
-                ],
-                'batch_id' => 'batch_KoGILWQCoVkOz5',
-            ],
-        ],
-        'response' => [
-            'content' => []
-        ]
-    ],
-
     'testPaymentLinkSendNotificationForAllRecordsFailure' => [
         'request' => [
             'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
@@ -1954,11 +1905,11 @@ return [
                         'item' => [
                             'name'        =>  'item2',
                             'description' => NULL,
-                            'amount'      => NULL,   
+                            'amount'      => NULL,
                             'currency'    => 'INR'
 
                         ],
-                
+
                         'mandatory'         => TRUE,
                         'image_url'         => 'dummy',
                         'stock'             => 10000,
@@ -7526,7 +7477,7 @@ The validation failed for pri__ref__id'
         ],
         'response' => [
             'content' => [
-                'error_description' => 
+                'error_description' =>
                 'Mandatory field entry missing for amount
 Payment amount is lesser than the minimum amount allowed'
                 ]
