@@ -500,7 +500,19 @@ class Core extends Base\Core
 
     public function getOriginForEntity(string $entityType, string $entityId, string $partnerId) : ?string
     {
-        $originId = $this->getEntityOriginFromCache($entityType, $entityId);
+        $originId = null;
+        try {
+            $originId = $this->getEntityOriginFromCache($entityType, $entityId);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::ENTITY_ORIGIN_FETCH_FROM_CACHE_ERROR, [
+                'error_message' => $e->getMessage(),
+                'entityType'    => $entityType,
+                'entityId'      => $entityId,
+            ]);
+            $this->trace->count(Metric::ENTITY_ORIGIN_FETCH_FROM_CACHE_FAILURE_TOTAL);
+        }
 
         if (!empty($originId))
         {
