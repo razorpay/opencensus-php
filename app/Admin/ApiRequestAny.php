@@ -108,7 +108,8 @@ class ApiRequestAny
 
     const WHITELISTED_QUERY_PARAMS_ROUTE_PREFIXES = [
         'vendor-payments',
-        'gcoms'
+        'gcoms',
+        'payments_cross_border'
     ];
 
     /**
