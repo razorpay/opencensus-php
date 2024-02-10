@@ -24,7 +24,7 @@ class Type
     const CREATE_BULK_GIFT_CARDS            = 'create_bulk_gift_cards';
 
     // GCOMS batch types
-    CONST UPLOAD_BULK_EMAILS = 'gcms_upload_bulk_emails';
+    CONST GCMS_UPLOAD_BULK_EMAILS = 'gcms_upload_bulk_emails';
 
 
     //Cod eligibility attribute batch
@@ -609,7 +609,7 @@ class Type
         self::IRCTC_SETTLEMENT,
         self::CREATE_WALLET_CONTAINER_REVERSALS,
         self::CREATE_BULK_GIFT_CARDS,
-        self::UPLOAD_BULK_EMAILS
+        self::GCMS_UPLOAD_BULK_EMAILS
     ];
 
     /**
@@ -709,7 +709,7 @@ class Type
         self::CREATE_WALLET_USER_CONTAINERS,
         self::CREATE_WALLET_CONTAINER_REVERSALS,
         self::CREATE_BULK_GIFT_CARDS,
-        self::UPLOAD_BULK_EMAILS
+        self::GCMS_UPLOAD_BULK_EMAILS
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

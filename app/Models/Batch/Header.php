@@ -5665,7 +5665,7 @@ class Header
             self::OUTPUT => []
         ],
 
-        TYPE::UPLOAD_BULK_EMAILS => [
+        TYPE::GCMS_UPLOAD_BULK_EMAILS => [
             self::INPUT => [
                 self::UPLOAD_BULK_EMAIL_ORDER_ID,
                 self::UPLOAD_BULK_EMAIL_PROGRAM_ID,
@@ -5916,7 +5916,7 @@ class Header
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS);
         }
 
-        if ($type === Type::UPLOAD_BULK_EMAILS)
+        if ($type === Type::GCMS_UPLOAD_BULK_EMAILS)
         {
             self::validateGCOMSBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_UPLOAD_BULK_EMAILS);
         }

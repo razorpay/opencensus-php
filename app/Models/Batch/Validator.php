@@ -1054,7 +1054,7 @@ class Validator extends Base\Validator
         Entity::FILE_ID              => 'required_without:file|public_id'
     ];
 
-    protected static $uploadBulkEmailsCreateRules = [
+    protected static $gcmsUploadBulkEmailsCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required_without:file_id|file|max:51200' . self::DEFAULT_MIME_RULE,
