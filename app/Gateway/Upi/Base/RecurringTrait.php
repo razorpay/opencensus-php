@@ -43,6 +43,8 @@ trait RecurringTrait
     // 24 + 1 hours in second
     protected $defaultExecuteBuffer = 90000;
 
+    protected $optimizerRecurringExecuteBuffer = 176400;
+
     public function redirectCallbackIfRequired(array $response, $content, $headers)
     {
         $details = $this->getRecurringDetailsFromServerCallback($response);
@@ -515,7 +517,12 @@ trait RecurringTrait
         // For notify call ICICI is expecting the execution, we are going to make it centralize
         if ($mozartAction === 'notify')
         {
-            $executeAt = $input['payment']['created_at'] + $this->defaultExecuteBuffer;
+            // add 49 hours for payu
+            if(in_array($input['payment']['gateway'],self::$optimizerUpiRecurringGateway) === true) {
+                $executeAt = $input['payment']['created_at'] + $this->optimizerRecurringExecuteBuffer;
+            } else {
+                $executeAt = $input['payment']['created_at'] + $this->defaultExecuteBuffer;
+            }
 
             $position = strpos($input['payment']['description'], 'execute at ');
 

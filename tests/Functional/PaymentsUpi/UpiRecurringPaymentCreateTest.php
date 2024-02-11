@@ -689,7 +689,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
                 $this->assertArraySubset([
                     'act'   => 'notify',
                     'ano'   => 1,
-                    'ext'   => $paymentCreatedAt + 90000,
+                    'ext'   => $paymentCreatedAt + 176400,
                     'sno'   => 2,
                     'id'    => $paymentId . '0notify' . 1,
                 ], $content['upi']['gateway_data']);
@@ -782,7 +782,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
                 $this->assertArraySubset([
                     'act'   => 'notify',
                     'ano'   => 1,
-                    'ext'   => $paymentCreatedAt + 90000,
+                    'ext'   => $paymentCreatedAt + 176400,
                     'sno'   => 2,
                     'id'    => $paymentId . '0notify' . 1,
                 ], $content['upi']['gateway_data']);

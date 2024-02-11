@@ -249,8 +249,13 @@ class UpiMetadataTransformer extends UpiTransformer
             }
             else
             {
-                // 24+1 hours in minutes to be set for authorization
-                $remindAfter = 1500;
+                if(in_array($this->input['payment']['gateway'], RecurringTrait::$optimizerUpiRecurringGateway) === true) {
+                    // 48+1 hours in minutes to be set for authorization
+                    $remindAfter = 2940;
+                } else {
+                    // 24+1 hours in minutes to be set for authorization
+                    $remindAfter = 1500;
+                }
             }
         }
 
