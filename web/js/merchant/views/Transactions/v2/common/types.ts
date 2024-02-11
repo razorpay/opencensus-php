@@ -22,6 +22,7 @@ export interface ListContainerProps<T> {
   paginate: Paginate;
   loading: boolean;
   items: T[];
+  shouldDisplaySourceChannel: boolean;
 }
 
 export interface Collection<T> {

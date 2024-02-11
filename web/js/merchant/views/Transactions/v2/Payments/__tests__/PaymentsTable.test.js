@@ -26,6 +26,26 @@ describe('PaymentsTable', () => {
     });
   });
 
+  describe('source channel', () => {
+    test('should show source channel when user is omni', () => {
+      const items = mockFetchPaymentItems();
+      renderApp({
+        items,
+        shouldDisplaySourceChannel: true,
+      });
+      expect(screen.queryAllByTestId('source-channel').length).toBeGreaterThan(0);
+    });
+
+    test('should not show source channel when user is not omni', () => {
+      const items = mockFetchPaymentItems();
+      renderApp({
+        items,
+        shouldDisplaySourceChannel: false,
+      });
+      expect(screen.queryAllByTestId('source-channel').length).toBe(0);
+    });
+  });
+
   test('should renders correct column for mobile', () => {
     window.location.pathname = '/failed-payments';
     useMobileSpy.mockImplementation(() => true);

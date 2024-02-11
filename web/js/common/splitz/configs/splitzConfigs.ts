@@ -881,5 +881,30 @@ export const splitzConfig: SplitzInitConfig = {
         },
       ],
     },
+    {
+      routesToMatch: [`${PAYMENTS}/*`],
+      abExperiments: [
+        {
+          uniqueHashKey: 'omni_merchants',
+          experimentId: {
+            beta: 'MHJsO5gmOwUIVt',
+            production: 'MHMXkYtdAeHGmg',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'show-ezetap-txn',
+                value: 'on',
+              },
+              {
+                key: 'hide-ezetap-txn',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };

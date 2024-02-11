@@ -18,7 +18,7 @@ import {
 import { getCreatedOnTime } from 'merchant/views/Transactions/v2/common/utils';
 
 import { paymentStatusVariantMap } from './constants';
-import { getPaymentMethod } from './utils';
+import { getPaymentMethod, getSourceChannelType } from './utils';
 
 const { FAILED_PAYMENTS, PAYMENTS } = TransactionsEntityRoute;
 
@@ -30,6 +30,24 @@ export const paymentId = {
       <CustomClipboard value={id}>
         <CopyIcon size="medium" color="feedback.icon.neutral.lowContrast" />
       </CustomClipboard>
+    </Box>
+  ),
+};
+
+export const omniPaymentId = {
+  title: <Title>Payment ID</Title>,
+  value: ({
+    id,
+    source_channel,
+  }: {
+    id: Item['id'];
+    source_channel: Item['source_channel'];
+  }): JSX.Element => (
+    <Box display="block" columnGap="spacing.2" testID="source-channel">
+      {paymentId.value({ id })}
+      <Text size="small" color="surface.text.muted.lowContrast">
+        {getSourceChannelType(source_channel)}
+      </Text>
     </Box>
   ),
 };
@@ -147,3 +165,10 @@ export const desktopColumns = [
   status,
   actions,
 ];
+
+export const getDesktopColumns = (shouldDisplaySourceChannel: boolean) => {
+  if (shouldDisplaySourceChannel) {
+    return [omniPaymentId, ...desktopColumns.slice(1, desktopColumns.length)];
+  }
+  return desktopColumns;
+};

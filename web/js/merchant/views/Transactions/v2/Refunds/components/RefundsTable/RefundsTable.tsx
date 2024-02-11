@@ -8,7 +8,6 @@ import { StyledTable } from 'merchant/views/Transactions/v2/common/styled';
 import EmptyComponent from './EmptyComponent';
 import { desktopColumns, mobileColumns } from './columns';
 import { RefundsTableProps } from './types';
-
 const RefundsTable = (props: RefundsTableProps): JSX.Element => {
   const { loading: isLoading } = props;
   const isMobile = useMobile(mobileBreakoints);

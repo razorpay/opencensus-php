@@ -22,6 +22,7 @@ class PaymentsList extends ListContainer {
       history,
       location: { pathname, search },
       navigate,
+      user: { isOmniChannelMerchant, pos_activation_status },
     } = this.props;
     return (
       <>
@@ -31,6 +32,7 @@ class PaymentsList extends ListContainer {
           skip={skip}
           paginate={onPaginate(this.paginate)}
           isDisabled={({ status }) => !paymentStatusVariantMap[status]}
+          shouldDisplaySourceChannel={isOmniChannelMerchant && !!pos_activation_status}
           onRowClick={(id) =>
             handleDetailsClick({
               navigate,
@@ -52,6 +54,7 @@ export default withRouter(
   connect(
     (state) => ({
       ...state.payments,
+      user: state.session.user,
     }),
     { fetchAll },
   )(PaymentsList),

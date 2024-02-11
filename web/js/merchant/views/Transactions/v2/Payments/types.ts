@@ -35,6 +35,7 @@ export interface Item {
   error_reason: null | string;
   acquirer_data: AcquirerData;
   created_at: number;
+  source_channel: null | 'online' | 'in_person';
 }
 
 export interface AcquirerData {

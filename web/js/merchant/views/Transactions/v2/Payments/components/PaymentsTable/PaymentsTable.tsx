@@ -6,13 +6,15 @@ import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constant
 import { StyledTable } from 'merchant/views/Transactions/v2/common/styled';
 
 import EmptyComponent from './EmptyComponent';
-import { desktopColumns, mobileColumns } from './columns';
+import { mobileColumns, getDesktopColumns } from './columns';
 import { PaymentsTableProps } from './types';
 
 const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
-  const { loading: isLoading } = props;
+  const { loading: isLoading, shouldDisplaySourceChannel } = props;
   const isMobile = useMobile(mobileBreakoints);
-  const columns = isMobile ? mobileColumns : desktopColumns;
+
+  const columns = isMobile ? mobileColumns : getDesktopColumns(shouldDisplaySourceChannel);
+
   return (
     <StyledTable loading={isLoading}>
       <EntityTable

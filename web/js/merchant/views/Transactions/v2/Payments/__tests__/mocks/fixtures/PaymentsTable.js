@@ -10,11 +10,13 @@ const generatePayment = ({ method, status = 'authorized', cardType = 'debit' }) 
   const random = Math.floor(Math.random() * 3);
   let arn = null;
   let rrn = null;
+
   if (random === 1) {
     arn = `arn_${Math.floor(Math.random() * 100)}`;
   } else if (random === 2) {
     rrn = `rrn_${Math.floor(Math.random() * 100)}`;
   }
+  const source_channel = Math.random() < 0.5 ? 'online' : 'in_person';
 
   return {
     id,
@@ -45,6 +47,7 @@ const generatePayment = ({ method, status = 'authorized', cardType = 'debit' }) 
       arn,
       rrn,
     },
+    source_channel,
   };
 };
 
