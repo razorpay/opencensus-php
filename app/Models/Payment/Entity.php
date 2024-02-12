@@ -316,6 +316,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REARCH_PCP_PAYMENT_SERVICE        = 8;
     const EMANDATE_PAYMENT_SERVICE          = 9;
 
+    const REARCH_PAYMENT_SERVICES           = [self::REARCH_CARD_PAYMENT_SERVICE, self::REARCH_UPI_PAYMENT_SERVICE, self::REARCH_PCP_PAYMENT_SERVICE,self::NB_PLUS_SERVICE_PAYMENTS];
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
     const HOSTED_TIME_FORMAT                = 'j M Y';

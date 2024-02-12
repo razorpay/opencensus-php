@@ -3,9 +3,13 @@
 namespace RZP\Models\Base\Traits;
 
 use App;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use Throwable;
 use RZP\Exception;
+use Database\Connection;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
@@ -51,8 +55,9 @@ trait ArchivedCore
 
             $queryStartTime = millitime();
 
-            $entity = $this->newQueryAndResetEntityConnection(function () use ($id) {
-                return parent::findByPublicId($id, ConnectionType::ARCHIVED_DATA_REPLICA);
+            $entity = $this->newQueryAndResetEntityConnection(function () use ($id)
+            {
+                return parent::findByPublicId($id, $this->getArchivedEntityConnection());
             });
 
             $entity->setArchived(true);
@@ -86,7 +91,7 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchant, $params)
             {
-                return parent::findByPublicIdAndMerchant($id, $merchant, $params,ConnectionType::ARCHIVED_DATA_REPLICA);
+                return parent::findByPublicIdAndMerchant($id, $merchant, $params,$this->getArchivedEntityConnection());
             });
 
             $entity->setArchived(true);
@@ -120,7 +125,7 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchant, $params)
             {
-                return parent::findByIdAndMerchant($id, $merchant, $params,ConnectionType::ARCHIVED_DATA_REPLICA);
+                return parent::findByIdAndMerchant($id, $merchant, $params,$this->getArchivedEntityConnection());
             });
 
             $entity->setArchived(true);
@@ -151,7 +156,7 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $merchantId)
             {
-                return parent::findByIdAndMerchantId($id, $merchantId, ConnectionType::ARCHIVED_DATA_REPLICA);
+                return parent::findByIdAndMerchantId($id, $merchantId, $this->getArchivedEntityConnection());
             });
 
             $entity->setArchived(true);
@@ -182,7 +187,7 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $params)
             {
-                return parent::findOrFailByPublicIdWithParams($id, $params, ConnectionType::ARCHIVED_DATA_REPLICA);
+                return parent::findOrFailByPublicIdWithParams($id, $params, $this->getArchivedEntityConnection());
             });
 
             $entity->setArchived(true);
@@ -213,7 +218,7 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $columns)
             {
-                return parent::findOrFailPublic($id, $columns, ConnectionType::ARCHIVED_DATA_REPLICA);
+                return parent::findOrFailPublic($id, $columns, $this->getArchivedEntityConnection());
             });
 
             $entity->setArchived(true);
@@ -247,8 +252,9 @@ trait ArchivedCore
 
                 $queryStartTime = millitime();
 
-                $entity = $this->newQueryAndResetEntityConnection(function () use ($id, $columns) {
-                    return parent::findOrFail($id, $columns, ConnectionType::ARCHIVED_DATA_REPLICA);
+                $entity = $this->newQueryAndResetEntityConnection(function () use ($id, $columns)
+                {
+                    return parent::findOrFail($id, $columns, $this->getArchivedEntityConnection());
                 });
 
                 $entity->setArchived(true);
@@ -280,7 +286,7 @@ trait ArchivedCore
 
             $entity = $this->newQueryAndResetEntityConnection(function() use ($id, $columns)
             {
-                return parent::findOrFail($id, $columns, ConnectionType::ARCHIVED_DATA_REPLICA);
+                return parent::findOrFail($id, $columns, $this->getArchivedEntityConnection());
             });
 
             $entity->setArchived(true);
@@ -378,5 +384,24 @@ trait ArchivedCore
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    private function getArchivedEntityConnection()
+    {
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::LIVE);
+
+        if ($experimentResult !== 'on')
+        {
+            return ConnectionType::ARCHIVED_DATA_REPLICA;
+        }
+
+        $connection = $this->app->runningUnitTests() ? Connection::LIVE : ConnectionType::PAYMENT_FETCH_REPLICA;
+
+        if ($this->entity !== Entity::PAYMENT)
+        {
+            $connection = ConnectionType::ARCHIVED_DATA_REPLICA;
+        }
+
+        return $connection;
     }
 }

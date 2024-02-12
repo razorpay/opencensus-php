@@ -450,6 +450,8 @@ final class RazorxTreatment
 
     const FLIP_PAYMENT_READS = "flip_payment_reads";
 
+    const ARCHIVED_REPLICA_QUERY_MOVEMENT = "archived_replica_query_movement";
+
     const ROUTE_CONVENIENCE_FEE_ORDER_TO_PG_ROUTER = "route_convenience_fee_order_to_pg_router";
 
     //Experiment to allow mtu coupon code application

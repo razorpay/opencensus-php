@@ -11,6 +11,8 @@ use RZP\Models;
 use RZP\Gateway;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Jobs\Context as WorkerContext;
@@ -389,16 +391,56 @@ class RepositoryManager extends Illuminate\Support\Manager
             return Mode::TEST;
         }
 
-        // Check id in archived data replica as the entity might be archived
-        // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
-        $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::LIVE);
+
+        if ($experimentResult === 'on')
+        {
+            if ($entity === Entity::PAYMENT)
+            {
+                // Check id in archived data replica as the entity might be archived
+                // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
+                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_LIVE)->findNonRearchPaymentsFromPaymentFetchReplica($id);
+            }
+            else
+            {
+                // Check id in archived data replica as the entity might be archived
+                // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
+                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_LIVE)->find($id);
+            }
+        }
+        else
+        {
+            $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
+        }
+
 
         if ($obj !== null)
         {
             return Mode::LIVE;
         }
 
-        $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::TEST);
+
+        if ($experimentResult === 'on')
+        {
+            if ($entity === Entity::PAYMENT)
+            {
+                // Check id in archived data replica as the entity might be archived
+                // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
+                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_TEST)->findNonRearchPaymentsFromPaymentFetchReplica($id);
+            }
+            else
+            {
+                // Check id in archived data replica as the entity might be archived
+                // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
+                $obj = $repo->connection(Connection::PAYMENT_FETCH_REPLICA_TEST)->find($id);
+            }
+        }
+        else
+        {
+            $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
+        }
+
 
         if ($obj !== null)
         {

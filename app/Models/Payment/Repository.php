@@ -19,6 +19,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Gateway\Enach;
@@ -2554,12 +2555,15 @@ EOT;
         // experiment added as P0 flows were going to TiDB
         if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
         {
-            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA))->whereNotNull(Entity::CAPTURED_AT)
+            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))->whereNotNull(Entity::CAPTURED_AT)
                             ->where(Entity::ORDER_ID, '=', $orderId)
+                            ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
                             ->first();
             $this->resetDefaultConnInEntity($payment);
 
-        }else{
+        }
+        else
+        {
             $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
             $payment = $this->newQueryWithConnection($connectionType)->whereNotNull(Entity::CAPTURED_AT)
                             ->where(Entity::ORDER_ID, '=', $orderId)
@@ -3907,10 +3911,11 @@ EOT;
         // added as P0 flows were going to TiDB
         if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
         {
-            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA));
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA));
             $payments = $query
                 ->where(Entity::INVOICE_ID, $invoiceId)
                 ->where(Entity::STATUS, '=', Status::CAPTURED)
+                ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
                 ->get();
 
             $this->resetDefaultConnInEntities($payments);
@@ -4022,15 +4027,35 @@ EOT;
             return [$obj, Mode::TEST];
         }
 
-        // Check id in archived data replica as the entity might be archived
-        $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->where(Entity::GATEWAY, $gateway)->find($id);
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::LIVE);
+
+        if ($experimentResult === 'on')
+        {
+            // Check id in archived data replica as the entity might be archived
+            $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection())->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+        }
+        else
+        {
+            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->where(Entity::GATEWAY, $gateway)->find($id);
+        }
+
 
         if ($obj !== null)
         {
             return [$obj, Mode::LIVE];
         }
 
-        $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->where(Entity::GATEWAY, $gateway)->find($id);
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::TEST);
+
+        if ($experimentResult === 'on')
+        {
+            $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaTestConnection())->where(Entity::GATEWAY, $gateway)->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+        }
+        else
+        {
+            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->where(Entity::GATEWAY, $gateway)->find($id);
+        }
+
 
         if ($obj !== null)
         {
@@ -4068,8 +4093,18 @@ EOT;
             return Mode::TEST;
         }
 
-        // Check id in archived data replica as the entity might be archived
-        $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::LIVE);
+
+        if ($experimentResult === 'on')
+        {
+            // Check id in archived data replica as the entity might be archived
+            $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaLiveConnection())->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+        }
+        else
+        {
+            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
+        }
+
 
         if (($obj !== null) and
             ($obj->getAuthenticationGateway() !== null))
@@ -4077,7 +4112,16 @@ EOT;
             return Mode::LIVE;
         }
 
-        $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
+        $experimentResult = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::ARCHIVED_REPLICA_QUERY_MOVEMENT, Mode::TEST);
+
+        if ($experimentResult === 'on')
+        {
+            $obj = $this->newQueryWithConnection($this->getPaymentFetchReplicaTestConnection())->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)->find($id);
+        }
+        else
+        {
+            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
+        }
 
         if (($obj !== null) and
             ($obj->getAuthenticationGateway() !== null))
@@ -4414,6 +4458,11 @@ EOT;
        {
           $emiPlan = $this->stripEmiRelation($payment);
 
+           // Source Channel column is introduced by omni channel team in harvester replica,
+           // which is noty present in master, unsetting so that it doesn't break insert on archived
+           // payments
+          unset($payment['source_channel']);
+
           parent::saveOrFail($payment, $options);
 
           $this->addEmiRelationIfApplicable($payment, $emiPlan);
@@ -4429,6 +4478,11 @@ EOT;
         if ($payment->isExternal() === false)
         {
             $emiPlan = $this->stripEmiRelation($payment);
+
+            // Source Channel column is introduced by omni channel team in harvester replica,
+            // which is noty present in master, unsetting so that it doesn't break insert on archived
+            // payments
+            unset($payment['source_channel']);
 
             try
             {
@@ -4629,8 +4683,9 @@ EOT;
         // added as P0 flows were going to TiDB
         if ($this->isExperimentEnabledForId(self::PAYMENT_P0_QUERIES_MIGRATE_FROM_TIDB, __FUNCTION__) === true)
         {
-            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::ARCHIVED_DATA_REPLICA))
+            $payment = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
                             ->where(Entity::TOKEN_ID, $tokenId)
+                            ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
                             ->where(Entity::MERCHANT_ID, $merchantId)
                             ->where(Entity::METHOD, $method)
                             ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
@@ -4950,5 +5005,12 @@ EOT;
         }
 
         return [null, null];
+    }
+
+    public function findNonRearchPaymentsFromPaymentFetchReplica($id)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::PAYMENT_FETCH_REPLICA))
+            ->whereNotIn(Entity::CPS_ROUTE, Entity::REARCH_PAYMENT_SERVICES)
+            ->find($id);
     }
 }

@@ -532,7 +532,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         return $this->newQueryWithConnection($slaveConnection);
     }
-    
+
     /**
      * This gives the connection to payment fetch Replica with a feature of `lagThreshold`.
      * If the current lag is more than the threshold provided, we will fail the query immediately with a
@@ -560,9 +560,9 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         $replicationLagInMilli = $this->app['db.connector.mysql']->getReplicationLagInMilli($slaveConnection);
-        
+
         $acceptDbLag = $this->acceptDBLag($endTime, $replicationLagInMilli);
-        
+
         if (($lagThreshold !== null) and
             ($replicationLagInMilli > $lagThreshold))
         {
@@ -570,7 +570,7 @@ class Repository extends \Razorpay\Spine\Repository
             {
                 return $this->newQueryWithConnection($slaveConnection);
             }
-            
+
             throw new Exception\ServerErrorException(
                 'Replication lag greater than the defined threshold',
                 ErrorCode::SERVER_ERROR_SLAVE_LAG_THRESHOLD_BREACHED,
@@ -582,17 +582,17 @@ class Repository extends \Razorpay\Spine\Repository
 
         return $this->newQueryWithConnection($slaveConnection);
     }
-    
+
     public function acceptDBLag($endTime, $dbReplicaLag): bool
     {
         try
         {
             $currentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
-            
+
             $endTime = $endTime + (5 * 60);
-            
+
             $timeDiff = ($currentTime - $endTime) * 1000;
-            
+
             $this->trace->info(TraceCode::DB_CONNECTION_LAG, [
                 "current_time"          => $currentTime,
                 "end_time"              => $endTime,
@@ -608,7 +608,7 @@ class Repository extends \Razorpay\Spine\Repository
         {
             $this->trace->traceException($exception);
         }
-        
+
         return false;
     }
 
@@ -1597,5 +1597,25 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return $entity;
+    }
+
+    public function getPaymentFetchReplicaLiveConnection()
+    {
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker', 'beta'], true) === true)
+        {
+            return Config::get('database.default');
+        }
+
+        return Connection::PAYMENT_FETCH_REPLICA_LIVE;
+    }
+
+    public function getPaymentFetchReplicaTestConnection()
+    {
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker', 'beta'], true) === true)
+        {
+            return Config::get('database.default');
+        }
+
+        return Connection::PAYMENT_FETCH_REPLICA_TEST;
     }
 }
