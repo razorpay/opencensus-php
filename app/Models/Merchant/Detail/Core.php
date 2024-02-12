@@ -1466,6 +1466,17 @@ class Core extends Base\Core
         $this->autoUpdateMerchantActivationFlows(
             $merchant, $merchantDetails, null, [Detail\Constants::INTERNATIONAL_ACTIVATION], false);
 
+        // auto update activation flow if it can be determined
+        if ($merchantDetails->canDetermineActivationFlow())
+        {
+            $this->trace->info(TraceCode::MERCHANT_AUTO_UPDATE_ACTIVATION_FLOW, [
+                'category'      => $merchantDetails->getBusinessCategory(),
+                'subcategory'   => $merchantDetails->getBusinessSubcategory(),
+            ]);
+            $this->autoUpdateMerchantActivationFlows(
+                $merchant, $merchantDetails, null, [Detail\Constants::ACTIVATION], false);
+        }
+
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
 
         if ($isRiskyMerchant === true)
