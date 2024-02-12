@@ -18,6 +18,7 @@ use RZP\Http\RequestContextV2;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\OneClickCheckout\Shopify\Decomp as MagicDecomp;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\NetbankingConfig;
 
@@ -13670,20 +13671,49 @@ trait Authorize
                 {
                     $dispatched = true;
 
-                    OneCCShopifyCreateOrder::dispatch([
+                    $publishData = [
                         'mode'                => $this->mode,
                         'razorpay_order_id'   => $order->getPublicId(),
                         'razorpay_payment_id' => $payment->getPublicId(),
                         'merchant_id'         => $this->merchant->getId(),
                         'type'                => 'create_order',
                         'dispatch_time'       => millitime() - $start,
-                    ])->delay(now()->addSeconds(45));
+                    ];
+                    $waitTime = 45;
+                    $magicDecomp = new MagicDecomp();
+                    $useMcs = $magicDecomp->useMCSForAsyncCompleteCheckout();
+
+                    if ($useMcs === true)
+                    {
+                        try
+                        {
+                            $magicDecomp->placeShopifyOrderFromMCSQueue($publishData, $waitTime);
+                        }
+                        catch (\Throwable $ex)
+                        {
+
+                            OneCCShopifyCreateOrder::dispatch($publishData)->delay(now()->addSeconds($waitTime));
+
+                            $this->trace->traceException(
+                                $ex,
+                                Trace::CRITICAL,
+                                TraceCode::SHOPIFY_1CC_MCS_COMPLETE_CHECKOUT_SQS_PUSH_FAILED,
+                                [
+                                    'data' => $publishData,
+                                ]);
+                        }
+                    }
+                    else
+                    {
+                        OneCCShopifyCreateOrder::dispatch($publishData)->delay(now()->addSeconds($waitTime));
+                    }
 
                     // To debug payloads not being handled properly in sqs
                     $this->trace->info(
                         TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB,
                         [
                             'step'                => 'dispatch',
+                            'use_mcs'             => $useMcs,
                             'dispatched'          => $dispatched,
                             'mode'                => $this->mode,
                             'razorpay_order_id'   => $order->getPublicId(),

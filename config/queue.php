@@ -686,6 +686,8 @@ return [
 
     'fulfillment_event_update' => env('AWS_ORDER_STATUS_UPDATE_QUEUE'),
 
+    'mcs_shopify_complete_checkout' => env('AWS_SHOPIFY_COMPLETE_CHECKOUT_QUEUE'),
+
     'one_cc_address_ingestion_standardization' => env('AWS_ONE_CC_ADDRESS_INGESTION_STANDARDIZATION_QUEUE'),
 
     'merchant_based_balance_update_v1' => [

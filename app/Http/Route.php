@@ -17284,6 +17284,7 @@ class Route
             'one_cc_shopify_order_for_mcs',
             'one_cc_shopify_cart_for_mcs',
             'order_payments',
+            'payment_refund',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',
