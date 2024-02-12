@@ -70,8 +70,6 @@ class Service extends Base\Service
 
         $this->partnerActivationValidator->validateInput('savePartnerActivation', $input);
 
-        $this->merchant->load('merchantDetail');
-
         $merchantDetail = $this->merchant->merchantDetail;
 
         $merchantInput = $input;

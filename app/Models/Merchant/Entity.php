@@ -4134,6 +4134,11 @@ class Entity extends Base\PublicEntity
 
     public function getParentAttribute()
     {
+        if ($this->getParentId() == null)
+        {
+            return null;
+        }
+
         return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity, "parent", 'getParentId');
     }
 
