@@ -155,8 +155,8 @@ class Service extends Base\Service
         unset($input['is_one_cc']);
 
         // This will be used to decide whether FE has to show the addresses sorted by latest usage
-        $shouldSortAddresses = (bool) ($input['1cc_sort_addresses'] ?? false);
-        unset($input['1cc_sort_addresses']);
+        $shouldSortAddresses = (bool) ($input['one_cc_sort_addresses'] ?? false);
+        unset($input['one_cc_sort_addresses']);
 
         (new Validator())->validateInput('global_customer_create', $input);
 
@@ -331,8 +331,10 @@ class Service extends Base\Service
         }
 
         if ($this->merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT)) {
-            $shouldSortAddresses = (bool) ($input['1cc_sort_addresses'] ?? false);
-            unset($input['1cc_sort_addresses']);
+
+            $shouldSortAddresses = (bool) ($input['one_cc_sort_addresses'] ?? false);
+            unset($input['one_cc_sort_addresses']);
+
             $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer, $shouldSortAddresses);
 
             $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
