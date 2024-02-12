@@ -161,6 +161,40 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals($response1['id'], $response2['id']);
     }
 
+    public function testRequestKycAccessByPartnerAgent()
+    {
+        $this->createResellerPartnerSubmerchant(true);
+
+        $partnerAgentUser = $this->fixtures->user->create(['email' => 'partneragent@razorpay.com']);
+        $merchantUser = $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => self::DEFAULT_MERCHANT_ID,
+                'user_id'     => $partnerAgentUser->getId(),
+                'role'        => 'partner_agent',
+            ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, ['contact_mobile' => '+919123456789']);
+        $this->fixtures->on('live')->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, ['contact_mobile' => '+919123456789']);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $merchantTestUtil = new MerchantTest();
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Submerchant_kyc_access.Requested', '+919123456789', [
+            'subMerchantName'      => 'submerchant',
+        ], 2);
+
+        $this->ba->proxyAuth('rzp_test_'.self::DEFAULT_MERCHANT_ID, $partnerAgentUser->getId());
+
+        $testData = $this->testData['testRequestKycAccessByPartner'];
+        $response1 = $this->runRequestResponseFlow($testData);
+
+        // running twice shouldn't give any error
+        $response2 = $this->runRequestResponseFlow($testData);
+        $this->assertEquals($response1['id'], $response2['id']);
+    }
+
     public function testUpdateKycAccessWithApprovedStatusWithNoRecord()
     {
         $this->createResellerPartnerSubmerchant();
@@ -861,6 +895,7 @@ class PartnerExperienceTest extends OAuthTestCase
                 'audits' => [
                     [
                         'entity_id' => '10000000000009',
+                        'actor_type' => 'owner',
                         'metadata' => [
                             'actor_email' => 'kmk@rzp.com',
                             'actor_name'  => 'name',
@@ -885,6 +920,51 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $this->startTest();
     }
+    // Fetch all subMs for partner_agent
+    public function testFetchSubmerchantsProductPOSPartnerAgent()
+    {
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
+
+        $partnerAgentUser = $this->fixtures->user->create(['email' => 'partneragent@razorpay.com']);
+        $merchantUser = $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => self::DEFAULT_MERCHANT_ID,
+                'user_id'     => $partnerAgentUser->getId(),
+                'role'        => 'partner_agent',
+            ]);
+
+        $this->mockPartnershipsServiceTreatment([], [
+            'response' => [
+                'audits' => [
+                    [
+                        'entity_id' => '10000000000009',
+                        'actor_type' => 'owner',
+                        'metadata' => [
+                            'actor_email' => 'kmk@rzp.com',
+                            'actor_name'  => 'name',
+                            'actor_id'    => '10000000000010',
+                            'actor_type'  => 'owner',
+                            'field_details' => [
+                                'field_names' => [
+                                    'business_type',
+                                    'business_type_personal_pan'
+                                ],
+                            ],
+                            'route_name' => 'MerchantActivationSave',
+                        ]
+                    ]
+                ],
+            ],
+        ], 'getLastEventAudits');
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth('rzp_test_'.self::DEFAULT_MERCHANT_ID, $partnerAgentUser->getId());
+
+        $testData = $this->testData['testFetchPartnerPOSSubmerchantsProductPOS'];
+
+        $this->runRequestResponseFlow($testData);
+    }
 
     // use case: the sub-merchant KYC form is submitted
     public function testFetchPartnerSubmerchantProductPOS()
@@ -898,6 +978,7 @@ class PartnerExperienceTest extends OAuthTestCase
                 'audits' => [
                     [
                         'entity_id' => '10000000000009',
+                        'actor_type' => 'owner',
                         'metadata' => [
                             'actor_email' => 'kmk@rzp.com',
                             'actor_name' => 'test',
@@ -924,6 +1005,54 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchSubmerchantProductPOSPartnerAgent()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
+
+        $partnerAgentUser = $this->fixtures->user->create(['email' => 'partneragent@razorpay.com']);
+        $merchantUser = $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => self::DEFAULT_MERCHANT_ID,
+                'user_id'     => $partnerAgentUser->getId(),
+                'role'        => 'partner_agent',
+            ]);
+
+        $this->mockPartnershipsServiceTreatment([], [
+            'response' => [
+                'audits' => [
+                    [
+                        'entity_id' => '10000000000009',
+                        'actor_type' => 'owner',
+                        'metadata' => [
+                            'actor_email' => 'kmk@rzp.com',
+                            'actor_name' => 'test',
+                            'actor_id' => '10000000000010',
+                            'actor_type' => 'owner',
+                            'field_details' => [
+                                'field_names' => [
+                                    'business_type',
+                                    'business_type_personal_pan'
+                                ],
+                                'step_name' => 'aadhaar'
+                            ],
+                            'route_name' => 'MerchantActivationSave',
+                        ]
+                    ]
+                ],
+            ]
+        ], 'getEventAudits');
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->proxyAuth('rzp_test_'.self::DEFAULT_MERCHANT_ID, $partnerAgentUser->getId());
+
+        $testData = $this->testData['testFetchPartnerSubmerchantProductPOS'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     // use case: the sub-merchant KYC form is saved but not submitted
     public function testFetchPartnerSubmerchantProductPOSWithNoActionStateLogs()
     {
@@ -938,6 +1067,7 @@ class PartnerExperienceTest extends OAuthTestCase
                 'audits' => [
                     [
                         'entity_id' => '10000000000009',
+                        'actor_type' => 'owner',
                         'metadata' => [
                             'actor_email' => 'kmk@rzp.com',
                             'actor_name' => 'test',

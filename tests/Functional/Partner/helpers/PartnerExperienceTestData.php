@@ -897,7 +897,7 @@ return [
                         'dashboard_access' => false,
                         'pos' => [
                             'activation_status' => "NA",
-                            'success'           => false,
+                            'success'           => true,
                             'last_kyc_performed_by' => [
                                 'contact_email' => 'kmk@rzp.com',
                                 'name'          => 'name',
