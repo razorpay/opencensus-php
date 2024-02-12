@@ -901,6 +901,7 @@ class ErrorCode
     const BAD_REQUEST_ORDER_EXISTS                                                  = 'BAD_REQUEST_ORDER_EXISTS';
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                          = 'BAD_REQUEST_ORDER_DOES_NOT_EXIST';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                           = 'BAD_REQUEST_ORDER_INVALID_OFFER';
+    const BAD_REQUEST_NO_SUBVENTION_PARAMS                                          = 'BAD_REQUEST_NO_SUBVENTION_PARAMS';
     const BAD_REQUEST_OFFERS_ENGINE_RESPONSE_EMPTY                                  = 'BAD_REQUEST_OFFERS_ENGINE_RESPONSE_EMPTY';
     const SERVER_ERROR_OFFERS_ENGINE_MISSING_OFFERS                                 = 'SERVER_ERROR_OFFERS_ENGINE_MISSING_OFFERS';
 

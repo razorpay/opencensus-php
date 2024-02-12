@@ -89,7 +89,7 @@ class Validator extends Base\Validator
         Entity::DEFAULT_OFFER       => 'filled|boolean',
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
         Entity::TYPE                => 'required|in:instant,deferred,already_discounted',
-        Entity::PERCENT_RATE        => 'sometimes|filled|min:0|max:10000',
+        Entity::PERCENT_RATE        => 'sometimes|filled|min:1|max:10000',
         Entity::LOW_COST_EMI        => 'sometimes|array',
     ];
 

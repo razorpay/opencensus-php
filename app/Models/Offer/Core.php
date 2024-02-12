@@ -19,6 +19,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order\ProductType;
 use RZP\Error\PublicErrorDescription;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Error\Error;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\SubscriptionOffer;
@@ -1050,6 +1051,7 @@ class Core extends Base\Core
         {
             $this->trace->traceException(
                 $e,
+                Trace::ERROR,
                 TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
                 [
                     'msg' => $e->getMessage()
@@ -1067,17 +1069,42 @@ class Core extends Base\Core
      */
     protected function createSubventedOffer(array $input, array $offers_array, Merchant\Entity $merchant): array
     {
-        if (empty($input[Entity::LOW_COST_EMI]) === true)
+        $exception = null;
+
+        $success = 0;
+
+        // both no cost and low cost requests are empty
+        if (empty($input[Entity::EMI_DURATIONS]) === true && empty($input[Entity::LOW_COST_EMI]) === true)
         {
-            array_push($offers_array, $this->createOffer($merchant, $input));
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_SUBVENTION_PARAMS);
         }
-        else
+
+        // create NC EMI Offer
+        if (empty($input[Entity::EMI_DURATIONS]) === false)
         {
+            try
+            {
+                array_push($offers_array, $this->createOffer($merchant, $input));
+
+                $success++;
+            }
+            catch (\Exception $e)
+            {
+                $error = new Error($e->getError()->getPublicErrorCode(), $e->getError()->getDescription(), null, null);
+
+                array_push($offers_array, $error);
+
+                $exception = $e;
+            }
+        }
+
+        // low cost emi offer creation
+        if (empty($input[Entity::LOW_COST_EMI]) === false)
+        {
+
             $lc_emi_values = $input[Entity::LOW_COST_EMI];
 
-            $success = 0;
-
-            $exception = null;
             foreach ($lc_emi_values as $lc_emi)
             {
 
@@ -1096,7 +1123,6 @@ class Core extends Base\Core
                     array_push($offers_array, $lc_emi_offer);
 
                     $success++;
-
                 }
                 catch (\Exception $e)
                 {
@@ -1107,11 +1133,11 @@ class Core extends Base\Core
                     $exception = $e;
                 }
             }
+        }
 
-            if ($success === 0)
-            {
-                throw $exception;
-            }
+        if ($success === 0)
+        {
+            throw $exception;
         }
 
         return $offers_array;
