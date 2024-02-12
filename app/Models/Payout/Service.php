@@ -6114,4 +6114,47 @@ class Service extends Base\Service
         return true;
     }
 
+    /**
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     */
+    public function getSmartRoutingSummary($input): array
+    {
+        (new Validator)->validateSmartRoutingSummaryInput($input);
+
+        $mode = $input[Entity::MODE];
+        $response = [];
+        try {
+            if ($mode === Entity::MODE_ALL)
+            {
+                foreach (Entity::PAYOUTS_SUMMARY_ALLOWED_MODES as $mode)
+                {
+                    $input[Entity::MODE] = $mode;
+                    $response[$mode] = $this->core->smartRoutingPayoutsSummary($input);
+                }
+            }
+            else
+            {
+                $response[$mode] = $this->core->smartRoutingPayoutsSummary($input);
+            }
+        }
+        catch (Exception\ServerErrorException $e) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                $e->getMessage()
+            );
+        } catch (BadRequestValidationFailureException|Throwable $e) {
+            throw new BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE,
+                null,
+                null,
+                $e->getMessage()
+            );
+        }
+
+        return $response;
+    }
+
 }

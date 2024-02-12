@@ -1916,4 +1916,11 @@ class FundTransfer extends Base
         return false;
     }
 
+    public function getPriorityChannelThroughFts(array $input)
+    {
+        $response = $this->createAndSendRequest(parent::FTS_PRIORITY_ROUTE, 'POST', $input);
+
+        return $response['body'];
+    }
+
 }

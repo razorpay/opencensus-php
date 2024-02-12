@@ -148,6 +148,8 @@ class Base
 
     const FTS_SMART_ROUTING = '/routing/route_selection';
 
+    const FTS_PRIORITY_ROUTE = '/routing/priority_route';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

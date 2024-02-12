@@ -2057,7 +2057,11 @@ class Route
         'payouts_scheduled_time_slots'             => ['get',      'payouts/schedule/timeslots',                     'PayoutController@getScheduleSlotsForPayouts'                       ],
         'payouts_bulk_sample_file'                 => ['post',     'payouts/bulk/sample_file',                       'PayoutController@getSampleFileForBulkPayouts'                      ],
         'payouts_bulk_amount_type'                 => ['post',     'payouts/bulk/amount_type',                       'PayoutController@postBulkPayoutsAmountType'                        ],
-        'payouts_bulk_amount_type_update'          => ['patch',    'payouts/bulk/amount_type',                       'PayoutController@updateBulkPayoutsAmountType'                       ],
+        'payouts_bulk_amount_type_update'          => ['patch',    'payouts/bulk/amount_type',                       'PayoutController@updateBulkPayoutsAmountType'                      ],
+
+
+        //Merchant Smart Routing Summary Routes
+        'payouts_merchant_smart_routing_summary'   => ['get',       'payouts/smart_routing_summary',                 'PayoutController@getSmartRoutingSummary'                   ],
 
         // Routes for merchant's direct account payout mode config
         'fetch_merchant_da_payout_mode_config'     => ['get',       'payouts/da_payout_mode_config',                 'PayoutsConfigurationsController@fetchDirectAccountPayoutModeConfig'                        ],
@@ -5021,6 +5025,7 @@ class Route
 
     public static $private = [
         'collect_info_merchant_details_patch',
+        'payouts_merchant_smart_routing_summary',
         'mock_bvs_validation_event',
         'bulk_migrate_aggregator_to_reseller',
         'bulk_migrate_reseller_to_aggregator',
@@ -6489,6 +6494,7 @@ class Route
     // User context is taken from the provided header.
     // Below routes deal only with user entity without context of merchant.
     public static $userWhitelist = [
+        'payouts_merchant_smart_routing_summary',
         'user_resend_verification',
         'user_verify_second_factor_auth',
         'user_otp_login_2fa_password',
@@ -6612,6 +6618,7 @@ class Route
 
     public static $proxy = [
         'merchant_fetch_customer_eligibility',
+        'payouts_merchant_smart_routing_summary',
         'merchant_vkyc_submit',
         'merchant_edd_details_fetch',
         'pgos_send_sms_otp',
@@ -9202,6 +9209,7 @@ class Route
         'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
         'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
         'merchant_website_section_page_load_v2'           => Permission::VIEW_MERCHANT,
+        'payouts_merchant_smart_routing_summary'          => Permission::VIEW_PAYOUT,
         //'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
@@ -10874,6 +10882,7 @@ class Route
         'payout_get_attachment_signed_url'             => Permission::VIEW_PAYOUT,
         'payout_fetch_multiple'                        => Permission::VIEW_PAYOUT,
         'payout_status_to_reason_mapping'              => Permission::VIEW_PAYOUT,
+        'payouts_merchant_smart_routing_summary'       => Permission::VIEW_PAYOUT,
         'payout_cancel'                                => Permission::CANCEL_PAYOUT,
         'payout_update_status'                         => Permission::UPDATE_PAYOUT,
         'payout_purpose_get'                           => Permission::VIEW_PAYOUT_PURPOSE,
@@ -12601,6 +12610,7 @@ class Route
             'payout_bulk_create',
             'payout_cancel',
             'payout_create',
+            'payouts_merchant_smart_routing_summary',
             'payout_validate',
             'payout_create_with_otp',
             'composite_payout_create_with_otp',
@@ -14759,6 +14769,7 @@ class Route
             'payout_bulk_create',
             'payout_cancel',
             'payout_create',
+            'payouts_merchant_smart_routing_summary',
             'payout_validate',
             'payout_create_with_otp',
             'payout_create_2FA',
@@ -17455,6 +17466,7 @@ class Route
         'reports_order_rpp'                    => [Feature::RPP_REPORT],
         'payment_payout'                       => [Feature::PAYOUT],
         'payout_create'                        => [Feature::PAYOUT],
+        'payouts_merchant_smart_routing_summary'=> [Feature::PAYOUT],
         'payout_validate'                      => [Feature::PAYOUT],
         'payouts_batch_create'                 => [Feature::PAYOUT, Feature::PAYOUTS_BATCH],
         'payout_approve_bulk'                  => [Feature::PAYOUT],
@@ -17751,7 +17763,8 @@ class Route
 
     public static $routeEnabledForBankingSmartRouting = [
         'payout_create',
-        'payout_create_with_otp'
+        'payout_create_with_otp',
+        'payouts_merchant_smart_routing_summary'
     ];
 
     public static $routeAllowedForBankingVirtualAccountCreation = [
@@ -17937,6 +17950,7 @@ class Route
     const REQUEST_LOG_ROUTES = [
         'payout_create',
         'payout_create_with_otp',
+        'payouts_merchant_smart_routing_summary',
         'composite_payout_create_with_otp',
         'payout_create_2FA',
         'fund_account_validate',
@@ -18018,6 +18032,7 @@ class Route
         'mob_ca_lms_routes',
         'merchant_activation_needs_clarification',
         'payout_create',
+        'payouts_merchant_smart_routing_summary',
         'payout_validate',
         'payout_create_internal',
         'payout_create_2FA_internal',

@@ -6,6 +6,7 @@ use App;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\Batch;
@@ -37,7 +38,6 @@ use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\PayoutsDetails\Entity as PayoutDetailsEntity;
-use RZP\Models\BankingAccountStatement\Details\AccountType;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 use RZP\Models\PayoutsDetails\Validator as PayoutDetailsValidator;
 use RZP\Models\Payout\Configurations\DirectAccounts\PayoutModeConfig;
@@ -138,6 +138,10 @@ class Validator extends Base\Validator
     const DATA_CONSISTENCY_CHECKER_PAYOUTS_DETAIL_FETCH = 'data_consistency_checker_payouts_detail_fetch';
 
     const WFS_CONFIG_FETCH = 'wfs_config_fetch';
+
+    const SMART_ROUTING_PAYOUTS_SUMMARY = 'smart_routing_payouts_summary';
+
+    const SMART_ROUTING_PAYOUTS_SUMMARY_FTS_RESPONSE = 'smart_routing_payouts_summary_fts_response';
 
     const OWNER_BULK_REJECT_PAYOUTS = 'owner_bulk_reject_payouts';
 
@@ -675,6 +679,17 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException('Destination channel is required only if destination type is direct/ rx_wallet.');
         }
     }
+
+    protected static $smartRoutingPayoutsSummaryRules = [
+        'start_time'      => 'required|integer',
+        'end_time'        => 'required|integer',
+        'mode'            => 'required|string|in:'.(Mode::IMPS).','.(Mode::UPI).','.(Entity::MODE_ALL),
+    ];
+
+    protected static $smartRoutingPayoutsSummaryFtsResponseRules = [
+        'account_type'    => 'required|string|in:'.(AccountType::DIRECT).','.(AccountType::SHARED),
+        'balance_id'      => 'required_if:account_type,direct|array',
+    ];
 
     protected function validateFtsAccountType($attribute, $ftsAccountType)
     {
@@ -1800,6 +1815,85 @@ class Validator extends Base\Validator
                 ]
             );
         }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateSmartRoutingSummaryInput($payload): void
+    {
+        $this->setStrictFalse()->validateInput(Validator::SMART_ROUTING_PAYOUTS_SUMMARY, $payload);
+
+        //validate if start_time and end_time in $payload are valid timestamps in epoch format
+        $currentTimestamp = time();
+        $threeMonthsAgoTimestamp = strtotime('-3 months', $currentTimestamp);
+        if ($payload['start_time'] < $threeMonthsAgoTimestamp || $payload['end_time'] > $currentTimestamp) {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid start_time or end_time received.",
+                null,
+                [
+                    'start_time' => $payload['start_time'],
+                    'end_time' => $payload['end_time']
+                ]
+            );
+        }
+    }
+
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateSmartRoutingSummaryFtsResponse($payload, $directBalances): void
+    {
+        $this->setStrictFalse()->validateInput(Validator::SMART_ROUTING_PAYOUTS_SUMMARY_FTS_RESPONSE, $payload);
+
+        $balanceIds = array_keys($payload['balance_id']);
+        $missingKeys = array_diff($balanceIds, $directBalances);
+        if ($payload[Entity::ACCOUNT_TYPE] === AccountType::DIRECT && !empty($missingKeys)) {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid balance_id key received from fts.",
+                null,
+                [
+                    'balance_id' => $payload['balance_id']
+                ]
+            );
+        }
+
+        foreach($payload['balance_id'] as $balanceId => $balanceDetails) {
+            foreach($balanceDetails as $timeRangeList) {
+                if (!isset($timeRangeList['start_time'], $timeRangeList['end_time'])) {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "Invalid balance details received from fts.",
+                        null,
+                        [
+                            'balance_id' => $balanceId,
+                            'balance_details' => $balanceDetails
+                        ]
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateSmartRoutingPayoutsSummaryHarvesterResponse($payload): void
+    {
+        foreach ($payload as $item) {
+            // Check if all required keys are present in the current item
+            if (!isset($item['amount'], $item['balance_id'], $item['count'], $item['status'])) {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid item received in the response from harvester.",
+                    null,
+                    [
+                        'item' => $item
+                    ]
+                );
+            }
+        }
+
+
     }
 
 

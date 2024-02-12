@@ -731,4 +731,220 @@ return [
             ]
         ],
     ],
+
+    'testSmartRoutingSummary_ModeIMPS_SharedPriority' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'IMPS',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "IMPS" => [
+                    "success_rate_with_mar" => 100,
+                    "success_rate_without_mar" => 66.67,
+                    "total_payouts" => 15,
+                    "total_primary_successful_payouts" => 5,
+                    "total_secondary_successful_payouts" => 10,
+                    "total_payouts_from_primary_channel" => 5,
+                    "total_payouts_from_secondary_channel" => 10,
+                    "total_payouts_amount" => 1500,
+                    "total_payouts_processed_amount" => 1500,
+                    "total_payouts_amount_from_primary_channel" => 500,
+                    "total_payouts_amount_from_secondary_channel" => 1000,
+                    "total_payouts_processed_amount_from_primary_channel" => 500,
+                    "total_payouts_processed_amount_from_secondary_channel" => 1000
+                ],
+            ],
+        ],
+    ],
+
+    'testSmartRoutingSummary_ModeIMPS_DirectPriority' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'IMPS',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "IMPS" => [
+                    "success_rate_with_mar" => 100,
+                    "success_rate_without_mar" => 66.67,
+                    "total_payouts" => 15,
+                    "total_primary_successful_payouts" => 5,
+                    "total_secondary_successful_payouts" => 10,
+                    "total_payouts_from_primary_channel" => 5,
+                    "total_payouts_from_secondary_channel" => 10,
+                    "total_payouts_amount" => 1500,
+                    "total_payouts_processed_amount" => 1500,
+                    "total_payouts_amount_from_primary_channel" => 500,
+                    "total_payouts_amount_from_secondary_channel" => 1000,
+                    "total_payouts_processed_amount_from_primary_channel" => 500,
+                    "total_payouts_processed_amount_from_secondary_channel" => 1000
+                ],
+            ],
+        ],
+    ],
+
+    'testSmartRoutingSummary_ModeUPI_SharedPriority' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'UPI',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "UPI" => [
+                    'success_rate_with_mar' => 100,
+                    'success_rate_without_mar' => 75,
+                    'total_payouts' => 10,
+                    'total_primary_successful_payouts' => 5,
+                    'total_secondary_successful_payouts' => 5,
+                    'total_payouts_from_primary_channel' => 5,
+                    'total_payouts_from_secondary_channel' => 5,
+                    'total_payouts_amount' => 1000,
+                    'total_payouts_processed_amount' => 1000,
+                    'total_payouts_amount_from_primary_channel' => 500,
+                    'total_payouts_amount_from_secondary_channel' => 500,
+                    'total_payouts_processed_amount_from_primary_channel' => 500,
+                    'total_payouts_processed_amount_from_secondary_channel' => 500
+                ],
+            ],
+        ],
+    ],
+
+    'testSmartRoutingSummary_ModeUPI_DirectPriority' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'UPI',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "UPI" => [
+                    'success_rate_with_mar' => 100,
+                    'success_rate_without_mar' => 75,
+                    'total_payouts' => 10,
+                    'total_primary_successful_payouts' => 5,
+                    'total_secondary_successful_payouts' => 5,
+                    'total_payouts_from_primary_channel' => 5,
+                    'total_payouts_from_secondary_channel' => 5,
+                    'total_payouts_amount' => 1000,
+                    'total_payouts_processed_amount' => 1000,
+                    'total_payouts_amount_from_primary_channel' => 500,
+                    'total_payouts_amount_from_secondary_channel' => 500,
+                    'total_payouts_processed_amount_from_primary_channel' => 500,
+                    'total_payouts_processed_amount_from_secondary_channel' => 500
+                ],
+            ],
+        ],
+    ],
+
+    'testSmartRoutingSummary_ModeAll_SharedPriority' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'ALL',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "IMPS" => [
+                    'success_rate_with_mar' => 100,
+                    'success_rate_without_mar' => 75,
+                    'total_payouts' => 10,
+                    'total_primary_successful_payouts' => 5,
+                    'total_secondary_successful_payouts' => 5,
+                    'total_payouts_from_primary_channel' => 5,
+                    'total_payouts_from_secondary_channel' => 5,
+                    'total_payouts_amount' => 1000,
+                    'total_payouts_processed_amount' => 1000,
+                    'total_payouts_amount_from_primary_channel' => 500,
+                    'total_payouts_amount_from_secondary_channel' => 500,
+                    'total_payouts_processed_amount_from_primary_channel' => 500,
+                    'total_payouts_processed_amount_from_secondary_channel' => 500
+                ],
+                "UPI" => [
+                    'success_rate_with_mar' => 100,
+                    'success_rate_without_mar' => 75,
+                    'total_payouts' => 10,
+                    'total_primary_successful_payouts' => 5,
+                    'total_secondary_successful_payouts' => 5,
+                    'total_payouts_from_primary_channel' => 5,
+                    'total_payouts_from_secondary_channel' => 5,
+                    'total_payouts_amount' => 1000,
+                    'total_payouts_processed_amount' => 1000,
+                    'total_payouts_amount_from_primary_channel' => 500,
+                    'total_payouts_amount_from_secondary_channel' => 500,
+                    'total_payouts_processed_amount_from_primary_channel' => 500,
+                    'total_payouts_processed_amount_from_secondary_channel' => 500
+                ],
+            ],
+        ],
+    ],
+
+    'testSmartRoutingSummary_ModeAll_DirectPriority' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'ALL',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "IMPS" => [
+                    'success_rate_with_mar' => 100,
+                    'success_rate_without_mar' => 75,
+                    'total_payouts' => 10,
+                    'total_primary_successful_payouts' => 5,
+                    'total_secondary_successful_payouts' => 5,
+                    'total_payouts_from_primary_channel' => 5,
+                    'total_payouts_from_secondary_channel' => 5,
+                    'total_payouts_amount' => 1000,
+                    'total_payouts_processed_amount' => 1000,
+                    'total_payouts_amount_from_primary_channel' => 500,
+                    'total_payouts_amount_from_secondary_channel' => 500,
+                    'total_payouts_processed_amount_from_primary_channel' => 500,
+                    'total_payouts_processed_amount_from_secondary_channel' => 500
+                ],
+                "UPI" => [
+                    'success_rate_with_mar' => 100,
+                    'success_rate_without_mar' => 75,
+                    'total_payouts' => 10,
+                    'total_primary_successful_payouts' => 5,
+                    'total_secondary_successful_payouts' => 5,
+                    'total_payouts_from_primary_channel' => 5,
+                    'total_payouts_from_secondary_channel' => 5,
+                    'total_payouts_amount' => 1000,
+                    'total_payouts_processed_amount' => 1000,
+                    'total_payouts_amount_from_primary_channel' => 500,
+                    'total_payouts_amount_from_secondary_channel' => 500,
+                    'total_payouts_processed_amount_from_primary_channel' => 500,
+                    'total_payouts_processed_amount_from_secondary_channel' => 500
+                ],
+            ],
+        ],
+    ],
 ];

@@ -390,6 +390,46 @@ class Entity extends Base\PublicEntity
     // constant for dispatching payouts that were scheduled post approval (delayed approval for p2p)
     const DISPATCH_PAYOUTS_SCHEDULED_POST_APPROVAL = 'dispatch_payouts_scheduled_post_approval';
 
+    //Smart Routing Payouts Summary
+    const MODE_ALL = 'ALL';
+    
+    const IMPS = 'IMPS';
+    
+    const ACCOUNT_TYPE = 'account_type';
+    
+    const START_TIME = 'start_time';
+    
+    const END_TIME = 'end_time';
+    
+    const QUERY = 'query';
+    
+    const TABLE = 'table';
+    
+    const INPUT = 'input';
+    
+    const BACKEND = 'backend';
+    
+    const PINOT_BACKEND = 'pinot';
+    
+    const PAYOUTS_TABLE = 'payouts';
+    
+    const FTS_REQUEST = 'fts_request';
+    
+    const FTS_RESPONSE = 'fts_response';
+    
+    const SMART_ROUTING_SUMMARY = 'smart_routing_summary';
+    
+    const HARVESTER_PAYLOAD = 'harvester_request_payload';
+    
+    const HARVESTER_RESPONSE = 'harvester_response';
+    
+    const TIME_RANGE_LIST = 'time_range_list';
+
+    const PAYOUTS_SUMMARY_ALLOWED_MODES = [
+        PayoutMode::IMPS,
+        PayoutMode::UPI
+    ];
+
     protected $queueFlag = false;
 
     protected $statusDetails = [
