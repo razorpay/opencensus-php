@@ -92,6 +92,54 @@ class UserSessionTest extends IlluminateTestCase
     }
 
     /**
+     * Tests getSessionData with input containing query and source attributes for activated mcc pending merchant
+     */
+    public function testGetSessionDataForActivatedMccPendingMerchant()
+    {
+        $data = [
+            'activation_status' => 'activated_mcc_pending',
+            'merchant'          => [
+                'suspended_at'  => null
+            ]
+        ];
+        $userData = $this->setUpMockData($data, true);
+        $merchantData = $userData['merchants']->toArray();
+
+        $response = (new User\Service())->getSessionData($this->getQueryParams(true));
+
+        self::assertCount(2, $response);
+        self::assertNull($response[0]);
+
+        $sessionData = $response[1];
+        $this->checkAndVerifyResponse($sessionData, $userData, $merchantData[0]);
+        self::assertEquals(Constants::OAUTH_ACTION_RENDER, $sessionData[User\Service::OAUTH_ACTION]);
+    }
+
+    /**
+     * Tests getSessionData with input containing query and source attributes for instantly activated merchant
+     */
+    public function testGetSessionDataForInstantlyActivatedMerchant()
+    {
+        $data = [
+            'activation_status' => 'instantly_activated',
+            'merchant'          => [
+                'suspended_at'  => null
+            ]
+        ];
+        $userData = $this->setUpMockData($data, true);
+        $merchantData = $userData['merchants']->toArray();
+
+        $response = (new User\Service())->getSessionData($this->getQueryParams(true));
+
+        self::assertCount(2, $response);
+        self::assertNull($response[0]);
+
+        $sessionData = $response[1];
+        $this->checkAndVerifyResponse($sessionData, $userData, $merchantData[0]);
+        self::assertEquals(Constants::OAUTH_ACTION_RENDER, $sessionData[User\Service::OAUTH_ACTION]);
+    }
+
+    /**
      * Tests getSessionData with input containing query and source attributes for merchant in under_review status
      */
     public function testGetSessionDataForMerchantUnderReview()

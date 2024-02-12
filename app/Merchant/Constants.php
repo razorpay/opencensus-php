@@ -278,7 +278,9 @@ class Constants
     const ACTIVATION_STATUS_ALLOWED_FOR_OAUTH_ACTION = [
         'activated',
         'under_review',
-        'needs_clarification'
+        'needs_clarification',
+        'activated_mcc_pending',
+        'instantly_activated'
     ];
 
     const OAUTH_SOURCE = 'oauth';
