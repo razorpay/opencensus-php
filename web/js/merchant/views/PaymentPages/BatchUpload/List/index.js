@@ -15,7 +15,6 @@ import SendAllLinks from 'merchant/views/PaymentLinks/BatchUpload/components/Sen
 import {
   getHeaderList,
   getFormattedExcelData,
-  allowSendAllLinks,
 } from 'merchant/views/PaymentPages/BatchUpload/helper';
 import track from 'merchant/views/PaymentPages/BatchUpload/track';
 import {
@@ -121,16 +120,14 @@ const BatchListContainer = ({
   const sendAllLinks = (item) => {
     const { status, id } = item;
     if (!['created', 'failure'].includes(status)) {
-      const allowSendAll = allowSendAllLinks(item);
       return (
         <button
           type="button"
           key={id}
           className="btn btn-xs btn-default"
           onClick={() => sendAll(item)}
-          disabled={!allowSendAll}
         >
-          {allowSendAll ? 'Send all links' : 'All links sent'}
+          Send all links
         </button>
       );
     }

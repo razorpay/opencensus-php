@@ -21,12 +21,3 @@ export const getFormattedExcelData = (headerList) => {
   }, {});
   return [newHeaderList];
 };
-
-export const allowSendAllLinks = (batch) => {
-  // config object will not be available for older batches
-  // duplicate batches will have no success count
-  //if more than 0 payment link(s) has been sent, disable the btn
-  return batch?.config && Object.keys(batch.config).length
-    ? !(Number(batch?.config?.sms_notify) > 0 || Number(batch?.config?.email_notify) > 0)
-    : false;
-};
