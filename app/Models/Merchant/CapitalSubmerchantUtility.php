@@ -684,7 +684,7 @@ class CapitalSubmerchantUtility
 
         $createCapitalApplicationInput["merchant_id"] = $subMerchant->getId();
 
-        $user = $subMerchant->owners(Product::BANKING)->first();
+        $createCapitalApplicationInput["is_multi_product"] = true;
 
         $headers = [
             'X-Service-Name' => app('basicauth')->getInternalApp() ?? 'batch',
