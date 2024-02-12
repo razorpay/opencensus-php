@@ -13,7 +13,10 @@ class OpsMxPocEmails
         'abhishek.sriram@cnx.razorpay.com',
         'shreyash.patil@cnx.razorpay.com',
         'prateek.prateek@cnx.razorpay.com',
-        'saurav.gupta@cnx.razorpay.com'
+        'saurav.gupta@cnx.razorpay.com',
+        'vinay.rajj@ie.razorpay.com',
+        'vaishnavi.kjoi@ie.razorpay.com',
+        'harshita.nandini@ie.razorpay.com'
     ];
 
     public function checkIfEmailInMxPocEmailsList(string $email): bool
