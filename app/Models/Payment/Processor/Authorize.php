@@ -7741,7 +7741,10 @@ trait Authorize
     }
 
     protected function getFirstPaymentCreatedResponse(array $request, Payment\Entity $payment): array
-    {
+    {   
+        $app = \App::getFacadeRoot();
+        $paymentMeta = $payment->paymentMeta;
+       
         $data['type'] = 'first';
 
         $data['request'] = $request;
@@ -7752,7 +7755,14 @@ trait Authorize
 
         $data['gateway'] = $this->getEncryptedGatewayText($payment->getGateway());
 
-        $data['amount'] =  $payment->getFormattedAmount();
+        if($app['api.route']->getCurrentRouteName() === 'payment_redirect_to_authenticate_post' && $paymentMeta !== null)
+        {
+            $gatewayAmount = $paymentMeta->getGatewayAmount();
+            $gatewayCurrency = $paymentMeta->getGatewayCurrency();
+            $data['amount'] =  $payment->getFormattedAmountsAsPerCurrency($gatewayCurrency, $gatewayAmount);
+        }else{
+            $data['amount'] = $payment->getFormattedAmount();
+        }
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
