@@ -49,6 +49,12 @@ class Service extends Base\Service
         $variant = (new Core)->getCommissionInvoiceExperimentMode($this->merchant->getId());
         if($variant == 'reverse-shadow' or $variant == 'cutoff')
         {
+            // old workflows getting approved will have action set to under_review
+            if($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true &&  $input[Entity::ACTION] === Status::UNDER_REVIEW)
+            {
+                $input[Entity::ACTION] = Status::APPROVED;
+            }
+
             $response =  $this->app->partnerships->updateInvoiceStatus(['id'=> $id, 'status'=> $input[Entity::ACTION]]);
             if ( $variant == 'cutoff')
             {
