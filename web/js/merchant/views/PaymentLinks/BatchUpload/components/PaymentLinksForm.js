@@ -112,11 +112,13 @@ export default class extends React.Component {
           </div>
         </div>
 
-        <div class="form-group send-links-form">
-          <label class="m-r">Reminders</label>
+        {batchType !== BATCH_TYPE && (
+          <div className="form-group send-links-form">
+            <label className="m-r">Reminders</label>
 
-          {this.renderRemindersFormFields()}
-        </div>
+            {this.renderRemindersFormFields()}
+          </div>
+        )}
 
         <p class="m-t">
           <i class="i i-info-circle m-r" />

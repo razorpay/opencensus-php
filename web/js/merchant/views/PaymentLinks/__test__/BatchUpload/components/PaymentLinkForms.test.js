@@ -40,4 +40,9 @@ describe('PaymentLinksForm', () => {
     renderApp({ batchType: BATCH_TYPE });
     expect(screen.getByText(NOTIFY_MESSAGE.BATCH_PAYMENT_PAGE)).toBeInTheDocument();
   });
+
+  test('should not show Auto reminders section if batch type is "payment_page" ', () => {
+    renderApp({ batchType: BATCH_TYPE });
+    expect(screen.queryByText('Send auto reminders')).not.toBeInTheDocument();
+  });
 });
