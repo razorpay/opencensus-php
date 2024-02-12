@@ -1402,21 +1402,6 @@ class Processor
                 Card\Network::AMEX,
             ];
 
-            if ((($iin->isAmex() === false) and
-                    IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true))
-            {
-                $result = $this->canRouteInternationalPaymentsViaRearchFlow($input,$merchant);
-
-                $this->trace->info(TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_RESULT, [
-                    'canRouteThroughCrossBorderRearchFlow'      =>  $result,
-                ]);
-
-                if($result == false)
-                {
-                    return false;
-                }
-            }
-
             if((in_array($iin->getNetworkCode(), $supportedNetworks, true) === false)){
                 return false;
             }
@@ -1441,6 +1426,24 @@ class Processor
                 if (in_array($flow, $supportedFlows, true) === false)
                 {
                     return false;
+                }
+            }
+
+            if ((($iin->isAmex() === false) and
+                    IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true))
+            {
+                $result = $this->canRouteInternationalPaymentsViaRearchFlow($input,$merchant);
+
+                $this->trace->info(TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_RESULT, [
+                    'canRouteThroughCrossBorderRearchFlow'      =>  $result,
+                ]);
+
+                if($result == false)
+                {
+                    return false;
+                }
+                else{
+                    $result = 'on';
                 }
             }
 
