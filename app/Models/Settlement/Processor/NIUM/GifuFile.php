@@ -64,6 +64,12 @@ class GifuFile extends Base\BaseGifuFile
             $to = $to ?? Carbon::today(Timezone::IST)->getTimestamp();
 
             $merchantIntegrationInfo = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity($mid, 'nium');
+            if($merchantIntegrationInfo === null) {
+                $this->trace->info(
+                    TraceCode::NIUM_GIFU_FILE_MII_NOT_FOUND,
+                    [ 'mid' => $mid]);
+                continue;
+            }
             $settlements = $this->repo->settlement
                 ->getProcessedSettlementsForTimePeriodForMid($mid, $from, $to, $this->connectionType);
             $settlementIds = $this->getSettlementIds($settlements);

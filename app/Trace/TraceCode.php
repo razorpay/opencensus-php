@@ -9430,6 +9430,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_PUSH_CUSTOMER_INFO                            = 'TOKEN_PUSH_CUSTOMER_INFO';
     const TOKEN_PUSH_EXCEPTION                                = 'TOKEN_PUSH_EXCEPTION';
     const MANUAL_MERCHANT_WEBHOOK_TRIGGER                     = 'MANUAL_MERCHANT_WEBHOOK_TRIGGER';
+    const NIUM_GIFU_FILE_MII_NOT_FOUND                        = 'NIUM_GIFU_FILE_MII_NOT_FOUND';
     const TOKEN_PUSH_FETCH_INFO                               = 'TOKEN_PUSH_FETCH_INFO';
     const PUSH_TOKEN_FETCH_EXCEPTION                          = 'PUSH_TOKEN_FETCH_EXCEPTION';
     const PUSH_TOKEN_CONSENT_PERSIST_EVENT                    = 'PUSH_TOKEN_CONSENT_PERSIST_EVENT';
