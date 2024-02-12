@@ -12,8 +12,9 @@ import {
   OrderItemsCreateParams,
   Order,
   OrderSubmitParams,
+  OrderUpdateParams,
 } from 'merchant/views/GCMS/Orders/types';
-import { GCMS_BASE_PATH, ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
+import { getGCMSBasePath, ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import { ListApiParams, ListApiResponse, MerchantReseller } from 'merchant/views/GCMS/shared/types';
 
 export const LIST_FETCH_BATCH_SIZE = 25;
@@ -37,7 +38,7 @@ export const fetchOrders = async ({
 }) => {
   try {
     const res = await fetch<ListApiResponse<Order>>({
-      url: `${GCMS_BASE_PATH}/orders${stringifyQueryParams({
+      url: `${getGCMSBasePath(mode)}/orders${stringifyQueryParams({
         skip,
         count: LIST_FETCH_BATCH_SIZE,
         reseller_name: resellerName ?? '',
@@ -63,7 +64,7 @@ export const fetchOrders = async ({
 export const fetchOrderDetails = async ({ orderId, mode = 'test' }: ListApiParams) => {
   try {
     const res = await fetch<Order>({
-      url: `${GCMS_BASE_PATH}/orders/${orderId}`,
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}`,
       method: 'get',
       mode,
     });
@@ -86,7 +87,7 @@ export const fetchOrderItems = async ({
 }: ListApiParams): Promise<OrderItem> => {
   try {
     const res = await fetch<ListApiResponse<OrderItem>>({
-      url: `${GCMS_BASE_PATH}/orders/${orderId}/items`,
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}/items`,
       method: 'get',
       data: {
         merchant_id: merchantId,
@@ -113,7 +114,7 @@ export const fetchMerchantResellerRelationshipDetails = async ({
 }: ListApiParams) => {
   try {
     const res = await fetch<MerchantReseller>({
-      url: `${GCMS_BASE_PATH}/merchants/${merchantId}/resellers/${resellerId}`,
+      url: `${getGCMSBasePath(mode)}/merchants/${merchantId}/resellers/${resellerId}`,
       method: 'get',
       data: {
         merchant_id: merchantId,
@@ -139,7 +140,7 @@ export const fetchMerchantDetails = async ({
 }: ListApiParams) => {
   try {
     const res = await fetch<MerchantReseller>({
-      url: `${GCMS_BASE_PATH}/merchant_details/${resellerDetailId}`,
+      url: `${getGCMSBasePath(mode)}/merchant_details/${resellerDetailId}`,
       method: 'get',
       data: {
         merchant_id: merchantId,
@@ -161,7 +162,7 @@ export const fetchMerchantDetails = async ({
 export const orderCreate = async ({ resellerId, merchantId, mode = 'test' }: OrderCreateParams) => {
   try {
     const res = await fetch<Order>({
-      url: `${GCMS_BASE_PATH}/orders`,
+      url: `${getGCMSBasePath(mode)}/orders`,
       method: 'post',
       mode,
       data: {
@@ -187,7 +188,8 @@ export const orderUpdate = async ({
   orderId,
   mode = 'test',
   order,
-}: OrderCreateParams) => {
+  status,
+}: OrderUpdateParams) => {
   const data = {
     reseller_id: resellerId,
     merchant_id: merchantId,
@@ -196,9 +198,13 @@ export const orderUpdate = async ({
     /* @ts-expect-error empty-object-key */
     data.is_multiple_delivery = order.is_multiple_delivery;
   }
+  if (status) {
+    /* @ts-expect-error empty-object-key */
+    data.status = status;
+  }
   try {
     const res = await fetch<Order>({
-      url: `${GCMS_BASE_PATH}/orders/${orderId}`,
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}`,
       method: 'patch',
       data,
       mode,
@@ -223,7 +229,7 @@ export const orderItemsCreate = async ({
 }: OrderItemsCreateParams) => {
   try {
     const res = await fetch<ListApiResponse<OrderItem>>({
-      url: `${GCMS_BASE_PATH}/orders/${orderId}/items`,
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}/items`,
       method: 'post',
       data: {
         merchant_id: merchantId,
@@ -252,7 +258,7 @@ export const orderItemsPatch = async ({
 }: OrderItemPatchParams) => {
   try {
     const res = await fetch<ListApiResponse<OrderItem>>({
-      url: `${GCMS_BASE_PATH}/orders/${orderId}/items/${itemId}`,
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}/items/${itemId}`,
       method: 'patch',
       data: {
         merchant_id: merchantId,
@@ -280,7 +286,7 @@ export const orderItemsDelete = async ({
 }: OrderItemDeleteParams) => {
   try {
     const res = await fetch<Order>({
-      url: `${GCMS_BASE_PATH}/orders/${orderId}/items/${itemId}`,
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}/items/${itemId}`,
       method: 'delete',
       data: {
         merchant_id: merchantId,
@@ -301,12 +307,13 @@ export const orderItemsDelete = async ({
 
 export const orderSubmit = async ({ orderId, merchantId, mode = 'test' }: OrderSubmitParams) => {
   try {
+    const data = {
+      merchantId,
+    };
     const res = await fetch<Order>({
-      url: `${GCMS_BASE_PATH}/orders/${orderId}/submit`,
+      url: `${getGCMSBasePath(mode)}/orders/${orderId}/submit`,
       method: 'patch',
-      data: {
-        merchantId,
-      },
+      data,
       mode,
     });
     return res;

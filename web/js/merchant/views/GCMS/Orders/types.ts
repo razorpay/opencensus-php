@@ -31,6 +31,10 @@ export interface OrderCreateParams extends ListApiParams {
   order?: Order;
 }
 
+export interface OrderUpdateParams extends OrderCreateParams {
+  status?: string;
+}
+
 export interface OrderSubmitParams extends ListApiParams {
   orderId: string;
   merchantId: string;
@@ -56,6 +60,7 @@ export interface OrderItemDeleteParams extends ListApiParams {
 }
 
 export interface OrderItemDenomination extends OrderItem {
+  index?: number;
   id?: string;
   type?: string;
 }

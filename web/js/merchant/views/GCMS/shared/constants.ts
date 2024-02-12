@@ -1,5 +1,12 @@
+import { isProductionEnv } from 'common/utils/rzp-utils';
+
 export const WALLET_BASE_PATH = 'wallet/proxy/issuing';
-export const GCMS_BASE_PATH = `gcoms`;
+
+const isProd = isProductionEnv();
+
+// Only for to Production Environment
+export const getGCMSBasePath = (mode = 'test') =>
+  isProd ? (mode === 'test' ? `gcoms/test` : 'gcoms') : 'gcoms';
 export const RESELLER_PROGRAMS_PATH = 'programs';
 export const PROGRAM_TYPES = {
   VOUCHER: {

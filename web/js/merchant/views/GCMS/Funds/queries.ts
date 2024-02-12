@@ -4,7 +4,7 @@ import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { stringifyQueryParams } from 'common/utils/rzp-utils';
 import * as types from 'merchant/views/GCMS/Funds/types';
-import { GCMS_BASE_PATH, WALLET_BASE_PATH } from 'merchant/views/GCMS/shared/constants';
+import { getGCMSBasePath, WALLET_BASE_PATH } from 'merchant/views/GCMS/shared/constants';
 import { Transaction } from 'merchant/views/Wallet/types';
 
 import { BrandBalance, TransactionListApiParams, ResellersBalance } from './types';
@@ -58,7 +58,7 @@ export const fetchBrandBalance = async ({
 }): Promise<BrandBalance> => {
   try {
     const res = await fetch<BrandBalance>({
-      url: `${GCMS_BASE_PATH}/merchants/${merchantId}/balances`,
+      url: `${getGCMSBasePath(mode)}/merchants/${merchantId}/balances`,
       mode,
     });
     return res;
@@ -81,13 +81,13 @@ export const fetchResellersBalances = async ({
   ...filters
 }: types.ListApiParams): Promise<types.ListApiResponse<ResellersBalance>> => {
   try {
-    const url = `${GCMS_BASE_PATH}/merchants/${merchantId}/resellers/balances${stringifyQueryParams(
-      {
-        skip,
-        count,
-        ...filters,
-      },
-    )}`;
+    const url = `${getGCMSBasePath(
+      mode,
+    )}/merchants/${merchantId}/resellers/balances${stringifyQueryParams({
+      skip,
+      count,
+      ...filters,
+    })}`;
 
     const res = await fetch<types.ListApiResponse<ResellersBalance>>({
       url,

@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Button,
-  ChevronLeftIcon,
-  IconButton,
-  Link,
-  ShoppingCartIcon,
-} from '@razorpay/blade/components';
+import { Box, ChevronLeftIcon, Link } from '@razorpay/blade/components';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import {
@@ -29,7 +22,6 @@ import { RESELLER_PROGRAMS_PATH } from 'merchant/views/GCMS/shared/constants';
 import { ListApiResponse } from 'merchant/views/Wallet/types';
 
 import ResellerDetailsHeader from './ResellerDetailsHeader';
-import { ShoppingCartRedDot } from './styled';
 
 const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) => {
   const [orderId, setOrderId] = useState<string>('');
@@ -41,6 +33,10 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
     navigate(`/gcms/orders/create/programs`, { state: { resellerId } });
   };
 
+  const handleViewCart = () => {
+    navigate(`/gcms/orders/create/cart`, { state: { resellerId } });
+  };
+
   const { mutate: orderCreateMutation } = useMutation({
     mutationFn: orderCreate,
     onSuccess: (data) => {
@@ -48,7 +44,7 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
     },
   });
 
-  const { data: orderItems } = useQuery<ListApiResponse<OrderItem>, Error>({
+  const { data: orderItems, isLoading } = useQuery<ListApiResponse<OrderItem>, Error>({
     /* @ts-expect-error no-overload */
     queryKey: ['wallet:order:items', merchantId, orderId, mode],
     queryFn: () => fetchOrderItems({ mode, merchantId, orderId }),
@@ -70,9 +66,9 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
     const { prevPath = '' } = location?.state ?? {};
 
     if (prevPath) {
-      navigate(-1);
+      return navigate(-1);
     }
-    navigate('/gcms/resellers');
+    return navigate('/gcms/resellers');
   };
 
   return (
@@ -95,32 +91,21 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
               Go back
             </Link>
           </Box>
-          <Button variant="primary" onClick={handleOrderCreate}>
-            Create Order
-          </Button>
         </Box>
       </Box>
       <div className="tabbed-container">
-        <ResellerDetailsHeader merchantId={merchantId} resellerId={resellerId || ''} />
+        <ResellerDetailsHeader
+          mode={mode}
+          merchantId={merchantId}
+          resellerId={resellerId || ''}
+          hasOrderCreate
+          isLoadingViewCart={isLoading}
+          onClickOrderCreate={handleOrderCreate}
+          onClickViewCart={handleViewCart}
+          cartLength={orderItemsByProgram}
+        />
         <header>
           <NavLink to={RESELLER_PROGRAMS_PATH}>Programs</NavLink>
-          <Box position="absolute" right="0px" top="0px" padding={['spacing.5', 'spacing.6']}>
-            <IconButton
-              size="large"
-              icon={ShoppingCartIcon}
-              accessibilityLabel="Cart"
-              onClick={() => {
-                if (orderItemsByProgram > 0) {
-                  navigate(`/gcms/orders/create/cart`, { state: { resellerId } });
-                }
-              }}
-            />
-            {orderItemsByProgram > 0 && (
-              <Box position="absolute" top="spacing.4" right="spacing.5">
-                <ShoppingCartRedDot />
-              </Box>
-            )}
-          </Box>
         </header>
         <div className="content">
           <Routes>

@@ -1,6 +1,6 @@
 import { rest } from 'msw';
 
-import { GCMS_BASE_PATH } from 'merchant/views/GCMS/shared/constants';
+import { getGCMSBasePath } from 'merchant/views/GCMS/shared/constants';
 
 import { programsListResponse, resellersListResponse } from './fixtures';
 
@@ -22,7 +22,7 @@ export default [
     }
     return res(ctx.status(200), ctx.json(resellersListResponse), ctx.delay(100));
   }),
-  rest.get(`*${GCMS_BASE_PATH}/skus`, (req, res, ctx) => {
+  rest.get(`*${getGCMSBasePath()}/skus`, (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(programsListResponse), ctx.delay(100));
   }),
 ];

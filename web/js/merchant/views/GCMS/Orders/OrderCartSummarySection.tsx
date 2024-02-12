@@ -84,7 +84,7 @@ const OrderCartSummarySection = () => {
                               <Box>
                                 <Text weight="bold">
                                   {/* @ts-expect-error parseInt Number */}
-                                  {parseInt(program?.default_discount / 100, 10)}%
+                                  {parseFloat(program?.default_discount / 100, 10)}%
                                 </Text>
                               </Box>
                             </Box>

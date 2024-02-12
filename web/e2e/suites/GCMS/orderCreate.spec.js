@@ -28,15 +28,10 @@ test.describe('GCMS orders create @flow=ordersCreate @project=payments', () => {
 
     const firstCard = await page
       .locator('div[data-blade-component="card"]')
-      .filter({ hasText: 'Thank You Gift Card' })
+      .filter({ hasText: 'Special New Year Gift Card' })
       .first();
     await expect(firstCard).toBeVisible();
     await firstCard.click();
-
-    await page
-      .locator('input[data-blade-component="styled-base-input"][placeholder="Enter custom amount"]')
-      .first()
-      .fill('1');
     await page
       .locator('input[data-blade-component="styled-base-input"][placeholder="0"]')
       .first()

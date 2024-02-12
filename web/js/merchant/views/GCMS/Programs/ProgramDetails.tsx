@@ -29,9 +29,9 @@ const ProgramDetails: React.FC = () => {
     const { prevPath = '' } = location?.state ?? {};
 
     if (prevPath) {
-      navigate(-1);
+      return navigate(-1);
     }
-    navigate('/gcms/programs');
+    return navigate('/gcms/programs');
   };
 
   const contentSections = program ? getProgramContentSections(program) : [];

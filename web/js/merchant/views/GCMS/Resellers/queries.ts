@@ -6,7 +6,7 @@ import { fetch } from 'common/services/rest/rest-fetch';
 import { stringifyQueryParams } from 'common/utils/rzp-utils';
 import { Program } from 'merchant/views/GCMS/Programs/types';
 import { Reseller, ResellerBalance } from 'merchant/views/GCMS/Resellers/types';
-import { RESELLERS_STATUS } from 'merchant/views/GCMS/shared/constants';
+import { getGCMSBasePath, RESELLERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import { ListApiResponse } from 'merchant/views/GCMS/shared/types';
 
 export const LIST_FETCH_BATCH_SIZE = 25;
@@ -22,7 +22,7 @@ export const fetchProgramsForReseller = async ({
 }): Promise<ListApiResponse<Program>> => {
   try {
     const response = await fetch<ListApiResponse<Program>>({
-      url: `gcoms/skus${stringifyQueryParams({
+      url: `${getGCMSBasePath(mode)}/skus${stringifyQueryParams({
         skip,
         count: LIST_FETCH_BATCH_SIZE,
         reseller_id: resellerId,
@@ -56,7 +56,7 @@ export const fetchResellers = async ({
 }): Promise<ListApiResponse<Reseller>> => {
   try {
     const res = await fetch<ListApiResponse<Reseller>>({
-      url: `gcoms/merchants/${merchantId}/resellers${stringifyQueryParams({
+      url: `${getGCMSBasePath(mode)}/merchants/${merchantId}/resellers${stringifyQueryParams({
         skip,
         count: LIST_FETCH_BATCH_SIZE,
         merchant_name: resellerName ?? '',
@@ -78,15 +78,17 @@ export const fetchResellers = async ({
 };
 
 export const fetchResellerBalance = async ({
+  mode,
   resellerId,
   merchantId,
 }: {
+  mode: ModeT;
   resellerId?: string;
   merchantId: string;
 }): Promise<ResellerBalance> => {
   try {
     const response = await fetch<ResellerBalance>({
-      url: `gcoms/merchants/${merchantId}/resellers/${resellerId}/balances`,
+      url: `${getGCMSBasePath(mode)}/merchants/${merchantId}/resellers/${resellerId}/balances`,
     });
     return response;
   } catch (e: any) {

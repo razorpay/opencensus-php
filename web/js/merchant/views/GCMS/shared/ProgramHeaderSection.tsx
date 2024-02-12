@@ -40,7 +40,13 @@ const ProgramHeaderSection: React.FC<Props> = ({
             {program.name}
           </Heading>
         </Box>
-        <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between">
+        <Box
+          display="flex"
+          flexDirection="row"
+          flexWrap="wrap"
+          alignItems="center"
+          justifyContent="space-between"
+        >
           {headerSections.map((section) => (
             <Box
               key={section.name}

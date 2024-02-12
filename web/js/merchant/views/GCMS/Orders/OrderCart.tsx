@@ -1,5 +1,14 @@
 import React, { useContext } from 'react';
-import { Title, Box, Button, Link, ChevronLeftIcon, Heading } from '@razorpay/blade/components';
+import {
+  Title,
+  Box,
+  Button,
+  Link,
+  ChevronLeftIcon,
+  Heading,
+  TrashIcon,
+  IconButton,
+} from '@razorpay/blade/components';
 import { useMutation } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -15,7 +24,7 @@ import OrderCartItemsSection from './OrderCartItemsSection';
 import OrderCartStatusSection from './OrderCartStatusSection';
 import OrderCartSummarySection from './OrderCartSummarySection';
 import { GCMSOrderSession, OrderSessionContext } from './context';
-import { orderSubmit } from './queries';
+import { orderSubmit, orderUpdate } from './queries';
 
 type Props = {
   showNotification: ({ type, message }: { type: string; message: string }) => void;
@@ -29,7 +38,7 @@ const OrderCart = ({ showNotification }: Props) => {
   const { mutate: orderSubmitMutation, isLoading: isLoadingOrderSubmit } = useMutation({
     mutationFn: orderSubmit,
     onSuccess: (data) => {
-      navigate(`/gcms/orders`);
+      navigate(`/gcms/orders/${orderId}`);
       queryClient.setQueryData(['wallet:order', merchantId, orderId, mode], data);
       showNotification({
         type: 'success',
@@ -41,6 +50,24 @@ const OrderCart = ({ showNotification }: Props) => {
         type: 'error',
         /* @ts-expect-error */
         message: error?.message || 'Error submitting the order',
+      });
+    },
+  });
+  const { mutate: orderUpdateMutation, isLoading: isLoadingOrderUpdate } = useMutation({
+    mutationFn: orderUpdate,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['wallet:order', merchantId, orderId, mode], data);
+      showNotification({
+        type: 'success',
+        message: 'Order has been cancelled successfully',
+      });
+      navigate(`/gcms/orders/${orderId}`);
+    },
+    onError: (error) => {
+      showNotification({
+        type: 'error',
+        /* @ts-expect-error error-message-check */
+        message: error?.message || 'Error updating the order',
       });
     },
   });
@@ -58,6 +85,10 @@ const OrderCart = ({ showNotification }: Props) => {
     await orderSubmitMutation({ orderId, merchantId, mode });
   };
 
+  const handleOrderCancel = async () => {
+    await orderUpdateMutation({ orderId, merchantId, mode, status: 'cancelled' });
+  };
+
   return (
     <Box>
       <div className="tabbed-container">
@@ -66,8 +97,17 @@ const OrderCart = ({ showNotification }: Props) => {
             Go back
           </Link>
         </Box>
-        <Box>
+        <Box display="flex" flexDirection="row" justifyContent="space-between">
           <Title color="surface.text.subtle.lowContrast">Cart</Title>
+          <Box>
+            <IconButton
+              isDisabled={isLoadingOrderUpdate}
+              size="large"
+              icon={TrashIcon}
+              accessibilityLabel="Cancel"
+              onClick={handleOrderCancel}
+            />
+          </Box>
         </Box>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" flexDirection="column" flex={1}>
@@ -82,7 +122,11 @@ const OrderCart = ({ showNotification }: Props) => {
             >
               <Box paddingRight="spacing.4" display="flex" flexDirection="column" flex={1}>
                 <Box padding={['spacing.4', 'spacing.0']}>
-                  <ResellerDetailsHeader merchantId={merchantId} resellerId={resellerId} />
+                  <ResellerDetailsHeader
+                    mode={mode}
+                    merchantId={merchantId}
+                    resellerId={resellerId}
+                  />
                 </Box>
                 <Box
                   display="flex"

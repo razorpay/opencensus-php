@@ -34,3 +34,7 @@ export const isGCMSExperimentEnabled = (splitz: SpiltzContextState): boolean => 
   const { abExperiments } = splitz || { abExperiments: { razorpay_gcms: undefined } };
   return isExperimentEnabled(abExperiments.razorpay_gcms);
 };
+
+export const isPositiveInteger = (value: string) => {
+  return /^\d+$/.test(value);
+};

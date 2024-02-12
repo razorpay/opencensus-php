@@ -9,6 +9,8 @@ import {
   TextInput,
   Text,
   Button,
+  PlusIcon,
+  CloseIcon,
 } from '@razorpay/blade/components';
 import { useMutation } from '@tanstack/react-query';
 
@@ -38,11 +40,14 @@ const OrderCreateProgramDenominationsModal = ({
   orderItems: orderItemsProps,
 }: Props) => {
   const [orderItems, setOrderItems] = useState<OrderItemDenomination[]>([]);
-  const [customOrderItem, setCustomOrderItem] = useState<OrderItemDenomination>({
-    type: 'custom',
-    quantity: 0,
-    denomination: 0,
-  });
+  const [customOrderItems, setCustomOrderItems] = useState<OrderItemDenomination[]>([
+    {
+      index: 0,
+      type: 'custom',
+      quantity: 0,
+      denomination: 0,
+    },
+  ]);
   const { mode, merchantId } = useContext<GCMSSession>(SessionContext);
   const { orderId } = useContext<GCMSOrderSession>(OrderSessionContext);
 
@@ -94,31 +99,39 @@ const OrderCreateProgramDenominationsModal = ({
         : [];
       setOrderItems(formattedOrderItemsDenominations);
     } else {
-      const customOrderItem = orderItemsProps.find((item) =>
-        orderItemDenominationsIndexArray.every((value) => value !== item.id),
-      );
-      setCustomOrderItem(
-        customOrderItem
-          ? { ...customOrderItem, type: 'custom' }
-          : { type: 'custom', quantity: 0, denomination: 0 },
+      const formattedCustomOrderedItems = orderItemsProps.map((item) => ({
+        ...item,
+        type: 'custom',
+      }));
+      setCustomOrderItems(
+        orderItemsProps.length > 0
+          ? formattedCustomOrderedItems
+          : [{ type: 'custom', quantity: 0, denomination: 0 }],
       );
     }
   }, [isOpen, orderItemsProps, sku?.policies?.gift_card_price_denominations]);
 
   const clear = () => {
-    setCustomOrderItem({ type: 'custom', quantity: 0, denomination: 0 });
+    setCustomOrderItems([{ type: 'custom', quantity: 0, denomination: 0, index: 0 }]);
     setOrderItems([]);
   };
 
-  const updateOrderItem = ({ type = 'fixed', quantity, denomination }) => {
+  const updateOrderItem = ({ type = 'fixed', quantity, denomination, index: itemIndex = 0 }) => {
     if (type === 'custom') {
-      return setCustomOrderItem((prevState) => ({
-        ...prevState,
-        quantity: quantity || prevState.quantity,
-        denomination: denomination || prevState.denomination,
-        program_id: sku.program_id,
-        sku_id: sku.id,
-      }));
+      return setCustomOrderItems(
+        customOrderItems.map((item, index) =>
+          itemIndex === index
+            ? {
+                ...item,
+                type,
+                program_id: sku.program_id,
+                sku_id: sku.id,
+                quantity: quantity || item.quantity,
+                denomination: denomination || item.denomination,
+              }
+            : item,
+        ),
+      );
     } else {
       return setOrderItems(
         orderItems.map((item) =>
@@ -133,7 +146,12 @@ const OrderCreateProgramDenominationsModal = ({
   const onSubmitClick = async (): Promise<void> => {
     try {
       const items = orderItems
-        .concat([{ ...customOrderItem, denomination: (customOrderItem.denomination || 0) * 100 }])
+        .concat(
+          customOrderItems.map((item) => ({
+            ...item,
+            denomination: item?.id ? item.denomination : (item.denomination || 0) * 100,
+          })),
+        )
         .filter((item) => item.program_id && item.sku_id);
 
       const data = items.reduce(
@@ -144,6 +162,7 @@ const OrderCreateProgramDenominationsModal = ({
         },
         { patchedData: [], updatedData: [] },
       );
+
       if (data.updatedData.length > 0) {
         await orderItemsCreateMutation({ merchantId, orderItems: data.updatedData, orderId, mode });
       }
@@ -175,6 +194,34 @@ const OrderCreateProgramDenominationsModal = ({
     clear();
   };
 
+  const onSubmitAddCustomOrderItem = () => {
+    setCustomOrderItems([
+      ...customOrderItems,
+      {
+        type: 'custom',
+        quantity: 0,
+        denomination: 0,
+        index: customOrderItems.length,
+        program_id: sku.program_id,
+        sku_id: sku.id,
+      },
+    ]);
+  };
+
+  const customOrderEntriesSet = new Set(
+    customOrderItems.map((item) =>
+      item.denomination
+        ? parseInt(String(item?.id ? item.denomination / 100 : item.denomination), 10)
+        : item.denomination,
+    ),
+  );
+
+  const onSubmitRemoveCustomOrderItem = (index) => {
+    setCustomOrderItems(customOrderItems.filter((item, i) => i !== index));
+  };
+
+  const hasDuplicateEntries = customOrderEntriesSet.size < customOrderItems.length;
+
   return (
     <Modal isOpen={isOpen} onDismiss={() => setIsOpen(false)} size="medium">
       <ModalHeader title="Selected Gift Card Program" />
@@ -183,12 +230,17 @@ const OrderCreateProgramDenominationsModal = ({
           <ProgramHeaderSection
             program={sku}
             containerProps={{
-              height: '80px',
+              minHeight: '80px',
               padding: ['spacing.0', 'spacing.0', 'spacing.5', 'spacing.0'],
               borderBottomWidth: 'thick',
               borderBottomColor: 'surface.border.subtle.lowContrast',
             }}
-            imageProps={{ height: '60px', width: '94px' }}
+            imageProps={{
+              maxHeight: '60px',
+              maxWidth: '94px',
+              minHeight: '40px',
+              minWidth: '60px',
+            }}
           />
         </Box>
         <Box
@@ -197,32 +249,31 @@ const OrderCreateProgramDenominationsModal = ({
           alignItems="center"
           padding={['spacing.4', 'spacing.0', 'spacing.0', 'spacing.0']}
         >
-          <Box width="200px">
+          <Box minWidth="185px" paddingRight="spacing.4">
             <Text color="surface.text.muted.lowContrast">Denomination</Text>
           </Box>
-          <Box width="200px">
+          <Box minWidth="185px" paddingRight="spacing.4">
             <Text color="surface.text.muted.lowContrast">Quantity</Text>
           </Box>
         </Box>
-        {isProgramDenominationArrayAvailable ? (
-          orderItems.map(({ id, denomination, quantity }, index) => {
-            return (
-              <Box
-                key={id ? id + index : index}
-                borderBottomWidth="thick"
-                borderBottomColor="surface.border.subtle.lowContrast"
-                display="flex"
-                flexDirection="row"
-                alignItems="center"
-                padding={['spacing.3', 'spacing.0', 'spacing.4', 'spacing.0']}
-              >
-                <Box width="200px">
-                  <Heading size="small" color="surface.text.subdued.lowContrast">
-                    {denomination ? getFormattedAmountNew(denomination, true) : 0}
-                  </Heading>
-                </Box>
-                <Box width="200px">
-                  <Box width="175px">
+        {isProgramDenominationArrayAvailable
+          ? orderItems.map(({ id, denomination, quantity }, index) => {
+              return (
+                <Box
+                  key={id ? id + index : index}
+                  borderBottomWidth="thick"
+                  borderBottomColor="surface.border.subtle.lowContrast"
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  padding={['spacing.3', 'spacing.0', 'spacing.4', 'spacing.0']}
+                >
+                  <Box minWidth="185px" paddingRight="spacing.4">
+                    <Heading size="small" color="surface.text.subdued.lowContrast">
+                      {denomination ? getFormattedAmountNew(denomination, true) : 0}
+                    </Heading>
+                  </Box>
+                  <Box minWidth="185px" paddingRight="spacing.4">
                     <TextInput
                       label=""
                       type="number"
@@ -233,45 +284,71 @@ const OrderCreateProgramDenominationsModal = ({
                     />
                   </Box>
                 </Box>
-              </Box>
-            );
-          })
-        ) : (
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            padding={['spacing.3', 'spacing.0', 'spacing.0', 'spacing.0']}
-          >
-            <Box width="200px">
-              <Box width="175px">
-                <TextInput
-                  label=""
-                  placeholder="Enter custom amount"
-                  type="number"
-                  defaultValue={
-                    customOrderItem?.denomination
-                      ? getFixedINRAmount(customOrderItem?.denomination)
-                      : 0
-                  }
-                  /* @ts-expect-error undefined-object-check */
-                  onChange={({ value }) => updateOrderItem({ type: 'custom', denomination: value })}
-                />
-              </Box>
-            </Box>
-            <Box width="200px">
-              <Box width="175px">
-                <TextInput
-                  label=""
-                  placeholder="0"
-                  type="number"
-                  /* @ts-expect-error undefined-object-check */
-                  defaultValue={customOrderItem?.quantity}
-                  /* @ts-expect-error undefined-object-check */
-                  onChange={({ value }) => updateOrderItem({ type: 'custom', quantity: value })}
-                />
-              </Box>
-            </Box>
+              );
+            })
+          : customOrderItems.map((customOrderItem, index) => {
+              return (
+                <Box
+                  key={customOrderItem?.id ? customOrderItem.id + index : index}
+                  borderBottomWidth="thick"
+                  borderBottomColor="surface.border.subtle.lowContrast"
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  padding={['spacing.3', 'spacing.0', 'spacing.4', 'spacing.0']}
+                >
+                  <Box minWidth="185px" paddingRight="spacing.4">
+                    <TextInput
+                      isDisabled={!!customOrderItem.id}
+                      label=""
+                      placeholder="Enter custom amount"
+                      type="number"
+                      defaultValue={
+                        customOrderItem?.denomination
+                          ? getFixedINRAmount(customOrderItem?.denomination)
+                          : 0
+                      }
+                      onChange={({ value }) =>
+                        /* @ts-expect-error undefined-object-check */
+                        updateOrderItem({ type: 'custom', denomination: value, index })
+                      }
+                    />
+                  </Box>
+                  <Box minWidth="185px" paddingRight="spacing.4">
+                    <TextInput
+                      label=""
+                      placeholder="0"
+                      type="number"
+                      /* @ts-expect-error undefined-object-check */
+                      defaultValue={customOrderItem?.quantity}
+                      onChange={({ value }) =>
+                        /* @ts-expect-error undefined-object-check */
+                        updateOrderItem({ type: 'custom', quantity: value, index })
+                      }
+                    />
+                  </Box>
+                  {!customOrderItem?.id && index !== 0 && (
+                    <Box width="200px">
+                      <Button
+                        icon={CloseIcon}
+                        variant="secondary"
+                        onClick={() => onSubmitRemoveCustomOrderItem(index)}
+                      />
+                    </Box>
+                  )}
+                </Box>
+              );
+            })}
+        {!isProgramDenominationArrayAvailable && (
+          <Box paddingY="spacing.4">
+            <Button
+              isDisabled={hasDuplicateEntries}
+              icon={PlusIcon}
+              variant="primary"
+              onClick={onSubmitAddCustomOrderItem}
+            >
+              Add Denomination
+            </Button>
           </Box>
         )}
 
@@ -291,6 +368,7 @@ const OrderCreateProgramDenominationsModal = ({
         <Box paddingX="spacing.2" display="flex" flexDirection="row">
           <Box paddingRight="spacing.4">
             <Button
+              isDisabled={hasDuplicateEntries}
               isLoading={isLoading || isLoadingOrderItemPatchMutation}
               onClick={onSubmitClick}
             >
@@ -307,10 +385,14 @@ const OrderCreateProgramDenominationsModal = ({
             </Button>
           </Box>
         </Box>
-        {(isError || isErrorOrderItemPatchMutation) && (
+        {(isError || isErrorOrderItemPatchMutation || hasDuplicateEntries) && (
           <Box paddingX="spacing.2">
-            {/* @ts-expect-error error-message-check */}
-            <ErrorText>{error?.message || errorOrderItemPatchMutation?.message}</ErrorText>
+            <ErrorText>
+              {hasDuplicateEntries
+                ? 'Denominations must be distinct'
+                : /* @ts-expect-error error-message-check */
+                  error?.message || errorOrderItemPatchMutation?.message}
+            </ErrorText>
           </Box>
         )}
       </ModalFooter>

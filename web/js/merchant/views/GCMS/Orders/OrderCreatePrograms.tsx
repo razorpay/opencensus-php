@@ -87,7 +87,7 @@ const OrderCreatePrograms = () => {
         <Box paddingBottom="spacing.6">
           <Title color="surface.text.subtle.lowContrast">Create Order</Title>
         </Box>
-        <ResellerDetailsHeader merchantId={merchantId} resellerId={resellerId || ''} />
+        <ResellerDetailsHeader mode={mode} merchantId={merchantId} resellerId={resellerId || ''} />
         <Box paddingTop="spacing.6">
           <Heading color="surface.text.subtle.lowContrast">Select Program</Heading>
         </Box>
