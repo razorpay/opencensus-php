@@ -610,12 +610,16 @@ class Service extends Base\Service
         if (empty($id) === true) {
             throw new Exception\BadRequestValidationFailureException("Plan Id is a required field");
         }
+        $orgId = null;
+        $type = null;
         if (empty($input[Pricing\Entity::TYPE]) === false) {
             $type = $input[Pricing\Entity::TYPE];
         }
-        $skipOrgIdCheck = filter_var($input['skip_org_id_check'], FILTER_VALIDATE_BOOLEAN);
+        if (empty($input[Pricing\Entity::ORG_ID]) === false) {
+            $orgId = $input[Pricing\Entity::ORG_ID];
+        }
 
-        $assignedPlan = $this->repo->pricing->getPlan($id, $type, skipOrgCheck:$skipOrgIdCheck);
+        $assignedPlan = $this->repo->pricing->getPlan($id, $type, orgId:$orgId);
 
         $additionalFlags = $this->getAdditionalFlags($input, $assignedPlan);
 
@@ -648,7 +652,7 @@ class Service extends Base\Service
             }
         } catch (\Exception $e) {
             $this->trace->error(TraceCode::PRICING_ADDITIONAL_FLAGS_PLAN_FETCH_ERROR,
-                array_merge($input, ['assigned_plan'=> $assignedPlan->getId()])
+                array_merge($input, ['assigned_plan'=> $assignedPlan->getId(), 'error' => $e->getMessage()])
             );
         }
         return $response;
