@@ -119,17 +119,17 @@ class StateMap
      //Fetching the state code on Shopify using the state name for Italy
      function getShopifyStateCodeIT($stateCode)
      {
- 
+
          $shippingStateCodeMap = [
              'lombardy' => 'MI',
              'calabria' => 'CZ',
          ];
- 
+
          $shopifyStateCode = isset($shippingStateCodeMap[$stateCode]) ? $shippingStateCodeMap[$stateCode] : $stateCode;
- 
+
          return $shopifyStateCode;
      }
-     
+
     //Fetching the state code on Shopify using the state name for Malaysia
     function getShopifyStateCodeMY($stateCode)
     {
@@ -152,7 +152,22 @@ class StateMap
             '16' => 'PJY',
             'labuan federal territory' => 'labuan',
             'federal territory of kuala lumpur' => 'kuala lumpur',
-            'malacca' => 'melaka'
+            'malacca' => 'MLK',
+            'perak' => 'PRK',
+            'johor' => 'JHR',
+            'kedah' => 'KDH',
+            'kelantan' => 'KTN',
+            'kuala lumpur' => 'KUL',
+            'labuan' => 'LBN',
+            'nagari sembilan' => 'NSN',
+            'pahang' => 'PHG',
+            'penang' => 'PNG',
+            'perlis' => 'PLS',
+            'putrajaya' => 'PJY',
+            'sabah' => 'SBH',
+            'sarawak' => 'SWK',
+            'selangor' => 'SGR',
+            'terengganu' => 'TRG'
         ];
 
         $shopifyStateCode = isset($shippingStateCodeMap[$stateCode]) ? $shippingStateCodeMap[$stateCode] : $stateCode;
