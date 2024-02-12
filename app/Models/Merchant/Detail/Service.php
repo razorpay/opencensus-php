@@ -5153,19 +5153,27 @@ class Service extends Base\Service
 
         $vcipEntities = $this->core->fetchAllVCIPEntity($input);
 
-        if ((isset($vcipEntities[0]['status']) === true) and
-            ($vcipEntities[0]['status'] === DEConstants::INITIATED))
+        if (isset($vcipEntities[0]['status']) === true)
         {
-            if(isset($vcipEntities[0]['details']->weblink_expiry))
+            if($vcipEntities[0]['status'] === DEConstants::INITIATED)
             {
-                $diff = intval($vcipEntities[0]['details']->weblink_expiry) - time();
-
-                if ($diff >= DEConstants::VKYC_CUT_OFF_DURATION)
+                if(isset($vcipEntities[0]['details']->weblink_expiry))
                 {
-                    return $vcipEntities[0];
+                    $diff = intval($vcipEntities[0]['details']->weblink_expiry) - time();
+    
+                    if ($diff >= DEConstants::VKYC_CUT_OFF_DURATION)
+                    {
+                        return $vcipEntities[0];
+                    }
                 }
             }
+
+            if($vcipEntities[0]['status'] === DEConstants::UNDER_REVIEW)
+            {
+                return $vcipEntities[0];
+            }
         }
+        
         $vcipEntity = $this->core->createVCIPEntity($input);
 
         return $vcipEntity;

@@ -199,6 +199,11 @@ class Constants
             self::AOA,
             self::UBO,
         ],
+        BusinessType::LLP => [
+            self::MOA,
+            self::AOA,
+            self::UBO,
+        ],
         BusinessType::NGO => [
             self::DARPAN_PORTAL,
             self::BUSINESS_PROOF_URL,
