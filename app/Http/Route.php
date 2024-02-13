@@ -6447,6 +6447,7 @@ class Route
         'workflow_config_create_internal',
         'downtime_auto_resolve_cron',
         'merchant_validate_public_auth_over_internal_auth',
+        'customer_truecaller_callback_internal',
 
         //Order Outbox
         'order_outbox_retry',
@@ -7736,7 +7737,6 @@ class Route
         'merchant_policy_details',
         'customer_truecaller_auth_internal',
         'customer_truecaller_verify_internal',
-        'customer_truecaller_callback_internal',
         'checkout_personalisation_internal',
         'customer_fetch_internal_for_checkout',
         'global_customer_find_or_create_for_checkout',
