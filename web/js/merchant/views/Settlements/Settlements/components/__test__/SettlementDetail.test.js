@@ -1,6 +1,7 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, userEvent } from 'test-utils';
+import { getFormattedAmountByParts } from 'common/utils/rzp-utils';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import {
   props as defaultProps,
@@ -10,6 +11,7 @@ import {
   inActivatedUserOnHoldAndUnderReview,
 } from 'merchant/views/Settlements/Settlements/components/__test__/mocks/fixtures/SettlementDetail';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { render, screen, userEvent } from 'test-utils';
 
 jest.mock('merchant/views/TicketSupport/utils', () => ({
   CreateTicketEmitter: {
@@ -67,7 +69,8 @@ describe('SettlementDetails.js', () => {
   describe('Settlements are enabled', () => {
     test('should render settlement amount', () => {
       renderApp(activatedUser);
-      const settlementAmount = screen.queryByText('3,36,847');
+      const formattedSettlementAmount = getFormattedAmountByParts(33684700);
+      const settlementAmount = screen.queryByText(formattedSettlementAmount?.integer);
       expect(settlementAmount).toBeInTheDocument();
     });
 

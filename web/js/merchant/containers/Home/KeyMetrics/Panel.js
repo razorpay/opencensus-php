@@ -1,41 +1,42 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
 import Chart from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { PowerSelect } from 'react-power-select';
-import Definition from 'common/ui/Definition';
-import Change from 'common/ui/Change';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+
 import { BtnGroup, Btn } from 'common/ui/BtnGroup/index';
+import Change from 'common/ui/Change';
+import Definition from 'common/ui/Definition';
+import Group, { GroupItem } from 'common/ui/Group';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import GenericTooltip from 'common/ui/Tooltip';
 import { namedColors } from 'common/utils/chart/colors';
+import { timeScale } from 'common/utils/chart/new';
+import debounce from 'common/utils/debounce';
+import { i18nifyHumanReadable } from 'common/utils/numerals';
 import {
   isDefined,
   titleCase,
   i18CurrencyConversionFromMinorUnitToCommonUnit,
   getPercentage,
 } from 'common/utils/rzp-utils';
-import debounce from 'common/utils/debounce';
-import { timeScale } from 'common/utils/chart/new';
-import Group, { GroupItem } from 'common/ui/Group';
-import { i18HumanReadableCurrency, i18HumanReadableNumerals } from 'common/utils/numerals';
-import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import GenericTooltip from 'common/ui/Tooltip';
-import { tabsMeta, breakdownVals, breakdownValsMap, PLATFORM, CUMULATIVE } from './data';
-import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import FilteringDropdown from 'merchant/components/Home/FilteringDropdown';
-import Legend from 'merchant/components/Home/Legend';
-import LastUpdated from 'merchant/components/Home/LastUpdated';
-import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
+import LastUpdated from 'merchant/components/Home/LastUpdated';
+import Legend from 'merchant/components/Home/Legend';
 import Tooltip from 'merchant/components/Home/Tooltip';
+import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
+import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 
-import { trackGoToLinks } from './ga';
 import customToolTip, { positioner } from './customTooltip';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { tabsMeta, breakdownVals, breakdownValsMap, PLATFORM, CUMULATIVE } from './data';
+import { trackGoToLinks } from './ga';
 
 Chart.Tooltip.positioners.custom = positioner;
 
@@ -267,8 +268,8 @@ class Panel extends Component {
       trendAbsValue = Math.abs(trendValue);
 
       trendText = isCurrency
-        ? i18HumanReadableCurrency(convertedAmount, user.merchant.currency)
-        : i18HumanReadableNumerals(trendAbsValue, user.merchant.currency);
+        ? i18nifyHumanReadable(convertedAmount, user.merchant.currency)
+        : i18nifyHumanReadable(trendAbsValue);
 
       trendText +=
         // eslint-disable-next-line prefer-template

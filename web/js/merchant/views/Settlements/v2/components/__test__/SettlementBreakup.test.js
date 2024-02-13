@@ -1,5 +1,7 @@
-import * as SettlementsDB from 'merchant/views/Settlements/__test__/data/SettlementsDB';
 import React from 'react';
+
+import { getFormattedAmountByParts } from 'common/utils/rzp-utils';
+import * as SettlementsDB from 'merchant/views/Settlements/__test__/data/SettlementsDB';
 import SettlementBreakup from 'merchant/views/Settlements/v2/components/SettlementBreakup';
 import { settlementInfoErrorHandler } from 'merchant/views/Settlements/v2/components/__test__/mocks/handlers';
 import {
@@ -9,7 +11,6 @@ import {
   waitForLoadingToFinish,
   checkIfComponentIsEmpty,
 } from 'test-utils';
-import { getFormattedAmount } from 'common/utils/rzp-utils';
 
 describe('SettlementBreakup', () => {
   const renderApp = (props = {}) => {
@@ -45,12 +46,18 @@ describe('SettlementBreakup', () => {
 
     await waitForLoadingToFinish();
 
+    const expectedCreditAmountObj = getFormattedAmountByParts('33948761');
+    const expectedCreditAmount = `${expectedCreditAmountObj?.integer}${expectedCreditAmountObj?.decimal}${expectedCreditAmountObj?.fraction}`;
+
     expect(screen.getByText(/Total credit amount/i)).toHaveTextContent(
-      new RegExp(`Total credit amount: ₹ ${getFormattedAmount(33948761)}`, 'i'),
+      new RegExp(`Total credit amount: ₹ ${expectedCreditAmount}`, 'i'),
     );
 
+    const expectedDebitAmountObj = getFormattedAmountByParts('257350');
+    const expectedDebitAmount = `${expectedDebitAmountObj?.integer}${expectedDebitAmountObj?.decimal}${expectedDebitAmountObj?.fraction}`;
+
     expect(screen.getByText(/Total debit amount/i)).toHaveTextContent(
-      new RegExp(`Total debit amount: ₹ ${getFormattedAmount(257350)}`, 'i'),
+      new RegExp(`Total debit amount: ₹ ${expectedDebitAmount}`, 'i'),
     );
 
     const debitNodes = screen.getAllByTestId('settlementBreakupdebit');

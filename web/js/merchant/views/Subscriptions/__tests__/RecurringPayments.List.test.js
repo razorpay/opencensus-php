@@ -1,4 +1,8 @@
 import React from 'react';
+
+import App from 'merchant/views/Subscriptions/RecurringPayments/List';
+import { fetchRecurringPayments } from 'merchant/views/Subscriptions/__tests__/mocks/fixtures/fixtures';
+import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';
 import {
   screen,
   within,
@@ -8,9 +12,6 @@ import {
   userEvent,
   waitFor,
 } from 'test-utils';
-import App from 'merchant/views/Subscriptions/RecurringPayments/List';
-import { fetchRecurringPayments } from 'merchant/views/Subscriptions/__tests__/mocks/fixtures/fixtures';
-import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';
 import 'jest-location-mock';
 
 jest.mock('common/ui/HeaderAction', () => ({ children }) => <div>{children}</div>);
@@ -82,7 +83,7 @@ describe('Recurring Payments List', () => {
     });
 
     const cell = screen.getByRole('cell', {
-      name: /amount-info ₹ - ₹ \(inr\)/i,
+      name: /amount-info ₹ - Indian Rupee \(inr\)/i,
     });
     within(cell).getByText(/^1$/i);
   });

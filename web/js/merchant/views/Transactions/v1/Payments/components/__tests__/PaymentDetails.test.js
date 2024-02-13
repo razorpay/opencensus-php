@@ -1,15 +1,16 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, fireEvent, waitFor, updateUseI18ServiceSpy } from 'test-utils';
+import { useQuery } from '@tanstack/react-query';
+
+import { analyticsTrack } from 'common/utils/analytics';
+import User from 'merchant/models/User';
+import store from 'merchant/store';
+import { isPlatformTransaction } from 'merchant/views/Transactions/v1/Payments/Utils/platformUtils';
 import {
   defaultProps,
   App,
 } from 'merchant/views/Transactions/v1/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
-import { analyticsTrack } from 'common/utils/analytics';
-import { useQuery } from '@tanstack/react-query';
-import User from 'merchant/models/User';
-import store from 'merchant/store';
-import { isPlatformTransaction } from 'merchant/views/Transactions/v1/Payments/Utils/platformUtils';
+import { render, screen, fireEvent, waitFor, updateUseI18ServiceSpy } from 'test-utils';
 
 jest.mock('@tanstack/react-query', () => {
   const original = jest.requireActual('@tanstack/react-query');
@@ -312,6 +313,11 @@ describe('PaymentDetails', () => {
   describe('test suite for i18n orgs', () => {
     const payment = { ...defaultProps.payment, method: 'upi_transfer', currency: 'MYR' };
     const bankTransfer = { loading: true, details: { virtual_account: { status: 'closed' } } };
+    const user = {
+      merchant: {
+        currency: 'MYR',
+      },
+    };
     const stateSpy = jest.spyOn(store, 'getState');
 
     stateSpy.mockReturnValue({
@@ -324,26 +330,28 @@ describe('PaymentDetails', () => {
     });
     test('hide PaymentRefund and Refund Payment components if refunds.refund tags are enabled', () => {
       updateUseI18ServiceSpy('refunds.refund');
-      render(<App payment={payment} bankTransfer={bankTransfer} />);
+      render(<App user={user} payment={payment} bankTransfer={bankTransfer} />);
       expect(screen.queryByText('PaymentRefund')).not.toBeInTheDocument();
       expect(screen.queryByText('Refund Payment')).not.toBeInTheDocument();
     });
 
     test('hide PaymentDisputes component if disputes.disputes tags are enabled', () => {
       updateUseI18ServiceSpy('disputes.disputes');
-      render(<App payment={payment} bankTransfer={bankTransfer} />);
+      render(<App user={user} payment={payment} bankTransfer={bankTransfer} />);
       expect(screen.queryByText('PaymentDisputes')).not.toBeInTheDocument();
     });
 
     test('hide PaymentTransfers component if payment_transfer.transfers tags are enabled', () => {
       updateUseI18ServiceSpy('payment_transfer.transfers');
-      render(<App payment={payment} bankTransfer={bankTransfer} />);
+      render(<App user={user} payment={payment} bankTransfer={bankTransfer} />);
       expect(screen.queryByText('PaymentTransfers')).not.toBeInTheDocument();
     });
 
     test('hide PaymentTransfers component if payment_transfer.transfers tags are enabled', () => {
       isPlatformTransaction.mockImplementation(() => false);
-      const { container } = render(<App payment={payment} bankTransfer={bankTransfer} />);
+      const { container } = render(
+        <App user={user} payment={payment} bankTransfer={bankTransfer} />,
+      );
       const currencySymbol = container.querySelector('.rzp-currency');
       expect(currencySymbol).toHaveTextContent('RM');
     });

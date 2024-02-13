@@ -12,9 +12,9 @@ import {
   Tooltip,
   TooltipInteractiveWrapper,
 } from '@razorpay/blade/components';
-import { useLocation, useNavigate } from 'react-router-dom';
-
+import { formatNumber } from '@razorpay/i18nify-js/currency';
 import noop from 'lodash/noop';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { CardShimmer } from 'merchant/views/Transactions/v2/Analytics/components/Shimmer';
@@ -119,7 +119,7 @@ const BottomOverviewCard = ({
                       size="large"
                       marginLeft="spacing.2"
                     >
-                      {value}
+                      {formatNumber(value)}
                     </Heading>
                   )}
                 </Box>

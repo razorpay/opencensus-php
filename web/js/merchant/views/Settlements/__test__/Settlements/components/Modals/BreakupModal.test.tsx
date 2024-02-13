@@ -1,6 +1,4 @@
 import React from 'react';
-import { getFormattedAmount } from 'common/utils/rzp-utils';
-import BreakupModal from 'merchant/views/Settlements/Settlements/components/Modals/BreakupModal';
 import {
   errorHandlers,
   fireEvent,
@@ -10,7 +8,10 @@ import {
   server,
   delay,
 } from 'test-utils';
+
 import TestModal from 'common/services/test/TestModal';
+import { getFormattedAmountByParts } from 'common/utils/rzp-utils';
+import BreakupModal from 'merchant/views/Settlements/Settlements/components/Modals/BreakupModal';
 
 const onMount = jest.fn();
 const onUnMount = jest.fn();
@@ -63,8 +64,11 @@ test('should show correct settlement amount', async () => {
 
   const settledAmount = 33691411;
 
+  const expectedAmountObj = getFormattedAmountByParts(settledAmount);
+  const expectedAmount = `${expectedAmountObj?.integer}${expectedAmountObj?.decimal}${expectedAmountObj?.fraction}`;
+
   expect(screen.getByText(/Total settled amount/i)).toHaveTextContent(
-    new RegExp(getFormattedAmount(settledAmount), 'g'),
+    new RegExp(expectedAmount, 'g'),
   );
 });
 

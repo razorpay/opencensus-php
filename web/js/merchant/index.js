@@ -8,6 +8,7 @@ import 'react-dates/initialize';
 import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router } from 'react-router-dom';
+import { I18nProvider } from '@razorpay/i18nify-react';
 
 import 'common/utils/polyfills';
 import { I18ServiceProvider } from 'common/i18/I18ServiceProvider';
@@ -43,18 +44,20 @@ capturePrometheusMetric({
   labels: { pathname: getPathForMetrics(window.location.pathname) },
 });
 render(
-  <Provider store={store}>
-    <ConfirmModalProvider>
-      <Router basename="/app">
-        <SpiltzServiceProvider dashboardType="merchant">
-          <ErrorBoundary>
-            <I18ServiceProvider>
-              <App />
-            </I18ServiceProvider>
-          </ErrorBoundary>
-        </SpiltzServiceProvider>
-      </Router>
-    </ConfirmModalProvider>
-  </Provider>,
+  <I18nProvider>
+    <Provider store={store}>
+      <ConfirmModalProvider>
+        <Router basename="/app">
+          <SpiltzServiceProvider dashboardType="merchant">
+            <ErrorBoundary>
+              <I18ServiceProvider>
+                <App />
+              </I18ServiceProvider>
+            </ErrorBoundary>
+          </SpiltzServiceProvider>
+        </Router>
+      </ConfirmModalProvider>
+    </Provider>
+  </I18nProvider>,
   document.getElementById('react-root'),
 );

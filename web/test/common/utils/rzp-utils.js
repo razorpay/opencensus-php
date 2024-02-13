@@ -1,22 +1,162 @@
+import {
+  isFunction,
+  stringToObj,
+  getFormattedAmountByParts,
+  getFormattedAmountNew,
+  formatAmount,
+} from 'common/utils/rzp-utils';
+
 require('it-each')();
 const expect = require('chai').expect;
-import { isFunction, stringToObj } from 'common/utils/rzp-utils';
 
-describe('common/utils/rzp-utils Fn: isFunction', function () {
+describe('common/utils/rzp-utils Fn: isFunction', () => {
   const falseValues = [2, 2.3, true, false, 0, '0', [], {}, '', null, undefined];
 
-  it('should be function', function () {
-    const value = function () {};
+  it('should be function', () => {
+    const value = () => {};
     const result = isFunction(value);
 
     expect(result).to.eql(true);
   });
 
-  it.each(falseValues, 'all values should not be function.', function (value, next) {
+  it.each(falseValues, 'all values should not be function.', (value, next) => {
     const result = isFunction(value);
     expect(result).to.eql(false);
 
     next();
+  });
+});
+
+describe('common/utils/rzp-utils: getFormattedAmountByParts', () => {
+  it('getFormattedAmountByParts should return subparts of formatted amount in different currencies', () => {
+    const formattedAmountINR = getFormattedAmountByParts(125672.8767, 'INR');
+    const formattedAmountUSD = getFormattedAmountByParts(125672.8767, 'USD');
+
+    const expectedAmountINR = {
+      currency: '₹',
+      fraction: '73',
+      integer: '1,256',
+      decimal: '.',
+      isPrefixSymbol: true,
+      rawParts: [
+        {
+          type: 'currency',
+          value: '₹',
+        },
+        {
+          type: 'integer',
+          value: '1',
+        },
+        {
+          type: 'group',
+          value: ',',
+        },
+        {
+          type: 'integer',
+          value: '256',
+        },
+        {
+          type: 'decimal',
+          value: '.',
+        },
+        {
+          type: 'fraction',
+          value: '73',
+        },
+      ],
+    };
+
+    const expectedAmountUSD = {
+      currency: '$',
+      fraction: '73',
+      integer: '1,256',
+      decimal: '.',
+      isPrefixSymbol: true,
+      rawParts: [
+        {
+          type: 'currency',
+          value: '$',
+        },
+        {
+          type: 'integer',
+          value: '1',
+        },
+        {
+          type: 'group',
+          value: ',',
+        },
+        {
+          type: 'integer',
+          value: '256',
+        },
+        {
+          type: 'decimal',
+          value: '.',
+        },
+        {
+          type: 'fraction',
+          value: '73',
+        },
+      ],
+    };
+
+    expect(formattedAmountINR).to.deep.eql(expectedAmountINR);
+    expect(formattedAmountUSD).to.deep.eql(expectedAmountUSD);
+  });
+});
+
+describe('common/utils/rzp-utils: getFormattedAmountNew', () => {
+  it('should correctly format a number without currency symbol', () => {
+    const result = getFormattedAmountNew(123456, false);
+    expect(result).to.equal('1,234.56');
+  });
+
+  it('should correctly format a number with default currency (INR)', () => {
+    const result = getFormattedAmountNew(123456, true);
+    expect(result).to.include('₹'); // Check for presence of Rupee symbol
+    expect(result).to.match(/₹\s?1,234.56/); // Check for correct formatting with currency
+  });
+
+  it('should correctly format a number with specified currency (USD)', () => {
+    const result = getFormattedAmountNew(123456, true, 'USD');
+    // Check for correct formatting with specified currency
+    expect(result).to.include('$'); // Check for presence of Dollar symbol
+    expect(result).to.match(/\$\s?1,234.56/); // Assuming 'en-IN' formatting rules apply
+  });
+
+  it('should handle zero amount correctly', () => {
+    const result = getFormattedAmountNew(0, true, 'INR');
+    // Check for correct formatting of zero amount
+    expect(result).to.equal('₹0.00');
+  });
+
+  it('should handle negative amounts correctly', () => {
+    const result = getFormattedAmountNew(-123456, true, 'INR');
+    // Check for correct formatting of negative amounts
+    expect(result).to.match(/-₹\s?1,234.56/);
+  });
+
+  it('should return the formatted amount with two decimal places', () => {
+    const result = getFormattedAmountNew(123400, true, 'INR');
+    // Ensure the function always formats the amount with two decimal places
+    expect(result).to.equal('₹1,234.00');
+  });
+});
+
+describe('common/utils/rzp-utils: formatAmount', () => {
+  it('should correctly format a number without currency', () => {
+    const result = formatAmount(1234.56, false);
+    expect(result).to.equal('1,234.56');
+  });
+
+  it('should correctly format a number with currency', () => {
+    const result = formatAmount(1234.56, true, 'USD');
+    expect(result).to.equal('$1,234.56'); // for locale: en-MY
+  });
+
+  it('should correctly round numbers based on currency rules', () => {
+    const result = formatAmount(1234.567, true, 'USD');
+    expect(result).to.equal('$1,234.57');
   });
 });
 

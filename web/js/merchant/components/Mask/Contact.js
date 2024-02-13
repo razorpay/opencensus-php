@@ -16,7 +16,6 @@ export function getI18FormattedPhoneNumber(contact) {
       actionName: ANALYTICS.ACTION.PHONE_NUMBER,
       screen: ANALYTICS.SCREEN.DASHBOARD,
       properties: {
-        timestamp: Date.now(),
         input: `${contact}`,
         error: `${e}`,
       },
@@ -26,7 +25,7 @@ export function getI18FormattedPhoneNumber(contact) {
 }
 
 function MaskedContact({ contact = '', user }) {
-  const formattedContact = getI18FormattedPhoneNumber(contact);
+  const formattedContact = contact ? getI18FormattedPhoneNumber(contact) : contact;
   return user.isHidePIDetails ? getMaskedContact(formattedContact) : formattedContact;
 }
 

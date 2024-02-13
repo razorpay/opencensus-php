@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+
+import { withI18Service } from 'common/i18';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
+import { i18nifyHumanReadable } from 'common/utils/numerals';
 import {
   titleCase,
   isDefined,
@@ -9,12 +14,8 @@ import {
   getFixedNumber,
   groupBy,
 } from 'common/utils/rzp-utils';
-import { i18HumanReadableNumerals, i18HumanReadableCurrency } from 'common/utils/numerals';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { fetch } from 'merchant/reducers/pokedex';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import Tooltip from 'merchant/components/Home/Tooltip';
 import {
   API_ERROR,
   API_INVALID_RESP,
@@ -23,8 +24,14 @@ import {
   platformsOrder,
   paymentMethodsOrder,
 } from 'merchant/components/Home/data';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { trackNoData, trackError } from 'merchant/containers/Home/ga';
-import Tooltip from 'merchant/components/Home/Tooltip';
+import { fetch } from 'merchant/reducers/pokedex';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import Mobile from './Mobile';
+import Panel from './Panel';
+import MiniChart from './TinyAreaChart';
 import {
   NUM_TRANSACTIONS,
   TRANSACTION_VOLUME,
@@ -41,11 +48,6 @@ import {
   getTimelineData,
 } from './data';
 import { trackTabClick, trackBreakdownChange, trackSavedCardsHidden } from './ga';
-import Panel from './Panel';
-import MiniChart from './TinyAreaChart';
-import Mobile from './Mobile';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { withI18Service } from 'common/i18';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
@@ -78,9 +80,9 @@ const TabContent = ({
         value,
         merchantCurrency,
       );
-      formattedValue = i18HumanReadableCurrency(convertedAmount, merchantCurrency);
+      formattedValue = i18nifyHumanReadable(convertedAmount, merchantCurrency);
     } else {
-      formattedValue = i18HumanReadableNumerals(value, merchantCurrency);
+      formattedValue = i18nifyHumanReadable(value);
     }
   } else {
     formattedValue = `${getFixedNumber(percent)}%`;

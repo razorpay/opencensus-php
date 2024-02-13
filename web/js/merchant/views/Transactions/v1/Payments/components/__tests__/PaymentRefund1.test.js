@@ -70,7 +70,7 @@ describe('PaymentRefund', () => {
         />,
       );
       expect(screen.getByText('Partially refunded in')).toBeInTheDocument();
-      expect(screen.getAllByText('.')).toHaveLength(4);
+      expect(screen.getAllByText('.')).toHaveLength(3);
       expect(screen.getByText('refunds')).toBeInTheDocument();
       rerender(
         <App

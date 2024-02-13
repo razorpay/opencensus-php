@@ -2,10 +2,11 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import Tooltip from 'common/ui/Tooltip';
-import { getFormattedNumber, getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { globalGroupTitleMap as groupTitleMap } from 'common/utils/pokedex';
-
+import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import { getI18nifyFormattedNumber } from 'common/utils/numerals';
 import { bankNames } from 'merchant/containers/Home/PaymentMethods/data';
+
 import renderTreemap from './renderTreemap';
 
 let timer = null;
@@ -133,7 +134,7 @@ export default class Treemap extends Component {
   render() {
     const { tooltip } = this.state;
     const { isCurrency, user } = this.props;
-    const amount = (isCurrency ? getFormattedAmountNew : getFormattedNumber)(
+    const amount = (isCurrency ? getFormattedAmountNew : getI18nifyFormattedNumber)(
       tooltip.data.amount,
       true,
       user.merchant.currency,

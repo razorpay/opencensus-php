@@ -34,7 +34,7 @@ describe('test suite for Earnings List', () => {
     });
     // Check for negative refund amount
     expect(screen.getByTestId('amount-comm_MWDbnTWLqZrpMV').closest('td')).toHaveTextContent(
-      '- ₹ 5.90₹ - ₹ (INR)',
+      '- ₹ 5.90₹ - Indian Rupee (INR)',
     );
   });
 

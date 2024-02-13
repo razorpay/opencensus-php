@@ -14,15 +14,18 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable no-use-before-define */
 /* eslint-disable prefer-const */
+import { formatNumberByParts } from '@razorpay/i18nify-js/currency';
 import axios from 'axios';
-import { SENSITIVE_FIELDS } from 'common/constant';
 import { saveAs } from 'file-saver';
 import isEmpty from 'lodash/isEmpty';
+import moment from 'moment';
+import { utils, write } from 'xlsx';
+
+import { SENSITIVE_FIELDS } from 'common/constant';
 import currencies from 'merchant/constants/currency';
 import { CURRENCY_FORMATTERS } from 'merchant/helpers/currency/helper';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
-import moment from 'moment';
-import { utils, write } from 'xlsx';
+
 import { acronyms, shortenText } from './acronyms';
 
 moment.updateLocale('en', {
@@ -348,6 +351,39 @@ export const getCurrencyConfig = (currency = 'INR') => {
   }
 };
 
+/**
+ * Parses the amount string and returns the parsed object with integer, decimal, fraction, currency, etc
+ * @param {string | number} amount Amount to format
+ * @param {string} currencyCode
+ * @returns {ReturnType<formatNumberByParts>}
+ */
+export const getFormattedAmountByParts = (amount, currency = 'INR') => {
+  let updatedAmount = (amount / 100).toFixed(2);
+
+  const integer = updatedAmount.split('.')[0] || '';
+  const fraction = updatedAmount.split('.')[1] || '';
+
+  let byParts;
+
+  try {
+    byParts = formatNumberByParts(updatedAmount, {
+      currency,
+      intlOptions: {
+        style: 'currency',
+      },
+    });
+  } catch (e) {
+    byParts = {
+      integer,
+      decimal: '.',
+      fraction,
+      isPrefixSymbol: true,
+    };
+  }
+
+  return byParts;
+};
+
 // following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
 export const getFormattedAmount = (amount, currency = 'INR') => {
   if (isNExponentSupported()) {
@@ -357,16 +393,35 @@ export const getFormattedAmount = (amount, currency = 'INR') => {
   return (amount / 100).toFixed(2).replace(numberFormatRegex, '$1,');
 };
 
-export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') => {
-  let formattedAmount;
-  if (isNExponentSupported()) {
-    formattedAmount = getFormattedAmount(amount, currency);
-  } else if (currency === 'INR') {
-    formattedAmount = getFormattedNumber((amount / 100).toFixed(2));
-  } else {
-    formattedAmount = (Number(amount) / 100).toFixed(CURRENCY_DECIMALS[currency]).toLocaleString();
+/**
+ * Formats a numeric amount into a localized currency string.
+ * This function takes a numeric amount and returns it as a formatted string in a given currency style.
+ * It utilizes `formatNumberByParts`, a custom implementation of `Intl.NumberFormat.prototype.formatToParts()` from i18nify,
+ * to handle the localization and formatting based on the provided options.
+ */
+export const formatAmount = (amt, showCurrency, currency) => {
+  try {
+    let options = {
+      intlOptions: {
+        minimumFractionDigits: 2,
+      },
+    };
+
+    if (showCurrency) {
+      options.currency = currency;
+    }
+    const byParts = formatNumberByParts(amt, options);
+    return byParts.rawParts.reduce((acc, curr) => `${acc}${curr.value}`, '');
+  } catch (e) {
+    console.error(e);
+    return showCurrency ? `${currency} ${amt}` : amt;
   }
-  return (showCurrency ? currencySymbols[currency] : '') + formattedAmount;
+};
+
+export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') => {
+  const adjustedAmount = (amount / 100).toFixed(2);
+
+  return formatAmount(adjustedAmount, showCurrency, currency);
 };
 
 //used to merge formatting of local currency list with api response

@@ -75,9 +75,10 @@ import lazy from 'merchant/routes/LazyLoader';
 import { SplitzRoutesBasedService } from 'common/splitz/components/SplitzRoutesBasedService';
 import cloneDeep from 'lodash/cloneDeep';
 import { withSplitzService } from 'common/splitz';
-import { withI18Service } from 'common/i18';
+import { withI18Service, withI18nifyState } from 'common/i18';
 import { fetchConfigTags } from 'merchant/reducers/session';
 import graphqlClient from 'common/services/graphql/graphql-client';
+import { COUNTRY_CODE_LOCALE_MAP } from 'merchant/routes/constants';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -376,6 +377,10 @@ class App extends Component {
       }),
     ])
       .then((response) => {
+        this.props.setI18nState({
+          locale: COUNTRY_CODE_LOCALE_MAP[response[0]?.merchant?.country_code],
+        });
+
         if (response[0].showInstantActivation) {
           setTrackData({
             eventCategory: 'Dashboard - Instant Activations',
@@ -1415,4 +1420,4 @@ export default compose(
       },
     },
   ),
-)(withI18Service(withSplitzService(App)));
+)(withI18Service(withI18nifyState(withSplitzService(App))));

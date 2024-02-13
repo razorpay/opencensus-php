@@ -4962,10 +4962,17 @@
   dependencies:
     "@razorpay/blade" "10.23.5"
 
-"@razorpay/i18nify-js@1.2.0":
-  version "1.2.0"
-  resolved "https://npm.pkg.github.com/download/@razorpay/i18nify-js/1.2.0/a4f396f18a5cb2ce8bde6344a1af78b41217fd82#a4f396f18a5cb2ce8bde6344a1af78b41217fd82"
-  integrity sha512-mfbKpECSmf1Cg+SPMX+o0NIHNR/ICAJNzDKCHTzwf3Q8ocu3Nnl6NQDYnyfVrBnppwx0Sbu23KGhRa0HN3D6AA==
+"@razorpay/i18nify-js@^1.4.0":
+  version "1.4.0"
+  resolved "https://npm.pkg.github.com/download/@razorpay/i18nify-js/1.4.0/4988e9a10b55c6fbe1b045afa7f0f240eea01845#4988e9a10b55c6fbe1b045afa7f0f240eea01845"
+  integrity sha512-JY1g3Kn4e8ktsMbrDHOh8TEtPvJOT/A6FKGfNcaEVZ7uJM5Ew9fwP5j6orSF7FaGEZ8PVEIoCsycKhwm9fLfrA==
+
+"@razorpay/i18nify-react@^4.0.0":
+  version "4.0.0"
+  resolved "https://npm.pkg.github.com/download/@razorpay/i18nify-react/4.0.0/f7cd2a019cb5b201c9086398486e492971d16ca5#f7cd2a019cb5b201c9086398486e492971d16ca5"
+  integrity sha512-dOLilNaWS9397R/1hZM4ffFJDmqLUPkqZBp+Bmra3wo8tdhbk43fTAMrZhk1o9EU+WqxiP9Wup8mnZQ33qP0/g==
+  dependencies:
+    "@razorpay/i18nify-js" "^1.4.0"
 
 "@razorpay/universe-cli@15.3.0":
   version "15.3.0"

@@ -91,6 +91,7 @@ jest.mock('common/i18', () => {
     useI18Service: () => ({
       isConfigTagEnabled: jest.fn(),
     }),
+    withI18nifyState: (Component) => (props) => <Component {...props} setI18nState={jest.fn()} />,
   };
 });
 

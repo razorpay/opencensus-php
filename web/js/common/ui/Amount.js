@@ -1,8 +1,13 @@
 import React, { useCallback } from 'react';
+import {
+  getCurrencyList,
+  getCurrencySymbol as i18nifyGetCurrencySymbol,
+} from '@razorpay/i18nify-js/currency';
+
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { getFormattedAmount, classList } from 'common/utils/rzp-utils';
-import useViewport, { ViewportProvider } from 'merchant/hooks/useViewPort';
+import { getFormattedAmountByParts, classList } from 'common/utils/rzp-utils';
 import sanitizer from 'common/utils/xss-sanitizer';
+import useViewport, { ViewportProvider } from 'merchant/hooks/useViewPort';
 
 const currencies = {
   INR: {
@@ -60,9 +65,6 @@ const Amount = ({
   if (testId !== null) {
     attrs['data-testid'] = testId;
   }
-  const amount = getFormattedAmount(value, currency);
-
-  const currencySymbol = getCurrencySymbol(currency);
 
   const getDirection = useCallback(() => {
     if (RTL_CURRENCIES.includes(currency)) {
@@ -70,6 +72,10 @@ const Amount = ({
     }
     return 'ltr';
   }, [currency]);
+
+  const currencySymbol = i18nifyGetCurrencySymbol(currency);
+
+  const amount = getFormattedAmountByParts(value, currency);
 
   // TODO: pointer-events: allow, but cursor be as per inherit
   return (
@@ -84,8 +90,13 @@ const Amount = ({
           className="rzp-currency"
           dangerouslySetInnerHTML={{ __html: sanitizer(currencySymbol) }}
         />{' '}
-        <span className="rzp-whole">{amount?.split('.')[0]}</span>
-        {!hidePaisa && <span className="rzp-paise">.{amount?.split('.')[1]}</span>}
+        <span className="rzp-whole">{amount?.integer}</span>
+        {!hidePaisa && amount?.decimal && amount?.fraction && (
+          <span className="rzp-paise">
+            {amount.decimal}
+            {amount.fraction}
+          </span>
+        )}
       </span>
     </AmountTooltip>
   );
@@ -119,14 +130,10 @@ export function AmountTooltipContainer({
 
   const context = useViewport();
 
-  let currencySymbol = currencies[currency] ? currencies[currency].symbol : currency;
+  const currencyInfo = getCurrencyList()[currency];
+  const currencySymbol = currencyInfo.symbol || currency;
 
-  let currencyName = currencySymbol;
-
-  if (window.currencyList && window.currencyList[currency]) {
-    currencySymbol = window.currencyList[currency].symbol;
-    currencyName = window.currencyList[currency].name;
-  }
+  const currencyName = currencyInfo.name;
 
   return (
     <span className={classList('help-content help-content--currency', customClass)}>

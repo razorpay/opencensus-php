@@ -1,4 +1,5 @@
-import { screen, userEvent, within, server, waitFor } from 'test-utils';
+import { formatNumberByParts } from '@razorpay/i18nify-js/currency';
+
 import {
   renderInitialApp,
   renderApp,
@@ -9,6 +10,7 @@ import {
   saveSettingsError,
 } from 'merchant/views/Subscriptions/__tests__/mocks/fixtures/Settings';
 import * as analytics from 'merchant/views/Subscriptions/analytics';
+import { screen, userEvent, within, server, waitFor } from 'test-utils';
 
 const defaultProps = {
   i18: { isConfigTagEnabled: jest.fn() },
@@ -56,10 +58,12 @@ describe('Subscription Settings', () => {
     });
 
     const acceptPaymentView = screen.getAllByText(/accept payments upto/i)[0];
-    expect(within(acceptPaymentView).getByText(/2,00,000/i)).toBeInTheDocument();
+    const { integer: acceptPaymentValue } = formatNumberByParts(200000);
+    expect(within(acceptPaymentView).getByText(acceptPaymentValue)).toBeInTheDocument();
 
     const maxPaymentView = screen.getAllByText(/payments above/i)[0];
-    expect(within(maxPaymentView).getByText(/15,000/i)).toBeInTheDocument();
+    const { integer: maxPaymentValue } = formatNumberByParts(15000);
+    expect(within(maxPaymentView).getByText(maxPaymentValue)).toBeInTheDocument();
     expect(
       within(maxPaymentView).getByText(/will ask the customer for otp verification as well\./i),
     ).toBeInTheDocument();
@@ -82,13 +86,16 @@ describe('Subscription Settings', () => {
     });
 
     const acceptPaymentView = screen.getAllByText(/accept payments upto/i)[1];
-    expect(within(acceptPaymentView).getByText(/1,00,000/i)).toBeInTheDocument();
+    const { integer: acceptPaymentValue } = formatNumberByParts(100000);
+    expect(within(acceptPaymentView).getByText(acceptPaymentValue)).toBeInTheDocument();
 
     const bfscView = screen.getByText(/\(for bfsi:/i);
-    expect(within(bfscView).getByText(/2,00,000/i)).toBeInTheDocument();
+    const { integer: bfscValue } = formatNumberByParts(200000);
+    expect(within(bfscView).getByText(bfscValue)).toBeInTheDocument();
 
     const maxPaymentView = screen.getAllByText(/payments above/i)[1];
-    expect(within(maxPaymentView).getByText(/5,000/i)).toBeInTheDocument();
+    const { integer: maxPaymentValue } = formatNumberByParts(15000);
+    expect(within(maxPaymentView).getByText(maxPaymentValue)).toBeInTheDocument();
     expect(
       within(maxPaymentView).getByText(/will ask the customer for upi pin verification as well\./i),
     ).toBeInTheDocument();
@@ -105,7 +112,8 @@ describe('Subscription Settings', () => {
     });
 
     const view = screen.getByText(/accept payments upto:/i);
-    expect(within(view).getByText(/1,00,00,000/i)).toBeInTheDocument();
+    const { integer: viewValue } = formatNumberByParts(10000000);
+    expect(within(view).getByText(viewValue)).toBeInTheDocument();
   });
 
   test('Should not render Emandate settings if payment method is not enabled for merchant', () => {

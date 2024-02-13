@@ -12,5 +12,6 @@ export const ANALYTICS = {
   OBJECT: { I18N: 'i18n' },
   ACTION: {
     PHONE_NUMBER: 'phone number',
+    CURRENCY: 'currency',
   },
 };
