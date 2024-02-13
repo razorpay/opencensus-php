@@ -16923,7 +16923,8 @@ class Route
             'workflow_state_callback',
             'workflow_state_callback_update',
             'merchant_assign_pricing_internal',
-            'cb_invoice_workflow_callback'
+            'cb_invoice_workflow_callback',
+            'merchant_fetch_internal_users'
         ],
 
         'pg_router' => [
