@@ -1299,6 +1299,7 @@ class Processor
                                         Card\Entity::TOKEN_IIN              => $card->getTokenIin(),
                                         Card\Entity::LAST4                  => $card->getLast4(),
                                         Card\Entity::TOKENISED              => true,
+                                        Card\Entity::REWARD                 => $input['card']['reward']
                                     ];
                                     $input[Payment\Entity::CARD] = $cardInput;
                                     $input[Payment\Entity::API_VAULT] = $card->getVault();   // We are passing API_VALUT key to CPS to send it to router so that it can provide us terminals acc.
@@ -1654,7 +1655,8 @@ class Processor
             Card\Entity::TOKENISED              => true,
             Card\Entity::VAULT                  => "rzpvault",
             Card\Entity::CVV                    => $input['card']['cvv'] ?? null,
-            Card\Entity::TOKEN_PROVIDER         => 'Razorpay'
+            Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
+            Card\Entity::REWARD                 => $input['card']['reward'],
         ];
 
         if ( $card->getVault() === Card\Vault::HDFC)

@@ -116,6 +116,8 @@ class Entity extends Base\PublicEntity
     const TOKEN_REFERENCE_NUMBER           = 'token_reference_number';
     const TOKEN_REFERENCE_ID           = 'token_reference_id';
 
+    const REWARD = 'reward';
+
     const RELATION_GLOBAL_CARD = 'globalCard';
 
     const TEMP_VAULT_TOKEN_PREFIX = 'pay_';
