@@ -6548,7 +6548,7 @@ class Core extends Base\Core
         {
             if ($this->isSubCategoryExcluded($merchant, $merchantDetails->getBusinessSubcategory(), $businessType) === true)
             {
-                return Status::ACTIVATED_MCC_PENDING;
+                return ($currentActivationFlow === ActivationFlow::GREYLIST) ? Status::UNDER_REVIEW : Status::ACTIVATED_MCC_PENDING;
             }
 
             if ($this->hasAppUrls($merchantDetails) === false)
