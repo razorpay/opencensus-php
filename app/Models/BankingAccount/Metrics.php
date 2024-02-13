@@ -15,6 +15,14 @@ class Metrics extends Core
 
     const BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_FAILED = 'banking_account_gateway_balance_update_job_failed';
 
+    const BANKING_ACCOUNT_PRIORITY_GATEWAY_BALANCE_DISPATCH = 'banking_account_priority_gateway_balance_dispatch';
+    const BANKING_ACCOUNT_PRIORITY_GATEWAY_BALANCE_INIT     = 'banking_account_priority_gateway_balance_init';
+    const BANKING_ACCOUNT_PRIORITY_GATEWAY_BALANCE_SUCCESS  = 'banking_account_priority_gateway_balance_success';
+    const BANKING_ACCOUNT_PRIORITY_GATEWAY_BALANCE_FAILURE  = 'banking_account_priority_gateway_balance_failure';
+
+    // histogram
+    const BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_LATENCY    = 'banking_account_gateway_balance_update_latency.histogram';
+
     public function pushErrorMetrics($labelName, $dimensions)
     {
         try

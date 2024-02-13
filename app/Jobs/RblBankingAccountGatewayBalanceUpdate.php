@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
+use RZP\Models\BankingAccount\Metrics;
 use RZP\Models\Settlement\SlackNotification;
 
 class RblBankingAccountGatewayBalanceUpdate extends Job
@@ -44,15 +45,23 @@ class RblBankingAccountGatewayBalanceUpdate extends Job
 
             $BACore = new BankingAccount\Core;
 
+            $isHighPriorityBalanceUpdate = false;
+
+            if (str_contains($this->queue, 'high-priority'))
+            {
+                $isHighPriorityBalanceUpdate = true;
+            }
+
             // Worker will directly delete the message based on output from gatewayBalanceUpdateDeleteMode function.
             if ($BACore->gatewayBalanceUpdateDeleteMode($this->params[BankingAccount\Entity::CHANNEL]) === true)
             {
                 $this->trace->info(
                     TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE,
                     [
-                        'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
-                        'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
-                        'queue_name'  => $this->queue,
+                        'channel'          => $this->params[BankingAccount\Entity::CHANNEL],
+                        'merchant_id'      => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                        'queue_name'       => $this->queue,
+                        'is_high_priority' => $isHighPriorityBalanceUpdate
                     ]);
             }
             else
@@ -60,12 +69,20 @@ class RblBankingAccountGatewayBalanceUpdate extends Job
                 $this->trace->info(
                     TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_INIT,
                     [
-                        'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
-                        'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
-                        'queue_name'  => $this->queue,
+                        'channel'          => $this->params[BankingAccount\Entity::CHANNEL],
+                        'merchant_id'      => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                        'queue_name'       => $this->queue,
+                        'is_high_priority' => $isHighPriorityBalanceUpdate
                     ]);
 
-                $response = $BACore->fetchAndUpdateGatewayBalanceWrapper($this->params);
+                if ($isHighPriorityBalanceUpdate == true)
+                {
+                    $this->trace->count(Metrics::BANKING_ACCOUNT_PRIORITY_GATEWAY_BALANCE_INIT, [
+                        'channel' => $this->params[BankingAccount\Entity::CHANNEL]
+                    ]);
+                }
+
+                $response = $BACore->fetchAndUpdateGatewayBalanceWrapper($this->params, $isHighPriorityBalanceUpdate);
             }
 
             $this->delete();
@@ -77,9 +94,10 @@ class RblBankingAccountGatewayBalanceUpdate extends Job
                 TraceCode::ERROR_EXCEPTION,
                 TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_FAILED,
                 [
-                    'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
-                    'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
-                    'queue_name'  => $this->queue,
+                    'channel'          => $this->params[BankingAccount\Entity::CHANNEL],
+                    'merchant_id'      => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                    'queue_name'       => $this->queue,
+                    'is_high_priority' => $isHighPriorityBalanceUpdate
                 ]);
 
             $this->checkRetry();

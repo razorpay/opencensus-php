@@ -1716,7 +1716,7 @@ class Core extends Base\Core
         }
     }
 
-    public function fetchAndUpdateGatewayBalanceWrapper(array $input)
+    public function fetchAndUpdateGatewayBalanceWrapper(array $input, $isHighPriorityBalanceUpdate = false)
     {
         $validator = new Validator();
 
@@ -1728,7 +1728,25 @@ class Core extends Base\Core
         $basDetails = $this->repo->banking_account_statement_details
             ->getDirectBasDetailEntityByMerchantIdAndChannel($merchantId, $channel);
 
+        /** @var BASDetails\Entity $basDetails */
+        $lastBalanceUpdate = $basDetails->getBalanceLastFetchedAt();
+
+        /** @var BASDetails\Entity response */
         $response = $this->fetchAndUpdateGatewayBalance($basDetails);
+
+        if ($isHighPriorityBalanceUpdate === true && $response->getBalanceLastFetchedAt() == $lastBalanceUpdate)
+        {
+            $this->trace->count(Metrics::BANKING_ACCOUNT_PRIORITY_GATEWAY_BALANCE_FAILURE, [
+                'channel' => $channel
+            ]);
+        }
+
+        $latency = $lastBalanceUpdate !== null ?
+            $response->getBalanceLastFetchedAt() - $lastBalanceUpdate : 0;
+
+        $this->trace->histogram(Metrics::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_LATENCY, $latency, [
+            'is_priority_update' => $isHighPriorityBalanceUpdate
+        ]);
 
         return $response;
     }
@@ -3656,6 +3674,12 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_GATEWAY_PRIORITY_BALANCE_UPDATE_JOB_COMPLETE, [
+            'total_merchants'     => sizeof($merchantIdsToDispatch),
+            'successful_dispatch' => sizeof($successfullyDispatchedMerchantIds),
+            'priority_merchants'  => sizeof($priorityMerchants)
+        ]);
+
+        $this->trace->count(Metrics::BANKING_ACCOUNT_PRIORITY_GATEWAY_BALANCE_DISPATCH, [
             'total_merchants'     => sizeof($merchantIdsToDispatch),
             'successful_dispatch' => sizeof($successfullyDispatchedMerchantIds),
             'priority_merchants'  => sizeof($priorityMerchants)

@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
+use RZP\Models\BankingAccount\Metrics;
 
 class RblUniqueGatewayBalanceUpdate extends Job implements ShouldBeUnique
 {
@@ -53,12 +54,20 @@ class RblUniqueGatewayBalanceUpdate extends Job implements ShouldBeUnique
 
             $BACore = new BankingAccount\Core;
 
+            $isHighPriorityBalanceUpdate = false;
+
+            if (str_contains($this->queue, 'high-priority'))
+            {
+                $isHighPriorityBalanceUpdate = true;
+            }
+
             if ($BACore->gatewayBalanceUpdateDeleteMode($this->params[BankingAccount\Entity::CHANNEL]) === true)
             {
                 $this->trace->info(TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE, [
-                    'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
-                    'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
-                    'queue_name'  => $this->queue,
+                    'channel'          => $this->params[BankingAccount\Entity::CHANNEL],
+                    'merchant_id'      => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                    'queue_name'       => $this->queue,
+                    'is_high_priority' => $isHighPriorityBalanceUpdate
                 ]);
 
                 $this->delete();
@@ -67,13 +76,21 @@ class RblUniqueGatewayBalanceUpdate extends Job implements ShouldBeUnique
             }
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_INIT, [
-                'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
-                'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
-                'job_name'    => $this->getJobName(),
-                'queue_name'  => $this->queue,
+                'channel'          => $this->params[BankingAccount\Entity::CHANNEL],
+                'merchant_id'      => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                'job_name'         => $this->getJobName(),
+                'queue_name'       => $this->queue,
+                'is_high_priority' => $isHighPriorityBalanceUpdate
             ]);
 
-            $BACore->fetchAndUpdateGatewayBalanceWrapper($this->params);
+            if ($isHighPriorityBalanceUpdate == true)
+            {
+                $this->trace->count(Metrics::BANKING_ACCOUNT_PRIORITY_GATEWAY_BALANCE_INIT, [
+                    'channel' => $this->params[BankingAccount\Entity::CHANNEL]
+                ]);
+            }
+
+            $BACore->fetchAndUpdateGatewayBalanceWrapper($this->params, $isHighPriorityBalanceUpdate);
         }
         catch (\Throwable $exception)
         {
@@ -82,10 +99,11 @@ class RblUniqueGatewayBalanceUpdate extends Job implements ShouldBeUnique
                 TraceCode::ERROR_EXCEPTION,
                 TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_FAILED,
                 [
-                    'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
-                    'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
-                    'job_name'    => $this->getJobName(),
-                    'queue_name'  => $this->queue,
+                    'channel'          => $this->params[BankingAccount\Entity::CHANNEL],
+                    'merchant_id'      => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                    'job_name'         => $this->getJobName(),
+                    'queue_name'       => $this->queue,
+                    'is_high_priority' => $isHighPriorityBalanceUpdate
                 ]);
         }
 
