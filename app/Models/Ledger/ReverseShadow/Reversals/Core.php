@@ -149,15 +149,23 @@ class Core extends Base\Core
             $moneyParams[Constants::TAX]                = strval($tax);
             $moneyParams[Constants::REVERSED_AMOUNT]    = "0";
 
-            if ($isRefundCredits === true)
+            if($refund->merchant->isPostpaid() === true)
             {
-                $rule[Constants::REVERSE_REFUND_ACCOUNTING]     = Constants::INSTANT_REFUND_REVERSED_CREDITS;
-                $moneyParams[Constants::REFUND_CREDITS]         = strval($commission + $tax);
+                $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($commission + $tax);
+                $rule[Constants::REVERSE_REFUND_ACCOUNTING]     = Constants::INSTANT_REFUND_REVERSED_POSTPAID;
             }
             else
             {
-                $rule[Constants::REVERSE_REFUND_ACCOUNTING]         = Constants::INSTANT_REFUND_REVERSED;
-                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($commission + $tax);
+                if ($isRefundCredits === true)
+                {
+                    $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_REVERSED_CREDITS;
+                    $moneyParams[Constants::REFUND_CREDITS] = strval($commission + $tax);
+                }
+                else
+                {
+                    $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_REVERSED;
+                    $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($commission + $tax);
+                }
             }
         }
         else

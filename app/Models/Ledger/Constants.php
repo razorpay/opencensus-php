@@ -49,6 +49,7 @@ class Constants
     const REFUND_PROCESSED_WITH_CREDITS_INSTANT             = "instant_refund_processed_with_credits";
     const REFUND_REVERSED_CREDITS                           = "refund_reversed_credits";
     const INSTANT_REFUND_REVERSED_CREDITS                   = "instant_refund_reversed_credits";
+    const INSTANT_REFUND_REVERSED_POSTPAID                  = "instant_refund_reversed_postpaid";
     const INSTANT_REFUND_REVERSED                           = "instant_refund_reversed";
     const REFUND_ACCOUNTING                                 = "refund_accounting";
     const REFUND_CREDITS                                    = "refund_credits";
