@@ -276,7 +276,7 @@ class RateLimiterController extends EdgeThrottleController
      */
     protected function getRateLimit(string $id)
     {
-        $path = '/limits?id ='.$id;
+        $path = '/limits?id='.$id;
         $response = $this->fetchResponse('GET', $path);
 
 
