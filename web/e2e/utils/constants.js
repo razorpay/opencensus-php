@@ -20,6 +20,7 @@ const StorageStatePath = {
   INTERNATIONAL_ACTIVATION_STATE: `${BASE_PATH}/international-activation.json`,
   WALLET_REPORTS_LOGIN_STATE: `${BASE_PATH}/mobile-wallet-reports-login.json`,
   MOBILE_TEST_GCMS_STATE: `${BASE_PATH}/mobile-test-mode-gcms.json`,
+  CURLEC_TEST_LOGIN_STATE: `${BASE_PATH}/curlec-test-mode-login.json`,
 };
 
 const routes = {
@@ -195,6 +196,15 @@ const PosCredentials = [
   },
 ];
 
+const CurlecCredentials = [
+  {
+    type: 'curlec-merchant-desktop-test-mode-login.json',
+    username: process.env.CURLEC_TEST_MODE_USERNAME,
+    password: process.env.CURLEC_TEST_MODE_PASSWORD,
+    storagePath: StorageStatePath.CURLEC_TEST_LOGIN_STATE,
+  },
+];
+
 module.exports = {
   routes,
   EmailCredentials,
@@ -203,4 +213,5 @@ module.exports = {
   MagicCheckoutCredentials,
   StorageStatePath,
   PosCredentials,
+  CurlecCredentials,
 };

@@ -77,6 +77,14 @@ const paymentLinksUIData = {
   },
 };
 
+const curlecPaymentLinksUIData = {
+  ...paymentLinksUIData.default,
+  customer: {
+    contact: '132758792',
+    email: 'qa.testing@razorpay.com',
+  },
+};
+
 const upiLinksData = {
   withoutExpiry: {
     amount: '4000',
@@ -138,4 +146,5 @@ const upiLinksData = {
 module.exports = {
   paymentLinksUIData,
   upiLinksData,
+  curlecPaymentLinksUIData,
 };

@@ -3,6 +3,7 @@ const {
   EmailCredentials,
   MobileCredentials,
   ActivatedNotIECredentials,
+  CurlecCredentials,
   MagicCheckoutCredentials,
   PosCredentials,
 } = require('./constants');
@@ -40,15 +41,21 @@ function getReporter() {
   ];
 }
 
-function getBaseUrl() {
+function getBaseUrl(customDomain) {
   const baseUrl = process.env.E2E_BASE_URL || 'https://dashboard.dev.razorpay.in';
   const label = process.env.DEVSTACK_LABEL;
+  const url = new URL(baseUrl);
+  const subDomain = url.hostname.split('.')[0];
+
   if (label) {
-    const url = new URL(baseUrl);
-    const subDomain = url.hostname.split('.')[0];
-    return baseUrl.replace(subDomain, `${subDomain}-${label}`);
+    const newSubDomainURL = customDomain
+      ? `${subDomain}-${label}-${customDomain}`
+      : `${subDomain}-${label}`;
+    return baseUrl.replace(subDomain, newSubDomainURL);
   }
-  return baseUrl;
+
+  const newSubDomainURL = customDomain ? `${subDomain}-${customDomain}` : `${subDomain}`;
+  return baseUrl.replace(subDomain, newSubDomainURL);
 }
 
 function getCredentials() {
@@ -56,6 +63,7 @@ function getCredentials() {
     emailCred: EmailCredentials,
     mobileCred: MobileCredentials,
     activatedNotIe: ActivatedNotIECredentials,
+    curlecCred: CurlecCredentials,
     magicCheckout: MagicCheckoutCredentials,
     posCredentials: PosCredentials,
   };
@@ -79,6 +87,7 @@ export function getProjects() {
   }
 
   browsers.forEach((browser) => {
+    const curlecProjectName = `MY-Login:${browser.defaultBrowserType}`;
     projects.push(
       {
         name: `Login:${browser.defaultBrowserType}`,
@@ -86,11 +95,29 @@ export function getProjects() {
         use: browser,
       },
       {
+        name: curlecProjectName,
+        grep: /@flow=MY-auth/,
+        use: {
+          ...browser,
+          baseURL: getBaseUrl('curlec'),
+        },
+      },
+      {
         name: 'Custom flow',
         use: browser,
         dependencies: [`Login:${browser.defaultBrowserType}`],
         grep: grep ? new RegExp(grep) : undefined,
         grepInvert: grepInvert ? new RegExp(grepInvert) : undefined,
+      },
+      {
+        name: 'MY-Custom flow',
+        dependencies: [curlecProjectName],
+        grep: /@country=MY/,
+        grepInvert: grepInvert ? new RegExp(grepInvert) : undefined,
+        use: {
+          ...browser,
+          baseURL: getBaseUrl('curlec'),
+        },
       },
     );
   });

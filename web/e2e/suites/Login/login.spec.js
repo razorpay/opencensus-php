@@ -1,20 +1,19 @@
-import { hideSearchFTUXBannerByLocalStorage } from '../utils';
+import { hideSearchFTUXBannerByLocalStorage } from '../../utils';
 import {
   hideCustomBannersFromState,
   hideCustomerGluGame,
   loginByEmail,
   loginByMobile,
   showStreakRewardTileInAccountPage,
-} from '../utils/common';
-import { routes } from '../utils/constants';
+} from '../../utils/common';
+import { routes } from '../../utils/constants';
 
 const { test, expect } = require('@playwright/test');
 
-const { getCredentials } = require('../utils/config');
+const { getCredentials } = require('../../utils/config');
+const { emailCred, activatedNotIe, mobileCred, magicCheckout, posCredentials } = getCredentials();
 
 test.describe.parallel('Dashboard login flow @flow=auth', () => {
-  const { emailCred, activatedNotIe, mobileCred, magicCheckout, posCredentials } = getCredentials();
-
   // testing for multiple credentials using email login
   for (const cred of emailCred) {
     test(`should login with email in ${cred.type} mode: @priority=critical @duration=long`, async ({
