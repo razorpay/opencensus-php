@@ -11,7 +11,7 @@ use RZP\Error;
 
 class BinService
 {
-    const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
+    const X_RAZORPAY_TASKID = 'grpc-metadata-X-Task-Id';
 
     const X_NAMESPACE = 'grpc-metadata-x-namespace';
 

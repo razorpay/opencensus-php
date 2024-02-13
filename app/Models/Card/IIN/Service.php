@@ -37,13 +37,13 @@ class Service extends Base\Service
     {
         $iin = $this->repo->iin->findOrFail($id);
 
-        $this->formatEditInput($iin, $input);
-
         //adding bin service update for dual write
         if ($this->shouldDualWrite() === true)
         {
             $this->updateBinServiceData($iin, $input);
         }
+
+        $this->formatEditInput($iin, $input);
 
         $iin->edit($input);
 
