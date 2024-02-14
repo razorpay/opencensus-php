@@ -213,19 +213,6 @@ class Service extends Base\Service
 
         (new Notifier)->notifyByEmailAndSms($paymentLink, $notifyInput);
 
-        $batch = $this->repo->payment_page_record->getBatchesByPaymentPageId($batchId);
-
-        if(in_array('sms',$input['notify_on']) === true)
-        {
-            $batchSettings['sms_notify'] = 1;
-        }
-        if(in_array('email',$input['notify_on']) === true)
-        {
-            $batchSettings['email_notify'] = 1;
-        }
-
-        $this->app->batchService->forwardNotify($batchId, $batchSettings, $this->merchant);
-
         $redis->setex($redisKey, 86400, time());
 
     }
