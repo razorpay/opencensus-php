@@ -323,8 +323,6 @@ class UpiKotakQRCodeTest extends TestCase
 
     public function testQrPaymentOnIntentSubType()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::MAKE_QR_PAYMENT_OF_TYPE_INTENT => RazorxTreatment::RAZORX_VARIANT_ON]);
-
         $this->createQrCode(
             [
                 'usage'          => 'single_use',

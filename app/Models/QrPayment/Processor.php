@@ -405,10 +405,7 @@ class Processor extends Base\Core
             {
                 $paymentArray['vpa'] = $this->gatewayInput[GatewayResponseParams::VPA];
 
-                if ($this->checkIfExperimentEnabledtoEnableIntent($this->qrCode->merchant->getId()) === true)
-                {
-                    $paymentArray['upi']['flow'] = 'intent';
-                }
+                $paymentArray['upi']['flow'] = 'intent';
             }
         }
 
@@ -427,20 +424,6 @@ class Processor extends Base\Core
         }
 
         return $paymentArray;
-    }
-
-    public function checkIfExperimentEnabledtoEnableIntent($merchantId)
-    {
-        $variant = $this->app['razorx']->getTreatment($merchantId,
-                                                      RazorxTreatment::MAKE_QR_PAYMENT_OF_TYPE_INTENT,
-                                                      $this->mode);
-
-        if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function getDummyCardDetails()

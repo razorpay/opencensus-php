@@ -2192,8 +2192,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrPaymentOnIntentSubType()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::MAKE_QR_PAYMENT_OF_TYPE_INTENT => RazorxTreatment::RAZORX_VARIANT_ON]);
-
         $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
 
         $qrCodeId = $qrCode['id'];
