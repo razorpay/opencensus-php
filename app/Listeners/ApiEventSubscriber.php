@@ -6,7 +6,6 @@ use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Event;
-use RZP\Models\Merchant\OneClickCheckout\Shopify\Decomp as MagicDecomp;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout;
 use RZP\Models\QrCode;
@@ -573,39 +572,15 @@ class ApiEventSubscriber extends Base\Core
                 if ($payment->isAuthorized() === true)
                 {
                     $dispatched = true;
-                    $publishData = [
+
+                    OneCCShopifyCreateOrder::dispatch([
                         'mode'                => $this->mode,
                         'razorpay_order_id'   => $order->getPublicId(),
                         'razorpay_payment_id' => $payment->getPublicId(),
                         'merchant_id'         => $payment->getMerchantId(),
                         'type'                => 'create_order',
                         'dispatch_time'       => millitime() - $start,
-                    ];
-                    $waitTime = 45;
-                    $magicDecomp = new MagicDecomp();
-                    $useMcs = $magicDecomp->useMCSForAsyncCompleteCheckout();
-                    if ($useMcs === true)
-                    {
-                        try
-                        {
-                            $magicDecomp->placeShopifyOrderFromMCSQueue($publishData, $waitTime);
-                        }
-                        catch (\Throwable $ex)
-                        {
-                            OneCCShopifyCreateOrder::dispatch($publishData)->delay(now()->addSeconds($waitTime));
-                            $this->trace->traceException(
-                                $ex,
-                                Trace::CRITICAL,
-                                TraceCode::SHOPIFY_1CC_MCS_COMPLETE_CHECKOUT_SQS_PUSH_FAILED,
-                                [
-                                    'data' => $publishData,
-                                ]);
-                        }
-                    }
-                    else
-                    {
-                        OneCCShopifyCreateOrder::dispatch($publishData)->delay(now()->addSeconds($waitTime));
-                    }
+                    ])->delay(now()->addSeconds(45));
 
                     // To debug payloads not being handled properly in sqs
                     $this->trace->info(
@@ -613,7 +588,6 @@ class ApiEventSubscriber extends Base\Core
                         [
                             'step'                => 'dispatch',
                             'type'                => 'create_order',
-                            'use_mcs'             => $useMcs,
                             'dispatched'          => $dispatched,
                             'mode'                => $this->mode,
                             'razorpay_order_id'   => $order->getPublicId(),
