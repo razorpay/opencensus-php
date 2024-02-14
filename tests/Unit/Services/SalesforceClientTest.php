@@ -39,6 +39,11 @@ class SalesforceClientTest extends TestCase
     {
         $merchant = $this->fixtures->create('merchant');
 
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'    => $merchant->getId(),
+            'gstin'          => 'Dummy gstin number'
+        ]);
+
         $input = [
             'business_name'      => 'Dummy Business Name',
             'business_type'      => 'Dummy Business Type',
@@ -52,9 +57,12 @@ class SalesforceClientTest extends TestCase
             'final_utm_source'   => 'random_source',
             'final_utm_campaign' => 'random_campaign',
             'final_page'         => 'www.random.com',
+            'gstin'              => 'Dummy gstin number'
         ];
 
         $payload = $this->salesforceClient->payloadGenerationForPreSignupDetails($input, $merchant);
+
+        $this->assertEquals('Dummy gstin number', $payload['gst_number']);
 
         $this->assertBooleanValuesAsInt($payload);
     }

@@ -417,6 +417,16 @@ class SalesForceClient
             $this->checkAndInsert($input, $key, $data, $value);
         }
 
+        /** @var Merchant\Detail\Entity $merchantDetail */
+
+        $merchantDetail = $merchant->merchantDetail;
+        $gstin = $merchantDetail->getGstin();
+
+        if (!empty($gstin))
+        {
+            $data['gst_number'] = $gstin;
+        }
+
         return $data;
     }
 

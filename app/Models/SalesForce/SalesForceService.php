@@ -145,6 +145,16 @@ class SalesForceService extends Base\Service {
                     'signup_date'           => date($DATE_FORMAT, $merchant->getCreatedAt()),
                     'event_submission_date' => date($DATE_FORMAT)
                 ];
+
+                /** @var Merchant\Detail\Entity $merchantDetail */
+
+                $merchantDetail = $merchant->merchantDetail;
+                $gstin = $merchantDetail->getGstin();
+
+                if (!empty($gstin)) {
+                    $eventPayload['gst_number'] = $gstin;
+                }
+
                 $eventPayload = array_merge($eventPayload, $salesForceEventRequestDTO->getEventProperties());
                 $this->addPartnerAndSourceDetailsToPayloadIfApplicable($eventPayload, $salesForceEventRequestType->getValue(), $merchant);
                 return $eventPayload;
