@@ -59,6 +59,7 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\M2MReferral\Status as M2MEntityStatus;
 use RZP\Models\Merchant\M2MReferral\Entity as M2MReferralEntity;
+use RZP\Models\ClarificationDetail\Service as ClarificationDetailService;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\BvsValidation\Entity as BVSEntity;
 use RZP\Models\Merchant\Cron\Constants as CronConstants;
@@ -16435,5 +16436,77 @@ class CoreTest extends TestCase
         $businessDetail = $this->getDbEntity('merchant_business_detail', ['merchant_id' => $merchant->getId()]);
 
         $this->assertEquals(Status::UNDER_REVIEW, $merchantDetail[Entity::ACTIVATION_STATUS]);
+    }
+    
+    public function testPGOSMerchantSaveMerchantResponseToClarifications()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+        
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+        
+        $merchantId = $merchantDetails->getId();
+        
+        $input = [
+            'poi_verification_status'                => 'verified',
+            'poa_verification_status'                => 'verified',
+            'bank_details_verification_status'       => 'verified',
+            'gstin_verification_status'              => 'not_matched',
+            'shop_establishment_verification_status' => 'incorrect_details',
+            'onboarding_type'                        => null,
+            'submit'                                 => 0
+        ];
+        
+        // Create a mock object for the NeedsClarificationProxyController class
+        $pgosProxyController = Mockery::mock('RZP\Http\Controllers\NeedsClarificationProxyController');
+
+// Define the expectations for the handlePGOSProxyRequests method
+        $pgosProxyController
+            ->shouldReceive('handlePGOSProxyRequests')
+            ->andReturn([
+                            "code"                   => "internal",
+                            "msg"                    => "validation_failure: Processing failed because input does not have all fields",
+                            "downstream_status_code" => 500,
+                            "meta"                   => ["cause" => "errors.Error"]
+                        ]);
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'id'           => $merchantId,
+            'country_code' => 'IN'
+        ]);
+        
+        $this->app['basicauth']->setMerchant($merchant);
+        
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
+        
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata'        => [
+                'service' => 'pgos'
+            ]
+        ]);
+        
+        try
+        {
+            (new ClarificationDetailService())->saveMerchantResponseToClarifications($input, $merchantId);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertNotNull($e);
+            $this->assertEquals($e->getError()->getInternalErrorCode(), "SERVER_ERROR_PGOS_PROCESSNG_FAILED");
+            $this->assertEquals($e->getError()->getPublicErrorCode(), "SERVER_ERROR");
+            
+        }
     }
 }

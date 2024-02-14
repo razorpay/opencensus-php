@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\Entity as DEntity;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 
 class Service extends Base\Service
 {
@@ -296,7 +297,11 @@ class Service extends Base\Service
                     'response'  => $response,
                     'payload'   => $pgosInput,
                 ]);
-
+               
+                $pgosProxyController = new MerchantOnboardingProxyController();
+                // check errors and rethrow them
+                $pgosProxyController->errorHandler($response);
+                
                 return $response;
             }
         }
