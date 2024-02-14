@@ -926,7 +926,7 @@ class Service extends Base\Service
     // for JPMC repatriation
     // files sent by JPMC are encrypted
     // JPMC can send multiple files
-    // 
+    //
     public function processLambdaJpmcSettlementRepatriation(array $input)
     {
         RuntimeManager::setMaxExecTime(7200);
@@ -970,7 +970,7 @@ class Service extends Base\Service
                 return ['success' => true, 'file_name' => $fileName, 'message' => 'JPMC sent different reverse file'];
             }
 
-            if (($input['partner'] === self::JPMC) && 
+            if (($input['partner'] === self::JPMC) &&
                 ($this->checkValidFile($fileName, self::VALID_JPMC_REPAT_FILE) === true))
             {
                 $this->getDecryptedFile($fileDetails);
@@ -1210,7 +1210,9 @@ class Service extends Base\Service
         }
 
         $response = false;
-        if ($amount == $settlementAmount){
+        //$amount is double, $settlementAmount is integer, == comparison cannot be used.
+        // As both values are in paise, rounding them off won't make any difference.
+        if (round($amount,3) == round($settlementAmount,3)){
             $response = true;
         }
 
