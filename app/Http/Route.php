@@ -11,6 +11,7 @@ use RZP\Models\IdempotencyKey;
 use RZP\Http\Request\Requests;
 use RZP\Foundation\Application;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Base\Database\LagChecker\HeartbeatLagChecker;
@@ -19080,6 +19081,11 @@ class Route
         'merchant_onboarding_crons'                        =>  'wda_merchant_onboarding_crons',
     ];
 
+    protected static $hostMapping = array(
+        "prod-api-int.razorpay.com" => "api.razorpay.com",
+        "api-dark-int.razorpay.com" => "api-dark.razorpay.com",
+    );
+
     /**
      * @var Router
      */
@@ -19106,6 +19112,8 @@ class Route
         $this->ba = $app['basicauth'];
 
         $this->trace = $app['trace'];
+
+        $this->razorx = $app['razorx'];
     }
 
     public function getCurrentRouteName()
@@ -19315,7 +19323,45 @@ class Route
 
         $schema = $request->getScheme() . '://';
 
-        $host = $request->getHost();
+        $requestHost = $request->header('Host');
+
+        $requestNewHost = $request->getHost();
+
+
+        $shouldGoViaNewFlow = false;
+
+        if ($this->ba->getMerchantId() != null and $this->app->runningUnitTests() === false)
+        {
+            $variantForFeature = $this->razorx->getTreatment($this->ba->getMerchantId(),
+                RazorxTreatment::STOP_HOST_HEADER_INJECTION, app('request.ctx')->getMode());
+
+            $this->trace->info(
+                TraceCode::RAZORX_EXPERIMENT_FOR_HOST_INJECTION,
+                [
+                    'varientForFeature' => strtolower($variantForFeature),
+                    'result' => strtolower($variantForFeature) == RazorxTreatment::RAZORX_VARIANT_ON,
+                ]
+            );
+
+            $shouldGoViaNewFlow = strtolower($variantForFeature) == RazorxTreatment::RAZORX_VARIANT_ON;
+        }
+
+        if ($shouldGoViaNewFlow == true)
+        {
+            if(array_key_exists($requestHost, self::$hostMapping))
+            {
+                $host = self::$hostMapping[$requestHost];
+            }
+            else
+            {
+                $host = $requestHost;
+            }
+        }
+        else
+        {
+            $host = $requestNewHost;
+        }
+
         $this->trace->info(
             TraceCode::HEADER_LOGGER_FOR_PARITY,
             [
