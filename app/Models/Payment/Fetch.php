@@ -57,7 +57,8 @@ class Fetch extends BaseFetch
             Entity::SETTLED_BY                   => 'sometimes',
             Entity::INTL_BANK_TRANSFER           => 'sometimes|in:0,1',
             EsRepository::QUERY                  => 'sometimes|string|min:1|max:100',
-            Entity::FLOW                         => 'sometimes|string|in:in_app,intent,collect'
+            Entity::FLOW                         => 'sometimes|string|in:in_app,intent,collect',
+            Constant::SOURCE_CHANNEL             => 'sometimes|string'
         ],
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
@@ -90,6 +91,7 @@ class Fetch extends BaseFetch
             Entity::VIRTUAL_ACCOUNT,
             Entity::VA_TRANSACTION_ID,
             Entity::INTL_BANK_TRANSFER,
+            Constant::SOURCE_CHANNEL,
         ],
         AuthType::PROXY_AUTH => [
             Entity::STATUS,
@@ -106,6 +108,7 @@ class Fetch extends BaseFetch
             Entity::FLOW,
             Entity::ORDER_ID,
             EsRepository::QUERY,
+            Constant::SOURCE_CHANNEL,
         ],
         AuthType::ADMIN_AUTH => [
             Entity::VERIFIED,
@@ -129,6 +132,7 @@ class Fetch extends BaseFetch
             Token\Entity::RECURRING_STATUS,
             Entity::VPA,
             Terminal\Entity::GATEWAY_TERMINAL_ID,
+            Constant::SOURCE_CHANNEL,
         ],
     ];
 

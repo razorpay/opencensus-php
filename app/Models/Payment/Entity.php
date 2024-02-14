@@ -2342,7 +2342,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function getSourceChannel()
     {
-        return $this->getAttribute(self::SOURCE_CHANNEL);
+        $sourceChannel = $this->getAttribute(self::SOURCE_CHANNEL);
+
+        if ($sourceChannel === null)
+        {
+            $sourceChannel = $this->getAttribute(Payment\Constant::SOURCE_CHANNEL);
+        }
+
+        return $sourceChannel;
     }
 
     /**
