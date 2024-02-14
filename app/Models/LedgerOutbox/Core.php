@@ -995,7 +995,7 @@ class Core extends Base\Core
                                         LedgerConstants::TRANSFER_ID  => $transfer->getPublicId(),
                                         'transfer_input_to_queue'     => $input
                                     ]);
-    
+
                             // transfer transactions created via queue in async
                             }
                             else
@@ -1081,7 +1081,12 @@ class Core extends Base\Core
 
                         list($txn, $merchantBalance) = $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);
 
-                        $paymentProcessor->processTransferIfApplicable($payment);
+                        $this->handleAsyncUpdateBalanceIfApplicable($payment, $txn);
+
+                         if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
+                         {
+                             $paymentProcessor->processTransferIfApplicable($payment);
+                         }
 
                         return $txn;
                     });

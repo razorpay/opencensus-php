@@ -172,11 +172,6 @@ class Core extends Base\Core
             $shouldDispatchSettlementBucket = false;
         }
 
-        if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
-        {
-            $shouldDispatchSettlementBucket = true;
-        }
-
         if ($shouldDispatchSettlementBucket === true)
         {
             // dispatch this transaction for settlement.

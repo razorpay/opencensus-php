@@ -209,11 +209,6 @@ class Payment extends Base
 
             return false;
         }
-        else if ($this->source->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
-        {
-            $this->txn->setBalanceUpdated(true);
-            return true;
-        }
         else if ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true)
         {
             return false;
@@ -226,7 +221,6 @@ class Payment extends Base
             return false;
         }
 
-
         $this->txn->setBalanceUpdated(true);
 
         return true;
@@ -235,11 +229,6 @@ class Payment extends Base
 
     protected function shouldMoveTxnFillToAsync(): bool
     {
-        if($this->source->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
-        {
-            return false;
-        }
-
         return ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true);
     }
 
