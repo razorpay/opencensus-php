@@ -689,6 +689,11 @@ class Service extends Base\Service
 
     public function routeRequestForCouponDecomp(string $platform): bool
     {
+        if ((app()->isEnvironmentProduction() === true && $this->mode === Mode::TEST))
+        {
+            return false;
+        }
+
         $useMCS = false;
         if ($platform === Constants::SHOPIFY) {
             $useMCS = (new SplitzExperimentEvaluator())->useMCSForShopifyApplyCouponDecomposition();
@@ -703,6 +708,11 @@ class Service extends Base\Service
 
     public function routeRequestForRemoveCouponDecomp(string $platform): bool
     {
+        if ((app()->isEnvironmentProduction() === true && $this->mode === Mode::TEST))
+        {
+            return false;
+        }
+
         $useMCS = false;
         if ($platform === Constants::SHOPIFY) {
             $useMCS = (new SplitzExperimentEvaluator())->useMCSForShopifyRemoveCouponDecomposition();
