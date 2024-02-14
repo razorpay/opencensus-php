@@ -119,7 +119,8 @@ class Ledger
         'fetchByTransactor'                     => 'FetchByTransactor',
         'fetchById'                             => 'FetchById',
         'fetchByEntitiesAndMerchantID'          => 'FetchByEntitiesAndMerchantID',
-        'updateAccountByEntitiesAndMerchantID'  => 'UpdateByEntitiesAndMerchantID'
+        'updateAccountByEntitiesAndMerchantID'  => 'UpdateByEntitiesAndMerchantID',
+        'fetchInBulkByEntitiesAndMerchantID'    => 'FetchInBulkByEntitiesAndMerchantID',
     ];
 
     // Headers
@@ -862,6 +863,20 @@ class Ledger
     public function fetchAccountsByEntitiesAndMerchantID($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['fetchByEntitiesAndMerchantID'],
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $requestBody
+     * @param      $requestHeaders
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchAccountsInBulkByEntitiesAndMerchantID($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['fetchInBulkByEntitiesAndMerchantID'],
             Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 

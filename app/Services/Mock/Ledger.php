@@ -1591,4 +1591,53 @@ class Ledger extends BaseLedger
             ]
         ];
     }
+
+    /**
+     * @param      $requestBody
+     * @param      $requestHeaders
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function fetchAccountsInBulkByEntitiesAndMerchantID($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
+    {
+        $response = [
+            "merchantAccounts" => [
+                [
+                    "merchant_id" => "sampleMerchant1",
+                    "accounts" => [
+                        [
+                            "name" => "PG Reward Account - sampleMerchant1",
+                            "balance" => "20.000000",
+                            "min_balance" => "0.000000",
+                            "entities" => [
+                                "account_type" => ["payable"],
+                                "fund_account_type" => ["reward"]
+                            ]
+                        ]
+                    ]
+                ],
+                [
+                    "merchant_id" => "sampleMerchant2",
+                    "accounts" => [
+                        [
+                            "name" => "PG Merchant Balance Account - sampleMerchant2",
+                            "balance" => "100.000000",
+                            "min_balance" => "0.000000",
+                            "entities" => [
+                                "account_type" => ["payable"],
+                                "fund_account_type" => ["merchant_balance"]
+                            ]
+                        ]
+                    ]
+                ]
+
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
 }
