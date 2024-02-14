@@ -665,6 +665,15 @@ class Service extends Base\Service
                  $orderAttributes[Entity::ACCOUNT_NUMBER] = $core->getMaskedAccountNumber($accountNumber);
              }
 
+             // In case of empty offers, this is currently present as empty collection
+             // which is coming as a dictionary in response
+             // checkout service can only accept a single type
+             // Hence setting to empty array if it's not a sequential array
+             // This is used to fetch eligible offers from offer engine in checkout service
+             if (!is_sequential_array($orderAttributes["offers"])) {
+                 $orderAttributes["offers"] = [];
+             }
+
              $response['order'] = $orderAttributes;
          }
 

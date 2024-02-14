@@ -164,11 +164,7 @@ return [
                     'merchant_id' => '10000000000000',
                     'method' => 'netbanking',
                     'notes' => [],
-                    'offers' => [
-                        'count' => 0,
-                        'entity' => 'collection',
-                        'items' => [],
-                    ],
+                    'offers' => [],
                     'offer_id' => null,
                     'order_metas' => [
                         [
@@ -212,6 +208,21 @@ return [
                 ],
                 'partial_payment' => false,
             ],
+        ],
+    ],
+
+    'testOffersInFetchOrderDetailsForCheckout' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/internal/orders/checkout',
+            'content' => [
+                'expand' => [
+                    'order',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => []
         ],
     ],
 

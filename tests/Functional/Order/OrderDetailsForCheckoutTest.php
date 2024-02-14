@@ -196,7 +196,38 @@ class OrderDetailsForCheckoutTest extends TestCase
         $this->testData[__FUNCTION__]['response']['content']['order']['id'] = $orderId;
         $this->testData[__FUNCTION__]['response']['content']['order']['order_metas'][0]['order_id'] = $orderId;
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertEmpty($response["order"]["offers"]);
+    }
+
+    public function testOffersInFetchOrderDetailsForCheckout(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enablePaytm();
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer3 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'], 'type' => 'deferred']);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+            $offer3,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals($offer1->getPublicId(), $response['order']['offers'][0]);
+        $this->assertEquals($offer2->getPublicId(), $response['order']['offers'][1]);
+        $this->assertEquals($offer3->getPublicId(), $response['order']['offers'][2]);
     }
 
     public function testFetchOrderDetailsForCheckoutWithSubscriptionId(): void
