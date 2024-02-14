@@ -1830,27 +1830,27 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function decrementAmountTransferred(int $amount)
     {
+        $newAmount = $this->getAmountTransferred() - $amount;
+
+        if ($newAmount < 0 )
+        {
+            throw new Exception\LogicException(
+                'Amount transferred is going negative',
+                ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+                [
+                    'payment_id'        => $this->getId(),
+                    'amount'            => $amount,
+                ]);
+        }
+
+        $this->setAmountTransferred($newAmount);
+
         if ($this->isExternal() === true)
         {
-            $newAmount = $this->getAmountTransferred() - $amount;
-
-            if ($newAmount < 0 )
-            {
-                 throw new Exception\LogicException(
-                    'Amount transferred is going negative',
-                    ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
-                    [
-                        'payment_id'        => $this->getId(),
-                        'amount'            => $amount,
-                    ]);
-            }
-
-            $this->setAmountTransferred($newAmount);
-
             return;
         }
 
-        $this->decrement(self::AMOUNT_TRANSFERRED, $amount);
+        (new Repository)->saveOrFail($this);
     }
 
     public function setEmiSubvention(string $subvention)
