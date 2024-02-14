@@ -2110,54 +2110,44 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
         // fetch transfer again to check if txn id associated
         $transfer = $this->getDbEntity('transfer',  ['id' => $transferId]);
         $this->assertNotNull($transfer, 'transfer not found');
-        $this->assertNotNull($transfer['transaction_id'], 'debit transaction not associated with transfer');
-        $this->assertEquals('processed', $transfer['status'], 'transfer status not marked processed');
-        $this->assertEquals('pending', $transfer['settlement_status'], 'transfer settlement status not marked processed');
-        $this->assertEquals($debitJID, $transfer['transaction_id'], 'transfer txn_id not equal to debit journal_id');
+        $this->assertNull($transfer['transaction_id'], 'transfer txn associaited not found');
+        $this->assertEquals('pending', $transfer['status'], 'transfer status not marked pending');
 
         // fetch source_payment again to check if amount_transferred updated
         $sourcePayment = $this->getDbEntity('payment', ['id' => str_replace('pay_', '', $this->payment['id'])]);
         $newTransferPaymentEntity = $this->getLastEntity('transfer_payment', true);
 
         $this->assertNotNull($sourcePayment, 'source payment not found');
-        $this->assertEquals($transfer['amount'], $newTransferPaymentEntity['amount_transferred'], 'amount_transferred incorrect in source_payment ');
+        $this->assertNotEquals($transfer['amount'], $newTransferPaymentEntity['amount_transferred'], 'amount_transferred incorrect in source_payment ');
 
         // fetch transfer payment again to check if txn id associated
         $transferPayment = $this->getDbEntity('payment',['transfer_id' => $transferId ] );
         $this->assertNotNull($transferPayment, 'transfer_payment not found');
         $this->assertEquals('captured', $transferPayment['status'], 'transfer_payment not captured');
-        $this->assertEquals($creditJID, $transferPayment['transaction_id'], 'transfer_payment txn_id not equal to credit journal_id');
+        $this->assertNull($transferPayment['transaction_id'], 'transfer txn associaited not found');
 
         // fetch transfer txn
         $transferTxn = $this->getDbEntity('transaction', ['type' => 'transfer', 'entity_id' => $transferId]);
-        $this->assertNotNull($transferTxn, 'transfer_txn not found');
-        $this->assertEquals($debitJID, $transferTxn['id'], 'transfer_txn_id does not match debit journalId');
-        $this->assertNotNull($transferTxn['balance_id'], ' balance not updated in transfer_txn');
-        $this->assertNotNull($transferTxn['debit'], 'amount not debited from transfer Txn');
+        $this->assertNull($transferTxn, 'transfer_txn not found');
 
-        $debitAMount = $transferTxn['debit'];
 
         // fetch transfer_payment txn
         $transferPaymentTxn = $this->getDbEntity('transaction', ['type' => 'payment', 'entity_id' => $transferPayment['id']]);
-        $this->assertNotNull($transferPaymentTxn, 'transfer_payment_txn not found');
-        $this->assertEquals($creditJID, $transferPaymentTxn['id'], 'transfer_payment_txn_id does not match credit journal_id');
-        $this->assertNotNull($transferPaymentTxn['balance_id'], 'balance not updated in transfer_payment_txn');
-        $this->assertNotNull($transferPaymentTxn['credit'], 'amount not credited from transfer_payment_txn');
-        $this->assertEquals($debitAMount, $transferPaymentTxn['credit'], 'debit amount not equal to credit amount');
+        $this->assertNull($transferPaymentTxn, 'transfer_payment_txn not found');
 
         // fetch  outbox entry
-        $ledgerOutboxEntities = $this->getTrashedDbEntities('ledger_outbox', ['payload_name' => $publicTransferId.'-'.'transfer_processed']);
+        $ledgerOutboxEntities = $this->getDbEntities('ledger_outbox', ['payload_name' => $publicTransferId.'-'.'transfer_processed']);
         $this->assertCount(1,$ledgerOutboxEntities, ' ledger_outbox entry for transfer_processed event not found');
-        $this->assertEquals( $ledgerOutboxEntities[0]['is_deleted'], 1, 'outbox entry not soft deleted');
-        $this->assertNotNull( $ledgerOutboxEntities[0]['deleted_at'], 'outbox entry not soft deleted');
+        $this->assertEquals( $ledgerOutboxEntities[0]['is_deleted'], 0, 'outbox entry not soft deleted');
+        $this->assertNull( $ledgerOutboxEntities[0]['deleted_at'], 'outbox entry not soft deleted');
 
         // check new source balance
         $newSourceMarketBalance = $this->getAccountBalance($sourceMID);
-        $this->assertEquals($oldSourceMarketBalance - $transfer->getAmount(), $newSourceMarketBalance, 'source balance not deeducted');
+        $this->assertEquals($oldSourceMarketBalance, $newSourceMarketBalance, 'source balance not deeducted');
 
         // check new destn balance
         $newDestnMarketBalance = $this->getAccountBalance($destnMID);
-        $this->assertEquals($oldDestnMarketBalance + $transfer->getAmount(), $newDestnMarketBalance, 'destn balance not deeducted');
+        $this->assertEquals($oldDestnMarketBalance, $newDestnMarketBalance, 'destn balance not deeducted');
 
     }
 
@@ -2381,7 +2371,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/ledger_outbox/retry';
+        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer';
         $this->ba->cronAuth();
         $this->runRequestResponseFlow($testData);
 
@@ -2494,7 +2484,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/ledger_outbox/retry';
+        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer';
         $this->ba->cronAuth();
         $this->runRequestResponseFlow($testData);
 
@@ -2592,7 +2582,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/ledger_outbox/retry';
+        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer';
         $this->ba->cronAuth();
         $this->runRequestResponseFlow($testData);
 
@@ -2748,7 +2738,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/ledger_outbox/retry';
+        $testData['request']['url'] = '/ledger_outbox/retry?type=transfer';
         $this->ba->cronAuth();
         $this->runRequestResponseFlow($testData);
 
@@ -3014,7 +3004,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
     //     // 4. pg ledger cron picks the transfer as outbox entry present
     //     $testData = $this->testData[__FUNCTION__];
 
-    //     $testData['request']['url'] = '/ledger_outbox/retry';
+    //     $testData['request']['url'] = '/ledger_outbox/retry?type=transfer';
 
     //     $this->runRequestResponseFlow($testData);
 
@@ -3026,5 +3016,54 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
     //     $transferPayments = $this->getDbEntities('payment',['transfer_id'=>$transferId]);
     //     $this->assertNotNull($transferPayments);
     // }
+
+    public function testReverseShadowCronRetryForPaymentTransferProcessedEventFailureWrongRoute()
+    {
+        $this->assertNotNull($this->payment);
+
+        $sourceMID = '10000000000000';
+        $destnMID = '10000000000001';
+
+        $this->assertNotNull($this->payment);
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow']);
+        $this->fixtures->merchant->addFeatures(['marketplace', 'pg_ledger_reverse_shadow'], $destnMID);
+
+        $oldDestnMarketBalance = $this->getAccountBalance($destnMID);
+        $this->assertEquals(0, $oldDestnMarketBalance);
+
+        $oldSourceMarketBalance = $this->getAccountBalance($sourceMID);
+        $this->assertGreaterThanOrEqual($this->payment['amount'],$oldSourceMarketBalance);
+
+        $mockLedger = $this->initialiseLedger(1000000, 0, 0);
+
+        // create transfer
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 10000,
+            'currency'=> 'INR',
+        ];
+
+        $content = $this->transferPayment($this->payment['id'], $transfers);
+
+        $publicTransferId = $content['items'][0]['id'];
+
+        $transferId =  str_replace('trf_', '', $publicTransferId);
+
+        $ledgerOutboxEntry = $this->getDbEntity('ledger_outbox',  ['payload_name' => $publicTransferId.'-transfer_processed']);
+        $this->assertNotNull( $ledgerOutboxEntry);
+
+        // setting outbox entry's created_at to an earlier timestamp so that cron fetches it
+        $createdAtTimestamp = (int)((millitime()-3600000)/1000);
+        $this->fixtures->edit('ledger_outbox', $ledgerOutboxEntry['id'], ['created_at' => $createdAtTimestamp]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/ledger_outbox/retry';
+        $this->ba->cronAuth();
+        $this->runRequestResponseFlow($testData);
+
+    }
+
 
 }

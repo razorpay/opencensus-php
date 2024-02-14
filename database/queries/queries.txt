@@ -7204,3 +7204,7 @@ CREATE TABLE transfer_payment (
    INDEX `idx_created_at` (`created_at`),
    INDEX `idx_updated_at` (`updated_at`)
 )DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+ALTER TABLE ledger_outbox
+    ADD COLUMN entity_type VARCHAR(30) NULL,
+    ADD COLUMN entity_id CHAR(14) NULL;

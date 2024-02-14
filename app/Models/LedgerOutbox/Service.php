@@ -43,5 +43,29 @@ class Service extends Base\Service
     {
         return $this->core->createLedgerOutboxPartition();
     }
+
+    //pg-ledger outbox cron retries journal and txn creation for non-deleted outbox entries in reverse-shadow mode for transfer entities
+    public function retryFailedReverseShadowTransferTransactions(array $input)
+    {
+        $this->increaseAllowedSystemLimits();
+
+        $limit = $input['limit'] ?? Constants::DEFAULT_LIMIT;
+
+        $response = (new LedgerOutbox\Cron\Transfer\Core())->retryFailedReverseShadowTransferTransactions($limit);
+        return $response;
+    }
+
+    //pg-ledger outbox cron retries journal and txn creation for non-deleted outbox entries in reverse-shadow mode for settlement.ondemand entities
+    public function retryFailedReverseShadowSettlementOndemandTransactions(array $input)
+    {
+        $this->increaseAllowedSystemLimits();
+
+        $limit = $input['limit'] ?? Constants::DEFAULT_LIMIT;
+
+        $response = (new LedgerOutbox\Cron\OndemandSettlement\Core())->retryFailedReverseShadowSettlementOndemandTransactions($limit);
+
+        return $response;
+    }
+
 }
 

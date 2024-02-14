@@ -7122,6 +7122,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPITAL_PG_LEDGER_OUTBOX_PUSH_SUCCESS                                 = 'CAPITAL_PG_LEDGER_OUTBOX_PUSH_SUCCESS';
     const CAPITAL_PG_LEDGER_OUTBOX_PUSH_FAILURE                                 = 'CAPITAL_PG_LEDGER_OUTBOX_PUSH_FAILURE';
     const PG_LEDGER_OUTBOX_FETCH                                                = 'PG_LEDGER_OUTBOX_FETCH';
+    const PG_LEDGER_OUTBOX_FETCH_INVALID                                        = 'PG_LEDGER_OUTBOX_FETCH_INVALID';
     const PG_LEDGER_OUTBOX_SOFT_DELETE_SUCCESS                                  = 'PG_LEDGER_OUTBOX_SOFT_DELETE_SUCCESS';
     const PG_LEDGER_OUTBOX_SOFT_DELETE_FAILURE                                  = 'PG_LEDGER_OUTBOX_SOFT_DELETE_FAILURE';
     const PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE                                   = 'PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE';

@@ -376,7 +376,7 @@ class Core extends Base\Core
     /**
      * @throws BadRequestException
      */
-    private function determineEntityIDFromTransactorID(string $transactorId): string
+    public function determineEntityIDFromTransactorID(string $transactorId): string
     {
         $transactorIdArr = $this->getTransactorIDArray($transactorId);
         return $transactorIdArr[1];
@@ -401,7 +401,7 @@ class Core extends Base\Core
         return $transactorIdArr;
     }
 
-    private function determineTransactionType(string $transactorId)
+    public function determineTransactionType(string $transactorId)
     {
         $transactorIdArr = $this->getTransactorIDArray($transactorId);
 
@@ -431,6 +431,10 @@ class Core extends Base\Core
                 return $res;
             case "trf":
                 $res[Constants::TYPE] = Constants::TRANSFER;
+                return $res;
+            case "setlod":
+            case "setlodrvrsl":
+                $res[Constants::TYPE] = Constants::ONDEMAND_SETTLEMENT;
                 return $res;
             default:
                 $res[Constants::TYPE] = "";
@@ -553,7 +557,7 @@ class Core extends Base\Core
                     // check if txn exists already for the journal
                     $journal = $this->getJournalByTransactorInfo($transactorId, $transactorEvent, $this->ledgerService);
 
-                    if($journal === null)
+                    if(($journal === null) or (in_array($transactorEvent, Constants::BULK_JOURNAL_EVENTS)))
                     {
                         // if journal does not exist, return so that cron retries the entry
                         return null;
@@ -643,7 +647,7 @@ class Core extends Base\Core
         return null;
     }
 
-    private function handleOndemandSettlementEventsOnFailure(string $event, string $transactorId)
+    public function handleOndemandSettlementEventsOnFailure(string $event, string $transactorId)
     {
         try {
             $entityId = $this->determineEntityIDFromTransactorID($transactorId);
@@ -1444,7 +1448,7 @@ class Core extends Base\Core
         ];
     }
 
-    protected function updateRetryCount(Entity $entry, $retries, $transactorEvent)
+    public function updateRetryCount(Entity $entry, $retries, $transactorEvent)
     {
         try
         {
@@ -1501,7 +1505,7 @@ class Core extends Base\Core
         $this->repo->ledger_outbox->saveOrFail($entry);
     }
 
-    private function updateRetryCountAndSoftDelete($entry, int $retryCount = null): bool
+    public function updateRetryCountAndSoftDelete($entry, int $retryCount = null): bool
     {
         try
         {
@@ -1575,7 +1579,7 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
-    private function failTransferWithErrorCodeAndMessage($entry, $errorCode=ErrorCode::BAD_REQUEST_ERROR,
+    public function failTransferWithErrorCodeAndMessage($entry, $errorCode=ErrorCode::BAD_REQUEST_ERROR,
                                                          $errorMessage=PublicErrorDescription::BAD_REQUEST_ERROR)
     {
         $payloadName = $entry['payload_name'];

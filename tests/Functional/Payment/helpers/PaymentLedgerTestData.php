@@ -40,6 +40,22 @@ return [
         ]
     ],
 
+    'testCronRetrySuccessForPaymentMerchantCaptureEventWithEntityTypeNull' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => [
+                'limit'        =>  5,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'successful entries count' => 2,
+                'failed entries count' =>  0,
+            ],
+        ]
+    ],
+
     'testCronRetrySuccessForNonReverseShadowMerchant' => [
         'request' => [
             'url' => '/ledger_outbox/retry',

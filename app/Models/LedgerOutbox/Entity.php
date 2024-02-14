@@ -19,6 +19,8 @@ class Entity extends Base\PublicEntity
     const DELETED_AT            = 'deleted_at';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
+    const ENTITY_TYPE           = 'entity_type';
+    const ENTITY_ID             = 'entity_id';
 
     protected $entity = 'ledger_outbox';
 
@@ -31,6 +33,8 @@ class Entity extends Base\PublicEntity
         self::RETRY_COUNT,
         self::IS_DELETED,
         self::DELETED_AT,
+        self::ENTITY_TYPE,
+        self::ENTITY_ID,
     ];
 
     protected $public = [
@@ -50,6 +54,8 @@ class Entity extends Base\PublicEntity
         self::IS_DELETED    => 0,
         self::RETRY_COUNT   => 0,
         self::DELETED_AT    => null,
+        self::ENTITY_TYPE   => null,
+        self::ENTITY_ID     => null,
     ];
 
     // Setters
@@ -88,6 +94,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::IS_DELETED, $isDeleted);
     }
 
+    public function setEntityType(string $entityType)
+    {
+        $this->setAttribute(self::ENTITY_TYPE, $entityType);
+    }
+
+    public function setEntityId(string $entityId)
+    {
+        $this->setAttribute(self::ENTITY_ID, $entityId);
+    }
+
     // Getters
     public function isDeleted(): bool
     {
@@ -103,4 +119,15 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::PAYLOAD_SERIALIZED);
     }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
 }

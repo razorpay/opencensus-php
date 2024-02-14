@@ -24,7 +24,9 @@ class Constants
     ];
 
 
-    const MAX_RETRY_COUNT           = 3;
-    const MAX_RETRY_COUNT_CRON      = 10;
-    const RETRY_COUNT               = 'retry_count';
+    const MAX_RETRY_COUNT                           = 3;
+    const MAX_RETRY_COUNT_CRON                      = 15;
+    const MAX_RETRY_COUNT_TRANSFER_CRON             = 15;
+    const MAX_RETRY_COUNT_ONDEMAND_SETTLEMENT_CRON  = 15;
+    const RETRY_COUNT                               = 'retry_count';
 }

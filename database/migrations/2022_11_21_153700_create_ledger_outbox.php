@@ -39,7 +39,13 @@ class CreateLedgerOutbox extends Migration
 
             $table->integer(Entity::DELETED_AT)->nullable();
 
+            $table->string(Entity::ENTITY_TYPE, 30)->nullable();
+
+            $table->string(Entity::ENTITY_ID, 14)->nullable();
+
             $table->index(Entity::PAYLOAD_NAME);
+            
+            $table->index(Entity::ENTITY_TYPE);
         });
     }
 

@@ -14,6 +14,7 @@ class Constants
     const RESPONSE          = "response";
     const ERROR_RESPONSE    = "error_response";
     const TYPE              = "type";
+    const CRON_TYPE         = "cron_type";
     const CODE              = "code";
     const MSG               = "msg";
 
@@ -58,7 +59,7 @@ class Constants
     // Cron
     const MAX_RETRY_COUNT           = 10;
     const OUTBOX_RETRY_DEFAULT_END_TIME = 600;
-    const OUTBOX_RETRY_DEFAULT_START_TIME = 864000;
+    const OUTBOX_RETRY_DEFAULT_START_TIME = 259200; // 3 days
     const DEFAULT_LIMIT             = 100;
 
     // Transactor events for which transaction is not created
@@ -77,5 +78,11 @@ class Constants
     ];
 
     const LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED = "ondemand_settlement_processed";
-    const LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED = "ondemand_settlement_reversed";
+    const LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED  = "ondemand_settlement_reversed";
+    const ONDEMAND_SETTLEMENT                           = "ondemand_settlement";
+
+    const SETLLEMENT_ONDEMAND_EVENTS = [
+        self::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_PROCESSED,
+        self::LEDGER_OUTBOXER_ONDEMAND_SETTLEMENT_REVERSED
+    ];
 }

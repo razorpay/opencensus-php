@@ -8,6 +8,7 @@ use RZP\Error\Error;
 use Ramsey\Uuid\Uuid;
 use RZP\Models\Feature;
 use RZP\Constants\Metric;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
@@ -152,6 +153,22 @@ trait ReverseShadowTrait
 
     protected function prepareOutboxPayload($payloadName, $payloadSerialized)
     {
+        $entityId = null;
+        $entityType = null;
+
+        if(isset($payloadSerialized[Constants::TRANSACTOR_ID]) === true)
+        {
+            $ledgerOutboxCore = new LedgerOutboxCore();
+
+            $transactorId = $payloadSerialized[Constants::TRANSACTOR_ID];
+
+            $entityId = $ledgerOutboxCore->determineEntityIDFromTransactorID($transactorId);
+
+            $transactorInfo = $ledgerOutboxCore->determineTransactionType($transactorId);
+
+            $entityType = $transactorInfo[Constants::TYPE];
+        }
+
         $payloadString = json_encode($payloadSerialized);
 
         $encodedPayload = base64_encode($payloadString);
@@ -163,6 +180,8 @@ trait ReverseShadowTrait
         $outboxPayload->build([
             LedgerOutboxEntity::PAYLOAD_NAME        => $payloadName,
             LedgerOutboxEntity::PAYLOAD_SERIALIZED  => $encodedPayload,
+            LedgerOutboxEntity::ENTITY_TYPE  => $entityType,
+            LedgerOutboxEntity::ENTITY_ID  => $entityId,
         ]);
 
         return $outboxPayload;
@@ -385,7 +404,7 @@ trait ReverseShadowTrait
     }
 
     // handles errors in journal creation in pg_legder sync and cron flows
-    private function handleSyncLedgerJournalCreateFailures(array $journalPayload, array $errorResponse, string $source = ""): bool
+    public function handleSyncLedgerJournalCreateFailures(array $journalPayload, array $errorResponse, string $source = ""): bool
     {
         $app = App::getFacadeRoot();
 

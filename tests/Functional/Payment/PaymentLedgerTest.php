@@ -4188,6 +4188,7 @@ class PaymentLedgerTest extends TestCase
         // gateway capture assertions
         $this->assertEquals($gatewayCaptureLedgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
         $this->assertEquals($gatewayCaptureLedgerOutboxEntity['retry_count'], 1);
+        $this->assertEquals('payment', $gatewayCaptureLedgerOutboxEntity['entity_type']);
         $this->assertNotNull($gatewayCaptureLedgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
 
         // merchant capture assertions
@@ -4200,6 +4201,7 @@ class PaymentLedgerTest extends TestCase
 
         $this->assertEquals(1, $merchantCaptureLedgerOutboxEntity['is_deleted'], 'outbox entry not soft deleted');
         $this->assertEquals(1, $merchantCaptureLedgerOutboxEntity['retry_count']);
+        $this->assertEquals('payment', $merchantCaptureLedgerOutboxEntity['entity_type']);
         $this->assertNotNull($merchantCaptureLedgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
     }
 
@@ -4582,5 +4584,85 @@ class PaymentLedgerTest extends TestCase
         $txn = $this->getDbLastEntity('transaction');
         $this->assertNotNull($txn);
     }
+
+    public function testCronRetrySuccessForPaymentMerchantCaptureEventWithEntityTypeNull()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $payment = $this->createPaymentForCron($mockLedger);
+
+        $paymentId = $payment['id'];
+
+        $this->assertNull($payment['transaction_id']);
+
+        $ledgerOutboxEntities = $this->getDbEntities('ledger_outbox');
+
+        // setting outbox entry's created_at to an earlier timestamp so that cron fetches it
+        $createdAtTimestamp = (int)((millitime()-3600000)/1000);
+        $this->fixtures->edit('ledger_outbox', $ledgerOutboxEntities[0]['id'], ['created_at' => $createdAtTimestamp,'entity_type' => null]);
+        $this->fixtures->edit('ledger_outbox', $ledgerOutboxEntities[1]['id'], ['created_at' => $createdAtTimestamp,'entity_type' => null]);
+
+        $this->assertEquals(2, count($ledgerOutboxEntities));
+
+        $entry = $this->getDbLastEntity('ledger_outbox');
+        $this->assertNotNull( $entry);
+        $this->assertEquals($paymentId.'-'.'payment_merchant_captured', $entry['payload_name']);
+
+        $payload = base64_decode($entry['payload_serialized']);
+        $actualOutboxEntry = json_decode($payload, true);
+        $apiTxnId = $actualOutboxEntry['api_transaction_id'];
+        $this->assertNotNull( $apiTxnId);
+
+        $gatewayCaptureJournalResponse = $this->getPaymentGatewayCapturedJournalResponsePayload($paymentId);
+        $merchantCaptureJournalResponse = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId, $apiTxnId);
+        $payload = base64_decode($ledgerOutboxEntities[0]['payload_serialized']);
+        $actualGatewayCaptureLedgerOutboxEntry = json_decode($payload, true);
+        $merchantCaptureJournalResponse['id'] = $actualGatewayCaptureLedgerOutboxEntry['api_txn_id'];
+
+        $mockLedger->shouldReceive('createJournal')
+            ->times(2)
+            ->andReturnValues([
+                [
+                    'code' => 200,
+                    'body' => $gatewayCaptureJournalResponse,
+                ],
+                [
+                    'code' => 200,
+                    'body' => $merchantCaptureJournalResponse
+                ]
+            ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $gatewayCaptureLedgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_gateway_captured']);
+        $merchantCaptureLedgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
+
+        // gateway capture assertions
+        $this->assertEquals($gatewayCaptureLedgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+        $this->assertEquals($gatewayCaptureLedgerOutboxEntity['retry_count'], 1);
+        $this->assertNotNull($gatewayCaptureLedgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+
+        // merchant capture assertions
+        $this->assertEquals($paymentId, 'pay_'.$txn['entity_id']);
+        $this->assertEquals($merchantCaptureJournalResponse['id'], $txn['id']);
+        $this->assertEquals($merchantCaptureJournalResponse['ledger_entry'][0]['amount'], $txn['fee']);
+        $this->assertEquals($merchantCaptureJournalResponse['ledger_entry'][1]['amount'], $txn['tax']);
+        $this->assertEquals($merchantCaptureJournalResponse['ledger_entry'][2]['amount'], $txn['amount']);
+        $this->assertEquals($merchantCaptureJournalResponse['ledger_entry'][3]['amount'], $txn['amount']-$txn['fee']-$txn['tax']);
+
+        $this->assertEquals(1, $merchantCaptureLedgerOutboxEntity['is_deleted'], 'outbox entry not soft deleted');
+        $this->assertEquals(1, $merchantCaptureLedgerOutboxEntity['retry_count']);
+        $this->assertNotNull($merchantCaptureLedgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+    }
+
 
 }

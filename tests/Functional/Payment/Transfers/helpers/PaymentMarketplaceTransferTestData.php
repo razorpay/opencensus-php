@@ -808,7 +808,7 @@ return [
 
     'testReverseShadowCronRetrySuccessForPaymentTransferProcessedEvent' => [
         'request' => [
-            'url' => '/ledger_outbox/retry',
+            'url' => '/ledger_outbox/retry?type=transfer',
             'method' => 'POST',
             'content' => []
         ],
@@ -823,7 +823,7 @@ return [
 
     'testReverseShadowCronRetryRetryableFailureForPaymentTransferProcessedEvent' => [
         'request' => [
-            'url' => '/ledger_outbox/retry',
+            'url' => '/ledger_outbox/retry?type=transfer',
             'method' => 'POST',
             'content' => []
         ],
@@ -838,7 +838,7 @@ return [
 
     'testReverseShadowCronRetryTransferFailsDueToInsufficientBalanceAfterMaxRetry' => [
         'request' => [
-            'url' => '/ledger_outbox/retry',
+            'url' => '/ledger_outbox/retry?type=transfer',
             'method' => 'POST',
             'content' => []
         ],
@@ -853,7 +853,7 @@ return [
 
     'testReverseShadowCronRetryNonRetryableFailureForPaymentTransferProcessedEvent' => [
         'request' => [
-            'url' => '/ledger_outbox/retry',
+            'url' => '/ledger_outbox/retry?type=transfer',
             'method' => 'POST',
             'content' => []
         ],
@@ -949,13 +949,28 @@ return [
 
     'testReverseShadowCronRetrySuccessForPaymentTransferAlreadyProcessedByPendingCron' => [
         'request' => [
-            'url' => '/ledger_outbox/retry',
+            'url' => '/ledger_outbox/retry?type=transfer',
             'method' => 'POST',
             'content' => []
         ],
         'response' => [
             'content' => [
                 'successful entries count' => 1,
+                'failed entries count' =>  0,
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testReverseShadowCronRetryForPaymentTransferProcessedEventFailureWrongRoute' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'successful entries count' => 0,
                 'failed entries count' =>  0,
             ],
             'status_code' => 200,
