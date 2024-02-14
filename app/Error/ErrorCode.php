@@ -3061,6 +3061,8 @@ class ErrorCode
 
     const BAD_REQUEST_ENTITY_NOT_SUPPORTED                                          = 'BAD_REQUEST_ENTITY_NOT_SUPPORTED';
 
+    //methods
+    const BAD_REQUEST_METHOD_NOT_ALLOWED_FOR_COUNTRY_ORG                            = 'BAD_REQUEST_METHOD_NOT_ALLOWED_FOR_COUNTRY_ORG';
 
     static function getConstants()
     {

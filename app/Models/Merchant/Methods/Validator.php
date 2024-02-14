@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Methods;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Trace\TraceCode;
@@ -242,6 +244,37 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 Entity::IN_APP_CREDIT_CARD . ' cannot be enabled for this MCC: ' . $mcc
             );
+        }
+    }
+
+    public function validateCountryAndOrgAllowedMethodsEnablement($country, $orgId, Entity $methods)
+    {
+        if(isset($country) && isset($orgId)) {
+            $countryOrgWiseNotAllowedMethods = DefaultMethodsForCategory::getCountryOrgWiseNotAllowedMethods($country, $orgId);
+
+            $merchantInfo = [
+                'country' => $country,
+                'org_id' => $orgId,
+                'merchant_id' => $methods->merchant->getId(),
+                'methods_enabled' => $methods->toArray(),
+            ];
+
+            app()->trace->info(TraceCode::NOT_ALLOWED_METHODS_FOR_COUNTRY_ORG, [
+                'merchant_info' => $merchantInfo,
+                'not_allowed_methods' => $countryOrgWiseNotAllowedMethods,
+            ]);
+
+            foreach ($countryOrgWiseNotAllowedMethods as $key => $notAllowedMethod) {
+                if ($methods->isMethodEnabled($notAllowedMethod) === true) {
+                    app()->trace->error(TraceCode::NOT_ALLOWED_METHOD_ENABLED, [
+                        'merchant_info' => $merchantInfo,
+                        'not_allowed_method' => $notAllowedMethod,
+                    ]);
+
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_METHOD_NOT_ALLOWED_FOR_COUNTRY_ORG, null, null,
+                        'Method ' . $notAllowedMethod . ' not allowed for country ' . $country . ' and org ' . $orgId);
+                }
+            }
         }
     }
 }

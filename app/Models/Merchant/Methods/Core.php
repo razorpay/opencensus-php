@@ -986,7 +986,33 @@ class Core extends Base\Core
                 $methods->setMethods(self::defaultCardlessEmiProvidersWhitelisted);
             }
 
-            $methods->setAttribute($key, $value);
+            switch (true)
+            {
+                //for additional wallets like payzapp getters check in attribute array Entity::ADDITIONAL_WALLETS.
+                //Their setters either don't exist or would not return correct value if set using $methods->setAttribute($key, $value)
+                case in_array($key, Entity::getAllAdditionalWalletNames()):
+                    $additionalWallets = $methods->getAttribute(Entity::ADDITIONAL_WALLETS);
+
+                    if(($value === true) && (in_array($key, $additionalWallets) === false)) {
+                        array_push($additionalWallets, $key);
+                    }
+
+                    if(($value === false) && (in_array($key, $additionalWallets) === true)) {
+                        unset($additionalWallets[$key]);
+                    }
+
+                    $methods->setAttribute(Entity::ADDITIONAL_WALLETS, $additionalWallets);
+                    break;
+
+                case $key === Entity::SODEXO:
+                    $addonMethods = $methods->getAttribute(Entity::ADDON_METHODS);
+                    $addonMethods[Entity::CARD][Entity::SODEXO] = $value;
+                    $methods->setAttribute(Entity::ADDON_METHODS, $addonMethods);
+                    break;
+
+                default:
+                    $methods->setAttribute($key, $value);
+            }
         }
 
         $this->repo->saveOrFail($methods);

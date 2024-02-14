@@ -1861,6 +1861,19 @@ class Pricing extends Base
                 'fixed_rate'     => 0,
                 'org_id'         => $orgId,
             ],
+            [
+                'id'                  => '1zE31zbyeGCTe3',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'upi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 250,
+                'fixed_rate'          => 0,
+                'org_id'              => $orgId,
+            ],
         ];
 
         $this->addPricingRulesToDb($rows);

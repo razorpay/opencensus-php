@@ -28,6 +28,7 @@ use RZP\Models\Payment\Processor\Wallet;
 use Illuminate\Cache\Events\CacheMissed;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethods;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Models\Admin;
@@ -36,7 +37,10 @@ use Mockery;
 class MethodsTest extends TestCase
 {
     use PaymentTrait;
+    use HeimdallTrait;
     use DbEntityFetchTrait;
+
+    const CURLEC_ORG_ID         = 'KjWRtYXwpK6VfK';
 
     protected function setUp(): void
     {
@@ -281,6 +285,60 @@ class MethodsTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testBulkMethodUpdateNotAllowedMethodsForCountryAndOrg()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $merchantId]);
+        $this->fixtures->merchant->disableAllMethods($merchantId);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $orgId      = self::CURLEC_ORG_ID;
+
+        // create org
+
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYE';
+
+        // create pricing plan for org
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        // assign org standard pricing plan to merchant
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id'          => $orgId,
+            'pricing_plan_id' => $planId,
+            'country_code'    => 'MY',
+        ]);
+
+
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest();
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 
     public function testBulkMethodUpdateMissingInput()

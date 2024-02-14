@@ -238,6 +238,31 @@ return [
         ],
     ],
 
+    'testBulkMethodUpdateNotAllowedMethodsForCountryAndOrg' => [
+        'request'   => [
+            'url'     => '/methods/bulkupdate',
+            'method'  => 'put',
+            'content' => [
+                'merchants' => ['1cXSLlUU8V9sXl'],
+                'methods'   => [
+                    'debit_card' => true,
+                    'credit_card'=> true,
+                    'netbanking' => true,
+                    'upi'        => true
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                "total" => 1,
+                "success" => 0,
+                "failed" => 1,
+                "failedIds" => []
+            ],
+        ],
+    ],
+
     'testBulkMethodUpdateMissingInput' => [
         'request'   => [
             'url'     => '/methods/bulkupdate',

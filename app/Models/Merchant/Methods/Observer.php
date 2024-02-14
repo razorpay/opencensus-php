@@ -14,11 +14,15 @@ class Observer extends BaseObserver
      * <entityName>_<planID>_<type>
      *
      * @param Entity $methods
-     * @throws Exception\RuntimeException
+     * @throws Exception\BadRequestException|Exception\RuntimeException
      */
     public function created(Entity $methods)
     {
         $this->validateEntity($methods);
+
+        $merchantInfo = (new Service())->getMerchantInfo($methods);
+
+        (new Validator)->validateCountryAndOrgAllowedMethodsEnablement($merchantInfo['country'], $merchantInfo['org_id'], $methods);
 
         $methods->flushCache(Entity::getCacheTags($methods->getEntity(), $methods->getMerchantId()));
     }
@@ -44,11 +48,15 @@ class Observer extends BaseObserver
      * <entityName>_<planID>_<type>
      *
      * @param Entity $methods
-     * @throws $methods\RuntimeException
+     * @throws Exception\BadRequestException|Exception\RuntimeException
      */
     public function updated($methods)
     {
         $this->validateEntity($methods);
+
+        $merchantInfo = (new Service())->getMerchantInfo($methods);
+
+        (new Validator)->validateCountryAndOrgAllowedMethodsEnablement($merchantInfo['country'], $merchantInfo['org_id'], $methods);
 
         $methods->flushCache(Entity::getCacheTags($methods->getEntity(), $methods->getMerchantId()));
     }

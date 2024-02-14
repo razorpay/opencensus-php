@@ -92,6 +92,7 @@ class ActivationTest extends OAuthTestCase
     const SIB_ORG_ID            = 'HrgeWjbnzZefSN';
     const AXIS_EASYPAY_ORG_ID   = 'ISCkwbk39MdTk5';
     const KOTAK_ORG_ID          = 'IUXvshap3HbzOs';
+    const CURLEC_ORG_ID         = 'KjWRtYXwpK6VfK';
 
     protected $esClient;
 
@@ -412,7 +413,7 @@ class ActivationTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
             'cardless_emi'  => false,
@@ -473,7 +474,7 @@ class ActivationTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
             'debit_emi_providers'=> ['HDFC' => 1],
@@ -555,7 +556,7 @@ class ActivationTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
             'cardless_emi'  => false,
@@ -635,7 +636,7 @@ class ActivationTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
             'debit_emi_providers'=> ['HDFC' => 1],
@@ -716,7 +717,7 @@ class ActivationTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
             'cardless_emi'  => false,
@@ -787,7 +788,7 @@ class ActivationTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
             'cardless_emi'  => true,
@@ -859,7 +860,7 @@ class ActivationTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
             'amazonpay'     => false,
@@ -930,7 +931,7 @@ class ActivationTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
             'cardless_emi'  => true,
@@ -1002,7 +1003,7 @@ class ActivationTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
             'cardless_emi'  => false,
@@ -1261,7 +1262,7 @@ class ActivationTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
             'cardless_emi'  => true,
         ];
@@ -1529,6 +1530,107 @@ class ActivationTest extends OAuthTestCase
             'sbibuddy'      => false,
             'phonepeswitch' => false,
             'bank_transfer' => false,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+    }
+
+    public function testActivationDefaultMethodsBasedOnCurlecOrg()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+        $orgId      = self::CURLEC_ORG_ID;
+
+        // create org
+
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYE';
+
+        // create pricing plan for org
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        // assign org standard pricing plan to merchant
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId
+        ]);
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
+        $methods = $this->fixtures->edit('methods', $merchantId, ['bank_transfer' => 0]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $data = $this->getKycSubmittedMerchantData();
+        $data['category'] = '6051';
+        $data['category2'] = 'cryptocurrency';
+        $data['activated'] = 0;
+
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $testData = $this->testData['changeActivationStatus'];
+
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest($testData);
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'       => true,
+            'debit_card'        => true,
+            'prepaid_card'      => true,
+            'fpx'               => true,
+            'upi'               => false,
+            'emi'               => [],
+            'grabpay'           => true,
+            'boost'             => true,
+            'touchngo'          => true,
+            'mcash'             => true,
+            'sodexo'            => false,
+            'sbibuddy'          => false,
+            'phonepeswitch'     => false,
+            'phonepe'           => false,
+            'payzapp'           => false,
+            'payumoney'         => false,
+            'paytm'             => false,
+            'paycash'           => false,
+            'oxigen'            => false,
+            'openwallet'        => false,
+            'olamoney'          => false,
+            'netbanking'        => false,
+            'nach'              => false,
+            'mpesa'             => false,
+            'mobikwik'          => false,
+            'jiomoney'          => false,
+            'itzcash'           => false,
+            'freecharge'        => false,
+            'citibankrewards'   => false,
+            'bajajpay'          => false,
+            'airtelmoney'       => false,
+            'aeps'              => false,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);

@@ -6719,6 +6719,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATE_METHOD_REQUEST                                    = 'UPDATE_METHOD_REQUEST';
     const UPDATE_METHOD_RESPONSE                                   = 'UPDATE_METHOD_RESPONSE';
     const UPDATE_METHOD_FAILED                                     = 'UPDATE_METHOD_FAILED';
+    const NOT_ALLOWED_METHODS_FOR_COUNTRY_ORG                      = 'NOT_ALLOWED_METHODS_FOR_COUNTRY_ORG';
+    const NOT_ALLOWED_METHOD_ENABLED                               = 'NOT_ALLOWED_METHOD_ENABLED';
     const SKIPPED_MERCHANTS                                        = 'SKIPPED_MERCHANTS';
     const FAILED_MERCHANTS                                         = 'FAILED_MERCHANTS';
     const SUCCESS_MERCHANTS                                        = 'SUCCESS_MERCHANTS';

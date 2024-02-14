@@ -125,4 +125,15 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    public function getMerchantInfo(Entity $methods)
+    {
+        $merchant = $methods->merchant;
+
+        return [
+            'merchant_id' => $merchant->getId(),
+            'org_id'      => $merchant->getOrgId(),
+            'country'     => $merchant->getCountry()
+        ];
+    }
 }

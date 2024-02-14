@@ -482,15 +482,15 @@ class MerchantDetailTest extends OAuthTestCase
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
             Entity::CONTACT_EMAIL => null
         ]);
-        
+
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-        
+
         $this->fixtures->create('user_device_detail', [
             'merchant_id'     => self::DEFAULT_MERCHANT_ID,
             'user_id'         => $merchantUser->getId(),
             'signup_campaign' => 'easy_onboarding'
         ]);
-        
+
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         $this->mockHubSpotClient('trackPreSignupEvent');
@@ -3063,7 +3063,7 @@ class MerchantDetailTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => false,
+            'payzapp'       => true,
             'sbibuddy'      => true,
         ];
 
@@ -3942,37 +3942,37 @@ We look forward to transacting with you!
     public function testGetInternalMerchantIsTransactedDetailTrue()
     {
         $merchantId = '10011110025000';
-        
+
         $merchant = $this->fixtures->create('merchant', [
             'id'        => $merchantId,
             'email'     => 'razorpay@razorpay.com',
             'website'   => 'razorpay.com',
         ]);
-        
+
         $payment = $this->fixtures->on('test')->create('payment', [
             'base_amount'   => 10000,
             'merchant_id'   => $merchantId,
             'status'        => 'captured',
         ]);
-        
+
         $this->ba->terminalsAuth();
         $this->startTest();
     }
-    
+
     public function testGetInternalMerchantIsTransactedDetailFalse()
     {
         $merchantId = '10011210025000';
-        
+
         $merchant = $this->fixtures->create('merchant', [
           'id'        => $merchantId,
           'email'     => 'razorpay@razorpay.com',
           'website'   => 'razorpay.com',
         ]);
-        
+
         $this->ba->terminalsAuth();
         $this->startTest();
     }
-    
+
     public function testGetInternalMerchantMerchantDetailsFetch()
     {
         $merchantId = '10000000000155';
@@ -10287,37 +10287,37 @@ You can now start accepting payments from https://www.example.com.
     {
         $this->app['config']['services.ocr_service.mock'] = true;
         $this->app['config']['services.mutex.mock'] = true;
-    
+
         [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails(['name' => 'Test name', 'has_key_access' => true, 'category' => 6211], ['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated']);
-    
+
         $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId );
-    
+
         $this->startTest();
-    
+
         $merchantDetail = $this->getDbLastEntity('merchant_detail');
-        
+
         $this->assertEquals('https://www.example.com', $merchantDetail->getWebsite());
-        
+
     }
-    
+
     public function testBusinessWebsiteRaiseWorkflowAfterOCRValidationDueToBusinessWebsiteAlreadyExistWithDifferentMerchant()
     {
         $this->app['config']['services.ocr_service.mock'] = true;
         $this->app['config']['services.mutex.mock'] = true;
-        
+
         [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails(['name' => 'Test name1', 'has_key_access' => true, 'category' => 6211], ['business_website'=> 'https://www.example.com', 'activation_status' => 'activated']);
-        
+
         $this->setupWorkflow("update_website", PermissionName::UPDATE_MERCHANT_WEBSITE);
-        
+
         $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId );
-    
+
         $testData = $this->testData['testBusinessWebsiteSaveForOCRSuccessfulValidation'];
-    
+
         $this->testData[__FUNCTION__] = $testData;
-        
+
         $this->startTest();
     }
-    
+
     public function testBusinessWebsiteAdditionWorkflowApprove()
     {
         Mail::fake();
@@ -10474,7 +10474,7 @@ You can now start accepting payments from https://www.example.com.
         $mockedCore->shouldAllowMockingProtectedMethods();
         $data['ocr_automated_check_enable'] = true;
         $mockedCore->shouldReceive("getMerchantWebsiteAutomatedOcrCheckCacheData")->andReturn($data);
-        
+
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         $testData = $this->testData['testGetMerchantWorkflowDetailsByInternalAuth'];

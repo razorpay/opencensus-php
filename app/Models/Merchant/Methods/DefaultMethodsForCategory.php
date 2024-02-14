@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Methods;
 
+use RZP\Constants\Country;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -1037,6 +1038,38 @@ class DefaultMethodsForCategory
                     ]
                 ],
             ],
+            OrgEntity::CURLEC_ORG_ID => [
+                Category::OTHERS  =>  [
+                    Category::OTHERS    =>  [
+                        self::BLACKLISTED_METHODS => [
+                            Entity::SODEXO,
+                            Entity::SBIBUDDY,
+                            Entity::PHONEPE_SWITCH,
+                            Entity::PHONEPE,
+                            Entity::PAYZAPP,
+                            Entity::PAYUMONEY,
+                            Entity::PAYTM,
+                            Entity::PAYCASH,
+                            Entity::OXIGEN,
+                            Entity::OPENWALLET,
+                            Entity::OLAMONEY,
+                            Entity::NETBANKING,
+                            Entity::NACH,
+                            Entity::MPESA,
+                            Entity::MOBIKWIK,
+                            Entity::JIOMONEY,
+                            Entity::ITZCASH,
+                            Entity::FREECHARGE,
+                            Entity::CITIBANKREWARDS,
+                            Entity::BAJAJPAY,
+                            Entity::AIRTELMONEY,
+                            Entity::AEPS,
+                        ],
+                        self::GREYLISTED_METHODS =>[],
+                        self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
+                    ]
+                ],
+            ],
         ];
 
     // These are all the methods provided in the sheet https://docs.google.com/spreadsheets/d/1eZMlh007Utp8JWGYGJ7Hk6zADSVlBWspHEzcGoKOydI
@@ -1125,7 +1158,59 @@ class DefaultMethodsForCategory
             Entity::NETBANKING,
             Entity::UPI,
         ],
+        OrgEntity::CURLEC_ORG_ID => [
+            Entity::CREDIT_CARD,
+            Entity::DEBIT_CARD,
+            Entity::PREPAID_CARD,
+            Entity::FPX,
+            Entity::GRABPAY,
+            Entity::BOOST,
+            Entity::TOUCHNGO,
+            Entity::MCASH,
+        ],
     ];
+
+    const COUNTRY_ORG_WISE_NOT_ALLOWED_METHODS = [
+        Country::MY => [
+            OrgEntity::CURLEC_ORG_ID => [
+                Entity::SODEXO,
+                Entity::SBIBUDDY,
+                Entity::PHONEPE_SWITCH,
+                Entity::PHONEPE,
+                Entity::PAYZAPP,
+                Entity::PAYUMONEY,
+                Entity::PAYTM,
+                Entity::PAYCASH,
+                Entity::OXIGEN,
+                Entity::OPENWALLET,
+                Entity::OLAMONEY,
+                Entity::NETBANKING,
+                Entity::NACH,
+                Entity::MPESA,
+                Entity::MOBIKWIK,
+                Entity::JIOMONEY,
+                Entity::ITZCASH,
+                Entity::FREECHARGE,
+                Entity::CITIBANKREWARDS,
+                Entity::BAJAJPAY,
+                Entity::AIRTELMONEY,
+                Entity::AEPS,
+            ],
+        ]
+    ];
+
+    public static function getCountryOrgWiseNotAllowedMethods($country, $orgId): array
+    {
+        $countryOrgWiseAllowedMethods = [];
+
+        $country = strtolower($country);
+
+        if(isset(self::COUNTRY_ORG_WISE_NOT_ALLOWED_METHODS[$country][$orgId]) === true) {
+            $countryOrgWiseAllowedMethods = self::COUNTRY_ORG_WISE_NOT_ALLOWED_METHODS[$country][$orgId];
+        }
+
+        return $countryOrgWiseAllowedMethods;
+    }
 
     public static function getDefaultMethodsFromMerchantCategories($category, $category2, string $orgId = 'default', $variantFlag = 'control')
     {
