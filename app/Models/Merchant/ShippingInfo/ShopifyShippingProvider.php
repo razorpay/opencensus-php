@@ -138,8 +138,8 @@ class ShopifyShippingProvider extends Base\Service
 
             // get customer email and contact for cod engine
             $customer = $this->getMagicCustomerDetails();
-            $customerContact = $customer->getContact();
-            $customerEmail = $customer->getEmail();
+            $customerContact = $customer->getContact() !== '' ? $customer->getContact() : $input['contact'];
+            $customerEmail = $customer->getEmail() !== '' ? $customer->getEmail() : $input['email'];
 
             // Backwards compatibility for merchant serviceability url/shopify that does not return methods
             $decodedResponse = $this->convertOldFormatToShippingMethods($decodedResponse);

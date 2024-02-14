@@ -415,10 +415,17 @@ class Service extends Base\Service
             // Digital products are never cod eligible.
             if ($isDigitalProduct === false)
             {
+                // Customer info will be considered from input payload if it's not available in order meta during COD engine payload construction.
+                $customerInfo = [
+                    'email' => $input['email'],
+                    'phone' => $input['contact'],
+                ];
+
                 $MagicCheckoutProvider = new MagicCheckoutProvider();
                 $address = $MagicCheckoutProvider->applyCodEngineRulesIfApplicable(
                     $order,
                     $orderMetaArray,
+                    $customerInfo,
                     $address,
                     $dimensions);
             }

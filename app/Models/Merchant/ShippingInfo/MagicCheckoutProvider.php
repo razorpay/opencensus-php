@@ -148,6 +148,7 @@ class MagicCheckoutProvider extends Base\Core
     public function applyCodEngineRulesIfApplicable(
         $order,
         array $orderMetaArray,
+        array $customerInfo,
         array $address,
         array $dimensions): array
     {
@@ -169,7 +170,7 @@ class MagicCheckoutProvider extends Base\Core
             }
             return $address;
         }
-        $payload = $this->codEnginePayload($order, $orderMetaArray, $address, $codEngineConfigs[Merchant1ccConfig\Type::COD_ENGINE_TYPE]);
+        $payload = $this->codEnginePayload($order, $orderMetaArray, $customerInfo, $address, $codEngineConfigs[Merchant1ccConfig\Type::COD_ENGINE_TYPE]);
 
         try
         {
@@ -255,10 +256,15 @@ class MagicCheckoutProvider extends Base\Core
         ];
     }
 
-    protected function codEnginePayload($order, array $orderMetaArray, array $address, string $type): array
+    protected function codEnginePayload($order, array $orderMetaArray, array $customerInfo, array $address, string $type): array
     {
         $location = $this->getShippingAddress($address);
-        $customerInfo = $this->getCustomerDetails($orderMetaArray);
+        $customerMetaInfo = $this->getCustomerDetails($orderMetaArray);
+
+        if(empty($customerMetaInfo['phone']) === true || empty($customerMetaInfo['email']) === true)
+        {
+            $customerMetaInfo = array_merge($customerMetaInfo, $customerInfo);
+        }
 
         $rzpOrderId = $order->getPublicId();
         $orderAmount = $orderMetaArray['line_items_total'];
@@ -280,7 +286,7 @@ class MagicCheckoutProvider extends Base\Core
             'type'          => $type,
             'order'         => $inputOrder,
             'location'      => $location,
-            'customer_info' => $customerInfo,
+            'customer_info' => $customerMetaInfo,
         ];
     }
 
