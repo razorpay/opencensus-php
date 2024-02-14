@@ -4789,6 +4789,8 @@ We look forward to transacting with you!
 
     public function testPutPreSignupDetailsWithPartnerCouponCodeForBanking()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->mockBvsService();
 
         $this->ba->adminAuth();
@@ -6808,6 +6810,8 @@ Team Razorpay', '+911234567890');
     {
         Queue::fake([PartnerSubmerchantLinkingReferralJob::class]);
 
+        Config::set('pgos.proxy.request.mock', true);
+
         $dummyPartnerId = self::DEFAULT_SUBMERCHANT_ID;
 
         $this->mockCapitalPartnershipSplitzExperiment($dummyPartnerId);
@@ -7033,6 +7037,8 @@ Team Razorpay', '+911234567890');
 
     public function testPutPreSignupDetailsWithCapitalReferralCode()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->mockBvsService();
 
         $this->mockCapitalPartnershipSplitzExperiment();
@@ -7101,6 +7107,8 @@ Team Razorpay', '+911234567890');
 
     public function testPutPreSignUpDetailsWithBankingReferralCodeInX()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->mockBvsService();
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);

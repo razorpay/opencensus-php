@@ -9224,6 +9224,51 @@ class Core extends Base\Core
         return false;
     }
 
+    /**
+     * @param Entity $merchant
+     *
+     * @return bool
+     */
+    public function isRegularSubmerchant(Entity $merchant): bool
+    {
+        $isLinkedAccOrPartnerOrBankingMerchant = (
+            $merchant->isBusinessBankingEnabled()
+            or $merchant->isLinkedAccount()
+            or $merchant->isPartner()
+        );
+
+        return $isLinkedAccOrPartnerOrBankingMerchant === false;
+    }
+
+    /**
+     * Checks whether the partner that referred this merchant has POS Enabled
+     *
+     * @param Entity $merchant
+     *
+     * @return bool
+     */
+    public function isPOSSubMerchant(Entity $merchant): bool
+    {
+        if ($this->isRegularSubmerchant($merchant) === false)
+        {
+            return false;
+        }
+
+        if ($merchant->isTagAddedBasedOnPrefix(Constants::POS_PARTNERSHIP_TAG_PREFIX) === false)
+        {
+            return false;
+        }
+
+        $partnerId = (new AccessMapCore())->getIdOfReferringPartner($merchant);
+
+        if ($partnerId === null)
+        {
+            return false;
+        }
+
+        return (new Partner\Core())->isPOSEnabledForPartner($partnerId);
+    }
+
     public function isRegularMerchant(Entity $merchant): bool
     {
         // RazorpayX

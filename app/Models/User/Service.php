@@ -812,24 +812,45 @@ class Service extends Base\Service
         return $response;
     }
 
-    private function handlePGOSOnboarding($merchant, $signupCampaign, $countryCode, $input, $user)
+    private function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
     {
         $shouldOnboardViaPGOS = false;
 
-        //Determine whether onboarding should be done via PGOS or not
-        // TODO Phantom Onboarding should also be redirected to PGOS once required changes are done in PGOS
-        if ($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING)
-        {
-            $isPGOSLiveModeExperimentEnabledForMerchant =
-                $this->pgosProxyController->isPGOSExperimentEnabledForMerchant($merchant->getId(), 'app.pgos_live_mode_experiment_id', 'enable');
+        $merchantCore = new Merchant\Core();
 
-            if ($isPGOSLiveModeExperimentEnabledForMerchant === true and
-                (new Merchant\Core)->isRegularMerchant($merchant) === true
-                and $countryCode === 'IN')
+        //Determine whether onboarding should be done via PGOS or not
+        if ($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING AND $countryCode === 'IN')
+        {
+
+            if ($merchantCore->isPOSSubMerchant($merchant))
             {
                 $shouldOnboardViaPGOS = true;
             }
+            else
+            {
+                $isPGOSLiveModeExperimentEnabledForMerchant = $this->pgosProxyController->isPGOSExperimentEnabledForMerchant(
+                    $merchant->getId(), 'app.pgos_live_mode_experiment_id', 'enable',
+                );
+
+                if ($isPGOSLiveModeExperimentEnabledForMerchant)
+                {
+                    if ($merchantCore->isRegularMerchant($merchant))
+                    {
+                        $shouldOnboardViaPGOS = true;
+                    }
+                    else if (
+                        $merchantCore->isRegularSubmerchant($merchant)
+                        and $this->pgosProxyController->isPGOSEnabledForPGSubmerchant($merchant)
+                    )
+                    {
+                        $shouldOnboardViaPGOS = true;
+                    }
+                }
+            }
         }
+
+
+        // TODO Phantom Onboarding should also go to PGOS
 
         if ($signupCampaign === DeviceDetail\Constants::I18N_MY_SIGNUP)
         {

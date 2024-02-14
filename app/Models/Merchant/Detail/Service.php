@@ -2291,6 +2291,10 @@ class Service extends Base\Service
         //        Detail\Entity::BUSINESS_WEBSITE,
         //    ];
 
+        $this->createCapitalApplicationIfApplicable($merchant, $referral);
+
+        $this->createLegalDocumentsForBanking($merchant);
+
         try
         {
             $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry());
@@ -2322,10 +2326,6 @@ class Service extends Base\Service
                 'error description' => 'submitted data could not be processed'
             ]);
         }
-
-        $this->createLegalDocumentsForBanking($merchant);
-
-        $this->createCapitalApplicationIfApplicable($merchant, $referral);
 
         return $this->getPreSignupDetails();
     }

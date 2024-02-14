@@ -76,8 +76,10 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const FETCH_MERCHANT_DOCUMENT_DETAILS  = 'fetch_merchant_document';
     const MERCHANT_DOCUMENT_VALIDITY_CHECK = 'merchant_document_validity_check';
 
-    const PGOS_SHADOW_MODE_EXPERIMENT_ID = 'app.pgos_shadow_mode_experiment_id';
-    const PGOS_LIVE_MODE_EXPERIMENT_ID   = 'app.pgos_live_mode_experiment_id';
+    const PGOS_SHADOW_MODE_EXPERIMENT_ID                = 'app.pgos_shadow_mode_experiment_id';
+    const PGOS_LIVE_MODE_EXPERIMENT_ID                  = 'app.pgos_live_mode_experiment_id';
+    const EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID = 'app.easy_submerchant_pgos_live_mode_experiment_id';
+
     const ENABLE                         = 'enable';
     const LIVE                           = 'live';
 
@@ -317,6 +319,17 @@ class MerchantOnboardingProxyController extends BaseProxyController
         //mocking default response based on RouteKey
         return match ($routeKey)
         {
+            self::PGOS_BULK_FETCH_PGOS_ACTIVATION_STATUS => [
+                'pos_activation_status' => [
+                    "10000000000009" => "under_review"
+                ]
+            ],
+            self::MERCHANT_ACTIVATION_SAVE => [
+              "success" => true,
+            ],
+            self::MERCHANT_SIGN_UP => [
+                "workflow_id" => "test_workflow"
+            ],
             self::FETCH_MERCHANT_DOCUMENT_DETAILS => [
                 "ffmc_license" => [
                     [
@@ -378,11 +391,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         $mock = $app['config']['pgos.proxy.request.mock'];
 
-        if ($mock === true)
-        {
-            return $this->pgosMockResponses($routeKey);
-        }
-
         // check if for the merchant the experiment is enabled or not
         // check if merchant is a regular merchant or not
 
@@ -394,6 +402,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         if ($ignoreRoutingConditions or $this->shouldMerchantOnboardViaPGOS($merchantId, $merchant->getCountry()))
         {
+            if ($mock === true)
+            {
+                return $this->pgosMockResponses($routeKey);
+            }
+
             // get path from defined route url map
             $twirpPath = self::ROUTES_URL_MAP[$routeKey];
 
@@ -502,6 +515,28 @@ class MerchantOnboardingProxyController extends BaseProxyController
         return 'Basic ' . base64_encode($this->serviceConfig['user'] . ':' . $this->serviceConfig['password']);
     }
 
+    /**
+     * Merchants who sign up using a reseller partner referral link are marked as a submerchant.
+     * They signup via easy onboarding, hence their signup campaign is `easy_onboarding`.
+     * Currently `handlePGOSOnboarding` sets the onboarding service for sub-merchants as `service_api`
+     * So, their onboarding is handled by API.
+     * Here we allow sub-merchants to be onboarded via PGOS if their signup campaign is easy_onboarding
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return bool
+     */
+    public function isPGOSEnabledForPGSubmerchant(Merchant\Entity $merchant): bool
+    {
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get(self::EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID),
+        ];
+        $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+        return $response['response']['variant']['name'] === self::ENABLE;
+    }
+
     public function isPGOSExperimentEnabledForMerchant($merchantId, $experimentId, $mode): bool
     {
         $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
@@ -529,11 +564,19 @@ class MerchantOnboardingProxyController extends BaseProxyController
     {
         try
         {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $merchantCore = new Core();
+
+            // Check for POS Sub-merchants
+            if ($merchantCore->isPOSSubMerchant($merchant))
+            {
+                return true;
+            }
+
             $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchantId);
 
             //Check for Google OAuth merchants
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
-
             if (empty($userDeviceDetail) === false)
             {
                 $merchantOnboardedViaService = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::SERVICE);

@@ -896,7 +896,7 @@ return [
                         ],
                         'dashboard_access' => false,
                         'pos' => [
-                            'activation_status' => "NA",
+                            'activation_status' => "under_review",
                             'success'           => true,
                             'last_kyc_performed_by' => [
                                 'contact_email' => 'kmk@rzp.com',
@@ -995,7 +995,7 @@ return [
                 ],
                 'dashboard_access' => false,
                 'pos' => [
-                    'activation_status' => null,
+                    'activation_status' => 'under_review',
                     'success' => true,
                     'action_states' => [],
                     'last_kyc_performed_by' => [
@@ -1045,7 +1045,7 @@ return [
                 ],
                 'dashboard_access' => false,
                 'pos' => [
-                    'activation_status' => null,
+                    'activation_status' => 'under_review',
                     'success' => true,
                     'action_states' => [],
                     'last_kyc_performed_by' => [],

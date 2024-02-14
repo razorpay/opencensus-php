@@ -474,6 +474,24 @@ class Core extends Base\Core
     }
 
     /**
+     * Returns the ID of the partner that referred this submerchant
+     *
+     * @param Merchant\Entity $subMerchant
+     *
+     * @return string|null
+     */
+    public function getIdOfReferringPartner(Merchant\Entity $subMerchant): string|null
+    {
+        $accessMaps = $this->repo
+            ->merchant_access_map
+            ->getMappingByApplicationType($subMerchant->getId(), MerchantApplications\Entity::REFERRED);
+
+        $accessMap = $accessMaps->first();
+
+        return optional($accessMap)->entity_owner_id;
+    }
+
+    /**
      * Returns the internal partner referred oauth app associated with the submerchant
      *
      * @param Merchant\Entity $subMerchant

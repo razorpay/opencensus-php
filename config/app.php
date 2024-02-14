@@ -447,6 +447,8 @@ return array(
 
     'pgos_live_mode_experiment_id' => env('PGOS_LIVE_MODE_EXPERIMENT_ID'),
 
+    'easy_submerchant_pgos_live_mode_experiment_id' => env('EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID'),
+
     'others_m3_experiment_id' => env('OTHERS_M3_EXPERIMENT_ID'),
 
     'wda_migration_acquisition_splitz_exp_id' => env('WDA_MIGRATION_ACQUISITION_SPLITZ_EXP_ID'),

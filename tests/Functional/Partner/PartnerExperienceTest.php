@@ -51,6 +51,7 @@ use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Partner\NotifyPartnerAboutPartnerTypeSwitch;
 use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
 
@@ -489,7 +490,8 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->createResellerPartnerSubmerchant(true, true);
 
         $partnerAgentUser = $this->fixtures->user->create(['email' => 'partneragent@razorpay.com']);
-        $merchantUser = $this->fixtures->user->createUserMerchantMapping(
+
+        $this->fixtures->user->createUserMerchantMapping(
             [
                 'merchant_id' => self::DEFAULT_MERCHANT_ID,
                 'user_id'     => $partnerAgentUser->getId(),
@@ -511,8 +513,6 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->fixtures->merchant->addFeatures(['partner_sub_kyc_access'], self::DEFAULT_MERCHANT_ID);
 
         $this->startTest();
-
-        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
     }
 
     public function testfetchSubmerchantActivationByPartner()
@@ -888,6 +888,8 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchPartnerPOSSubmerchantsProductPOS()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
 
         $this->mockPartnershipsServiceTreatment([], [
@@ -923,10 +925,12 @@ class PartnerExperienceTest extends OAuthTestCase
     // Fetch all subMs for partner_agent
     public function testFetchSubmerchantsProductPOSPartnerAgent()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
 
         $partnerAgentUser = $this->fixtures->user->create(['email' => 'partneragent@razorpay.com']);
-        $merchantUser = $this->fixtures->user->createUserMerchantMapping(
+        $this->fixtures->user->createUserMerchantMapping(
             [
                 'merchant_id' => self::DEFAULT_MERCHANT_ID,
                 'user_id'     => $partnerAgentUser->getId(),
@@ -1056,6 +1060,8 @@ class PartnerExperienceTest extends OAuthTestCase
     // use case: the sub-merchant KYC form is saved but not submitted
     public function testFetchPartnerSubmerchantProductPOSWithNoActionStateLogs()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
 
         $merchantDetailCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core');
@@ -1097,6 +1103,8 @@ class PartnerExperienceTest extends OAuthTestCase
     // use case: the sub-merchant KYC form is not saved at all
     public function testFetchPartnerSubmerchantProductPOSWithNoEventAuditLog()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $this->createResellerPartnerSubmerchant(false, false, ProductConstants::POS);
 
         $merchantDetailCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core');
@@ -4436,6 +4444,8 @@ class PartnerExperienceTest extends OAuthTestCase
     // The following testcase would create a merchant entity for the subM, attach the subM to the partner via referral code
     public function testUserRegisterWithMobileWithReferralCode()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         Queue::fake([PartnerSubmerchantLinkingReferralJob::class]);
 
         $smsPayload = [
@@ -4457,13 +4467,14 @@ class PartnerExperienceTest extends OAuthTestCase
         $testData = & $this->testData[__FUNCTION__];
 
         //Create a dummy partner to fetch primary referral link
-        $partnerMerchant = $this->createPartner('aggregator');
+        $partnerMerchant = $this->createPartner('reseller');
 
         $referralLink = $this->getDbEntity('referrals', ['product' => 'primary']);
 
         $referralCode = $referralLink['ref_code'];
 
-        $testData['request']['content']['partner_referral_code'] = $referralCode;
+        $testData['request']['content']['partner_referral_code']    = $referralCode;
+        $testData['request']['content']['signup_campaign']          = DeviceDetailConstants::EASY_ONBOARDING;
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -4482,6 +4493,16 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals($partnerMerchant['id'], $accessMap['entity_owner_id']);
 
         Queue::assertNotPushed(PartnerSubmerchantLinkingReferralJob::class);
+
+        $userDeviceDetail = $this->getDbLastEntity('user_device_detail');
+
+        $this->assertEquals(DeviceDetailConstants::EASY_ONBOARDING, $userDeviceDetail['signup_campaign']);
+
+        $this->assertEquals(
+            DeviceDetailConstants::SERVICE_PGOS,
+            $userDeviceDetail->getValueFromMetaData('service')
+        );
+
     }
 
     /**
@@ -4595,6 +4616,8 @@ class PartnerExperienceTest extends OAuthTestCase
     // The following testcase would create a merchant entity for the subM, attach the subM to the partner via referral code for POS
     public function testUserRegisterWithMobileWithPOSReferralCode()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $smsPayload = [
             'otp'        => '0007',
             'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
@@ -4626,6 +4649,8 @@ class PartnerExperienceTest extends OAuthTestCase
 
         $testData['request']['content']['partner_referral_code'] = $referralCode;
 
+        $testData['request']['content']['signup_campaign'] = DeviceDetailConstants::EASY_ONBOARDING;
+
         $this->ba->dashboardGuestAppAuth();
 
         $response = $this->runRequestResponseFlow($testData);
@@ -4641,6 +4666,15 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->assertEquals($partnerMerchant['id'], $accessMap['entity_owner_id']);
 
         $this->assertTrue($createdSubM->isTagAdded('pos-sub-'.$partnerId));
+
+        $userDeviceDetail = $this->getDbLastEntity('user_device_detail');
+
+        $this->assertEquals(DeviceDetailConstants::EASY_ONBOARDING, $userDeviceDetail['signup_campaign']);
+
+        $this->assertEquals(
+            DeviceDetailConstants::SERVICE_PGOS,
+            $userDeviceDetail->getValueFromMetaData('service')
+        );
     }
 
     public function testLinkSubMerchantForPPReferralFlow()
@@ -4831,6 +4865,8 @@ class PartnerExperienceTest extends OAuthTestCase
 
     public function testFetchOauthApplicationDetailsFromPayment()
     {
+        Config::set('pgos.proxy.request.mock', true);
+
         $accessToken = $this->setPurePlatformContext(Mode::TEST);
 
         $payment = $this->getDefaultPaymentArray();
