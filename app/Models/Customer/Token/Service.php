@@ -1016,7 +1016,7 @@ class Service extends Base\Service
 
                 $serviceProviderTokens = [];
 
-                if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === true || $isPar)
+                if (($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === true || $isPar) && $token->status == "active")
                 {
                     $serviceProviderTokens = $this->core->fetchToken($token, $internalServiceRequest);
                 }
