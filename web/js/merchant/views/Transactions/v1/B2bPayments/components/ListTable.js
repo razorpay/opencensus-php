@@ -5,8 +5,8 @@ import { useSplitzService } from 'common/splitz';
 import { paymentId, amount, createdAt, status } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
 import SenderDetails from 'merchant/views/Transactions/v1/B2bPayments/components/SenderDetails';
+import { getCountryName } from 'merchant/views/Transactions/v1/B2bPayments/utils';
 import { makeIdLink } from 'merchant/views/Transactions/v1/Payments/Utils';
-
 import './styles.styl';
 
 const _paymentId = (splitz) => {
@@ -129,8 +129,9 @@ const ListTable = ({
     value: (item) => {
       const { sender_address } = item ?? {};
       const { name = '', country = '' } = sender_address ?? {};
+      const countryName = getCountryName(country);
 
-      return <SenderDetails name={name} country={country} />;
+      return <SenderDetails name={name} country={countryName} />;
     },
   };
 

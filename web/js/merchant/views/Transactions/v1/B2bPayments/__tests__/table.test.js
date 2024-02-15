@@ -164,27 +164,36 @@ describe('Test <ListTable />', () => {
     expect(screen.getByText('VIEW')).toBeInTheDocument();
   });
 
+  /** Sender Details - start */
   test('should not render show sender details', () => {
     renderSenderAddress(null, { isSenderDetailsEnabled: false });
   });
 
-  test('should show sender details', () => {
-    const senderAddress = { name: 'Sample name', country: 'Sample country' };
+  test('should show sender details with valid name and country', () => {
+    const senderAddress = { name: 'Sample name', country: 'gb' };
     renderSenderAddress(senderAddress);
 
     expect(screen.queryByText(senderAddress.name)).toBeInTheDocument();
-    expect(screen.queryByText(senderAddress.country)).toBeInTheDocument();
+    expect(screen.queryByText('United Kingdom')).toBeInTheDocument();
   });
 
-  test('should show sender details - Name not available', () => {
-    const senderAddress = { name: null, country: 'Sample country' };
+  test('should show sender details with country code if mapping is not there', () => {
+    const senderAddress = { name: 'Sample name', country: 'xyz' };
+    renderSenderAddress(senderAddress);
+
+    expect(screen.queryByText(senderAddress.name)).toBeInTheDocument();
+    expect(screen.queryByText('xyz')).toBeInTheDocument();
+  });
+
+  test('should show sender details with name not available', () => {
+    const senderAddress = { name: null, country: 'SX' };
     renderSenderAddress(senderAddress);
 
     expect(screen.queryByText('Name not available')).toBeInTheDocument();
-    expect(screen.queryByText(senderAddress.country)).toBeInTheDocument();
+    expect(screen.queryByText('Sint Maarten')).toBeInTheDocument();
   });
 
-  test('should show sender details - Country not available', () => {
+  test('should show sender details with country not available', () => {
     const senderAddress = { name: 'Sample name', country: null };
     renderSenderAddress(senderAddress);
 
@@ -192,13 +201,13 @@ describe('Test <ListTable />', () => {
     expect(screen.queryByText('Country not available')).toBeInTheDocument();
   });
 
-  test('should show sender details - Name and country not available', () => {
+  test('should show sender details with name and country not available', () => {
     const senderAddress = { name: null, country: null };
     renderSenderAddress(senderAddress);
     assertSenderDetailsNotAvailable();
   });
 
-  test('should show sender details - Name and country with undefined values', () => {
+  test('should show sender details with name and country as undefined values', () => {
     const senderAddress = { name: undefined, country: undefined };
     renderSenderAddress(senderAddress);
     assertSenderDetailsNotAvailable();
@@ -209,4 +218,5 @@ describe('Test <ListTable />', () => {
     renderSenderAddress(senderAddress);
     assertSenderDetailsNotAvailable();
   });
+  /** Sender Details - end */
 });

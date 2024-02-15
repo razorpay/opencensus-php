@@ -1204,4 +1204,54 @@ export const COUNTRY_CODES = [
     dial_code: '+383',
     code: 'XK',
   },
+  {
+    name: 'Bouvet Island',
+    dial_code: '+47',
+    code: 'BV',
+  },
+  {
+    name: 'Bonaire Sint Eustatius and Saba',
+    dial_code: '+599',
+    code: 'BQ',
+  },
+  {
+    name: 'Heard Island and McDonald Islands',
+    dial_code: '+672',
+    code: 'HM',
+  },
+  {
+    name: 'Western Sahara',
+    dial_code: '+212',
+    code: 'EH',
+  },
+  {
+    name: 'Cocos Islands',
+    dial_code: '+61',
+    code: 'CC',
+  },
+  {
+    name: 'Christmas Island',
+    dial_code: '+61',
+    code: 'CX',
+  },
+  {
+    name: 'Curaçao',
+    dial_code: '+599',
+    code: 'CW',
+  },
+  {
+    name: 'Sint Maarten',
+    dial_code: '+1-721',
+    code: 'SX',
+  },
+  {
+    name: 'United States Minor Outlying Islands',
+    dial_code: '',
+    code: 'UM',
+  },
+  {
+    name: 'French Southern Territories',
+    dial_code: '+262',
+    code: 'TF',
+  },
 ];
