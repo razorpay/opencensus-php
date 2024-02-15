@@ -44,7 +44,7 @@ const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
           }}
         >
           <Box
-            marginTop="spacing.4"
+            paddingTop="spacing.4"
             padding="spacing.4"
             display="flex"
             flex={1}

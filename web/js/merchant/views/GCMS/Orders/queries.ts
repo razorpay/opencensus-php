@@ -327,3 +327,45 @@ export const orderSubmit = async ({ orderId, merchantId, mode = 'test' }: OrderS
     throw new Error(e?.response?.errors?.[0]);
   }
 };
+
+export const fetchResellerOrders = async ({
+  mode = 'test',
+  skip = 0,
+  orderStatus,
+  fromDate,
+  toDate,
+  resellerId,
+  orderId,
+}: {
+  mode?: ModeT;
+  skip?: number;
+  orderStatus?: string;
+  fromDate?: number;
+  toDate?: number;
+  resellerId?: string;
+  orderId: string;
+}) => {
+  try {
+    const res = await fetch<ListApiResponse<Order>>({
+      url: `${getGCMSBasePath(mode)}/orders${stringifyQueryParams({
+        reseller_id: resellerId,
+        id: orderId,
+        skip,
+        count: LIST_FETCH_BATCH_SIZE,
+        status: !orderStatus || orderStatus === ORDERS_STATUS.all.value ? '' : orderStatus,
+        from: !fromDate ? '' : fromDate,
+        to: !toDate ? '' : toDate,
+      })}`,
+      mode,
+    });
+    return res;
+  } catch (e: any) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};

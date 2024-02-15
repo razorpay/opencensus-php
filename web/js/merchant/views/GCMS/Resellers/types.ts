@@ -32,6 +32,17 @@ export type ResellerBalance = {
   account_id: string;
   balance: number;
   created_at: number;
+  virtual_account: VirtualAccount;
+};
+
+type VirtualAccount = {
+  id: string;
+  entity: string;
+  name: string;
+  bank_account_number: string;
+  ifsc: string;
+  bank_name: string;
+  status: string;
 };
 
 export type ResellerDetails = {

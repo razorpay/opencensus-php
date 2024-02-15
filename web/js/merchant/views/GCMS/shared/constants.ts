@@ -8,6 +8,8 @@ const isProd = isProductionEnv();
 export const getGCMSBasePath = (mode = 'test') =>
   isProd ? (mode === 'test' ? `gcoms/test` : 'gcoms') : 'gcoms';
 export const RESELLER_PROGRAMS_PATH = 'programs';
+export const RESELLER_ACCOUNTS_PATH = 'accounts';
+export const RESELLER_ORDERS_PATH = 'orders';
 export const PROGRAM_TYPES = {
   VOUCHER: {
     id: 'voucher',

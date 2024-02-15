@@ -7,13 +7,14 @@ import { StyledFilterDiv } from './StyledDiv';
 
 interface OrdersFilterProps {
   onSearch: ({ date, status, resellerName, orderId }) => void;
+  isResellerOrderFilter?: boolean;
 }
 
 export const presetsForCalendar = generatePresets(DATE_RANGE_PRESETS);
 const allTimePresetName = DATE_RANGE_PRESETS[0][0];
 const getEmptyDate = () => ({ from: '', to: '' });
 
-const OrdersFilter = ({ onSearch }: OrdersFilterProps) => {
+const OrdersFilter = ({ onSearch, isResellerOrderFilter = false }: OrdersFilterProps) => {
   const [selectedPreset, setSelectedPreset] = useState({
     name: allTimePresetName,
     value: DATE_RANGE_PRESETS[0][1],
@@ -96,18 +97,19 @@ const OrdersFilter = ({ onSearch }: OrdersFilterProps) => {
               }}
             />
           </div>
-          <div className="form-group list-filter-item">
-            <label>Reseller Name</label>
-            <input
-              name="reseller_name"
-              className="form-control input-sm"
-              data-testid="reseller_name"
-              value={resellerName}
-              onChange={(e) => {
-                handleResellerNameChange(e.target.value);
-              }}
-            />
-          </div>
+          {!isResellerOrderFilter ? (
+            <div className="form-group list-filter-item">
+              <label>Reseller Name</label>
+              <input
+                name="reseller_name"
+                className="form-control input-sm"
+                data-testid="reseller_name"
+                onChange={(e) => {
+                  handleResellerNameChange(e.target.value);
+                }}
+              />
+            </div>
+          ) : null}
           <div className="form-group datepicker-group">
             <label>Duration</label>
             <DateRangePickerV2

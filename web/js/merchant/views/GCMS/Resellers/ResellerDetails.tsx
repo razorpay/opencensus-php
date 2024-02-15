@@ -18,7 +18,13 @@ import { fetchOrderItems, orderCreate } from 'merchant/views/GCMS/Orders/queries
 import { OrderItem } from 'merchant/views/GCMS/Orders/types';
 import ResellerPrograms from 'merchant/views/GCMS/Resellers/ResellerPrograms';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
-import { RESELLER_PROGRAMS_PATH } from 'merchant/views/GCMS/shared/constants';
+import ResellerOrders from 'merchant/views/GCMS/Resellers/ResellerOrders';
+import ResellerAccounts from 'merchant/views/GCMS/Resellers/ResellerAccounts';
+import {
+  RESELLER_ACCOUNTS_PATH,
+  RESELLER_ORDERS_PATH,
+  RESELLER_PROGRAMS_PATH,
+} from 'merchant/views/GCMS/shared/constants';
 import { ListApiResponse } from 'merchant/views/Wallet/types';
 
 import ResellerDetailsHeader from './ResellerDetailsHeader';
@@ -106,11 +112,17 @@ const ResellerDetails = ({ mode, merchantId }: { mode: ModeT; merchantId: string
         />
         <header>
           <NavLink to={RESELLER_PROGRAMS_PATH}>Programs</NavLink>
+          <NavLink data-testid="orders-nav-link" to={RESELLER_ORDERS_PATH}>
+            Orders
+          </NavLink>
+          <NavLink to={RESELLER_ACCOUNTS_PATH}>Accounts</NavLink>
         </header>
         <div className="content">
           <Routes>
             <Route path="/" element={<Navigate to={RESELLER_PROGRAMS_PATH} replace />} />
             <Route path={RESELLER_PROGRAMS_PATH} element={<ResellerPrograms mode={mode} />} />
+            <Route path={RESELLER_ORDERS_PATH} element={<ResellerOrders mode={mode} />} />
+            <Route path={RESELLER_ACCOUNTS_PATH} element={<ResellerAccounts mode={mode} />} />
           </Routes>
         </div>
       </div>
