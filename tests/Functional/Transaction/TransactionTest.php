@@ -1628,6 +1628,39 @@ class TransactionTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentCaptureTransactionsForEmiCreateInternal()
+    {
+        $posCardPricingPlanEmi =  [
+            'id'                  => '1zE31zbybadaq5',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'product'             => 'primary',
+            'feature'             => 'payment',
+            'payment_method'      => 'emi',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'fixed_rate'          => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+            'channel'             => 'in_person',
+            'fee_bearer'          => 'platform'
+        ];
+
+        $this->ba->appAuth();
+
+        $this->fixtures->create('pricing', $posCardPricingPlanEmi);
+
+        $terminal = $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payment']['terminal_id'] = $terminal['id'];
+
+        $this->startTest();
+    }
+
     public function testPaymentCaptureTransactionsCreateInternalWithPCPAuth()
     {
         $posCardPricingPlan = [

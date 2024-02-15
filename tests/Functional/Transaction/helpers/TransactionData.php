@@ -889,6 +889,83 @@ return [
         ],
     ],
 
+    'testPaymentCaptureTransactionsForEmiCreateInternal' => [
+        'request' => [
+            'content' => [
+                'payment' => [
+                    'id' =>  "GiahjFtNg85OjP",
+                    'amount' =>  50000,
+                    'base_amount' => 50000,
+                    'currency' => "INR",
+                    'status' => "captured",
+                    'card' => [
+                        'id'                =>  'GiahjFtNg85OjA',
+                        'merchant_id'       =>  '10000000000000',
+                        'name'              =>  'test',
+                        'network'           =>  'RuPay',
+                        'expiry_month'      =>  '12',
+                        'expiry_year'       =>  '2100',
+                        'issuer'            =>  'hdfc',
+                        'type'              =>  'debit',
+                        'iin'               =>  '607384',
+                        'last4'             =>  '1111',
+                        'vault_token'       =>  'NjA3Mzg0OTcwMDAwNDk0Nw==',
+                        'vault'             =>  'rzpvault',
+                    ],
+                    'emi_plan' => [
+                        'id' => '4rKDQ3plcTWpEj',
+                        'rate' => 900,
+                        'duration' => 15,
+                        'issuer' => 'sc3',
+                        'bank' => 'HDFC',
+                        'network' => 'Visa'
+                    ],
+                    'international' => FALSE,
+                    'method' => "emi",
+                    'source_channel' => 'in_person',
+                    'amount_refunded' =>  0,
+                    'captured' => TRUE,
+                    'description' =>  "random description",
+                    'bank' => NULL,
+                    'wallet' => NULL,
+                    'vpa' => NULL,
+                    'email' => "a@b.com",
+                    'contact' =>  "+919918899029",
+                    'notes' =>  [
+                        'merchant_order_id' =>  "random order id",
+                    ],
+                    'fee' =>  0,
+                    'tax' =>  0,
+                    'created_at' =>  1614864014,
+                    'captured_at' =>  1614874014,
+                    'merchant_id' => "10000000000000"
+                ]
+            ],
+            'url'    => '/internal/transactions',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity_id' => 'pay_GiahjFtNg85OjP',
+                'type' => 'payment',
+                'debit' =>  0,
+                'credit' =>  50000,
+                'amount' =>  50000,
+                'currency' => "INR",
+                'fee' =>  0,
+                'tax' =>  0,
+                'settled' =>  FALSE,
+                'credit_type' => "default",
+                'description' =>  "random description",
+                'settlement_utr' => NULL,
+                'order_id' => NULL,
+                'order_receipt' => NULL,
+                'method' => "emi",
+                'dispute_id' => NULL,
+            ],
+        ],
+    ],
+
     'testHDFCSurchargeNonDsPaymentCaptureTransactionsCreateInternal' => [
         'request' => [
             'content' => [

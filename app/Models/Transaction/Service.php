@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Emi;
 use RZP\Trace\Tracer;
 use RZP\Models\Payout;
 use RZP\Services\Mutex;
@@ -456,6 +457,15 @@ class Service extends Base\Service
             $payment->setSourceChannel($input['payment']['source_channel']);
         }
 
+
+        if ((isset($input['payment']['emi_plan']) === true) and 
+        (isset($input['payment']['source_channel']) === true))
+        {
+            $emiPlan = (new Emi\Entity)->forceFill($input['payment']['emi_plan']);
+
+            unset($input['payment']['emi_plan']);
+        }
+
         $payment->forceFill($input['payment']);
 
         if ($payment->isFeeBearerCustomer() === false)
@@ -466,6 +476,19 @@ class Service extends Base\Service
         if ($payment->isCard() === true)
         {
             $payment->card()->associate($card);
+
+            if ((isset($input['payment']['source_channel']) === true) and
+                ($input['payment']['source_channel'] === 'in_person'))
+            {
+                $payment->enablePCPService();
+            }
+        }
+
+
+        if ($payment->isEmi() === true)
+        {
+            $payment->card()->associate($card);
+            $payment->emiPlan()->associate($emiPlan);
 
             if ((isset($input['payment']['source_channel']) === true) and
                 ($input['payment']['source_channel'] === 'in_person'))
