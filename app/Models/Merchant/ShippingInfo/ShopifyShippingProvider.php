@@ -136,10 +136,13 @@ class ShopifyShippingProvider extends Base\Service
                 unset($decodedResponse['tax_details']);
             }
 
+            $inputPhone = $input['contact'] ?? '';
+            $inputEmail = $input['email'] ?? '';
+
             // get customer email and contact for cod engine
             $customer = $this->getMagicCustomerDetails();
-            $customerContact = $customer->getContact() !== '' ? $customer->getContact() : $input['contact'];
-            $customerEmail = $customer->getEmail() !== '' ? $customer->getEmail() : $input['email'];
+            $customerContact = $customer->getContact() !== '' ? $customer->getContact() : $inputPhone;
+            $customerEmail = $customer->getEmail() !== '' ? $customer->getEmail() : $inputEmail;
 
             // Backwards compatibility for merchant serviceability url/shopify that does not return methods
             $decodedResponse = $this->convertOldFormatToShippingMethods($decodedResponse);

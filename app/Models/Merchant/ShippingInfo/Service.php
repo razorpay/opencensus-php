@@ -417,8 +417,8 @@ class Service extends Base\Service
             {
                 // Customer info will be considered from input payload if it's not available in order meta during COD engine payload construction.
                 $customerInfo = [
-                    'email' => $input['email'],
-                    'phone' => $input['contact'],
+                    'email' => $input['email'] ?? '',
+                    'phone' => $input['contact'] ?? '',
                 ];
 
                 $MagicCheckoutProvider = new MagicCheckoutProvider();
