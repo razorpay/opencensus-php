@@ -1,5 +1,5 @@
-import { merchantFetch } from 'merchant/utils/ajax';
 import { CommonApiResponse } from 'common/typings';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 export const createSubmerchantInvite = (params) => {
   return merchantFetch({

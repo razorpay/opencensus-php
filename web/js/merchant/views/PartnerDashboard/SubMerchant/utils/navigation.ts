@@ -4,7 +4,7 @@ import { ShowNotificationT } from 'merchant/views/PartnerDashboard/Home/TypesDec
 
 type SubmerchantPartial = { id: string; user: { id: string } };
 
-const checkIsEasyEnabledForSubmerchant = async (
+export const checkIsEasyEnabledForSubmerchant = async (
   submerchant: SubmerchantPartial,
   showNotification: ShowNotificationT,
 ): Promise<boolean> => {

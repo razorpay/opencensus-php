@@ -147,6 +147,9 @@ const SubmerchantDetails = lazy(() =>
     /* webpackChunkName: "SubMerchantDetails" */ 'merchant/views/PartnerDashboard/SubMerchant/DetailsContainer'
   ),
 );
+const PosSubmerchantDetails = lazy(() =>
+  import('merchant/views/PartnerDashboard/SubMerchant/POS/PosSubmerchantDetails'),
+);
 const EarningTransactionalDetails = lazy(() =>
   import(
     /* webpackChunkName: "EarningsTransactional" */ 'merchant/views/PartnerDashboard/Earnings/Transactional/Details'
@@ -477,6 +480,7 @@ const entityDetailsMap = {
   '/partners/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
   '/partners/submerchants/x/:id(acc_.+)': { component: SubmerchantDetails },
   '/partners/submerchants/capital/:id(acc_.+)': { component: SubmerchantDetails },
+  '/partners/submerchants/pos/:id(acc_.+)': { component: PosSubmerchantDetails },
   '/partners/earnings/transactional/:id(comm_.+)': {
     component: EarningTransactionalDetails,
     additionalCondition: (user) => user.isAllowedView('earnings') && user.isHavingPartnerConfigs,

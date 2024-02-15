@@ -436,3 +436,13 @@ export type PosActivationStatusTypes =
   | 'kyc_qualified_stb'
   | 'kyc_qualified_unactivated'
   | null;
+
+export enum POS_ACTIVATION_STATUS {
+  submitted = 'submitted',
+  needs_clarification = 'needs_clarification',
+  rejected = 'rejected',
+  under_review = 'under_review',
+  activated = 'activated',
+  kyc_qualified_stb = 'kyc_qualified_stb',
+  kyc_qualified_unactivated = 'kyc_qualified_unactivated',
+}

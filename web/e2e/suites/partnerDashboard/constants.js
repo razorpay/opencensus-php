@@ -1,5 +1,6 @@
 export const WELCOME_TEXT_SELECTORS = {
   RESELLER_WELCOME_TEXT: 'text=Welcome to Reseller Partner dashboard, Playwright Account!',
+  RESELLER_POS_WELCOME_TEXT: 'text=Welcome to Reseller Partner dashboard, POS PLAYWRIGHT RESELLER!',
   AGGREGATOR_WELCOME_TEXT:
     'text=Welcome to Aggregator Partner dashboard, Playwright Partner Aggregator!',
   PLATFORM_PARTNER_WELCOME_TEXT:
