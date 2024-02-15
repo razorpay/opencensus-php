@@ -895,6 +895,52 @@ return [
         ],
     ],
 
+    'testBasNotifyWebhookDataAmbiguity' => [
+        'request'  => [
+            'url'     => '/bas/banking_accounts/notifications',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'notification_type' => 'webhook_data_ambiguity',
+                    'banking_account'   => [
+                        'id'                                 => '10000000000000',
+                        'merchant_id'                        => '10000000000000',
+                        'banking_account_activation_details' => [
+                            'assignee_name'         => 'Foo',
+                            'additional_details'    => [],
+                            'booking_date_and_time' => 1590521524,
+                            'sales_team'            => 'sme',
+                        ],
+                        'bank_reference_number'              => '1590521524',
+                        'created_at'                         => 1590521524,
+                        'pincode'                            => '560002',
+                        'status'                             => 'created',
+                        'sub_status'                         => null
+                    ],
+                    'webhook_data'    => [
+                        'new_status'            => 'activated',
+                        'new_sub_status'        => null,
+                        'beneficiary_name'      => 'test',
+                        'beneficiary_pin'       => '560002',
+                        'beneficiary_city'      => 'Bangalore',
+                        'beneficiary_address1'  => '14-A',
+                        'bank_reference_number' => '156783',
+                    ],
+                    'validator_op'      => 'create_normal'
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'banking_account_id' => '10000000000000',
+                    'success'            => true,
+                    'error'              => null
+                ]
+            ],
+        ],
+    ],
+
     'testBasNotifyStatusChange' => [
         'request'  => [
             'url'     => '/bas/banking_accounts/notifications',

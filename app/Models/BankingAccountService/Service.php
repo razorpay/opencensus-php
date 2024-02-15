@@ -1000,7 +1000,7 @@ class Service extends Base\Service
                         $bankingAccount = $input[Constants::BANKING_ACCOUNT];
                         $webhookData = $input[Constants::NOTIFICATION_INPUT_WEBHOOK_DATA];
 
-                        $notifier->notify($bankingAccount->toArray(), Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY, Event::ALERT, $webhookData);
+                        $notifier->notify($bankingAccount, Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY, Event::ALERT, $webhookData);
 
                         break;
 

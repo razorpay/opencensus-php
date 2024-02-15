@@ -34,6 +34,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\BankingAccount\Activation\Detail\Validator;
 use RZP\Tests\Functional\Helpers\BankingAccount\FeeRecoveryTrait;
+use RZP\Mail\BankingAccount\Activation\AccountOpeningWebhookDataAmbiguity;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\DocketMail\DocketMail;
 use RZP\Services\BankingAccountService as BasService;
@@ -1749,6 +1750,17 @@ class BankingAccountServiceTest extends TestCase
 
         Mail::hasQueued(XProActivation::class);
 
+    }
+
+    public function testBasNotifyWebhookDataAmbiguity()
+    {
+        Mail::fake();
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(AccountOpeningWebhookDataAmbiguity::class);
     }
 
     public function testBasNotifyStatusChange()
