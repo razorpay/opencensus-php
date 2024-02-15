@@ -16396,6 +16396,7 @@ class Route
         ],
 
         'ucs' => [
+            'dispute_fetch_multiple_aggregate',
             'merchant_fetch_config_internal',
             'internal_merchant_fetch',
             'user_fetch_internal',
@@ -17022,6 +17023,7 @@ class Route
         ],
 
         'care' => [
+            'internal_merchant_fetch',
             'fd_insert_into_db',
             'merchant_ids_fetch_for_user_contact',
             'user_fetch_primary_user_contact',
