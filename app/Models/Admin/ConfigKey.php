@@ -456,6 +456,8 @@ class ConfigKey
 
     const P2P_SCHEDULE_POST_APPROVAL_MERCHANT_LIST  = self::PREFIX . 'p2p_schedule_post_approval_merchant_list';
 
+    const PENNILESS_WHITELISTED_BANKS_LIST          = self::PREFIX . 'penniless_whitelisted_banks_list';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,

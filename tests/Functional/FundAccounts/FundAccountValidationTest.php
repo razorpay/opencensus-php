@@ -12,12 +12,14 @@ use RZP\Models\Admin\Admin;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Models\Pricing\Fee;
 use RZP\Jobs\FavQueueForFTS;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\FundAccount\Validation\Entity;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\BankAccount\Entity as BankAccount;
@@ -121,6 +123,8 @@ class FundAccountValidationTest extends TestCase
 
         Queue::fake();
 
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
@@ -195,6 +199,8 @@ class FundAccountValidationTest extends TestCase
     {
 
         Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
@@ -286,6 +292,8 @@ class FundAccountValidationTest extends TestCase
     {
 
         Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
@@ -380,6 +388,8 @@ class FundAccountValidationTest extends TestCase
 
         Queue::fake();
 
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
@@ -445,6 +455,169 @@ class FundAccountValidationTest extends TestCase
         // Test worker
         $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
         $faVpaValidation->handle();
+
+        Queue::assertPushed(FavQueueForFTS::class);
+
+        // Test worker
+        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+        $favQueueForFts->handle();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->triggerFlowToUpdateFavWithNewState($fav['id'], 'COMPLETED');
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Test', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+
+        // Penny drop assertion
+        $this->assertEquals('fav_'.$favUpdated['id'], $fta['source']);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+        $this->assertNotNull($fta['narration']);
+    }
+
+    public function testPennilessValidationWithWhitelistedBeneBank()
+    {
+
+        Queue::fake();
+
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PENNILESS_VALIDATION]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $txn = $this->getLastEntity('transaction', true);
+        $balance = $this->getLastEntity('balance', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals(false, $txn['settled']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals(3, $txn['mdr']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(3, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        // Note: because no fee credits are available
+        $this->assertEquals(9999997, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertNotNull($txn['posted_at']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(3, $fav['fees']);
+        $this->assertEquals(0, $fav['tax']);
+
+        // validate balance entry in database
+        $this->assertEquals(9999997, $balance['balance']);
+
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        // no fta
+        $this->assertNotEquals($fav['id'], $fta['source']);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Customer', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+
+    }
+
+    public function testPennilessValidationWithBlacklistedBeneBank()
+    {
+
+        Queue::fake();
+
+//        test case if of sbi account, but only hdfc is whitelisted
+        (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['HDFC']]);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PENNILESS_VALIDATION]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $txn = $this->getLastEntity('transaction', true);
+        $balance = $this->getLastEntity('balance', true);
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals(false, $txn['settled']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals(3, $txn['mdr']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(3, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+
+        // Note: because no fee credits are available
+        $this->assertEquals(9999997, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertNotNull($txn['posted_at']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(3, $fav['fees']);
+        $this->assertEquals(0, $fav['tax']);
+
+        // validate balance entry in database
+        $this->assertEquals(9999997, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
 
         Queue::assertPushed(FavQueueForFTS::class);
 

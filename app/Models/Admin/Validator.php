@@ -288,6 +288,7 @@ class Validator extends Base\Validator
         ConfigKey::ICICI_CA_PRIORITY_BALANCE_UPDATE_LIST                               => 'filled|array',
         ConfigKey::P2P_SCHEDULE_POST_APPROVAL_MERCHANT_LIST                            => 'filled|array',
         ConfigKey::UPI_TURBO_PRE_FETCH_BANK_ACCOUNT                                    => 'filled|array',
+        ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST                                    => 'filled|array'
     ];
 
     protected static $setRedisKeysRules = [

@@ -4210,6 +4210,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VPA_FAILED_TO_VALIDATE_BANK_ACCOUNT                   = 'VPA_FAILED_TO_VALIDATE_BANK_ACCOUNT';
     const BANK_ACCOUNT_VALIDATED_USING_VPA                      = 'BANK_ACCOUNT_VALIDATED_USING_VPA';
     const SWITCHING_BACK_TO_PENNY_DROP                          = 'SWITCHING_BACK_TO_PENNY_DROP';
+    const FAV_MERCHANT_FLAGS_STATUS                             = 'FAV_MERCHANT_FLAGS_STATUS';
+    const FAV_QUEUE_FOR_VPA_VALIDATE_JOB_REQUEST                = 'FAV_QUEUE_FOR_VPA_VALIDATE_JOB_REQUEST';
+    const FAV_QUEUE_FOR_VPA_VALIDATE_JOB_REQUEST_DISPATCHED     = 'FAV_QUEUE_FOR_VPA_VALIDATE_JOB_REQUEST_DISPATCHED';
 
     //Trace Code for B2B flow
     const FETCH_INTERNATIONAL_BANK_TRANSFERS_ACCOUNTS           = 'FETCH_INTERNATIONAL_BANK_TRANSFERS_ACCOUNTS';
@@ -8806,6 +8809,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // FTA Deprecation for FAV
     const FAV_QUEUE_FOR_FTS_JOB_INIT                                 = 'FAV_QUEUE_FOR_FTS_JOB_INIT';
     const FAV_QUEUE_FOR_FTS_JOB_REQUEST                              = 'FAV_QUEUE_FOR_FTS_JOB_REQUEST';
+    const FAV_QUEUE_FOR_FTS_JOB_REQUEST_DISPATCHED                   = 'FAV_QUEUE_FOR_FTS_JOB_REQUEST_DISPATCHED';
     const FAV_QUEUE_FOR_FTS_JOB_FAILED                               = 'FAV_QUEUE_FOR_FTS_JOB_FAILED';
     const FAV_QUEUE_FOR_FTS_JOB_SUCCESSFUL                           = 'FAV_QUEUE_FOR_FTS_JOB_SUCCESSFUL';
     const FAV_QUEUE_FOR_FTS_JOB_RELEASED                             = 'FAV_QUEUE_FOR_FTS_JOB_RELEASED';

@@ -94,17 +94,38 @@ class Core extends Base\Core
 
                 $isUtrExposed = $fundAccountValidation->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_FA_VALIDATION_UTR);
 
+                $this->trace->info(TraceCode::FAV_MERCHANT_FLAGS_STATUS,
+                    [
+                        'isPenniless'  => $isPenniless,
+                        'isUtrExposed' => $isUtrExposed
+                    ]);
+
                 if (($isPenniless === true) && ($isUtrExposed === false)
                     && ($fundAccountValidation->getFundAccountType() === FundAccount\Type::BANK_ACCOUNT))
                 {
-                    $this->trace->info(TraceCode::SWITCHED_TO_VPA_VALIDATION,
-                        [
-                            'fav_id'      => $fundAccountValidation->getId(),
-                            'merchant_id' => $merchant->getId(),
-                            'isPenniless' => $isPenniless
-                        ]);
+                    $ifsc = $fundAccountValidation->fundAccount->account->getIfscCode();
 
-                    $processor = Processor\Factory::getVPAProcessor($fundAccountValidation);
+                    $beneBank = substr($ifsc, 0, 4);
+
+                    $whitelistedBanksLists = (new Admin\Service)->getConfigKey([
+                        'key' => Admin\ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST
+                    ]);
+
+                    if (in_array($beneBank, $whitelistedBanksLists))
+                    {
+                        $this->trace->info(TraceCode::SWITCHED_TO_VPA_VALIDATION,
+                            [
+                                'fav_id'      => $fundAccountValidation->getId(),
+                                'merchant_id' => $merchant->getId(),
+                                'isPenniless' => $isPenniless
+                            ]);
+
+                        $processor = Processor\Factory::getVPAProcessor($fundAccountValidation);
+                    }
+                    else
+                    {
+                        $processor = Processor\Factory::get($fundAccountValidation);
+                    }
                 }
                 else
                 {

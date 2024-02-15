@@ -114,7 +114,7 @@ class FaVpaValidation extends Job
                 $success = array_key_exists('success', $data) ? $data['success'] : null;
 
                 $traceable = [
-                    'isPenniless'      => $isPenniless,
+                    'isPenniless'      =>  $isPenniless,
                     'account_status'   =>  $accountStatus,
                     'customer_name'    =>  $name,
                     'fav_status'       =>  $data['fav_status'],
@@ -135,16 +135,18 @@ class FaVpaValidation extends Job
                             TraceCode::BANK_ACCOUNT_VALIDATED_USING_VPA,
                             $traceable
                         );
+
+                        $vpaProcessor->markValidationAsCompleted($data['account_status']);
                     }
                     else
                     {
                         $this->handlePennilessVPAValidationFailure($faValidation, $traceable);
-
-                        return;
                     }
                 }
-
-                $vpaProcessor->markValidationAsCompleted($data['account_status']);
+                else
+                {
+                    $vpaProcessor->markValidationAsCompleted($data['account_status']);
+                }
             }
             else
             {
@@ -161,35 +163,21 @@ class FaVpaValidation extends Job
                 if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT))
                 {
                     $this->handlePennilessVpaValidationFailure($faValidation, $traceable);
-
-                    return;
                 }
-
-                $vpaProcessor->markValidationAsFailed();
+                else
+                {
+                    $vpaProcessor->markValidationAsFailed();
+                }
             }
 
         }
-        catch (RuntimeException $e) {
-
-            $this->trace->traceException(
-                $e,
-                Logger::ERROR,
-                TraceCode::FUND_ACCOUNT_VALIDATION_VPA_VALIDATE_FAILED,
-                [
-                    'fa_validation_id' => $this->favId
-                ]
-            );
+        catch (RuntimeException $e)
+        {
+            $this->handleFavException($e, TraceCode::FUND_ACCOUNT_VALIDATION_VPA_VALIDATE_FAILED);
         }
         catch (Throwable $e)
         {
-            $this->trace->traceException(
-                $e,
-                Logger::ERROR,
-                TraceCode::FUND_ACCOUNT_VALIDATION_VPA_FAILED,
-                [
-                    'fa_validation_id' => $this->favId
-                ]
-            );
+            $this->handleFavException($e, TraceCode::FUND_ACCOUNT_VALIDATION_VPA_FAILED);
         }
 
         $this->delete();
@@ -327,5 +315,37 @@ class FaVpaValidation extends Job
         );
 
         $bankAccountProcessor->preProcessValidation();
+    }
+
+    protected function handleFavException(Throwable $e, string $traceCode)
+    {
+        $faValidation = $this->repoManager
+            ->fund_account_validation
+            ->findOrFail($this->favId);
+
+        $fundAccount = $faValidation->fundAccount;
+
+        $isPenniless = $faValidation->merchant->isFeatureEnabled(Constants::PENNILESS_VALIDATION);
+
+        if (($isPenniless === true) && ($fundAccount->getAccountType() === Type::BANK_ACCOUNT))
+        {
+            $traceable = [
+                'id'        => $faValidation->getId(),
+                'exception' => $e
+            ];
+
+            $this->handlePennilessVpaValidationFailure($faValidation, $traceable);
+        }
+        else
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                $traceCode,
+                [
+                    'fa_validation_id' => $this->favId
+                ]
+            );
+        }
     }
 }

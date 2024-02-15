@@ -520,6 +520,14 @@ class BankAccount extends Base
                 'fav_id' => $this->validation->getId(),
             ]
         );
+
         FavQueueForFTS::dispatch($this->mode, $this->validation->getId());
+
+        $this->trace->info(
+            TraceCode::FAV_QUEUE_FOR_FTS_JOB_REQUEST_DISPATCHED,
+            [
+                'fav_id' => $this->validation->getId(),
+            ]
+        );
     }
 }
