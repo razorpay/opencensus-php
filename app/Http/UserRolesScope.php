@@ -36,7 +36,7 @@ class UserRolesScope
             'merchant_activation_clarifications_fetch'             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
             'merchant_activation_clarifications_save'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
 
-            'fetch_device_config'                                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
+            'fetch_device_config'                                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
             'pos_create_order'                                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
             'pos_update_order'                                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
             'pos_fetch_device_order'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER, Role::PARTNER_AGENT],
@@ -47,7 +47,7 @@ class UserRolesScope
             'merchant_bmc_response_fetch_admin'                    => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_document_save'                               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
 
-            'merchant_get_l2_dynamic_configs'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_get_l2_dynamic_configs'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER_AGENT, Role::PARTNER],
             'merchant_policy_section_publish_v2'                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
 
             'pgos_send_sms_otp'                                    => [Role::OWNER, Role::MANAGER, Role::ADMIN],
@@ -57,7 +57,7 @@ class UserRolesScope
             'onboarding_order_verify'                              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_bmc_response_save'                           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER],
             'merchant_website_section_page_load_v2'                => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
-            'merchant_activation_business_categories_v3'           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_activation_business_categories_v3'           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE, Role::PARTNER_AGENT, Role::PARTNER],
             'merchant_activation_business_categories_admin_v3'     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_business_categories_adminV3'      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
 
@@ -382,7 +382,7 @@ class UserRolesScope
             'payment_handle_update'                    => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER, Role::PARTNER],
             'payment_handle_update_old'                => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER, Role::PARTNER],
             'payment_handle_availability'              => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER, Role::PARTNER],
-            'payment_handle_get'                       => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER, Role::PARTNER],
+            'payment_handle_get'                       => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER, Role::PARTNER, Role::PARTNER_AGENT],
             'payment_handle_suggestion'                => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
             'payment_handle_amount_encryption'         => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
             'payment_validate_vpa_internal'            => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
