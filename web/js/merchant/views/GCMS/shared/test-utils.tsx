@@ -17,7 +17,10 @@ export const GCMSTestWrapperRenderer = ({ history, children }) => {
   const initialState = {
     session: {
       mode: 'test',
-      merchantId: 'N91osUDdN9WdO9',
+      merchantId: 'NDnRD3epJ6P60L',
+      user: {
+        current: 'NDnRD3epJ6P60L',
+      },
     },
   };
 
@@ -34,7 +37,10 @@ export const GCMSTestPageRenderer = ({ children }) => {
   const initialState = {
     session: {
       mode: 'test',
-      merchantId: 'N91osUDdN9WdO9',
+      merchantId: 'NDnRD3epJ6P60L',
+      user: {
+        current: 'NDnRD3epJ6P60L',
+      },
     },
   };
 

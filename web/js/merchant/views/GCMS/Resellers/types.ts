@@ -8,7 +8,7 @@ export type Reseller = {
   logo: string;
   type: string;
   status: string;
-  order_count: 0;
+  order_count: number;
   aggregate_order_value: number;
   eligible_programs: number;
   created_at: number;
@@ -32,4 +32,26 @@ export type ResellerBalance = {
   account_id: string;
   balance: number;
   created_at: number;
+};
+
+export type ResellerDetails = {
+  id: string;
+  name: string;
+  type: string;
+  status: string; //TODO: confirm
+  roles: string[];
+  logo: string;
+  tier_level: string;
+  industry: string;
+  region: string;
+  billing_detail: {
+    billing_label: string;
+    business_name: string;
+    gst_number: string;
+    company_pan: string;
+    authorized_signatory_pan: string;
+    cin: string;
+  };
+  created_at: number;
+  pool_account_id: string;
 };

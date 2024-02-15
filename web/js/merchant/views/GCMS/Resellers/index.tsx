@@ -91,7 +91,7 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
           <ResellersFilter onSearch={handleSearch} />
           {isLoading ? (
             <div className="page-spinner-container">
-              <Spinner center />
+              <Spinner center={undefined} />
             </div>
           ) : (
             <>
@@ -143,7 +143,7 @@ const Resellers = ({ mode, merchantId }: { mode: ModeT; merchantId: string }) =>
                 </table>
               </div>
               <Box>
-                <Box position="absolute" paddingTop="spacing.1">
+                <Box position="absolute" paddingLeft="spacing.5" paddingTop="spacing.1">
                   <Text size="small" color="surface.text.subdued.lowContrast">{`Total ${
                     resellers?.total_count || 0
                   } records`}</Text>

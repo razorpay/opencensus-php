@@ -30,7 +30,7 @@ test.describe
     storageState: StorageStatePath.INTERNATIONAL_LOGIN_STATE,
   });
   // TODO: enable these tests after multiple auth setup is done
-  test('should show request button in disabled state with method enablement tab @priority=normal', async ({
+  test.skip('should show request button in disabled state with method enablement tab @priority=normal', async ({
     page,
   }) => {
     // navigate to IE Route
@@ -48,7 +48,7 @@ test.describe
     await expect(button.first()).toBeDisabled();
   });
 
-  test('should be able to open method enablement form and use pre-requisites tab @priority=normal', async ({
+  test.skip('should be able to open method enablement form and use pre-requisites tab @priority=normal', async ({
     page,
   }) => {
     // navigate to IE Route
@@ -80,7 +80,7 @@ test.describe
     await assertButton(page, CONSTANTS.NEXT_CTA);
   });
 
-  test('Should be able to navigate to additional docs tab and upload/remove docs', async ({
+  test.skip('Should be able to navigate to additional docs tab and upload/remove docs', async ({
     page,
   }) => {
     await navigateTo(page, CONSTANTS.IE_TAB_URL);

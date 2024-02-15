@@ -5,7 +5,7 @@ import { ModeT } from 'common/services/mode';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { stringifyQueryParams } from 'common/utils/rzp-utils';
 import { Program } from 'merchant/views/GCMS/Programs/types';
-import { Reseller, ResellerBalance } from 'merchant/views/GCMS/Resellers/types';
+import { Reseller, ResellerBalance, ResellerDetails } from 'merchant/views/GCMS/Resellers/types';
 import { getGCMSBasePath, RESELLERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import { ListApiResponse } from 'merchant/views/GCMS/shared/types';
 
@@ -15,16 +15,18 @@ export const fetchProgramsForReseller = async ({
   skip = 0,
   resellerId,
   mode,
+  count = LIST_FETCH_BATCH_SIZE,
 }: {
-  skip: number;
+  skip?: number;
   resellerId?: string;
   mode?: ModeT;
+  count?: number;
 }): Promise<ListApiResponse<Program>> => {
   try {
     const response = await fetch<ListApiResponse<Program>>({
       url: `${getGCMSBasePath(mode)}/skus${stringifyQueryParams({
         skip,
-        count: LIST_FETCH_BATCH_SIZE,
+        count,
         reseller_id: resellerId,
       })}`,
       mode,
@@ -89,6 +91,33 @@ export const fetchResellerBalance = async ({
   try {
     const response = await fetch<ResellerBalance>({
       url: `${getGCMSBasePath(mode)}/merchants/${merchantId}/resellers/${resellerId}/balances`,
+      mode,
+    });
+    return response;
+  } catch (e: any) {
+    errorService.captureError(e, {
+      tags: {
+        team: Teams.RAZORPAY_WALLET,
+      },
+      rank: Ranks.P2,
+    });
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const fetchResellerDetails = async ({
+  resellerId,
+  merchantId,
+  mode,
+}: {
+  resellerId?: string;
+  merchantId: string;
+  mode: ModeT;
+}): Promise<ResellerDetails> => {
+  try {
+    const response = await fetch<ResellerDetails>({
+      url: `${getGCMSBasePath(mode)}/merchants/${merchantId}/resellers/${resellerId}`,
+      mode,
     });
     return response;
   } catch (e: any) {

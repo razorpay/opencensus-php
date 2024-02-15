@@ -9,6 +9,7 @@ type Props = {
   program: Program;
   containerProps?: BoxProps;
   imageProps?: BoxProps;
+  showOverview?: boolean;
   headingProps?: HeadingProps<any>;
   sectionItemProps?: BoxProps;
 };
@@ -19,6 +20,7 @@ const ProgramHeaderSection: React.FC<Props> = ({
   headingProps = {},
   imageProps = {},
   sectionItemProps = {},
+  showOverview = true,
 }) => {
   const headerSections = program ? getProgramHeaderSections(program) : [];
 
@@ -47,21 +49,23 @@ const ProgramHeaderSection: React.FC<Props> = ({
           alignItems="center"
           justifyContent="space-between"
         >
-          {headerSections.map((section) => (
-            <Box
-              key={section.name}
-              padding={['spacing.4', 'spacing.8', 'spacing.4', 'spacing.0']}
-              display="flex"
-              flexDirection="row"
-              alignItems="center"
-              {...sectionItemProps}
-            >
-              <Text color="surface.text.muted.lowContrast">{section.name}:&nbsp;&nbsp;</Text>
-              <Text color="surface.text.subdued.lowContrast" weight="bold">
-                {capitalize(section.value)}
-              </Text>
-            </Box>
-          ))}
+          {showOverview
+            ? headerSections.map((section) => (
+                <Box
+                  key={section.name}
+                  padding={['spacing.4', 'spacing.8', 'spacing.4', 'spacing.0']}
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  {...sectionItemProps}
+                >
+                  <Text color="surface.text.muted.lowContrast">{section.name}:&nbsp;&nbsp;</Text>
+                  <Text color="surface.text.subdued.lowContrast" weight="bold">
+                    {capitalize(section.value)}
+                  </Text>
+                </Box>
+              ))
+            : null}
         </Box>
       </Box>
     </Box>

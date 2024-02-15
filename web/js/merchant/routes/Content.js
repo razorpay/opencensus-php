@@ -485,6 +485,10 @@ const GCMSOrders = lazy(() =>
   import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Orders'),
 );
 
+const GCMSOrderDetails = lazy(() =>
+  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Orders/OrderDetails'),
+);
+
 const GCMSResellerDetails = lazy(() =>
   import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Resellers/ResellerDetails'),
 );
@@ -2028,6 +2032,7 @@ class Content extends Component {
             }
           />
           <Route path="gcms/*">
+            <Route path="*" element={<Navigate to="/gcms/orders/" replace />} />
             <Route path="resellers/*">
               <Route
                 index
@@ -2085,6 +2090,32 @@ class Content extends Component {
                     }
                   >
                     <GCMSProgramDetails />
+                  </RouteGuard>
+                }
+              />
+            </Route>
+            <Route path="orders/*">
+              <Route
+                index
+                element={
+                  <RouteGuard
+                    additionalCondition={(user) =>
+                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                    }
+                  >
+                    <GCMSOrders />
+                  </RouteGuard>
+                }
+              />
+              <Route
+                path=":orderId/*"
+                element={
+                  <RouteGuard
+                    additionalCondition={(user) =>
+                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
+                    }
+                  >
+                    <GCMSOrderDetails />
                   </RouteGuard>
                 }
               />

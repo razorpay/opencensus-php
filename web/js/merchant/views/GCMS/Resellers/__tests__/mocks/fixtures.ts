@@ -214,3 +214,29 @@ export const resellersListResponse = {
     ],
   },
 };
+
+export const resellerDetailsResponse = {
+  status_code: 200,
+  success: true,
+  data: {
+    id: 'N91osUDdN9WdO9',
+    name: 'Ibaco',
+    type: 'Test type',
+    status: 'active',
+    roles: ['reseller'],
+    logo: 'http://logo.com',
+    tier_level: 'gold',
+    industry: 'food',
+    region: 'karantaka',
+    billing_detail: {
+      billing_label: 'updated label',
+      business_name: 'test name',
+      gst_number: 'GST1234',
+      company_pan: 'PAN1234',
+      authorized_signatory_pan: 'SIGPAN1234',
+      cin: 'CIN1234',
+    },
+    created_at: 1704862382,
+    pool_account_id: 'NURNmyrP9xLAAJ',
+  },
+};

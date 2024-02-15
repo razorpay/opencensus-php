@@ -21,7 +21,7 @@ const ORDER_LIST_COLUMNS = [
   {
     label: 'Order ID',
     value: (order) => (
-      <NavLink key={order.orderId} to="#">
+      <NavLink key={order.orderId} to={`${order.id}`}>
         {order.id}
       </NavLink>
     ), //TODO: replace with actual order details link

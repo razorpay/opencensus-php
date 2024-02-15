@@ -29,4 +29,12 @@ test.describe('GCMS orders @flow=orders @project=payments', () => {
     await page.getByRole('button', { name: 'Search' }).click();
     await expect(await page.getByText('There are no orders yet!!').first()).toBeVisible();
   });
+
+  test('should be able to view order details', async ({ page }) => {
+    const link = page.locator('tr:nth-child(1)').getByRole('link');
+    const orderId = await link.textContent();
+    await link.click();
+    await expect(page).toHaveURL(`${routes.GCMS_ORDERS}/${orderId}`);
+    await expect(await page.getByText(`Order ID: ${orderId}`)).toBeVisible();
+  });
 });

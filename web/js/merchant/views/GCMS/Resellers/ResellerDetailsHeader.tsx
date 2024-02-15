@@ -31,7 +31,7 @@ const ResellerDetailsHeader = ({
     data: resellerBalance,
     isError,
   } = useQuery({
-    queryKey: ['reseller:balance', merchantId, resellerId],
+    queryKey: ['reseller:balance', merchantId, resellerId, mode],
     queryFn: () => fetchResellerBalance({ merchantId, resellerId, mode }),
   });
 

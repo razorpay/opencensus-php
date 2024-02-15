@@ -26,3 +26,9 @@ export const OrderCardItemContainer = styled.div`
   padding: 8px 8px 8px 8px;
   margin: 8px 12px 8px 12px;
 `;
+
+export const StyledImg = styled.img`
+  height: 40px;
+  width: 40px;
+  border-radius: 5px;
+`;

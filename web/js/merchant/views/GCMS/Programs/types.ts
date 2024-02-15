@@ -34,6 +34,8 @@ export type Program = {
   merchant: string;
   type: string;
   policies: ProgramPolicy;
+  program_id: string;
+  default_discount: number;
 };
 
 export interface SKU extends Program {

@@ -33,7 +33,7 @@ const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
     <div>
       {isLoading ? (
         <div className="page-spinner-container">
-          <Spinner center />
+          <Spinner center={undefined} />
         </div>
       ) : (
         <Box

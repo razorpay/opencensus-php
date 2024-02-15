@@ -242,3 +242,35 @@ export const ordersListResponse = {
     ],
   },
 };
+
+export const orderDetailsResponse = {
+  status_code: 200,
+  success: true,
+  data: {
+    id: 'NVFqTLplfIXKbK',
+    merchant_id: 'NDnRD3epJ6P60L',
+    reseller_id: 'N91osUDdN9WdO9',
+    status: 'draft',
+    delivery_status: null,
+    total_amount: 100,
+    net_amount: 100,
+    total_quantity: 1,
+    created_at: 1706711738,
+    updated_at: 1706711743,
+    order_items: [
+      {
+        id: 'NVFqYRuXpkmBwa',
+        program_id: 'NDow2sn8PD4SBZ',
+        sku_id: 'NMmsZbvXKsxmBh',
+        denomination: 100,
+        quantity: 1,
+        issued_quantity: 0,
+        total_amount: 100,
+        net_amount: 100,
+        tax: 0,
+        fee: 0,
+        discount_percent: 10,
+      },
+    ],
+  },
+};

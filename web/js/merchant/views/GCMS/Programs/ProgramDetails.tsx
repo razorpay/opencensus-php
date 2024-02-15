@@ -46,14 +46,7 @@ const ProgramDetails: React.FC = () => {
           </Link>
         </Box>
         {!isLoading && program && (
-          <Box
-            backgroundColor="surface.background.level2.lowContrast"
-            maxWidth={{
-              l: '1200px',
-              m: '100%',
-              s: '100%',
-            }}
-          >
+          <Box backgroundColor="surface.background.level2.lowContrast">
             <ProgramHeaderSection
               program={program}
               containerProps={{ height: '116px' }}
