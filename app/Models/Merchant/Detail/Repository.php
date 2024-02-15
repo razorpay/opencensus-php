@@ -44,7 +44,7 @@ class Repository extends Base\Repository
 
     const GET_SUBM_IDS_BY_ACTIVATION_STATUS_DL_QUERY                            = "SELECT md.merchant_id FROM hive.realtime_hudi_api.merchant_details AS md INNER JOIN hive.realtime_hudi_api.merchant_access_map AS mam ON md.merchant_id = mam.merchant_id WHERE mam.entity_owner_id = '%s' AND md.activation_status IN ('%s')";
     const GET_SUBM_IDS_WITH_KYC_SUBMITTED_UNDER_REVIEW_IN_PAST_DAYS_DL_QUERY    = "SELECT md.merchant_id FROM hive.realtime_hudi_api.merchant_details AS md INNER JOIN hive.realtime_hudi_api.merchant_access_map AS mam ON md.merchant_id = mam.merchant_id WHERE mam.entity_owner_id = '%s' AND md.submitted_at >= %d AND md.submitted = 1 AND md.activation_status = 'under_review' LIMIT %d";
-    const COUNT_SUBM_WITH_KYC_NOT_INITIATED_IN_PAST_DAYS_DL_QUERY               = "SELECT COUNT(*) AS subm_count FROM hive.realtime_hudi_api.merchant_details AS md INNER JOIN hive.realtime_hudi_api.merchant_access_map AS mam ON md.merchant_id = mam.merchant_id WHERE mam.entity_owner_id = '%s' AND md.created_at >= %d AND md.activation_status IS NULL;";
+    const COUNT_SUBM_WITH_KYC_NOT_INITIATED_IN_PAST_DAYS_DL_QUERY               = "SELECT COUNT(*) AS subm_count FROM hive.realtime_hudi_api.merchant_details AS md INNER JOIN hive.realtime_hudi_api.merchant_access_map AS mam ON md.merchant_id = mam.merchant_id WHERE mam.entity_owner_id = '%s' AND md.created_at >= %d AND md.activation_status IS NULL";
 
     function __construct()
     {

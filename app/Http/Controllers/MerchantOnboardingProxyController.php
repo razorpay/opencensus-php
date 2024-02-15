@@ -528,13 +528,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
      */
     public function isPGOSEnabledForPGSubmerchant(Merchant\Entity $merchant): bool
     {
+
         $properties = [
             'id'            => $merchant->getId(),
             'experiment_id' => $this->app['config']->get(self::EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID),
         ];
-        $response   = $this->app['splitzService']->evaluateRequest($properties);
 
-        return $response['response']['variant']['name'] === self::ENABLE;
+        return (new Core())->isSplitzExperimentEnable($properties, self::ENABLE);
     }
 
     public function isPGOSExperimentEnabledForMerchant($merchantId, $experimentId, $mode): bool

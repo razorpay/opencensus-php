@@ -2369,14 +2369,14 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param string $partnerMerchantId
-     * @param int    $pastDays
-     * @param int    $limit
-     * @param string $variant
+     * @param string      $partnerMerchantId
+     * @param int         $pastDays
+     * @param int         $limit
+     * @param string|null $variant
      *
      * @return array
      */
-    public function getRejectedSubMInPastDays(string $partnerMerchantId, int $pastDays, int $limit, string $variant): array
+    public function getRejectedSubMInPastDays(string $partnerMerchantId, int $pastDays, int $limit, string|null $variant): array
     {
         $pastDaysTimestamp = Carbon::now()->subDays($pastDays)->getTimestamp();
 
