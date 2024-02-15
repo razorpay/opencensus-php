@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use GuzzleHttp\Exception\RequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -217,6 +218,24 @@ class UfhService
         return new UfhClient($config);
     }
 
+    private function is4xxException(RequestException $e): bool
+    {
+        return ($e->getCode() >= 400) &&
+            ($e->getCode() < 500);
+    }
+
+    protected function formatResponse($response)
+    {
+        $responseArray = json_decode($response->getBody(), true);
+
+        $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_RESPONSE, [
+            'response'  => $responseArray,
+            'service'   => 'UFH',
+        ]);
+
+        return $responseArray;
+    }
+
     /**
      * @param UploadedFile $file
      * @param string $storageFileName
@@ -257,14 +276,29 @@ class UfhService
         {
             $response = $this->ufhClient->upload($requestData);
         }
+        catch (RequestException $e)
+        {
+            $this->trace->error(TraceCode::UFH_FILE_UPLOAD_ERROR, ["error" => $e->getMessage()]);
+
+            if ($e->hasResponse() && $this->is4xxException($e) === true)
+            {
+                $resp = $this->formatResponse($e->getResponse());
+
+                throw new Exception\BadRequestException($resp['error']['code'] ?? ErrorCode::BAD_REQUEST_ERROR, null, $resp['error'],
+                    $resp['error']['description'] ?? '');
+            }
+
+            throw new Exception\ServerErrorException(
+                'Error completing the request',
+                ErrorCode::SERVER_ERROR_UFH_SERVICE_FAILURE);
+        }
         catch (\Throwable $e)
         {
             $this->trace->traceException($e);
 
             throw new Exception\ServerErrorException(
                 'Error completing the request',
-                ErrorCode::SERVER_ERROR_UFH_SERVICE_FAILURE
-            );
+                ErrorCode::SERVER_ERROR_UFH_SERVICE_FAILURE);
         }
 
         $this->validateResponse($response);
