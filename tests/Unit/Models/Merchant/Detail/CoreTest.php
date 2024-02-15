@@ -10,6 +10,7 @@ use ReflectionClass;
 use Carbon\Carbon;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Services\Stork;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Store;
@@ -15781,7 +15782,6 @@ class CoreTest extends TestCase
 
     }
 
-
     // In fee based gating flow, when mechant done payment and call comes to api form pgos, eligible activation status is kyc but input has under_review so here merchant moves new eligible activation status
     public function testSubmitMerchantInternalFeeBasedFlowKYC()
     {
@@ -16437,11 +16437,124 @@ class CoreTest extends TestCase
 
         $this->assertEquals(Status::UNDER_REVIEW, $merchantDetail[Entity::ACTIVATION_STATUS]);
     }
-    
+
+    // moving merchant to ur without fee based flow
+    public function testPosCaseCreation()
+    {
+        $this->mockRazorxTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id" => $merchant->getId(),
+            "contact_name" => "Mohan",
+            "business_type" => 4,
+            "business_name" => "Private Limited",
+            "business_dba" => "DBA",
+            "business_website" => "https://www.hempstrol.com/",
+            "business_international" => 0,
+            "business_registered_address" => "address",
+            "business_registered_state" => "DL",
+            "business_registered_city" => "Delhi",
+            "business_registered_pin" => 110022,
+            "business_operation_address" => "address",
+            "business_operation_state" => "DL",
+            "business_operation_city" => "Delhi",
+            "business_operation_pin" => 110022,
+            "business_category" => "ecommerce",
+            "business_subcategory" => "fashion_and_lifestyle",
+            "steps_finished" => [
+            ],
+            "activation_progress" => 80,
+            "locked" => 0,
+            "activation_flow" => "whitelist",
+            "issue_fields" => "business_website",
+            "submitted" => 1,
+            "poi_verification_status" => "verified",
+            "poa_verification_status" => "verified",
+            "bank_details_verification_status" => "verified",
+            "kyc_clarification_reasons" => [
+                "nc_count" => 1,
+                "additional_details" => [
+                ],
+            ],
+            "live_transaction_done" => 0,
+            "additional_websites" => [
+            ],
+            "company_pan_verification_status" => "intiated",
+            "gstin_verification_status" => "failed",
+            "international_activation_flow" => "whitelist",
+            "activation_form_milestone" => "L2",
+        ]);
+
+        $eventData =  (new DetailCore)->pushKafkaEventOnPOSActivationFormSubmit($merchantDetails, $merchant, "pos_activation_form_submission_kafka_event");
+        $this->assertEquals("false", $eventData["pos_details_required_status"]);
+    }
+
+    public function testPosCaseCreation2()
+    {
+        $this->mockRazorxTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            "merchant_id" => $merchant->getId(),
+            "contact_name" => "Mohan",
+            "business_type" => 4,
+            "business_name" => "Private Limited",
+            "business_dba" => "DBA",
+            "business_international" => 0,
+            "business_registered_address" => "address",
+            "business_registered_state" => "DL",
+            "business_registered_city" => "Delhi",
+            "business_registered_pin" => 110022,
+            "business_operation_address" => "address",
+            "business_operation_state" => "DL",
+            "business_operation_city" => "Delhi",
+            "business_operation_pin" => 110022,
+            "business_category" => "ecommerce",
+            "business_subcategory" => "fashion_and_lifestyle",
+            "steps_finished" => [
+            ],
+            "activation_progress" => 80,
+            "locked" => 0,
+            "activation_flow" => "whitelist",
+            "issue_fields" => "business_website",
+            "submitted" => 1,
+            "poi_verification_status" => "verified",
+            "poa_verification_status" => "verified",
+            "bank_details_verification_status" => "verified",
+            "kyc_clarification_reasons" => [
+                "nc_count" => 1,
+                "additional_details" => [
+                ],
+            ],
+            "live_transaction_done" => 0,
+            "additional_websites" => [
+            ],
+            "company_pan_verification_status" => "intiated",
+            "gstin_verification_status" => "failed",
+            "international_activation_flow" => "whitelist",
+            "activation_form_milestone" => "L2",
+        ]);
+
+        $eventData =  (new DetailCore)->pushKafkaEventOnPOSActivationFormSubmit($merchantDetails, $merchant, "pos_activation_form_submission_kafka_event");
+        $this->assertEquals("true", $eventData["pos_details_required_status"]);
+    }
+
+
     public function testPGOSMerchantSaveMerchantResponseToClarifications()
     {
         Config::set('pgos.proxy.request.mock', true);
-        
+
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
             'business_category'         => 'ecommerce',
@@ -16454,9 +16567,9 @@ class CoreTest extends TestCase
             'submitted'                 => true,
             'business_website'          => 'https://google.com',
         ]);
-        
+
         $merchantId = $merchantDetails->getId();
-        
+
         $input = [
             'poi_verification_status'                => 'verified',
             'poa_verification_status'                => 'verified',
@@ -16466,7 +16579,7 @@ class CoreTest extends TestCase
             'onboarding_type'                        => null,
             'submit'                                 => 0
         ];
-        
+
         // Create a mock object for the NeedsClarificationProxyController class
         $pgosProxyController = Mockery::mock('RZP\Http\Controllers\NeedsClarificationProxyController');
 
@@ -16483,11 +16596,11 @@ class CoreTest extends TestCase
             'id'           => $merchantId,
             'country_code' => 'IN'
         ]);
-        
+
         $this->app['basicauth']->setMerchant($merchant);
-        
+
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetails->getId());
-        
+
         $this->fixtures->create('user_device_detail', [
             'merchant_id'     => $merchantId,
             'user_id'         => $merchantUser->getId(),
@@ -16496,7 +16609,7 @@ class CoreTest extends TestCase
                 'service' => 'pgos'
             ]
         ]);
-        
+
         try
         {
             (new ClarificationDetailService())->saveMerchantResponseToClarifications($input, $merchantId);
@@ -16506,7 +16619,7 @@ class CoreTest extends TestCase
             $this->assertNotNull($e);
             $this->assertEquals($e->getError()->getInternalErrorCode(), "SERVER_ERROR_PGOS_PROCESSNG_FAILED");
             $this->assertEquals($e->getError()->getPublicErrorCode(), "SERVER_ERROR");
-            
+
         }
     }
 }

@@ -586,7 +586,7 @@ class Service extends Base\Service
 
                         $this->core->updatePosActivationStatus($merchant, [DEConstants::POS_ACTIVATION_STATUS => Status::UNDER_REVIEW]);
 
-                        $this->core()->pushKafkaEventOnActivationFormSubmit($merchantDetails, $merchant, DEConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA);
+                        $this->core()->pushKafkaEventOnPOSActivationFormSubmit($merchantDetails, $merchant, DEConstants::POS_ACTIVATION_FORM_SUBMISSION_KAFKA);
                     }
                 }
 
