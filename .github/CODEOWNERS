@@ -318,3 +318,11 @@ app/Models/Merchant/Detail/InternationalCore.php           @razorpay/TechCrossBo
 app/Models/Merchant/InternationalIntegration               @razorpay/TechCrossBorder
 app/Models/Merchant/InternationalEnablement                @razorpay/TechCrossBorder
 app/Models/Payment/PaymentMeta                             @razorpay/TechCrossBorder
+
+
+#
+# CDP (Slack - @cdp-devs, #tech_infra_cdp)
+# Mandating CDP team's review on any changes related to Customer, Addresses and Consents Entities
+app/Http/Controllers/CustomerController.php              @razorpay/cdp
+app/Models/Customer/CustomerConsent1cc                   @razorpay/cdp
+app/Models/Customer/Account                              @razorpay/cdp
