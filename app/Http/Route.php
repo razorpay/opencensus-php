@@ -12207,6 +12207,7 @@ class Route
             'list_merchant_notification_config',
             'loc_service',
             'los_service',
+            'capital_bnpl_service',
             'partnerships_service_proxy',
             'capital_es_service',
             'mailgun_webhook',

@@ -274,7 +274,6 @@ function disableEmptyInputs(form) {
                 <option value="krbe">KreditBee</option>
                 <option value="cshe">CASHe</option>
                 <option value="tvsc">TVS Credit</option>
-                <option value="rzpx_postpaid">RazorpayX Postpaid</option>
             </select>
         </td>
     </tr>
