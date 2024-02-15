@@ -2106,7 +2106,6 @@ class PayoutSmartRoutingTest extends TestCase
 
         $ftsRoutingMockedResponse = [
             PayoutEntity::ACCOUNT_TYPE => AccountType::SHARED,
-            PayoutEntity::BALANCE_ID  => [],
         ];
 
         $this->mockFtsGetPriorityChannel($this->ftsMock, $ftsGetPriorityChannelSuccess, 1, $ftsRoutingMockedResponse);
@@ -2147,6 +2146,83 @@ class PayoutSmartRoutingTest extends TestCase
         $this->assertTrue($harvesterServiceSuccess);
         $this->assertTrue($queryBuilderSuccess);
 
+    }
+    public function testSmartRoutingSummary_FailureDueToInvalidMode()
+    {
+        $this->liveSetUp();
+
+        list($liteBalances, $directBalances) = $this->setupLiteAndDirectAccountsForMerchants(1, 1);
+
+        $this->ba->privateAuth();
+
+        $testDataRequest = $this->testData[__FUNCTION__]['request']['content'];
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsGetPriorityChannelSuccess = false;
+
+        $ftsRoutingMockedResponse = [];
+
+        $this->mockFtsGetPriorityChannel($this->ftsMock, $ftsGetPriorityChannelSuccess, 0, $ftsRoutingMockedResponse);
+
+        $this->startTest();
+
+        $this->assertFalse($ftsGetPriorityChannelSuccess);
+
+    }
+
+    public function testSmartRoutingSummary_FailureFtsServerError()
+    {
+        $this->liveSetUp();
+
+        list($liteBalances, $directBalances) = $this->setupLiteAndDirectAccountsForMerchants(1, 1);
+
+        $this->ba->privateAuth();
+
+        $testDataRequest = $this->testData[__FUNCTION__]['request']['content'];
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsGetPriorityChannelSuccess = false;
+
+        $ftsRoutingMockedResponse = [];
+
+        $this->mockFtsGetPriorityChannel($this->ftsMock, $ftsGetPriorityChannelSuccess, 1, $ftsRoutingMockedResponse, true);
+
+        $this->startTest();
+
+        $this->assertFalse($ftsGetPriorityChannelSuccess);
+
+    }
+
+    public function testSmartRoutingSummary_FailureDueToInvalidFTSResponse()
+    {
+        $this->liveSetUp();
+
+        list($liteBalances, $directBalances) = $this->setupLiteAndDirectAccountsForMerchants(1, 1);
+
+        $this->ba->privateAuth();
+
+        $testDataRequest = $this->testData[__FUNCTION__]['request']['content'];
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $ftsGetPriorityChannelSuccess = false;
+
+        $ftsRoutingMockedResponse = [
+            PayoutEntity::ACCOUNT_TYPE => "INVALID_ACCOUNT_TYPE",
+            PayoutEntity::BALANCE_ID  => [
+                $directBalances[0]->getId() => [
+                    ["start_time" => $testDataRequest['start_time'], "end_time" => $testDataRequest['end_time'] ]
+                ],
+            ],
+        ];
+
+        $this->mockFtsGetPriorityChannel($this->ftsMock, $ftsGetPriorityChannelSuccess, 1, $ftsRoutingMockedResponse, false);
+
+        $this->startTest();
+
+        $this->assertTrue($ftsGetPriorityChannelSuccess);
     }
 
     protected function mockHarvesterService($expectedContents, $response, &$harvesterServiceSuccess, $times = 1): void
@@ -2212,7 +2288,7 @@ class PayoutSmartRoutingTest extends TestCase
             $startTime = $range['start_time'];
             $endTime = $range['end_time'];
 
-            $conditions[] = "(created_at >= $startTime AND created_at <= $endTime)";
+            $conditions[] = "(created_at > $startTime AND created_at <= $endTime)";
         }
         $conditions = implode(' AND ', $conditions);
 
@@ -2220,7 +2296,7 @@ class PayoutSmartRoutingTest extends TestCase
               FROM {{table}}
               WHERE balance_id IN ($balanceString)
                 AND mode = '$mode'
-                AND $conditions
+                AND ($conditions)
               GROUP BY balance_id, status;";
 
         $queryBuilderSuccess = true;

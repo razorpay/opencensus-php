@@ -947,4 +947,76 @@ return [
             ],
         ],
     ],
+
+    'testSmartRoutingSummary_FailureDueToInvalidMode' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'INVALID_MODE',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Invalid mode received.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSmartRoutingSummary_FailureFtsServerError' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'IMPS',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => \Exception::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        ],
+    ],
+
+    'testSmartRoutingSummary_FailureDueToInvalidFTSResponse' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/smart_routing_summary',
+            'content' => [
+                'mode' => 'IMPS',
+                'start_time' => time() - 1000000,
+                'end_time' => time(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'The selected account type is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \Exception::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

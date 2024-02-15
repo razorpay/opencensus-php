@@ -683,7 +683,7 @@ class Validator extends Base\Validator
     protected static $smartRoutingPayoutsSummaryRules = [
         'start_time'      => 'required|integer',
         'end_time'        => 'required|integer',
-        'mode'            => 'required|string|in:'.(Mode::IMPS).','.(Mode::UPI).','.(Entity::MODE_ALL),
+        'mode'            => 'required|string',
     ];
 
     protected static $smartRoutingPayoutsSummaryFtsResponseRules = [
@@ -1824,6 +1824,17 @@ class Validator extends Base\Validator
     {
         $this->setStrictFalse()->validateInput(Validator::SMART_ROUTING_PAYOUTS_SUMMARY, $payload);
 
+        //Validate for allowed modes
+        if ($payload['mode'] != Entity::MODE_ALL && !in_array($payload['mode'], Entity::PAYOUTS_SUMMARY_ALLOWED_MODES)) {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid mode received.",
+                null,
+                [
+                    'mode' => $payload['mode']
+                ]
+            );
+        }
+
         //validate if start_time and end_time in $payload are valid timestamps in epoch format
         $currentTimestamp = time();
         $threeMonthsAgoTimestamp = strtotime('-3 months', $currentTimestamp);
@@ -1847,29 +1858,31 @@ class Validator extends Base\Validator
     {
         $this->setStrictFalse()->validateInput(Validator::SMART_ROUTING_PAYOUTS_SUMMARY_FTS_RESPONSE, $payload);
 
-        $balanceIds = array_keys($payload['balance_id']);
-        $missingKeys = array_diff($balanceIds, $directBalances);
-        if ($payload[Entity::ACCOUNT_TYPE] === AccountType::DIRECT && !empty($missingKeys)) {
-            throw new Exception\BadRequestValidationFailureException(
-                "Invalid balance_id key received from fts.",
-                null,
-                [
-                    'balance_id' => $payload['balance_id']
-                ]
-            );
-        }
+        if($payload[Entity::ACCOUNT_TYPE] === AccountType::DIRECT) {
+            $balanceIds = array_keys($payload['balance_id']);
+            $missingKeys = array_diff($balanceIds, $directBalances);
+            if (!empty($missingKeys)) {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid balance_id key received from fts.",
+                    null,
+                    [
+                        'balance_id' => $payload['balance_id']
+                    ]
+                );
+            }
 
-        foreach($payload['balance_id'] as $balanceId => $balanceDetails) {
-            foreach($balanceDetails as $timeRangeList) {
-                if (!isset($timeRangeList['start_time'], $timeRangeList['end_time'])) {
-                    throw new Exception\BadRequestValidationFailureException(
-                        "Invalid balance details received from fts.",
-                        null,
-                        [
-                            'balance_id' => $balanceId,
-                            'balance_details' => $balanceDetails
-                        ]
-                    );
+            foreach ($payload['balance_id'] as $balanceId => $balanceDetails) {
+                foreach ($balanceDetails as $timeRangeList) {
+                    if (!isset($timeRangeList['start_time'], $timeRangeList['end_time'])) {
+                        throw new Exception\BadRequestValidationFailureException(
+                            "Invalid balance details received from fts.",
+                            null,
+                            [
+                                'balance_id' => $balanceId,
+                                'balance_details' => $balanceDetails
+                            ]
+                        );
+                    }
                 }
             }
         }

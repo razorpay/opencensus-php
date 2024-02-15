@@ -10740,8 +10740,11 @@ class Core extends Base\Core
         $mode = $input[Entity::MODE];
         $fundAccountType = ($mode === Mode::IMPS) ? Type::BANK_ACCOUNT : Type::VPA;
         $isSharedAccountType = true;
-        $priorityBalance = null;
         $priorityBalanceList = [];
+        $directBalances = [];
+        $liteBalances = [];
+        $validDirectAccounts = 0;
+        $validLiteAccounts = 0;
 
         $this->trace->info(TraceCode::SMART_ROUTING_SUMMARY_REQUEST, [
             Entity::MERCHANT_ID => $merchant->getId(),
@@ -10749,59 +10752,33 @@ class Core extends Base\Core
             Entity::INPUT       => $input
         ]);
 
-        //Get Direct balances
-        $directBalances = $this->getDirectBalancesForPayoutsSummary($input, $merchant, $fundAccountType);
-        $validDirectAccounts = count($directBalances);
+        $listBalanceIds = $this->getBalanceIdsForPayoutsSummary($input, $merchant, $fundAccountType, $directBalances, $liteBalances, $validDirectAccounts, $validLiteAccounts);
 
-        // Fetch Lite balances
-        $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
-            $merchant->getId(), Balance\Type::BANKING, AccountType::SHARED, $this->mode);
-        $validLiteAccounts = count($liteBalances);
-
-        if($validLiteAccounts === 0 && $validDirectAccounts === 0)
-        {
-            throw new LogicException('Merchant doesn\'t have any viable channels for routing.', null, [
-                Entity::MERCHANT_ID  => $merchant->getId()
-            ]);
-        }
-
+        // create and send Request to FTS to get priority channel for valid direct accounts
         if($validDirectAccounts > 0)
         {
-            //Call to FTS to get priority channel
-            $ftsRequest = [
-                Entity::MERCHANT_ID => $merchant->getId(),
-                Entity::BALANCE_ID => $directBalances,
-                Entity::MODE => $mode,
-                Entity::START_TIME => $input[Entity::START_TIME],
-                Entity::END_TIME => $input[Entity::END_TIME]
+            $ftsRequest = $this->initializeFtsRequest($merchant, $mode, $directBalances, $input);
 
-            ];
-
-            $this->trace->info(TraceCode::SMART_ROUTING_SUMMARY_FTS_REQUEST, [
-                Entity::MERCHANT_ID => $merchant->getId(),
-                Entity::MODE => $mode,
-                Entity::FTS_REQUEST => $ftsRequest
-            ]);
+            /** @var \RZP\Services\FTS\FundTransfer $ftsService */
+            $ftsService = App::getFacadeRoot()['fts_fund_transfer'];
+            $ftsService->setRequestTimeout(1);
 
             try {
-                /** @var \RZP\Services\FTS\FundTransfer $ftsService */
-                $ftsService = App::getFacadeRoot()['fts_fund_transfer'];
 
-                $ftsService->setRequestTimeout(1);
-
+                //Call to FTS to get priority channel
                 $ftsResponse = $ftsService->getPriorityChannelThroughFts($ftsRequest);
 
                 (new Validator())->validateSmartRoutingSummaryFtsResponse($ftsResponse, array_keys($directBalances));
 
-                if ($ftsResponse[Entity::ACCOUNT_TYPE] == AccountType::DIRECT) {
+                if ($ftsResponse[Entity::ACCOUNT_TYPE] == AccountType::DIRECT)
+                {
                     $isSharedAccountType = false;
                     $priorityBalanceList = $ftsResponse[Entity::BALANCE_ID];
                 }
+
             } catch (\Throwable $ex) {
                 $this->trace->traceException(
-                    $ex,
-                    Logger::ERROR,
-                    TraceCode::SMART_ROUTING_SUMMARY_FTS_FAILED,
+                    $ex, Logger::ERROR, TraceCode::SMART_ROUTING_SUMMARY_FTS_FAILED,
                     [
                         Entity::MERCHANT_ID => $merchant->getId(),
                         Entity::MODE => $mode,
@@ -10818,44 +10795,22 @@ class Core extends Base\Core
             ]);
         }
 
-        if($validLiteAccounts > 0 && $isSharedAccountType)
-        {
-            $priorityBalance = array_first($liteBalances)->getId();
-        }
+        $smartRoutingSummary = $this->initializeSmartRoutingSummary();
 
-        $listBalanceIds = array_keys($directBalances);
-        //Taking the 1st Lite Balance
-        $listBalanceIds[] = $liteBalances->first()->getId();
-
-        sort($listBalanceIds);
-
-        $this->trace->info(TraceCode::SMART_ROUTING_SUMMARY_BALANCE_LIST, [
-            Entity::MERCHANT_ID => $merchant->getId(),
-            Entity::BALANCE_IDS => $listBalanceIds
-        ]);
-
-        $smartRoutingSummary = [
-            'success_rate_with_mar' => 0.0,
-            'success_rate_without_mar' => 0.0,
-            'total_payouts' => 0,
-            'total_primary_successful_payouts' => 0,
-            'total_secondary_successful_payouts' => 0,
-            'total_payouts_from_primary_channel' => 0,
-            'total_payouts_from_secondary_channel' => 0,
-            'total_payouts_amount' => 0,
-            'total_payouts_processed_amount' => 0,
-            'total_payouts_amount_from_primary_channel' => 0,
-            'total_payouts_amount_from_secondary_channel' => 0,
-            'total_payouts_processed_amount_from_primary_channel' => 0,
-            'total_payouts_processed_amount_from_secondary_channel' => 0,
-        ];
-
+        //Harvester Service Instance
         $harvesterService = $this->app['eventManager'];
 
         /* If the account type is shared, then we will to make a single call to harvester, for the entire time range
          */
         if($isSharedAccountType)
         {
+            if($validLiteAccounts === 0)
+            {
+                throw new LogicException('Merchant doesn\'t have any viable channels for routing.', null, [
+                    Entity::MERCHANT_ID  => $merchant->getId()
+                ]);
+            }
+            $priorityBalance = $liteBalances->first()->getId();
             $harvesterPayload = $this->payoutSummaryHarvesterQueryBuilder($listBalanceIds, $mode, [[Entity::START_TIME => $input[Entity::START_TIME],
                 Entity::END_TIME => $input[Entity::END_TIME]]]);
 
@@ -10870,9 +10825,7 @@ class Core extends Base\Core
 
             } catch (\Throwable $ex) {
                 $this->trace->traceException(
-                    $ex,
-                    Logger::ERROR,
-                    TraceCode::HARVESTER_QUERY_FAILED,
+                    $ex, Logger::ERROR, TraceCode::HARVESTER_QUERY_FAILED,
                     [
                         Entity::HARVESTER_PAYLOAD => $harvesterPayload
                     ]);
@@ -10887,10 +10840,28 @@ class Core extends Base\Core
         }
         else {
 
-            foreach ($priorityBalanceList as $priorityBalance => $timeRangesList) {
+            foreach ($priorityBalanceList as $priorityBalance => $timeRangesList)
+            {
                 $harvesterPayload = $this->payoutSummaryHarvesterQueryBuilder($listBalanceIds, $mode, $timeRangesList);
 
-                $harvesterResponse = $harvesterService->getDataFromPinot($harvesterPayload);
+                try
+                {
+                    $harvesterResponse = $harvesterService->getDataFromPinot($harvesterPayload);
+
+                    $this->trace->info(TraceCode::HARVESTER_QUERY_RESPONSE, [
+                        Entity::MERCHANT_ID => $merchant->getId(),
+                        Entity::MODE => $mode,
+                        Entity::HARVESTER_RESPONSE => $harvesterResponse
+                    ]);
+                } catch (\Throwable $ex) {
+                    $this->trace->traceException(
+                        $ex, Logger::ERROR, TraceCode::HARVESTER_QUERY_FAILED,
+                        [
+                            Entity::HARVESTER_PAYLOAD => $harvesterPayload
+                        ]);
+
+                    throw $ex;
+                }
 
                 (new Validator())->validateSmartRoutingPayoutsSummaryHarvesterResponse($harvesterResponse);
 
@@ -10899,22 +10870,7 @@ class Core extends Base\Core
             }
         }
 
-        $totalPayouts = $smartRoutingSummary['total_payouts'];
-        $totalPayoutsFromSecondaryChannel = $smartRoutingSummary['total_payouts_from_secondary_channel'];
-        $totalSuccessfulPayoutsFromPrimaryChannel = $smartRoutingSummary['total_primary_successful_payouts'];
-        $totalSuccessfulPayoutsFromSecondaryChannel = $smartRoutingSummary['total_secondary_successful_payouts'];
-
-        /// SuccessRate Logic
-        if($totalPayouts != 0) {
-            $successRateWithMAR = round((($totalSuccessfulPayoutsFromPrimaryChannel + $totalSuccessfulPayoutsFromSecondaryChannel) / $totalPayouts) * 100.0, 2);
-            $successRateWithoutMAR = round((($totalPayoutsFromSecondaryChannel / 2.0) + $totalSuccessfulPayoutsFromPrimaryChannel) / $totalPayouts * 100.0, 2);
-        } else {
-            $successRateWithMAR = 0.0;
-            $successRateWithoutMAR = 0.0;
-        }
-        $smartRoutingSummary['success_rate_with_mar'] += $successRateWithMAR;
-        $smartRoutingSummary['success_rate_without_mar'] += $successRateWithoutMAR;
-
+        $this->calculateSuccessRates($smartRoutingSummary);
 
         $this->trace->info(TraceCode::SMART_ROUTING_SUMMARY_RESPONSE, [
             Entity::MERCHANT_ID => $merchant->getId(),
@@ -10925,6 +10881,102 @@ class Core extends Base\Core
         return $smartRoutingSummary;
 
     }
+
+    /**
+     * @throws \Throwable
+     */
+    protected function getBalanceIdsForPayoutsSummary($input, $merchant, $fundAccountType, &$directBalances, &$liteBalances, &$validDirectAccounts, &$validLiteAccounts): array
+    {
+        // Fetch Direct balances
+        $directBalances = $this->getDirectBalancesForPayoutsSummary($input, $merchant, $fundAccountType);
+        $validDirectAccounts = count($directBalances);
+
+        // Fetch Lite balances
+        $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
+            $merchant->getId(), Balance\Type::BANKING, AccountType::SHARED, $this->mode);
+        $validLiteAccounts = count($liteBalances);
+
+        if($validLiteAccounts === 0 && $validDirectAccounts === 0)
+        {
+            throw new LogicException('Merchant doesn\'t have any viable channels for routing.', null, [
+                Entity::MERCHANT_ID  => $merchant->getId()
+            ]);
+        }
+
+        //Taking the 1st Lite Balance and all Direct Balances for the summary
+        $listBalanceIds = array_keys($directBalances);
+        if ($validLiteAccounts > 0)
+        {
+            $listBalanceIds[] = $liteBalances->first()->getId();
+        }
+        sort($listBalanceIds);
+
+        $this->trace->info(TraceCode::SMART_ROUTING_SUMMARY_BALANCE_LIST, [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            Entity::BALANCE_IDS => $listBalanceIds
+        ]);
+
+        return $listBalanceIds;
+    }
+
+    protected function initializeSmartRoutingSummary(): array
+    {
+        return [
+            'success_rate_with_mar' => 0.0,
+            'success_rate_without_mar' => 0.0,
+            'total_payouts' => 0,
+            'total_primary_successful_payouts' => 0,
+            'total_secondary_successful_payouts' => 0,
+            'total_payouts_from_primary_channel' => 0,
+            'total_payouts_from_secondary_channel' => 0,
+            'total_payouts_amount' => 0,
+            'total_payouts_processed_amount' => 0,
+            'total_payouts_amount_from_primary_channel' => 0,
+            'total_payouts_amount_from_secondary_channel' => 0,
+            'total_payouts_processed_amount_from_primary_channel' => 0,
+            'total_payouts_processed_amount_from_secondary_channel' => 0,
+        ];
+    }
+
+    protected function initializeFtsRequest($merchant, $mode, $directBalances, $input): array
+    {
+        $ftsRequest = [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            Entity::BALANCE_ID => $directBalances,
+            Entity::MODE => $mode,
+            Entity::START_TIME => $input[Entity::START_TIME],
+            Entity::END_TIME => $input[Entity::END_TIME]
+
+        ];
+
+        $this->trace->info(TraceCode::SMART_ROUTING_SUMMARY_FTS_REQUEST, [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            Entity::MODE => $mode,
+            Entity::FTS_REQUEST => $ftsRequest
+        ]);
+
+        return $ftsRequest;
+    }
+
+    protected function calculateSuccessRates(&$smartRoutingSummary): void
+    {
+        $totalPayouts = $smartRoutingSummary['total_payouts'];
+        $totalPayoutsFromSecondaryChannel = $smartRoutingSummary['total_payouts_from_secondary_channel'];
+        $totalSuccessfulPayoutsFromPrimaryChannel = $smartRoutingSummary['total_primary_successful_payouts'];
+        $totalSuccessfulPayoutsFromSecondaryChannel = $smartRoutingSummary['total_secondary_successful_payouts'];
+
+        if ($totalPayouts != 0) {
+            $successRateWithMAR = round((($totalSuccessfulPayoutsFromPrimaryChannel + $totalSuccessfulPayoutsFromSecondaryChannel) / $totalPayouts) * 100.0, 2);
+            $successRateWithoutMAR = round((($totalPayoutsFromSecondaryChannel / 2.0) + $totalSuccessfulPayoutsFromPrimaryChannel) / $totalPayouts * 100.0, 2);
+        } else {
+            $successRateWithMAR = 0.0;
+            $successRateWithoutMAR = 0.0;
+        }
+
+        $smartRoutingSummary['success_rate_with_mar'] += $successRateWithMAR;
+        $smartRoutingSummary['success_rate_without_mar'] += $successRateWithoutMAR;
+    }
+
 
     /**
      * @throws \Throwable
@@ -11053,7 +11105,7 @@ class Core extends Base\Core
             $startTime = $range['start_time'];
             $endTime = $range['end_time'];
 
-            $conditions[] = "(created_at >= $startTime AND created_at <= $endTime)";
+            $conditions[] = "(created_at > $startTime AND created_at <= $endTime)";
         }
         $conditions = implode(' OR ', $conditions);
 
@@ -11061,7 +11113,7 @@ class Core extends Base\Core
               FROM {{table}}
               WHERE balance_id IN ($balanceString)
                 AND mode = '$mode'
-                AND $conditions
+                AND ($conditions)
               GROUP BY balance_id, status;";
 
         $harvesterPayload = [

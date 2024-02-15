@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\RuntimeException;
 use RZP\Services\Mutex;
 use RZP\Models\Address;
 use RZP\Trace\TraceCode;
@@ -1916,6 +1917,10 @@ class FundTransfer extends Base
         return false;
     }
 
+    /**
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
     public function getPriorityChannelThroughFts(array $input)
     {
         $response = $this->createAndSendRequest(parent::FTS_PRIORITY_ROUTE, 'POST', $input);

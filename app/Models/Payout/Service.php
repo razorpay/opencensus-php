@@ -6120,23 +6120,28 @@ class Service extends Base\Service
      */
     public function getSmartRoutingSummary($input): array
     {
-        (new Validator)->validateSmartRoutingSummaryInput($input);
+        try
+        {
+            (new Validator)->validateSmartRoutingSummaryInput($input);
 
-        $mode = $input[Entity::MODE];
-        $response = [];
-        try {
-            if ($mode === Entity::MODE_ALL)
+            $mode = $input[Entity::MODE];
+            $response = [];
+
+            if($mode === Entity::MODE_ALL)
             {
-                foreach (Entity::PAYOUTS_SUMMARY_ALLOWED_MODES as $mode)
-                {
-                    $input[Entity::MODE] = $mode;
-                    $response[$mode] = $this->core->smartRoutingPayoutsSummary($input);
-                }
+                $modeList = Entity::PAYOUTS_SUMMARY_ALLOWED_MODES;
             }
             else
             {
+                $modeList[] = $mode;
+            }
+
+            foreach ($modeList as $mode)
+            {
+                $input[Entity::MODE] = $mode;
                 $response[$mode] = $this->core->smartRoutingPayoutsSummary($input);
             }
+
         }
         catch (Exception\ServerErrorException $e) {
             throw new Exception\BadRequestException(
@@ -6145,12 +6150,19 @@ class Service extends Base\Service
                 null,
                 $e->getMessage()
             );
-        } catch (BadRequestValidationFailureException|Throwable $e) {
+        } catch (BadRequestValidationFailureException $e) {
             throw new BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE,
+                $e->getMessage(),
+                null,
+                null
+            );
+        }catch (Throwable $e)
+        {
+            throw new Exception\ServerErrorException(
+                ErrorCode::SERVER_ERROR,
                 null,
                 null,
-                $e->getMessage()
+                $e
             );
         }
 
