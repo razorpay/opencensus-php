@@ -32,6 +32,11 @@ export enum BUSINESS_SUBCATEGORIES {
 }
 
 type Getters = {
+  findTag: (tag: string) => boolean;
+  isAllowedView: (args: string) => boolean;
+  isFeatureEnabled: (args: string) => boolean;
+  isOrgAllowedFunctionality: (featureName: string) => boolean;
+  isPartner: (...args: string[]) => boolean;
   isApmOnboardingEnabled: boolean;
   isAccountAndSettingsRevampEnabled: boolean;
   isIERevampEnabled: boolean;
@@ -46,9 +51,6 @@ type Getters = {
   };
   isMarketplaceEnabled: boolean;
   isSupportRole: boolean;
-  isOrgAllowedFunctionality: (featureName: string) => boolean;
-  findTag: (tag: string) => boolean;
-  isPartner: (args: string) => boolean;
   isSettlementV3RevampEnabled: boolean;
   isSingleReconEnabled: boolean;
   isOptimizerEnabled: boolean;
@@ -63,9 +65,9 @@ type Getters = {
   isOrgCurlec: boolean;
   isOrgRZP: boolean;
   isPartnershipForCapitalEnabled: boolean;
-  isPartnershipsInviteFlowEnabled: boolean;
   isInternationalMethodsHidden: boolean;
   isDirectTransferEnabled: boolean;
+  isSubMerchantKycEnabled: boolean;
 };
 
 type UserProperties = {
@@ -81,6 +83,7 @@ type UserProperties = {
   transaction_report_email: string;
   name: string;
   user: {
+    id: string;
     name: string;
     email?: string;
     contact_mobile?: string;
@@ -96,7 +99,6 @@ type UserProperties = {
   isTransacted: boolean;
   pos_activation_status?: string;
   pos_kyc_deadline_date?: number;
-  isAllowedView: (args: string) => boolean;
   documents: {
     shop_front?: [];
     shop_interior?: [];

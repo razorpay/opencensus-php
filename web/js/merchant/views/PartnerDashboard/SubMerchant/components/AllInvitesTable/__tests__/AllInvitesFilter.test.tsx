@@ -1,34 +1,35 @@
 import React from 'react';
-import { render, screen, waitFor, userEvent } from 'test-utils';
-import { AllInvitesFilter } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/components/AllInvitesFilter';
-import { createMemoryHistory } from 'history';
 
-const location = {
-  search: '',
+import AllInvitesFilter from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/components/AllInvitesFilter';
+import { render, screen, waitFor, userEvent } from 'test-utils';
+
+const MOCK_LOCATION = {
+  key: '',
   pathname: '/submerchants/all',
+  hash: '',
+  search: '',
+  state: {},
 };
+
+let mockLocation = MOCK_LOCATION;
+jest.mock('react-router-dom', () => {
+  return {
+    __esModule: true,
+    ...(jest.requireActual('react-router-dom') as any),
+    useLocation: () => mockLocation,
+  };
+});
 const handlePagination = jest.fn();
 const onSearch = jest.fn();
-let history;
 
 describe('All Invites Filter', () => {
-  beforeAll(() => {
-    history = createMemoryHistory();
-    history.push = jest.fn();
+  beforeEach(() => {
+    mockLocation = MOCK_LOCATION;
   });
-  const renderApp = (locationProp = location) => {
-    render(
-      <AllInvitesFilter
-        location={locationProp}
-        setPagination={handlePagination}
-        count={25}
-        onSearch={onSearch}
-        history={history}
-      />,
-      {
-        renderViaRouteGuard: false,
-      },
-    );
+  const renderApp = () => {
+    render(<AllInvitesFilter setPagination={handlePagination} count={25} onSearch={onSearch} />, {
+      renderViaRouteGuard: false,
+    });
   };
 
   test('should render all fields', () => {
@@ -42,7 +43,8 @@ describe('All Invites Filter', () => {
   });
 
   test('should setValue to fields if search is already present in location', async () => {
-    renderApp({ ...location, search: '?name=ABC123&count=28' });
+    mockLocation = { ...MOCK_LOCATION, search: '?name=ABC123&count=28' };
+    renderApp();
     await waitFor(() => {
       expect(screen.getByLabelText('Count')).toHaveValue('28');
     });
@@ -74,7 +76,8 @@ describe('All Invites Filter', () => {
   });
 
   test('should reset the value to initial state and call the API without any filter when reset is clicked', async () => {
-    renderApp({ ...location, search: '?name=ABC123&count=28' });
+    mockLocation = { ...MOCK_LOCATION, search: '?name=ABC123&count=28' };
+    renderApp();
     await waitFor(() => {
       expect(screen.getByLabelText('Count')).toHaveValue('28');
     });

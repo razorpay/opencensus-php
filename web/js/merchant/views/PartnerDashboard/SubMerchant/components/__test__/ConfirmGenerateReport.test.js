@@ -1,6 +1,7 @@
 import React from 'react';
-import { render, userEvent, screen } from 'test-utils';
+
 import ConfirmGenerateReport from 'merchant/views/PartnerDashboard/SubMerchant/components/ConfirmGenerateReport';
+import { render, userEvent, screen } from 'test-utils';
 
 const defaultProps = {
   onDownload: jest.fn(),

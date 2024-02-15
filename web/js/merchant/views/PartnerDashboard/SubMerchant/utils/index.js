@@ -57,9 +57,9 @@ export const getInitialState = ({ addType, referralData }) => {
   }
   return state;
 };
-
+const INVITE_RECENTLY_ACCEPTED_DAYS = 7;
 export const isInviteRecentlyAccepted = (created_at) => {
   const momentInviteAcceptedOn = moment(created_at * 1000);
   const currentTime = moment(Date.now());
-  return currentTime.diff(momentInviteAcceptedOn, 'days') <= 7;
+  return currentTime.diff(momentInviteAcceptedOn, 'days') <= INVITE_RECENTLY_ACCEPTED_DAYS;
 };

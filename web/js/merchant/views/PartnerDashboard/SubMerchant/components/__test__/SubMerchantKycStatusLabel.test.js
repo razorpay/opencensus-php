@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react';
 import moment from 'moment';
 
 import SubMerchantKycStatusLabel from 'merchant/views/PartnerDashboard/SubMerchant/components/SubMerchantKycStatusLabel';
+import { delay, fireEvent, render, screen } from 'test-utils';
 import '@testing-library/jest-dom/extend-expect';
 
 describe('<SubMerchantKycStatusLabel />', () => {
@@ -125,5 +125,27 @@ describe('<SubMerchantKycStatusLabel />', () => {
     // checking if not exist
     expect(screen.queryByText('Pending Completion')).toBeNull();
     expect(screen.queryByText('Request approved by Merchant')).toBeNull();
+  });
+
+  test('SubM approved request with showDescriptionAsTooltip = true', async () => {
+    let notExpiredTime = new Date().getTime() + 100000;
+    notExpiredTime = moment(notExpiredTime).unix();
+    const props = {
+      activation_status: null,
+      showDescriptionAsTooltip: true,
+      kyc_access: {
+        state: 'approved',
+        rejection_count: 1,
+        token_expiry: notExpiredTime,
+      },
+    };
+    render(<SubMerchantKycStatusLabel {...props} />);
+    expect(screen.getByText('Pending Completion')).toBeInTheDocument();
+    expect(screen.queryByText('Request approved by Merchant')).not.toBeInTheDocument();
+
+    fireEvent.mouseEnter(screen.getByTestId('tooltip-interactive-wrapper'));
+    await delay(500);
+
+    expect(screen.getByText('Request approved by Merchant')).toBeInTheDocument();
   });
 });

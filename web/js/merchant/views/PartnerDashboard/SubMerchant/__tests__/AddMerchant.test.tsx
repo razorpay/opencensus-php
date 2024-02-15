@@ -1,25 +1,40 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, waitFor, userEvent, server, delay } from 'common/services/test/test-utils';
-import { rest } from 'msw';
-import store from 'merchant/store';
 import cloneDeep from 'lodash/cloneDeep';
+import { rest } from 'msw';
+
+import { render, screen, waitFor, userEvent, server, delay } from 'common/services/test/test-utils';
+import * as analytics from 'common/utils/analytics';
+import store from 'merchant/store';
+import { createSubmerchantInviteSuccessHandler } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/once-handlers';
 import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
 import * as api from 'merchant/views/PartnerDashboard/SubMerchant/api';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+
 import {
   referralData as referralDataFixture,
   fileUploadResponse,
   orgDetails,
 } from './mocks/fixtures';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import * as analytics from 'common/utils/analytics';
-import {
-  createSubmerchantInviteSuccessHandler,
-  fetchReferralsHandler,
-} from './mocks/once-handlers';
+import { fetchReferralsHandler } from './mocks/once-handlers';
 const analyticsTrackWithUserInfoSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 
 // TODO : covered only Capital use case, have to cover others later
+
+const defaultPartnerDashboardExperiments = {
+  isPartnershipCapitalBureauLinkEnabled: true,
+  isPartnershipsInviteFlowEnabled: false,
+  isPlatformPartnerInviteFlowEnabled: false,
+};
+let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+jest.mock('merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments', () => {
+  return {
+    __esModule: true,
+    default: (Component) => (props) =>
+      <Component {...props} experiments={mockPartnerDashboardExperiments} />,
+  };
+});
 
 const storeData = store.getState();
 const isPartner = jest.fn();
@@ -103,11 +118,20 @@ describe('AddMerchant', () => {
 
     window.rzpQ.component = jest.fn();
   });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+  });
   const renderApp = ({
     isPartnershipForCapitalEnabled = true,
     isPartnershipsInviteFlowEnabled = false,
     referralData = referralDataFixture as string | typeof referralDataFixture,
   } = {}) => {
+    mockPartnerDashboardExperiments = {
+      ...defaultPartnerDashboardExperiments,
+      isPartnershipsInviteFlowEnabled,
+    };
     return render(
       <AddMerchant
         closeModal={mockCloseModal}
@@ -122,7 +146,6 @@ describe('AddMerchant', () => {
             user: {
               ...state.session.user,
               isPartnershipForCapitalEnabled,
-              isPartnershipsInviteFlowEnabled,
             },
           },
         },
@@ -145,10 +168,6 @@ describe('AddMerchant', () => {
       },
     );
   };
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   test('should show different footer text for partnerships invite flow', async () => {
     renderApp({ isPartnershipsInviteFlowEnabled: true, isPartnershipForCapitalEnabled: false });

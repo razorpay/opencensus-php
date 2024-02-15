@@ -1,17 +1,16 @@
 import React, { useEffect } from 'react';
-import type { History, Location } from 'history';
 import { TextInput, Button, Link } from '@razorpay/blade/components';
-import {
-  decodeSensitiveFields,
-  encodeSensitiveFields,
-  getURLQueryParams,
-  stringifyQueryParams,
-} from 'common/utils/rzp-utils';
-import { FilterContainer, InputContainer, ButtonContainer } from './styles';
-import { PaginationParamsType } from 'common/typings';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import { isEmpty } from 'lodash';
+import { useLocation, useNavigate } from 'react-router-dom';
+import * as Yup from 'yup';
+
+import { PaginationParamsType } from 'common/typings';
+import { encodeSensitiveFields, stringifyQueryParams } from 'common/utils/rzp-utils';
+import { getDecodedParams as _getDecodedParams } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/common/FiltersSectionWrapper/utils';
+
+import { FilterContainer, InputContainer, ButtonContainer } from './styles';
+export const getDecodedParams = _getDecodedParams;
 
 export type AllInvitesFiltersType = {
   name: string;
@@ -36,27 +35,9 @@ const validationSchema = Yup.object().shape({
     .nullable(),
 });
 
-export const getDecodedParams = (search: string = location.search): Record<string, string> => {
-  let params = {};
-  if (search) {
-    params = getURLQueryParams(search);
-  }
-
-  for (const key in params) {
-    if (params.hasOwnProperty(key)) {
-      params[key] = decodeURI(params[key]);
-      if (key === 'count' || key === 'skip') params[key] = Number(params[key]);
-    }
-  }
-
-  return decodeSensitiveFields(params);
-};
-
 interface AllInvitesFilterProps {
   count: number;
   onSearch: () => void;
-  history: History;
-  location: Location;
   setPagination: (val: PaginationParamsType) => void;
 }
 
@@ -67,16 +48,17 @@ const initState: AllInvitesFiltersType = {
   count: 25,
 };
 
-export const AllInvitesFilter = ({
+const AllInvitesFilter = ({
   onSearch,
   count,
-  location,
-  history,
   setPagination,
 }: AllInvitesFilterProps): JSX.Element => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const handleFormSubmit = (formData) => {
     const searchParams = stringifyQueryParams(encodeSensitiveFields(formData));
-    history.push({
+    navigate({
       pathname: location.pathname,
       hash: location.hash,
       search: searchParams,
@@ -114,7 +96,7 @@ export const AllInvitesFilter = ({
   };
 
   const handleReset = () => {
-    history.push({
+    navigate({
       search: stringifyQueryParams({}),
       hash: location.hash,
     });
@@ -187,3 +169,4 @@ export const AllInvitesFilter = ({
     </FilterContainer>
   );
 };
+export default AllInvitesFilter;

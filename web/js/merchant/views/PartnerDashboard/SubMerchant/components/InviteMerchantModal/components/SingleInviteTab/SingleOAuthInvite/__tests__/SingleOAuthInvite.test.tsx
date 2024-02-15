@@ -1,17 +1,16 @@
 import React from 'react';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
-import * as api from 'merchant/views/PartnerDashboard/SubMerchant/api';
-import SingleOAuthInvite from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SingleOAuthInvite';
-import * as analytics from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
-
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { render, screen, server, userEvent, waitFor } from 'test-utils';
 import {
   createSubmerchantInviteErrorHandler,
   createSubmerchantInviteSuccessHandler,
-} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/once-handlers';
+} from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/once-handlers';
+import * as api from 'merchant/views/PartnerDashboard/SubMerchant/api';
+import SingleOAuthInvite from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SingleOAuthInvite';
+import * as analytics from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { render, screen, server, userEvent, waitFor } from 'test-utils';
 
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 const createSubmerchantInviteSpy = jest.spyOn(api, 'createSubmerchantInvite');
@@ -20,6 +19,16 @@ const trackInviteFlowGenericErrorSpy = jest.spyOn(analytics, 'trackInviteFlowGen
 const trackInviteFlowSuccessfulInviteSpy = jest.spyOn(analytics, 'trackInviteFlowSuccessfulInvite');
 const trackInviteFlowValidationErrorSpy = jest.spyOn(analytics, 'trackInviteFlowValidationError');
 const trackSubmerchantReferViaEmailSpy = jest.spyOn(analytics, 'trackSubmerchantReferViaEmail');
+
+const defaultPartnerDashboardExperiments = {
+  isPartnershipsInviteFlowEnabled: false,
+  isPlatformPartnerInviteFlowEnabled: false,
+};
+let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments', () => ({
+  __esModule: true,
+  default: () => mockPartnerDashboardExperiments,
+}));
 
 const isPartner = jest.fn();
 isPartner.mockImplementation((type) => type === 'reseller');
@@ -43,7 +52,16 @@ const defaultUserExtra = {
 };
 const defaultOrgExtra = {};
 describe('SingleOAuthInvite', () => {
-  const renderApp = (props = {}, { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {}) => {
+  afterEach(() => {
+    jest.clearAllMocks();
+    mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+  });
+  const renderApp = (
+    props = {},
+    { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {},
+    experiments = {},
+  ) => {
+    mockPartnerDashboardExperiments = { ...defaultPartnerDashboardExperiments, ...experiments };
     const session = getInitialUserOrgState({
       isRzpOrg,
       userExtra: { ...defaultUserExtra, ...userExtra },
@@ -53,9 +71,6 @@ describe('SingleOAuthInvite', () => {
     // @ts-ignore
     render(<SingleOAuthInvite {...defaultProps} {...props} />, { initialState: { session } });
   };
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
   beforeEach(() => {
     server.use(createSubmerchantInviteSuccessHandler());
   });
@@ -69,7 +84,7 @@ describe('SingleOAuthInvite', () => {
   };
 
   test('should correctly render typical partnerships oauth invite flow', async () => {
-    renderApp({}, { userExtra: { isPartnershipsInviteFlowEnabled: true } });
+    renderApp({}, {}, { isPartnershipsInviteFlowEnabled: true });
 
     const { name, email } = await fillFormEssentials();
     const contact_no = '9123123123';

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { render, screen, waitForLoadingToFinish } from 'common/services/test/test-utils';
 import List from 'merchant/views/PartnerDashboard/SubMerchant/List';
 
@@ -12,6 +13,19 @@ jest.mock('common/i18', () => ({
   }),
 }));
 
+const defaultPartnerDashboardExperiments = {
+  isPartnershipsInviteFlowEnabled: false,
+  isPlatformPartnerInviteFlowEnabled: false,
+  isPartnershipCapitalBureauLinkEnabled: true,
+};
+let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+jest.mock('merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments', () => {
+  return {
+    __esModule: true,
+    default: (Component) => (props) =>
+      <Component {...props} experiments={mockPartnerDashboardExperiments} />,
+  };
+});
 const isPartner = jest.fn();
 const isPartnerIntent = jest.fn();
 const isFeatureEnabled = jest.fn();
@@ -26,7 +40,6 @@ const state = {
       isFeatureEnabled,
       isPartnershipForCapitalEnabled: true,
       isPartnershipFUX: true,
-      isPartnershipsInviteFlowEnabled: false,
       instantActivation,
     },
   },
@@ -36,7 +49,8 @@ const location = {
   pathname: '/partners/submerchants',
 };
 
-const renderApp = (newState = state, props = {}) => {
+const renderApp = (newState = state, props = {}, experiments = {}) => {
+  mockPartnerDashboardExperiments = { ...defaultPartnerDashboardExperiments, ...experiments };
   render(<List location={location} {...props} />, {
     initialState: {
       ...newState,
@@ -45,6 +59,10 @@ const renderApp = (newState = state, props = {}) => {
 };
 
 describe('List', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+    mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+  });
   beforeAll(() => {
     document.execCommand = jest.fn();
     window.rzp_user = {};
@@ -89,15 +107,7 @@ describe('List', () => {
   });
 
   it('should render Invites flow navlinks if the feature is enabled', async () => {
-    const newState = {
-      session: {
-        user: {
-          ...state.session.user,
-          isPartnershipsInviteFlowEnabled: true,
-        },
-      },
-    };
-    renderApp(newState);
+    renderApp(state, {}, { isPartnershipsInviteFlowEnabled: true });
     await waitForLoadingToFinish();
     expect(screen.getByText('All Invites')).toBeInTheDocument();
     expect(screen.getByText('Accepted Invites')).toBeInTheDocument();

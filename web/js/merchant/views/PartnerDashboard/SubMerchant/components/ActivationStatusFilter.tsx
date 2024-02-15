@@ -1,7 +1,10 @@
 import React from 'react';
 
 interface ActivationStatusFilterProps {
-  input: { value: string; onChange: React.ChangeEventHandler };
+  input: {
+    value: string;
+    onChange: React.ChangeEventHandler<HTMLSelectElement>;
+  };
 }
 
 export const activationStatusMenu = [

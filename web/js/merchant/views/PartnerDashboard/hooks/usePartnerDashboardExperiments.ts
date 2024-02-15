@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { getUser } from 'merchant/store';
@@ -5,69 +7,87 @@ import { getUser } from 'merchant/store';
 /**
  * Accepts `user` to access any getters such as partner_type, isOrgRzp, older experiments, etc.
  */
-const isEasierAccessToSubmerchantKycEnabled = ({ variant, user }) => {
-  return user.isPartnershipsInviteFlowEnabled && isExperimentEnabled(variant);
+const isPartnershipsInviteFlowEnabled = ({ user }) => {
+  // Note: this experiment is ramped 100% but the user checks are still needed.
+  return user.isPartner('reseller') && user.isOrgRZP;
 };
 
-const isPlatformPartnerInviteFlowEnabled = ({ variant, user }) => {
-  return user.isPartner('pure_platform') && user.isOrgRZP && isExperimentEnabled(variant);
+const isPlatformPartnerInviteFlowEnabled = ({ abExperiments, user }) => {
+  return (
+    user.isPartner('pure_platform') &&
+    user.isOrgRZP &&
+    isExperimentEnabled(abExperiments.partnerships_oauth_phantom)
+  );
 };
 
-const isPartnerPlaybookEnabled = ({ variant, user }) => {
-  return user.isOrgRZP && isExperimentEnabled(variant);
+const isPartnerPlaybookEnabled = ({ abExperiments, user }) => {
+  return user.isOrgRZP && isExperimentEnabled(abExperiments.partnerships_partner_playbook);
 };
 
-const isPartnershipCapitalBureauLinkEnabled = ({ variant }) => {
-  return isExperimentEnabled(variant);
+const isPartnershipsForPosEnabled = ({ abExperiments, user }) => {
+  return (
+    user.isPartner('reseller') &&
+    user.isOrgRZP &&
+    isExperimentEnabled(abExperiments.partnerships_for_pos)
+  );
 };
 
-const isPartnershipsForPosEnabled = ({ variant, user }) => {
-  return user.isPartner('reseller') && user.isOrgRZP && isExperimentEnabled(variant);
+const isAccountsListRevampEnabled = ({ abExperiments, user }) => {
+  const { partnerships_accounts_list_revamp } = abExperiments;
+  return (
+    // TODO v2: test for curlec and remove the user.isOrgRZP check
+    user.isOrgRZP &&
+    isExperimentEnabled(partnerships_accounts_list_revamp) &&
+    (partnerships_accounts_list_revamp.variables?.skip_pos_check === 'on' ||
+      isPartnershipsForPosEnabled({ abExperiments, user }))
+  );
+};
+const isPartnershipCapitalBureauLinkEnabled = ({ abExperiments }) => {
+  return isExperimentEnabled(abExperiments.partnership_capital_bureau_link);
 };
 
 /**
  * A custom hook for consuming partner dashboard's specific experiments
  *
  */
-const usePartnerDashboardExperiments = (): {
-  isEasierAccessToSubmerchantKycEnabled: boolean;
+export type PartnerDashboardExperiments = {
+  isPartnershipsInviteFlowEnabled: boolean;
   isPlatformPartnerInviteFlowEnabled: boolean;
   isPartnerPlaybookEnabled: boolean;
-  isPartnershipCapitalBureauLinkEnabled: boolean;
+  isAccountsListRevampEnabled: boolean;
   isPartnershipsForPosEnabled: boolean;
-} => {
+  isPartnershipCapitalBureauLinkEnabled: boolean;
+};
+const usePartnerDashboardExperiments = (): PartnerDashboardExperiments => {
   const user = getUser();
-  const {
-    abExperiments: {
-      // List of partner dashboard specific experiment labels here:
-      partnerships_easier_access_to_submerchant_kyc,
-      partnerships_oauth_phantom,
-      partnerships_partner_playbook,
-      partnership_capital_bureau_link,
-      partnerships_for_pos,
-    } = {},
-  } = useSplitzService();
-  return {
-    isEasierAccessToSubmerchantKycEnabled: isEasierAccessToSubmerchantKycEnabled({
-      variant: partnerships_easier_access_to_submerchant_kyc,
-      user,
+  const { abExperiments = {} } = useSplitzService();
+  return useMemo(
+    () => ({
+      isPartnershipsInviteFlowEnabled: isPartnershipsInviteFlowEnabled({
+        user,
+      }),
+      isPlatformPartnerInviteFlowEnabled: isPlatformPartnerInviteFlowEnabled({
+        abExperiments,
+        user,
+      }),
+      isPartnerPlaybookEnabled: isPartnerPlaybookEnabled({
+        abExperiments,
+        user,
+      }),
+      isPartnershipsForPosEnabled: isPartnershipsForPosEnabled({
+        abExperiments,
+        user,
+      }),
+      isAccountsListRevampEnabled: isAccountsListRevampEnabled({
+        abExperiments,
+        user,
+      }),
+      isPartnershipCapitalBureauLinkEnabled: isPartnershipCapitalBureauLinkEnabled({
+        abExperiments,
+      }),
     }),
-    isPlatformPartnerInviteFlowEnabled: isPlatformPartnerInviteFlowEnabled({
-      variant: partnerships_oauth_phantom,
-      user,
-    }),
-    isPartnerPlaybookEnabled: isPartnerPlaybookEnabled({
-      variant: partnerships_partner_playbook,
-      user,
-    }),
-    isPartnershipCapitalBureauLinkEnabled: isPartnershipCapitalBureauLinkEnabled({
-      variant: partnership_capital_bureau_link,
-    }),
-    isPartnershipsForPosEnabled: isPartnershipsForPosEnabled({
-      variant: partnerships_for_pos,
-      user,
-    }),
-  };
+    [user, abExperiments],
+  );
 };
 
 export default usePartnerDashboardExperiments;

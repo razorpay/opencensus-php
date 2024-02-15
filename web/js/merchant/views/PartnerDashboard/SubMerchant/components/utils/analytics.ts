@@ -10,7 +10,7 @@ type SubmerchantPartial = {
   user?: { contact_mobile: string };
 };
 
-export const trackAcceptedInvitesCta = (
+export const trackAccountLevelAcceptedInvitesCta = (
   submerchant: SubmerchantPartial,
   { properties = {}, ...args }: { properties: Record<string, string> },
 ): void => {

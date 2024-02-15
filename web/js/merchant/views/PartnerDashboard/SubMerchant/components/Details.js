@@ -282,7 +282,6 @@ const Details = (props) => {
                       <SubMerchantKycStatusLabel
                         activation_status={submerchant.details.activation_status}
                         kyc_access={submerchant.kyc_access}
-                        isSubMerchantKYCAccess={isSubMerchantKYCAccess}
                       />
                     ) : // old ui
                     submerchant.details && submerchant.details.activation_status ? (

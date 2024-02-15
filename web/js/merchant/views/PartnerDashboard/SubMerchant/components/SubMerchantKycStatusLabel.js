@@ -1,16 +1,38 @@
-import PropTypes from 'prop-types';
-import { titleCase } from 'common/utils/rzp-utils';
-import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import {
+  AlertOctagonIcon,
+  AlertTriangleIcon,
+  CheckIcon,
+  Badge,
+  InfoIcon,
+  ClockIcon,
+  Box,
+} from '@razorpay/blade/components';
 import moment from 'moment';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import { titleCase } from 'common/utils/rzp-utils';
+import ConditionalTooltip from 'merchant/containers/ConditionalTooltip';
 
 const statusMap = {
-  activated: 'label-light-positive',
-  rejected: 'label-light-negative',
-  needs_clarification: 'label-light-warning',
-  under_review: 'label-light-neutral',
-  kyc_qualified_unactivated: 'label-light-neutral',
-  instantly_activated: 'label-light-information',
-  activated_mcc_pending: 'label-light-positive',
+  activated: 'positive',
+  rejected: 'negative',
+  needs_clarification: 'notice',
+  under_review: 'information',
+  kyc_qualified_unactivated: 'information',
+  instantly_activated: 'information',
+  activated_mcc_pending: 'positive',
+};
+
+const activationStatusToIcon = {
+  activated: CheckIcon,
+  rejected: AlertOctagonIcon,
+  needs_clarification: AlertTriangleIcon,
+  under_review: ClockIcon,
+  kyc_qualified_unactivated: ClockIcon,
+  instantly_activated: CheckIcon,
+  activated_mcc_pending: CheckIcon,
 };
 
 // API Resp
@@ -23,11 +45,11 @@ const statusMap = {
 const SubMerchantKycStatusLabel = ({
   activation_status = null,
   kyc_access = null,
-  isSubMerchantKYCAccess,
+  user,
+  showDescriptionAsTooltip = false,
 }) => {
-  // May need to re-assign in future
-  // eslint-disable-next-line prefer-const
-  let customLabelStyle = null;
+  const isSubMerchantKYCAccess = user?.isFeatureEnabled('partner_sub_kyc_access');
+
   let state = kyc_access?.state;
   const token_expiry = moment.unix(kyc_access?.token_expiry);
   const rejection_count = kyc_access?.rejection_count;
@@ -74,14 +96,21 @@ const SubMerchantKycStatusLabel = ({
     description = ``;
   }
 
-  const getLabelStyle = () => {
-    if (customLabelStyle) {
-      return customLabelStyle;
-    }
+  const getLabelColor = () => {
     if (activation_status === null) {
-      return 'label-light-warning';
+      return 'notice';
     }
-    return statusMap[activation_status.toLowerCase()];
+    return statusMap[activation_status.toLowerCase()] || statusMap.needs_clarification;
+  };
+
+  const getLabelIcon = () => {
+    if (activation_status === null) {
+      return InfoIcon;
+    }
+    return (
+      activationStatusToIcon[activation_status.toLowerCase()] ||
+      activationStatusToIcon.needs_clarification
+    );
   };
 
   const getLabelText = () => {
@@ -94,8 +123,20 @@ const SubMerchantKycStatusLabel = ({
     return titleCase(activation_status);
   };
   return (
-    <div className={`submerchant-kyc-status ${description ? '' : 'no-description'}`}>
-      <span class={`status-label label ${getLabelStyle()}`}>{getLabelText()}</span>
+    <Box
+      minWidth="150px"
+      className={`submerchant-kyc-status ${description ? '' : 'no-description'}`}
+    >
+      <ConditionalTooltip
+        showTooltip={showDescriptionAsTooltip && !!description}
+        content={description}
+        onOpenChange={function noRefCheck() {}}
+        placement="bottom"
+      >
+        <Badge size="large" icon={getLabelIcon()} color={getLabelColor()}>
+          {getLabelText()}
+        </Badge>
+      </ConditionalTooltip>
       {activation_status === 'instantly_activated' && (
         <>
           &nbsp;
@@ -108,18 +149,21 @@ const SubMerchantKycStatusLabel = ({
           </PopoverComponent>
         </>
       )}
-      {description && <div className="submerchant-kyc-description"> {description} </div>}
-    </div>
+      {!showDescriptionAsTooltip && description ? (
+        <div className="submerchant-kyc-description"> {description} </div>
+      ) : null}
+    </Box>
   );
 };
 
 SubMerchantKycStatusLabel.propTypes = {
   activation_status: PropTypes.string,
+  user: PropTypes.object,
   kyc_access: PropTypes.shape({
     state: PropTypes.string.isRequired,
     rejection_count: PropTypes.number.isRequired,
     token_expiry: PropTypes.number.isRequired,
   }),
-  isSubMerchantKYCAccess: PropTypes.bool,
 };
-export default SubMerchantKycStatusLabel;
+
+export default connect((state) => ({ user: state.session.user }), null)(SubMerchantKycStatusLabel);

@@ -75,10 +75,11 @@ jest.mock(
   }),
 );
 const defaultPartnerDashboardExperiments = {
-  isEasierAccessToSubmerchantKycEnabled: true,
+  isPartnershipsInviteFlowEnabled: true,
+  isPartnershipsForPosEnabled: false,
   isPlatformPartnerInviteFlowEnabled: false,
 };
-let mockPartnerDashboardExperiments = { ...defaultPartnerDashboardExperiments };
+let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
 jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments', () => ({
   __esModule: true,
   default: () => mockPartnerDashboardExperiments,
@@ -90,7 +91,12 @@ const defaultUserExtra = {
 };
 const defaultOrgExtra = {};
 describe('InviteMerchantTabs', () => {
-  const renderApp = (props = {}, { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {}) => {
+  const renderApp = (
+    props = {},
+    { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {},
+    experiments = {},
+  ) => {
+    mockPartnerDashboardExperiments = { ...defaultPartnerDashboardExperiments, ...experiments };
     const session = getInitialUserOrgState({
       isRzpOrg,
       userExtra: { ...defaultUserExtra, ...userExtra },
@@ -115,11 +121,7 @@ describe('InviteMerchantTabs', () => {
   });
 
   test('should show correct tabs content for OAuth PG Invite Flow', async () => {
-    mockPartnerDashboardExperiments = {
-      ...defaultPartnerDashboardExperiments,
-      isPlatformPartnerInviteFlowEnabled: true,
-    };
-    renderApp();
+    renderApp({}, {}, { isPlatformPartnerInviteFlowEnabled: true });
     expect(screen.getByText('SingleOAuthInvite')).toBeInTheDocument();
     await userEvent.click(screen.getByText('Bulk Upload'));
     expect(screen.getByText('BulkOAuthInvite')).toBeInTheDocument();
@@ -144,6 +146,20 @@ describe('InviteMerchantTabs', () => {
     await userEvent.click(screen.getByText('Public Link'));
     expect(screen.getByText('PublicLinksTab')).toBeInTheDocument();
   });
+
+  test('should show correct tabs content for POS Invite Flow', async () => {
+    renderApp(
+      { productType: PRODUCT_TYPE.POS },
+      {},
+      { isPartnershipsInviteFlowEnabled: false, isPartnershipsForPosEnabled: true },
+    );
+    expect(screen.getByText('SingleInviteTab')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Bulk Upload'));
+    expect(screen.getByText('BulkInviteTab')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Public Link'));
+    expect(screen.getByText('PublicLinksTab')).toBeInTheDocument();
+  });
+
   test('should hide Public Links tab with international flag', () => {
     // Enable all options
     updateUseI18ServiceSpy('partnership.referral_links');

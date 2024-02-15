@@ -1,21 +1,24 @@
 import { Suspense, useEffect } from 'react';
-import store from 'merchant/store';
+import { Box, Spinner } from '@razorpay/blade/components';
 import { Route, Routes } from 'react-router-dom';
-import SubMerchantList from './SubMerchant/List';
-import Settings from './Settings';
-import Earnings from './Earnings';
-import Subvention from './Subvention';
-import Applications from './Applications';
-import PartnerReports from 'merchant_common/views/Reports/views/PartnerReports';
-import Home from './Home';
+
 import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
+import { RouteGuard } from 'merchant/components/ShowWhen';
+import lazy from 'merchant/routes/LazyLoader';
+import store from 'merchant/store';
 import usePartnerPageNPS from 'merchant/views/PartnerDashboard/SubMerchant/utils/usePartnerPageNPS';
 import useTrackPartnerExperiments from 'merchant/views/PartnerDashboard/SubMerchant/utils/useTrackPartnerExperiments';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
+import PartnerReports from 'merchant_common/views/Reports/views/PartnerReports';
+
+import ClientAccounts from './ClientAccounts';
+import Applications from './Applications';
+import Earnings from './Earnings';
+import Home from './Home';
+import Settings from './Settings';
 import Configuration from './Settings/configuration';
-import { RouteGuard } from 'merchant/components/ShowWhen';
-import lazy from 'merchant/routes/LazyLoader';
-import { Box, Spinner } from '@razorpay/blade/components';
+import SubMerchantList from './SubMerchant/List';
+import Subvention from './Subvention';
 
 const PartnerPlaybook = lazy(() =>
   import(
@@ -24,7 +27,8 @@ const PartnerPlaybook = lazy(() =>
 );
 
 export default function PartnerDashboard() {
-  const { isPartnerPlaybookEnabled } = usePartnerDashboardExperiments();
+  const { isPartnerPlaybookEnabled, isAccountsListRevampEnabled } =
+    usePartnerDashboardExperiments();
 
   const user = store.getState().session.user;
   const isPartnershipFUX = user?.isPartnershipFUX || false;
@@ -147,7 +151,7 @@ export default function PartnerDashboard() {
           path="submerchants/*"
           element={
             <RouteGuard>
-              <SubMerchantList />
+              {isAccountsListRevampEnabled ? <ClientAccounts /> : <SubMerchantList />}
             </RouteGuard>
           }
         />

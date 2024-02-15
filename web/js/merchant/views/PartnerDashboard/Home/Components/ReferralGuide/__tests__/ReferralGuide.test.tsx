@@ -1,10 +1,11 @@
 import React from 'react';
+import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import ReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/index';
-import { ThemeProvider } from 'styled-components';
-import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import { BrowserRouter as Router } from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
+
+import ReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/index';
 import { orgDetails } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 
 const setUpComponent = (TestElement: JSX.Element) => {

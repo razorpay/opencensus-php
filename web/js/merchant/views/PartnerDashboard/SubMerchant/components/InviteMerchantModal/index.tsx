@@ -7,6 +7,7 @@ import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { User } from 'common/typings';
 import lazy from 'merchant/routes/LazyLoader';
+import { getIsInviteFlowEnabled } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/utils/tabsData';
 import { Org } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import { PRODUCT_TYPE, ORG_NAME } from 'merchant/views/PartnerDashboard/constants';
@@ -28,21 +29,11 @@ const getModalHeaderText = (
   productType: string,
   currentStep: string,
   orgName: string,
-  {
-    isPGInviteFlow,
-    isPlatformPartnerInviteFlowEnabled,
-    isPosInviteFlow,
-  }: {
-    isPGInviteFlow: boolean;
-    isPlatformPartnerInviteFlowEnabled: boolean;
-    isPosInviteFlow: boolean;
-  },
+  { isInviteFlowEnabled }: { isInviteFlowEnabled: boolean },
 ): string => {
   switch (currentStep) {
     case SELECT_PRODUCT:
-      return isPGInviteFlow || isPlatformPartnerInviteFlowEnabled || isPosInviteFlow
-        ? 'Add New Clients'
-        : 'Add New Merchants';
+      return isInviteFlowEnabled ? 'Add New Clients' : 'Add New Merchants';
     case CHOOSE_OAUTH_APP:
       return 'Choose app to refer';
     case INVITE_TABS:
@@ -53,11 +44,10 @@ const getModalHeaderText = (
         case PRODUCT_TYPE.CAPITAL:
           return 'Add New Merchants - Line Of Credit';
         case PRODUCT_TYPE.POS:
-          return 'Add new clients - Razorpay POS';
+          return 'Add New Clients - Razorpay POS';
         case PRODUCT_TYPE.PG:
         default:
-          if (isPGInviteFlow || isPlatformPartnerInviteFlowEnabled)
-            return `Add New Clients - ${orgName} Payments`;
+          if (isInviteFlowEnabled) return `Add New Clients - ${orgName} Payments`;
           return `Add New Merchants - ${orgName} Payments`;
       }
   }
@@ -86,7 +76,7 @@ const InviteMerchantModal = ({
   const [selectedStep, setCurrentStep] = useState<string | null>(null);
   const [shouldShowHeaderAndTabs, setShowHeaderAndTabs] = useState(true);
   const [shouldShowFooter, setShouldShowFooter] = useState(true);
-  const { isPlatformPartnerInviteFlowEnabled } = usePartnerDashboardExperiments();
+  const experiments = usePartnerDashboardExperiments();
   // Note: we need the defaults outside useState because the component may not remount.
   const productType = selectedProductType || initialProductType;
   const currentStep = (selectedStep || initialStep) as INVITE_MERCHANT_STEPS;
@@ -96,14 +86,10 @@ const InviteMerchantModal = ({
   }, [currentStep]);
 
   // experiment conditions
-  const isPGInviteFlow = user.isPartnershipsInviteFlowEnabled && productType == PRODUCT_TYPE.PG;
-  const isPosInviteFlow = productType == PRODUCT_TYPE.POS;
-
+  const { isInviteFlowEnabled } = getIsInviteFlowEnabled(productType, experiments);
   const orgName = org?.business_name || ORG_NAME.RZP;
   const modalTitle = getModalHeaderText(productType, currentStep, orgName, {
-    isPGInviteFlow,
-    isPlatformPartnerInviteFlowEnabled,
-    isPosInviteFlow,
+    isInviteFlowEnabled,
   });
 
   // cta handlers

@@ -1,6 +1,10 @@
 import React from 'react';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
+import {
+  createSubmerchantInviteErrorHandler,
+  createSubmerchantInviteSuccessHandler,
+} from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/once-handlers';
 import * as api from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { INVITE_TAB_TYPES } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/InviteMerchantTabs/constants';
 import SingleInviteTab from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab';
@@ -9,10 +13,6 @@ import * as kycAccessFtux from 'merchant/views/PartnerDashboard/SubMerchant/comp
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { render, screen, server, userEvent, waitFor } from 'test-utils';
-import {
-  createSubmerchantInviteErrorHandler,
-  createSubmerchantInviteSuccessHandler,
-} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/once-handlers';
 
 const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
 const getHasSelectedKycAccessSpy = jest.spyOn(kycAccessFtux, 'getHasSelectedKycAccess');
@@ -36,25 +36,41 @@ const defaultProps = {
   onDismiss: jest.fn(),
 };
 
+const defaultPartnerDashboardExperiments = {
+  isPartnershipsInviteFlowEnabled: false,
+  isPlatformPartnerInviteFlowEnabled: false,
+};
+let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments', () => ({
+  __esModule: true,
+  default: () => mockPartnerDashboardExperiments,
+}));
 const defaultUserExtra = {
   id: 'K0KQSNE7BypZ5VE',
   isPartner,
 };
 const defaultOrgExtra = {};
 describe('SingleInviteTab', () => {
-  const renderApp = (props = {}, { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {}) => {
+  afterEach(() => {
+    jest.clearAllMocks();
+    mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+  });
+  const renderApp = (
+    props = {},
+    { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {},
+    experiments = {},
+  ) => {
+    mockPartnerDashboardExperiments = { ...defaultPartnerDashboardExperiments, ...experiments };
     const session = getInitialUserOrgState({
       isRzpOrg,
       userExtra: { ...defaultUserExtra, ...userExtra },
       orgExtra: { ...defaultOrgExtra, ...orgExtra },
     });
+
     // eslint-disable-next-line
     // @ts-ignore
     render(<SingleInviteTab {...defaultProps} {...props} />, { initialState: { session } });
   };
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
   beforeEach(() => {
     server.use(createSubmerchantInviteSuccessHandler());
   });
@@ -69,7 +85,8 @@ describe('SingleInviteTab', () => {
 
   test('should correctly render typical partnerships invite flow', async () => {
     getHasSelectedKycAccessSpy.mockImplementation(() => true);
-    renderApp({}, { userExtra: { isPartnershipsInviteFlowEnabled: true } });
+
+    renderApp({}, {}, { isPartnershipsInviteFlowEnabled: true });
 
     const { name, email } = await fillFormEssentials();
     const contact_no = '9123123123';

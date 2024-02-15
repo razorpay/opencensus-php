@@ -54,6 +54,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'partnerships_accounts_list_revamp',
+        experimentId: {
+          beta: 'NEXPO27pXq4xdu',
+          production: 'NEXPYKWw3XJgkb',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'firs_request',
         experimentId: {
           beta: 'MkokP4l9jGy625',
@@ -290,22 +306,6 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'LoGdTEB7Wo0UuW',
             production: 'NHITocFEQvgrVs',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
-        {
-          uniqueHashKey: 'partnerships_easier_access_to_submerchant_kyc',
-          experimentId: {
-            beta: 'MNuYX8JifIAFCc',
-            production: 'MNuWeZSwz01j8V',
           },
           defaultVariant: {
             name: 'variables',

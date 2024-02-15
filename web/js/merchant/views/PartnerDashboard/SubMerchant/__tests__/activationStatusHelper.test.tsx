@@ -1,13 +1,11 @@
+import { capitalApplicationsResponse } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/CapitalClients/__tests__/mocks/fixtures';
+import { accountsListResponse } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/fixtures';
 import {
   activationStatusMap,
   filterApplications,
   getFormattedCapitalResponse,
 } from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
 import { CAPITAL_STATUS } from 'merchant/views/PartnerDashboard/constants';
-import {
-  items,
-  bulkResponse,
-} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 
 describe('activationStatusHelper', () => {
   test('should return status based on received value', () => {
@@ -69,13 +67,14 @@ describe('filterApplication', () => {
 });
 
 describe('getFormattedCapitalResponse', () => {
+  const { items } = accountsListResponse;
   test('should return subMerchant data if applicationData is not passed or it is empty', () => {
     const data = {};
     expect(getFormattedCapitalResponse(data, items)).toStrictEqual(items);
   });
 
   test('should return capitalActivationStatus as empty string if applicationData is not there for passed id', () => {
-    expect(getFormattedCapitalResponse(bulkResponse, [items[2]])).toStrictEqual([
+    expect(getFormattedCapitalResponse(capitalApplicationsResponse, [items[2]])).toStrictEqual([
       {
         ...items[2],
         capitalActivationStatus: '',

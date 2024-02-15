@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Button, Heading, Text, Link } from '@razorpay/blade/components';
 
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
+import { PARTNERSHIPS_WEBSITE_LINKS } from 'merchant/views/PartnerDashboard/constants';
 
 import Ellipse from './icons/ellipse.svg';
 import SuccessIcon from './icons/success-tick-rounded-green.svg';
@@ -66,7 +67,7 @@ const SuccessScreenOptIn = ({ onDismiss }: SuccessScreenOptInProps): JSX.Element
                 size="small"
                 target="_blank"
                 rel="noreferrer noopener"
-                href="https://razorpay.com/docs/partners/resellers/perform-kyc"
+                href={PARTNERSHIPS_WEBSITE_LINKS.PERFORM_KYC_DOCS_LINK}
               >
                 Know more
               </Link>

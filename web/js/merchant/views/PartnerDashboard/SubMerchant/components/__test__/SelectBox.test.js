@@ -1,6 +1,7 @@
 import React from 'react';
-import { render, screen } from 'test-utils';
+
 import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';
+import { render, screen } from 'test-utils';
 
 // TODO: only basic render test added, other tests can be added later.
 

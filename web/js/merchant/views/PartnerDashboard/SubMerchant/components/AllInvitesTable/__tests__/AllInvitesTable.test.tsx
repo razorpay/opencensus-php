@@ -1,10 +1,12 @@
 import React from 'react';
+
 import { render, screen, waitFor, server, userEvent } from 'common/services/test/test-utils';
+import * as analytics from 'common/utils/analytics';
 import AllInvitesTable from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+
 import { allInvitesData, allInvitesDataEmpty } from './mocks/fixtures';
 import { allInvitesListSuccess, allInvitesListError, resendInviteHandler } from './mocks/handlers';
-import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import * as analytics from 'common/utils/analytics';
 
 const analyticsTrackWithUserInfoSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 const showNotificationsSpy = jest.spyOn(NotificationsActions, 'showNotification');

@@ -1,20 +1,24 @@
-import { merchantFetch } from 'merchant/utils/ajax';
-import { AllInvitesFiltersType } from './components/AllInvitesFilter';
 import { CommonApiResponse, PaginationParamsType } from 'common/typings';
+import { merchantFetch } from 'merchant/utils/ajax';
+
+import { AllInvitesFiltersType } from './components/AllInvitesFilter';
 
 export type SubmerchantInviteItem = {
   id: string;
+  name: string;
   email: string;
   contact_no: string;
   updated_at: string;
   created_at: string;
 };
 
-type FetchInviteResponse = CommonApiResponse<{
+export type FetchInviteResponse = CommonApiResponse<{
   count: number;
   items: Array<SubmerchantInviteItem>;
 }>;
-export interface FetchInvitesParams extends AllInvitesFiltersType, PaginationParamsType {
+export interface FetchInvitesParams
+  extends Partial<AllInvitesFiltersType>,
+    Partial<PaginationParamsType> {
   product: string;
 }
 

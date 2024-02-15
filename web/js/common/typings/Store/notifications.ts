@@ -3,6 +3,7 @@ export type Notification = {
   message: string | string[] | (() => string);
   closeTimeout?: number;
   className?: string;
+  hidePrevious?: boolean;
 };
 
 export type ShowNotificationType = (arg0: Notification) => void;

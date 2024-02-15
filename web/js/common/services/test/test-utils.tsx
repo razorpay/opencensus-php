@@ -120,8 +120,15 @@ const customRenderHook = (
   return renderHook(hook, { wrapper: AllTheProviders, ...restOptions });
 };
 
-const waitForLoadingToFinish = (): Promise<void> =>
-  waitForElementToBeRemoved(screen.queryAllByTestId('spinner'));
+const waitForLoadingToFinish = (testID = 'spinner'): Promise<void> =>
+  waitForElementToBeRemoved(screen.queryAllByTestId(testID));
+const waitForLoadingToFinishByLabel = (label = 'spinner'): Promise<void> =>
+  waitFor(
+    () => {
+      expect(screen.queryAllByLabelText(label)).toHaveLength(0);
+    },
+    { timeout: 10000 },
+  );
 
 const checkIfComponentIsEmpty = () =>
   expect(screen.getByTestId(COMPONENT_WRAPPER_TESTID)).toBeEmptyDOMElement();
@@ -141,6 +148,7 @@ export {
   customRender as render,
   customRenderHook as renderHook,
   waitForLoadingToFinish,
+  waitForLoadingToFinishByLabel,
   server,
   errorHandlers,
   delay,

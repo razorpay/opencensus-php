@@ -8,6 +8,7 @@ import { compose } from 'redux';
 
 import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
 import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
+import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Image from 'common/ui/Image';
@@ -32,12 +33,12 @@ import {
   CapitalSubMerchantStatusLabel,
 } from 'merchant/components/StatusLabel';
 import ListContainer from 'merchant/containers/ListContainer';
-import { withRouter } from 'common/deprecated/withRouter';
 import { fetchProducts } from 'merchant/reducers/capital';
 import { fetchSubmerchants as fetchAll } from 'merchant/reducers/collection';
 import { switchMerchant } from 'merchant/reducers/session';
 import { downloadSubmerchants } from 'merchant/reducers/submerchant';
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
+import { fetchBureauLink } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import {
   getActivationStatusBulk,
   getFormattedCapitalResponse,
@@ -46,6 +47,7 @@ import {
   PRODUCT_TYPE,
   CAPITAL_STATUS,
   CREATE_BUREAU_COUNTDOWN_TIME,
+  PARTNERSHIPS_WEBSITE_LINKS,
 } from 'merchant/views/PartnerDashboard/constants';
 import {
   trackSearchAnalytics,
@@ -59,17 +61,17 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
+import { trackAcceptedInvitesClick, trackAllInvitesClick } from './analytics';
 import ActionButtonKYC from './components/ActionButtonKYC';
 import { fetchInvites } from './components/AllInvitesTable/api';
 import ConfirmGenerateReport from './components/ConfirmGenerateReport';
+import { CreateBureauLink } from './components/CreateBureauLink';
 import InviteMerchantModal from './components/InviteMerchantModal';
 import { INVITE_MERCHANT_STEPS } from './components/InviteMerchantModal/constants';
-import PGInvitesNavLinks from './components/PGInviteNavLinks';
+import InviteNavLinks from './components/InviteNavLinks';
 import SubMerchantKycStatusLabel from './components/SubMerchantKycStatusLabel';
 import { mediaWindowUrl } from './components/utils/social-share';
 import { isInviteRecentlyAccepted } from './utils';
-import { CreateBureauLink } from './components/CreateBureauLink';
-import { fetchBureauLink } from 'merchant/views/PartnerDashboard/SubMerchant/api';
 
 const email = {
   title: 'Registered Email',
@@ -206,7 +208,7 @@ const capitalStatus = {
             Click{' '}
             <a
               target="_blank"
-              href="https://betasite.razorpay.com/docs/razorpay/add-partners-capital-doc/partners/capital/#track-leads-status"
+              href={PARTNERSHIPS_WEBSITE_LINKS.CAPITAL_ADD_PARTNERS_KNOW_MORE_URL}
               rel="noopener noreferrer"
             >
               here
@@ -314,9 +316,10 @@ class ProductSubMerchantsList extends ListContainer {
   }
 
   checkIfPGInvitesEmpty = () => {
-    const { user, product, experiments } = this.props;
+    const { product, experiments } = this.props;
     const isPGProductWithInviteFlow =
-      (user.isPartnershipsInviteFlowEnabled || experiments.isPlatformPartnerInviteFlowEnabled) &&
+      (experiments.isPartnershipsInviteFlowEnabled ||
+        experiments.isPlatformPartnerInviteFlowEnabled) &&
       product === PRODUCT_TYPE.PG;
 
     if (isPGProductWithInviteFlow) {
@@ -455,7 +458,6 @@ class ProductSubMerchantsList extends ListContainer {
         <SubMerchantKycStatusLabel
           activation_status={submerchant.details.activation_status}
           kyc_access={submerchant.kyc_access}
-          isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
         />
       ),
     };
@@ -479,11 +481,10 @@ class ProductSubMerchantsList extends ListContainer {
       product,
       i18: { isConfigTagEnabled },
     } = this.props;
-    const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
-      experiments;
+    const { isPartnershipsInviteFlowEnabled, isPlatformPartnerInviteFlowEnabled } = experiments;
     const isPlatformPartnerWithPGInviteFlow =
       isPlatformPartnerInviteFlowEnabled && product === PRODUCT_TYPE.PG;
-    if (isPlatformPartnerWithPGInviteFlow || isEasierAccessToSubmerchantKycEnabled) {
+    if (isPlatformPartnerWithPGInviteFlow || isPartnershipsInviteFlowEnabled) {
       this.setState({ isInviteMerchantModalOpen: true });
     } else {
       openModal({
@@ -723,7 +724,7 @@ class ProductSubMerchantsList extends ListContainer {
     // prettier-ignore
     const { user, experiments, product, referralData, location, org } = this.props;
     const {
-      isEasierAccessToSubmerchantKycEnabled,
+      isPartnershipsInviteFlowEnabled,
       isPlatformPartnerInviteFlowEnabled,
       isPartnershipCapitalBureauLinkEnabled,
     } = experiments;
@@ -739,7 +740,7 @@ class ProductSubMerchantsList extends ListContainer {
       experiments.isPlatformPartnerInviteFlowEnabled && product === PRODUCT_TYPE.PG;
     const isPGProductWithInviteFlow =
       isPlatformPartnerWithPGInviteFlow ||
-      (user.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG);
+      (experiments.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG);
     const isCombinedContactFilterEnabled = user.isOrgRZP && product === PRODUCT_TYPE.PG;
 
     const shouldShowWelcomeScreen =
@@ -776,10 +777,7 @@ class ProductSubMerchantsList extends ListContainer {
           activation_status={submerchant.details.activation_status}
           kyc_access={submerchant.kyc_access}
           submerchant={submerchant}
-          trackUserEvent={this.trackUserEvent}
-          isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
           isPGProductWithInviteFlow={this.isPGProductWithInviteFlow}
-          showNotification={this.props.showNotification}
         />
       ),
     };
@@ -858,7 +856,11 @@ class ProductSubMerchantsList extends ListContainer {
       <tabbed-container class="sub-merchants-tab">
         <div className={`sub-merchants-list ${currentProduct}`}>
           {!shouldShowWelcomeScreen && isPGProductWithInviteFlow ? (
-            <PGInvitesNavLinks prefix="/partners/submerchants" />
+            <InviteNavLinks
+              productType={PRODUCT_TYPE.PG}
+              onAcceptedInvitesClick={trackAcceptedInvitesClick}
+              onAllInvitesClick={trackAllInvitesClick}
+            />
           ) : null}
           <div className={`content-wrapper ${shouldShowWelcomeScreen ? 'partner-welcome' : ''}`}>
             {!shouldShowWelcomeScreen ? (
@@ -1056,7 +1058,7 @@ class ProductSubMerchantsList extends ListContainer {
           </div>
         </div>
 
-        {isEasierAccessToSubmerchantKycEnabled || isPlatformPartnerWithPGInviteFlow ? (
+        {isPartnershipsInviteFlowEnabled || isPlatformPartnerWithPGInviteFlow ? (
           <InviteMerchantModal
             initialProductType={product}
             initialStep={

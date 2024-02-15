@@ -2,10 +2,10 @@ import React from 'react';
 import { Box, Button, Heading, Text, Link } from '@razorpay/blade/components';
 
 import ModalFooter from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/ModalCommon/ModalFooter';
-
 import Ellipse from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/icons/ellipse.svg';
 import SuccessIcon from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/icons/success-tick-rounded-green.svg';
 import { SuccessBackground } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/styled';
+import { PARTNERSHIPS_WEBSITE_LINKS } from 'merchant/views/PartnerDashboard/constants';
 
 type SuccessScreenProps = {
   onDismiss: () => void;
@@ -58,7 +58,7 @@ const SuccessScreen = ({ onDismiss }: SuccessScreenProps): JSX.Element => {
                 target="_blank"
                 rel="noreferrer noopener"
                 // TODO v2: get new docs link for Platform Partners
-                href="https://razorpay.com/docs/partners/resellers/perform-kyc"
+                href={PARTNERSHIPS_WEBSITE_LINKS.PERFORM_KYC_DOCS_LINK}
               >
                 Know more
               </Link>

@@ -41,7 +41,6 @@ const OrderCreate = ({ mode, merchantId }: GCMSSession) => {
           <Route
             path="programs/*"
             element={
-              /* @ts-expect-error withRouterProps-check */
               <RouteGuard additionalCondition={() => hasResellerId()}>
                 <GCMSOrdersCreatePrograms />
               </RouteGuard>
@@ -50,7 +49,6 @@ const OrderCreate = ({ mode, merchantId }: GCMSSession) => {
           <Route
             path="cart/*"
             element={
-              /* @ts-expect-error withRouterProps-check */
               <RouteGuard additionalCondition={() => hasResellerId()}>
                 <GCMSOrdersCart />
               </RouteGuard>

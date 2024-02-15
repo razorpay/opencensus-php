@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { FormikValues, useFormik } from 'formik';
 import { isEmpty } from 'lodash';
 import { connect } from 'react-redux';
-import { withRouter } from 'common/deprecated/withRouter';
 import { compose, bindActionCreators } from 'redux';
 import * as Yup from 'yup';
 
+import { withRouter } from 'common/deprecated/withRouter';
 import { CommonApiResponse, FormikHandleChange, ShowNotificationType, User } from 'common/typings';
 import { create as createSubmerchant } from 'merchant/reducers/submerchant';
 import { Org } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';

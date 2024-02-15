@@ -1,17 +1,27 @@
 import React from 'react';
 import { Button } from '@razorpay/blade/components';
 import { useMutation } from '@tanstack/react-query';
-import { resendInvite } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/api';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import { ShowNotificationType } from 'common/typings';
+import {
+  SubmerchantInviteItem,
+  resendInvite,
+} from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/api';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
 import { trackAllInvitesCta } from './analytics';
 
 type InviteActionButtonProps = {
-  invite: { id: string; name: string; email: string; contact_no: string };
+  invite: SubmerchantInviteItem;
+  productType: string;
   showNotification: ShowNotificationType;
 };
 
 const InviteActionButton = ({
   invite: { id, name, email, contact_no },
+  productType,
   showNotification,
 }: InviteActionButtonProps): JSX.Element => {
   const { mutate: handleResendInvite, isLoading } = useMutation({
@@ -32,7 +42,7 @@ const InviteActionButton = ({
 
   const onResendInviteClick = () => {
     handleResendInvite(id);
-    trackAllInvitesCta({ name, email, contact_no });
+    trackAllInvitesCta({ name, email, contact_no, productType });
   };
   return (
     <Button variant="secondary" size="small" isLoading={isLoading} onClick={onResendInviteClick}>
@@ -41,4 +51,7 @@ const InviteActionButton = ({
   );
 };
 
-export default InviteActionButton;
+export default connect(
+  () => ({}),
+  (dispatch) => bindActionCreators({ showNotification }, dispatch),
+)(InviteActionButton);

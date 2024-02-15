@@ -1,7 +1,7 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen, userEvent } from 'common/services/test/test-utils';
-
 import MultiFileUpload from 'merchant/views/PartnerDashboard/SubMerchant/components/MultiFileUpload';
 
 function createDummyFile() {

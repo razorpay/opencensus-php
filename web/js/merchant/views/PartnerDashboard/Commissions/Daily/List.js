@@ -1,9 +1,10 @@
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { compose } from 'redux';
+
 import { withRouter } from 'common/deprecated/withRouter';
 import { withI18Service } from 'common/i18';
-
 import Amount from 'common/ui/Amount';
 import DataTable from 'common/ui/Table/DataTable';
 import { without } from 'common/utils/rzp-utils';
@@ -16,7 +17,6 @@ import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/com
 import { INVITE_MERCHANT_STEPS } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/constants';
 import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { compose } from 'redux';
 
 const activeMerchants = {
   title: 'No. of Active Accounts',
@@ -90,7 +90,7 @@ class CommissionsDailyList extends ListContainer {
       i18: { isConfigTagEnabled },
     } = this.props;
 
-    if (experiments.isEasierAccessToSubmerchantKycEnabled) {
+    if (experiments.isPartnershipsInviteFlowEnabled) {
       this.setState({ isInviteMerchantModalOpen: true });
     } else {
       this.props.openModal({
@@ -140,7 +140,7 @@ class CommissionsDailyList extends ListContainer {
           EmptyComponent={this.renderLessThanRequiredMerchants}
           {...this.props}
         />
-        {experiments.isEasierAccessToSubmerchantKycEnabled ? (
+        {experiments.isPartnershipsInviteFlowEnabled ? (
           <InviteMerchantModal
             initialStep={INVITE_MERCHANT_STEPS.SELECT_PRODUCT}
             isOpen={this.state.isInviteMerchantModalOpen}

@@ -1,16 +1,14 @@
-import { renderHook } from 'test-utils';
+import User from 'merchant/models/User';
+import store from 'merchant/store';
 import {
   numberDifferentiation,
   getInitialState,
 } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
 import usePartnerPageNPS from 'merchant/views/PartnerDashboard/SubMerchant/utils/usePartnerPageNPS';
-import {
-  defaultAddMerchantState,
-  addMerchantProps,
-} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 import { PRODUCT_TYPE, ADD_MODE } from 'merchant/views/PartnerDashboard/constants';
-import User from 'merchant/models/User';
-import store from 'merchant/store';
+import { renderHook } from 'test-utils';
+
+import { defaultAddMerchantState, addMerchantProps } from './mocks/fixtures';
 
 describe('Number Differentiation', () => {
   test('should return short form of Lacks and Crores', () => {

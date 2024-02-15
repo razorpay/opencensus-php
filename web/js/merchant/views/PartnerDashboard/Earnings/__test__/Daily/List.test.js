@@ -5,6 +5,7 @@ import { render, screen, waitFor } from 'common/services/test/test-utils';
 import { getInitialUserOrgState } from 'common/tests/utils';
 import { REQUEST_EPOCH_APRIL_2023 } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/fixtures';
 import EarningsDailyList from 'merchant/views/PartnerDashboard/Earnings/Daily/List';
+jest.mock('common/ui/DateRangePicker', () => () => <div>DateRangePicker</div>);
 
 const defaultProps = {
   location: {

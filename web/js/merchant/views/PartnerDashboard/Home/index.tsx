@@ -25,13 +25,13 @@ import {
   PartnerHomeT,
 } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
+import 'merchant/views/PartnerDashboard/Home/home.styl';
 import InviteMerchantModal from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal';
 import { INVITE_MERCHANT_STEPS } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/constants';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import 'merchant/views/PartnerDashboard/Home/home.styl';
 
 import PageHeading from './Components/PageHeading';
 
@@ -48,7 +48,7 @@ const Home = ({
   org,
   partnerSwitchFlag,
 }: PartnerHomeT): JSX.Element => {
-  const { isEasierAccessToSubmerchantKycEnabled, isPartnershipsForPosEnabled } =
+  const { isPartnershipsInviteFlowEnabled, isPartnershipsForPosEnabled } =
     usePartnerDashboardExperiments();
   const [FUXStatus, setFUXStatus] = useState<FUXStatusStateT>({
     value: null,
@@ -108,7 +108,7 @@ const Home = ({
     }
   };
   const handleReferClient = (source: AddMerchantSource, type?: string): void => {
-    if (isEasierAccessToSubmerchantKycEnabled) {
+    if (isPartnershipsInviteFlowEnabled) {
       setIsInviteMerchantModalOpen(true);
       setInviteMerchantProductType(type || '');
     } else {
@@ -201,7 +201,7 @@ const Home = ({
         </Suspense>
       </ShowWhen>
 
-      {isEasierAccessToSubmerchantKycEnabled ? (
+      {isPartnershipsInviteFlowEnabled ? (
         <InviteMerchantModal
           isOpen={isInviteMerchantModalOpen}
           onAddSuccess={onAddMerchantSuccess}

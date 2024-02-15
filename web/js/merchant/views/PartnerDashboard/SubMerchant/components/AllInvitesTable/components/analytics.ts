@@ -1,14 +1,15 @@
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 export const trackAllInvitesCta = ({
   name,
   email,
   contact_no,
+  productType,
 }: {
   name: string;
   email: string;
   contact_no: string;
+  productType: string;
 }): void => {
   return analyticsTrackWithUserInfo({
     objectName: 'Partner Dashboard Account Level All Invites Tab Action Cta',
@@ -19,7 +20,7 @@ export const trackAllInvitesCta = ({
       contactEmail: email,
       accountName: name,
       action: 'Resend Invite',
-      productType: PRODUCT_TYPE.PG,
+      productType,
     },
   });
 };

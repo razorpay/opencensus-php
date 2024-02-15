@@ -5,6 +5,7 @@ import { compose, bindActionCreators } from 'redux';
 
 import { useI18Service } from 'common/i18';
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
+import { getIsInviteFlowEnabled } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/utils/tabsData';
 import { OAuthAppDetailsType } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import BulkInviteTab from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab';
 import BulkAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/BulkInviteTab/BulkAddMerchant';
@@ -47,13 +48,12 @@ const InviteMerchantTabs = ({
   onAddSuccess,
 }: InviteMerchantTabsProps): JSX.Element => {
   const [activeTabId, setActiveTabId] = useState(SINGLE_INVITE);
-  const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
-    usePartnerDashboardExperiments();
+  const experiments = usePartnerDashboardExperiments();
+  const { isPlatformPartnerInviteFlowEnabled } = experiments;
+
+  const { isResellerInviteFlowEnabled } = getIsInviteFlowEnabled(productType, experiments);
   const { isConfigTagEnabled } = useI18Service();
 
-  const shouldShowTabWithFtux =
-    isEasierAccessToSubmerchantKycEnabled &&
-    (productType === PRODUCT_TYPE.PG || productType === PRODUCT_TYPE.POS);
   useEffect(() => {
     setShowHeaderAndTabs(true);
     setShouldShowFooter(activeTabId !== PUBLIC_LINK);
@@ -79,7 +79,7 @@ const InviteMerchantTabs = ({
             />
           ) : null}
           {!isPlatformPartnerInviteFlowEnabled ? (
-            shouldShowTabWithFtux ? (
+            isResellerInviteFlowEnabled ? (
               // TODO v2: consider lazy loading with suspense here.
               <SingleInviteTab
                 productType={productType}
@@ -117,7 +117,7 @@ const InviteMerchantTabs = ({
             />
           ) : null}
           {!isPlatformPartnerInviteFlowEnabled ? (
-            shouldShowTabWithFtux ? (
+            isResellerInviteFlowEnabled ? (
               <BulkInviteTab
                 productType={productType}
                 onDismiss={onDismiss}

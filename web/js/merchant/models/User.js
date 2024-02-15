@@ -1170,10 +1170,6 @@ export default class User {
     return getSplitzExperimentVariant('enable_easy_dashboard_nc')?.variables?.result === 'on';
   }
 
-  get isPartnershipsInviteFlowEnabled() {
-    return this.partner_type === 'reseller' && this.isOrgRZP;
-  }
-
   get isAddReplyMigrationActive() {
     return getSplitzExperimentVariant('add_reply_migration')?.variables?.result === 'on';
   }

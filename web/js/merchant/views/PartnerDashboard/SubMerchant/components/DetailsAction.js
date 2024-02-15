@@ -1,21 +1,27 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
-import { AsyncBtn } from 'common/new-ui/Button';
 import ButtonTrans from '@razorpay/blade-old/src/atoms/Button';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { connect } from 'react-redux';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
-import { fetchSubmerchants } from 'merchant/reducers/collection';
 import moment from 'moment';
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
-import { withRouter } from 'common/deprecated/withRouter';
-import WaitingApprovalImg from 'assets/partner-dashboard/waiting-approval.png';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+
 import DefaultImg from 'assets/partner-dashboard/req-by-email-1.png';
-import Image from 'common/ui/Image';
+import WaitingApprovalImg from 'assets/partner-dashboard/waiting-approval.png';
+import { withRouter } from 'common/deprecated/withRouter';
+import { AsyncBtn } from 'common/new-ui/Button';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
-import { trackAcceptedInvitesCta } from './utils/analytics';
+import Image from 'common/ui/Image';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
+import { fetchSubmerchants } from 'merchant/reducers/collection';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
+import {
+  PARTNERSHIPS_WEBSITE_LINKS,
+  PRODUCT_TYPE,
+} from 'merchant/views/PartnerDashboard/constants';
+import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { trackAccountLevelAcceptedInvitesCta } from './utils/analytics';
 
 const DetailsAction = ({
   activation_status = null,
@@ -26,6 +32,7 @@ const DetailsAction = ({
   user,
   ...props
 }) => {
+  const { isPartnershipsInviteFlowEnabled } = usePartnerDashboardExperiments();
   const submerchantId = submerchant.id.replace('acc_', '');
   const [isActionLoading, setIsActionLoading] = useState(false);
 
@@ -51,8 +58,8 @@ const DetailsAction = ({
       setIsActionLoading(true);
 
       // Note: product type is PG as parent conditionally renders it only for PG.
-      if (user.isPartnershipsInviteFlowEnabled) {
-        trackAcceptedInvitesCta(submerchant, {
+      if (isPartnershipsInviteFlowEnabled) {
+        trackAccountLevelAcceptedInvitesCta(submerchant, {
           properties: { action: btnText },
         });
       }
@@ -68,8 +75,8 @@ const DetailsAction = ({
         cta: 'request_access',
       });
 
-      if (user.isPartnershipsInviteFlowEnabled) {
-        trackAcceptedInvitesCta(submerchant, {
+      if (isPartnershipsInviteFlowEnabled) {
+        trackAccountLevelAcceptedInvitesCta(submerchant, {
           properties: { action: btnText },
         });
       }
@@ -196,7 +203,7 @@ const DetailsAction = ({
               merchant&apos;s KYC
             </p>
             <a
-              href="https://razorpay.com/docs/payments/kyc"
+              href={PARTNERSHIPS_WEBSITE_LINKS.PG_KYC_DOCS_LINK}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() =>

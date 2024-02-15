@@ -1,18 +1,19 @@
-import { render, screen, userEvent } from 'test-utils';
 import '@testing-library/jest-dom/extend-expect';
-import ActionButtonKYC from 'merchant/views/PartnerDashboard/SubMerchant/components/ActionButtonKYC';
 import moment from 'moment';
+
+import ActionButtonKYC from 'merchant/views/PartnerDashboard/SubMerchant/components/ActionButtonKYC';
 import * as analyticsUtil from 'merchant/views/PartnerDashboard/SubMerchant/components/utils/analytics';
 import * as navigationUtil from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
-const trackAcceptedInvitesCtaSpy = jest.spyOn(analyticsUtil, 'trackAcceptedInvitesCta');
+import { render, screen, userEvent } from 'test-utils';
+const trackAcceptedInvitesCtaSpy = jest.spyOn(analyticsUtil, 'trackAccountLevelAcceptedInvitesCta');
 const openKYCFormUtilSpy = jest.spyOn(navigationUtil, 'openKYCFormUtil');
 
 // TODO: reuse commonProps in existing test cases
 const commonProps = {
   activation_status: null,
-  trackUserEvent: jest.fn(),
   submerchant: { id: 'acc_LY0LBrSgJLlFHa', details: { activation_status: null } },
   showNotification: jest.fn(),
+  isPGProductWithInviteFlow: false,
 };
 
 describe('<ActionButtonKYC /> ', () => {

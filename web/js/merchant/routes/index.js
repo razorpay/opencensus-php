@@ -351,7 +351,7 @@ const PaymentTransferNew = lazy(() =>
 
 const PartnerPricingPlans = lazy(() =>
   import(
-    /* webpackChunkName: "PartnerPricingPlans" */ 'merchant/views/PartnerDashboard/PartnerPricingPlans'
+    /* webpackChunkName: "PartnerPricingPlans" */ 'merchant/views/PartnerDashboard/external/PartnerPricingPlans'
   ),
 );
 

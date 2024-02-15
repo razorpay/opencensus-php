@@ -1,10 +1,13 @@
-import React from 'react';
-import Loader from 'common/ui/Loader';
-import { Navigate } from 'react-router-dom';
+import React, { ReactNode } from 'react';
 import { connect } from 'react-redux';
+import { Navigate } from 'react-router-dom';
+
+import { WithRouterProps } from 'common/deprecated/RouteComponentProps';
 import { withRouter } from 'common/deprecated/withRouter';
 import { useI18Service } from 'common/i18';
 import { useSplitzService } from 'common/splitz';
+import { User } from 'common/typings';
+import Loader from 'common/ui/Loader';
 
 const TAGS_API_NOT_RESOLVED_YET = 'TAGS_API_NOT_RESOLVED_YET';
 
@@ -107,7 +110,12 @@ export function showWhenUtil(store) {
   };
 }
 
-export const RouteGuard = withRouter(
+interface RouteGuardProps extends WithRouterProps {
+  children?: ReactNode;
+  additionalCondition?: (currentUser: User) => boolean;
+}
+
+export const RouteGuard = withRouter<RouteGuardProps>(
   connect(
     ({ session }) => ({ session }),
     null,

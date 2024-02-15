@@ -1,4 +1,5 @@
 import { rest } from 'msw';
+
 import { allInvitesData, resendInviteData } from './fixtures';
 
 export const allInvitesListSuccess = (response = allInvitesData) => {

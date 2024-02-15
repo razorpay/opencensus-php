@@ -1,7 +1,9 @@
 import React from 'react';
+
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen, server, waitFor, userEvent } from 'common/services/test/test-utils';
 import { CreateBureauLink } from 'merchant/views/PartnerDashboard/SubMerchant/components/CreateBureauLink';
+
 import { sendMessageSuccess, sendMessageError } from './mocks/handlers';
 
 const closeModal = jest.fn();

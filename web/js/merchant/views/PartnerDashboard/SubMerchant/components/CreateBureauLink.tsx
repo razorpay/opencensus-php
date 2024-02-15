@@ -10,9 +10,10 @@ import {
   Text,
 } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
+
+import { ShowNotificationType } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { sendMessage } from 'merchant/views/PartnerDashboard/SubMerchant/api';
-import { ShowNotificationType } from 'common/typings';
 import {
   CREATE_BUREAU_COUNTDOWN_TIME,
   SMS_COUNT_MAX_LIMIT,

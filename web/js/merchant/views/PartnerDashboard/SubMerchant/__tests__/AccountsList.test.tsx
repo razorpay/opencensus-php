@@ -1,4 +1,6 @@
 import React from 'react';
+import { rest } from 'msw';
+
 import {
   render,
   screen,
@@ -7,7 +9,16 @@ import {
   waitFor,
   fireEvent,
 } from 'common/services/test/test-utils';
-import { rest } from 'msw';
+import { getInitialUserOrgState } from 'common/tests/utils';
+import * as downloadSubmerchantsActions from 'merchant/reducers/submerchant';
+import {
+  createBureauLinkSuccess,
+  createBureauLinkError,
+} from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/CapitalClients/__tests__/mocks/once-handlers';
+import {
+  accountsListResponse,
+  emptyAccountsListResponse,
+} from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/fixtures';
 import {
   CapitalSubMerchantList,
   XSubMerchantList,
@@ -15,23 +26,14 @@ import {
 } from 'merchant/views/PartnerDashboard/SubMerchant/AccountsList';
 import {
   referralData,
-  emptyAccountsListResponse,
-  items,
   orgDetails,
 } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import * as downloadSubmerchantsActions from 'merchant/reducers/submerchant';
-
-import { getInitialUserOrgState } from 'common/tests/utils';
-import { allInvitesListSuccess } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/handlers';
 import {
   allInvitesData,
   allInvitesDataEmpty,
 } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/fixtures';
-import {
-  createBureauLinkSuccess,
-  createBureauLinkError,
-} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/handlers';
+import { allInvitesListSuccess } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/__tests__/mocks/handlers';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 // TODO : covered only Capital use case, have to cover others later
 
 const ComponentsProductMapping = {
@@ -61,20 +63,17 @@ jest.mock(
       ),
 );
 
+const defaultPartnerDashboardExperiments = {
+  isPartnershipCapitalBureauLinkEnabled: true,
+  isPartnershipsInviteFlowEnabled: false,
+  isPlatformPartnerInviteFlowEnabled: false,
+};
+let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
 jest.mock('merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments', () => {
   return {
     __esModule: true,
     default: (Component) => (props) =>
-      (
-        <Component
-          {...props}
-          experiments={{
-            isPartnershipCapitalBureauLinkEnabled: true,
-            isEasierAccessToSubmerchantKycEnabled: false,
-            isPlatformPartnerInviteFlowEnabled: false,
-          }}
-        />
-      ),
+      <Component {...props} experiments={mockPartnerDashboardExperiments} />,
   };
 });
 
@@ -145,9 +144,9 @@ describe('AccountsList', () => {
 
     window.rzpQ.component = jest.fn();
   });
-
   afterEach(() => {
     jest.clearAllMocks();
+    mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
 
   test('should render spinner if loading', () => {
@@ -157,11 +156,16 @@ describe('AccountsList', () => {
   });
 
   describe('partnerships invite flow', () => {
+    beforeEach(() => {
+      mockPartnerDashboardExperiments = {
+        ...defaultPartnerDashboardExperiments,
+        isPartnershipsInviteFlowEnabled: true,
+      };
+    });
     const renderAppForPGInviteFlow = ({ userExtra = {}, ...sessionArgs } = {}) =>
       renderApp(PRODUCT_TYPE.PG, '', {
         ...sessionArgs,
         userExtra: {
-          isPartnershipsInviteFlowEnabled: true,
           isPartnershipForCapitalEnabled: false,
           isPartnershipFUX: false,
           ...userExtra,
@@ -273,6 +277,7 @@ describe('AccountsList', () => {
         expect(screen.getByText('Email ID')).toBeInTheDocument();
         expect(screen.getByText('Registered Email')).toBeInTheDocument();
       }
+      const { items } = accountsListResponse;
       expect(screen.getByText(items[0].id)).toBeInTheDocument();
       expect(screen.getByText(items[0].name)).toBeInTheDocument();
       expect(screen.getByText(items[0].email)).toBeInTheDocument();

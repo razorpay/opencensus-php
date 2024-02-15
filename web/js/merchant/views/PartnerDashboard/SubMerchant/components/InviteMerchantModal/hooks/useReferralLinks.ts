@@ -1,16 +1,39 @@
-import { useQuery } from '@tanstack/react-query';
+import { UseQueryResult, useQuery } from '@tanstack/react-query';
 
 import { ShowNotificationType } from 'common/typings';
 import { merchantFetch } from 'merchant/utils/ajax';
-
-const useReferralLinks = ({ showNotification }: { showNotification: ShowNotificationType }) => {
+export type ReferralData = {
+  banking: {
+    id: string;
+    merchant_id: string;
+    ref_code: string;
+    url: string;
+    product: string;
+  };
+  primary: {
+    id: string;
+    merchant_id: string;
+    ref_code: string;
+    url: string;
+    easy_kyc_access_url: string;
+    product: string;
+  };
+  capital: {
+    id: string;
+    merchant_id: string;
+    ref_code: string;
+    url: string;
+    product: string;
+  };
+};
+const useReferralLinks = ({
+  showNotification,
+}: {
+  showNotification: ShowNotificationType;
+}): UseQueryResult<ReferralData> => {
   return useQuery({
     queryKey: ['fetch-referrals'],
-    queryFn: async (): Promise<{
-      primary: { easy_kyc_access_url?: string; url: string };
-      banking: { url: string };
-      capital: { url: string };
-    }> => {
+    queryFn: async (): Promise<ReferralData> => {
       const { data } = await merchantFetch({
         url: 'merchant/referral',
         mode: 'live',

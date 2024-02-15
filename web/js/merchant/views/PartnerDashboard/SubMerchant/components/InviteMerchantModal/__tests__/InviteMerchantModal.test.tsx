@@ -12,6 +12,16 @@ const defaultProps = {
   isOpen: true,
   onDismiss: jest.fn(),
 };
+
+const defaultPartnerDashboardExperiments = {
+  isPartnershipsInviteFlowEnabled: false,
+  isPlatformPartnerInviteFlowEnabled: false,
+};
+let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments', () => ({
+  __esModule: true,
+  default: () => mockPartnerDashboardExperiments,
+}));
 const defaultUserExtra = {
   findTag: jest.fn(),
   isPartner: (partner_type) => partner_type === 'reseller',
@@ -21,7 +31,12 @@ const defaultOrgExtra = {
   business_name: 'Razorpay',
 };
 describe('InviteMerchantModal', () => {
-  const renderApp = (props = {}, { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {}) => {
+  const renderApp = (
+    props = {},
+    { isRzpOrg = true, userExtra = {}, orgExtra = {} } = {},
+    experiments = {},
+  ) => {
+    mockPartnerDashboardExperiments = { ...defaultPartnerDashboardExperiments, ...experiments };
     const session = getInitialUserOrgState({
       isRzpOrg,
       userExtra: { ...defaultUserExtra, ...userExtra },
@@ -33,16 +48,14 @@ describe('InviteMerchantModal', () => {
   };
   afterEach(() => {
     jest.clearAllMocks();
+    mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
   });
 
   test('should show correct header for partnerships invite flow', async () => {
     renderApp(
       { initialProductType: PRODUCT_TYPE.PG },
-      {
-        userExtra: {
-          isPartnershipsInviteFlowEnabled: true,
-        },
-      },
+      {},
+      { isPartnershipsInviteFlowEnabled: true },
     );
     expect(screen.getByText('Add New Clients')).toBeInTheDocument();
     await userEvent.click(screen.getByText('Next'));

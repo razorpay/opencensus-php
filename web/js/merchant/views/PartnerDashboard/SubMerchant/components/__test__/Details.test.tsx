@@ -1,5 +1,7 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
+import { rest } from 'msw';
+
 import {
   render,
   screen,
@@ -8,26 +10,26 @@ import {
   userEvent,
   cleanup,
 } from 'common/services/test/test-utils';
-import { rest } from 'msw';
-import Details from 'merchant/views/PartnerDashboard/SubMerchant/components/Details';
 import {
-  bulkResponse,
-  productResponse,
-  items,
-} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
-import { PRODUCT_TYPE, NOT_AVAILABLE } from 'merchant/views/PartnerDashboard/constants';
+  capitalApplicationsResponse,
+  losProductsResponse,
+} from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/CapitalClients/__tests__/mocks/fixtures';
 import {
-  createBureauLinkSuccess,
   createBureauLinkError,
-} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/handlers';
+  createBureauLinkSuccess,
+} from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/CapitalClients/__tests__/mocks/once-handlers';
+import { accountsListResponse } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/fixtures';
+import Details from 'merchant/views/PartnerDashboard/SubMerchant/components/Details';
+import { PRODUCT_TYPE, NOT_AVAILABLE } from 'merchant/views/PartnerDashboard/constants';
 
 const onResendInvite = jest.fn();
+const { items } = accountsListResponse;
 const detailsProps = {
   subMerchant: items[1],
   isLoading: false,
   onResendInvite,
   product: PRODUCT_TYPE.CAPITAL,
-  capitalProducts: { loading: false, data: productResponse.products },
+  capitalProducts: { loading: false, data: losProductsResponse.products },
 };
 
 jest.mock('merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments', () => {
@@ -39,7 +41,7 @@ jest.mock('merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments'
           {...props}
           experiments={{
             isPartnershipCapitalBureauLinkEnabled: true,
-            isEasierAccessToSubmerchantKycEnabled: false,
+            isPartnershipsInviteFlowEnabled: false,
             isPlatformPartnerInviteFlowEnabled: false,
           }}
         />
@@ -48,7 +50,7 @@ jest.mock('merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments'
 });
 
 const getCapitalResponse = (item, index) =>
-  bulkResponse.response[item.id.replace('acc_', '')].partner_applications[index];
+  capitalApplicationsResponse.response[item.id.replace('acc_', '')].partner_applications[index];
 
 describe('Submerchant Details', () => {
   const renderApp = ({

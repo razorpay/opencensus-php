@@ -8,40 +8,58 @@ import { referralData } from 'merchant/views/PartnerDashboard/SubMerchant/__test
 import ShareReferralLink from 'merchant/views/PartnerDashboard/SubMerchant/components/ShareReferralLink';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
-const analyticsTrackSpy = jest.spyOn(analytics, 'analyticsTrack');
+const analyticsTrackWithUserInfoSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 
-const closeModal = jest.fn();
-
-const session = getInitialUserOrgState({
-  isRzpOrg: true,
-  userExtra: {
-    findTag: jest.fn(),
-    isPartnershipForCapitalEnabled: true,
-  },
-  orgExtra: {},
-});
+const defaultPartnerDashboardExperiments = {
+  isPartnershipsInviteFlowEnabled: true,
+  isPartnershipsForPosEnabled: true,
+  isPlatformPartnerInviteFlowEnabled: false,
+};
+let mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+jest.mock('merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments', () => ({
+  __esModule: true,
+  default: () => mockPartnerDashboardExperiments,
+}));
 
 describe('ShareReferralLink', () => {
   beforeAll(() => {
     document.execCommand = jest.fn();
+    window.open = jest.fn();
   });
 
-  const renderApp = ({ user = session.user, product, ...restProps }) => {
-    return render(
-      <ShareReferralLink
-        closeModal={closeModal}
-        referralData={referralData}
-        user={user}
-        product={product}
-        {...restProps}
-      />,
-    );
+  afterEach(() => {
+    jest.clearAllMocks();
+    mockPartnerDashboardExperiments = defaultPartnerDashboardExperiments;
+  });
+
+  const renderApp = ({ userExtra = {}, orgExtra = {} } = {}, props = {}, experiments = {}) => {
+    mockPartnerDashboardExperiments = {
+      ...defaultPartnerDashboardExperiments,
+      ...experiments,
+    };
+    const session = getInitialUserOrgState({
+      isRzpOrg: true,
+      userExtra: {
+        findTag: jest.fn(),
+        isPartnershipForCapitalEnabled: true,
+        ...userExtra,
+      },
+      orgExtra,
+    });
+    return render(<ShareReferralLink referralData={referralData} {...props} />, {
+      initialState: {
+        session,
+      },
+    });
   };
 
-  test('should render ShareReferralLink for capital with props', () => {
-    renderApp({
-      product: PRODUCT_TYPE.CAPITAL,
-    });
+  test('should render ShareReferralLink correctly for capital with props', () => {
+    renderApp(
+      {},
+      {
+        productType: PRODUCT_TYPE.CAPITAL,
+      },
+    );
     expect(screen.getByText('Line of Credit')).toBeInTheDocument();
     expect(screen.getByText(referralData.capital.url)).toBeInTheDocument();
     expect(screen.getByText('Copy Link')).toBeInTheDocument();
@@ -50,10 +68,14 @@ describe('ShareReferralLink', () => {
     ).toBeInTheDocument();
   });
 
-  test('should render ShareReferralLink for X with props', () => {
-    renderApp({
-      product: PRODUCT_TYPE.X,
-    });
+  test('should render ShareReferralLink correctly for X with props', () => {
+    renderApp(
+      {},
+      {
+        productType: PRODUCT_TYPE.X,
+      },
+      { isPartnershipsForPosEnabled: false },
+    );
     expect(screen.getByText('RazorpayX')).toBeInTheDocument();
     expect(screen.getByText(referralData.banking.url)).toBeInTheDocument();
     expect(
@@ -63,10 +85,14 @@ describe('ShareReferralLink', () => {
     ).toBeInTheDocument();
   });
 
-  test('should render ShareReferralLink for PG', async () => {
-    renderApp({
-      product: PRODUCT_TYPE.PG,
-    });
+  test('should render ShareReferralLink correctly for PG', async () => {
+    renderApp(
+      {},
+      {
+        productType: PRODUCT_TYPE.PG,
+      },
+      { isPartnershipsForPosEnabled: false },
+    );
     expect(screen.getByText('Razorpay Payments')).toBeInTheDocument();
     await userEvent.click(screen.getByText('No, my client will perform KYC on their own'));
     expect(screen.getByText(referralData.primary.url)).toBeInTheDocument();
@@ -75,17 +101,89 @@ describe('ShareReferralLink', () => {
   });
 
   test('track events in ShareReferralLink for PG', async () => {
-    renderApp({
-      product: PRODUCT_TYPE.PG,
-    });
-    expect(analyticsTrackSpy).toHaveBeenCalledWith(
+    renderApp(
+      {},
+      {
+        productType: PRODUCT_TYPE.PG,
+      },
+    );
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         objectName: 'Social Share Referral Box',
         actionName: 'Opened',
       }),
     );
+    await userEvent.click(screen.getByText('Yes, I will assist my client with their KYC'));
+    await userEvent.click(screen.getByText('Copy Link'));
+
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        objectName: 'Copy Referal Link',
+        actionName: 'Clicked',
+        properties: {
+          inviteFlow: 'SHARE_REFERRAL_LINK',
+          productType: 'primary',
+          isKycAssistedSelected: true,
+        },
+      }),
+    );
     await userEvent.click(screen.getByLabelText('Close'));
-    expect(analyticsTrackSpy).toHaveBeenCalledWith(
+
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        objectName: 'Social Share Referral Box',
+        actionName: 'Closed',
+      }),
+    );
+  });
+
+  test('should render ShareReferralLink correctly for POS', async () => {
+    renderApp(
+      {},
+      {
+        productType: PRODUCT_TYPE.POS,
+      },
+    );
+    expect(screen.getByText('Razorpay POS')).toBeInTheDocument();
+    await userEvent.click(screen.getByText('No, my client will perform KYC on their own'));
+    expect(screen.getByText(referralData.pos.url)).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Yes, I will assist my client with their KYC'));
+    expect(screen.getByText(referralData.pos.easy_kyc_access_url)).toBeInTheDocument();
+  });
+
+  test('track events in ShareReferralLink for POS', async () => {
+    renderApp(
+      {},
+      {
+        productType: PRODUCT_TYPE.POS,
+      },
+    );
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        objectName: 'Social Share Referral Box',
+        actionName: 'Opened',
+      }),
+    );
+    await userEvent.click(screen.getByText('Yes, I will assist my client with their KYC'));
+    await userEvent.click(screen.getByAltText('share via fb'));
+
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        objectName: 'Social Share Referral Link',
+        actionName: 'Clicked',
+        properties: {
+          inviteFlow: 'SHARE_REFERRAL_LINK',
+          isKycAssistedSelected: true,
+          productType: PRODUCT_TYPE.POS,
+          socialMedia: 'fb',
+        },
+      }),
+    );
+    await userEvent.click(screen.getByLabelText('Close'));
+
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         objectName: 'Social Share Referral Box',
         actionName: 'Closed',

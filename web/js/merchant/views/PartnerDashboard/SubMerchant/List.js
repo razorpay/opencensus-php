@@ -24,8 +24,9 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { XSubMerchantList, PrimarySubMerchantList, CapitalSubMerchantList } from './AccountsList';
 import AddMerchant from './AddMerchant';
+import { trackAcceptedInvitesClick, trackAllInvitesClick } from './analytics';
 import { INVITE_MERCHANT_STEPS } from './components/InviteMerchantModal/constants';
-import PGInvitesNavLinks from './components/PGInviteNavLinks';
+import InviteNavLinks from './components/InviteNavLinks';
 
 const AllInvitesTable = lazy(() =>
   import(/* webpackChunkName: "AllInvitesTable" */ './components/AllInvitesTable'),
@@ -119,14 +120,13 @@ class SubMerchantsList extends Component {
     } = this.props;
     const { referralData } = this.state;
     const product = this.getProductType();
-    const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
-      experiments;
+    const { isPartnershipsInviteFlowEnabled, isPlatformPartnerInviteFlowEnabled } = experiments;
 
     const isPlatformPartnerWithPGInviteFlow =
       isPlatformPartnerInviteFlowEnabled && product === PRODUCT_TYPE.PG;
     if (
       isPlatformPartnerWithPGInviteFlow ||
-      (product === PRODUCT_TYPE.PG && isEasierAccessToSubmerchantKycEnabled)
+      (product === PRODUCT_TYPE.PG && isPartnershipsInviteFlowEnabled)
     ) {
       this.setState({ isInviteMerchantModalOpen: true });
     } else {
@@ -172,14 +172,7 @@ class SubMerchantsList extends Component {
     }
     this.props.openModal({
       size: 'med-large',
-      component: (
-        <ShareReferralLink
-          user={this.props.user}
-          closeModal={this.props.closeModal}
-          referralData={this.state.referralData}
-          product={product}
-        />
-      ),
+      component: <ShareReferralLink referralData={this.state.referralData} productType={product} />,
     });
   };
 
@@ -264,8 +257,7 @@ class SubMerchantsList extends Component {
       experiments,
       i18: { isConfigTagEnabled },
     } = this.props;
-    const { isEasierAccessToSubmerchantKycEnabled, isPlatformPartnerInviteFlowEnabled } =
-      experiments;
+    const { isPartnershipsInviteFlowEnabled, isPlatformPartnerInviteFlowEnabled } = experiments;
     const product = this.getProductType();
     const isPlatformPartnerWithPGInviteFlow =
       isPlatformPartnerInviteFlowEnabled && product === PRODUCT_TYPE.PG;
@@ -361,13 +353,16 @@ class SubMerchantsList extends Component {
                     </RouteGuard>
                   }
                 />
-                {this.props.user.isPartnershipsInviteFlowEnabled ||
-                isPlatformPartnerWithPGInviteFlow ? (
+                {isPartnershipsInviteFlowEnabled || isPlatformPartnerWithPGInviteFlow ? (
                   <Route
                     path="all"
                     element={
                       <>
-                        <PGInvitesNavLinks prefix="/partners/submerchants" />
+                        <InviteNavLinks
+                          productType={PRODUCT_TYPE.PG}
+                          onAcceptedInvitesClick={trackAcceptedInvitesClick}
+                          onAllInvitesClick={trackAllInvitesClick}
+                        />
                         <div className="content-wrapper">
                           <Suspense
                             fallback={
@@ -394,7 +389,7 @@ class SubMerchantsList extends Component {
             </div>
           </content>
         </ProductWrapper>
-        {isEasierAccessToSubmerchantKycEnabled || isPlatformPartnerWithPGInviteFlow ? (
+        {isPartnershipsInviteFlowEnabled || isPlatformPartnerWithPGInviteFlow ? (
           <InviteMerchantModal
             initialProductType={product}
             initialStep={

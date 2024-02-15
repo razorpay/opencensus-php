@@ -16,6 +16,13 @@ export const PRODUCT_NAME = {
   [PRODUCT_TYPE.POS]: 'POS',
 };
 
+export const PRODUCT_ROUTE_PREFIX = {
+  [PRODUCT_TYPE.X]: '/partners/submerchants/banking',
+  [PRODUCT_TYPE.PG]: '/partners/submerchants',
+  [PRODUCT_TYPE.POS]: '/partners/submerchants/pos',
+  [PRODUCT_TYPE.CAPITAL]: '/partners/submerchants/capital',
+};
+
 export const ADD_MODE = {
   single: 'single',
   bulk: 'bulk',
@@ -86,6 +93,10 @@ export const COMMISSION_TYPE = {
 // TODO: Move existing website links in PartnerDashboard/ folder to this constant:
 export const PARTNERSHIPS_WEBSITE_LINKS = {
   PLATFORM_OAUTH_INTEGRATION: 'https://razorpay.com/docs/partners/platform/oauth/',
+  PERFORM_KYC_DOCS_LINK: 'https://razorpay.com/docs/partners/resellers/perform-kyc/',
+  PG_KYC_DOCS_LINK: 'https://razorpay.com/docs/payments/kyc',
+  CAPITAL_ADD_PARTNERS_KNOW_MORE_URL:
+    'https://betasite.razorpay.com/docs/razorpay/add-partners-capital-doc/partners/capital/#track-leads-status',
 };
 
 export const CREATE_BUREAU_COUNTDOWN_TIME = 30000;

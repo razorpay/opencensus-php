@@ -1,9 +1,9 @@
-import { titleCase } from 'common/utils/rzp-utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { titleCase } from 'common/utils/rzp-utils';
 
 const statusLabel =
   (statusMap, statusDescriptionMap) =>
-  ({ status = '', error_reason = '', className }) => {
+  ({ status = '', error_reason = '', className = '' }) => {
     //short term fix to handle avs failure
     const isAVSRefunded = status === 'refunded' && error_reason === 'avs_failure';
 

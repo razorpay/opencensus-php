@@ -1,23 +1,27 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
 import { Button } from '@razorpay/blade/components';
+import moment from 'moment';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { bindActionCreators, compose } from 'redux';
 
 import { withRouter } from 'common/deprecated/withRouter';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
-import { trackAcceptedInvitesCta } from './utils/analytics';
-import moment from 'moment';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { trackAccountLevelAcceptedInvitesCta } from './utils/analytics';
 
 const ActionButtonKYC = ({
   activation_status = null,
   kyc_access = null,
   submerchant,
   history,
-  trackUserEvent,
-  isSubMerchantKYCAccess,
+  user,
   isPGProductWithInviteFlow,
   showNotification,
 }) => {
+  const isSubMerchantKYCAccess = user?.isFeatureEnabled('partner_sub_kyc_access');
   const submerchantId = submerchant?.id;
   const [isActionLoading, setIsActionLoading] = useState(false);
   let state = kyc_access?.state;
@@ -28,17 +32,8 @@ const ActionButtonKYC = ({
   let btnText = 'Request for KYC';
 
   const openSidePannel = () => {
-    const is_mweb = isMobileAndTablet();
-    trackUserEvent('partnerships.dashboard.affiliate_account.kyc_request', {
-      activation_status,
-      kyc_access_state: state,
-      rejection_count,
-      is_mweb,
-      action: 'open_pannel',
-      submerchant_id: submerchantId,
-    });
     if (isPGProductWithInviteFlow) {
-      trackAcceptedInvitesCta(submerchant, {
+      trackAccountLevelAcceptedInvitesCta(submerchant, {
         properties: { action: btnText },
       });
     }
@@ -46,16 +41,8 @@ const ActionButtonKYC = ({
   };
   const openKYCForm = () => {
     const is_mweb = isMobileAndTablet();
-    trackUserEvent('partnerships.dashboard.affiliate_account.kyc_request', {
-      activation_status,
-      kyc_access_state: state,
-      rejection_count,
-      is_mweb,
-      action: 'kyc_form',
-    });
-
     if (isPGProductWithInviteFlow) {
-      trackAcceptedInvitesCta(submerchant, {
+      trackAccountLevelAcceptedInvitesCta(submerchant, {
         properties: { action: btnText },
       });
     }
@@ -137,8 +124,14 @@ ActionButtonKYC.propTypes = {
     token_expiry: PropTypes.number.isRequired,
   }),
   submerchant: PropTypes.object,
-  isSubMerchantKYCAccess: PropTypes.bool,
+  user: PropTypes.object,
   showNotification: PropTypes.func,
 };
 
-export default withRouter(ActionButtonKYC);
+export default compose(
+  connect(
+    (state) => ({ user: state.session.user }),
+    (dispatch) => bindActionCreators({ showNotification }, dispatch),
+  ),
+  withRouter,
+)(ActionButtonKYC);

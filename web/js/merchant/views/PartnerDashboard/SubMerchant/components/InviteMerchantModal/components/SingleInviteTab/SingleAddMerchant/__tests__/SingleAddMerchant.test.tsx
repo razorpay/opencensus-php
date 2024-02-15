@@ -2,7 +2,8 @@ import React from 'react';
 import { rest } from 'msw';
 
 import { getInitialUserOrgState } from 'common/tests/utils';
-import { submerchantWithKYCAccess } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
+import { submerchantWithKYCAccess } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/fixtures';
+import { fetchReferralsHandler } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/once-handlers';
 import SingleAddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/components/SingleInviteTab/SingleAddMerchant';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
@@ -40,7 +41,9 @@ describe('SingleAddMerchant', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
-  beforeEach(() => {});
+  beforeEach(() => {
+    server.use(fetchReferralsHandler());
+  });
 
   const fillFormEssentials = async () => {
     const name = 'Test Name';
@@ -93,6 +96,8 @@ describe('SingleAddMerchant', () => {
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
       expect(screen.queryByLabelText('success-screen-spinner')).not.toBeInTheDocument();
+      // Lazy loaded components
+      expect(screen.queryByRole('loader')).not.toBeInTheDocument();
     });
     expect(defaultProps.onAddSuccess).toHaveBeenCalled();
     expect(defaultProps.setShowHeaderAndTabs).toHaveBeenCalledWith(false);
@@ -117,6 +122,8 @@ describe('SingleAddMerchant', () => {
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
       expect(screen.queryByLabelText('success-screen-spinner')).not.toBeInTheDocument();
+      // Lazy loaded components
+      expect(screen.queryByRole('loader')).not.toBeInTheDocument();
     });
     expect(defaultProps.onAddSuccess).toHaveBeenCalled();
     expect(defaultProps.onDismiss).toHaveBeenCalled();
@@ -137,6 +144,8 @@ describe('SingleAddMerchant', () => {
     await waitFor(() => {
       expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument();
       expect(screen.queryByLabelText('success-screen-spinner')).not.toBeInTheDocument();
+      // Lazy loaded components
+      expect(screen.queryByRole('loader')).not.toBeInTheDocument();
     });
     expect(showNotificationSpy).toHaveBeenCalledWith({ message, type: 'error' });
   });

@@ -1,23 +1,22 @@
-import React, { ComponentType, useState } from 'react';
-import { connect } from 'react-redux';
-import { compose, bindActionCreators } from 'redux';
-import { useQuery } from '@tanstack/react-query';
-import { withRouter } from 'common/deprecated/withRouter';
+import React, { useState } from 'react';
 import { Spinner } from '@razorpay/blade/components';
-import { History, Location } from 'history';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { useQuery } from '@tanstack/react-query';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+import { User } from 'common/typings';
+import { ShowNotificationType } from 'common/typings/Store/notifications';
 import DataTable from 'common/ui/Table/DataTable';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import {
-  AllInvitesFilter,
+import { getTime } from 'common/ui/item';
+import AllInvitesFilter, {
   getDecodedParams,
 } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/components/AllInvitesFilter';
 import { SpinnerContainer } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/components/styles';
-import { ShowNotificationType } from 'common/typings/Store/notifications';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
 import { FetchInvitesParams, SubmerchantInviteItem, fetchInvites } from './api';
 import InviteActionButton from './components/InviteActionButton';
-import { getTime } from 'common/ui/item';
-import { User } from 'common/typings';
 
 const name = {
   title: 'Name',
@@ -39,24 +38,17 @@ const lastInvitedOn = {
   value: getTime('updated_at', 'll'),
 };
 
+const actions = {
+  title: 'Actions',
+  value: (item) => <InviteActionButton productType={PRODUCT_TYPE.PG} invite={item} />,
+};
+
 interface AllInvitesTableProps {
   user: User;
   showNotification: ShowNotificationType;
-  history: History;
-  location: Location;
 }
 
-const AllInvitesTable = ({
-  user,
-  showNotification,
-  history,
-  location,
-}: AllInvitesTableProps): JSX.Element => {
-  const actions = {
-    title: 'Actions',
-    value: (item) => <InviteActionButton showNotification={showNotification} invite={item} />,
-  };
-
+const AllInvitesTable = ({ user, showNotification }: AllInvitesTableProps): JSX.Element => {
   const [paginationState, setPagination] = useState({
     skip: 0,
     count: 25,
@@ -64,7 +56,7 @@ const AllInvitesTable = ({
 
   const [items, setItems] = useState<Array<SubmerchantInviteItem>>([]);
 
-  const { isLoading, isFetching, refetch } = useQuery({
+  const { isFetching, refetch } = useQuery({
     queryKey: ['filter-submerchant-invites', paginationState],
     queryFn: () =>
       fetchInvites(
@@ -92,11 +84,9 @@ const AllInvitesTable = ({
       <AllInvitesFilter
         onSearch={refetch}
         count={paginationState.count}
-        location={location}
-        history={history}
         setPagination={setPagination}
       />
-      {isLoading || isFetching ? (
+      {isFetching ? (
         <SpinnerContainer>
           <Spinner testID="all-invites-spinner" accessibilityLabel="spinner" size="xlarge" />
         </SpinnerContainer>
@@ -107,7 +97,7 @@ const AllInvitesTable = ({
           count={paginationState.count}
           skip={paginationState.skip}
           paginate={setPagination}
-          loading={isLoading || isFetching}
+          loading={isFetching}
           items={items}
         />
       )}
@@ -115,12 +105,9 @@ const AllInvitesTable = ({
   );
 };
 
-export default compose<ComponentType<AllInvitesTableProps>>(
-  withRouter,
-  connect(
-    (state) => ({
-      user: state.session.user,
-    }),
-    (dispatch) => bindActionCreators({ showNotification }, dispatch),
-  ),
+export default connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  (dispatch) => bindActionCreators({ showNotification }, dispatch),
 )(AllInvitesTable);

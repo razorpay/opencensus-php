@@ -1,7 +1,8 @@
 import React from 'react';
-import { render, screen, userEvent } from 'test-utils';
+
 import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/SocialShareGroup';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { render, screen, userEvent } from 'test-utils';
 
 // TODO: only basic render test added, other tests can be added later.
 

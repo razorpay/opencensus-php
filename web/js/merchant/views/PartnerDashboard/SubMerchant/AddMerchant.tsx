@@ -1,11 +1,20 @@
 import React, { Component, ComponentType } from 'react';
+import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
+import rTracking from 'react-tracking';
 import { compose } from 'redux';
 import { Field, reduxForm } from 'redux-form';
-import AsyncButton from 'react-async-button';
 
-import { create } from 'merchant/reducers/submerchant';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { withRouter } from 'common/deprecated/withRouter';
+import Button from 'common/new-ui/Button';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import ModalHeader from 'common/ui/ModalHeader';
+import { analyticsTrack } from 'common/utils/analytics';
+import { classList } from 'common/utils/rzp-utils';
+import { required, email, isEmail, isMobile, maxLength, name } from 'common/utils/validators';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
+import BatchValidate from 'merchant/containers/BatchNew/Validate';
+import setGaTrack from 'merchant/containers/BatchNew/ga';
 import {
   createPartnerSubmerchantBatch as createBatch,
   validatePartnerSubmerchantBatch as validateBatch,
@@ -14,39 +23,35 @@ import {
   createPartnerSubmerchantReferralInvitesBatch as createReferralInvitesBatch,
   validatePartnerSubmerchantReferralInvitesBatch as validateReferralInvitesBatch,
 } from 'merchant/reducers/batches';
-import setGaTrack from 'merchant/containers/BatchNew/ga';
-import rTracking from 'react-tracking';
-
-import ModalHeader from 'common/ui/ModalHeader';
-import InputField from './components/InputField';
-
-import { required, email, isEmail, isMobile, maxLength, name } from 'common/utils/validators';
-import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import BatchValidate from 'merchant/containers/BatchNew/Validate';
-import { withRouter } from 'common/deprecated/withRouter';
-
-import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
-import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';
-import Button from 'common/new-ui/Button';
-import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/SocialShareGroup';
+import { create } from 'merchant/reducers/submerchant';
+import lazy from 'merchant/routes/LazyLoader';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { PRODUCT_TYPE, ADD_MODE, ORG_CUSTOM_CODE } from 'merchant/views/PartnerDashboard/constants';
+import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';
+import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/SocialShareGroup';
 import { minLength, getInitialState } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
+import {
+  PRODUCT_TYPE,
+  ADD_MODE,
+  ORG_CUSTOM_CODE,
+  ORG_NAME,
+} from 'merchant/views/PartnerDashboard/constants';
+import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
+import withPartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hocs/withPartnerDashboardExperiments';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { createSubmerchantInvite } from './api';
+import InputField from './components/InputField';
+import {
+  trackSubmerchantReferViaBulkUpload,
+  trackSubmerchantReferViaEmail,
+} from './utils/analytics';
+
 import type {
   AddMerchantPropsT,
   AddMerchantStateT,
   ReduxFormEvent,
   NewMerchant,
 } from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant.types';
-import { classList } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
-import lazy from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { createSubmerchantInvite } from './api';
-import {
-  trackSubmerchantReferViaBulkUpload,
-  trackSubmerchantReferViaEmail,
-} from './utils/analytics';
 
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 const ORG_CONTACT_PLACEHOLDER_TEXT = {
@@ -93,20 +98,22 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   constructor(props: AddMerchantPropsT) {
     super(props);
     const { user, addType, referralData, onAddSuccess = () => {}, org } = props;
-    const state = getInitialState({ user, addType, referralData });
+    const state = getInitialState({ addType, referralData });
     const { isPartnershipFUX, isPartnershipForCapitalEnabled } = user;
     this.state = state;
     this.onAddSuccess = onAddSuccess;
     this.isPartnershipFUX = isPartnershipFUX;
     this.isPartnershipForCapitalEnabled = isPartnershipForCapitalEnabled;
     this.orgCode = org?.custom_code || 'rzp';
-    this.orgName = org?.business_name || 'Razorpay';
+    this.orgName = org?.business_name || ORG_NAME.RZP;
     this.countryCode = user?.merchant?.country_code || 'IN';
   }
 
   isCapitalProduct = (): boolean => this.state.merchantType === PRODUCT_TYPE.CAPITAL;
+
   isPGInviteFlow = (): boolean =>
-    this.state.merchantType === PRODUCT_TYPE.PG && this.props.user.isPartnershipsInviteFlowEnabled;
+    this.state.merchantType === PRODUCT_TYPE.PG &&
+    !!this.props.experiments?.isPartnershipsInviteFlowEnabled;
 
   sampleUrl = () => {
     const { merchantType } = this.state;
@@ -222,7 +229,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     return false;
   };
 
-  addNewMerchant = (params: NewMerchant): void => {
+  addNewMerchant = (params: NewMerchant): Promise<void> => {
     this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
       action: 'Send Invite',
     });
@@ -1059,6 +1066,7 @@ function isEmailMandatory(user) {
 export default compose<ComponentType<AddMerchantPropsT>>(
   rTracking(() => window.rzpQ.component('AddMerchant')),
   withRouter,
+  withPartnerDashboardExperiments,
   connect((state) => ({ ...state.session, isMobileResolution: state.app.isMobileResolution }), {
     create,
     showNotification,

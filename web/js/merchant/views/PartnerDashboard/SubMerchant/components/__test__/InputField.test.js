@@ -1,6 +1,7 @@
 import React from 'react';
-import { render, screen } from 'test-utils';
+
 import InputField from 'merchant/views/PartnerDashboard/SubMerchant/components/InputField';
+import { render, screen } from 'test-utils';
 const defaultProps = {
   value: 'text value',
   type: 'text',

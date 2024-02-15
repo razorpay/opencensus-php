@@ -9,6 +9,7 @@ import {
 } from '@razorpay/blade/components';
 
 import { trackInviteFlowCommonCtaClicked } from 'merchant/views/PartnerDashboard/SubMerchant/components/InviteMerchantModal/utils/analytics';
+import { PARTNERSHIPS_WEBSITE_LINKS } from 'merchant/views/PartnerDashboard/constants';
 
 import BankAccount from './icons/bank-account.svg';
 import BusinessAddress from './icons/business-address.svg';
@@ -165,6 +166,7 @@ const FAQContent = ({
                           <img src={GSTIN} />
                         </Box>
                       </Box>
+                      {/* eslint-disable-next-line i18n-rules/no-region-specific-keyword */}
                       <RowTextItem>GSTIN</RowTextItem>
                     </Box>
                     <Box display="flex" gap="spacing.3" alignItems="center" flex="1">
@@ -191,7 +193,7 @@ const FAQContent = ({
                   </Box>
                 </Box>
                 <Link
-                  href="https://razorpay.com/docs/partners/resellers/perform-kyc/"
+                  href={PARTNERSHIPS_WEBSITE_LINKS.PERFORM_KYC_DOCS_LINK}
                   target="_blank"
                   rel="noopener noreferer"
                   icon={ExternalLinkIcon}

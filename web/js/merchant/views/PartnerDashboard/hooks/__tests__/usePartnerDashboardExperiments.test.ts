@@ -1,9 +1,10 @@
+import { renderHook } from '@testing-library/react-hooks';
+
 import { SpiltzContextState } from 'common/splitz/types';
 import * as merchantStore from 'merchant/store';
 import usePartnerDashboardExperiments from 'merchant/views/PartnerDashboard/hooks/usePartnerDashboardExperiments';
 
 const defaultMockUser = {
-  isPartnershipsInviteFlowEnabled: true,
   isOrgRZP: true,
   isPartner: (partner_type) => partner_type === 'reseller',
 };
@@ -24,18 +25,24 @@ describe('usePartnerDashboardExperiments', () => {
   beforeEach(() => {
     mockAbExperiments = defaultAbExperiments;
   });
-  test('should return correct output for isEasierAccessToSubmerchantKycEnabled', () => {
+  test('should return correct output for isPartnershipsInviteFlowEnabled', () => {
     mockAbExperiments = {
       partnerships_easier_access_to_submerchant_kyc: variantOn,
     };
-    let experiments = usePartnerDashboardExperiments();
-    expect(experiments.isEasierAccessToSubmerchantKycEnabled).toBe(true);
+
+    const {
+      result: { current: experiments },
+    } = renderHook(() => usePartnerDashboardExperiments());
+    expect(experiments.isPartnershipsInviteFlowEnabled).toBe(true);
+
     userSpy.mockImplementation(() => ({
       ...defaultMockUser,
-      isPartnershipsInviteFlowEnabled: false,
+      isPartner: (partner_type) => partner_type !== 'reseller',
     }));
-    experiments = usePartnerDashboardExperiments();
-    expect(experiments.isEasierAccessToSubmerchantKycEnabled).toBe(false);
+    const {
+      result: { current: experimentsNext },
+    } = renderHook(() => usePartnerDashboardExperiments());
+    expect(experimentsNext.isPartnershipsInviteFlowEnabled).toBe(false);
   });
 
   test('should return correct output for isPlatformPartnerInviteFlowEnabled', () => {
@@ -46,28 +53,40 @@ describe('usePartnerDashboardExperiments', () => {
     mockAbExperiments = {
       partnerships_oauth_phantom: variantOn,
     };
-    let experiments = usePartnerDashboardExperiments();
+
+    const {
+      result: { current: experiments },
+    } = renderHook(() => usePartnerDashboardExperiments());
     expect(experiments.isPlatformPartnerInviteFlowEnabled).toBe(true);
 
     mockAbExperiments = {
       partnerships_oauth_phantom: variantOff,
     };
-    experiments = usePartnerDashboardExperiments();
-    expect(experiments.isPlatformPartnerInviteFlowEnabled).toBe(false);
+
+    const {
+      result: { current: experimentsNext },
+    } = renderHook(() => usePartnerDashboardExperiments());
+    expect(experimentsNext.isPlatformPartnerInviteFlowEnabled).toBe(false);
   });
 
   test('should return correct output for isPartnershipCapitalBureauLinkEnabled', () => {
     mockAbExperiments = {
       partnership_capital_bureau_link: variantOn,
     };
-    let experiments = usePartnerDashboardExperiments();
+
+    const {
+      result: { current: experiments },
+    } = renderHook(() => usePartnerDashboardExperiments());
     expect(experiments.isPartnershipCapitalBureauLinkEnabled).toBe(true);
 
     mockAbExperiments = {
       partnership_capital_bureau_link: variantOff,
     };
-    experiments = usePartnerDashboardExperiments();
-    expect(experiments.isPartnershipCapitalBureauLinkEnabled).toBe(false);
+
+    const {
+      result: { current: experimentsNext },
+    } = renderHook(() => usePartnerDashboardExperiments());
+    expect(experimentsNext.isPartnershipCapitalBureauLinkEnabled).toBe(false);
   });
 
   test('should return correct output for isPartnershipsForPosEnabled', () => {
@@ -78,13 +97,18 @@ describe('usePartnerDashboardExperiments', () => {
     mockAbExperiments = {
       partnerships_for_pos: variantOn,
     };
-    let experiments = usePartnerDashboardExperiments();
+
+    const {
+      result: { current: experiments },
+    } = renderHook(() => usePartnerDashboardExperiments());
     expect(experiments.isPartnershipsForPosEnabled).toBe(true);
 
     mockAbExperiments = {
       partnership_for_pos: variantOff,
     };
-    experiments = usePartnerDashboardExperiments();
-    expect(experiments.isPartnershipsForPosEnabled).toBe(false);
+    const {
+      result: { current: experimentsNext },
+    } = renderHook(() => usePartnerDashboardExperiments());
+    expect(experimentsNext.isPartnershipsForPosEnabled).toBe(false);
   });
 });

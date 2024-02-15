@@ -1,4 +1,5 @@
 import { rest } from 'msw';
+
 import { smsResponse, uploadStatementResponse, submitStatementResponse } from './fixtures';
 
 export const sendMessageSuccess = (response = smsResponse) => {
