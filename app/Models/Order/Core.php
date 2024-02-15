@@ -506,6 +506,20 @@ class Core extends Base\Core
 
                 $data[Entity::BANK_ACCOUNT] = $bankAccountData;
             }
+            
+            // mapping merged banks
+            if ($tokenRegistration->getMethod() === Methods\Entity::EMANDATE)
+            {
+                if(empty($data[Entity::BANK]) === false)
+                {
+                    $mappedBank = Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$data[Entity::BANK]] ?? null;
+                    
+                    if ($mappedBank !== null)
+                    {
+                        $data[Entity::BANK] = $mappedBank;
+                    }
+                }
+            }
 
             if ($tokenRegistration->getMethod() === Methods\Entity::CARD){
                 $data[Entity::TOKEN]['frequency'] = $tokenRegistration->getFrequency() ?? $tokenRegistration::AS_PRESENTED;

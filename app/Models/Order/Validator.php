@@ -583,6 +583,23 @@ class Validator extends Base\Validator
         if (($order->getBank() !== null) and
             ($order->getBank() !== $bank))
         {
+            if($method === Payment\Method::EMANDATE)
+            {
+                $isMergedBank = isset(Payment\Gateway::ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING[$order->getBank()]);
+                
+                $this->trace->info(TraceCode::EMANDATE_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK,
+                    [
+                        "order_bank"   => $order->getBank(),
+                        "payment_bank" => $bank,
+                        "is_merged_bank"  => $isMergedBank
+                    ]);
+                
+                if($isMergedBank === true)
+                {
+                    return;
+                }
+            }
+            
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK);
         }

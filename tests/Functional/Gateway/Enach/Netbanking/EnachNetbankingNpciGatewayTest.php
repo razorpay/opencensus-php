@@ -1388,6 +1388,30 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             $this->doAuthPayment($paymentInput);
         }, \RZP\Exception\BadRequestException::class, 'Bank code provided does not match order bank.');
     }
+    
+    public function testPaymentEsaf()
+    {
+        $paymentInput = $this->getEmandatePaymentArray('ESMF', 'netbanking', 0);
+        
+        $paymentInput['bank_account'] = [
+            'account_number' => '1111111111111',
+            'ifsc'           => 'ESMF0000001',
+            'name'           => 'Test account',
+            'account_type'   => 'current',
+        ];
+        
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $paymentInput['amount'], 'currency' => $paymentInput['currency'], 'method' => $paymentInput['method'], 'payment_capture' => '1', 'receipt' => 'test1', 'bank' => $paymentInput['bank']]);
+        $paymentInput['order_id'] = $order->getPublicId();
+        
+        $this->doAuthPayment($paymentInput);
+        
+        
+        $this->mockServerRequestFunction(function (& $content)
+        {
+            $this->assertNotNull($content);
+            $this->assertEquals('USFB', $content['BankID']);
+        });
+    }
 
     public function testOrderCreationWithBankAccount()
     {

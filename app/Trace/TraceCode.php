@@ -1468,7 +1468,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_TOKEN_CONFIG_RESET                           = 'EMANDATE_TOKEN_CONFIG_RESET';
     const EMANDATE_GET_TOKEN_EXPIRY_ERROR                       = 'EMANDATE_GET_TOKEN_EXPIRY_ERROR';
     const CURRENT_MONTH_FETCH_ERROR                             = 'CURRENT_MONTH_FETCH_ERROR';
-
+    const EMANDATE_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK       = 'EMANDATE_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK';
+    
     const EMANDATE_CONFIG_FETCH_REQUEST                         = 'EMANDATE_CONFIG_FETCH_REQUEST';
     const EMANDATE_CONFIG_FETCH_ERROR                           = 'EMANDATE_CONFIG_FETCH_ERROR';
     const EMANDATE_RAZORX_NR_VARIANT                            = 'EMANDATE_RAZORX_NR_VARIANT';

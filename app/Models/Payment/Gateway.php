@@ -818,6 +818,7 @@ class Gateway
         IFSC::DLXB,
         IFSC::ESAF,
         IFSC::ESFB,
+        IFSC::ESMF,
         IFSC::FDRL,
         IFSC::HDFC,
         IFSC::HSBC,
@@ -856,6 +857,12 @@ class Gateway
         IFSC::UTIB,
         IFSC::VARA,
         IFSC::YESB,
+    ];
+    
+    // Maintaing Map of IFSC Code with Merged Bank IFSC
+    const ENACH_NPCI_NB_MERGED_BANK_CODE_MAPPING = [
+        IFSC::ESMF => IFSC::ESAF,
+        IFSC::UJVN => IFSC::USFB,
     ];
 
     // banks supported by enach_npci_netbanking gateway for auth type card
